@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <repositories>
+        <repository>
+            <id>lsfusion</id>
+            <name>lsFusion Public Repository</name>
+            <url>http://repo.lsfusion.org</url>
+        </repository>
+    </repositories>
+
+    <parent>
+        <groupId>lsfusion.platform.build</groupId>
+        <artifactId>logics</artifactId>
+        <version>3.beta.0-SNAPSHOT</version>
+        <relativePath>../platform/build/logics/pom.xml</relativePath>
+    </parent>
+
+    <groupId>lsfusion.solutions</groupId>
+    <artifactId>mycompany</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>MyCompany</name>
+
+    <profiles>
+        <profile>
+            <id>assemble</id>
+            <properties>
+                <platform.assemble.version>3.beta.0-SNAPSHOT</platform.assemble.version>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>lsfusion.platform</groupId>
+                    <artifactId>api</artifactId>
+                    <version>${platform.assemble.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>lsfusion.platform</groupId>
+                    <artifactId>server</artifactId>
+                    <version>${platform.assemble.version}</version>
+                </dependency>
+            </dependencies>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>lsfusion.platform</groupId>
+                                    <artifactId>web-client</artifactId>
+                                    <version>${platform.assemble.version}</version>
+                                    <type>war</type>
+                                    <outputDirectory>target</outputDirectory>
+                                    <destFileName>web-client-${platform.assemble.version}.war</destFileName>
+                                    <overWrite>true</overWrite>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
