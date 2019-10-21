@@ -1,0 +1,23 @@
+MODULE Partner;
+
+REQUIRE MasterData;
+
+NAMESPACE MasterData;
+
+CLASS ABSTRACT Partner 'Контрагент';
+
+name 'Наименование' = ABSTRACT ISTRING[92] (Partner);
+address 'Адрес' = ABSTRACT ISTRING[121] (Partner);
+
+FORM partners 'Контрагенты'
+    OBJECTS p = Partner
+    PROPERTIES(p) READONLY name, address
+    
+    LIST Partner OBJECT p
+;
+
+NAVIGATOR {
+    masterData {
+        NEW partners;
+    }
+}

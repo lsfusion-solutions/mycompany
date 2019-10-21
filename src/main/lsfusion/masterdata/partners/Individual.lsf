@@ -1,0 +1,101 @@
+MODULE Individual;
+
+REQUIRE Partner, MasterData, LegalEntity;
+
+NAMESPACE MasterData;
+
+CLASS Individual 'Физическое лицо';
+
+firstName 'Имя' = DATA ISTRING[30] (Individual);
+lastName 'Фамилия' = DATA ISTRING[30] (Individual);
+middleName 'Отчество' = DATA ISTRING[30] (Individual);
+address 'Адрес' = DATA ISTRING[50] (Individual);
+city 'Город' = DATA ISTRING[30](Individual);
+state 'Область' = DATA ISTRING[30](Individual);
+zip'Почтовый индекс' = DATA INTEGER (Individual);
+phone 'Телефон' = DATA ISTRING[30](Individual);
+email 'Электронная почта' = DATA ISTRING[30](Individual);
+
+legalEntity = DATA LegalEntity (Individual);
+nameLegalEntity 'Организация' (Individual i) = name(legalEntity(i));
+
+FORM individual 'Физическое лицо'
+    OBJECTS i = Individual PANEL
+    PROPERTIES(i) lastName, firstName, middleName,
+                  nameLegalEntity, 
+                  address, city, state, zip, 
+                  phone, email
+    
+    EDIT Individual OBJECT i
+;
+
+DESIGN individual {
+    OBJECTS {
+        NEW head {
+            alignment = STRETCH;
+            type = CONTAINERH;
+            MOVE PROPERTY(lastName(i));
+            MOVE PROPERTY(firstName(i));
+            MOVE PROPERTY(middleName(i));
+        }
+        NEW header {
+            alignment = STRETCH;
+            MOVE PROPERTY(nameLegalEntity(i));
+        }
+        NEW pane {
+            fill = 1;
+            type = CONTAINERH;
+            NEW leftpane {
+                fill = 1;
+                MOVE PROPERTY(address(i));
+                MOVE PROPERTY(city(i));
+                MOVE PROPERTY(state(i));
+                MOVE PROPERTY(zip(i));
+                
+            }
+            NEW rightpane {
+                fill = 1;
+                MOVE PROPERTY(phone(i));
+                MOVE PROPERTY(email(i));
+            }
+        }
+    }
+}
+
+FORM individuals 'Физические лица'
+    OBJECTS i = Individual
+    PROPERTIES(i) READONLY lastName, firstName, middleName, address, city, state, zip, phone, email, nameLegalEntity
+    PROPERTIES(i) NEWSESSION NEW, EDIT, DELETE
+    
+    LIST Individual OBJECT i
+;
+
+NAVIGATOR {
+    masterData {
+        NEW individuals;
+    }
+}
+
+// Наследуем физическое лицо от партнера
+
+EXTEND CLASS Individual : Partner;
+
+name (Individual i) += CONCAT ' ', lastName(i), firstName(i), middleName(i);
+address (Individual i) += OVERRIDE (CONCAT ' ',address(i),  city(i), state(i), zip(i)),
+        (CONCAT ' ', address(legalEntity(i)), city(legalEntity(i)), state(legalEntity(i)), zip(legalEntity(i)));
+
+// Добавляем на форму организации возможность редактировать физические лица
+
+EXTEND FORM legalEntity 
+    OBJECTS i = Individual
+    PROPERTIES(i) READONLY lastName, firstName, middleName, address, city, state, zip, phone, email, nameLegalEntity
+    FILTERS legalEntity(i) = le
+;
+
+DESIGN legalEntity {
+    details {
+        MOVE BOX(i) {
+            caption = 'Контакты';
+        }
+    }
+}
