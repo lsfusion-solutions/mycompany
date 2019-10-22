@@ -1,0 +1,22 @@
+MODULE ServiceP;
+
+REQUIRE MasterData, Item, Product;
+
+NAMESPACE MasterData;
+
+CLASS Service 'Услуга' : Item;
+
+newService 'Добавить услугу' (Category c) {
+   NEWSESSION {
+       NEW s = Service {
+           category(s) <- c;
+           SHOW item OBJECTS i = s; 
+       }
+   }
+} IMAGE 'add.png';
+
+EXTEND FORM items
+    PROPERTIES newService(c) DRAW i TOOLBAR
+;
+
+

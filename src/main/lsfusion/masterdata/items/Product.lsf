@@ -1,0 +1,25 @@
+MODULE Product;
+
+REQUIRE MasterData, Item, Category;
+
+NAMESPACE MasterData;
+
+CLASS Product 'Товар' : Item;
+weight 'Вес' = DATA NUMERIC[10,2] (Product);
+
+EXTEND FORM item
+    PROPERTIES(i) weight
+;
+
+newProduct 'Добавить продукт' (Category c) {
+    NEWSESSION {
+        NEW p = Product {
+            category(p) <- c;
+            SHOW item OBJECTS i = p;  
+        }
+    }
+} IMAGE 'add.png';
+
+EXTEND FORM items
+    PROPERTIES newProduct(c) DRAW i TOOLBAR
+;

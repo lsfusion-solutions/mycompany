@@ -1,0 +1,48 @@
+MODULE Category;
+
+REQUIRE MasterData;
+
+NAMESPACE MasterData;
+
+CLASS Category 'Категория';
+name 'Наименование' = DATA ISTRING[50] (Category);
+
+parent 'Родитель' = DATA Category (Category);
+nameParent 'Родительская группа' (Category c) = name(parent(c));
+
+level 'Уровень' (Category child, Category parent) =
+   RECURSION 1l IF child IS Category AND parent == child
+        STEP 2l IF parent == parent($parent) MATERIALIZED;
+        
+canonicalName 'Каноническое имя' (Category c) =
+   GROUP CONCAT name(Category parent), ' / ' ORDER DESC level(c, parent) CHARWIDTH 50;
+   
+FORM category 'Категория'
+   OBJECTS c = Category PANEL
+   PROPERTIES(c) name, nameParent
+  
+   EDIT Category OBJECT c
+;
+
+newCategory 'Категория' (Category cc) {
+    NEWSESSION {
+        NEW cat = Category {
+            parent(cat) <- cc;
+            SHOW category OBJECTS c = cat;  
+        }
+    }
+} IMAGE 'add.png';
+
+FORM categories 'Категории'
+    OBJECTS c = Category
+    PROPERTIES(c) READONLY name, nameParent, canonicalName
+    PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE
+
+   LIST Category OBJECT c
+;
+
+NAVIGATOR {
+    masterData {
+        NEW categories;
+    }
+}

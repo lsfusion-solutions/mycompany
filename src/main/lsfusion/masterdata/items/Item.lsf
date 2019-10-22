@@ -1,0 +1,53 @@
+MODULE Item;
+
+REQUIRE MasterData, Category;
+
+NAMESPACE MasterData;
+
+CLASS ABSTRACT Item 'Номенклатура';
+name 'Имя' = DATA ISTRING[50] (Item);
+
+category 'Категория' = DATA Category (Item);
+nameCategory 'Категория' (Item i) = name(category(i));
+canonicalNameCategory 'Категория (полная)' (Item i) = canonicalName(category(i));
+
+barCode 'Штрих код' = DATA INTEGER (Item);
+
+FORM item 'Номенклатура'
+    OBJECTS i = Item PANEL
+    PROPERTIES(i) name, nameCategory, barCode
+  
+    EDIT Item OBJECT i
+;
+
+FORM items 'Номенклатуры'
+    TREE categories c = Category PARENT parent
+    PROPERTIES READONLY name(c)
+    ORDER name(c)
+    PROPERTIES newCategory(c) DRAW c TOOLBAR
+    PROPERTIES(c) NEWSESSION EDIT, DELETE
+
+    OBJECTS i = Item
+    PROPERTIES(i) READONLY name, nameCategory, barCode, canonicalNameCategory
+    PROPERTIES(i) NEWSESSION EDIT, DELETE 
+    FILTERS level(category(i), c)
+   
+    LIST Item OBJECT i
+;
+
+DESIGN items {
+   OBJECTS {
+       NEW pane {
+           type = SPLITH;
+           fill = 1;
+           MOVE BOX(TREE categories);
+           MOVE BOX(i) { fill = 2; }
+       }
+   }
+}
+
+NAVIGATOR {
+    masterData {
+        NEW items;
+    }
+}
