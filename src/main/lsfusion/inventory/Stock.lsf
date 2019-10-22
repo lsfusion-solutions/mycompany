@@ -1,0 +1,31 @@
+MODULE Stock;
+
+REQUIRE Inventory;
+
+NAMESPACE Inventory;
+
+CLASS Stock 'Склад';
+
+name 'Название' = DATA ISTRING[30] (Stock);
+address 'Адрес' = DATA ISTRING[50] (Stock);
+
+FORM stock 'Склад'
+    OBJECTS s = Stock PANEL
+    PROPERTIES(s) name, address
+    
+    EDIT Stock OBJECT s
+;
+
+FORM stocks 'Склады'
+    OBJECTS s = Stock
+    PROPERTIES(s) READONLY name, address
+    PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
+    
+    LIST Stock OBJECT s
+;
+
+NAVIGATOR {
+    inventory {
+        NEW stocks;
+    }
+}
