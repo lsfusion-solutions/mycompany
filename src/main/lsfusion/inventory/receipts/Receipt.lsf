@@ -1,13 +1,13 @@
 MODULE Receipt;
 
-REQUIRE Inventory, Stock, Partner, Product;
+REQUIRE Inventory, Location, Partner, Product;
 
 NAMESPACE Inventory;
 
 CLASS Receipt 'Поступление';
 
 scheduledDate 'Дата приемки' = DATA DATETIME (Receipt);
-stock 'Склад' = DATA Stock (Receipt);
+stock 'Место хранения' = DATA Location (Receipt);
 nameStock 'Склад' (Receipt r) = name(stock(r));
 partner 'Партнер' = DATA Partner (Receipt);
 namePartner 'Партнер' (Receipt r) = name(partner(r));
@@ -22,7 +22,7 @@ nameProduct 'Продукт' (ReceiptLine l) = name(product(l));
 
 initialDemand 'Исходное количество' = DATA INTEGER (ReceiptLine);
 
-FORM receipt 'Документ'
+FORM receipt 'Поступление'
     OBJECTS r = Receipt PANEL
     PROPERTIES(r) scheduledDate, nameStock, namePartner, notes
   
@@ -33,7 +33,7 @@ FORM receipt 'Документ'
     EDIT Receipt OBJECT r
 ;
 
-FORM receipts 'Документы'
+FORM receipts 'Поступления'
     OBJECTS r = Receipt
     PROPERTIES(r) READONLY scheduledDate, nameStock, namePartner, notes
     PROPERTIES(r) NEWSESSION NEW, EDIT, DELETE

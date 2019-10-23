@@ -1,6 +1,6 @@
 MODULE ReceiptDone;
 
-REQUIRE Inventory, ReceiptReady;
+REQUIRE Inventory, ReceiptReady, InvLedger;
 
 NAMESPACE Inventory;
 
@@ -50,10 +50,19 @@ EXTEND CLASS Status {
 status(Receipt r) += WHEN done(r) THEN Status.done;
 
 DESIGN receipt {                               
-            statusActions {                  
-                MOVE PROPERTY(validate(r));
-            }
-            status {
-                MOVE PROPERTY(done(r)) FIRST;                              
-            }                   
+    statusActions {                  
+        MOVE PROPERTY(validate(r));
+    }
+    status {
+        MOVE PROPERTY(done(r)) FIRST;                              
+    }                   
 }
+
+// Проводим по регистру изменения остатков
+EXTEND CLASS ReceiptLine : InvLedger;
+
+dateTime(ReceiptLine l) += scheduledDate(receipt(l));
+location(ReceiptLine l) += stock(receipt(l));
+
+product(ReceiptLine l) += product(l);
+quantity(ReceiptLine l) += done(l);

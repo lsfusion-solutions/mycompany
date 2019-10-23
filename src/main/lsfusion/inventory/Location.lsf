@@ -1,0 +1,49 @@
+MODULE Location;
+
+REQUIRE Inventory;
+
+NAMESPACE Inventory;
+
+CLASS Location 'Место хранения';
+
+name 'Название' = DATA ISTRING[30] (Location);
+
+parent 'Родитель' = DATA Location (Location);
+nameParent 'Родительское место хранения' (Location l) = name(parent(l));
+
+level 'Уровень' (Location child, Location parent) =
+   RECURSION 1l IF child IS Location AND parent == child
+        STEP 2l IF parent == parent($parent) MATERIALIZED;
+        
+canonicalName 'Каноническое имя' (Location l) =
+   GROUP CONCAT name(Location parent), ' / ' ORDER DESC level(l, parent) CHARWIDTH 50;
+
+FORM location 'Место хранения'
+    OBJECTS l = Location PANEL
+    PROPERTIES(l) name, nameParent
+    
+    EDIT Location OBJECT l
+;
+
+FORM locations 'Места хранения'
+    OBJECTS l = Location
+    PROPERTIES(l) READONLY name, nameParent, canonicalName
+    PROPERTIES(l) NEWSESSION NEW, EDIT, DELETE
+    
+    LIST Location OBJECT l
+;
+
+newLocation 'Место хранения' (Location ll) {
+    NEWSESSION {
+        NEW loc = Location {
+            parent(loc) <- ll;
+            SHOW location OBJECTS l = loc;  
+        }
+    }
+} IMAGE 'add.png';
+
+NAVIGATOR {
+    inventory {
+        NEW locations;
+    }
+}
