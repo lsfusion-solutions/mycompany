@@ -1,0 +1,59 @@
+MODULE ReceiptDone;
+
+REQUIRE Inventory, ReceiptReady;
+
+NAMESPACE Inventory;
+
+// Принят
+done 'Принят' = DATA BOOLEAN (Receipt);
+
+validate 'Принят' (Receipt r) {
+    APPLY; // сохраняем изменения
+    IF canceled() THEN RETURN; // если сработало ограничение, то выходим
+    
+    NEWSESSION {
+        IF GROUP SUM done(ReceiptLine l) IF receipt(l) = r THEN {
+            IF GROUP SUM 1 IF receipt(ReceiptLine l) = r AND NOT done(l) = initialDemand(l) THEN {
+                ASK 'Принято не все количество. Создать дополнительную приемку ?' DO {
+                    NEW rn = Receipt {
+                        partner(rn) <- partner(r);
+                        stock(rn) <- stock(r);
+                        scheduledDate(rn) <- scheduledDate(r);
+                        FOR receipt(ReceiptLine l) = r AND (q = initialDemand(l) (-) done(l)) DO NEW ln = ReceiptLine {
+                            receipt(ln) <- rn;
+                            product(ln) <- product(l);
+                            initialDemand(ln) <- q;
+                        }
+                    }
+                    initialDemand(ReceiptLine l) <- done(l) WHERE receipt(l) = r;
+                    DELETE ReceiptLine l WHERE receipt(l) = r AND NOT done(l);
+                }
+            }
+        } ELSE {
+            ASK 'Не заполены принятые количества. Проставить ожидаемыми ?' DO {
+                done(ReceiptLine l) <- initialDemand(l) WHERE receipt(l) = r;
+            } ELSE RETURN;
+        }
+        done(r) <- TRUE;
+        APPLY;
+    }
+}
+
+EXTEND FORM receipt
+    PROPERTIES(r) validate SHOWIF ready(r), done
+;
+
+EXTEND CLASS Status {
+    done 'Принят'
+}
+
+status(Receipt r) += WHEN done(r) THEN Status.done;
+
+DESIGN receipt {                               
+            statusActions {                  
+                MOVE PROPERTY(validate(r));
+            }
+            status {
+                MOVE PROPERTY(done(r)) FIRST;                              
+            }                   
+}

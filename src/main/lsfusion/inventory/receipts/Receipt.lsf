@@ -1,0 +1,65 @@
+MODULE Receipt;
+
+REQUIRE Inventory, Stock, Partner, Product;
+
+NAMESPACE Inventory;
+
+CLASS Receipt 'Поступление';
+
+scheduledDate 'Дата приемки' = DATA DATETIME (Receipt);
+stock 'Склад' = DATA Stock (Receipt);
+nameStock 'Склад' (Receipt r) = name(stock(r));
+partner 'Партнер' = DATA Partner (Receipt);
+namePartner 'Партнер' (Receipt r) = name(partner(r));
+notes 'Примечания' = DATA ISTRING[50] (Receipt);
+
+CLASS ReceiptLine 'Строка';
+
+receipt 'Документ' = DATA Receipt (ReceiptLine) NONULL DELETE;
+
+product 'Продукт' = DATA Product (ReceiptLine);
+nameProduct 'Продукт' (ReceiptLine l) = name(product(l));
+
+initialDemand 'Исходное количество' = DATA INTEGER (ReceiptLine);
+
+FORM receipt 'Документ'
+    OBJECTS r = Receipt PANEL
+    PROPERTIES(r) scheduledDate, nameStock, namePartner, notes
+  
+    OBJECTS l = ReceiptLine
+    PROPERTIES(l) nameProduct, initialDemand, NEW, DELETE
+    FILTERS receipt(l) = r
+ 
+    EDIT Receipt OBJECT r
+;
+
+FORM receipts 'Документы'
+    OBJECTS r = Receipt
+    PROPERTIES(r) READONLY scheduledDate, nameStock, namePartner, notes
+    PROPERTIES(r) NEWSESSION NEW, EDIT, DELETE
+;
+
+NAVIGATOR {
+    inventory {
+        NEW receipts;
+    }
+}
+
+DESIGN receipt {
+    OBJECTS {        
+        NEW pane {
+            fill = 1;                         
+            NEW pane1 {
+                type = CONTAINERH;                                           
+                MOVE PROPERTY(scheduledDate(r));
+                MOVE PROPERTY(nameStock(r));
+                MOVE PROPERTY(namePartner(r));
+                MOVE PROPERTY(notes(r));
+            }
+            NEW pane2 {
+                fill = 1;
+                MOVE BOX(l);                  
+            }
+        }        
+    }
+}

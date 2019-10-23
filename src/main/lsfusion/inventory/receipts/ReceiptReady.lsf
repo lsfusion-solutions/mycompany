@@ -1,0 +1,41 @@
+MODULE ReceiptReady;
+
+REQUIRE Inventory, ReceiptStatus;
+
+NAMESPACE Inventory;
+
+// К приемке
+done 'Принятое колчество' = DATA INTEGER (ReceiptLine);
+
+ready 'К приемке' = DATA BOOLEAN (Receipt);
+
+markAsToDo 'К приемке' (Receipt r) {
+    APPLY; 
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {
+        ready(r) <- TRUE;
+        APPLY;
+    }
+}
+
+EXTEND CLASS Status {
+    ready 'К приемке'
+}
+
+EXTEND FORM receipt
+    PROPERTIES(r) markAsToDo SHOWIF status(r) = Status.draft, ready
+
+    PROPERTIES(l) done READONLYIF NOT ready(r)
+;
+
+status(Receipt r) += WHEN ready(r) THEN Status.ready;
+
+DESIGN receipt {
+    statusActions {
+        MOVE PROPERTY(markAsToDo(r));                
+    }
+    status {
+        MOVE PROPERTY(ready(r)) FIRST;                               
+    }
+}
