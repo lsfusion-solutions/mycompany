@@ -23,17 +23,19 @@ FORM item 'Номенклатура'
 FORM items 'Номенклатуры'
     TREE categories c = Category PARENT parent
     PROPERTIES READONLY name(c)
-    ORDER name(c)
     PROPERTIES newCategory(c) DRAW c TOOLBAR
     PROPERTIES(c) NEWSESSION EDIT, DELETE
+    ORDER name(c)
 
     OBJECTS i = Item
-    PROPERTIES(i) READONLY name, nameCategory, barCode, canonicalNameCategory
-    PROPERTIES(i) NEWSESSION EDIT, DELETE 
+    PROPERTIES(i) READONLYIF isReadonly() name, nameCategory, barCode, canonicalNameCategory
+    PROPERTIES(i) SHOWIF isEditable() NEWSESSION EDIT, DELETE 
     FILTERS level(category(i), c)
    
     LIST Item OBJECT i
 ;
+
+@extendFormEditable(items);
 
 DESIGN items {
    OBJECTS {
