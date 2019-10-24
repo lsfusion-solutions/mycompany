@@ -7,8 +7,11 @@ NAMESPACE MasterData;
 CLASS Category 'Категория';
 name 'Наименование' = DATA ISTRING[50] (Category);
 
-parent 'Родитель' = DATA Category (Category);
+parent 'Родитель' = DATA Category (Category) INDEXED;
 nameParent 'Родительская группа' (Category c) = name(parent(c));
+
+CONSTRAINT DROPPED(Category c IS Category) AND PREV(parent(Category child) = c)
+        MESSAGE 'Запрещено удалять категории, на которые ссылаются другие категории';
 
 level 'Уровень' (Category child, Category parent) =
    RECURSION 1l IF child IS Category AND parent == child
