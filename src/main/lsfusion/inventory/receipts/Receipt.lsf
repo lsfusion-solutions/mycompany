@@ -1,16 +1,38 @@
 MODULE Receipt;
 
-REQUIRE Inventory, Location, Partner, Product, System, Time;
+REQUIRE System, Time,
+        Inventory, Location, Partner, Product,
+        ReceiptOperation;
 
 NAMESPACE Inventory;
 
 CLASS Receipt 'Поступление';
 
+// Операция
+operation 'Операция' = DATA ReceiptOperation (Receipt) NONULL;
+nameOperation 'Операция' (Receipt r) = name(operation(r));
+
+WHEN LOCAL SET(Receipt r IS Receipt) AND countOperations() = 1 DO operation(r) <- lastOperation(); 
+
 scheduledDate 'Дата приемки' = DATA DATETIME (Receipt) NONULL;
 scheduledDate (Receipt r) <- currentDateTime() WHEN SET(r IS Receipt);
 
+// Номер
+series 'Серия' = DATA STRING[2] (Receipt);
+number 'Номер' = DATA STRING[28] (Receipt);
+
+seriesNumber 'Серия/Номер' (Receipt r) = CONCAT '/', series(r), number(r); 
+
+WHEN SETCHANGED(operation(Receipt o)) AND NOT CHANGED(number(o)) AND NOT CHANGED(series(o)) DO {
+    number(o) <- curStringValue(numerator(operation(o)));
+    series(o) <- series(numerator(operation(o)));
+    incrementValueSession(numerator(operation(o)));
+}
+
+// Места хранения
 location 'Место хранения' = DATA Location (Receipt) NONULL INDEXED;
 nameLocation 'Склад' (Receipt r) = name(location(r));
+WHEN LOCAL CHANGED(operation(Receipt r)) DO location(r) <- defaultLocation(operation(r));
 
 partner 'Партнер' = DATA Partner (Receipt);
 namePartner 'Партнер' (Receipt r) = name(partner(r));
@@ -30,7 +52,7 @@ edit (ReceiptLine l) + { edit(receipt(l)); }
 
 FORM receipt 'Поступление'
     OBJECTS r = Receipt PANEL
-    PROPERTIES(r) scheduledDate, nameLocation, namePartner, notes
+    PROPERTIES(r) scheduledDate, series, number, nameOperation, nameLocation, namePartner, notes
   
     OBJECTS l = ReceiptLine
     PROPERTIES(l) nameProduct, initialDemand, NEW, DELETE
@@ -41,7 +63,7 @@ FORM receipt 'Поступление'
 
 FORM receipts 'Поступления'
     OBJECTS r = Receipt
-    PROPERTIES(r) READONLY scheduledDate, nameLocation, namePartner, notes
+    PROPERTIES(r) READONLY scheduledDate, series, number, nameOperation, nameLocation, namePartner, notes
     PROPERTIES(r) NEWSESSION NEW, EDIT, DELETE
 ;
 
@@ -56,11 +78,25 @@ DESIGN receipt {
         NEW pane {
             fill = 1;                         
             NEW pane1 {
-                type = CONTAINERH;                                           
-                MOVE PROPERTY(scheduledDate(r));
-                MOVE PROPERTY(nameLocation(r));
-                MOVE PROPERTY(namePartner(r));
-                MOVE PROPERTY(notes(r));
+                type = CONTAINERV ;
+                NEW box1 {
+                    type = CONTAINERH; 
+                    alignment = STRETCH;                                        
+                    MOVE PROPERTY(scheduledDate(r));
+                    MOVE PROPERTY(series(r));
+                    MOVE PROPERTY(number(r));
+                }
+                NEW box2 {
+                    type = CONTAINERH;
+                    MOVE PROPERTY(nameOperation(r));
+                    MOVE PROPERTY(nameLocation(r));
+                    MOVE PROPERTY(namePartner(r));
+                }
+                NEW box3 {
+                    type = CONTAINERH;
+                    alignment = STRETCH; 
+                    MOVE PROPERTY(notes(r));
+                }
             }
             NEW pane2 {
                 fill = 1;

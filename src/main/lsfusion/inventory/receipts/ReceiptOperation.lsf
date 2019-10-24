@@ -1,0 +1,37 @@
+MODULE ReceiptOperation;
+
+REQUIRE Inventory, Numerator, Location;
+
+NAMESPACE Inventory;
+
+CLASS ReceiptOperation 'Операция';
+
+name 'Название' = DATA ISTRING[50](ReceiptOperation);
+
+numerator 'Нумератор' = DATA Numerator (ReceiptOperation);
+nameNumerator 'Нумератор' (ReceiptOperation o) = name(numerator(o));
+defaultLocation 'Место хранения по умолчанию' = DATA Location(ReceiptOperation);
+nameDefaultLocation 'Место хранения по умолчанию' (ReceiptOperation o) = name(defaultLocation(o));
+
+countOperations 'Кол-во операций' () = GROUP SUM 1 IF r IS ReceiptOperation; 
+lastOperation 'Последняя операция' = GROUP LAST r AS ReceiptOperation ORDER r;
+
+FORM operation 'Операция'
+    OBJECTS o = ReceiptOperation PANEL 
+    PROPERTIES(o) name, nameNumerator, nameDefaultLocation
+     
+    EDIT ReceiptOperation OBJECT o;
+;
+
+FORM operations 'Операции'
+    OBJECTS o = ReceiptOperation
+    PROPERTIES(o) READONLY name, nameNumerator, nameDefaultLocation
+    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+    LIST ReceiptOperation OBJECT o;
+;
+
+NAVIGATOR {
+    inventory {
+        NEW operations;
+    }
+}

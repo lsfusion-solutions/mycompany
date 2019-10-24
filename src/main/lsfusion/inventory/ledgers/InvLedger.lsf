@@ -17,6 +17,11 @@ nameToLocation 'Место хранения (куда)' (InvLedger l) = name(toL
 
 product 'Товар' = ABSTRACT Product (InvLedger) MATERIALIZED;
 
+series 'Серия' = ABSTRACT STRING[2] (InvLedger);
+number 'Номер' = ABSTRACT STRING[28] (InvLedger);
+
+seriesNumber 'Серия/Номер' (InvLedger l) = CONCAT '/', series(l), number(l);
+
 INDEX product(InvLedger l);
 INDEX fromLocation(InvLedger l), product(l);
 INDEX toLocation(InvLedger l), product(l);
