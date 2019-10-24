@@ -39,13 +39,18 @@ validate 'Принят' (Receipt r) {
     }
 }
 
+EXTEND CLASS Status {
+    done 'Принят'
+}
+
 EXTEND FORM receipt
     PROPERTIES(r) validate SHOWIF ready(r), done
 ;
 
-EXTEND CLASS Status {
-    done 'Принят'
-}
+EXTEND FORM receipts  
+    EXTEND FILTERGROUP status
+        FILTER 'Принят' status(r) = Status.done 'F7'
+;
 
 status(Receipt r) += WHEN done(r) THEN Status.done;
 
