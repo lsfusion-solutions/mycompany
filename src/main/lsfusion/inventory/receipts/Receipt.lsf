@@ -6,7 +6,8 @@ NAMESPACE Inventory;
 
 CLASS Receipt 'Поступление';
 
-scheduledDate 'Дата приемки' = DATA DATETIME (Receipt);
+scheduledDate 'Дата приемки' = DATA DATETIME (Receipt) NONULL;
+scheduledDate (Receipt r) <- currentDateTime() WHEN SET(r IS Receipt);
 
 location 'Место хранения' = DATA Location (Receipt) NONULL INDEXED;
 nameLocation 'Склад' (Receipt r) = name(location(r));
