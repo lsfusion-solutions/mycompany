@@ -1,19 +1,21 @@
 MODULE Receipt;
 
-REQUIRE Inventory, Location, Partner, Product;
+REQUIRE Inventory, Location, Partner, Product, System, Time;
 
 NAMESPACE Inventory;
 
 CLASS Receipt 'Поступление';
 
 scheduledDate 'Дата приемки' = DATA DATETIME (Receipt);
-stock 'Место хранения' = DATA Location (Receipt) NONULL INDEXED;
-nameStock 'Склад' (Receipt r) = name(stock(r));
+
+location 'Место хранения' = DATA Location (Receipt) NONULL INDEXED;
+nameLocation 'Склад' (Receipt r) = name(location(r));
+
 partner 'Партнер' = DATA Partner (Receipt);
 namePartner 'Партнер' (Receipt r) = name(partner(r));
 notes 'Примечания' = DATA ISTRING[50] (Receipt);
 
-CLASS ReceiptLine 'Строка';
+CLASS ReceiptLine 'Строка поступления';
 
 receipt 'Документ' = DATA Receipt (ReceiptLine) NONULL DELETE;
 
@@ -22,9 +24,12 @@ nameProduct 'Продукт' (ReceiptLine l) = name(product(l));
 
 initialDemand 'Исходное количество' = DATA INTEGER (ReceiptLine);
 
+// при редактировании строки открываем редактирование документа
+edit (ReceiptLine l) + { edit(receipt(l)); } 
+
 FORM receipt 'Поступление'
     OBJECTS r = Receipt PANEL
-    PROPERTIES(r) scheduledDate, nameStock, namePartner, notes
+    PROPERTIES(r) scheduledDate, nameLocation, namePartner, notes
   
     OBJECTS l = ReceiptLine
     PROPERTIES(l) nameProduct, initialDemand, NEW, DELETE
@@ -35,7 +40,7 @@ FORM receipt 'Поступление'
 
 FORM receipts 'Поступления'
     OBJECTS r = Receipt
-    PROPERTIES(r) READONLY scheduledDate, nameStock, namePartner, notes
+    PROPERTIES(r) READONLY scheduledDate, nameLocation, namePartner, notes
     PROPERTIES(r) NEWSESSION NEW, EDIT, DELETE
 ;
 
@@ -52,7 +57,7 @@ DESIGN receipt {
             NEW pane1 {
                 type = CONTAINERH;                                           
                 MOVE PROPERTY(scheduledDate(r));
-                MOVE PROPERTY(nameStock(r));
+                MOVE PROPERTY(nameLocation(r));
                 MOVE PROPERTY(namePartner(r));
                 MOVE PROPERTY(notes(r));
             }

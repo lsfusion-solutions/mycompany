@@ -1,0 +1,54 @@
+MODULE InventoryReport;
+
+REQUIRE InvLedger;
+
+NAMESPACE Inventory;
+
+FORM inventoryReport 'Текущие остатки'
+    TREE locations lt = Location PARENT parent
+    PROPERTIES READONLY name(lt)
+    ORDER name(lt)
+    
+    TREE categories c = Category PARENT parent
+    PROPERTIES READONLY name(c)
+    ORDER name(c)
+    
+    OBJECTS lp = (l = Location, p = Product)
+    PROPERTIES READONLY 'Склад' = canonicalName(l), 'Товар' = name(p) 
+    PROPERTIES onHand(l, p)
+    FILTERS level(l, lt),
+            level(category(p), c),
+            onHand(l, p)
+            
+    OBJECTS il = InvLedger
+    PROPERTIES(il) READONLY dateTime, description, namePartner, nameFromLocation, nameToLocation, quantity, EDIT
+    FILTERS product(il) = p,
+            fromLocation(il) = l OR toLocation(il) = l
+;
+
+DESIGN inventoryReport {
+   OBJECTS {
+       NEW pane {
+           type = SPLITH;
+           fill = 1;
+           NEW pane1 {
+               fill = 1;
+               type = SPLITV;
+               MOVE BOX(TREE locations){caption = 'Места хранения';};
+               MOVE BOX(TREE categories){caption = 'Категории';};
+           }
+           NEW pane2 {
+               fill = 2;
+               type = SPLITV;
+               MOVE BOX(lp);
+               MOVE BOX(il);
+           }               
+       }
+   }
+}
+
+NAVIGATOR {
+    inventory {
+        NEW inventoryReport;
+    }
+}

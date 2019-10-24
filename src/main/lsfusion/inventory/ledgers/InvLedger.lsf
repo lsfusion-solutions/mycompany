@@ -1,0 +1,35 @@
+MODULE InvLedger;
+
+REQUIRE Inventory, Category, Product, Location, Partner;
+
+NAMESPACE Inventory;
+
+CLASS ABSTRACT InvLedger 'Регистр изменения остатка';
+
+done 'Проведен' = ABSTRACT BOOLEAN (InvLedger);
+dateTime 'Время' = ABSTRACT DATETIME (InvLedger) MATERIALIZED;
+
+fromLocation 'Место хранения (откуда)' = ABSTRACT Location (InvLedger) MATERIALIZED;
+nameFromLocation 'Место хранения (откуда)' (InvLedger l) = name(fromLocation(l));
+
+toLocation 'Место хранения (куда)' = ABSTRACT Location (InvLedger) MATERIALIZED;
+nameToLocation 'Место хранения (куда)' (InvLedger l) = name(toLocation(l));
+
+product 'Товар' = ABSTRACT Product (InvLedger) MATERIALIZED;
+
+INDEX product(InvLedger l);
+INDEX fromLocation(InvLedger l), product(l);
+INDEX toLocation(InvLedger l), product(l);
+
+quantity 'Кол-во' = ABSTRACT INTEGER (InvLedger) MATERIALIZED;
+
+partner 'Партнер' = ABSTRACT Partner(InvLedger) MATERIALIZED;
+namePartner 'Партнер' (InvLedger l) = name(partner(l));
+description 'Описание' = ABSTRACT ISTRING[100](InvLedger);
+
+inQuantity 'Кол-во поступившее' (Location ll, Product p) = 
+    GROUP SUM quantity(InvLedger l)  IF toLocation(l) = ll AND product(l) = p MATERIALIZED;
+outQuantity 'Кол-во отправленное' (Location ll, Product p) = 
+    GROUP SUM quantity(InvLedger l)  IF fromLocation(l) = ll AND product(l) = p MATERIALIZED;
+
+onHand 'Текущий остаток' (Location ll, Product p) = inQuantity(ll,p) (-) outQuantity(ll,p) MATERIALIZED;
