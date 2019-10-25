@@ -78,6 +78,25 @@ NAVIGATOR {
     }
 }
 
+copyShipment 'Копировать' (Shipment s)  { 
+    NEWSESSION {
+        NEW ns = Shipment {
+            FOR shipment(ShipmentLine l) = s DO {
+                NEW nl = ShipmentLine {
+                    shipment(nl) <- ns;
+                    product(nl) <- product(l);
+                    initialDemand(nl) <- initialDemand(l);
+                }
+            }
+            SHOW shipment OBJECTS s = ns DOCKED;
+        }
+    }
+}
+
+EXTEND FORM shipments
+    PROPERTIES(s) copyShipment TOOLBAR 
+;
+
 DESIGN shipment {
     OBJECTS {        
         NEW pane {
