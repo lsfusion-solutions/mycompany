@@ -50,12 +50,14 @@ initialDemand 'Исходное количество' = DATA NUMERIC[16,3] (Rece
 // при редактировании строки открываем редактирование документа
 edit (ReceiptLine l) + { edit(receipt(l)); } 
 
+index 'Индекс' = PARTITION SUM 1 ORDER ReceiptLine l BY receipt(l);
+
 FORM receipt 'Поступление'
     OBJECTS r = Receipt PANEL
     PROPERTIES(r) scheduledDate, series, number, nameOperation, nameLocation, namePartner, notes
   
     OBJECTS l = ReceiptLine
-    PROPERTIES(l) nameProduct, initialDemand, NEW, DELETE
+    PROPERTIES(l) index READONLY, nameProduct, initialDemand, NEW, DELETE
     FILTERS receipt(l) = r
  
     EDIT Receipt OBJECT r
