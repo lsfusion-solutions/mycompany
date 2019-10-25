@@ -33,6 +33,7 @@ validate 'Отгружен' (Shipment s) {
             }
         }
         done(s) <- TRUE;
+        shipmentDate(s) <- currentDateTime();
         APPLY;
     }
 }
@@ -45,7 +46,8 @@ EXTEND FORM shipment
     PROPERTIES(s) validate SHOWIF ready(s), done
 ;
 
-EXTEND FORM shipments  
+EXTEND FORM shipments 
+    PROPERTIES(s) shipmentDate SHOWIF done(s)
     EXTEND FILTERGROUP status
         FILTER 'Отгружен' status(s) = ShipmentStatus.done 'F7'
 ;

@@ -35,6 +35,7 @@ validate 'Принят' (Receipt r) {
             } ELSE RETURN;
         }
         done(r) <- TRUE;
+        receiptDate(r) <- currentDateTime();
         APPLY;
     }
 }
@@ -47,7 +48,8 @@ EXTEND FORM receipt
     PROPERTIES(r) validate SHOWIF ready(r), done
 ;
 
-EXTEND FORM receipts  
+EXTEND FORM receipts 
+    PROPERTIES(r) receiptDate SHOWIF done(r)
     EXTEND FILTERGROUP status
         FILTER 'Принят' status(r) = ReceiptStatus.done 'F7'
 ;
