@@ -33,8 +33,9 @@ namePartner 'Партнер' (InvLedger l) = name(partner(l));
 description 'Описание' = ABSTRACT ISTRING[100](InvLedger);
 
 inQuantity 'Кол-во поступившее' (Location ll, Product p) = 
-    GROUP SUM quantity(InvLedger l)  IF toLocation(l) = ll AND product(l) = p MATERIALIZED;
+    GROUP SUM quantity(InvLedger l) IF done(l) AND toLocation(l) = ll AND product(l) = p MATERIALIZED;
 outQuantity 'Кол-во отправленное' (Location ll, Product p) = 
-    GROUP SUM quantity(InvLedger l)  IF fromLocation(l) = ll AND product(l) = p MATERIALIZED;
+    GROUP SUM quantity(InvLedger l) IF done(l) AND  fromLocation(l) = ll AND product(l) = p MATERIALIZED;
 
 onHand 'Текущий остаток' (Location ll, Product p) = inQuantity(ll,p) (-) outQuantity(ll,p) MATERIALIZED;
+

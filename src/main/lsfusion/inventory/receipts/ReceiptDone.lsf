@@ -39,7 +39,7 @@ validate 'Принят' (Receipt r) {
     }
 }
 
-EXTEND CLASS Status {
+EXTEND CLASS ReceiptStatus {
     done 'Принят'
 }
 
@@ -49,10 +49,10 @@ EXTEND FORM receipt
 
 EXTEND FORM receipts  
     EXTEND FILTERGROUP status
-        FILTER 'Принят' status(r) = Status.done 'F7'
+        FILTER 'Принят' status(r) = ReceiptStatus.done 'F7'
 ;
 
-status(Receipt r) += WHEN done(r) THEN Status.done;
+status(Receipt r) += WHEN done(r) THEN ReceiptStatus.done;
 
 DESIGN receipt {                               
     statusActions {                  
@@ -66,6 +66,7 @@ DESIGN receipt {
 // Проводим по регистру изменения остатков
 EXTEND CLASS ReceiptLine : InvLedger;
 
+done(ReceiptLine l) += done(receipt(l));
 dateTime(ReceiptLine l) += scheduledDate(receipt(l));
 toLocation(ReceiptLine l) += location(receipt(l));
 

@@ -1,0 +1,79 @@
+MODULE ShipmentDone;
+
+REQUIRE Inventory, ShipmentReady;
+
+NAMESPACE Inventory;
+
+done 'Отгружен' = DATA BOOLEAN (Shipment);
+
+validate 'Отгружен' (Shipment s) {
+    APPLY; // сохраняем изменения
+    IF canceled() THEN RETURN; // если сработало ограничение, то выходим
+    
+    NEWSESSION {
+        IF NOT GROUP SUM done(ShipmentLine l) IF shipment(l) = s THEN
+            ASK 'Не заполены отгруженые количества. Проставить ожидаемыми?' DO {
+                done(ShipmentLine l) <- reserved(l) WHERE shipment(l) = s;
+            } ELSE RETURN;
+        
+        IF GROUP SUM 1 IF shipment(ShipmentLine l) = s AND NOT done(l) = initialDemand(l) THEN {
+            ASK 'Отгружено не все количество. Создать дополнительную отгрузку?' DO {
+                NEW rn = Shipment {
+                    partner(rn) <- partner(s);
+                    location(rn) <- location(s);
+                    scheduledDate(rn) <- scheduledDate(s);
+                    FOR shipment(ShipmentLine l) = s AND (q = initialDemand(l) (-) done(l)) DO NEW ln = ShipmentLine {
+                        shipment(ln) <- rn;
+                        product(ln) <- product(l);
+                        initialDemand(ln) <- q;
+                    }
+                }
+                initialDemand(ShipmentLine l) <- done(l) WHERE shipment(l) = s;
+                DELETE ShipmentLine l WHERE shipment(l) = s AND NOT done(l);
+            }
+        }
+        done(s) <- TRUE;
+        APPLY;
+    }
+}
+
+EXTEND CLASS ShipmentStatus {
+    done 'Отгружен'
+}
+
+EXTEND FORM shipment
+    PROPERTIES(s) validate SHOWIF ready(s), done
+;
+
+EXTEND FORM shipments  
+    EXTEND FILTERGROUP status
+        FILTER 'Отгружен' status(s) = ShipmentStatus.done 'F7'
+;
+
+status(Shipment s) += WHEN done(s) THEN ShipmentStatus.done;
+
+DESIGN shipment {                               
+    statusActions {                  
+        MOVE PROPERTY(validate(s));
+    }
+    status {
+        MOVE PROPERTY(done(s));                              
+    }                   
+}
+
+// Проводим по регистру изменения остатков
+EXTEND CLASS ShipmentLine : InvLedger;
+
+done(ShipmentLine l) += done(shipment(l));
+dateTime(ShipmentLine l) += scheduledDate(shipment(l));
+fromLocation(ShipmentLine l) += location(shipment(l));
+toLocation(ShipmentLine l) += toLocation(shipment(l));
+
+product(ShipmentLine l) += product(l);
+quantity(ShipmentLine l) += done(l);
+
+description(ShipmentLine l) += 'Отгрузка' IF l IS ShipmentLine;
+partner(ShipmentLine l) += partner(shipment(l));
+
+series(ShipmentLine l) += series(shipment(l));
+number(ShipmentLine l) += number(shipment(l));

@@ -4,7 +4,7 @@ REQUIRE Inventory, Numerator, Location;
 
 NAMESPACE Inventory;
 
-CLASS ReceiptOperation 'Операция';
+CLASS ReceiptOperation 'Операция поступления';
 
 name 'Название' = DATA ISTRING[50](ReceiptOperation);
 
@@ -16,14 +16,14 @@ nameDefaultLocation 'Место хранения по умолчанию' (Recei
 countOperations 'Кол-во операций' () = GROUP SUM 1 IF r IS ReceiptOperation; 
 lastOperation 'Последняя операция' = GROUP LAST r AS ReceiptOperation ORDER r;
 
-FORM operation 'Операция'
+FORM operation 'Операция поступления'
     OBJECTS o = ReceiptOperation PANEL 
     PROPERTIES(o) name, nameNumerator, nameDefaultLocation
      
     EDIT ReceiptOperation OBJECT o;
 ;
 
-FORM operations 'Операции'
+FORM operations 'Операции поступления'
     OBJECTS o = ReceiptOperation
     PROPERTIES(o) READONLY name, nameNumerator, nameDefaultLocation
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE

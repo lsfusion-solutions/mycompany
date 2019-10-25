@@ -1,0 +1,43 @@
+MODULE ShipmentWaiting;
+
+REQUIRE Inventory, ShipmentStatus, InvLedger;
+
+NAMESPACE Inventory;
+
+done 'Отгруженое кол-во' = DATA NUMERIC[16,3] (ShipmentLine);
+
+waiting 'В ожидании' = DATA BOOLEAN (Shipment);
+
+markAsToDo 'В работу' (Shipment s) {
+    APPLY; 
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {
+        waiting(s) <- TRUE;
+        APPLY;
+    }
+}
+
+EXTEND CLASS ShipmentStatus {
+    waiting 'В ожидании'
+}
+
+EXTEND FORM shipment
+    PROPERTIES(s) markAsToDo SHOWIF status(s) = ShipmentStatus.draft, waiting
+;
+
+EXTEND FORM shipments    
+    EXTEND FILTERGROUP status
+        FILTER 'В ожидании' status(s) = ShipmentStatus.waiting 'F9'    
+;
+
+status(Shipment s) += WHEN waiting(s) THEN ShipmentStatus.waiting;
+
+DESIGN shipment {
+    statusActions {
+        MOVE PROPERTY(markAsToDo(s));                
+    }
+    status {
+        MOVE PROPERTY(waiting(s));                               
+    }
+}

@@ -5,11 +5,11 @@ REQUIRE Inventory, ReceiptStatus;
 NAMESPACE Inventory;
 
 // К приемке
-done 'Принятое колчество' = DATA NUMERIC[16,3] (ReceiptLine);
+done 'Принятое кол-во' = DATA NUMERIC[16,3] (ReceiptLine);
 
 ready 'К приемке' = DATA BOOLEAN (Receipt);
 
-markAsToDo 'К приемке' (Receipt r) {
+markAsToDo 'В работу' (Receipt r) {
     APPLY; 
     IF canceled() THEN RETURN;
     
@@ -19,24 +19,24 @@ markAsToDo 'К приемке' (Receipt r) {
     }
 }
 
-EXTEND CLASS Status {
+EXTEND CLASS ReceiptStatus {
     ready 'К приемке'
 }
 
 EXTEND FORM receipt
-    PROPERTIES(r) markAsToDo SHOWIF status(r) = Status.draft, ready
+    PROPERTIES(r) markAsToDo SHOWIF status(r) = ReceiptStatus.draft, ready
 
     PROPERTIES(l) done READONLYIF NOT ready(r)
 ;
 
 EXTEND FORM receipts    
     EXTEND FILTERGROUP status
-        FILTER 'К приемке' status(r) = Status.ready 'F8'    
+        FILTER 'К приемке' status(r) = ReceiptStatus.ready 'F8'    
 ;
 
 
 
-status(Receipt r) += WHEN ready(r) THEN Status.ready;
+status(Receipt r) += WHEN ready(r) THEN ReceiptStatus.ready;
 
 DESIGN receipt {
     statusActions {

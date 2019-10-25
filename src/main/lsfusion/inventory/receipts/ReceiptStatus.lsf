@@ -6,20 +6,20 @@ NAMESPACE Inventory;
 
 // Статусы
 
-CLASS Status 'Статус прихода' {
+CLASS ReceiptStatus 'Статус прихода' {
     draft 'Черновик'
 }
 
-name 'Имя' (Status o) = staticCaption(o) IF o IS Status CHARWIDTH 15;
+name 'Имя' (ReceiptStatus o) = staticCaption(o) IF o IS ReceiptStatus CHARWIDTH 15;
 
 FORM dialogStatuses 'Статус прихода'
-    OBJECTS o = Status
+    OBJECTS o = ReceiptStatus
     PROPERTIES(o) READONLY name
     
-    LIST Status OBJECT o
+    LIST ReceiptStatus OBJECT o
 ;
 
-status 'Статус' = ABSTRACT CASE Status (Receipt);
+status 'Статус' = ABSTRACT CASE ReceiptStatus (Receipt);
 nameStatus 'Статус' (Receipt r) = name(status(r));
 
 EXTEND FORM receipt
@@ -28,15 +28,14 @@ EXTEND FORM receipt
 
 EXTEND FORM receipts    
     FILTERGROUP status
-        FILTER 'Все статусы' status(r) 'F10' DEFAULT 
-        FILTER 'Черновик' status(r) = Status.draft 'F9'
+        FILTER 'Черновик' status(r) = ReceiptStatus.draft 'F9'
 ;
 
 EXTEND FORM receipts
     PROPERTIES(r) nameStatus
 ;
 
-status(Receipt r) += WHEN r IS Receipt THEN Status.draft;
+status(Receipt r) += WHEN r IS Receipt THEN ReceiptStatus.draft;
 
 DESIGN receipt {
     OBJECTS {        

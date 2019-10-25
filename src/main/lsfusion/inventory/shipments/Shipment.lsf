@@ -1,0 +1,112 @@
+MODULE Shipment;
+
+REQUIRE System, Time,
+        Inventory, Location, Partner, Product,
+        ShipmentOperation;
+
+NAMESPACE Inventory;
+
+CLASS Shipment 'Отгрузка';
+
+operation 'Операция' = DATA ShipmentOperation (Shipment) NONULL;
+nameOperation 'Операция' (Shipment s) = name(operation(s));
+
+WHEN LOCAL SET(Shipment s IS Shipment) AND countOperationsShipment() = 1 DO operation(s) <- lastOperationShipment(); 
+
+scheduledDate 'Дата приемки' = DATA DATETIME (Shipment) NONULL;
+scheduledDate (Shipment s) <- currentDateTime() WHEN SET(s IS Shipment);
+
+location 'Место хранения' = DATA Location (Shipment) NONULL INDEXED;
+nameLocation 'Место хранения' (Shipment s) = name(location(s));
+toLocation 'Место хранения (Куда)' = DATA Location (Shipment);
+nameToLocation 'Место хранения (Куда)' (Shipment s) = name(toLocation(s));
+
+WHEN LOCAL CHANGED(operation(Shipment s)) DO IF (isTransfer(operation(s))) THEN 
+                                                                        toLocation(s) <- defaultLocation(operation(s));
+
+partner 'Партнер' = DATA Partner (Shipment);
+namePartner 'Партнер' (Shipment s) = name(partner(s));
+notes 'Примечания' = DATA ISTRING[50] (Shipment);
+
+// Номер
+series 'Серия' = DATA STRING[2] (Shipment);
+number 'Номер' = DATA STRING[28] (Shipment);
+
+seriesNumber 'Серия/Номер' (Shipment s) = CONCAT '/', series(s), number(s); 
+
+WHEN SETCHANGED(operation(Shipment o)) AND NOT CHANGED(number(o)) AND NOT CHANGED(series(o)) DO {
+    number(o) <- curStringValue(numerator(operation(o)));
+    series(o) <- series(numerator(operation(o)));
+    incrementValueSession(numerator(operation(o)));
+}
+
+CLASS ShipmentLine 'Строка отгрузки';
+
+shipment 'Документ' = DATA Shipment (ShipmentLine) NONULL DELETE;
+
+product 'Продукт' = DATA Product (ShipmentLine) NONULL INDEXED;
+nameProduct 'Продукт' (ShipmentLine l) = name(product(l));
+
+initialDemand 'Исходное количество' = DATA NUMERIC[16,3] (ShipmentLine) NONULL;
+
+// при редактировании строки открываем редактирование документа
+edit (ShipmentLine l) + { edit(shipment(l)); } 
+
+FORM shipment 'Отгрузка'
+    OBJECTS s = Shipment PANEL 
+    PROPERTIES(s) scheduledDate, series, number, nameOperation, nameLocation, 
+                  nameToLocation SHOWIF isTransfer(operation(s)), namePartner SHOWIF NOT isTransfer(operation(s)), notes
+      
+    OBJECTS l = ShipmentLine
+    PROPERTIES(l) nameProduct, initialDemand, NEW, DELETE
+    FILTERS shipment(l) = s
+    
+    EDIT Shipment OBJECT s
+;
+
+FORM shipments 'Отгрузки'
+    OBJECTS s = Shipment
+    PROPERTIES(s) READONLY scheduledDate, series, number, nameOperation, nameLocation,
+                  nameToLocation SHOWIF isTransfer(operation(s)), namePartner SHOWIF NOT isTransfer(operation(s)), notes
+    PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
+;
+
+NAVIGATOR {
+    inventory {
+        NEW shipments;
+    }
+}
+
+DESIGN shipment {
+    OBJECTS {        
+        NEW pane {
+            fill = 1;                         
+            NEW pane1 {
+                type = CONTAINERV ;
+                NEW box1 {
+                    type = CONTAINERH; 
+                    alignment = STRETCH;                                        
+                    MOVE PROPERTY(scheduledDate(s));
+                    MOVE PROPERTY(series(s));
+                    MOVE PROPERTY(number(s));
+                }
+                NEW box2 {
+                    type = CONTAINERH;
+                    MOVE PROPERTY (nameOperation(s));
+                    MOVE PROPERTY(nameLocation(s));
+                    MOVE PROPERTY(namePartner(s));
+                    MOVE PROPERTY (nameToLocation(s));
+                }
+                NEW box3 {
+                    type = CONTAINERH;
+                    alignment = STRETCH; 
+                    MOVE PROPERTY(notes(s));
+                }
+            }
+            NEW pane2 {
+                fill = 1;
+                MOVE BOX(l);                  
+            }
+        }        
+    }
+}

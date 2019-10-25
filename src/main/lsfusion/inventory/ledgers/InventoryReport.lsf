@@ -1,6 +1,6 @@
 MODULE InventoryReport;
 
-REQUIRE InvLedger;
+REQUIRE InvLedger, ShipmentReady;
 
 NAMESPACE Inventory;
 
@@ -15,14 +15,15 @@ FORM inventoryReport 'Текущие остатки'
     
     OBJECTS lp = (l = Location, p = Product)
     PROPERTIES READONLY 'Склад' = canonicalName(l), 'Товар' = name(p) 
-    PROPERTIES onHand(l, p)
+    PROPERTIES(l,p) reserved, available, onHand
     FILTERS level(l, lt),
             level(category(p), c),
             onHand(l, p)
             
     OBJECTS il = InvLedger
     PROPERTIES(il) READONLY dateTime, series, number, description, namePartner, nameFromLocation, nameToLocation, quantity, EDIT
-    FILTERS product(il) = p,
+    FILTERS done(il),
+            product(il) = p,
             fromLocation(il) = l OR toLocation(il) = l
 ;
 
