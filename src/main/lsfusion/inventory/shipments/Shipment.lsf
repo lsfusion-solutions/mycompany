@@ -61,11 +61,7 @@ FORM shipment 'Отгрузка'
     OBJECTS s = Shipment PANEL 
     PROPERTIES(s) scheduledDate, shipmentDate READONLY, series, number, nameOperation, nameLocation, 
                   nameToLocation SHOWIF isTransfer(operation(s)), namePartner SHOWIF NOT isTransfer(operation(s)), notes
-      
-    OBJECTS l = ShipmentLine
-    PROPERTIES(l) nameProduct, initialDemand, NEW, DELETE
-    FILTERS shipment(l) = s
-    
+             
     EDIT Shipment OBJECT s
 ;
 
@@ -85,15 +81,15 @@ DESIGN shipment {
                 NEW box1 {
                     type = CONTAINERH; 
                     alignment = STRETCH;                                        
-                    MOVE PROPERTY(scheduledDate(s));
+                    MOVE PROPERTY(scheduledDate(s)) {notNull = TRUE;}
                     MOVE PROPERTY(shipmentDate(s));
                     MOVE PROPERTY(series(s));
-                    MOVE PROPERTY(number(s));
+                    MOVE PROPERTY(number(s)) {notNull = TRUE;}
                 }
                 NEW box2 {
                     type = CONTAINERH;
-                    MOVE PROPERTY(nameOperation(s));
-                    MOVE PROPERTY(nameLocation(s));
+                    MOVE PROPERTY(nameOperation(s)) {notNull = TRUE;}
+                    MOVE PROPERTY(nameLocation(s)) {notNull = TRUE;}
                     MOVE PROPERTY(namePartner(s));
                     MOVE PROPERTY(nameToLocation(s));
                 }
@@ -102,11 +98,7 @@ DESIGN shipment {
                     alignment = STRETCH; 
                     MOVE PROPERTY(notes(s));
                 }
-            }
-            NEW pane2 {
-                fill = 1;
-                MOVE BOX(l);                  
-            }
+            }  
         }        
     }
 }

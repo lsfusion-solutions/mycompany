@@ -46,7 +46,7 @@ receipt 'Документ' = DATA Receipt (ReceiptLine) NONULL DELETE INDEXED;
 product 'Продукт' = DATA Product (ReceiptLine) NONULL INDEXED;
 nameProduct 'Продукт' (ReceiptLine l) = name(product(l));
 
-initialDemand 'Исходное количество' = DATA NUMERIC[16,3] (ReceiptLine);
+initialDemand 'Исходное количество' = DATA NUMERIC[16,3] (ReceiptLine) NONULL;
 
 // при редактировании строки открываем редактирование документа
 edit (ReceiptLine l) + { edit(receipt(l)); } 
@@ -56,11 +56,7 @@ index 'Индекс' = PARTITION SUM 1 ORDER ReceiptLine l BY receipt(l);
 FORM receipt 'Поступление'
     OBJECTS r = Receipt PANEL
     PROPERTIES(r) scheduledDate, receiptDate READONLY, series, number, nameOperation, nameLocation, namePartner, notes
-  
-    OBJECTS l = ReceiptLine
-    PROPERTIES(l) index READONLY, nameProduct, initialDemand, NEW, DELETE
-    FILTERS receipt(l) = r
- 
+   
     EDIT Receipt OBJECT r
 ;
 
@@ -79,15 +75,15 @@ DESIGN receipt {
                 NEW box1 {
                     type = CONTAINERH; 
                     alignment = STRETCH;                                        
-                    MOVE PROPERTY(scheduledDate(r));
+                    MOVE PROPERTY(scheduledDate(r)) {notNull = TRUE;}
                     MOVE PROPERTY(receiptDate(r));
                     MOVE PROPERTY(series(r));
-                    MOVE PROPERTY(number(r));
+                    MOVE PROPERTY(number(r)) {notNull = TRUE;}
                 }
                 NEW box2 {
                     type = CONTAINERH;
-                    MOVE PROPERTY(nameOperation(r));
-                    MOVE PROPERTY(nameLocation(r));
+                    MOVE PROPERTY(nameOperation(r)) {notNull = TRUE;}
+                    MOVE PROPERTY(nameLocation(r)) {notNull = TRUE;}
                     MOVE PROPERTY(namePartner(r));
                 }
                 NEW box3 {
@@ -95,10 +91,6 @@ DESIGN receipt {
                     alignment = STRETCH; 
                     MOVE PROPERTY(notes(r));
                 }
-            }
-            NEW pane2 {
-                fill = 1;
-                MOVE BOX(l);                  
             }
         }        
     }
