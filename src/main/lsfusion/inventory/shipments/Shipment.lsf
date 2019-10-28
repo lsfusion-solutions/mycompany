@@ -54,12 +54,9 @@ nameProduct 'Продукт' (ShipmentLine l) = name(product(l));
 initialDemand 'Исходное количество' = DATA NUMERIC[16,3] (ShipmentLine) NONULL;
 reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ShipmentLine);
 
-WHEN LOCAL SETCHANGED(initialDemand(ShipmentLine l)) AND maxQuantity(operation(shipment(l))) DO {
-    IF initialDemand(l) < 0 
-        THEN initialDemand(l) <- 0;
-    IF initialDemand(l) > maxQuantity(operation(shipment(l))) 
-        THEN initialDemand(l) <- maxQuantity(operation(shipment(l)));
-}
+CONSTRAINT initialDemand(ShipmentLine l) < 0 OR initialDemand(l) > maxQuantity(operation(shipment(l))) 
+    AND maxQuantity(operation(shipment(l))) MESSAGE 'Исходное количество должно быть от 0 до максимально разрешенного';
+
 
 // при редактировании строки открываем редактирование документа
 edit (ShipmentLine l) + { edit(shipment(l)); } 

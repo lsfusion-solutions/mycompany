@@ -48,12 +48,8 @@ nameProduct 'Продукт' (ReceiptLine l) = name(product(l));
 
 initialDemand 'Исходное количество' = DATA NUMERIC[16,3] (ReceiptLine) NONULL;
 
-WHEN LOCAL SETCHANGED(initialDemand(ReceiptLine l)) AND maxQuantity(operation(receipt(l))) DO {
-    IF initialDemand(l) < 0 
-        THEN initialDemand(l) <- 0;
-    IF initialDemand(l) > maxQuantity(operation(receipt(l))) 
-        THEN initialDemand(l) <- maxQuantity(operation(receipt(l)));
-}
+CONSTRAINT initialDemand(ReceiptLine l) < 0 OR initialDemand(l) > maxQuantity(operation(receipt(l))) 
+    AND maxQuantity(operation(receipt(l))) MESSAGE 'Исходное количество должно быть от 0 до максимально разрешенного';
 
 // при редактировании строки открываем редактирование документа
 edit (ReceiptLine l) + { edit(receipt(l)); } 

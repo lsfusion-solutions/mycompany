@@ -63,7 +63,5 @@ DESIGN shipment {
     
 }
 
-WHEN LOCAL SETCHANGED(done(ShipmentLine l)) DO {
-    IF done(l) < 0 THEN done(l) <- 0;
-    IF done(l) > initialDemand(l) THEN done(l) <- initialDemand(l);
-}
+CONSTRAINT done(ShipmentLine l) < 0 OR done(l) > initialDemand(l) 
+    MESSAGE 'Отгруженое количество должно быть от 0 до исходного';
