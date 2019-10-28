@@ -65,38 +65,6 @@ FORM shipment 'Отгрузка'
     EDIT Shipment OBJECT s
 ;
 
-FORM shipments 'Отгрузки'
-    OBJECTS s = Shipment
-    PROPERTIES(s) READONLY scheduledDate, series, number, nameOperation, nameLocation,
-                  nameToLocation SHOWIF isTransfer(operation(s)), namePartner SHOWIF NOT isTransfer(operation(s)), notes
-    PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
-;
-
-NAVIGATOR {
-    inventory {
-        NEW shipments;
-    }
-}
-
-copyShipment 'Копировать' (Shipment s)  { 
-    NEWSESSION {
-        NEW ns = Shipment {
-            FOR shipment(ShipmentLine l) = s DO {
-                NEW nl = ShipmentLine {
-                    shipment(nl) <- ns;
-                    product(nl) <- product(l);
-                    initialDemand(nl) <- initialDemand(l);
-                }
-            }
-            SHOW shipment OBJECTS s = ns DOCKED;
-        }
-    }
-}
-
-EXTEND FORM shipments
-    PROPERTIES(s) copyShipment TOOLBAR 
-;
-
 DESIGN shipment {
     OBJECTS {        
         NEW pane {
@@ -130,3 +98,33 @@ DESIGN shipment {
         }        
     }
 }
+
+FORM shipments 'Отгрузки'
+    OBJECTS s = Shipment
+    PROPERTIES(s) READONLY scheduledDate, series, number, nameOperation, nameLocation,
+                  nameToLocation SHOWIF isTransfer(operation(s)), namePartner SHOWIF NOT isTransfer(operation(s)), notes
+    PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
+;
+
+NAVIGATOR {
+    inventory {
+        NEW shipments;
+    }
+}
+
+copyShipment 'Копировать' (Shipment s)  { 
+    NEWSESSION {
+        NEW ns = Shipment {
+            FOR shipment(ShipmentLine l) = s NEW nl = ShipmentLine DO {
+                shipment(nl) <- ns;
+                product(nl) <- product(l);
+                initialDemand(nl) <- initialDemand(l);
+            }
+            SHOW shipment OBJECTS s = ns DOCKED;
+        }
+    }
+}
+
+EXTEND FORM shipments
+    PROPERTIES(s) copyShipment TOOLBAR 
+;

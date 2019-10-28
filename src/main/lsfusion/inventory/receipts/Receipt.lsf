@@ -64,37 +64,6 @@ FORM receipt 'Поступление'
     EDIT Receipt OBJECT r
 ;
 
-FORM receipts 'Поступления'
-    OBJECTS r = Receipt
-    PROPERTIES(r) READONLY scheduledDate, series, number, nameOperation, nameLocation, namePartner, notes
-    PROPERTIES(r) NEWSESSION NEW, EDIT, DELETE
-;
-
-NAVIGATOR {
-    inventory {
-        NEW receipts;
-    }
-}
-
-copyReceipt 'Копировать' (Receipt r)  { 
-    NEWSESSION {
-        NEW nr = Receipt {
-            FOR receipt(ReceiptLine l) = r DO {
-                NEW nl = ReceiptLine {
-                    receipt(nl) <- nr;
-                    product(nl) <- product(l);
-                    initialDemand(nl) <- initialDemand(l);
-                }
-            }
-            SHOW receipt OBJECTS r = nr DOCKED;
-        }
-    }
-}
-
-EXTEND FORM receipts
-    PROPERTIES(r) copyReceipt TOOLBAR 
-;
-
 DESIGN receipt {
     OBJECTS {        
         NEW pane {
@@ -127,3 +96,33 @@ DESIGN receipt {
         }        
     }
 }
+
+FORM receipts 'Поступления'
+    OBJECTS r = Receipt
+    PROPERTIES(r) READONLY scheduledDate, series, number, nameOperation, nameLocation, namePartner, notes
+    PROPERTIES(r) NEWSESSION NEW, EDIT, DELETE
+;
+
+NAVIGATOR {
+    inventory {
+        NEW receipts;
+    }
+}
+
+// Копирование receipt
+copyReceipt 'Копировать' (Receipt r)  { 
+    NEWSESSION {
+        NEW nr = Receipt {
+            FOR receipt(ReceiptLine l) = r NEW nl = ReceiptLine DO {
+                receipt(nl) <- nr;
+                product(nl) <- product(l);
+                initialDemand(nl) <- initialDemand(l);
+            }
+            SHOW receipt OBJECTS r = nr DOCKED;
+        }
+    }
+}
+
+EXTEND FORM receipts
+    PROPERTIES(r) copyReceipt TOOLBAR 
+;
