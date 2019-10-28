@@ -20,7 +20,7 @@ receiptDate 'Дата проведения' = DATA DATETIME (Receipt);
 
 // Номер
 series 'Серия' = DATA STRING[2] (Receipt);
-number 'Номер' = DATA STRING[28] (Receipt);
+number 'Номер' = DATA STRING[28] (Receipt) NONULL;
 
 seriesNumber 'Серия/Номер' (Receipt r) = CONCAT '/', series(r), number(r); 
 
@@ -41,7 +41,7 @@ notes 'Примечания' = DATA ISTRING[50] (Receipt);
 
 CLASS ReceiptLine 'Строка поступления';
 
-receipt 'Документ' = DATA Receipt (ReceiptLine) NONULL DELETE;
+receipt 'Документ' = DATA Receipt (ReceiptLine) NONULL DELETE INDEXED;
 
 product 'Продукт' = DATA Product (ReceiptLine) NONULL INDEXED;
 nameProduct 'Продукт' (ReceiptLine l) = name(product(l));
@@ -68,31 +68,6 @@ FORM receipts 'Поступления'
     OBJECTS r = Receipt
     PROPERTIES(r) READONLY scheduledDate, receiptDate, series, number, nameOperation, nameLocation, namePartner, notes
     PROPERTIES(r) NEWSESSION NEW, EDIT, DELETE
-;
-
-NAVIGATOR {
-    inventory {
-        NEW receipts;
-    }
-}
-
-copyReceipt 'Копировать' (Receipt r)  { 
-    NEWSESSION {
-        NEW nr = Receipt {
-            FOR receipt(ReceiptLine l) = r DO {
-                NEW nl = ReceiptLine {
-                    receipt(nl) <- nr;
-                    product(nl) <- product(l);
-                    initialDemand(nl) <- initialDemand(l);
-                }
-            }
-            SHOW receipt OBJECTS r = nr DOCKED;
-        }
-    }
-}
-
-EXTEND FORM receipts
-    PROPERTIES(r) copyReceipt TOOLBAR 
 ;
 
 DESIGN receipt {
@@ -128,3 +103,26 @@ DESIGN receipt {
         }        
     }
 }
+
+NAVIGATOR {
+    inventory {
+        NEW receipts;
+    }
+}
+
+copyReceipt 'Копировать' (Receipt r)  { 
+    NEWSESSION {
+        NEW nr = Receipt {
+            FOR receipt(ReceiptLine l) = r INLINE NEW nl = ReceiptLine DO {
+                receipt(nl) <- nr;
+                product(nl) <- product(l);
+                initialDemand(nl) <- initialDemand(l);
+            }
+            SHOW receipt OBJECTS r = nr DOCKED;
+        }
+    }
+}
+
+EXTEND FORM receipts
+    PROPERTIES(r) copyReceipt TOOLBAR 
+;

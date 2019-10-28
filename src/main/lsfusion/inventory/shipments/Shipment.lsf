@@ -22,10 +22,11 @@ nameLocation 'Место хранения' (Shipment s) = name(location(s));
 toLocation 'Место хранения (Куда)' = DATA Location (Shipment);
 nameToLocation 'Место хранения (Куда)' (Shipment s) = name(toLocation(s));
 
-WHEN LOCAL CHANGED(operation(Shipment s)) DO IF (isTransfer(operation(s))) THEN {
-                                                                        location(s) <- defaultLocationFrom(operation(s));
-                                                                        toLocation(s) <- defaultLocationFrom(operation(s));
-                                                                    }
+WHEN LOCAL CHANGED(operation(Shipment s)) DO 
+    IF (isTransfer(operation(s))) THEN {
+        location(s) <- defaultLocationFrom(operation(s));
+        toLocation(s) <- defaultLocationFrom(operation(s));
+    }
 
 partner 'Партнер' = DATA Partner (Shipment);
 namePartner 'Партнер' (Shipment s) = name(partner(s));
@@ -33,7 +34,7 @@ notes 'Примечания' = DATA ISTRING[50] (Shipment);
 
 // Номер
 series 'Серия' = DATA STRING[2] (Shipment);
-number 'Номер' = DATA STRING[28] (Shipment);
+number 'Номер' = DATA STRING[28] (Shipment) NONULL;
 
 seriesNumber 'Серия/Номер' (Shipment s) = CONCAT '/', series(s), number(s); 
 
@@ -45,7 +46,7 @@ WHEN SETCHANGED(operation(Shipment o)) AND NOT CHANGED(number(o)) AND NOT CHANGE
 
 CLASS ShipmentLine 'Строка отгрузки';
 
-shipment 'Документ' = DATA Shipment (ShipmentLine) NONULL DELETE;
+shipment 'Документ' = DATA Shipment (ShipmentLine) NONULL DELETE INDEXED;
 
 product 'Продукт' = DATA Product (ShipmentLine) NONULL INDEXED;
 nameProduct 'Продукт' (ShipmentLine l) = name(product(l));
@@ -75,31 +76,6 @@ FORM shipments 'Отгрузки'
     PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
 ;
 
-NAVIGATOR {
-    inventory {
-        NEW shipments;
-    }
-}
-
-copyShipment 'Копировать' (Shipment s)  { 
-    NEWSESSION {
-        NEW ns = Shipment {
-            FOR shipment(ShipmentLine l) = s DO {
-                NEW nl = ShipmentLine {
-                    shipment(nl) <- ns;
-                    product(nl) <- product(l);
-                    initialDemand(nl) <- initialDemand(l);
-                }
-            }
-            SHOW shipment OBJECTS s = ns DOCKED;
-        }
-    }
-}
-
-EXTEND FORM shipments
-    PROPERTIES(s) copyShipment TOOLBAR 
-;
-
 DESIGN shipment {
     OBJECTS {        
         NEW pane {
@@ -110,16 +86,16 @@ DESIGN shipment {
                     type = CONTAINERH; 
                     alignment = STRETCH;                                        
                     MOVE PROPERTY(scheduledDate(s));
-                     MOVE PROPERTY(shipmentDate(s));
+                    MOVE PROPERTY(shipmentDate(s));
                     MOVE PROPERTY(series(s));
                     MOVE PROPERTY(number(s));
                 }
                 NEW box2 {
                     type = CONTAINERH;
-                    MOVE PROPERTY (nameOperation(s));
+                    MOVE PROPERTY(nameOperation(s));
                     MOVE PROPERTY(nameLocation(s));
                     MOVE PROPERTY(namePartner(s));
-                    MOVE PROPERTY (nameToLocation(s));
+                    MOVE PROPERTY(nameToLocation(s));
                 }
                 NEW box3 {
                     type = CONTAINERH;
@@ -134,3 +110,26 @@ DESIGN shipment {
         }        
     }
 }
+
+NAVIGATOR {
+    inventory {
+        NEW shipments;
+    }
+}
+
+copyShipment 'Копировать' (Shipment s)  { 
+    NEWSESSION {
+        NEW ns = Shipment {
+            FOR shipment(ShipmentLine l) = s INLINE NEW nl = ShipmentLine DO {
+                shipment(nl) <- ns;
+                product(nl) <- product(l);
+                initialDemand(nl) <- initialDemand(l);
+            }
+            SHOW shipment OBJECTS s = ns DOCKED;
+        }
+    }
+}
+
+EXTEND FORM shipments
+    PROPERTIES(s) copyShipment TOOLBAR 
+;
