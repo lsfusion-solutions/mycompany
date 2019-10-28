@@ -16,14 +16,14 @@ nameDefaultLocation 'Место хранения по умолчанию' (Recei
 countOperations 'Кол-во операций' () = GROUP SUM 1 IF r IS ReceiptOperation; 
 lastOperation 'Последняя операция' = GROUP LAST r AS ReceiptOperation ORDER r;
 
-FORM operation 'Операция поступления'
+FORM operationRec 'Операция поступления'
     OBJECTS o = ReceiptOperation PANEL 
     PROPERTIES(o) name, nameNumerator, nameDefaultLocation
      
     EDIT ReceiptOperation OBJECT o;
 ;
 
-FORM operations 'Операции поступления'
+FORM operationsRec 'Операции поступления'
     OBJECTS o = ReceiptOperation
     PROPERTIES(o) READONLY name, nameNumerator, nameDefaultLocation
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
@@ -31,7 +31,7 @@ FORM operations 'Операции поступления'
 ;
 
 NAVIGATOR {
-    Settings {
-        NEW operations;
+    settings {
+        NEW operationsRec;
     }
 }
