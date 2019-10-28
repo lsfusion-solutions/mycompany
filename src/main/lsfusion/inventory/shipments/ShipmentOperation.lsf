@@ -15,20 +15,23 @@ defaultLocationTo 'Место хранения по умолчанию (отку
 nameDefaultLocationTo 'Место хранения по умолчанию (откуда)' (ShipmentOperation o) = name(defaultLocationTo(o));
 defaultLocationFrom 'Место хранения по умолчанию (куда)' = DATA Location(ShipmentOperation);
 nameDefaultLocationFrom 'Место хранения по умолчанию (куда)' (ShipmentOperation o) = name(defaultLocationTo(o));
+maxQuantity 'Максимальное кол-во товара' = DATA NUMERIC[16,3](ShipmentOperation);
 
 countOperationsShipment 'Кол-во операций' () = GROUP SUM 1 IF r IS ShipmentOperation; 
 lastOperationShipment 'Последняя операция' = GROUP LAST r AS ShipmentOperation ORDER r;
 
 FORM operationhip 'Операция отгрузки'
     OBJECTS o = ShipmentOperation PANEL 
-    PROPERTIES(o) name, isTransfer, nameNumerator, nameDefaultLocationTo SHOWIF NOT isTransfer(o), nameDefaultLocationFrom
+    PROPERTIES(o) name, isTransfer, nameNumerator, nameDefaultLocationTo SHOWIF NOT isTransfer(o), 
+                nameDefaultLocationFrom, maxQuantity
      
     EDIT ShipmentOperation OBJECT o;
 ;
 
 FORM operationsShip 'Операции отгрузки'
     OBJECTS o = ShipmentOperation
-    PROPERTIES(o) READONLY name, isTransfer, nameNumerator, nameDefaultLocationTo SHOWIF NOT isTransfer(o), nameDefaultLocationFrom
+    PROPERTIES(o) READONLY name, isTransfer, nameNumerator, nameDefaultLocationTo SHOWIF NOT isTransfer(o), 
+                nameDefaultLocationFrom, maxQuantity
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
     LIST ShipmentOperation OBJECT o;
 ;

@@ -12,20 +12,21 @@ numerator 'Нумератор' = DATA Numerator (ReceiptOperation);
 nameNumerator 'Нумератор' (ReceiptOperation o) = name(numerator(o));
 defaultLocation 'Место хранения по умолчанию' = DATA Location(ReceiptOperation);
 nameDefaultLocation 'Место хранения по умолчанию' (ReceiptOperation o) = name(defaultLocation(o));
+maxQuantity 'Максимальное кол-во товара' = DATA NUMERIC[16,3](ReceiptOperation);
 
 countOperations 'Кол-во операций' () = GROUP SUM 1 IF r IS ReceiptOperation; 
 lastOperation 'Последняя операция' = GROUP LAST r AS ReceiptOperation ORDER r;
 
 FORM operationRec 'Операция поступления'
     OBJECTS o = ReceiptOperation PANEL 
-    PROPERTIES(o) name, nameNumerator, nameDefaultLocation
+    PROPERTIES(o) name, nameNumerator, nameDefaultLocation, maxQuantity
      
     EDIT ReceiptOperation OBJECT o;
 ;
 
 FORM operationsRec 'Операции поступления'
     OBJECTS o = ReceiptOperation
-    PROPERTIES(o) READONLY name, nameNumerator, nameDefaultLocation
+    PROPERTIES(o) READONLY name, nameNumerator, nameDefaultLocation, maxQuantity
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
     LIST ReceiptOperation OBJECT o;
 ;
