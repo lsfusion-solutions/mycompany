@@ -1,0 +1,35 @@
+MODULE ResLedger;
+
+REQUIRE InvLedger;//, ShipmentReady;
+
+NAMESPACE Inventory;
+
+CLASS ResLedger;
+
+done 'Проведен' = ABSTRACT BOOLEAN (ResLedger);
+dateTime 'Время' = ABSTRACT DATETIME (ResLedger) MATERIALIZED;
+
+location 'Место хранения (откуда)' = ABSTRACT Location (ResLedger) MATERIALIZED;
+
+product 'Товар' = ABSTRACT Product (ResLedger) MATERIALIZED;
+
+series 'Серия' = ABSTRACT STRING[2] (ResLedger);
+number 'Номер' = ABSTRACT STRING[28] (ResLedger);
+
+seriesNumber 'Серия/Номер' (ResLedger l) = CONCAT '/', series(l), number(l);
+
+INDEX product(ResLedger l);
+INDEX location(ResLedger l), product(l);
+
+quantity 'Кол-во' = ABSTRACT NUMERIC[16,3] (ResLedger) MATERIALIZED;
+reserved 'Зарезервированое кол-во' = ABSTRACT NUMERIC[16,3] (ResLedger) MATERIALIZED;
+
+partner 'Партнер' = ABSTRACT Partner (ResLedger) MATERIALIZED;
+namePartner 'Партнер' (ResLedger l) = name(partner(l));
+description 'Описание' = ABSTRACT ISTRING[100](ResLedger);
+
+reserved 'Зарезервировано' (Location l, Product p) = 
+    GROUP SUM reserved(ResLedger sl) IF location(sl) = l 
+                                        AND product(sl) = p MATERIALIZED; 
+                                        
+available 'Доступный остаток' (Location ll, Product p) = onHand(ll,p) (-) reserved(ll,p);

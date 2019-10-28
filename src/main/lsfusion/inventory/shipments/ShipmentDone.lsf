@@ -47,7 +47,6 @@ EXTEND FORM shipment
 ;
 
 EXTEND FORM shipments 
-    PROPERTIES(s) shipmentDate SHOWIF done(s)
     EXTEND FILTERGROUP status
         FILTER 'Отгружен' status(s) = ShipmentStatus.done 'F7'
 ;
@@ -79,3 +78,22 @@ partner(ShipmentLine l) += partner(shipment(l));
 
 series(ShipmentLine l) += series(shipment(l));
 number(ShipmentLine l) += number(shipment(l));
+
+CLASS ShipmentResLedger : ResLedger;
+ResLedger = AGGR ShipmentResLedger WHERE reserved(ShipmentLine l) AND status(shipment(l)) = ShipmentStatus.ready;
+
+done(ShipmentResLedger r) += done(shipment(l(r)));
+dateTime(ShipmentResLedger r) += scheduledDate(shipment(l(r)));
+
+location(ResLedger r) += location(shipment(l(r)));
+//toLocation(ResLedger r) += toLocation(shipment(l(r)));
+
+product(ResLedger r) += product(l(r));
+quantity(ResLedger r) += done(l(r));
+reserved(ResLedger r) += reserved(l(r));
+
+description(ResLedger r) += 'Отгрузка' IF l(r) IS ShipmentLine;
+partner(ResLedger r) += partner(shipment(l(r)));
+
+series(ResLedger r) += series(shipment(l(r)));
+number(ResLedger r) += number(shipment(l(r)));

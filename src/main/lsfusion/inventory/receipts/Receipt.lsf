@@ -55,7 +55,7 @@ index 'Индекс' = PARTITION SUM 1 ORDER ReceiptLine l BY receipt(l);
 
 FORM receipt 'Поступление'
     OBJECTS r = Receipt PANEL
-    PROPERTIES(r) scheduledDate, series, number, nameOperation, nameLocation, namePartner, notes
+    PROPERTIES(r) scheduledDate, receiptDate READONLY, series, number, nameOperation, nameLocation, namePartner, notes
   
     OBJECTS l = ReceiptLine
     PROPERTIES(l) index READONLY, nameProduct, initialDemand, NEW, DELETE
@@ -66,7 +66,7 @@ FORM receipt 'Поступление'
 
 FORM receipts 'Поступления'
     OBJECTS r = Receipt
-    PROPERTIES(r) READONLY scheduledDate, series, number, nameOperation, nameLocation, namePartner, notes
+    PROPERTIES(r) READONLY scheduledDate, receiptDate, series, number, nameOperation, nameLocation, namePartner, notes
     PROPERTIES(r) NEWSESSION NEW, EDIT, DELETE
 ;
 
@@ -100,11 +100,12 @@ DESIGN receipt {
         NEW pane {
             fill = 1;                         
             NEW pane1 {
-                type = CONTAINERV ;
+                type = CONTAINERV;
                 NEW box1 {
                     type = CONTAINERH; 
                     alignment = STRETCH;                                        
                     MOVE PROPERTY(scheduledDate(r));
+                    MOVE PROPERTY(receiptDate(r));
                     MOVE PROPERTY(series(r));
                     MOVE PROPERTY(number(r));
                 }

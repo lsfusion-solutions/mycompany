@@ -1,21 +1,12 @@
 MODULE ShipmentReady;
 
-REQUIRE Inventory, ShipmentWaiting;
+REQUIRE Inventory, ShipmentWaiting, Utils, ResLedger;
 
 NAMESPACE Inventory;
 
 EXTEND CLASS ShipmentStatus {
     ready 'К отгрузке'
 }
-
-reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ShipmentLine);
-
-reserved 'Зарезервировано' (Location l, Product p) = 
-    GROUP SUM reserved(ShipmentLine sl) IF location(shipment(sl)) = l 
-                                        AND product(sl) = p 
-                                        AND status(shipment(sl)) = ShipmentStatus.ready;
-                                        
-available 'Доступный остаток' (Location ll, Product p) = onHand(ll,p) (-) reserved(ll,p);
 
 ready 'К отгрузке' = DATA BOOLEAN (Shipment);
 
@@ -26,9 +17,7 @@ checkAvailability 'Зарезервировать' (Shipment s) {
     NEWSESSION {
         FOR shipment(ShipmentLine l) = s DO {
             reserved(l) <- reserved(l) (+)
-                           IF (initialDemand(l) (-) reserved(l)) >= available(location(s),product(l)) 
-                                THEN available(location(s),product(l))
-                                ELSE initialDemand(l) (-) reserved(l);
+                           min(initialDemand(l) (-) reserved(l), available(location(s),product(l)));
         }
         
         IF GROUP SUM 1 IF reserved(ShipmentLine l) AND shipment(l) = s THEN{

@@ -11,22 +11,24 @@ isTransfer 'Трансфер?' = DATA BOOLEAN (ShipmentOperation) CHARWIDTH 10;
 
 numerator 'Нумератор' = DATA Numerator (ShipmentOperation);
 nameNumerator 'Нумератор' (ShipmentOperation o) = name(numerator(o));
-defaultLocation 'Место хранения по умолчанию' = DATA Location(ShipmentOperation);
-nameDefaultLocation 'Место хранения по умолчанию' (ShipmentOperation o) = name(defaultLocation(o));
+defaultLocationTo 'Место хранения по умолчанию (откуда)' = DATA Location(ShipmentOperation);
+nameDefaultLocationTo 'Место хранения по умолчанию (откуда)' (ShipmentOperation o) = name(defaultLocationTo(o));
+defaultLocationFrom 'Место хранения по умолчанию (куда)' = DATA Location(ShipmentOperation);
+nameDefaultLocationFrom 'Место хранения по умолчанию (куда)' (ShipmentOperation o) = name(defaultLocationTo(o));
 
 countOperationsShipment 'Кол-во операций' () = GROUP SUM 1 IF r IS ShipmentOperation; 
 lastOperationShipment 'Последняя операция' = GROUP LAST r AS ShipmentOperation ORDER r;
 
 FORM operationhip 'Операция отгрузки'
     OBJECTS o = ShipmentOperation PANEL 
-    PROPERTIES(o) name, isTransfer, nameNumerator, nameDefaultLocation
+    PROPERTIES(o) name, isTransfer, nameNumerator, nameDefaultLocationTo SHOWIF NOT isTransfer(o), nameDefaultLocationFrom
      
     EDIT ShipmentOperation OBJECT o;
 ;
 
 FORM operationsShip 'Операции отгрузки'
     OBJECTS o = ShipmentOperation
-    PROPERTIES(o) READONLY name, isTransfer, nameNumerator, nameDefaultLocation
+    PROPERTIES(o) READONLY name, isTransfer, nameNumerator, nameDefaultLocationTo SHOWIF NOT isTransfer(o), nameDefaultLocationFrom
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
     LIST ShipmentOperation OBJECT o;
 ;
