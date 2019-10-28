@@ -29,10 +29,7 @@ checkAvailability 'Зарезервировать' (Shipment s) {
 
 EXTEND FORM shipment
     PROPERTIES(s) checkAvailability SHOWIF status(s) = ShipmentStatus.waiting OR status(s) = ShipmentStatus.ready, ready
-    
-    OBJECTS l = ShipmentLine
-    PROPERTIES(l) nameProduct READONLYIF NOT status(s) = ShipmentStatus.draft, 
-                                            initialDemand READONLYIF NOT status(s) = ShipmentStatus.draft, NEW, DELETE        
+       
     PROPERTIES(l) reserved READONLY, done READONLYIF NOT status(s) = ShipmentStatus.ready
     FILTERS shipment(l) = s
 ;
@@ -50,17 +47,7 @@ DESIGN shipment {
     }
     status {
         MOVE PROPERTY(ready(s));                               
-    }
-    pane {
-        NEW pane2 {
-            fill = 1;
-            MOVE BOX(l){
-                PROPERTY(nameProduct(l)) {notNull = TRUE;}
-                PROPERTY(initialDemand(l));
-            }                  
-        }
-    }
-    
+    }    
 }
 
 CONSTRAINT done(ShipmentLine l) < 0 OR done(l) > initialDemand(l) 

@@ -22,6 +22,8 @@ FORM dialogStatuses 'Статус прихода'
 status 'Статус' = ABSTRACT CASE ReceiptStatus (Receipt);
 nameStatus 'Статус' (Receipt r) = name(status(r));
 
+readonly (ReceiptLine l) += WHEN NOT status(receipt(l)) = ReceiptStatus.draft THEN TRUE;
+
 EXTEND FORM receipt
     PROPERTIES(r) nameStatus
 ;

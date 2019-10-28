@@ -26,19 +26,13 @@ EXTEND CLASS ReceiptStatus {
 EXTEND FORM receipt
     PROPERTIES(r) markAsToDo SHOWIF status(r) = ReceiptStatus.draft, ready
 
-    OBJECTS l = ReceiptLine
-    PROPERTIES(l) index READONLY, nameProduct READONLYIF NOT status(r) = ReceiptStatus.draft, 
-                initialDemand READONLYIF NOT status(r) = ReceiptStatus.draft, NEW, DELETE        
     PROPERTIES(l) done READONLYIF NOT status(r) = ReceiptStatus.ready
-    FILTERS receipt(l) = r
 ;
 
 EXTEND FORM receipts    
     EXTEND FILTERGROUP status
         FILTER 'К приемке' status(r) = ReceiptStatus.ready 'F8'    
 ;
-
-
 
 status(Receipt r) += WHEN ready(r) THEN ReceiptStatus.ready;
 
@@ -48,15 +42,6 @@ DESIGN receipt {
     }
     status {
         MOVE PROPERTY(ready(r));                               
-    }
-    pane {
-        NEW pane2 {
-            fill = 1;
-            MOVE BOX(l) {
-                PROPERTY(nameProduct(l)) {notNull = TRUE;}
-                PROPERTY(initialDemand(l));
-            }                  
-        }
     }
 }
 
