@@ -5,6 +5,9 @@ REQUIRE InvLedger, ShipmentReady;
 NAMESPACE Inventory;
 
 FORM inventoryReport 'Текущие остатки'
+    OBJECTS invL = InvLedger PANEL 
+    PROPERTIES selectedDateTime()
+    
     TREE locations lt = Location PARENT parent
     PROPERTIES READONLY name(lt)
     ORDER name(lt)
@@ -21,10 +24,12 @@ FORM inventoryReport 'Текущие остатки'
             onHand(l, p)
             
     OBJECTS il = InvLedger
-    PROPERTIES(il) READONLY dateTime, series, number, description, namePartner, nameFromLocation, nameToLocation, quantity, EDIT
+    PROPERTIES(il) READONLY dateTime, series, number, description, namePartner, nameFromLocation, nameToLocation, 
+                            quantity, EDIT
     FILTERS done(il),
             product(il) = p,
-            fromLocation(il) = l OR toLocation(il) = l
+            fromLocation(il) = l OR toLocation(il) = l,
+            dateTime(il) <= selectedDateTime() OR NOT selectedDateTime()
 ;
 
 DESIGN inventoryReport {

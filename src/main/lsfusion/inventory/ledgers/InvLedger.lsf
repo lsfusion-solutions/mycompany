@@ -1,6 +1,6 @@
 MODULE InvLedger;
 
-REQUIRE Inventory, Category, Product, Location, Partner;
+REQUIRE Inventory, Category, Product, Location, Partner, Time;
 
 NAMESPACE Inventory;
 
@@ -32,10 +32,25 @@ partner 'Партнер' = ABSTRACT Partner(InvLedger) MATERIALIZED;
 namePartner 'Партнер' (InvLedger l) = name(partner(l));
 description 'Описание' = ABSTRACT ISTRING[100](InvLedger);
 
+selectedDateTime 'Выбрать дату' = DATA LOCAL DATETIME ();
+    
 inQuantity 'Кол-во поступившее' (Location ll, Product p) = 
-    GROUP SUM quantity(InvLedger l) IF done(l) AND toLocation(l) = ll AND product(l) = p MATERIALIZED;
+    IF NOT selectedDateTime() 
+    THEN GROUP SUM quantity(InvLedger l) IF done(l) AND toLocation(l) = ll AND product(l) = p  
+    ELSE GROUP SUM quantity(InvLedger l) IF done(l) AND toLocation(l) = ll AND product(l) = p AND 
+        dateTime(l) <= selectedDateTime() MATERIALIZED; 
+ 
+    
+
+
 outQuantity 'Кол-во отправленное' (Location ll, Product p) = 
-    GROUP SUM quantity(InvLedger l) IF done(l) AND  fromLocation(l) = ll AND product(l) = p MATERIALIZED;
+    IF NOT selectedDateTime() 
+    THEN GROUP SUM quantity(InvLedger l) IF done(l) AND  fromLocation(l) = ll AND product(l) = p 
+    ELSE  GROUP SUM quantity(InvLedger l) IF done(l) AND  fromLocation(l) = ll AND product(l) = p AND 
+        dateTime(l) <= selectedDateTime() MATERIALIZED;
 
 onHand 'Текущий остаток' (Location ll, Product p) = inQuantity(ll,p) (-) outQuantity(ll,p) MATERIALIZED;
+
+
+
 
