@@ -4,6 +4,9 @@ REQUIRE InvLedger, ShipmentReady;
 
 NAMESPACE Inventory;
 
+selectedDateTime 'Выбрать дату' = DATA LOCAL DATETIME ();
+onHandDateTime 'Остаток на дату' (Location l, Product p) = onHand(l, p, selectedDateTime());
+
 FORM inventoryReport 'Текущие остатки'
     OBJECTS invL = InvLedger PANEL 
     PROPERTIES selectedDateTime()
@@ -18,10 +21,11 @@ FORM inventoryReport 'Текущие остатки'
     
     OBJECTS lp = (l = Location, p = Product)
     PROPERTIES READONLY 'Склад' = canonicalName(l), 'Товар' = name(p) 
-    PROPERTIES(l,p) reserved, available, onHand
+    PROPERTIES(l,p) reserved, available, onHand SHOWIF NOT selectedDateTime()
+    PROPERTIES onHandDateTime(l, p) SHOWIF selectedDateTime()
     FILTERS level(l, lt),
             level(category(p), c),
-            onHand(l, p)
+            onHand(l, p) 
             
     OBJECTS il = InvLedger
     PROPERTIES(il) READONLY dateTime, series, number, description, namePartner, nameFromLocation, nameToLocation, 
