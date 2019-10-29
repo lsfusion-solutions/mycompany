@@ -2,16 +2,16 @@ MODULE Shipment;
 
 REQUIRE System, Time,
         Inventory, Location, Partner, Product,
-        ShipmentOperation;
+        ShipmentType;
 
 NAMESPACE Inventory;
 
 CLASS Shipment 'Отгрузка';
 
-operation 'Операция' = DATA ShipmentOperation (Shipment) NONULL;
-nameOperation 'Операция' (Shipment s) = name(operation(s));
+type 'Тип' = DATA ShipmentType (Shipment) NONULL;
+nameType 'Тип' (Shipment s) = name(type(s));
 
-WHEN LOCAL SET(Shipment s IS Shipment) AND countOperationsShipment() = 1 DO operation(s) <- lastOperationShipment(); 
+WHEN LOCAL SET(Shipment s IS Shipment) AND countTypesShipment() = 1 DO type(s) <- lastTypeShipment(); 
 
 scheduledDate 'Дата отгрузки' = DATA DATETIME (Shipment) NONULL;
 scheduledDate (Shipment s) <- currentDateTime() WHEN SET(s IS Shipment);
@@ -22,10 +22,10 @@ nameLocation 'Место хранения' (Shipment s) = name(location(s));
 toLocation 'Место хранения (Куда)' = DATA Location (Shipment);
 nameToLocation 'Место хранения (Куда)' (Shipment s) = name(toLocation(s));
 
-WHEN LOCAL CHANGED(operation(Shipment s)) DO 
-    IF (isTransfer(operation(s))) THEN {
-        location(s) <- defaultLocationFrom(operation(s));
-        toLocation(s) <- defaultLocationFrom(operation(s));
+WHEN LOCAL CHANGED(type(Shipment s)) DO 
+    IF (isTransfer(type(s))) THEN {
+        location(s) <- defaultLocationFrom(type(s));
+        toLocation(s) <- defaultLocationFrom(type(s));
     }
 
 partner 'Партнер' = DATA Partner (Shipment);
@@ -38,10 +38,10 @@ number 'Номер' = DATA STRING[28] (Shipment) NONULL;
 
 seriesNumber 'Серия/Номер' (Shipment s) = CONCAT '/', series(s), number(s); 
 
-WHEN SETCHANGED(operation(Shipment o)) AND NOT CHANGED(number(o)) AND NOT CHANGED(series(o)) DO {
-    number(o) <- curStringValue(numerator(operation(o)));
-    series(o) <- series(numerator(operation(o)));
-    incrementValueSession(numerator(operation(o)));
+WHEN SETCHANGED(type(Shipment o)) AND NOT CHANGED(number(o)) AND NOT CHANGED(series(o)) DO {
+    number(o) <- curStringValue(numerator(type(o)));
+    series(o) <- series(numerator(type(o)));
+    incrementValueSession(numerator(type(o)));
 }
 
 CLASS ShipmentLine 'Строка отгрузки';
@@ -54,8 +54,8 @@ nameProduct 'Продукт' (ShipmentLine l) = name(product(l));
 initialDemand 'Исходное количество' = DATA NUMERIC[16,3] (ShipmentLine) NONULL;
 reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ShipmentLine);
 
-CONSTRAINT initialDemand(ShipmentLine l) < 0 OR initialDemand(l) > maxQuantity(operation(shipment(l))) 
-    AND maxQuantity(operation(shipment(l))) MESSAGE 'Исходное количество должно быть от 0 до максимально разрешенного';
+CONSTRAINT initialDemand(ShipmentLine l) < 0 OR initialDemand(l) > maxQuantity(type(shipment(l))) 
+    AND maxQuantity(type(shipment(l))) MESSAGE 'Исходное количество должно быть от 0 до максимально разрешенного';
 
 
 // при редактировании строки открываем редактирование документа
@@ -65,8 +65,8 @@ readonly = ABSTRACT CASE BOOLEAN (ShipmentLine);
 
 FORM shipment 'Отгрузка'
     OBJECTS s = Shipment PANEL 
-    PROPERTIES(s) scheduledDate, shipmentDate READONLY, series, number, nameOperation, nameLocation, 
-                  nameToLocation SHOWIF isTransfer(operation(s)), namePartner SHOWIF NOT isTransfer(operation(s)), notes
+    PROPERTIES(s) scheduledDate, shipmentDate READONLY, series, number, nameType, nameLocation, 
+                  nameToLocation SHOWIF isTransfer(type(s)), namePartner SHOWIF NOT isTransfer(type(s)), notes
                   
     OBJECTS l = ShipmentLine
     PROPERTIES(l) READONLYIF readonly(l) nameProduct, initialDemand , NEW, DELETE  
@@ -76,8 +76,8 @@ FORM shipment 'Отгрузка'
 
 FORM shipments 'Отгрузки'
     OBJECTS s = Shipment
-    PROPERTIES(s) READONLY scheduledDate, shipmentDate, series, number, nameOperation, nameLocation,
-                  nameToLocation SHOWIF isTransfer(operation(s)), namePartner SHOWIF NOT isTransfer(operation(s)), notes
+    PROPERTIES(s) READONLY scheduledDate, shipmentDate, series, number, nameType, nameLocation,
+                  nameToLocation SHOWIF isTransfer(type(s)), namePartner SHOWIF NOT isTransfer(type(s)), notes
     PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
 ;
 
@@ -97,7 +97,7 @@ DESIGN shipment {
                 }
                 NEW box2 {
                     type = CONTAINERH;
-                    MOVE PROPERTY(nameOperation(s)) {notNull = TRUE;}
+                    MOVE PROPERTY(nameType(s)) {notNull = TRUE;}
                     MOVE PROPERTY(nameLocation(s)) {notNull = TRUE;}
                     MOVE PROPERTY(namePartner(s));
                     MOVE PROPERTY(nameToLocation(s));
@@ -120,7 +120,7 @@ DESIGN shipment {
 }
 
 NAVIGATOR {
-    operations {
+    types {
         NEW shipments;
     }
 }

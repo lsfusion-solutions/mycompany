@@ -1,0 +1,43 @@
+MODULE ShipmentType;
+
+REQUIRE Inventory, Numerator, Location;
+
+NAMESPACE Inventory;
+
+CLASS ShipmentType 'Тип отгрузки';
+
+name 'Название' = DATA ISTRING[50](ShipmentType);
+isTransfer 'Трансфер?' = DATA BOOLEAN (ShipmentType) CHARWIDTH 10;
+
+numerator 'Нумератор' = DATA Numerator (ShipmentType);
+nameNumerator 'Нумератор' (ShipmentType o) = name(numerator(o));
+defaultLocationTo 'Место хранения по умолчанию (откуда)' = DATA Location(ShipmentType);
+nameDefaultLocationTo 'Место хранения по умолчанию (откуда)' (ShipmentType o) = name(defaultLocationTo(o));
+defaultLocationFrom 'Место хранения по умолчанию (куда)' = DATA Location(ShipmentType);
+nameDefaultLocationFrom 'Место хранения по умолчанию (куда)' (ShipmentType o) = name(defaultLocationTo(o));
+maxQuantity 'Максимальное кол-во товара' = DATA NUMERIC[16,3](ShipmentType);
+
+countTypesShipment 'Кол-во типов' () = GROUP SUM 1 IF r IS ShipmentType; 
+lastTypeShipment 'Последний тип' = GROUP LAST r AS ShipmentType ORDER r;
+
+FORM typeShip 'Тип отгрузки'
+    OBJECTS o = ShipmentType PANEL 
+    PROPERTIES(o) name, isTransfer, nameNumerator, nameDefaultLocationTo SHOWIF isTransfer(o), 
+                nameDefaultLocationFrom, maxQuantity
+     
+    EDIT ShipmentType OBJECT o;
+;
+
+FORM typesShip 'Типы отгрузки'
+    OBJECTS o = ShipmentType
+    PROPERTIES(o) READONLY name, isTransfer, nameNumerator, nameDefaultLocationTo, 
+                nameDefaultLocationFrom, maxQuantity
+    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+    LIST ShipmentType OBJECT o;
+;
+
+NAVIGATOR {
+    settings {
+        NEW typesShip;
+    }
+}
