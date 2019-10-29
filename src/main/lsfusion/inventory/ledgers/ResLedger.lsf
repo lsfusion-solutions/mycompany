@@ -33,3 +33,6 @@ reserved 'Зарезервировано' (Location l, Product p) =
                                         AND product(sl) = p MATERIALIZED; 
                                         
 available 'Доступный остаток' (Location ll, Product p) = onHand(ll,p) (-) reserved(ll,p);
+
+CONSTRAINT available (Location ll, Product p) < 0 AND positiveOnly(ll) 
+            MESSAGE 'Доступный остаток не может быть отрицательным';

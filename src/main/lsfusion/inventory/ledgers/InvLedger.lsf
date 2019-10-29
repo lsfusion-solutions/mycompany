@@ -46,8 +46,14 @@ outQuantity 'Кол-во отправленное' (Location ll, Product p, DATE
 
 onHand 'Текущий остаток' (Location ll, Product p) = inQuantity(ll, p) (-) outQuantity(ll, p) MATERIALIZED;
 
+CONSTRAINT onHand(Location ll, Product p) < 0 AND positiveOnly(ll) 
+            MESSAGE 'Текущий остаток не может быть отрицательным';
+
 onHand 'Текущий остаток' (Location ll, Product p, DATETIME dt) = 
                                                             inQuantity(ll, p, dt) (-) outQuantity(ll, p, dt) IF dt;
+                                                            
+CONSTRAINT onHand(Location ll, Product p, DATETIME dt) < 0 AND positiveOnly(ll) 
+            MESSAGE 'Текущий остаток не может быть отрицательным';
 
 
 
