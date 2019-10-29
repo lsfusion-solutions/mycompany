@@ -16,8 +16,9 @@ checkAvailability 'Зарезервировать' (Shipment s) {
     
     NEWSESSION {
         FOR shipment(ShipmentLine l) = s DO {
-            reserved(l) <- reserved(l) (+)
-                           min(initialDemand(l) (-) reserved(l), available(location(s),product(l)));
+            reserved(l) <- reserved(l) (+) IF negativeQuantity(location(s))
+                            THEN initialDemand(l) (-) reserved(l)
+                            ELSE  min(initialDemand(l) (-) reserved(l), available(location(s),product(l)));
         }
         
         IF GROUP SUM 1 IF reserved(ShipmentLine l) AND shipment(l) = s THEN{

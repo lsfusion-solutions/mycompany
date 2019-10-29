@@ -10,6 +10,7 @@ name 'Название' = DATA ISTRING[30] (Location);
 
 parent 'Родитель' = DATA Location (Location);
 nameParent 'Родительское место хранения' (Location l) = name(parent(l));
+negativeQuantity 'Возможно отрицательное кол-во товаров' = DATA BOOLEAN (Location) CHARWIDTH 15;
 
 level 'Уровень' (Location child, Location parent) =
    RECURSION 1l IF child IS Location AND parent == child
@@ -20,14 +21,14 @@ canonicalName 'Каноническое имя' (Location l) =
 
 FORM location 'Место хранения'
     OBJECTS l = Location PANEL
-    PROPERTIES(l) name, nameParent
+    PROPERTIES(l) name, nameParent, negativeQuantity
     
     EDIT Location OBJECT l
 ;
 
 FORM locations 'Места хранения'
     OBJECTS l = Location
-    PROPERTIES(l) READONLY name, nameParent, canonicalName
+    PROPERTIES(l) READONLY name, nameParent, canonicalName, negativeQuantity
     PROPERTIES(l) NEWSESSION NEW, EDIT, DELETE
     
     LIST Location OBJECT l
@@ -37,6 +38,8 @@ newLocation 'Место хранения' (Location ll) {
     NEWSESSION {
         NEW loc = Location {
             parent(loc) <- ll;
+            IF negativeQuantity(parent(loc))
+                THEN negativeQuantity(loc) <- TRUE;
             SHOW location OBJECTS l = loc;  
         }
     }
