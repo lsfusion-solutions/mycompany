@@ -1,0 +1,55 @@
+MODULE Invoice;
+
+REQUIRE Invoicing, Item, Partner;
+
+NAMESPACE Invoicing;
+
+CLASS Invoice 'Накладная';
+
+date 'Дата накладной' = DATA DATETIME (Invoice);
+dueDate 'Дата к оплате' = DATA DATETIME (Invoice);
+
+partner 'Партнер' = DATA Partner (Invoice);
+namePartner 'Партнер' (Invoice b) = name(partner(b));
+
+notes 'Примечания' = DATA ISTRING[50] (Invoice);
+
+CLASS InvoiceLine 'Строка накладной';
+
+bill 'Накладная' = DATA Invoice (InvoiceLine) NONULL DELETE;
+
+item 'Номенклатура' = DATA Item (InvoiceLine);
+itemName 'Номенклатура' (InvoiceLine l) = name(item(l));
+
+quantity 'Кол-во' = DATA NUMERIC[16,3] (InvoiceLine) NONULL;
+unitPrice 'Цена за штуку' = DATA NUMERIC[10,2] (InvoiceLine) NONULL;
+amount 'Общая цена'  = DATA NUMERIC[14,2] (InvoiceLine);
+
+WHEN LOCAL SETCHANGED (quantity(InvoiceLine l)) OR SETCHANGED (unitPrice(l)) DO {
+    amount(l) <- NUMERIC[14,2](quantity(l) * unitPrice(l));
+}
+
+FORM invoice 'Накладная'
+    OBJECTS  i = Invoice PANEL 
+    PROPERTIES(i) date, dueDate, namePartner, notes
+    
+    OBJECTS l = InvoiceLine
+    PROPERTIES(l) itemName, quantity, unitPrice, amount READONLY, NEW, DELETE 
+    FILTERS bill(l) = i
+    
+    EDIT Invoice OBJECT i;
+;
+
+FORM invoices 'Накладные'
+    OBJECTS i = Invoice
+    PROPERTIES(i) READONLY date, dueDate, namePartner, notes
+    PROPERTIES(i) NEWSESSION NEW, EDIT, DELETE
+    
+    LIST Invoice OBJECT i;
+;
+
+NAVIGATOR {
+    invoicing {
+        NEW invoices;
+    }
+}

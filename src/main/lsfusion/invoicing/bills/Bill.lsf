@@ -1,0 +1,55 @@
+MODULE Bill;
+
+REQUIRE Invoicing, Item, Partner;
+
+NAMESPACE Invoicing;
+
+CLASS Bill 'Счет';
+
+date 'Дата счета' = DATA DATETIME (Bill);
+dueDate 'Дата к оплате' = DATA DATETIME (Bill);
+
+partner 'Партнер' = DATA Partner (Bill);
+namePartner 'Партнер' (Bill b) = name(partner(b));
+
+notes 'Примечания' = DATA ISTRING[50] (Bill);
+
+CLASS BillLine 'Строка счета';
+
+bill 'Счет' = DATA Bill (BillLine) NONULL DELETE;
+
+item 'Номенклатура' = DATA Item (BillLine);
+itemName 'Номенклатура' (BillLine l) = name(item(l));
+
+quantity 'Кол-во' = DATA NUMERIC[16,3] (BillLine) NONULL;
+unitPrice 'Цена за штуку' = DATA NUMERIC[10,2] (BillLine) NONULL;
+amount 'Общая цена'  = DATA NUMERIC[14,2] (BillLine);
+
+WHEN LOCAL SETCHANGED (quantity(BillLine l)) OR SETCHANGED (unitPrice(l)) DO {
+    amount(l) <- NUMERIC[14,2](quantity(l) * unitPrice(l));
+}
+
+FORM bill 'Счет'
+    OBJECTS  b = Bill PANEL 
+    PROPERTIES(b) date, dueDate, namePartner, notes
+    
+    OBJECTS l = BillLine
+    PROPERTIES(l) itemName, quantity, unitPrice, amount READONLY, NEW, DELETE 
+    FILTERS bill(l) = b
+    
+    EDIT Bill OBJECT b;
+;
+
+FORM bills 'Счета'
+    OBJECTS b = Bill
+    PROPERTIES(b) READONLY date, dueDate, namePartner, notes
+    PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE
+    
+    LIST Bill OBJECT b;
+;
+
+NAVIGATOR {
+    invoicing {
+        NEW bills;
+    }
+}
