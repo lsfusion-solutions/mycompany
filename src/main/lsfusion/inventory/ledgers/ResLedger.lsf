@@ -1,6 +1,6 @@
 MODULE ResLedger;
 
-REQUIRE InvLedger;//, ShipmentReady;
+REQUIRE InvLedger;
 
 NAMESPACE Inventory;
 
@@ -34,5 +34,5 @@ reserved 'Зарезервировано' (Location l, Product p) =
                                         
 available 'Доступный остаток' (Location ll, Product p) = onHand(ll,p) (-) reserved(ll,p);
 
-CONSTRAINT available (Location ll, Product p) < 0 AND positiveOnly(ll) 
+CONSTRAINT SET(available (Location ll, Product p) < 0) AND recPositiveOnHand(ll) 
             MESSAGE 'Доступный остаток не может быть отрицательным';

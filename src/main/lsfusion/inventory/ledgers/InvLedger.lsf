@@ -46,15 +46,24 @@ outQuantity 'Кол-во отправленное' (Location ll, Product p, DATE
 
 onHand 'Текущий остаток' (Location ll, Product p) = inQuantity(ll, p) (-) outQuantity(ll, p) MATERIALIZED;
 
-CONSTRAINT onHand(Location ll, Product p) < 0 AND positiveOnly(ll) 
-            MESSAGE 'Текущий остаток не может быть отрицательным';
-
 onHand 'Текущий остаток' (Location ll, Product p, DATETIME dt) = 
                                                             inQuantity(ll, p, dt) (-) outQuantity(ll, p, dt) IF dt;
-                                                            
-CONSTRAINT onHand(Location ll, Product p, DATETIME dt) < 0 AND positiveOnly(ll) 
+
+positiveOnHand 'Только положительное кол-во товаров' = DATA BOOLEAN (Location) CHARWIDTH 15;
+
+
+            
+recPositiveOnHand 'Только положительное кол-во товаров' (Location child) = 
+    GROUP LAST positiveOnHand(Location parent) ORDER DESC level(child, parent) 
+    WHERE positiveOnHand(parent) MATERIALIZED CHARWIDTH 15;
+                                                      
+CONSTRAINT SET(onHand(Location ll, Product p) < 0) AND recPositiveOnHand(ll) 
             MESSAGE 'Текущий остаток не может быть отрицательным';
+            
+EXTEND FORM location
+    PROPERTIES(l) positiveOnHand
+;
 
-
-
-
+EXTEND FORM locations
+    PROPERTIES(l) READONLY recPositiveOnHand
+;
