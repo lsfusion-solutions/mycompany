@@ -1,0 +1,28 @@
+MODULE TaxItem;
+
+REQUIRE Tax, Item;
+
+NAMESPACE Invoicing;
+
+in 'Вкл' = DATA BOOLEAN (Item, Tax) CHARWIDTH 5;
+
+taxes 'Налоги' (Item i) = GROUP CONCAT name(Tax t) IF in(i, t), ', ' ORDER t CHARWIDTH 8;
+
+setTax 'Вкл' = DATA LOCAL BOOLEAN (Tax);
+FORM changeTax 'Установить налог'
+    OBJECTS t = Tax
+    PROPERTIES(t) setTax, name READONLY
+;
+
+changeTax (Item i) {
+    setTax (Tax t) <- in(i, t);
+    DIALOG changeTax DO {
+        in(i, Tax t) <- setTax(t);
+    } 
+}
+
+EXTEND FORM item
+    OBJECTS t = Tax
+    PROPERTIES name(t), in(i, t) 
+    PROPERTIES (i) taxes ON CHANGE changeTax(i)
+;

@@ -1,6 +1,6 @@
 MODULE Bill;
 
-REQUIRE Invoicing, Item, Partner;
+REQUIRE Invoicing, TaxItem, Partner;
 
 NAMESPACE Invoicing;
 
@@ -23,22 +23,79 @@ itemName 'Номенклатура' (BillLine l) = name(item(l));
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (BillLine) NONULL;
 unitPrice 'Цена за штуку' = DATA NUMERIC[10,2] (BillLine) NONULL;
-amount 'Общая цена'  = DATA NUMERIC[14,2] (BillLine);
+
+untaxedAmount 'Сумма'  = DATA NUMERIC[14,2] (BillLine);
 
 WHEN LOCAL SETCHANGED (quantity(BillLine l)) OR SETCHANGED (unitPrice(l)) DO {
-    amount(l) <- NUMERIC[14,2](quantity(l) * unitPrice(l));
+    untaxedAmount(l) <- NUMERIC[14,2](quantity(l) * unitPrice(l));
 }
 
+// налоги
+in 'Вкл' = DATA BOOLEAN (BillLine, Tax);
+WHEN LOCAL CHANGED(item(BillLine l)) DO
+    in(l, Tax t) <- in(item(l), t);
+
+untaxedAmount 'Сумма до налогов' (Bill b) = GROUP SUM untaxedAmount(BillLine l) IF bill(l) = b;
+
+taxAmount 'Сумма налога' (Tax t, BillLine l) = value(t) / 100 * untaxedAmount(l);
+
+taxAmount 'Сумма налога' (Tax t, Bill b) = 
+    GROUP SUM taxAmount(t, BillLine l) IF bill(l) = b AND in(l, t);
+
+totalTax 'Налог' (Bill b) = GROUP SUM taxAmount(Tax t, b);
+
+totalAmount 'Итоговая сумма' (Bill b) = untaxedAmount(b) (+) totalTax(b);
+
+countLine (Bill b, Tax t) = GROUP SUM 1 IF in(BillLine l, t) AND bill(l) = b;
+
+taxes 'Налоги' (BillLine l) = GROUP CONCAT name(Tax t) IF in(l, t), ', ' ORDER t CHARWIDTH 8;
+
+changeTax (BillLine l) {
+    setTax (Tax t) <- in(l, t);
+    DIALOG changeTax DO {
+        in(l, Tax t) <- setTax(t);
+    } 
+} 
+ 
 FORM bill 'Счет'
     OBJECTS  b = Bill PANEL 
     PROPERTIES(b) date, dueDate, namePartner, notes
     
     OBJECTS l = BillLine
-    PROPERTIES(l) itemName, quantity, unitPrice, amount READONLY, NEW, DELETE 
+    PROPERTIES(l) itemName, quantity, unitPrice, taxes ON CHANGE changeTax(l), untaxedAmount READONLY, NEW, DELETE 
     FILTERS bill(l) = b
+    
+    OBJECTS t = Tax
+    PROPERTIES READONLY name(t), taxAmount(t, b)
+    FILTERS countLine(b, t)
+    
+    OBJECTS bl = Bill PANEL 
+    PROPERTIES(bl) untaxedAmount, totalTax, totalAmount
+    FILTERS bl = b
     
     EDIT Bill OBJECT b;
 ;
+
+DESIGN bill {
+    OBJECTS {
+        NEW header{
+            fill = 1;
+            MOVE BOX (b);
+            MOVE BOX (l);
+        }
+        NEW pane {
+            type = SPLITH;
+            fill = 1;
+            NEW pane1{
+                MOVE BOX (t);
+            }
+            NEW pane2 {
+                MOVE BOX (bl); 
+                GROUP(,bl) {type = CONTAINERV;}         
+            }
+        }
+    }
+}
 
 FORM bills 'Счета'
     OBJECTS b = Bill

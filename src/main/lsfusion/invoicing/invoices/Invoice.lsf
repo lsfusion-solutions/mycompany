@@ -1,6 +1,6 @@
 MODULE Invoice;
 
-REQUIRE Invoicing, Item, Partner;
+REQUIRE Invoicing, TaxItem, Partner;
 
 NAMESPACE Invoicing;
 
@@ -16,29 +16,85 @@ notes 'Примечания' = DATA ISTRING[50] (Invoice);
 
 CLASS InvoiceLine 'Строка накладной';
 
-bill 'Накладная' = DATA Invoice (InvoiceLine) NONULL DELETE;
+invoice 'Накладная' = DATA Invoice (InvoiceLine) NONULL DELETE;
 
 item 'Номенклатура' = DATA Item (InvoiceLine);
 itemName 'Номенклатура' (InvoiceLine l) = name(item(l));
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (InvoiceLine) NONULL;
 unitPrice 'Цена за штуку' = DATA NUMERIC[10,2] (InvoiceLine) NONULL;
-amount 'Общая цена'  = DATA NUMERIC[14,2] (InvoiceLine);
+
+untaxedAmount 'Общая цена'  = DATA NUMERIC[14,2] (InvoiceLine);
 
 WHEN LOCAL SETCHANGED (quantity(InvoiceLine l)) OR SETCHANGED (unitPrice(l)) DO {
-    amount(l) <- NUMERIC[14,2](quantity(l) * unitPrice(l));
+    untaxedAmount(l) <- NUMERIC[14,2](quantity(l) * unitPrice(l));
 }
+
+in 'Вкл' = DATA BOOLEAN (InvoiceLine, Tax);
+WHEN LOCAL CHANGED(item(InvoiceLine l)) DO
+    in(l, Tax t) <- in(item(l), t);
+
+untaxedAmount 'Сумма до налогов' (Invoice i) = GROUP SUM untaxedAmount(InvoiceLine l) IF invoice(l) = i;
+
+taxAmount 'Сумма налога' (Tax t, InvoiceLine l) = value(t)/100 * untaxedAmount(l);
+
+taxAmount 'Сумма налога' (Tax t, Invoice i) = GROUP SUM taxAmount(t, InvoiceLine l) 
+                                            IF invoice(l) = i AND in(l, t);
+
+totalTax 'Налог' (Invoice i) = GROUP SUM taxAmount(Tax t, i);
+
+totalAmount 'Итоговая сумма' (Invoice i) = untaxedAmount(i) (+) totalTax(i);
+
+countLine (Invoice i, Tax t) = GROUP SUM 1 IF in(InvoiceLine l, t) AND invoice(l) = i;
+
+taxes 'Налоги' (InvoiceLine l) = GROUP CONCAT name(Tax t) IF in(l, t), ', ' ORDER t CHARWIDTH 8;
+
+changeTax (InvoiceLine l) {
+    setTax (Tax t) <- in(l, t);
+    DIALOG changeTax DO {
+        in(l, Tax t) <- setTax(t);
+    } 
+} 
 
 FORM invoice 'Накладная'
     OBJECTS  i = Invoice PANEL 
     PROPERTIES(i) date, dueDate, namePartner, notes
     
     OBJECTS l = InvoiceLine
-    PROPERTIES(l) itemName, quantity, unitPrice, amount READONLY, NEW, DELETE 
-    FILTERS bill(l) = i
+    PROPERTIES(l) itemName, quantity, unitPrice, taxes ON CHANGE changeTax(l), untaxedAmount READONLY, NEW, DELETE 
+    FILTERS invoice(l) = i
+    
+    OBJECTS t = Tax
+    PROPERTIES READONLY name(t), taxAmount(t, i)
+    FILTERS countLine(i, t)
+        
+    OBJECTS in = Invoice PANEL 
+    PROPERTIES(in) untaxedAmount, totalTax, totalAmount
+    FILTERS in = i
     
     EDIT Invoice OBJECT i;
 ;
+
+DESIGN invoice {
+    OBJECTS {
+        NEW header{
+            fill = 1;
+            MOVE BOX (i);
+            MOVE BOX (l);
+        }
+        NEW pane {
+            type = SPLITH;
+            fill = 1;
+            NEW pane1{
+                MOVE BOX (t);
+            }
+            NEW pane2 {
+                MOVE BOX (in); 
+                GROUP(,in) {type = CONTAINERV;}         
+            }
+        }
+    }
+}
 
 FORM invoices 'Накладные'
     OBJECTS i = Invoice

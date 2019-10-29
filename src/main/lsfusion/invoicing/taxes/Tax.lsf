@@ -1,0 +1,32 @@
+MODULE Tax;
+
+REQUIRE Invoicing;
+
+NAMESPACE Invoicing;
+
+CLASS Tax 'Налог';
+
+name 'Название' = DATA ISTRING[50] (Tax);
+
+value 'Значение, %' = DATA NUMERIC[5,2] (Tax);
+
+FORM tax 'Налог'
+    OBJECTS t = Tax PANEL 
+    PROPERTIES(t) name, value
+    
+    EDIT Tax OBJECT t
+;
+
+FORM taxes 'Налоги'
+    OBJECTS t = Tax
+    PROPERTIES(t) READONLY name, value
+    PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
+    
+    LIST Tax OBJECT t
+;
+
+NAVIGATOR {
+    invoicing {
+        NEW taxes;
+    }
+}
