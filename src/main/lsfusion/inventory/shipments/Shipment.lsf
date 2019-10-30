@@ -13,7 +13,7 @@ nameType 'Тип' (Shipment s) = name(type(s));
 
 WHEN LOCAL SET(Shipment s IS Shipment) AND countTypesShipment() = 1 DO type(s) <- lastTypeShipment(); 
 
-scheduledDate 'Дата отгрузки' = DATA DATETIME (Shipment) NONULL;
+scheduledDate 'Дата отгрузки' = DATA DATETIME (Shipment) NONULL IN id;
 scheduledDate (Shipment s) <- currentDateTime() WHEN SET(s IS Shipment);
 executionDate 'Дата проведения' = DATA DATETIME (Shipment);
 
@@ -49,7 +49,7 @@ CLASS ShipmentLine 'Строка отгрузки';
 shipment 'Документ' = DATA Shipment (ShipmentLine) NONULL DELETE INDEXED;
 
 product 'Продукт' = DATA Product (ShipmentLine) NONULL INDEXED;
-nameProduct 'Продукт' (ShipmentLine l) = name(product(l));
+nameProduct 'Продукт' (ShipmentLine l) = name(product(l)) IN id;
 
 initialDemand 'Исходное количество' = DATA NUMERIC[16,3] (ShipmentLine) NONULL;
 reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ShipmentLine);
@@ -61,7 +61,7 @@ CONSTRAINT initialDemand(ShipmentLine l) < 0 OR initialDemand(l) > maxQuantity(t
 // при редактировании строки открываем редактирование документа
 edit (ShipmentLine l) + { edit(shipment(l)); } 
 
-index 'Индекс' = PARTITION SUM 1 ORDER ShipmentLine l BY shipment(l);
+index 'Индекс' = PARTITION SUM 1 ORDER ShipmentLine l BY shipment(l) IN id;
 
 readonly = ABSTRACT CASE BOOLEAN (ShipmentLine);
 

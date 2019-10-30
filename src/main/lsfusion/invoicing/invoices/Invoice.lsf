@@ -6,7 +6,7 @@ NAMESPACE Invoicing;
 
 CLASS Invoice 'Накладная';
 
-date 'Дата накладной' = DATA DATETIME (Invoice);
+date 'Дата накладной' = DATA DATETIME (Invoice) IN id;
 dueDate 'Дата к оплате' = DATA DATETIME (Invoice);
 
 partner 'Партнер' = DATA Partner (Invoice);
@@ -19,7 +19,7 @@ CLASS InvoiceLine 'Строка накладной';
 invoice 'Накладная' = DATA Invoice (InvoiceLine) NONULL DELETE;
 
 item 'Номенклатура' = DATA Item (InvoiceLine);
-itemName 'Номенклатура' (InvoiceLine l) = name(item(l));
+itemName 'Номенклатура' (InvoiceLine l) = name(item(l)) IN id;
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (InvoiceLine) NONULL;
 unitPrice 'Цена за штуку' = DATA NUMERIC[10,2] (InvoiceLine) NONULL;

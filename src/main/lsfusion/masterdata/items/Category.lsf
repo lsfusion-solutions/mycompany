@@ -5,7 +5,7 @@ REQUIRE MasterData;
 NAMESPACE MasterData;
 
 CLASS Category 'Категория';
-name 'Наименование' = DATA ISTRING[50] (Category);
+name 'Наименование' = DATA ISTRING[50] (Category) IN id;
 
 parent 'Родитель' = DATA Category (Category) INDEXED;
 nameParent 'Родительская группа' (Category c) = name(parent(c));
@@ -18,7 +18,7 @@ level 'Уровень' (Category child, Category parent) =
         STEP 2l IF parent == parent($parent) MATERIALIZED;
         
 canonicalName 'Каноническое имя' (Category c) =
-   GROUP CONCAT name(Category parent), ' / ' ORDER DESC level(c, parent) CHARWIDTH 50;
+   GROUP CONCAT name(Category parent), ' / ' ORDER DESC level(c, parent) CHARWIDTH 50 IN id;
    
 FORM category 'Категория'
    OBJECTS c = Category PANEL
