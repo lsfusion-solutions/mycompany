@@ -33,7 +33,7 @@ validate 'Отгружен' (Shipment s) {
             }
         }
         done(s) <- TRUE;
-        shipmentDate(s) <- currentDateTime();
+        executionDate(s) <- currentDateTime();
         APPLY;
     }
 }
@@ -66,7 +66,7 @@ DESIGN shipment {
 EXTEND CLASS ShipmentLine : InvLedger;
 
 done(ShipmentLine l) += done(shipment(l));
-dateTime(ShipmentLine l) += scheduledDate(shipment(l));
+dateTime(ShipmentLine l) += executionDate(shipment(l));
 fromLocation(ShipmentLine l) += location(shipment(l));
 toLocation(ShipmentLine l) += toLocation(shipment(l));
 
@@ -83,7 +83,7 @@ CLASS ShipmentResLedger : ResLedger;
 ResLedger = AGGR ShipmentResLedger WHERE reserved(ShipmentLine l) AND status(shipment(l)) = ShipmentStatus.ready;
 
 done(ShipmentResLedger r) += done(shipment(l(r)));
-dateTime(ShipmentResLedger r) += scheduledDate(shipment(l(r)));
+dateTime(ShipmentResLedger r) += executionDate(shipment(l(r)));
 
 location(ResLedger r) += location(shipment(l(r)));
 //toLocation(ResLedger r) += toLocation(shipment(l(r)));

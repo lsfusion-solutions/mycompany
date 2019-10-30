@@ -15,7 +15,7 @@ WHEN LOCAL SET(Shipment s IS Shipment) AND countTypesShipment() = 1 DO type(s) <
 
 scheduledDate 'Дата отгрузки' = DATA DATETIME (Shipment) NONULL;
 scheduledDate (Shipment s) <- currentDateTime() WHEN SET(s IS Shipment);
-shipmentDate 'Дата проведения' = DATA DATETIME (Shipment);
+executionDate 'Дата проведения' = DATA DATETIME (Shipment);
 
 location 'Место хранения' = DATA Location (Shipment) NONULL INDEXED;
 nameLocation 'Место хранения (Откуда)' (Shipment s) = name(location(s));
@@ -67,7 +67,7 @@ readonly = ABSTRACT CASE BOOLEAN (ShipmentLine);
 
 FORM shipment 'Отгрузка'
     OBJECTS s = Shipment PANEL 
-    PROPERTIES(s) scheduledDate, shipmentDate READONLY, series, number, nameType, nameLocation, 
+    PROPERTIES(s) scheduledDate, executionDate READONLY, series, number, nameType, nameLocation, 
                   nameToLocation SHOWIF isTransfer(type(s)), namePartner SHOWIF NOT isTransfer(type(s)), notes
                   
     OBJECTS l = ShipmentLine
@@ -79,7 +79,7 @@ FORM shipment 'Отгрузка'
 
 FORM shipments 'Отгрузки'
     OBJECTS s = Shipment
-    PROPERTIES(s) READONLY scheduledDate, shipmentDate, series, number, nameType, nameLocation,
+    PROPERTIES(s) READONLY scheduledDate, executionDate, series, number, nameType, nameLocation,
                   nameToLocation SHOWIF isTransfer(type(s)), namePartner SHOWIF NOT isTransfer(type(s)), notes
     PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
 ;
@@ -94,7 +94,7 @@ DESIGN shipment {
                     type = CONTAINERH; 
                     alignment = STRETCH;                                        
                     MOVE PROPERTY(scheduledDate(s));
-                    MOVE PROPERTY(shipmentDate(s));
+                    MOVE PROPERTY(executionDate(s));
                     MOVE PROPERTY(series(s));
                     MOVE PROPERTY(number(s));
                 }

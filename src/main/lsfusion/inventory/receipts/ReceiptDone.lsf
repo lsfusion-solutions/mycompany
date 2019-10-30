@@ -35,7 +35,7 @@ validate 'Принят' (Receipt r) {
             } ELSE RETURN;
         }
         done(r) <- TRUE;
-        receiptDate(r) <- currentDateTime();
+        executionDate(r) <- currentDateTime();
         APPLY;
     }
 }
@@ -68,7 +68,7 @@ DESIGN receipt {
 EXTEND CLASS ReceiptLine : InvLedger;
 
 done(ReceiptLine l) += done(receipt(l));
-dateTime(ReceiptLine l) += scheduledDate(receipt(l));
+dateTime(ReceiptLine l) += executionDate(receipt(l));
 toLocation(ReceiptLine l) += location(receipt(l));
 
 product(ReceiptLine l) += product(l);

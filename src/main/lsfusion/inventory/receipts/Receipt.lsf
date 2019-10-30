@@ -16,7 +16,7 @@ WHEN LOCAL SET(Receipt r IS Receipt) AND countTypes() = 1 DO type(r) <- lastType
 
 scheduledDate 'Дата приемки' = DATA DATETIME (Receipt) NONULL;
 scheduledDate (Receipt r) <- currentDateTime() WHEN SET(r IS Receipt);
-receiptDate 'Дата проведения' = DATA DATETIME (Receipt);
+executionDate 'Дата проведения' = DATA DATETIME (Receipt);
 
 // Номер
 series 'Серия' = DATA STRING[2] (Receipt);
@@ -60,7 +60,7 @@ readonly = ABSTRACT CASE BOOLEAN (ReceiptLine);
 
 FORM receipt 'Поступление'
     OBJECTS r = Receipt PANEL
-    PROPERTIES(r) scheduledDate, receiptDate READONLY, series, number, nameType, nameLocation, namePartner, notes
+    PROPERTIES(r) scheduledDate, executionDate READONLY, series, number, nameType, nameLocation, namePartner, notes
 
     OBJECTS l = ReceiptLine
     PROPERTIES(l) index READONLY
@@ -72,7 +72,7 @@ FORM receipt 'Поступление'
 
 FORM receipts 'Поступления'
     OBJECTS r = Receipt
-    PROPERTIES(r) READONLY scheduledDate, receiptDate, series, number, nameType, nameLocation, namePartner, notes
+    PROPERTIES(r) READONLY scheduledDate, executionDate, series, number, nameType, nameLocation, namePartner, notes
     PROPERTIES(r) NEWSESSION NEW, EDIT, DELETE
 ;
 
@@ -86,7 +86,7 @@ DESIGN receipt {
                     type = CONTAINERH; 
                     alignment = STRETCH;                                        
                     MOVE PROPERTY(scheduledDate(r));
-                    MOVE PROPERTY(receiptDate(r));
+                    MOVE PROPERTY(executionDate(r));
                     MOVE PROPERTY(series(r));
                     MOVE PROPERTY(number(r));
                 }
