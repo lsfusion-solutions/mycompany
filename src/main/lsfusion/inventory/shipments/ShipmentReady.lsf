@@ -26,9 +26,14 @@ checkAvailability 'Зарезервировать' (Shipment s) {
     }
 }
 
+isReserved '' (Shipment s) = IF (GROUP SUM 1 IF (ShipmentLine l AND shipment(l) = s)) = 
+    GROUP SUM 1 IF (reserved(ShipmentLine ln) = initialDemand(ln) AND shipment(ln) = s)
+    THEN TRUE 
+    ELSE NULL;
+
 EXTEND FORM shipment
-    PROPERTIES(s) checkAvailability SHOWIF status(s) = ShipmentStatus.waiting OR status(s) = ShipmentStatus.ready, 
-                    ready READONLY 
+    PROPERTIES(s) checkAvailability SHOWIF (status(s) = ShipmentStatus.waiting OR status(s) = ShipmentStatus.ready) 
+                                    AND NOT isReserved(s), ready READONLY 
        
     PROPERTIES(l) reserved READONLY, done READONLYIF NOT status(s) = ShipmentStatus.ready
     FILTERS shipment(l) = s
