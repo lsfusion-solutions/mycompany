@@ -13,3 +13,18 @@ routingNumber 'Код банка' (BankAccount b) = routingNumber(bank(b));
 EXTEND FORM account
     PROPERTIES(a) nameBank, routingNumber READONLY 
 ;
+
+newBankAccount 'Банковский счет' () {
+    NEWSESSION {
+        NEW b = BankAccount {
+            
+            SHOW account OBJECTS a = b;  
+        }
+    }
+} IMAGE 'add.png';
+
+EXTEND FORM accounts
+    PROPERTIES newBankAccount() DRAW a TOOLBAR
+    
+    LIST BankAccount OBJECT a
+;
