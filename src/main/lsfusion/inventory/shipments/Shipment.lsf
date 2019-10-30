@@ -18,14 +18,14 @@ scheduledDate (Shipment s) <- currentDateTime() WHEN SET(s IS Shipment);
 shipmentDate 'Дата проведения' = DATA DATETIME (Shipment);
 
 location 'Место хранения' = DATA Location (Shipment) NONULL INDEXED;
-nameLocation 'Место хранения' (Shipment s) = name(location(s));
+nameLocation 'Место хранения (Откуда)' (Shipment s) = name(location(s));
 toLocation 'Место хранения (Куда)' = DATA Location (Shipment);
 nameToLocation 'Место хранения (Куда)' (Shipment s) = name(toLocation(s));
 
 WHEN LOCAL CHANGED(type(Shipment s)) DO 
     IF (isTransfer(type(s))) THEN {
-        location(s) <- defaultLocationFrom(type(s));
-        toLocation(s) <- defaultLocationFrom(type(s));
+        IF defaultLocationFrom(type(s)) THEN location(s) <- defaultLocationFrom(type(s));
+        IF defaultLocationTo(type(s)) THEN toLocation(s) <- defaultLocationTo(type(s));
     }
 
 partner 'Партнер' = DATA Partner (Shipment);
@@ -61,6 +61,8 @@ CONSTRAINT initialDemand(ShipmentLine l) < 0 OR initialDemand(l) > maxQuantity(t
 // при редактировании строки открываем редактирование документа
 edit (ShipmentLine l) + { edit(shipment(l)); } 
 
+index 'Индекс' = PARTITION SUM 1 ORDER ShipmentLine l BY shipment(l);
+
 readonly = ABSTRACT CASE BOOLEAN (ShipmentLine);
 
 FORM shipment 'Отгрузка'
@@ -69,6 +71,7 @@ FORM shipment 'Отгрузка'
                   nameToLocation SHOWIF isTransfer(type(s)), namePartner SHOWIF NOT isTransfer(type(s)), notes
                   
     OBJECTS l = ShipmentLine
+    PROPERTIES(l) index READONLY
     PROPERTIES(l) READONLYIF readonly(l) nameProduct, initialDemand , NEW, DELETE  
              
     EDIT Shipment OBJECT s
