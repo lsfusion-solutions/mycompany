@@ -1,0 +1,34 @@
+MODULE Account;
+
+REQUIRE Invoicing, Partner;
+
+NAMESPACE Invoicing;
+
+CLASS ABSTRACT Account 'Счет';
+
+accountNumber 'Номер счета' = DATA INTEGER (Account);
+
+accountHolder 'Держатель счета' = DATA Partner (Account);
+nameAccountHolder 'Держатель счета' (Account a) = name(accountHolder(a));
+
+FORM account 'Денежный счет'
+    OBJECTS a = Account PANEL 
+    PROPERTIES(a) accountNumber, nameAccountHolder
+    
+    EDIT Account OBJECT a
+;
+
+FORM accounts 'Денежные счета'
+    OBJECTS a = Account
+    PROPERTIES(a) READONLY  accountNumber, nameAccountHolder
+    PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE
+    
+    LIST Account OBJECT a
+
+;
+
+NAVIGATOR {
+    invoicing {
+        NEW accounts;
+    }
+}

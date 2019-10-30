@@ -21,11 +21,12 @@ FORM dialogStatuses 'Статус прихода'
 
 status 'Статус' = ABSTRACT CASE ReceiptStatus (Receipt);
 nameStatus 'Статус' (Receipt r) = name(status(r));
-
+colorStatus 'Цвет' = ABSTRACT CASE COLOR (Receipt);
+    
 readonly (ReceiptLine l) += WHEN NOT status(receipt(l)) = ReceiptStatus.draft THEN TRUE;
 
 EXTEND FORM receipt
-    PROPERTIES(r) nameStatus
+    PROPERTIES(r) nameStatus BACKGROUND colorStatus(r)
 ;
 
 EXTEND FORM receipts    
@@ -34,10 +35,11 @@ EXTEND FORM receipts
 ;
 
 EXTEND FORM receipts
-    PROPERTIES(r) nameStatus
+    PROPERTIES(r) nameStatus BEFORE scheduledDate(r) BACKGROUND colorStatus(r)
 ;
 
 status(Receipt r) += WHEN r IS Receipt THEN ReceiptStatus.draft;
+colorStatus(Receipt r) += WHEN status(r) == ReceiptStatus.draft THEN RGB(187,242,210);
 
 DESIGN receipt {
     OBJECTS {        

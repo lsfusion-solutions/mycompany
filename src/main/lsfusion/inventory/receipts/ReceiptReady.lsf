@@ -24,7 +24,7 @@ EXTEND CLASS ReceiptStatus {
 }
 
 EXTEND FORM receipt
-    PROPERTIES(r) markAsToDo SHOWIF status(r) = ReceiptStatus.draft, ready
+    PROPERTIES(r) markAsToDo SHOWIF status(r) = ReceiptStatus.draft, ready READONLY 
 
     PROPERTIES(l) done READONLYIF NOT status(r) = ReceiptStatus.ready
 ;
@@ -35,6 +35,7 @@ EXTEND FORM receipts
 ;
 
 status(Receipt r) += WHEN ready(r) THEN ReceiptStatus.ready;
+colorStatus(Receipt r) += WHEN status(r) == ReceiptStatus.ready THEN RGB(252,247,149);
 
 DESIGN receipt {
     statusActions {

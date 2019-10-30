@@ -1,0 +1,31 @@
+MODULE Bank;
+
+REQUIRE Invoicing;
+
+NAMESPACE Invoicing;
+
+CLASS Bank 'Банк';
+
+name 'Название' = DATA ISTRING[30] (Bank);
+routingNumber 'Код банка' = DATA INTEGER (Bank);
+
+FORM bank 'Банк'
+    OBJECTS b = Bank PANEL 
+    PROPERTIES(b) name, routingNumber
+    
+    EDIT Bank OBJECT b
+;
+
+FORM banks 'Банки'
+    OBJECTS b = Bank
+    PROPERTIES(b) READONLY name, routingNumber
+    PROPERTIES (b) NEWSESSION NEW, EDIT, DELETE
+    
+    LIST Bank OBJECT b
+;
+
+NAVIGATOR {
+    invoicing {
+        NEW banks;
+    }
+}

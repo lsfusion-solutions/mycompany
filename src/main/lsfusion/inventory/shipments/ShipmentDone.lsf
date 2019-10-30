@@ -43,7 +43,8 @@ EXTEND CLASS ShipmentStatus {
 }
 
 EXTEND FORM shipment
-    PROPERTIES(s) validate SHOWIF ready(s), done
+    PROPERTIES(s) validate SHOWIF ready(s), done READONLY 
+    PROPERTIES(s) executionDate READONLY AFTER scheduledDate(s) SHOWIF done(s)
 ;
 
 EXTEND FORM shipments 
@@ -52,6 +53,7 @@ EXTEND FORM shipments
 ;
 
 status(Shipment s) += WHEN done(s) THEN ShipmentStatus.done;
+colorStatus(Shipment s) += WHEN status(s) == ShipmentStatus.done THEN RGB(255,255,255);
 
 DESIGN shipment {                               
     statusActions {                  
@@ -59,7 +61,10 @@ DESIGN shipment {
     }
     status {
         MOVE PROPERTY(done(s));                              
-    }                   
+    } 
+    box1 {
+        MOVE PROPERTY(executionDate(s));
+    }                  
 }
 
 // Проводим по регистру изменения остатков

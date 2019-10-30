@@ -45,7 +45,8 @@ EXTEND CLASS ReceiptStatus {
 }
 
 EXTEND FORM receipt
-    PROPERTIES(r) validate SHOWIF ready(r), done
+    PROPERTIES(r) validate SHOWIF ready(r), done READONLY 
+    PROPERTIES (r)  executionDate READONLY AFTER scheduledDate(r) SHOWIF done(r)
 ;
 
 EXTEND FORM receipts 
@@ -54,6 +55,9 @@ EXTEND FORM receipts
 ;
 
 status(Receipt r) += WHEN done(r) THEN ReceiptStatus.done;
+colorStatus(Receipt r) += WHEN status(r) == ReceiptStatus.done THEN RGB(255,255,255);
+
+
 
 DESIGN receipt {                               
     statusActions {                  
@@ -61,7 +65,10 @@ DESIGN receipt {
     }
     status {
         MOVE PROPERTY(done(r));                              
-    }                   
+    } 
+    box1 {
+        MOVE PROPERTY(executionDate(r));
+    }                  
 }
 
 // Проводим по регистру изменения остатков

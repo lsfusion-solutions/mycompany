@@ -1,0 +1,15 @@
+MODULE BankAccount;
+
+REQUIRE Invoicing, Account, Bank;
+
+NAMESPACE Invoicing;
+
+CLASS BankAccount 'Банковский счет' : Account;
+
+bank 'Банк' = DATA Bank (BankAccount);
+nameBank 'Банк' (BankAccount b) = name(bank(b));
+routingNumber 'Код банка' (BankAccount b) = routingNumber(bank(b));
+
+EXTEND FORM account
+    PROPERTIES(a) nameBank, routingNumber READONLY 
+;

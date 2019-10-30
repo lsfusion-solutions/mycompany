@@ -12,9 +12,10 @@ name 'Имя' (ShipmentStatus o) = staticCaption(o) IF o IS ShipmentStatus CHARW
 
 status 'Статус' = ABSTRACT CASE ShipmentStatus (Shipment);
 nameStatus 'Статус' (Shipment s) = name(status(s));
+colorStatus 'Цвет' = ABSTRACT CASE COLOR (Shipment);
 
 EXTEND FORM shipment
-    PROPERTIES(s) nameStatus
+    PROPERTIES(s) nameStatus BACKGROUND colorStatus(s)
 ;
 
 EXTEND FORM shipments    
@@ -23,11 +24,11 @@ EXTEND FORM shipments
 ;
 
 EXTEND FORM shipments
-    PROPERTIES(s) nameStatus
+    PROPERTIES(s) nameStatus BEFORE scheduledDate(s) BACKGROUND colorStatus(s)
 ;
 
 status(Shipment s) += WHEN s IS Shipment THEN ShipmentStatus.draft;
-
+colorStatus(Shipment s) += WHEN status(s) == ShipmentStatus.draft THEN RGB(187,242,210);
 readonly (ShipmentLine l) += WHEN NOT status(shipment(l)) = ShipmentStatus.draft THEN TRUE;
 
 DESIGN shipment {
