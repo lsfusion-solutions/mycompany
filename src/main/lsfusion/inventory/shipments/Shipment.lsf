@@ -44,6 +44,8 @@ WHEN SETCHANGED(type(Shipment o)) AND NOT CHANGED(number(o)) AND NOT CHANGED(ser
     incrementValueSession(numerator(type(o)));
 }
 
+WHEN SETCHANGED(type(Shipment s)) AND NOT isTransfer(type(s)) DO toLocation(s) <- NULL;
+
 CLASS ShipmentLine 'Строка отгрузки';
 
 shipment 'Документ' = DATA Shipment (ShipmentLine) NONULL DELETE INDEXED;
@@ -56,6 +58,9 @@ reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ShipmentLine);
 
 CONSTRAINT initialDemand(ShipmentLine l) < 0 OR initialDemand(l) > maxQuantity(type(shipment(l))) 
     AND maxQuantity(type(shipment(l))) MESSAGE 'Исходное количество должно быть от 0 до максимально разрешенного';
+
+CONSTRAINT location(Shipment s) == toLocation(s)
+                MESSAGE 'Места хранения откуда и куда не могут совпадать';
 
 
 // при редактировании строки открываем редактирование документа
@@ -80,7 +85,7 @@ FORM shipment 'Отгрузка'
 FORM shipments 'Отгрузки'
     OBJECTS s = Shipment
     PROPERTIES(s) READONLY scheduledDate, executionDate, series, number, nameType, nameLocation,
-                  nameToLocation SHOWIF isTransfer(type(s)), namePartner SHOWIF NOT isTransfer(type(s)), notes
+                  nameToLocation, namePartner, notes
     PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
 ;
 
