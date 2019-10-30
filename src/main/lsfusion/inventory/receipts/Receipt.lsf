@@ -54,7 +54,7 @@ CONSTRAINT initialDemand(ReceiptLine l) < 0 OR initialDemand(l) > maxQuantity(ty
 // при редактировании строки открываем редактирование документа
 edit (ReceiptLine l) + { edit(receipt(l)); } 
 
-index 'Индекс' = PARTITION SUM 1 ORDER ReceiptLine l BY receipt(l) IN id;
+index 'Индекс' = PARTITION SUM 1 ORDER ReceiptLine l BY receipt(l) IN id MATERIALIZED;
 
 readonly = ABSTRACT CASE BOOLEAN (ReceiptLine); 
 
