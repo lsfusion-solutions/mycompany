@@ -6,10 +6,10 @@ NAMESPACE Invoicing;
 
 CLASS Invoice 'Накладная';
 
-date 'Дата накладной' = DATA DATETIME (Invoice) IN id;
+date 'Дата накладной' = DATA DATETIME (Invoice) NONULL IN id;
 dueDate 'Дата к оплате' = DATA DATETIME (Invoice);
 
-partner 'Партнер' = DATA Partner (Invoice);
+partner 'Партнер' = DATA Partner (Invoice) NONULL;
 namePartner 'Партнер' (Invoice b) = name(partner(b));
 
 notes 'Примечания' = DATA ISTRING[50] (Invoice);
@@ -98,7 +98,7 @@ DESIGN invoice {
 
 FORM invoices 'Накладные'
     OBJECTS i = Invoice
-    PROPERTIES(i) READONLY date, dueDate, namePartner, notes
+    PROPERTIES(i) READONLY date, dueDate, namePartner, notes, untaxedAmount, totalTax, totalAmount
     PROPERTIES(i) NEWSESSION NEW, EDIT, DELETE
     
     LIST Invoice OBJECT i;
