@@ -1,6 +1,6 @@
 MODULE Tax;
 
-REQUIRE Invoicing;
+REQUIRE Invoicing, TaxGroup;
 
 NAMESPACE Invoicing;
 
@@ -10,16 +10,19 @@ name 'Название' = DATA ISTRING[50] (Tax) IN id;
 
 value 'Значение, %' = DATA NUMERIC[5,2] (Tax);
 
+taxGroup 'Группа налога' = DATA TaxGroup (Tax);
+nameTaxGroup 'Группа налога' (Tax t) = name(taxGroup(t));
+
 FORM tax 'Налог'
     OBJECTS t = Tax PANEL 
-    PROPERTIES(t) name, value
+    PROPERTIES(t) name, value, nameTaxGroup
     
     EDIT Tax OBJECT t
 ;
 
 FORM taxes 'Налоги'
     OBJECTS t = Tax
-    PROPERTIES(t) READONLY name, value
+    PROPERTIES(t) READONLY name, value, nameTaxGroup
     PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
     
     LIST Tax OBJECT t

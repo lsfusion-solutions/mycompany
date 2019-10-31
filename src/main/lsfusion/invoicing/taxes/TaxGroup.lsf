@@ -1,0 +1,30 @@
+MODULE TaxGroup;
+
+REQUIRE Invoicing;
+
+NAMESPACE Invoicing;
+
+CLASS TaxGroup;
+
+name 'Название' = DATA ISTRING[30] (TaxGroup);
+
+FORM taxGroup 'Группа налога'
+    OBJECTS t = TaxGroup PANEL 
+    PROPERTIES(t) name
+        
+    EDIT TaxGroup OBJECT t
+;
+
+FORM taxGroups 'Группы налогов'
+    OBJECTS t = TaxGroup
+    PROPERTIES(t) READONLY name
+    PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
+        
+    LIST TaxGroup OBJECT t
+;
+
+NAVIGATOR {
+    invoicing {
+        NEW taxGroups;
+    }
+}

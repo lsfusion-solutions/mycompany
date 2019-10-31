@@ -9,6 +9,13 @@ in 'Вкл' = DATA BOOLEAN (Item, Tax) CHARWIDTH 5;
 taxes 'Налоги' (Item i) = GROUP CONCAT name(Tax t) IF in(i, t), ', ' ORDER t CHARWIDTH 8;
 
 setTax 'Вкл' = DATA LOCAL BOOLEAN (Tax);
+
+WHEN LOCAL SETCHANGED(in(Item i, Tax t)) DO {
+    FOR taxGroup(t) = taxGroup(Tax tx) AND NOT t = tx DO {
+        in(i, tx) <- NULL;
+    }
+}
+
 FORM changeTax 'Установить налог'
     OBJECTS t = Tax
     PROPERTIES(t) setTax, name READONLY
@@ -16,6 +23,7 @@ FORM changeTax 'Установить налог'
 
 changeTax (Item i) {
     setTax (Tax t) <- in(i, t);
+    
     DIALOG changeTax DO {
         in(i, Tax t) <- setTax(t);
     } 
