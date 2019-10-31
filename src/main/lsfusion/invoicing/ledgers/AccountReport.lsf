@@ -1,0 +1,21 @@
+MODULE AccountReport;
+
+REQUIRE AccLedger;
+
+NAMESPACE Invoicing;
+
+FORM accountReport 'Остатки по счетам'
+    OBJECTS a = Account
+    PROPERTIES(a) READONLY  accountNumber, nameAccountHolder, notes, inAmount, outAmount, balance
+    
+    OBJECTS ac = AccLedger
+    PROPERTIES(ac) date, numberFromAccount, numberToAccount, amount
+    FILTERS done(ac),
+            toAccount(ac) = a OR fromAccount(ac) = a
+;
+
+NAVIGATOR {
+    invoicing {
+        NEW accountReport;
+    }
+}

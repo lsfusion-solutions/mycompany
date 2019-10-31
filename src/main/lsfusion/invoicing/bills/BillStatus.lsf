@@ -1,0 +1,49 @@
+MODULE BillStatus;
+
+REQUIRE Invoicing, BillPayment;
+
+NAMESPACE Invoicing;
+
+CLASS BillStatus 'Статус счета' {
+    draft 'Черновик'
+}
+
+name 'Имя' (BillStatus o) = staticCaption(o) IF o IS BillStatus CHARWIDTH 15;
+
+status 'Статус' = ABSTRACT CASE BillStatus (Bill);
+nameStatus 'Статус' (Bill b) = name(status(b));
+colorStatus 'Цвет' = ABSTRACT CASE COLOR (Bill);
+
+EXTEND FORM bill
+    PROPERTIES(b) nameStatus BACKGROUND colorStatus(b)
+;
+
+EXTEND FORM bills    
+    FILTERGROUP status
+        FILTER 'Черновик' status(b) = BillStatus.draft 'F10'
+;
+
+EXTEND FORM bills
+    PROPERTIES(b) nameStatus BEFORE date(b) BACKGROUND colorStatus(b)
+;
+
+status(Bill b) += WHEN b IS Bill THEN BillStatus.draft;
+colorStatus(Bill b) += WHEN status(b) == BillStatus.draft THEN RGB(187,242,210);
+
+DESIGN bill {
+    OBJECTS {        
+        NEW statusPane FIRST {
+            caption = 'Статусы';
+            type = CONTAINERH;
+            alignment = STRETCH;                          
+            NEW statusActions {
+                type = CONTAINERH;                    
+                flex = 1;            
+            }
+            NEW status {
+                type = CONTAINERH;                
+                MOVE PROPERTY(nameStatus(b)); 
+            }
+        }                
+    }
+}

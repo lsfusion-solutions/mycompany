@@ -1,0 +1,52 @@
+MODULE BillDone;
+
+REQUIRE Invoicing, BillReady;
+
+NAMESPACE Invoicing;
+
+done 'Оплачено' = DATA BOOLEAN (Bill);
+
+EXTEND CLASS BillStatus {
+    done 'Оплачено'
+}
+
+registerPayment 'Оформить платеж' (Bill b){
+    APPLY; 
+    IF canceled() THEN RETURN;
+    IF done(b) THEN RETURN;
+    
+    NEWSESSION {
+        NEW p = Payment {
+            bill(p) <- b;
+            amount(p) <- totalAmount(bill(p));
+            SHOW payment OBJECTS p = p; 
+        } 
+        done(b) <- TRUE;
+        APPLY;
+    }
+}
+
+WHEN SETCHANGED(done(bill(Payment p))) DO {
+    done(p) <- TRUE;
+}
+
+EXTEND FORM bill
+    PROPERTIES(b) registerPayment SHOWIF ready(b), done READONLY 
+;
+
+EXTEND FORM bills 
+    EXTEND FILTERGROUP status
+        FILTER 'Отгружен' status(b) = BillStatus.done 'F7'
+;
+
+status(Bill b) += WHEN done(b) THEN BillStatus.done;
+
+DESIGN bill {                               
+    statusActions {                  
+        MOVE PROPERTY(registerPayment(b));
+    }
+    status {
+        MOVE PROPERTY(done(b));                              
+    }                 
+}
+            

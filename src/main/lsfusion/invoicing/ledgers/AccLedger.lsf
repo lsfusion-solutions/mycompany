@@ -1,0 +1,22 @@
+MODULE AccLedger;
+
+REQUIRE Invoicing, Account;
+
+NAMESPACE Invoicing;
+
+CLASS ABSTRACT AccLedger 'Регистр изменения остатка';
+
+done 'Оплачено' = ABSTRACT BOOLEAN (AccLedger);
+date 'Дата' = ABSTRACT DATETIME (AccLedger);
+
+toAccount 'Счет (куда)' = ABSTRACT Account (AccLedger);
+numberToAccount 'Счет (куда)' (AccLedger l) = accountNumber(toAccount(l));
+fromAccount 'Счет (откуда)' = ABSTRACT Account (AccLedger);
+numberFromAccount 'Счет (откуда)' (AccLedger l) = accountNumber(fromAccount(l));
+
+amount 'Сумма' = ABSTRACT NUMERIC[14,2] (AccLedger);
+
+inAmount 'Доход' (Account a) = GROUP SUM amount(AccLedger l) IF done(l) AND toAccount(l) = a;
+outAmount 'Расход' (Account a) = GROUP SUM amount(AccLedger l) IF done(l) AND fromAccount(l) = a;
+
+balance 'Баланс' (Account a) = inAmount(a) (-) outAmount(a);

@@ -1,0 +1,11 @@
+MODULE InvoicePayment;
+
+REQUIRE Invoice, Payment;
+
+NAMESPACE Invoicing;
+
+invoice 'Накладная' = DATA Invoice (Payment);
+
+WHEN SETCHANGED(invoice(Payment p)) DO {
+    amount(p) <- totalAmount(invoice(p));
+}

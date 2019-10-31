@@ -43,7 +43,7 @@ taxAmount 'Сумма налога' (Tax t, Invoice i) = GROUP SUM taxAmount(t, 
 
 totalTax 'Налог' (Invoice i) = GROUP SUM taxAmount(Tax t, i);
 
-totalAmount 'Итоговая сумма' (Invoice i) = untaxedAmount(i) (+) totalTax(i);
+totalAmount 'Итоговая сумма' (Invoice i) = NUMERIC[14,2](untaxedAmount(i) (+) totalTax(i));
 
 countLine (Invoice i, Tax t) = GROUP SUM 1 IF in(InvoiceLine l, t) AND invoice(l) = i;
 

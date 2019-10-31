@@ -1,0 +1,42 @@
+MODULE InvoiceReady;
+
+REQUIRE Invoicing, InvoiceStatus;
+
+NAMESPACE Invoicing;
+
+EXTEND CLASS InvoiceStatus {
+    ready 'К платежу'
+}
+
+ready 'К платежу' = DATA BOOLEAN (Invoice);
+
+markAsToDo 'К платежу' (Invoice i) {
+    APPLY; 
+        IF canceled() THEN RETURN;
+        
+        NEWSESSION {
+            ready(i) <- TRUE;
+            APPLY;
+        }
+}
+
+EXTEND FORM invoice
+    PROPERTIES(i) markAsToDo SHOWIF status(i) = InvoiceStatus.draft, ready READONLY
+;
+
+EXTEND FORM invoices    
+    EXTEND FILTERGROUP status
+        FILTER 'К отгрузке' status(i) = InvoiceStatus.ready 'F8'    
+;
+
+status(Invoice i) += WHEN ready(i) THEN InvoiceStatus.ready;
+colorStatus(Invoice i) += WHEN status(i) == InvoiceStatus.ready THEN RGB(252,247,149);
+
+DESIGN invoice {
+    statusActions {
+        MOVE PROPERTY(markAsToDo(i));                
+    }
+    status {
+        MOVE PROPERTY(ready(i));                               
+    }    
+}

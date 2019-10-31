@@ -1,0 +1,42 @@
+MODULE BillReady;
+
+REQUIRE Invoicing, BillStatus;
+
+NAMESPACE Invoicing;
+
+EXTEND CLASS BillStatus {
+    ready 'К платежу'
+}
+
+ready 'К платежу' = DATA BOOLEAN (Bill);
+
+markAsToDo 'К платежу' (Bill b) {
+    APPLY; 
+        IF canceled() THEN RETURN;
+        
+        NEWSESSION {
+            ready(b) <- TRUE;
+            APPLY;
+        }
+}
+
+EXTEND FORM bill
+    PROPERTIES(b) markAsToDo SHOWIF status(b) = BillStatus.draft, ready READONLY
+;
+
+EXTEND FORM bills    
+    EXTEND FILTERGROUP status
+        FILTER 'К отгрузке' status(b) = BillStatus.ready 'F8'    
+;
+
+status(Bill b) += WHEN ready(b) THEN BillStatus.ready;
+colorStatus(Bill b) += WHEN status(b) == BillStatus.ready THEN RGB(252,247,149);
+
+DESIGN bill {
+    statusActions {
+        MOVE PROPERTY(markAsToDo(b));                
+    }
+    status {
+        MOVE PROPERTY(ready(b));                               
+    }    
+}

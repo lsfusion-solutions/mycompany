@@ -44,7 +44,7 @@ taxAmount 'Сумма налога' (Tax t, Bill b) =
 
 totalTax 'Налог' (Bill b) = GROUP SUM taxAmount(Tax t, b);
 
-totalAmount 'Итоговая сумма' (Bill b) = untaxedAmount(b) (+) totalTax(b);
+totalAmount 'Итоговая сумма' (Bill b) = NUMERIC[14,2](untaxedAmount(b) (+) totalTax(b));
 
 countLine (Bill b, Tax t) = GROUP SUM 1 IF in(BillLine l, t) AND bill(l) = b;
 

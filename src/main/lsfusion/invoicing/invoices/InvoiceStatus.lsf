@@ -1,0 +1,49 @@
+MODULE InvoiceStatus;
+
+REQUIRE Invoicing, InvoicePayment;
+
+NAMESPACE Invoicing;
+
+CLASS InvoiceStatus 'Статус счета' {
+    draft 'Черновик'
+}
+
+name 'Имя' (InvoiceStatus o) = staticCaption(o) IF o IS InvoiceStatus CHARWIDTH 15;
+
+status 'Статус' = ABSTRACT CASE InvoiceStatus (Invoice);
+nameStatus 'Статус' (Invoice i) = name(status(i));
+colorStatus 'Цвет' = ABSTRACT CASE COLOR (Invoice);
+
+EXTEND FORM invoice
+    PROPERTIES(i) nameStatus BACKGROUND colorStatus(i)
+;
+
+EXTEND FORM invoices    
+    FILTERGROUP status
+        FILTER 'Черновик' status(i) = InvoiceStatus.draft 'F10'
+;
+
+EXTEND FORM invoices
+    PROPERTIES(i) nameStatus BEFORE date(i) BACKGROUND colorStatus(i)
+;
+
+status(Invoice b) += WHEN b IS Invoice THEN InvoiceStatus.draft;
+colorStatus(Invoice b) += WHEN status(b) == InvoiceStatus.draft THEN RGB(187,242,210);
+
+DESIGN invoice {
+    OBJECTS {        
+        NEW statusPane FIRST {
+            caption = 'Статусы';
+            type = CONTAINERH;
+            alignment = STRETCH;                          
+            NEW statusActions {
+                type = CONTAINERH;                    
+                flex = 1;            
+            }
+            NEW status {
+                type = CONTAINERH;                
+                MOVE PROPERTY(nameStatus(i)); 
+            }
+        }                
+    }
+}

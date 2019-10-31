@@ -1,0 +1,11 @@
+MODULE BillPayment;
+
+REQUIRE Invoice, Bill, Payment;
+
+NAMESPACE Invoicing;
+
+bill 'Счет' = DATA Bill (Payment);
+
+WHEN SETCHANGED(bill(Payment p)) DO {
+    amount(p) <- totalAmount(bill(p));
+}
