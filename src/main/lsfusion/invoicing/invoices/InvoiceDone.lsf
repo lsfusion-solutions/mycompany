@@ -19,7 +19,8 @@ registerPayment 'Оформить платеж' (Invoice i){
         NEW p = Payment {
             invoice(p) <- i;
             amount(p) <- totalAmount(invoice(p));
-            SHOW payment OBJECTS p = p;  
+            SHOW payment OBJECTS p = p; 
+            IF amountPaid(p) < amount(p) THEN ASK 'Оплачена не вся сумма. Принять?' DO {} ELSE RETURN; 
         }
         done(i) <- TRUE;
         APPLY;
@@ -27,7 +28,7 @@ registerPayment 'Оформить платеж' (Invoice i){
 }
 
 WHEN SETCHANGED(done(invoice(Payment p))) DO {
-    done(p) <- TRUE;
+    paid(p) <- TRUE;
 }
 
 EXTEND FORM invoice

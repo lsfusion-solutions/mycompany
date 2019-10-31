@@ -20,12 +20,15 @@ registerPayment 'Оформить платеж' (Bill b){
             bill(p) <- b;
             amount(p) <- totalAmount(bill(p));
             SHOW payment OBJECTS p = p;
+            IF amountPaid(p) < amount(p) THEN ASK 'Оплачена не вся сумма. Принять?' DO {} ELSE RETURN; 
         } 
+        done(b) <- TRUE;
+        APPLY;
     }
 }
 
 WHEN SETCHANGED(done(bill(Payment p))) DO {
-    done(p) <- TRUE;
+    paid(p) <- TRUE;
 }
 
 EXTEND FORM bill

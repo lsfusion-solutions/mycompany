@@ -7,7 +7,7 @@ NAMESPACE Invoicing;
 CLASS Payment 'Платеж';
 
 date 'Дата' = DATA DATETIME (Payment);
-done 'Оплачено' = DATA BOOLEAN (Payment) CHARWIDTH 10;
+paid 'Оплачено' = DATA BOOLEAN (Payment) CHARWIDTH 10;
 
 toAccount 'Счет (куда)' = DATA Account (Payment);
 toAccountNumber 'Номер счета (куда)' (Payment p) = accountNumber(toAccount(p));
@@ -19,16 +19,20 @@ nameFromAccountHolder 'Держатель счета (откуда)' (Payment p)
 
 amount 'Сумма' = DATA NUMERIC[14,2] (Payment);
 
+amountPaid 'Оплачено' = DATA NUMERIC[14,2] (Payment);
+
 FORM payment 'Платеж'
     OBJECTS p = Payment PANEL 
-    PROPERTIES(p) date, fromAccountNumber, nameFromAccountHolder, toAccountNumber, nameToAccountHolder, amount READONLY 
+    PROPERTIES(p) date, fromAccountNumber, nameFromAccountHolder, toAccountNumber, nameToAccountHolder, 
+                amount READONLY, amountPaid 
     
     EDIT Payment OBJECT p
 ;
 
 FORM payments 'Платежи'
     OBJECTS p = Payment
-    PROPERTIES(p) READONLY done, date, fromAccountNumber, nameFromAccountHolder, toAccountNumber, nameToAccountHolder, amount
+    PROPERTIES(p) READONLY paid, date, fromAccountNumber, nameFromAccountHolder, toAccountNumber, nameToAccountHolder, 
+                amount, amountPaid
     PROPERTIES (p) NEWSESSION NEW, EDIT, DELETE 
     
     LIST Payment OBJECT p
@@ -42,7 +46,7 @@ NAVIGATOR {
 
 EXTEND CLASS Payment : AccLedger;
 
-done(Payment p) += done(p);
+done(Payment p) += paid(p);
 date(Payment p) += date(p);
 
 toAccount(Payment p) += toAccount(p);
