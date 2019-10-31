@@ -1,0 +1,22 @@
+MODULE ShipmentSearch;
+
+REQUIRE ShipmentDone, Doc;
+
+NAMESPACE Inventory;
+
+@defineDocSearch(shipment, product, shipmentLine, initialDemand);
+
+EXTEND FORM shipment
+    OBJECTS lp = (loc = Location, prod = Product)
+        PROPERTIES READONLY 'Склад' = canonicalName(loc), 'Товар' = name(prod) 
+        PROPERTIES(loc,prod) READONLY onHand 
+        PROPERTIES(s,prod) quantity ON CHANGE changeQuantity(s, prod)
+        FILTERS level(loc, location(s)), onHand(loc, prod) 
+;
+
+DESIGN shipment {
+    pane2 {
+        type = TABBED;
+        MOVE BOX(lp) {caption = 'Подбор';}     
+    }
+}

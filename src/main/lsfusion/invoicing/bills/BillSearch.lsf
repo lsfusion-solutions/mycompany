@@ -1,0 +1,34 @@
+MODULE BillSearch;
+
+REQUIRE Invoicing, BillDone, InventoryReport, Doc;
+
+NAMESPACE Invoicing;
+
+@defineDocSearch(bill, item, billLine, quantity);
+
+EXTEND FORM bill
+    TREE categories c = Category PARENT parent
+    PROPERTIES READONLY name(c)
+    ORDER name(c)
+    
+    OBJECTS it = Item
+    PROPERTIES(it) READONLY name, barCode
+    PROPERTIES(b, it) quantity ON CHANGE changeQuantity(b, it)
+    FILTERS level(category(it), c)
+;
+
+DESIGN bill {
+    box22 {
+        type = TABBED;
+        NEW pane33 {
+            caption = 'Подбор';
+            type = SPLITH;
+            fill = 1;
+            MOVE BOX(TREE categories);
+            MOVE BOX(it) { 
+                fill = 2; 
+                GRID(it) { defaultComponent = TRUE; }
+            }
+        }   
+    }
+}

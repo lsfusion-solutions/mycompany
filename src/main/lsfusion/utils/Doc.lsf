@@ -1,1 +1,28 @@
 MODULE Doc;
+
+META defineDocSearch (doc, it, line, fun)
+    quantity 'Кол-во' (###doc i, ###it p) = 
+        GROUP SUM fun(###doc##Line l) BY doc(l), it(l);
+    last###line 'Последняя строка' (###doc i, ###it p) = 
+        GROUP LAST ###line l ORDER l BY doc(l), it(l);
+        
+        changeQuantity 'Изменить кол-во' (###doc i, ###it p) {
+            INPUT q = NUMERIC[14,3] DO {
+                IF last###line(i, p) THEN {
+                    IF q THEN
+                        fun(###line l) <- q IF l = last###line(i, p)
+                            WHERE doc(l) = i AND it(l) = p;
+                    ELSE
+                        DELETE ###line l WHERE doc(l) = i AND it(l) == p;
+                }ELSE
+                    IF q THEN
+                        NEW l = ###line{
+                            doc(l) <- i;
+                            it(l) <- p;
+                            fun(l) <- q;
+                        }
+            }
+        }
+END
+
+
