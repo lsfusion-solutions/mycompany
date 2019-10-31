@@ -25,7 +25,10 @@ FORM inventoryReport 'Текущие остатки'
     PROPERTIES onHandDateTime(l, p) SHOWIF selectedDateTime()
     FILTERS level(l, lt),
             level(category(p), c),
-            IF selectedDateTime() THEN onHandDateTime(l,p) ELSE onHand(l, p) 
+            IF selectedDateTime() THEN onHandDateTime(l,p) ELSE onHand(l, p)
+    FILTERGROUP active
+        FILTER 'Активные товары' active(p) 'F10' DEFAULT 
+        FILTER 'Неактивные товары' archived(p) 'F9'
             
     OBJECTS il = InvLedger
     PROPERTIES(il) READONLY dateTime, series, number, description, namePartner, nameFromLocation, nameToLocation, 

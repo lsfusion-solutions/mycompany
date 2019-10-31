@@ -15,9 +15,15 @@ phone 'Телефон' = DATA ISTRING[30](LegalEntity);
 email 'Электронная почта' = DATA ISTRING[30](LegalEntity);
 website 'Веб сайт' = DATA ISTRING[30](LegalEntity);
 
+active 'Активный' = DATA BOOLEAN (LegalEntity) CHARWIDTH 10;
+archived 'Неактивный' = DATA BOOLEAN (LegalEntity) CHARWIDTH 10;
+
+WHEN LOCAL SETCHANGED(active(LegalEntity l)) DO archived(l) <- NULL;
+WHEN LOCAL SETCHANGED(archived(LegalEntity l)) DO active(l) <- NULL;
+
 FORM legalEntity 'Организация'
     OBJECTS le = LegalEntity PANEL
-    PROPERTIES(le) name, address, city, state, zip, phone, email, website
+    PROPERTIES(le) name, address, city, state, zip, phone, email, website, active, archived
     
     EDIT LegalEntity OBJECT le
 ;
@@ -58,7 +64,7 @@ DESIGN legalEntity {
 
 FORM legalEntities 'Организации'
     OBJECTS le = LegalEntity
-    PROPERTIES(le) READONLY name, address, city, state, zip, phone, email, website
+    PROPERTIES(le) READONLY name, address, city, state, zip, phone, email, website, active, archived
     PROPERTIES(le) NEWSESSION NEW, EDIT, DELETE
     
     LIST LegalEntity OBJECT le

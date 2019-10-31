@@ -19,12 +19,18 @@ email 'Электронная почта' = DATA ISTRING[30](Individual);
 legalEntity = DATA LegalEntity (Individual);
 nameLegalEntity 'Организация' (Individual i) = name(legalEntity(i));
 
+active 'Активный' = DATA BOOLEAN (Individual) CHARWIDTH 10;
+archived 'Неактивный' = DATA BOOLEAN (Individual) CHARWIDTH 10;
+
+WHEN LOCAL SETCHANGED(active(Individual i)) DO archived(i) <- NULL;
+WHEN LOCAL SETCHANGED(archived(Individual i)) DO active(i) <- NULL;
+
 FORM individual 'Физическое лицо'
     OBJECTS i = Individual PANEL
     PROPERTIES(i) lastName, firstName, middleName,
                   nameLegalEntity, 
                   address, city, state, zip, 
-                  phone, email
+                  phone, email, active, archived
     
     EDIT Individual OBJECT i
 ;
@@ -64,7 +70,8 @@ DESIGN individual {
 
 FORM individuals 'Физические лица'
     OBJECTS i = Individual
-    PROPERTIES(i) READONLY lastName, firstName, middleName, address, city, state, zip, phone, email, nameLegalEntity
+    PROPERTIES(i) READONLY lastName, firstName, middleName, address, city, state, zip, phone, email, nameLegalEntity,
+                            active, archived
     PROPERTIES(i) NEWSESSION NEW, EDIT, DELETE
     
     LIST Individual OBJECT i

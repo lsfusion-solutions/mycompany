@@ -13,12 +13,30 @@ canonicalNameCategory 'Категория (полная)' (Item i) = canonicalNa
 
 barCode 'Штрих код' = DATA INTEGER (Item);
 
+active 'Активный' = DATA BOOLEAN (Item) CHARWIDTH 10;
+archived 'Неактивный' = DATA BOOLEAN (Item) CHARWIDTH 10;
+
+WHEN LOCAL SETCHANGED(active(Item i)) DO archived(i) <- NULL;
+WHEN LOCAL SETCHANGED(archived(Item i)) DO active(i) <- NULL;
+
 FORM item 'Номенклатура'
     OBJECTS i = Item PANEL
-    PROPERTIES(i) name, nameCategory, barCode
+    PROPERTIES(i) name, nameCategory, barCode, active, archived
       
     EDIT Item OBJECT i
 ;
+
+DESIGN item {
+    OBJECTS {
+        NEW box{
+        type = CONTAINERH;
+            MOVE PROPERTY(active(i));
+            MOVE PROPERTY(archived(i));
+        }
+        MOVE BOX (i);
+    }
+    
+}
 
 FORM items 'Номенклатура'
     TREE categories c = Category PARENT parent
@@ -28,9 +46,13 @@ FORM items 'Номенклатура'
     ORDER name(c)
 
     OBJECTS i = Item
-    PROPERTIES(i) READONLYIF isReadonly() name, nameCategory, barCode, canonicalNameCategory
+    PROPERTIES(i) READONLYIF isReadonly() name, nameCategory, barCode, canonicalNameCategory,
+                    active, archived
     PROPERTIES(i) SHOWIF isReadonly() NEWSESSION EDIT, DELETE 
     FILTERS level(category(i), c)
+    FILTERGROUP active
+        FILTER 'Активные товары' active(i) 'F10' DEFAULT 
+        FILTER 'Неактивные товары' archived(i) 'F9'
    
     LIST Item OBJECT i
 ;
