@@ -4,33 +4,20 @@ REQUIRE ReceiptDone, Doc;
 
 NAMESPACE Inventory;
 
-@defineDocSearch(receipt, product, receiptLine, initialDemand);
-
-EXTEND FORM receipt
-    TREE categories c = Category PARENT parent
-    PROPERTIES READONLY name(c)
-    ORDER name(c)
-        
-    OBJECTS p = Product
-    PROPERTIES(p) READONLY name, barCode
-    PROPERTIES quantity(r,p) ON CHANGE changeQuantity(r, p)
-    FILTERS level(category(p), c)
-    
-;
+@defineDocSearch(receipt, product, initialDemand,r);
 
 DESIGN receipt {
     pane2 {
         type = TABBED;
         NEW pane33 {
-                    caption = 'Подбор';
-                    type = SPLITH;
-                    fill = 1;
-                    MOVE BOX(TREE categories);
-                    MOVE BOX(p) { 
-                        fill = 2; 
-                        GRID(p) { defaultComponent = TRUE; }
-                    }
-                }     
+            caption = 'Подбор';
+            type = SPLITH;
+            fill = 1;
+            MOVE BOX(TREE categories);
+            MOVE BOX(itm) { 
+                fill = 2; 
+            }
+        }     
     }
 }
 

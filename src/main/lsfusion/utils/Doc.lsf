@@ -1,28 +1,37 @@
 MODULE Doc;
 
-META defineDocSearch (doc, it, line, fun)
+META defineDocSearch (doc, it, fun, let)
     quantity 'Кол-во' (###doc i, ###it p) = 
         GROUP SUM fun(###doc##Line l) BY doc(l), it(l);
-    last###line 'Последняя строка' (###doc i, ###it p) = 
-        GROUP LAST ###line l ORDER l BY doc(l), it(l);
+    last###doc##Line 'Последняя строка' (###doc i, ###it p) = 
+        GROUP LAST ###doc##Line l ORDER l BY doc(l), it(l);
         
         changeQuantity 'Изменить кол-во' (###doc i, ###it p) {
             INPUT q = NUMERIC[14,3] DO {
-                IF last###line(i, p) THEN {
+                IF last###doc##Line(i, p) THEN {
                     IF q THEN
-                        fun(###line l) <- q IF l = last###line(i, p)
+                        fun(###doc##Line l) <- q IF l = last###doc##Line(i, p)
                             WHERE doc(l) = i AND it(l) = p;
                     ELSE
-                        DELETE ###line l WHERE doc(l) = i AND it(l) == p;
+                        DELETE ###doc##Line l WHERE doc(l) = i AND it(l) == p;
                 }ELSE
                     IF q THEN
-                        NEW l = ###line{
+                        NEW l = ###doc##Line{
                             doc(l) <- i;
                             it(l) <- p;
                             fun(l) <- q;
                         }
             }
         }
+    
+    EXTEND FORM doc
+    TREE categories c = Category PARENT parent
+    PROPERTIES READONLY name(c)
+    ORDER name(c)
+    
+    OBJECTS itm = ###it
+    PROPERTIES(itm) READONLY name, barCode
+    PROPERTIES(let, itm) quantity ON CHANGE changeQuantity(let, itm)
+    FILTERS level(category(itm), c)
+    ;
 END
-
-

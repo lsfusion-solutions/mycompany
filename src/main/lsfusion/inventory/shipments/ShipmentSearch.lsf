@@ -4,19 +4,19 @@ REQUIRE ShipmentDone, Doc;
 
 NAMESPACE Inventory;
 
-@defineDocSearch(shipment, product, shipmentLine, initialDemand);
-
-EXTEND FORM shipment
-    OBJECTS lp = (loc = Location, prod = Product)
-        PROPERTIES READONLY 'Склад' = canonicalName(loc), 'Товар' = name(prod) 
-        PROPERTIES(loc,prod) READONLY onHand 
-        PROPERTIES(s,prod) quantity ON CHANGE changeQuantity(s, prod)
-        FILTERS level(loc, location(s)), onHand(loc, prod) 
-;
+@defineDocSearch(shipment, product, initialDemand,s);
 
 DESIGN shipment {
     pane2 {
         type = TABBED;
-        MOVE BOX(lp) {caption = 'Подбор';}     
+        NEW pane33 {
+            caption = 'Подбор';
+            type = SPLITH;
+            fill = 1;
+            MOVE BOX(TREE categories);
+            MOVE BOX(itm) { 
+                fill = 2; 
+            }
+        }        
     }
 }

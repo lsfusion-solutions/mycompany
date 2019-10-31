@@ -4,18 +4,7 @@ REQUIRE Invoicing, InvoiceDone, InventoryReport, Doc;
 
 NAMESPACE Invoicing;
 
-@defineDocSearch(invoice, item, invoiceLine, quantity);
-
-EXTEND FORM invoice
-    TREE categories c = Category PARENT parent
-    PROPERTIES READONLY name(c)
-    ORDER name(c)
-    
-    OBJECTS it = Item
-    PROPERTIES(it) READONLY name, barCode
-    PROPERTIES(i, it) quantity ON CHANGE changeQuantity(i, it)
-    FILTERS level(category(it), c)
-;
+@defineDocSearch(invoice, item, quantity, i);
 
 DESIGN invoice {
     box22 {
@@ -25,9 +14,8 @@ DESIGN invoice {
             type = SPLITH;
             fill = 1;
             MOVE BOX(TREE categories);
-            MOVE BOX(it) { 
-                fill = 2; 
-                GRID(it) { defaultComponent = TRUE; }
+            MOVE BOX(itm) { 
+                fill = 2;
             }
         }   
     }
