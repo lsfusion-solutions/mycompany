@@ -1,0 +1,27 @@
+MODULE ShipmentCost;
+
+REQUIRE ShipmentDone, CostLedger;
+
+NAMESPACE Inventory;
+
+// расходная проводка
+CLASS ShipmentOutCostLedger : OutCostLedger;
+outCostLedger = AGGR ShipmentOutCostLedger WHERE done(ShipmentLine line) AND done(shipment(line));
+
+dateTime(ShipmentOutCostLedger l) += executionDate(shipment(line(l)));
+location(ShipmentOutCostLedger l) += location(shipment(line(l)));
+
+product(ShipmentOutCostLedger l) += product(line(l));
+quantity(ShipmentOutCostLedger l) += done(line(l));
+
+// приходная проводка
+CLASS ShipmentInCostLedger : InCostLedger;
+inCostLedger = AGGR ShipmentInCostLedger WHERE done(ShipmentLine line) AND done(shipment(line)) AND toLocation(shipment(line));
+
+dateTime(ShipmentInCostLedger l) += executionDate(shipment(line(l)));
+location(ShipmentInCostLedger l) += toLocation(shipment(line(l)));
+
+product(ShipmentInCostLedger l) += product(line(l));
+quantity(ShipmentInCostLedger l) += done(line(l));
+
+sum (ShipmentInCostLedger l) += sum(outCostLedger(line(l)));

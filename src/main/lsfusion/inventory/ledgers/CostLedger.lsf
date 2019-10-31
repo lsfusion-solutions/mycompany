@@ -1,0 +1,89 @@
+MODULE CostLedger;
+
+REQUIRE Location, Product, Utils;
+
+NAMESPACE Inventory;
+
+CLASS CostLedger 'Регистр себестоимости';
+dateTime 'Время' = ABSTRACT DATETIME (CostLedger) MATERIALIZED;
+
+location 'Место хранения' = ABSTRACT Location (CostLedger) MATERIALIZED;
+nameLocation 'Место хранения' (CostLedger l) = name(location(l));
+
+product 'Товар' = ABSTRACT Product (CostLedger) MATERIALIZED;
+nameProduct 'Товар' (CostLedger l) = name(product(l));
+
+CLASS InCostLedger 'Входящая проводка' : CostLedger;
+
+quantity 'Количество' = ABSTRACT NUMERIC[16,3] (InCostLedger);
+sum 'Сумма' = ABSTRACT NUMERIC[16,3] (InCostLedger);
+price 'Цена' (InCostLedger il) = sum(il) / quantity(il);
+
+CLASS OutCostLedger 'Исходящая проводка' : CostLedger;
+
+quantity 'Количество' = ABSTRACT NUMERIC[16,3] (OutCostLedger);
+sum 'Сумма' = DATA NUMERIC[16,3] (OutCostLedger);
+price 'Цена' (OutCostLedger il) = sum(il) / quantity(il);
+
+// Проводки с учетом знака
+signedQuantity 'Количество' (CostLedger l) = MULTI quantity[InCostLedger](l), -quantity[OutCostLedger](l) MATERIALIZED;
+signedSum 'Сумма' (CostLedger l) = MULTI sum[InCostLedger](l), -sum[OutCostLedger](l) MATERIALIZED;
+
+costQuantity 'Количество' (Location l, Product p) = GROUP SUM signedQuantity(CostLedger cl) IF location(cl) = l AND product(cl) = p MATERIALIZED;
+costSum 'Себестоимость' (Location l, Product p) = GROUP SUM signedSum(CostLedger cl) IF location(cl) = l AND product(cl) = p MATERIALIZED;
+
+costPrice 'Себестоимость за единицу' (Location l, Product p) = costSum(l, p) / costQuantity(l, p); 
+
+// Связываем OutCostLedger и InCostLedger
+
+quantity 'Расходовано' = DATA NUMERIC[16,3] (OutCostLedger, InCostLedger);
+costed 'Расходовано' (InCostLedger il) = GROUP SUM quantity(OutCostLedger ol, il) MATERIALIZED;
+notCosted 'Не расходовано' (InCostLedger il) = quantity(il) (-) costed(il) MATERIALIZED; 
+
+costed 'Расходовано' (OutCostLedger ol) = GROUP SUM quantity(ol, InCostLedger il) MATERIALIZED;
+
+calcCost = DATA LOCAL NESTED BOOLEAN (OutCostLedger);
+
+calculateCost () {
+    quantity(OutCostLedger out, InCostLedger in) <- NULL WHERE calcCost(out); // сбрасываем старый расчет
+
+    LOCAL ordered = INTEGER (OutCostLedger); // сортируем по товару и дробим на несколько итераций по товарам (остальные расчеты независимы) 
+    ordered(OutCostLedger ledger) <- PARTITION SUM 1 IF calcCost(ledger) 
+                                               ORDER dateTime(ledger), ledger 
+                                               BY product(ledger);
+
+    FOR iterate(INTEGER i, 1, (GROUP MAX ordered(OutCostLedger ledger))) DO {
+        LOCAL iteration = BOOLEAN (OutCostLedger);
+        iteration(OutCostLedger l) <- ordered(l) = i; // чтобы определились классы
+        
+        quantity(OutCostLedger ol, InCostLedger il) <- (PARTITION UNGROUP quantity
+                                                                  LIMIT notCosted(il) IF location(ol) = location(il) 
+                                                                                     AND product(ol) = product(il) 
+                                                                                     AND dateTime(il) <= dateTime(ol) 
+                                                                  ORDER dateTime(il), il
+                                                                  BY ol)
+                                                       WHERE iteration(ol);
+    }
+    
+    sum (OutCostLedger ol) <- NUMERIC[14,2](GROUP SUM quantity(ol, InCostLedger il) * price(il));
+
+}
+
+ON {
+    calcCost (OutCostLedger l) <- CHANGED(location(l)) OR CHANGED(product(l)) OR CHANGED(quantity(l));
+    NEWSESSION SINGLE {
+        calculateCost();
+    }
+}
+
+FORM dialogCost 'Параметры расчета себестоимости'
+    OBJECTS d = DATE PANEL
+    PROPERTIES 'Дата, с которой пересчитывать' = VALUE(d)
+;
+recalculateCost 'Пересчитать себестоимость' () {
+    DIALOG dialogCost OBJECTS d INPUT DO {
+        calcCost(OutCostLedger l) <- TRUE WHERE DATE(dateTime(l)) >= d;
+        calculateCost();
+        APPLY;
+    }
+} 

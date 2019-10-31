@@ -22,11 +22,10 @@ nameLocation 'Место хранения (Откуда)' (Shipment s) = name(lo
 toLocation 'Место хранения (Куда)' = DATA Location (Shipment);
 nameToLocation 'Место хранения (Куда)' (Shipment s) = name(toLocation(s));
 
-WHEN LOCAL CHANGED(type(Shipment s)) DO 
-    IF (isTransfer(type(s))) THEN {
-        IF defaultLocationFrom(type(s)) THEN location(s) <- defaultLocationFrom(type(s));
-        IF defaultLocationTo(type(s)) THEN toLocation(s) <- defaultLocationTo(type(s));
-    }
+WHEN LOCAL CHANGED(type(Shipment s)) DO { 
+    IF defaultLocationFrom(type(s)) THEN location(s) <- defaultLocationFrom(type(s));
+    IF (isTransfer(type(s))) AND defaultLocationTo(type(s)) THEN toLocation(s) <- defaultLocationTo(type(s));
+}
 
 partner 'Партнер' = DATA Partner (Shipment);
 namePartner 'Партнер' (Shipment s) = name(partner(s));
