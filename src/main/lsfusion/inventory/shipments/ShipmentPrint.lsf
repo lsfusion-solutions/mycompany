@@ -1,0 +1,41 @@
+MODULE ShipmentPrint;
+
+REQUIRE ShipmentDone;
+
+NAMESPACE Inventory;
+
+FORM printShipment 'Задание на отгрузку'
+    OBJECTS sl = (s = Shipment, l = ShipmentLine) PANEL 
+    PROPERTIES(l) index, nameProduct, initialDemand, reserved, done
+    PROPERTIES(s) nameLocation, nameToLocation, namePartner
+    FILTERS shipment(l) = s
+;
+
+print(Shipment s) {
+    PRINT printShipment OBJECTS s=s PREVIEW; 
+}
+
+EXTEND FORM shipment
+    PROPERTIES(s) print SHOWIF done(s)
+;
+
+DESIGN shipment {
+    status {
+        MOVE PROPERTY(print(s)) {caption = 'Печатать'; charWidth=10;}
+    }
+}
+
+DESIGN printShipment {
+    OBJECTS {
+        MOVE PROPERTY (index(l));
+        MOVE PROPERTY (nameProduct(l));
+        MOVE PROPERTY (initialDemand(l));
+        MOVE PROPERTY (reserved(l));
+        MOVE PROPERTY (done(l));
+        MOVE PROPERTY (nameLocation(s));
+        MOVE PROPERTY (nameToLocation(s));
+        MOVE PROPERTY (namePartner(s));
+    }
+}
+
+
