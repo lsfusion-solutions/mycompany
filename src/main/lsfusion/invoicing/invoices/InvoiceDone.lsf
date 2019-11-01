@@ -18,10 +18,16 @@ registerPayment 'Оформить платеж' (Invoice i){
     NEWSESSION {
         NEW p = Payment {
             invoice(p) <- i;
-            amount(p) <- totalAmount(invoice(p));
-            SHOW payment OBJECTS p = p; 
-            IF amountPaid(p) < amount(p) OR NOT amountPaid(p) THEN ASK 'Оплачена не вся сумма. Принять?' DO {} ELSE RETURN; 
-        }
+            SHOW payment OBJECTS p = p;
+            IF (amount(p) < totalAmount(i) (-) paid(i) OR NOT amount(p)) THEN {
+                ASK 'Оплачена не вся сумма. Закрыть счет ?' DO {}
+                ELSE {
+                    paid(p) <- TRUE;
+                    APPLY;
+                    RETURN;
+                }
+            }   
+        } 
         done(i) <- TRUE;
         APPLY;
     }

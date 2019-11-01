@@ -74,9 +74,9 @@ FORM shipment 'Отгрузка'
     PROPERTIES(s) scheduledDate, series, number, nameType, nameLocation, 
                   nameToLocation SHOWIF isTransfer(type(s)), namePartner SHOWIF NOT isTransfer(type(s)), notes
                   
-    OBJECTS lpl = (l = ShipmentLine, p = Product, loc = Location)
+    OBJECTS l = ShipmentLine
     PROPERTIES(l) index READONLY
-    PROPERTIES(l) READONLYIF readonly(l) nameProduct, initialDemand , NEW, DELETE  
+    PROPERTIES(l) READONLYIF readonly(l) nameProduct, initialDemand, NEW, DELETE  
              
     EDIT Shipment OBJECT s
 ;
@@ -117,7 +117,7 @@ DESIGN shipment {
             NEW details {
                 fill = 1;
                 type = TABBED;
-                MOVE BOX(lpl) {
+                MOVE BOX(l) {
                     caption = 'Строки';
                     PROPERTY(nameProduct(l)) {notNull = TRUE;}
                     PROPERTY(initialDemand(l));

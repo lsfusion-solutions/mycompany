@@ -56,13 +56,15 @@ changeTax (BillLine l) {
         in(l, Tax t) <- setTax(t);
     } 
 } 
+
+readonly = ABSTRACT CASE BOOLEAN (BillLine);
  
 FORM bill 'Приходная накладная'
     OBJECTS  b = Bill PANEL 
     PROPERTIES(b) date, dueDate, namePartner, notes
     
     OBJECTS l = BillLine
-    PROPERTIES(l) itemName, quantity, unitPrice, taxes ON CHANGE changeTax(l), untaxedAmount READONLY, NEW, DELETE 
+    PROPERTIES(l) READONLYIF readonly(l) itemName, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
     FILTERS bill(l) = b
     
     OBJECTS t = Tax
@@ -106,12 +108,19 @@ DESIGN bill {
 }
 
 FORM bills 'Приходная накладная'
+    OBJECTS b = Bill
+    PROPERTIES(b) READONLY date, dueDate, namePartner, notes, untaxedAmount, totalTax, totalAmount
+    
+    PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE
    
+    LIST Bill OBJECT b;
 ;
 
 NAVIGATOR {
     invoicing {
-        NEW bills BEFORE reports;
+        operations {
+            NEW bills;
+        }
     }
 }
 

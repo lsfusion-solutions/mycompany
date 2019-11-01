@@ -6,16 +6,12 @@ NAMESPACE Invoicing;
 
 invoice 'Накладная' = DATA Invoice (Payment);
 
-WHEN SETCHANGED(invoice(Payment p)) DO {
-    amount(p) <- totalAmount(invoice(p));
-}
+paid 'Оплачено' (Invoice i) = GROUP SUM amount(Payment p) IF invoice(p) = i AND paid(p);
 
-EXTEND FORM invoices
-    OBJECTS (i = Invoice, p = Payment)
-    PROPERTIES(i) READONLY date, dueDate, namePartner, notes, untaxedAmount, totalTax, totalAmount
-    PROPERTIES(p) READONLY amountPaid
-    PROPERTIES(i) NEWSESSION NEW, EDIT, DELETE
-    FILTERS invoice(p) = i
-        
-    LIST Invoice OBJECT i;    
+EXTEND FORM invoices   
+    PROPERTIES(i) READONLY paid  
+;
+
+EXTEND FORM invoice
+    PROPERTIES (in) paid
 ;

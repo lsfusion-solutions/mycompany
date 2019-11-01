@@ -56,12 +56,14 @@ changeTax (InvoiceLine l) {
     } 
 } 
 
+readonly = ABSTRACT CASE BOOLEAN (InvoiceLine);
+
 FORM invoice 'Расходная накладная'
     OBJECTS  i = Invoice PANEL 
     PROPERTIES(i) date, dueDate, namePartner, notes
     
     OBJECTS l = InvoiceLine
-    PROPERTIES(l) itemName, quantity, unitPrice, taxes ON CHANGE changeTax(l), untaxedAmount READONLY, NEW, DELETE 
+    PROPERTIES(l) READONLYIF readonly(l) itemName, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
     FILTERS invoice(l) = i
     
     OBJECTS t = Tax
@@ -104,12 +106,18 @@ DESIGN invoice {
 }
 
 FORM invoices 'Расходная накладная'
-    
+    OBJECTS i = Invoice
+    PROPERTIES(i) READONLY date, dueDate, namePartner, notes, untaxedAmount, totalTax, totalAmount     
+    PROPERTIES(i) NEWSESSION NEW, EDIT, DELETE
+       
+    LIST Invoice OBJECT i;
 ;
 
 NAVIGATOR {
     invoicing {
-        NEW invoices BEFORE reports;
+        operations {
+            NEW invoices;
+        }
     }
 }
 

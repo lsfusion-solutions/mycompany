@@ -6,13 +6,12 @@ NAMESPACE Invoicing;
 
 bill 'Счет' = DATA Bill (Payment);
 
+paid 'Оплачено' (Bill b) = GROUP SUM amount(Payment p) IF bill(p) = b AND paid(p);
 
 EXTEND FORM bills
-    OBJECTS (b = Bill, p = Payment)
-    PROPERTIES(b) READONLY date, dueDate, namePartner, notes, untaxedAmount, totalTax, totalAmount
-    PROPERTIES (p) READONLY amountPaid
-    PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE
-    FILTERS bill(p) = b
-    
-    LIST Bill OBJECT b;
+    PROPERTIES(b) READONLY paid
+;
+
+EXTEND FORM bill
+    PROPERTIES (bl) paid
 ;

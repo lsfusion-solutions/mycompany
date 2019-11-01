@@ -5,14 +5,16 @@ REQUIRE ShipmentDone;
 NAMESPACE Inventory;
 
 FORM printShipment 'Задание на отгрузку'
-    OBJECTS sl = (s = Shipment, l = ShipmentLine) PANEL 
+    OBJECTS s = Shipment PANEL 
+    PROPERTIES(s) nameLocation, nameToLocation, namePartner, nameType, nameStatus, scheduledDate
+    
+    OBJECTS l = ShipmentLine
     PROPERTIES(l) index, nameProduct, initialDemand, reserved, done
-    PROPERTIES(s) nameLocation, nameToLocation, namePartner
     FILTERS shipment(l) = s
 ;
 
 print(Shipment s) {
-    PRINT printShipment OBJECTS s=s PREVIEW; 
+    PRINT printShipment OBJECTS s=s; 
 }
 
 EXTEND FORM shipment
@@ -25,17 +27,5 @@ DESIGN shipment {
     }
 }
 
-DESIGN printShipment {
-    OBJECTS {
-        MOVE PROPERTY (index(l));
-        MOVE PROPERTY (nameProduct(l));
-        MOVE PROPERTY (initialDemand(l));
-        MOVE PROPERTY (reserved(l));
-        MOVE PROPERTY (done(l));
-        MOVE PROPERTY (nameLocation(s));
-        MOVE PROPERTY (nameToLocation(s));
-        MOVE PROPERTY (namePartner(s));
-    }
-}
 
 

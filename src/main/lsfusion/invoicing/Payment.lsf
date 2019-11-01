@@ -19,12 +19,11 @@ nameFromAccountHolder 'Держатель счета (откуда)' (Payment p)
 
 amount 'Сумма' = DATA NUMERIC[14,2] (Payment);
 
-amountPaid 'Оплачено' = DATA NUMERIC[14,2] (Payment);
 
 FORM payment 'Платеж'
     OBJECTS p = Payment PANEL 
     PROPERTIES(p) date, fromAccountNumber, nameFromAccountHolder, toAccountNumber, nameToAccountHolder, 
-                amount READONLY, amountPaid
+                amount
     
     EDIT Payment OBJECT p
 ;
@@ -32,7 +31,7 @@ FORM payment 'Платеж'
 FORM payments 'Платежи'
     OBJECTS p = Payment
     PROPERTIES(p) READONLY paid, date, fromAccountNumber, nameFromAccountHolder, toAccountNumber, nameToAccountHolder, 
-                amount, amountPaid
+                amount 
     PROPERTIES (p) NEWSESSION NEW, EDIT, DELETE 
     
     LIST Payment OBJECT p
@@ -40,7 +39,9 @@ FORM payments 'Платежи'
 
 NAVIGATOR {
     invoicing {
-        NEW payments BEFORE reports;
+        operations {
+            NEW payments;
+        }
     }
 }
 
