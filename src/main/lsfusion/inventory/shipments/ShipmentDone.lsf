@@ -19,9 +19,12 @@ validate 'Отгружен' (Shipment s) {
         IF GROUP SUM 1 IF shipment(ShipmentLine l) = s AND NOT done(l) = initialDemand(l) THEN {
             ASK 'Отгружено не все количество. Создать дополнительную отгрузку?' DO {
                 NEW rn = Shipment {
+                    type(rn) <- type(s);
                     partner(rn) <- partner(s);
                     location(rn) <- location(s);
+                    toLocation(rn) <- toLocation(s);
                     scheduledDate(rn) <- scheduledDate(s);
+                    notes(rn) <- notes(s);
                     FOR shipment(ShipmentLine l) = s AND (q = initialDemand(l) (-) done(l)) DO NEW ln = ShipmentLine {
                         shipment(ln) <- rn;
                         product(ln) <- product(l);

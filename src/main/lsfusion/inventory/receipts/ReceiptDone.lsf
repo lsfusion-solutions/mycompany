@@ -16,9 +16,11 @@ validate 'Принят' (Receipt r) {
             IF GROUP SUM 1 IF receipt(ReceiptLine l) = r AND NOT done(l) = initialDemand(l) THEN {
                 ASK 'Принято не все количество. Создать дополнительную приемку ?' DO {
                     NEW rn = Receipt {
+                        type(rn) <- type(r);
                         partner(rn) <- partner(r);
                         location(rn) <- location(r);
                         scheduledDate(rn) <- scheduledDate(r);
+                        notes(rn) <- notes(r);
                         FOR receipt(ReceiptLine l) = r AND (q = initialDemand(l) (-) done(l)) DO NEW ln = ReceiptLine {
                             receipt(ln) <- rn;
                             product(ln) <- product(l);
