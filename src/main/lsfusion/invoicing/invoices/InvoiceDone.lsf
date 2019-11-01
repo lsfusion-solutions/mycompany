@@ -20,7 +20,7 @@ registerPayment 'Оформить платеж' (Invoice i){
             invoice(p) <- i;
             amount(p) <- totalAmount(invoice(p));
             SHOW payment OBJECTS p = p; 
-            IF amountPaid(p) < amount(p) THEN ASK 'Оплачена не вся сумма. Принять?' DO {} ELSE RETURN; 
+            IF amountPaid(p) < amount(p) OR NOT amountPaid(p) THEN ASK 'Оплачена не вся сумма. Принять?' DO {} ELSE RETURN; 
         }
         done(i) <- TRUE;
         APPLY;
