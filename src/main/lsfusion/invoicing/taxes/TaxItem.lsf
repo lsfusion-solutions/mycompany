@@ -10,11 +10,18 @@ taxes 'Налоги' (Item i) = GROUP CONCAT name(Tax t) IF in(i, t), ', ' ORDER
 
 setTax 'Вкл' = DATA LOCAL BOOLEAN (Tax);
 
-WHEN LOCAL SETCHANGED(in(Item i, Tax t)) DO {
+WHEN LOCAL CHANGED(in(Item i, Tax t)) DO {
     FOR taxGroup(t) = taxGroup(Tax tx) AND NOT t = tx DO {
         in(i, tx) <- NULL;
     }
 }
+
+WHEN LOCAL CHANGED(setTax(Tax t)) DO {
+    FOR taxGroup(t) = taxGroup(Tax tx) AND NOT t = tx DO {
+        setTax(tx) <- NULL;
+    }
+}
+
 
 FORM changeTax 'Установить налог'
     OBJECTS t = Tax
