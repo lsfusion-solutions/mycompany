@@ -1,6 +1,6 @@
 MODULE ReceiptCost;
 
-REQUIRE ReceiptDone, CostLedger;
+REQUIRE ReceiptDone, CostLedger, CostLocation;
 
 NAMESPACE Inventory;
 
@@ -13,7 +13,7 @@ CLASS ReceiptCostLedger : InCostLedger;
 costLedger = AGGR ReceiptCostLedger WHERE done(ReceiptLine line) AND done(receipt(line));
 
 dateTime(ReceiptCostLedger l) += executionDate(receipt(line(l)));
-location(ReceiptCostLedger l) += location(receipt(line(l)));
+location(ReceiptCostLedger l) += costLocation(location(receipt(line(l))));
 
 product(ReceiptCostLedger l) += product(line(l));
 quantity(ReceiptCostLedger l) += done(line(l));
