@@ -33,7 +33,7 @@ WHEN SETCHANGED(type(Receipt o)) AND NOT CHANGED(number(o)) AND NOT CHANGED(seri
 // Места хранения
 location 'Место хранения' = DATA Location (Receipt) NONULL INDEXED;
 nameLocation 'Место хранения' (Receipt r) = name(location(r));
-WHEN LOCAL CHANGED(type(Receipt r)) DO IF defaultLocation(type(r)) THEN location(r) <- defaultLocation(type(r));
+WHEN LOCAL CHANGED(type(Receipt r)) AND defaultLocation(type(r)) DO location(r) <- defaultLocation(type(r));
 
 partner 'Партнер' = DATA Partner (Receipt);
 namePartner 'Партнер' (Receipt r) = name(partner(r));
