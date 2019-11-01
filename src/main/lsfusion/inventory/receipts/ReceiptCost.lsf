@@ -1,0 +1,21 @@
+MODULE ReceiptCost;
+
+REQUIRE ReceiptDone, CostLedger;
+
+NAMESPACE Inventory;
+
+cost 'Себестоимость (сумма, временно полежит здесь)' = DATA NUMERIC[14,2] (ReceiptLine);
+EXTEND FORM receipt
+    PROPERTIES(l) cost
+;
+
+CLASS ReceiptCostLedger : InCostLedger;
+costLedger = AGGR ReceiptCostLedger WHERE done(ReceiptLine line) AND done(receipt(line));
+
+dateTime(ReceiptCostLedger l) += executionDate(receipt(line(l)));
+location(ReceiptCostLedger l) += location(receipt(line(l)));
+
+product(ReceiptCostLedger l) += product(line(l));
+quantity(ReceiptCostLedger l) += done(line(l));
+
+sum (ReceiptCostLedger l) += cost(line(l));

@@ -1,0 +1,21 @@
+MODULE ShipmentInv;
+
+REQUIRE ShipmentDone, InvLedger;
+
+NAMESPACE Inventory;
+
+EXTEND CLASS ShipmentLine : InvLedger;
+
+done(ShipmentLine l) += done(shipment(l));
+dateTime(ShipmentLine l) += executionDate(shipment(l));
+fromLocation(ShipmentLine l) += location(shipment(l));
+toLocation(ShipmentLine l) += toLocation(shipment(l));
+
+product(ShipmentLine l) += product(l);
+quantity(ShipmentLine l) += done(l);
+
+description(ShipmentLine l) += 'Отгрузка' IF l IS ShipmentLine;
+partner(ShipmentLine l) += partner(shipment(l));
+
+series(ShipmentLine l) += series(shipment(l));
+number(ShipmentLine l) += number(shipment(l));
