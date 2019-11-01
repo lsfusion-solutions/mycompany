@@ -15,11 +15,8 @@ phone 'Телефон' = DATA ISTRING[30](LegalEntity);
 email 'Электронная почта' = DATA ISTRING[30](LegalEntity);
 website 'Веб сайт' = DATA ISTRING[30](LegalEntity);
 
-active 'Активный' = DATA BOOLEAN (LegalEntity) CHARWIDTH 10;
 archived 'Неактивный' = DATA BOOLEAN (LegalEntity) CHARWIDTH 10;
-
-WHEN LOCAL SETCHANGED(active(LegalEntity l)) DO archived(l) <- NULL;
-WHEN LOCAL SETCHANGED(archived(LegalEntity l)) DO active(l) <- NULL;
+active 'Активный' (LegalEntity i) = NOT archived(i) CHARWIDTH 10;
 
 FORM legalEntity 'Организация'
     OBJECTS le = LegalEntity PANEL

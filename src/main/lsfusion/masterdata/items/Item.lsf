@@ -13,11 +13,8 @@ canonicalNameCategory 'Категория (полная)' (Item i) = canonicalNa
 
 barCode 'Штрих код' = DATA INTEGER (Item);
 
-active 'Активный' = DATA BOOLEAN (Item) CHARWIDTH 10;
 archived 'Неактивный' = DATA BOOLEAN (Item) CHARWIDTH 10;
-
-WHEN LOCAL SETCHANGED(active(Item i)) DO archived(i) <- NULL;
-WHEN LOCAL SETCHANGED(archived(Item i)) DO active(i) <- NULL;
+active 'Активный' (Item i) = NOT archived(i) CHARWIDTH 10;
 
 FORM item 'Номенклатура'
     OBJECTS i = Item PANEL

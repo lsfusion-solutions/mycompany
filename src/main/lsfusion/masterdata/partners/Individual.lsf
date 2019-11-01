@@ -19,11 +19,8 @@ email 'Электронная почта' = DATA ISTRING[30](Individual);
 legalEntity = DATA LegalEntity (Individual);
 nameLegalEntity 'Организация' (Individual i) = name(legalEntity(i));
 
-active 'Активный' = DATA BOOLEAN (Individual) CHARWIDTH 10;
 archived 'Неактивный' = DATA BOOLEAN (Individual) CHARWIDTH 10;
-
-WHEN LOCAL SETCHANGED(active(Individual i)) DO archived(i) <- NULL;
-WHEN LOCAL SETCHANGED(archived(Individual i)) DO active(i) <- NULL;
+active 'Активный' (Individual i) = NOT archived(i) CHARWIDTH 10;
 
 FORM individual 'Физическое лицо'
     OBJECTS i = Individual PANEL
