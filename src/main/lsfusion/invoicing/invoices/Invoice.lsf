@@ -112,3 +112,18 @@ NAVIGATOR {
         NEW invoices BEFORE reports;
     }
 }
+
+copyShipment 'Копировать' (Invoice i)  { 
+    NEWSESSION {
+        NEW ni = Invoice {
+            partner(ni) <- partner(i);
+            notes(ni) <- notes(i);
+            FOR invoice(InvoiceLine l) = i INLINE NEW nl = InvoiceLine DO {
+                invoice(nl) <- ni;
+                item(nl) <- item(l);
+                quantity(nl) <- quantity(l);
+            }
+            SHOW invoice OBJECTS i = ni DOCKED;
+        }
+    }
+}

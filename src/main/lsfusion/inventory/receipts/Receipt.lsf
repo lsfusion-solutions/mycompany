@@ -33,7 +33,7 @@ WHEN SETCHANGED(type(Receipt o)) AND NOT CHANGED(number(o)) AND NOT CHANGED(seri
 // Места хранения
 location 'Место хранения' = DATA Location (Receipt) NONULL INDEXED;
 nameLocation 'Место хранения' (Receipt r) = name(location(r));
-WHEN LOCAL CHANGED(type(Receipt r)) DO location(r) <- defaultLocation(type(r));
+WHEN LOCAL CHANGED(type(Receipt r)) DO IF defaultLocation(type(r)) THEN location(r) <- defaultLocation(type(r));
 
 partner 'Партнер' = DATA Partner (Receipt);
 namePartner 'Партнер' (Receipt r) = name(partner(r));
@@ -123,6 +123,10 @@ NAVIGATOR {
 copyReceipt 'Копировать' (Receipt r)  { 
     NEWSESSION {
         NEW nr = Receipt {
+            type(nr) <- type(r);
+            location(nr) <- location(r);
+            partner(nr) <- partner(r);
+            notes(nr) <- notes(r);
             FOR receipt(ReceiptLine l) = r INLINE NEW nl = ReceiptLine DO {
                 receipt(nl) <- nr;
                 product(nl) <- product(l);
