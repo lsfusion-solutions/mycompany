@@ -4,5 +4,12 @@ REQUIRE ShipmentDone, Doc;
 
 NAMESPACE Inventory;
 
+available 'Доступный остаток' (Shipment s, Product p) = available(location(s), p);
+
 @defineDocSearch(shipment, product, initialDemand, s);
 
+EXTEND FORM shipment
+    PROPERTIES (s, itm) available
+    FILTERGROUP  available
+        FILTER 'Остатки' available(s, itm) 'F5' DEFAULT 
+;
