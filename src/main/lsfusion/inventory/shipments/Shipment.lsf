@@ -68,6 +68,7 @@ edit (ShipmentLine l) + { edit(shipment(l)); }
 index 'Индекс' = PARTITION SUM 1 ORDER ShipmentLine l BY shipment(l) IN id MATERIALIZED;
 
 readonly = ABSTRACT CASE BOOLEAN (ShipmentLine);
+readonly = ABSTRACT CASE BOOLEAN (Shipment);
 
 FORM shipment 'Отгрузка'
     OBJECTS s = Shipment PANEL 
@@ -76,7 +77,7 @@ FORM shipment 'Отгрузка'
                   
     OBJECTS l = ShipmentLine
     PROPERTIES(l) index READONLY
-    PROPERTIES(l) READONLYIF readonly(l) nameProduct, initialDemand, NEW, DELETE  
+    PROPERTIES(l) READONLYIF readonly(l) nameProduct, initialDemand, NEW ,DELETE  
              
     EDIT Shipment OBJECT s
 ;
@@ -85,7 +86,8 @@ FORM shipments 'Отгрузки'
     OBJECTS s = Shipment
     PROPERTIES(s) READONLY scheduledDate, executionDate, series, number, nameType, nameLocation,
                   nameToLocation, namePartner, notes
-    PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
+    PROPERTIES(s) NEWSESSION READONLYIF readonly(s) DELETE
+    PROPERTIES (s) NEWSESSION NEW, EDIT
 ;
 
 DESIGN shipment {

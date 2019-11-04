@@ -28,6 +28,7 @@ EXTEND FORM shipments
 ;
 
 status(Shipment s) += WHEN s IS Shipment THEN ShipmentStatus.draft;
+readonly (Shipment s) += WHEN NOT status(s) = ShipmentStatus.draft THEN TRUE;
 colorStatus(Shipment s) += WHEN status(s) == ShipmentStatus.draft THEN RGB(187,242,210);
 readonly (ShipmentLine l) += WHEN NOT status(shipment(l)) = ShipmentStatus.draft THEN TRUE;
 

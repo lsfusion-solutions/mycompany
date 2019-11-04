@@ -58,6 +58,7 @@ changeTax (BillLine l) {
 } 
 
 readonly = ABSTRACT CASE BOOLEAN (BillLine);
+readonly = ABSTRACT CASE BOOLEAN (Bill);
  
 FORM bill 'Приходная накладная'
     OBJECTS  b = Bill PANEL 
@@ -111,7 +112,8 @@ FORM bills 'Приходная накладная'
     OBJECTS b = Bill
     PROPERTIES(b) READONLY date, dueDate, namePartner, notes, untaxedAmount, totalTax, totalAmount
     
-    PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE
+    PROPERTIES(b) NEWSESSION NEW, EDIT
+    PROPERTIES(b) NEWSESSION READONLYIF readonly(b) DELETE
    
     LIST Bill OBJECT b;
 ;
