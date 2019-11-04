@@ -26,11 +26,21 @@ checkAvailability 'Зарезервировать' (Shipment s) {
     }
 }
 
+undo 'Снять резервирование' (Shipment s) {
+    NEWSESSION {
+        FOR shipment(ShipmentLine l) = s DO {
+            reserved(l) <- NULL;      
+        }
+        ready(s) <- NULL;
+        APPLY;
+    }
+}
+
 countLinesDemand (Shipment s) = GROUP SUM 1 IF shipment(ShipmentLine sl) = s AND NOT initialDemand(sl) = reserved(sl);
 
 EXTEND FORM shipment
     PROPERTIES(s) checkAvailability SHOWIF status(s) = ShipmentStatus.waiting OR (status(s) = ShipmentStatus.ready AND countLinesDemand(s)), 
-                  ready READONLY 
+                  undo SHOWIF status(s) = ShipmentStatus.ready, ready READONLY 
        
     PROPERTIES(l) reserved READONLY, done READONLYIF NOT status(s) = ShipmentStatus.ready BACKGROUND 
                                           IF status(s) = ShipmentStatus.ready THEN RGB(198,230,247)
@@ -47,7 +57,8 @@ colorStatus(Shipment s) += WHEN status(s) == ShipmentStatus.ready THEN RGB(252,2
 
 DESIGN shipment {
     statusActions {
-        MOVE PROPERTY(checkAvailability(s));                
+        MOVE PROPERTY(checkAvailability(s));
+        MOVE PROPERTY (undo(s));              
     }
     status {
         MOVE PROPERTY(ready(s));                               
