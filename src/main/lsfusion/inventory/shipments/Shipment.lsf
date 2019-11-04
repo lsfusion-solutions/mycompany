@@ -77,7 +77,8 @@ FORM shipment 'Отгрузка'
                   
     OBJECTS l = ShipmentLine
     PROPERTIES(l) index READONLY
-    PROPERTIES(l) READONLYIF readonly(l) nameProduct, NEW ,DELETE  
+    PROPERTIES(l) READONLYIF readonly(l) nameProduct, initialDemand BACKGROUND IF NOT readonly(l)
+                                                        THEN RGB(198,230,247), NEW, DELETE
              
     EDIT Shipment OBJECT s
 ;
@@ -122,6 +123,7 @@ DESIGN shipment {
                 MOVE BOX(l) {
                     caption = 'Строки';
                     PROPERTY(nameProduct(l)) {notNull = TRUE;}
+                    PROPERTY(initialDemand(l));
                 }                  
             }  
         }        

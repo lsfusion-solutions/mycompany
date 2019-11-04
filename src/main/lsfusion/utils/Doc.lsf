@@ -1,5 +1,7 @@
 MODULE Doc;
 
+REQUIRE Authentication, Time, InvoiceDone;
+
 META defineDocSearch (doc, it, fun, let)
     quantity 'Кол-во' (###doc i, ###it p) = 
         GROUP SUM fun(###doc##Line l) BY doc(l), it(l);
@@ -50,3 +52,50 @@ META defineDocSearch (doc, it, fun, let)
         }
     }
 END
+
+META defineDocHistory(doc, let)
+
+    CLASS ###doc##History 'История изменений';
+    
+    ##doc = DATA ###doc (###doc##History);
+
+    date 'Дата' = DATA DATETIME (###doc##History);
+    user 'Пользователь' = DATA User (###doc##History) CHARWIDTH 15;
+    nameUser 'Пользователь' (###doc##History l) = name(user(l));
+    type 'Тип' = DATA ISTRING[100](###doc##History);
+    description 'Описание' = DATA TEXT (###doc##History);
+     
+    WHEN SETCHANGED (status(###doc let)) DO {     
+        NEW l = ###doc##History {
+            ##doc(l) <- let;
+            date(l) <- currentDateTime();
+            user(l) <- currentUser();
+            type(l) <- 'Изменен статус';
+            description (l) <- 'Изменен статус на ' + staticCaption(status(let));
+        }
+            
+        
+    }
+
+    EXTEND FORM doc
+        OBJECTS doc##l = ###doc##History
+        PROPERTIES(doc##l) READONLY date, nameUser, type, description, pdescription = description PANEL
+        FILTERS ##doc(doc##l) = let
+    ;
+    
+    DESIGN doc {
+        details {
+            NEW history {
+                caption = 'История';
+                fill = 1;
+                type = SPLITH;
+                MOVE BOX(doc##l) { 
+                    fill = 2;
+                    PROPERTY(description(doc##l)) { valueHeight = 18; }
+                }
+                MOVE PROPERTY(pdescription) { panelCaptionAbove = TRUE; fill = 1; }
+            }
+        }
+    }
+END
+
