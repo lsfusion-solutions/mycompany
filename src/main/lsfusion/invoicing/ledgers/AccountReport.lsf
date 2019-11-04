@@ -4,11 +4,6 @@ REQUIRE Payment;
 
 NAMESPACE Invoicing;
 
-inAmount 'Доход' (Account a) = GROUP SUM amount(Payment p) IF paid(p) AND toAccount(p) = a;
-outAmount 'Расход' (Account a) = GROUP SUM amount(Payment p) IF paid(p) AND fromAccount(p) = a;
-
-balance 'Баланс' (Account a) = inAmount(a) (-) outAmount(a);
-
 FORM accountReport 'Остатки по счетам'
     OBJECTS a = Account
     PROPERTIES(a) READONLY  accountNumber, nameAccountHolder, notes, inAmount, outAmount, balance
