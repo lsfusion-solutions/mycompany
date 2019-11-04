@@ -7,11 +7,62 @@ NAMESPACE MasterData;
 CLASS ABSTRACT Partner 'Контрагент';
 
 name 'Наименование' = ABSTRACT ISTRING[92] (Partner) IN id;
-address 'Адрес' = ABSTRACT ISTRING[121] (Partner);
+address 'Адрес' = DATA ISTRING[50] (Partner);
+city 'Город' = DATA ISTRING[30](Partner);
+state 'Область' = DATA ISTRING[30](Partner);
+zip'Почтовый индекс' = DATA INTEGER (Partner);
+phone 'Телефон' = DATA ISTRING[30](Partner);
+email 'Электронная почта' = DATA ISTRING[30](Partner);
+
+archived 'Неактивный' = DATA BOOLEAN (Partner) CHARWIDTH 10;
+active 'Активный' (Partner p) = NOT archived(p) CHARWIDTH 10;
+
+showName = ABSTRACT CASE BOOLEAN (Partner);
+
+FORM partner 'Контрагент'
+    OBJECTS p = Partner PANEL 
+    PROPERTIES(p) name SHOWIF showName(p), address, city, state, zip, phone, email, archived
+    
+    EDIT Partner OBJECT p
+;
 
 FORM partners 'Контрагенты'
     OBJECTS p = Partner
-    PROPERTIES(p) READONLY name, address
+    PROPERTIES(p) READONLY name, address, city, state, zip, phone, email, active, archived
+    PROPERTIES(p) NEWSESSION NEW ,EDIT, DELETE 
     
     LIST Partner OBJECT p
 ;
+
+NAVIGATOR {
+    masterData {
+        NEW partners;
+    }
+}
+
+DESIGN partner {
+    OBJECTS {
+        NEW header {
+            type = CONTAINERH;
+            MOVE PROPERTY (name(p)); 
+        }
+        NEW pane {
+            type = CONTAINERH;
+            alignment = STRETCH;
+            NEW box1 {
+                MOVE PROPERTY (address(p));
+                MOVE PROPERTY (city(p));
+                MOVE PROPERTY (state(p));
+                MOVE PROPERTY (zip(p));
+            }
+            NEW box2 {
+                MOVE PROPERTY (phone(p));
+                MOVE PROPERTY (email(p));
+            }
+        }
+        NEW box {
+            MOVE PROPERTY (archived(p));        
+        }
+
+    }
+}

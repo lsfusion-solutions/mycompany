@@ -36,3 +36,21 @@ NAVIGATOR {
         }
     }
 }
+
+newAccount 'Счет' (Partner p) {
+    NEWSESSION {
+        NEW a = Account {
+            accountHolder(a) <- p;
+            SHOW account OBJECTS a = a;  
+        }
+    }
+} IMAGE 'add.png';
+
+EXTEND FORM partner
+    OBJECTS a = Account
+    PROPERTIES(a) READONLY accountNumber, notes
+    PROPERTIES (a) NEWSESSION EDIT, DELETE 
+    PROPERTIES newAccount(p) DRAW a TOOLBAR
+        
+    FILTERS accountHolder(a) = p
+;

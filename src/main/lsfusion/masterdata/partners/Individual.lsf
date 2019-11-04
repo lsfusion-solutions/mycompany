@@ -9,97 +9,42 @@ CLASS Individual 'Физическое лицо';
 firstName 'Имя' = DATA ISTRING[30] (Individual);
 lastName 'Фамилия' = DATA ISTRING[30] (Individual);
 middleName 'Отчество' = DATA ISTRING[30] (Individual);
-address 'Адрес' = DATA ISTRING[50] (Individual);
-city 'Город' = DATA ISTRING[30](Individual);
-state 'Область' = DATA ISTRING[30](Individual);
-zip'Почтовый индекс' = DATA INTEGER (Individual);
-phone 'Телефон' = DATA ISTRING[30](Individual);
-email 'Электронная почта' = DATA ISTRING[30](Individual);
 
 legalEntity = DATA LegalEntity (Individual);
 nameLegalEntity 'Организация' (Individual i) = name(legalEntity(i));
 
-archived 'Неактивный' = DATA BOOLEAN (Individual) CHARWIDTH 10;
-active 'Активный' (Individual i) = NOT archived(i) CHARWIDTH 10;
-
-FORM individual 'Физическое лицо'
-    OBJECTS i = Individual PANEL
-    PROPERTIES(i) lastName, firstName, middleName,
-                  nameLegalEntity, 
-                  address, city, state, zip, 
-                  phone, email, active, archived
-    
-    EDIT Individual OBJECT i
-;
-
-DESIGN individual {
-    OBJECTS {
-        NEW head {
-            alignment = STRETCH;
-            type = CONTAINERH;
-            MOVE PROPERTY(lastName(i));
-            MOVE PROPERTY(firstName(i));
-            MOVE PROPERTY(middleName(i));
-        }
-        NEW header {
-            alignment = STRETCH;
-            MOVE PROPERTY(nameLegalEntity(i));
-        }
-        NEW pane {
-            fill = 1;
-            type = CONTAINERH;
-            NEW leftpane {
-                fill = 1;
-                MOVE PROPERTY(address(i));
-                MOVE PROPERTY(city(i));
-                MOVE PROPERTY(state(i));
-                MOVE PROPERTY(zip(i));
-                
-            }
-            NEW rightpane {
-                fill = 1;
-                MOVE PROPERTY(phone(i));
-                MOVE PROPERTY(email(i));
-            }
-        }
-    }
-}
-
-FORM individuals 'Физические лица'
-    OBJECTS i = Individual
-    PROPERTIES(i) READONLY lastName, firstName, middleName, address, city, state, zip, phone, email, nameLegalEntity,
-                            active, archived
-    PROPERTIES(i) NEWSESSION NEW, EDIT, DELETE
-    
-    LIST Individual OBJECT i
-;
-
-NAVIGATOR {
-    masterData {
-        NEW individuals;
-    }
-}
-
-// Наследуем физическое лицо от партнера
-
 EXTEND CLASS Individual : Partner;
 
 name (Individual i) += CONCAT ' ', lastName(i), firstName(i), middleName(i);
-address (Individual i) += OVERRIDE (CONCAT ' ',address(i),  city(i), state(i), zip(i)),
-        (CONCAT ' ', address(legalEntity(i)), city(legalEntity(i)), state(legalEntity(i)), zip(legalEntity(i)));
 
-// Добавляем на форму организации возможность редактировать физические лица
+showName (Partner p) += WHEN NOT p IS Individual THEN TRUE;
 
-EXTEND FORM legalEntity 
-    OBJECTS i = Individual
-    PROPERTIES(i) READONLY lastName, firstName, middleName, address, city, state, zip, phone, email, nameLegalEntity
-    FILTERS legalEntity(i) = le
+EXTEND FORM partner
+    PROPERTIES(p) firstName, lastName, middleName, nameLegalEntity
 ;
 
-DESIGN legalEntity {
-    details {
-        MOVE BOX(i) {
-            caption = 'Контакты';
-        }
+DESIGN partner {
+    header {
+        MOVE PROPERTY (firstName(p));
+        MOVE PROPERTY (lastName(p));
+        MOVE PROPERTY (middleName(p));
+    }
+    box2 {
+        MOVE PROPERTY (nameLegalEntity(p));
     }
 }
+
+newIndividual 'Физическое лицо' () {
+    NEWSESSION {
+        NEW i = Individual {
+            
+            SHOW partner OBJECTS p = i;  
+        }
+    }
+} IMAGE 'add.png';
+
+EXTEND FORM partners
+    PROPERTIES newIndividual() DRAW p TOOLBAR
+    
+    LIST Individual OBJECT p
+;
