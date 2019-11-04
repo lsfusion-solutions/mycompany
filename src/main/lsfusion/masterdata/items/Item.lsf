@@ -11,14 +11,14 @@ category 'Категория' = DATA Category (Item) NONULL INDEXED;
 nameCategory 'Категория' (Item i) = name(category(i));
 canonicalNameCategory 'Категория (полная)' (Item i) = canonicalName(category(i));
 
-barCode 'Штрих код' = DATA INTEGER (Item);
+barCode 'Штрих код' = ABSTRACT CASE INTEGER (Item);
 
 archived 'Неактивный' = DATA BOOLEAN (Item) CHARWIDTH 10;
 active 'Активный' (Item i) = NOT archived(i) CHARWIDTH 10;
 
 FORM item 'Номенклатура'
     OBJECTS i = Item PANEL
-    PROPERTIES(i) name, nameCategory, barCode, active, archived
+    PROPERTIES(i) name, nameCategory, active, archived
       
     EDIT Item OBJECT i
 ;

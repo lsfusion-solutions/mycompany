@@ -1,0 +1,52 @@
+MODULE BarCode;
+
+REQUIRE MasterData, Item;
+
+NAMESPACE MasterData;
+
+CLASS BarCode 'Штрих код';
+
+item 'Номенклатура' = DATA Item (BarCode);
+nameItem 'Номенклатура' (BarCode b) = name(item(b));
+barCode 'Штрих код' = DATA INTEGER (BarCode);
+
+barCode (Item i) += WHEN i IS Item THEN GROUP LAST barCode(BarCode b) ORDER b WHERE item(b) = i;
+
+
+
+FORM barCode 'Штрих код'
+    OBJECTS b = BarCode PANEL 
+    PROPERTIES(b) nameItem, barCode
+        
+    EDIT BarCode OBJECT b
+;
+
+FORM barCodes 'Штрих коды'
+     OBJECTS b = BarCode
+        PROPERTIES(b) READONLY nameItem, barCode
+        PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE
+        
+        LIST BarCode OBJECT b
+;
+
+NAVIGATOR {
+    masterData {
+        NEW barCodes;
+    }
+}
+
+
+setBarCode(Item i) {
+    NEW b = BarCode {
+        item(b) <- i;
+        SHOW barCode OBJECTS b = b;
+    }    
+}
+
+WHEN SETCHANGED (barCode(BarCode b)) DO {
+    FOR barCode(b) = barCode(BarCode bb) AND item(b) = item(bb) AND NOT b = bb DO {DELETE (bb);}
+}
+
+EXTEND FORM item
+    PROPERTIES(i) barCode AFTER nameCategory(i) ON CHANGE setBarCode(i)
+;
