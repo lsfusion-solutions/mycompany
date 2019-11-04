@@ -11,8 +11,6 @@ category 'Категория' = DATA Category (Item) NONULL INDEXED;
 nameCategory 'Категория' (Item i) = name(category(i));
 canonicalNameCategory 'Категория (полная)' (Item i) = canonicalName(category(i));
 
-barCode 'Штрих код' = ABSTRACT CASE INTEGER (Item);
-
 archived 'Неактивный' = DATA BOOLEAN (Item) CHARWIDTH 10;
 active 'Активный' (Item i) = NOT archived(i) CHARWIDTH 10;
 
@@ -25,14 +23,16 @@ FORM item 'Номенклатура'
 
 DESIGN item {
     OBJECTS {
-        NEW box{
+        NEW head {
         type = CONTAINERH;
             MOVE PROPERTY(active(i));
             MOVE PROPERTY(archived(i));
         }
-        MOVE BOX (i);
-    }
-    
+        NEW header {
+            MOVE BOX (i);
+        }
+        NEW box {}
+    }  
 }
 
 FORM items 'Номенклатура'
@@ -43,7 +43,7 @@ FORM items 'Номенклатура'
     ORDER name(c)
 
     OBJECTS i = Item
-    PROPERTIES(i) READONLYIF isReadonly() name, nameCategory, barCode, canonicalNameCategory,
+    PROPERTIES(i) READONLYIF isReadonly() name, nameCategory, canonicalNameCategory,
                     active, archived
     PROPERTIES(i) SHOWIF isReadonly() NEWSESSION EDIT, DELETE 
     FILTERS level(category(i), c)
@@ -60,11 +60,13 @@ DESIGN items {
         NEW pane {
             type = SPLITH;
             fill = 1;
-            MOVE BOX(TREE categories);
+            MOVE BOX(TREE categories);                
             MOVE BOX(i) { 
                 fill = 2; 
                 GRID(i) { defaultComponent = TRUE; }
             }
+            
+            
         }
     }
 }

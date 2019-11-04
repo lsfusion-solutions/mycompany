@@ -8,45 +8,45 @@ CLASS BarCode 'Штрих код';
 
 item 'Номенклатура' = DATA Item (BarCode);
 nameItem 'Номенклатура' (BarCode b) = name(item(b));
-barCode 'Штрих код' = DATA INTEGER (BarCode);
+id 'Штрих код' = DATA STRING[20] (BarCode);
 
-barCode (Item i) += WHEN i IS Item THEN GROUP LAST barCode(BarCode b) ORDER b WHERE item(b) = i;
+barCode (Item i) = GROUP LAST BarCode b ORDER DESC b WHERE item(b) = i;
+id 'Штрих код' (Item i) = id(barCode(i));
 
-
-
-FORM barCode 'Штрих код'
-    OBJECTS b = BarCode PANEL 
-    PROPERTIES(b) nameItem, barCode
-        
-    EDIT BarCode OBJECT b
-;
-
-FORM barCodes 'Штрих коды'
-     OBJECTS b = BarCode
-        PROPERTIES(b) READONLY nameItem, barCode
-        PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE
-        
-        LIST BarCode OBJECT b
-;
-
-NAVIGATOR {
-    masterData {
-        NEW barCodes;
+setBarCode(Item i) {
+    INPUT id = STRING[20] DO {
+        IF NOT barCode(i) THEN NEW b = BarCode {
+            item(b) <- i;
+        }
+        id(BarCode b) <- id WHERE b = barCode(i); 
     }
 }
 
-
-setBarCode(Item i) {
-    NEW b = BarCode {
-        item(b) <- i;
-        SHOW barCode OBJECTS b = b;
-    }    
-}
-
-WHEN SETCHANGED (barCode(BarCode b)) DO {
-    FOR barCode(b) = barCode(BarCode bb) AND item(b) = item(bb) AND NOT b = bb DO {DELETE (bb);}
+WHEN SETCHANGED (id(BarCode b)) DO {
+    FOR id(b) = id(BarCode bb) AND item(b) = item(bb) AND NOT b = bb DO {DELETE (bb);}
 }
 
 EXTEND FORM item
-    PROPERTIES(i) barCode AFTER nameCategory(i) ON CHANGE setBarCode(i)
+    PROPERTIES(i) id AFTER nameCategory(i) ON CHANGE setBarCode(i)
+    
+    OBJECTS b = BarCode
+    PROPERTIES(b) nameItem, id
+    FILTERS item(b) = i
 ;
+
+DESIGN item {
+    box {
+        NEW box2 {
+            fill = 1;
+            caption = 'Штрих коды';
+            MOVE BOX (b);        
+        }
+
+    }
+}
+
+EXTEND FORM items
+    PROPERTIES(i) READONLYIF isReadonly() id BEFORE canonicalNameCategory(i)
+;
+
+
