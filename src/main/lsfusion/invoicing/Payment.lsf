@@ -7,7 +7,6 @@ NAMESPACE Invoicing;
 CLASS Payment 'Платеж';
 
 date 'Дата' = DATA DATETIME (Payment);
-paid 'Оплачено' = DATA BOOLEAN (Payment) CHARWIDTH 10;
 
 toAccount 'Счет (куда)' = DATA Account (Payment);
 toAccountNumber 'Номер счета (куда)' (Payment p) = accountNumber(toAccount(p));
@@ -19,8 +18,8 @@ nameFromAccountHolder 'Держатель счета (откуда)' (Payment p)
 
 amount 'Сумма' = DATA NUMERIC[14,2] (Payment);
 
-inAmount 'Доход' (Account a) = GROUP SUM amount(Payment p) IF paid(p) AND toAccount(p) = a;
-outAmount 'Расход' (Account a) = GROUP SUM amount(Payment p) IF paid(p) AND fromAccount(p) = a;
+inAmount 'Доход' (Account a) = GROUP SUM amount(Payment p) IF toAccount(p) = a;
+outAmount 'Расход' (Account a) = GROUP SUM amount(Payment p) IF fromAccount(p) = a;
 
 balance 'Баланс' (Account a) = inAmount(a) (-) outAmount(a);
 
@@ -34,7 +33,7 @@ FORM payment 'Платеж'
 
 FORM payments 'Платежи'
     OBJECTS p = Payment
-    PROPERTIES(p) READONLY paid, date, fromAccountNumber, nameFromAccountHolder, toAccountNumber, nameToAccountHolder, 
+    PROPERTIES(p) READONLY date, fromAccountNumber, nameFromAccountHolder, toAccountNumber, nameToAccountHolder, 
                 amount 
     PROPERTIES (p) NEWSESSION NEW, EDIT, DELETE 
     

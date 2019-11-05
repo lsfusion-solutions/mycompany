@@ -21,23 +21,16 @@ registerPayment 'Оформить платеж' (Bill b){
             date(p) <- currentDateTime();
             amount(p) <- totalAmount(b);
             fromAccount(p) <- partnerAccount(b);
-            SHOW payment OBJECTS p = p;
-            IF (amount(p) < totalAmount(b) (-) paid(b) OR NOT amount(p)) THEN {
-                ASK 'Оплачена не вся сумма. Закрыть счет ?' DO {}
-                    ELSE {
-                        paid(p) <- TRUE;
-                        APPLY;
-                        RETURN;
+            DIALOG payment OBJECTS p = p DO {
+                IF (totalAmount(b) > paid(b)) THEN {
+                    ASK 'Оплачена не вся сумма. Закрыть счет ?' DO {
+                        done(b) <- TRUE;
                     }
-             }   
+                } ELSE done(b) <- TRUE; 
+                APPLY;
+            }   
         } 
-        done(b) <- TRUE;
-        APPLY;
     }
-}
-
-WHEN SETCHANGED(done(bill(Payment p))) DO {
-    paid(p) <- TRUE;
 }
 
 EXTEND FORM bill

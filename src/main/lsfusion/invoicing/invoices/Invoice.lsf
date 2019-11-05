@@ -1,19 +1,34 @@
 MODULE Invoice;
 
-REQUIRE Invoicing, TaxItem, Account;
+REQUIRE Invoicing, TaxItem, Account, Time;
 
 NAMESPACE Invoicing;
 
 CLASS Invoice 'Расходная накладная';
 
 date 'Дата накладной' = DATA DATETIME (Invoice) NONULL IN id;
+
+WHEN LOCAL SET (Invoice i IS Invoice) DO {
+    date(i) <- currentDateTime();
+}
+
+
 dueDate 'Дата к оплате' = DATA DATETIME (Invoice);
 
 partner 'Партнер' = DATA Partner (Invoice) NONULL;
 namePartner 'Партнер' (Invoice b) = name(partner(b));
 
-partnerAccount 'Счет партнера' (Invoice i) = GROUP LAST Account a ORDER DESC a WHERE accountHolder(a) = partner(i);
+partnerAccount 'Счет партнера'  = DATA Account(Invoice);
+
+WHEN LOCAL CHANGED (partner(Invoice i)) DO {
+    partnerAccount(i) <- GROUP LAST Account a ORDER DESC a WHERE accountHolder(a) = partner(i);
+}
+
 partnerAccountNumber 'Счет партнера' (Invoice i) = accountNumber(partnerAccount(i));
+
+CONSTRAINT partnerAccount(Invoice i) AND NOT partner(i) = accountHolder(partnerAccount(i))
+    CHECKED BY partnerAccount
+    MESSAGE 'Счет должен принадлежать выбранному партнеру';
 
 notes 'Примечания' = DATA ISTRING[50] (Invoice);
 
@@ -47,7 +62,7 @@ WHEN LOCAL CHANGED (untaxedAmount(InvoiceLine l) IF in(l, Tax t)) DO
 CONSTRAINT (DROPPED (Tax t IS Tax) AND PREV (taxAmount(t, InvoiceLine l))) 
                                                         MESSAGE 'Нельзя удалять налог, участвующий в рассчетах';
     
-taxAmount 'Сумма налога' (Tax t, Invoice i) = GROUP SUM taxAmount(t, InvoiceLine l) 
+taxAmount 'Сумма налога (общая)' (Tax t, Invoice i) = GROUP SUM taxAmount(t, InvoiceLine l) 
                                             IF invoice(l) = i AND in(l, t);
 
 totalTax 'Налог' (Invoice i) = GROUP SUM taxAmount(Tax t, i);
@@ -77,16 +92,12 @@ FORM invoice 'Расходная накладная'
     FILTERS invoice(l) = i
     
     OBJECTS t = Tax
-    PROPERTIES READONLY name(t), taxAmount(t, i)
+    PROPERTIES READONLY name(t), taxAmount(t, i), taxAmount(t, l)
     FILTERS countLine(i, t)
         
     OBJECTS in = Invoice PANEL 
     PROPERTIES(in) untaxedAmount, totalTax, totalAmount
     FILTERS in = i
-    
-    OBJECTS tt = (il = InvoiceLine, tax = Tax)
-    PROPERTIES name(tax), taxAmount(tax, il)
-    FILTERS in(il, tax), il = l
     
     EDIT Invoice OBJECT i;
 ;
@@ -112,8 +123,7 @@ DESIGN invoice {
                     }
                     NEW pane2 {
                         MOVE BOX (in); 
-                        GROUP(,in) {type = CONTAINERV;} 
-                        MOVE BOX (tt);      
+                        GROUP(,in) {type = CONTAINERV;}      
                     }
                 }
             }
