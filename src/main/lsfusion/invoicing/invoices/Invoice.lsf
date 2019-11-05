@@ -1,6 +1,6 @@
 MODULE Invoice;
 
-REQUIRE Invoicing, TaxItem, Account, Time;
+REQUIRE Invoicing, TaxItem, Account, Time, MetaTax;
 
 NAMESPACE Invoicing;
 
@@ -48,117 +48,7 @@ WHEN LOCAL SETCHANGED (quantity(InvoiceLine l)) OR SETCHANGED (unitPrice(l)) DO 
     untaxedAmount(l) <- NUMERIC[14,2](quantity(l) * unitPrice(l));
 }
 
-in 'Вкл' = DATA BOOLEAN (InvoiceLine, Tax);
-WHEN LOCAL CHANGED(item(InvoiceLine l)) DO
-    in(l, Tax t) <- in(item(l), t);
-
-untaxedAmount 'Сумма до налогов (общая)' (Invoice i) = GROUP SUM untaxedAmount(InvoiceLine l) IF invoice(l) = i;
-
-taxAmount 'Сумма налога (строка)' (Tax t, InvoiceLine l) = DATA NUMERIC[14,2] (Tax, InvoiceLine);
-
-WHEN LOCAL CHANGED (untaxedAmount(InvoiceLine l) IF in(l, Tax t)) DO
-    taxAmount (t, l) <- NUMERIC[14,2] (value(t) / 100 * untaxedAmount(l));
-
-CONSTRAINT (DROPPED (Tax t IS Tax) AND PREV (taxAmount(t, InvoiceLine l))) 
-                                                        MESSAGE 'Нельзя удалять налог, участвующий в рассчетах';
-    
-taxAmount 'Сумма налога (общая)' (Tax t, Invoice i) = GROUP SUM taxAmount(t, InvoiceLine l) 
-                                            IF invoice(l) = i AND in(l, t);
-
-totalTax 'Налог' (Invoice i) = GROUP SUM taxAmount(Tax t, i);
-
-totalAmount 'Итоговая сумма' (Invoice i) = NUMERIC[14,2](untaxedAmount(i) (+) totalTax(i));
-
-countLine (Invoice i, Tax t) = GROUP SUM 1 IF in(InvoiceLine l, t) AND invoice(l) = i;
-
-taxes 'Налоги' (InvoiceLine l) = GROUP CONCAT name(Tax t) IF in(l, t), ', ' ORDER t CHARWIDTH 8;
-
-changeTax (InvoiceLine l) {
-    setTax (Tax t) <- in(l, t);
-    DIALOG changeTax DO {
-        in(l, Tax t) <- setTax(t);
-    } 
-} 
-
 readonly = ABSTRACT CASE BOOLEAN (InvoiceLine);
 readonly = ABSTRACT CASE BOOLEAN (Invoice);
 
-FORM invoice 'Расходная накладная'
-    OBJECTS  i = Invoice PANEL 
-    PROPERTIES(i) date, dueDate, namePartner, partnerAccountNumber, notes
-    
-    OBJECTS l = InvoiceLine
-    PROPERTIES(l) READONLYIF readonly(l) itemName, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
-    FILTERS invoice(l) = i
-    
-    OBJECTS t = Tax
-    PROPERTIES READONLY name(t), taxAmount(t, i), taxAmount(t, l)
-    FILTERS countLine(i, t)
-        
-    OBJECTS in = Invoice PANEL 
-    PROPERTIES(in) untaxedAmount, totalTax, totalAmount
-    FILTERS in = i
-    
-    EDIT Invoice OBJECT i;
-;
-
-DESIGN invoice {
-    OBJECTS {
-        NEW header{
-            MOVE BOX (i);
-            PROPERTY (namePartner(i)) {notNull = TRUE;}
-        }
-        NEW details{
-            fill = 1;
-            type = TABBED;
-            NEW box {
-                caption = 'Строка накладной';
-                fill = 1;
-                MOVE BOX (l);
-                NEW pane {
-                    type = SPLITH;
-                    fill = 1;
-                    NEW pane1{
-                        MOVE BOX (t);
-                    }
-                    NEW pane2 {
-                        MOVE BOX (in); 
-                        GROUP(,in) {type = CONTAINERV;}      
-                    }
-                }
-            }
-        }
-    }
-}
-
-FORM invoices 'Расходная накладная'
-    OBJECTS i = Invoice
-    PROPERTIES(i) READONLY date, dueDate, namePartner, notes, untaxedAmount, totalTax, totalAmount     
-    PROPERTIES(i) NEWSESSION NEW, EDIT
-    PROPERTIES(i) NEWSESSION READONLYIF readonly(i) DELETE
-       
-    LIST Invoice OBJECT i;
-;
-
-NAVIGATOR {
-    invoicing {
-        operations {
-            NEW invoices;
-        }
-    }
-}
-
-copyShipment 'Копировать' (Invoice i)  { 
-    NEWSESSION {
-        NEW ni = Invoice {
-            partner(ni) <- partner(i);
-            notes(ni) <- notes(i);
-            FOR invoice(InvoiceLine l) = i INLINE NEW nl = InvoiceLine DO {
-                invoice(nl) <- ni;
-                item(nl) <- item(l);
-                quantity(nl) <- quantity(l);
-            }
-            SHOW invoice OBJECTS i = ni DOCKED;
-        }
-    }
-}
+@defineTaxCalc(invoice, i, 'Расходная накладная');

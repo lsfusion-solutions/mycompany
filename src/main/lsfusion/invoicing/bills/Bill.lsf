@@ -1,6 +1,6 @@
 MODULE Bill;
 
-REQUIRE Invoicing, TaxItem, Account, Time;
+REQUIRE Invoicing, TaxItem, Account, Time, MetaTax;
 
 NAMESPACE Invoicing;
 
@@ -47,121 +47,8 @@ WHEN LOCAL SETCHANGED (quantity(BillLine l)) OR SETCHANGED (unitPrice(l)) DO {
     untaxedAmount(l) <- NUMERIC[14,2](quantity(l) * unitPrice(l));
 }
 
-// налоги
-in 'Вкл' = DATA BOOLEAN (BillLine, Tax);
-WHEN LOCAL CHANGED(item(BillLine l)) DO
-    in(l, Tax t) <- in(item(l), t);
-
-untaxedAmount 'Сумма до налогов' (Bill b) = GROUP SUM untaxedAmount(BillLine l) IF bill(l) = b;
-
-taxAmount 'Сумма налога (строка)' (Tax t, BillLine l) = DATA NUMERIC[14,2] (Tax, BillLine);
-
-WHEN LOCAL CHANGED (untaxedAmount(BillLine l) IF in(l, Tax t)) DO
-    taxAmount (t, l) <- NUMERIC[14,2] (value(t) / 100 * untaxedAmount(l));
-
-CONSTRAINT (DROPPED (Tax t IS Tax) AND PREV (taxAmount(t, BillLine l))) 
-                                                        MESSAGE 'Нельзя удалять налог, участвующий в рассчетах';
-    
-taxAmount 'Сумма налога (общая)' (Tax t, Bill b) = 
-    GROUP SUM taxAmount(t, BillLine l) IF bill(l) = b AND in(l, t);
-
-totalTax 'Налог' (Bill b) = GROUP SUM taxAmount(Tax t, b);
-
-totalAmount 'Итоговая сумма' (Bill b) = NUMERIC[14,2](untaxedAmount(b) (+) totalTax(b));
-
-countLine (Bill b, Tax t) = GROUP SUM 1 IF in(BillLine l, t) AND bill(l) = b;
-
-taxes 'Налоги' (BillLine l) = GROUP CONCAT name(Tax t) IF in(l, t), ', ' ORDER t CHARWIDTH 8;
-
-changeTax (BillLine l) {
-    setTax (Tax t) <- in(l, t);
-    DIALOG changeTax DO {
-        in(l, Tax t) <- setTax(t);
-    } 
-} 
-
 readonly = ABSTRACT CASE BOOLEAN (BillLine);
 readonly = ABSTRACT CASE BOOLEAN (Bill);
- 
-FORM bill 'Приходная накладная'
-    OBJECTS  b = Bill PANEL 
-    PROPERTIES(b) date, dueDate, namePartner, partnerAccountNumber, notes
-    
-    OBJECTS l = BillLine
-    PROPERTIES(l) READONLYIF readonly(l) itemName, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
-    FILTERS bill(l) = b
-    
-    OBJECTS t = Tax
-    PROPERTIES READONLY name(t), taxAmount(t, b), taxAmount(t,l)
-    FILTERS countLine(b, t)
-    
-    OBJECTS bl = Bill PANEL 
-    PROPERTIES(bl) untaxedAmount, totalTax, totalAmount
-    FILTERS bl = b
-    
-    EDIT Bill OBJECT b;
-;
 
-DESIGN bill {
-    OBJECTS {
-        NEW header {
-            MOVE BOX(b);
-            PROPERTY (namePartner(b)) {notNull = TRUE;} 
-        }
-        NEW details {
-            fill = 1;
-            type = TABBED;
-            NEW lines {
-                caption = 'Строка накладной';
-                fill = 1;
-                MOVE BOX (l);
-                NEW pane {
-                    type = SPLITH;
-                    fill = 1;
-                    NEW pane1{
-                        MOVE BOX (t);
-                    }
-                    NEW pane2 {
-                        MOVE BOX (bl); 
-                        GROUP(,bl) {type = CONTAINERV;}      
-                    }
-                }
-            }
-        }
-        
-    }
-}
-
-FORM bills 'Приходная накладная'
-    OBJECTS b = Bill
-    PROPERTIES(b) READONLY date, dueDate, namePartner, notes, untaxedAmount, totalTax, totalAmount
-    
-    PROPERTIES(b) NEWSESSION NEW, EDIT
-    PROPERTIES(b) NEWSESSION READONLYIF readonly(b) DELETE
-   
-    LIST Bill OBJECT b;
-;
-
-NAVIGATOR {
-    invoicing {
-        operations {
-            NEW bills;
-        }
-    }
-}
-
-copyBill 'Копировать' (Bill b)  { 
-    NEWSESSION {
-        NEW nb = Bill {
-            partner(nb) <- partner(b);
-            notes(nb) <- notes(b);
-            FOR bill(BillLine l) = b INLINE NEW nl = BillLine DO {
-                bill(nl) <- nb;
-                item(nl) <- item(l);
-                quantity(nl) <- quantity(l);
-            }
-            SHOW bill OBJECTS b = nb DOCKED;
-        }
-    }
-}
-
+// налоги
+@defineTaxCalc(bill, b, 'Приходная накладная');
