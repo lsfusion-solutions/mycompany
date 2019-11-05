@@ -1,6 +1,6 @@
 MODULE BillDone;
 
-REQUIRE Invoicing, BillReady;
+REQUIRE Invoicing, BillReady, Time;
 
 NAMESPACE Invoicing;
 
@@ -18,6 +18,9 @@ registerPayment 'Оформить платеж' (Bill b){
     NEWSESSION {
         NEW p = Payment {
             bill(p) <- b;
+            date(p) <- currentDateTime();
+            amount(p) <- totalAmount(b);
+            fromAccount(p) <- partnerAccount(b);
             SHOW payment OBJECTS p = p;
             IF (amount(p) < totalAmount(b) (-) paid(b) OR NOT amount(p)) THEN {
                 ASK 'Оплачена не вся сумма. Закрыть счет ?' DO {}

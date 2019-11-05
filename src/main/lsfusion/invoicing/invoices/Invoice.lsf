@@ -1,6 +1,6 @@
 MODULE Invoice;
 
-REQUIRE Invoicing, TaxItem, Partner;
+REQUIRE Invoicing, TaxItem, Account;
 
 NAMESPACE Invoicing;
 
@@ -11,6 +11,9 @@ dueDate 'Дата к оплате' = DATA DATETIME (Invoice);
 
 partner 'Партнер' = DATA Partner (Invoice) NONULL;
 namePartner 'Партнер' (Invoice b) = name(partner(b));
+
+partnerAccount 'Счет партнера' (Invoice i) = GROUP LAST Account a ORDER DESC a WHERE accountHolder(a) = partner(i);
+partnerAccountNumber 'Счет партнера' (Invoice i) = accountNumber(partnerAccount(i));
 
 notes 'Примечания' = DATA ISTRING[50] (Invoice);
 
@@ -34,10 +37,16 @@ in 'Вкл' = DATA BOOLEAN (InvoiceLine, Tax);
 WHEN LOCAL CHANGED(item(InvoiceLine l)) DO
     in(l, Tax t) <- in(item(l), t);
 
-untaxedAmount 'Сумма до налогов' (Invoice i) = GROUP SUM untaxedAmount(InvoiceLine l) IF invoice(l) = i;
+untaxedAmount 'Сумма до налогов (общая)' (Invoice i) = GROUP SUM untaxedAmount(InvoiceLine l) IF invoice(l) = i;
 
-taxAmount 'Сумма налога' (Tax t, InvoiceLine l) = value(t)/100 * untaxedAmount(l);
+taxAmount 'Сумма налога (строка)' (Tax t, InvoiceLine l) = DATA NUMERIC[14,2] (Tax, InvoiceLine);
 
+WHEN LOCAL CHANGED (untaxedAmount(InvoiceLine l) IF in(l, Tax t)) DO
+    taxAmount (t, l) <- NUMERIC[14,2] (value(t) / 100 * untaxedAmount(l));
+
+CONSTRAINT (DROPPED (Tax t IS Tax) AND PREV (taxAmount(t, InvoiceLine l))) 
+                                                        MESSAGE 'Нельзя удалять налог, участвующий в рассчетах';
+    
 taxAmount 'Сумма налога' (Tax t, Invoice i) = GROUP SUM taxAmount(t, InvoiceLine l) 
                                             IF invoice(l) = i AND in(l, t);
 
@@ -61,7 +70,7 @@ readonly = ABSTRACT CASE BOOLEAN (Invoice);
 
 FORM invoice 'Расходная накладная'
     OBJECTS  i = Invoice PANEL 
-    PROPERTIES(i) date, dueDate, namePartner, notes
+    PROPERTIES(i) date, dueDate, namePartner, partnerAccountNumber, notes
     
     OBJECTS l = InvoiceLine
     PROPERTIES(l) READONLYIF readonly(l) itemName, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
@@ -75,6 +84,10 @@ FORM invoice 'Расходная накладная'
     PROPERTIES(in) untaxedAmount, totalTax, totalAmount
     FILTERS in = i
     
+    OBJECTS tt = (il = InvoiceLine, tax = Tax)
+    PROPERTIES name(tax), taxAmount(tax, il)
+    FILTERS in(il, tax), il = l
+    
     EDIT Invoice OBJECT i;
 ;
 
@@ -82,6 +95,7 @@ DESIGN invoice {
     OBJECTS {
         NEW header{
             MOVE BOX (i);
+            PROPERTY (namePartner(i)) {notNull = TRUE;}
         }
         NEW details{
             fill = 1;
@@ -98,7 +112,8 @@ DESIGN invoice {
                     }
                     NEW pane2 {
                         MOVE BOX (in); 
-                        GROUP(,in) {type = CONTAINERV;}         
+                        GROUP(,in) {type = CONTAINERV;} 
+                        MOVE BOX (tt);      
                     }
                 }
             }
