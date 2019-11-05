@@ -8,7 +8,7 @@ scrap 'Списать' (Receipt r) {
     NEW s = Scrap {
         date(s) <- currentDateTime();
         locationFrom(s) <- location(r);
-        FOR receipt(ReceiptLine l) = r INLINE NEW sl = ScrapLine DO {
+        FOR (receipt(ReceiptLine l) = r AND done(l)) INLINE NEW sl = ScrapLine DO {
             scrap(sl) <- s;
             product(sl) <- product(l);
         }

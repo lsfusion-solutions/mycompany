@@ -1,6 +1,12 @@
 MODULE MetaTax;
 
-META defineTaxCalc(doc, let, rus)
+META defineTaxCalc(doc, let)
+    untaxedAmount 'Сумма'  = DATA NUMERIC[14,2] (###doc##Line);
+    
+    WHEN LOCAL SETCHANGED (quantity(###doc##Line l)) OR SETCHANGED (unitPrice(l)) DO {
+        untaxedAmount(l) <- NUMERIC[14,2](quantity(l) * unitPrice(l));
+    }
+    
     in 'Вкл' = DATA BOOLEAN (###doc##Line, Tax);
     WHEN LOCAL CHANGED(item(###doc##Line l)) DO
         in(l, Tax t) <- in(item(l), t);
@@ -32,85 +38,33 @@ META defineTaxCalc(doc, let, rus)
             in(l, Tax t) <- setTax(t);
         } 
     } 
-    
-    FORM doc rus
-    OBJECTS  let = ###doc PANEL 
-    PROPERTIES(let) date, dueDate, namePartner, partnerAccountNumber, notes
-        
-    OBJECTS l = ###doc##Line
-    PROPERTIES(l) READONLYIF readonly(l) itemName, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
-    FILTERS doc(l) = let
-        
-    OBJECTS t = Tax
-    PROPERTIES READONLY name(t), taxAmount(t, let), taxAmount(t, l)
-    FILTERS countLine(let, t)
-            
-    OBJECTS let##let = ###doc PANEL 
-    PROPERTIES(let##let) untaxedAmount, totalTax, totalAmount
-    FILTERS let##let = let
-        
-    EDIT ###doc OBJECT let;
+END
+
+META defineTaxForm(doc, let)
+    EXTEND FORM doc      
+        OBJECTS t = Tax
+        PROPERTIES READONLY name(t), taxAmount(t, let), taxAmount(t, l)
+        FILTERS countLine(let, t)
+                
+        OBJECTS let##let = ###doc PANEL 
+        PROPERTIES(let##let) untaxedAmount, totalTax, totalAmount
+        FILTERS let##let = let    
     ;
-    
+        
     DESIGN doc {
-        OBJECTS {
-            NEW header{
-                MOVE BOX (let);
-                PROPERTY (namePartner(let)) {notNull = TRUE;}
+        pane {
+            NEW pane1{
+                MOVE BOX (t);
             }
-            NEW details{
-                fill = 1;
-                type = TABBED;
-                NEW box {
-                    caption = 'Строка накладной';
-                    fill = 1;
-                    MOVE BOX (l);
-                    NEW pane {
-                        type = SPLITH;
-                        fill = 1;
-                        NEW pane1{
-                            MOVE BOX (t);
-                        }
-                        NEW pane2 {
-                            MOVE BOX (let##let); 
-                            GROUP(,let##let) {type = CONTAINERV;}      
-                        }
-                    }
-                }
+            NEW pane2 {
+                MOVE BOX (let##let); 
+                GROUP(,let##let) {type = CONTAINERV;}      
             }
         }
     }
-    
-    FORM doc##s rus
-    OBJECTS let = ###doc
-    PROPERTIES(let) READONLY date, dueDate, namePartner, notes, untaxedAmount, totalTax, totalAmount     
-    PROPERTIES(let) NEWSESSION NEW, EDIT
-    PROPERTIES(let) NEWSESSION READONLYIF readonly(let) DELETE
-           
-    LIST ###doc OBJECT let;
+        
+    EXTEND FORM doc##s 
+        PROPERTIES(let) READONLY untaxedAmount, totalTax, totalAmount     
     ;
-    
-    NAVIGATOR {
-        invoicing {
-            operations {
-                NEW doc##s;
-            }
-        }
-    }
-    
-    copy###doc 'Копировать' (###doc let)  { 
-        NEWSESSION {
-            NEW n##let = ###doc {
-                partner(n##let) <- partner(let);
-                notes(n##let) <- notes(let);
-                FOR doc(###doc##Line l) = let INLINE NEW nl = ###doc##Line DO {
-                    doc(nl) <- n##let;
-                    item(nl) <- item(l);
-                    quantity(nl) <- quantity(l);
-                }
-                SHOW doc OBJECTS let = n##let DOCKED;
-            }
-        }
-    }
 END
 

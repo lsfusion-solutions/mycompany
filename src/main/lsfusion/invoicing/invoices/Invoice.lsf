@@ -42,13 +42,74 @@ itemName 'Номенклатура' (InvoiceLine l) = name(item(l)) IN id;
 quantity 'Кол-во' = DATA NUMERIC[16,3] (InvoiceLine) NONULL;
 unitPrice 'Цена за штуку' = DATA NUMERIC[10,2] (InvoiceLine) NONULL;
 
-untaxedAmount 'Общая цена'  = DATA NUMERIC[14,2] (InvoiceLine);
-
-WHEN LOCAL SETCHANGED (quantity(InvoiceLine l)) OR SETCHANGED (unitPrice(l)) DO {
-    untaxedAmount(l) <- NUMERIC[14,2](quantity(l) * unitPrice(l));
-}
-
 readonly = ABSTRACT CASE BOOLEAN (InvoiceLine);
 readonly = ABSTRACT CASE BOOLEAN (Invoice);
 
-@defineTaxCalc(invoice, i, 'Расходная накладная');
+@defineTaxCalc(invoice, i);
+
+FORM invoice 'Расходная накладная'
+    OBJECTS  i = Invoice PANEL 
+    PROPERTIES(i) date, dueDate, namePartner, partnerAccountNumber, notes
+        
+    OBJECTS l = InvoiceLine
+    PROPERTIES(l) READONLYIF readonly(l) itemName, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
+    FILTERS invoice(l) = i
+    
+    EDIT Invoice OBJECT i;
+;
+    
+DESIGN invoice {
+    OBJECTS {
+        NEW header{
+            MOVE BOX (i);
+            PROPERTY (namePartner(i)) {notNull = TRUE;}
+        }
+        NEW details{
+            fill = 1;
+            type = TABBED;
+            NEW box {
+                caption = 'Строка накладной';
+                fill = 1;
+                MOVE BOX (l);
+                NEW pane {
+                    type = SPLITH;
+                    fill = 1;
+                }
+            }
+        }
+    }
+}
+
+FORM invoices 'Расходная накладная'
+    OBJECTS i = Invoice
+    PROPERTIES(i) READONLY date, dueDate, namePartner, notes    
+    PROPERTIES(i) NEWSESSION NEW, EDIT
+    PROPERTIES(i) NEWSESSION READONLYIF readonly(i) DELETE
+           
+    LIST Invoice OBJECT i;
+;
+    
+NAVIGATOR {
+    invoicing {
+        operations {
+            NEW invoices;
+        }
+    }
+}
+    
+copyInvoice 'Копировать' (Invoice i)  { 
+    NEWSESSION {
+        NEW ni = Invoice {
+            partner(ni) <- partner(i);
+            notes(ni) <- notes(i);
+            FOR invoice(InvoiceLine l) = i INLINE NEW nl = InvoiceLine DO {
+                invoice(nl) <- ni;
+                item(nl) <- item(l);
+                quantity(nl) <- quantity(l);
+            }
+            SHOW invoice OBJECTS i = ni DOCKED;
+        }
+    }
+}
+
+@defineTaxForm(invoice, i);

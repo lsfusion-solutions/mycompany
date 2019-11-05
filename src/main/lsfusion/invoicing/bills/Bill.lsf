@@ -41,14 +41,75 @@ itemName 'Номенклатура' (BillLine l) = name(item(l)) IN id;
 quantity 'Кол-во' = DATA NUMERIC[16,3] (BillLine) NONULL;
 unitPrice 'Цена за штуку' = DATA NUMERIC[10,2] (BillLine) NONULL;
 
-untaxedAmount 'Сумма'  = DATA NUMERIC[14,2] (BillLine);
-
-WHEN LOCAL SETCHANGED (quantity(BillLine l)) OR SETCHANGED (unitPrice(l)) DO {
-    untaxedAmount(l) <- NUMERIC[14,2](quantity(l) * unitPrice(l));
-}
-
 readonly = ABSTRACT CASE BOOLEAN (BillLine);
 readonly = ABSTRACT CASE BOOLEAN (Bill);
 
 // налоги
-@defineTaxCalc(bill, b, 'Приходная накладная');
+@defineTaxCalc(bill, b);
+
+FORM bill 'Приходная накладная'
+    OBJECTS  b = Bill PANEL 
+    PROPERTIES(b) date, dueDate, namePartner, partnerAccountNumber, notes
+        
+    OBJECTS l = BillLine
+    PROPERTIES(l) READONLYIF readonly(l) itemName, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
+    FILTERS bill(l) = b
+
+    EDIT Bill OBJECT b;
+;
+    
+DESIGN bill {
+    OBJECTS {
+        NEW header{
+            MOVE BOX (b);
+            PROPERTY (namePartner(b)) {notNull = TRUE;}
+        }
+        NEW details{
+            fill = 1;
+            type = TABBED;
+            NEW box {
+                caption = 'Строка накладной';
+                fill = 1;
+                MOVE BOX (l);
+                NEW pane {
+                    type = SPLITH;
+                    fill = 1;
+                }
+            }
+        }
+    }
+}
+
+FORM bills 'Приходная накладная'
+    OBJECTS b = Bill
+    PROPERTIES(b) READONLY date, dueDate, namePartner, notes     
+    PROPERTIES(b) NEWSESSION NEW, EDIT
+    PROPERTIES(b) NEWSESSION READONLYIF readonly(b) DELETE
+           
+    LIST Bill OBJECT b;
+;
+    
+NAVIGATOR {
+    invoicing {
+        operations {
+            NEW bills;
+        }
+    }
+}
+    
+copyBill 'Копировать' (Bill b)  { 
+    NEWSESSION {
+        NEW nb = Bill {
+            partner(nb) <- partner(b);
+            notes(nb) <- notes(b);
+            FOR bill(BillLine l) = b INLINE NEW nl = BillLine DO {
+                bill(nl) <- nb;
+                item(nl) <- item(l);
+                quantity(nl) <- quantity(l);
+            }
+            SHOW bill OBJECTS b = nb DOCKED;
+        }
+    }
+}
+
+@defineTaxForm(bill, b);
