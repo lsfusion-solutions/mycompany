@@ -1,0 +1,29 @@
+MODULE ReceiptScrap;
+
+REQUIRE Inventory, ReceiptDone, Scrap;
+
+NAMESPACE Inventory;
+
+scrap 'Списать' (Receipt r) {
+    NEW s = Scrap {
+        date(s) <- currentDateTime();
+        locationFrom(s) <- location(r);
+        FOR receipt(ReceiptLine l) = r INLINE NEW sl = ScrapLine DO {
+            scrap(sl) <- s;
+            product(sl) <- product(l);
+        }
+        SHOW scrap OBJECTS s = s DOCKED;
+        done(s) <- TRUE;
+    }
+    
+}
+
+EXTEND FORM receipt
+    PROPERTIES(r) scrap SHOWIF status(r) = ReceiptStatus.done
+;
+
+DESIGN receipt {
+    statusActions {
+        MOVE PROPERTY (scrap(r));
+    }
+}

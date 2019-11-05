@@ -1,0 +1,56 @@
+MODULE Scrap;
+
+REQUIRE Inventory, Product, Location, InvLedger;
+
+NAMESPACE Inventory;
+
+CLASS Scrap 'Списание';
+
+done 'Проведен' = DATA BOOLEAN (Scrap) CHARWIDTH 10;
+date 'Дата' = DATA DATETIME (Scrap);
+
+locationFrom 'Место хранения (откуда)' = DATA Location (Scrap);
+nameLocationFrom 'Место хранения (откуда)' (Scrap s) = name(locationFrom(s));
+
+CLASS ScrapLine 'Строка списания';
+
+scrap 'Списание' = DATA Scrap (ScrapLine);
+
+product 'Продукт' = DATA Product(ScrapLine);
+nameProduct 'Продукт' (ScrapLine l) = name(product(l));
+
+quantity 'Кол-во' = DATA NUMERIC[16,3] (ScrapLine);
+
+FORM scrap 'Списание'
+    OBJECTS s = Scrap PANEL 
+    PROPERTIES(s) done, date, nameLocationFrom
+    
+    OBJECTS l = ScrapLine
+    PROPERTIES(l) nameProduct, quantity
+    FILTERS scrap(l) = s
+    
+    EDIT Scrap OBJECT s
+;
+
+FORM scraps 'Списания'
+    OBJECTS s = Scrap 
+    PROPERTIES(s)  READONLY done, date, nameLocationFrom
+    PROPERTIES (s) NEWSESSION NEW, EDIT, DELETE 
+    
+    LIST Scrap OBJECT s
+;
+
+NAVIGATOR {
+    operations {
+        NEW scraps;
+    }
+}
+EXTEND CLASS ScrapLine  : InvLedger;
+
+done(ScrapLine l) += done(scrap(l));
+dateTime(ScrapLine l) += date(scrap(l));
+fromLocation(ScrapLine l) += locationFrom(scrap(l));
+
+product(ScrapLine l) += product(l);
+quantity(ScrapLine l) += quantity(l);
+description(ScrapLine l) += 'Списание' IF l IS ScrapLine;
