@@ -1,0 +1,45 @@
+MODULE ReceiptCanceled;
+
+REQUIRE ReceiptDone;
+
+NAMESPACE Inventory;
+    
+EXTEND CLASS ReceiptStatus {
+    canceled 'Отменен'
+}
+
+canceled 'Отменен' = DATA BOOLEAN (Receipt);
+
+cancel 'Отменить' (Receipt r) {
+    APPLY; 
+       IF canceled() THEN RETURN;
+           
+       NEWSESSION {
+           canceled(r) <- TRUE;
+           APPLY;
+       }
+}
+
+status(Receipt r) += WHEN canceled(r) THEN ReceiptStatus.canceled;
+colorStatus(Receipt r) += WHEN status(r) == ReceiptStatus.canceled THEN RGB(181,195,247);
+
+readonlyHeader (Receipt r) += WHEN status(r) = ReceiptStatus.canceled THEN TRUE;
+
+EXTEND FORM receipt
+    PROPERTIES(r) cancel SHOWIF NOT status(r) = ReceiptStatus.done, canceled SHOWIF status(r) = ReceiptStatus.canceled READONLY 
+;
+
+EXTEND FORM receipts    
+    EXTEND FILTERGROUP status
+        FILTER 'Отменен' status(r) = ReceiptStatus.canceled 'F5'    
+;
+
+DESIGN receipt {
+    statusActions {
+        MOVE PROPERTY(cancel(r));             
+    }
+    status {
+        MOVE PROPERTY(canceled(r));                               
+    }    
+}
+

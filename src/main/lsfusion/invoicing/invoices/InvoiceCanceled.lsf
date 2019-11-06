@@ -1,0 +1,42 @@
+MODULE InvoiceCanceled;
+
+REQUIRE InvoiceDone;
+
+NAMESPACE Invoicing;
+    
+EXTEND CLASS InvoiceStatus {
+    canceled 'Отменен'
+}
+
+canceled 'Отменен' = DATA BOOLEAN (Invoice);
+
+cancel 'Отменить' (Invoice i) {
+    APPLY; 
+       IF canceled() THEN RETURN;
+           
+       NEWSESSION {
+           canceled(i) <- TRUE;
+           APPLY;
+       }
+}
+
+status(Invoice i) += WHEN canceled(i) THEN InvoiceStatus.canceled;
+colorStatus(Invoice i) += WHEN status(i) == InvoiceStatus.canceled THEN RGB(181,195,247);
+
+EXTEND FORM invoice
+    PROPERTIES(i) cancel SHOWIF NOT status(i) = InvoiceStatus.done, canceled SHOWIF status(i) = InvoiceStatus.canceled READONLY 
+;
+
+EXTEND FORM invoices    
+    EXTEND FILTERGROUP status
+        FILTER 'Отменен' status(i) = InvoiceStatus.canceled 'F5'    
+;
+
+DESIGN invoice {
+    statusActions {
+        MOVE PROPERTY(cancel(i));             
+    }
+    status {
+        MOVE PROPERTY(canceled(i));                               
+    }    
+}
