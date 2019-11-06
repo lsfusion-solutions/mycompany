@@ -6,30 +6,37 @@ NAMESPACE Invoicing;
 
 CLASS ABSTRACT Account 'Счет';
 
-accountNumber 'Номер счета' = DATA ISTRING[30] (Account) IN id;
+number 'Номер счета' = DATA ISTRING[30] (Account) IN id;
 
-accountHolder 'Держатель счета' = DATA Partner (Account);
-nameAccountHolder 'Держатель счета' (Account a) = name(accountHolder(a)) IN id;
-defaultAccount 'По умолчанию' = DATA BOOLEAN (Account) CHARWIDTH 10;
+holder 'Держатель счета' = DATA Partner (Account);
+nameAccountHolder 'Держатель счета' (Account a) = name(holder(a)) IN id;
+//defaultAccount 'По умолчанию' = DATA BOOLEAN (Account) CHARWIDTH 10;
 
-WHEN LOCAL SETCHANGED (defaultAccount(Account a)) DO {
-    FOR accountHolder(Account aa) = accountHolder(a) DO {
-        IF NOT a = aa THEN defaultAccount(aa) <- NULL;
-    }
-}
+dataDefaultAccount = DATA Account (Partner);
+calcDefaultAccount (Partner p) = GROUP LAST Account a ORDER DESC a WHERE holder(a) =p;
+
+defaultAccount (Partner p) = OVERRIDE dataDefaultAccount(p), calcDefaultAccount(p);
+default 'По умолчанию' (Account a) = defaultAccount(holder(a)) = a CHARWIDTH 10;
 
 notes 'Примечания' = DATA ISTRING[50] (Account);
 
+changeDefault (Account a) {
+    INPUT b = BOOLEAN DO {
+        IF b THEN
+            defaultAccount(Partner p) <- a WHERE p = holder(a);
+    }
+}
+
 FORM account 'Счет'
     OBJECTS a = Account PANEL 
-    PROPERTIES(a) accountNumber, nameAccountHolder, notes, defaultAccount
+    PROPERTIES(a) number, nameAccountHolder, notes, default ON CHANGE changeDefault(a)
     
     EDIT Account OBJECT a
 ;
 
 FORM accounts 'Счета'
     OBJECTS a = Account
-    PROPERTIES(a) READONLY  accountNumber, nameAccountHolder, notes, defaultAccount
+    PROPERTIES(a) READONLY  number, nameAccountHolder, notes, default
     PROPERTIES(a) NEWSESSION EDIT, DELETE
     
     LIST Account OBJECT a
@@ -47,7 +54,7 @@ NAVIGATOR {
 newAccount 'Счет' (Partner p) {
     NESTEDSESSION {
         NEW a = Account {
-            accountHolder(a) <- p;
+            holder(a) <- p;
             SHOW account OBJECTS a = a;  
         }
     }
@@ -55,9 +62,9 @@ newAccount 'Счет' (Partner p) {
 
 EXTEND FORM partner
     OBJECTS a = Account
-    PROPERTIES(a) READONLY accountNumber, notes, defaultAccount
+    PROPERTIES(a) READONLY number, notes, default
     PROPERTIES (a) NESTEDSESSION EDIT, DELETE 
     PROPERTIES newAccount(p) DRAW a TOOLBAR
         
-    FILTERS accountHolder(a) = p
+    FILTERS holder(a) = p
 ;

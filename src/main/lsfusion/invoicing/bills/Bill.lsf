@@ -20,15 +20,12 @@ namePartner 'Партнер' (Bill b) = name(partner(b));
 partnerAccount 'Счет партнера'  = DATA Account(Bill);
 
 WHEN LOCAL CHANGED (partner(Bill b)) DO {
-    FOR accountHolder(Account a) = partner(b) AND defaultAccount(a) DO {
-        partnerAccount(b) <- a;
-    }
-    ELSE partnerAccount(b) <- GROUP LAST Account a ORDER DESC a WHERE accountHolder(a) = partner(b);
+    partnerAccount(b) <- defaultAccount(partner(b));
 }
 
-partnerAccountNumber 'Счет партнера' (Bill b) = accountNumber(partnerAccount(b));
+partnerAccountNumber 'Счет партнера' (Bill b) = number(partnerAccount(b));
 
-CONSTRAINT partnerAccount(Bill b) AND NOT partner(b) = accountHolder(partnerAccount(b))
+CONSTRAINT partnerAccount(Bill b) AND NOT partner(b) = holder(partnerAccount(b))
     CHECKED BY partnerAccount
     MESSAGE 'Счет должен принадлежать выбранному партнеру';
 
