@@ -1,0 +1,28 @@
+MODULE ReceiptPrint;
+
+REQUIRE ReceiptDone;
+
+NAMESPACE Inventory;
+
+FORM printReceipt 'Задание на поступление'
+    OBJECTS r = Receipt PANEL 
+    PROPERTIES(r) nameLocation, namePartner, nameType, nameStatus, scheduledDate
+    
+    OBJECTS l = ReceiptLine
+    PROPERTIES(l) index, nameProduct, initialDemand, done
+    FILTERS receipt(l) = r
+;
+
+print(Receipt r) {
+    PRINT printReceipt OBJECTS r=r; 
+}
+
+EXTEND FORM receipt
+    PROPERTIES(r) print SHOWIF done(r)
+;
+
+DESIGN receipt {
+    status {
+        MOVE PROPERTY(print(r)) {caption = 'Печатать'; charWidth=10;}
+    }
+}

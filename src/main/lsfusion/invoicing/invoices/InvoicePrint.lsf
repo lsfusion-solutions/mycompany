@@ -1,0 +1,36 @@
+MODULE InvoicePrint;
+
+REQUIRE InvoiceDone;
+
+NAMESPACE Invoicing;
+
+FORM printInvoice 'Расходная накладная'
+    OBJECTS i = Invoice PANEL 
+    PROPERTIES(i) date, dueDate, namePartner, nameStatus
+    
+    OBJECTS l = InvoiceLine
+    PROPERTIES(l) itemName, quantity, unitPrice, taxes, untaxedAmount
+    FILTERS invoice(l) = i
+    
+    OBJECTS t = Tax
+    PROPERTIES name(t), taxAmount(t, i)
+    FILTERS countLine(i, t)
+    
+    OBJECTS ii = Invoice PANEL
+    PROPERTIES(ii) untaxedAmount, totalAmount, paid
+    FILTERS ii = i
+;
+
+print(Invoice i) {
+    PRINT printInvoice OBJECTS i=i; 
+}
+
+EXTEND FORM invoice
+    PROPERTIES(i) print SHOWIF done(i)
+;
+
+DESIGN invoice {
+    status {
+        MOVE PROPERTY(print(i)) {caption = 'Печатать'; charWidth=10;}
+    }
+}
