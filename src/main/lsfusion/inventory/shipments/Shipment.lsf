@@ -69,11 +69,13 @@ index 'Индекс' = PARTITION SUM 1 ORDER ShipmentLine l BY shipment(l) IN id
 
 readonly = ABSTRACT CASE BOOLEAN (ShipmentLine);
 readonly = ABSTRACT CASE BOOLEAN (Shipment);
+readonlyHeader = ABSTRACT CASE BOOLEAN (Shipment);
 
 FORM shipment 'Отгрузка'
     OBJECTS s = Shipment PANEL 
-    PROPERTIES(s) scheduledDate, series, number, nameType, nameLocation, 
-                  nameToLocation SHOWIF isTransfer(type(s)), namePartner SHOWIF NOT isTransfer(type(s)), notes
+    PROPERTIES(s) READONLYIF readonly(s) series, number, nameType, nameLocation, notes
+    PROPERTIES(s) READONLYIF readonlyHeader(s) scheduledDate BEFORE series(s), 
+        nameToLocation SHOWIF isTransfer(type(s)) BEFORE notes(s), namePartner SHOWIF NOT isTransfer(type(s)) BEFORE notes(s)
                   
     OBJECTS l = ShipmentLine
     PROPERTIES(l) index READONLY

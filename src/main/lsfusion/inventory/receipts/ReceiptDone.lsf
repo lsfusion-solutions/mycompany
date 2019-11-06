@@ -46,6 +46,8 @@ EXTEND CLASS ReceiptStatus {
     done 'Принят'
 }
 
+readonlyHeader (Receipt r) += WHEN status(r) = ReceiptStatus.done THEN TRUE;
+
 EXTEND FORM receipt
     PROPERTIES(r) validate SHOWIF status(r) = ReceiptStatus.ready, done READONLY 
     PROPERTIES (r)  executionDate READONLY AFTER scheduledDate(r) SHOWIF done(r)
