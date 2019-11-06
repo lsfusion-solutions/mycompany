@@ -21,7 +21,10 @@ namePartner 'Партнер' (Invoice b) = name(partner(b));
 partnerAccount 'Счет партнера'  = DATA Account(Invoice);
 
 WHEN LOCAL CHANGED (partner(Invoice i)) DO {
-    partnerAccount(i) <- GROUP LAST Account a ORDER DESC a WHERE accountHolder(a) = partner(i);
+    FOR accountHolder(Account a) = partner(i) AND defaultAccount(a) DO {
+        partnerAccount(i) <- a;
+    }
+    ELSE partnerAccount(i) <- GROUP LAST Account a ORDER DESC a WHERE accountHolder(a) = partner(i);
 }
 
 partnerAccountNumber 'Счет партнера' (Invoice i) = accountNumber(partnerAccount(i));

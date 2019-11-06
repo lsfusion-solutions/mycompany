@@ -10,19 +10,26 @@ accountNumber 'Номер счета' = DATA ISTRING[30] (Account) IN id;
 
 accountHolder 'Держатель счета' = DATA Partner (Account);
 nameAccountHolder 'Держатель счета' (Account a) = name(accountHolder(a)) IN id;
+defaultAccount 'По умолчанию' = DATA BOOLEAN (Account) CHARWIDTH 10;
+
+WHEN LOCAL SETCHANGED (defaultAccount(Account a)) DO {
+    FOR accountHolder(Account aa) = accountHolder(a) DO {
+        IF NOT a = aa THEN defaultAccount(aa) <- NULL;
+    }
+}
 
 notes 'Примечания' = DATA ISTRING[50] (Account);
 
 FORM account 'Счет'
     OBJECTS a = Account PANEL 
-    PROPERTIES(a) accountNumber, nameAccountHolder, notes
+    PROPERTIES(a) accountNumber, nameAccountHolder, notes, defaultAccount
     
     EDIT Account OBJECT a
 ;
 
 FORM accounts 'Счета'
     OBJECTS a = Account
-    PROPERTIES(a) READONLY  accountNumber, nameAccountHolder, notes
+    PROPERTIES(a) READONLY  accountNumber, nameAccountHolder, notes, defaultAccount
     PROPERTIES(a) NEWSESSION EDIT, DELETE
     
     LIST Account OBJECT a
@@ -48,7 +55,7 @@ newAccount 'Счет' (Partner p) {
 
 EXTEND FORM partner
     OBJECTS a = Account
-    PROPERTIES(a) READONLY accountNumber, notes
+    PROPERTIES(a) READONLY accountNumber, notes, defaultAccount
     PROPERTIES (a) NESTEDSESSION EDIT, DELETE 
     PROPERTIES newAccount(p) DRAW a TOOLBAR
         
