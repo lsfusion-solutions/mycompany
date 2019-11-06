@@ -10,7 +10,18 @@ item 'Номенклатура' = DATA Item (BarCode);
 nameItem 'Номенклатура' (BarCode b) = name(item(b));
 id 'Штрих код' = DATA STRING[20] (BarCode);
 
-barCode (Item i) = GROUP LAST BarCode b ORDER DESC b WHERE item(b) = i;
+defaultId 'По умолчанию' = DATA BOOLEAN (BarCode) CHARWIDTH 10;
+
+WHEN LOCAL SETCHANGED (defaultId(BarCode b)) DO {
+    FOR item(BarCode bb) = item(b) DO {
+        IF NOT b = bb THEN defaultId(bb) <- NULL;
+    }
+}
+
+barCode (Item i) = IF (GROUP LAST BarCode b ORDER DESC b WHERE item(b) = i AND defaultId(b))
+                    THEN GROUP LAST BarCode b ORDER DESC b WHERE item(b) = i AND defaultId(b)
+                    ELSE GROUP LAST BarCode b ORDER DESC b WHERE item(b) = i;
+
 idBarCode 'Штрих код' (Item i) = id(barCode(i));
 
 setBarCode(Item i) {
@@ -26,7 +37,7 @@ EXTEND FORM item
     PROPERTIES(i) idBarCode AFTER nameCategory(i) ON CHANGE setBarCode(i)
     
     OBJECTS b = BarCode
-    PROPERTIES(b) nameItem, id
+    PROPERTIES(b) nameItem, id, defaultId
     FILTERS item(b) = i
 ;
 
