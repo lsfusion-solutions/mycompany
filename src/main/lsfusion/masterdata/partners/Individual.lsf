@@ -19,6 +19,12 @@ name (Individual i) += CONCAT ' ', lastName(i), firstName(i), middleName(i);
 
 showName (Partner p) += WHEN NOT p IS Individual THEN TRUE;
 
+EXTEND CLASS PartnerType {
+    individual 'Физическое лицо'
+}
+
+type (Partner p) += WHEN p IS Individual THEN PartnerType.individual;
+
 EXTEND FORM partner
     PROPERTIES(p) firstName, lastName, middleName, nameLegalEntity
 ;

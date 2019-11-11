@@ -10,6 +10,12 @@ bank 'Банк' = DATA Bank (BankAccount);
 nameBank 'Банк' (BankAccount b) = name(bank(b));
 routingNumber 'Код банка' (BankAccount b) = routingNumber(bank(b));
 
+EXTEND CLASS AccountType {
+     bank 'Банковский счет'
+}
+
+type(Account a) += WHEN a IS BankAccount THEN AccountType.bank;
+
 EXTEND FORM account
     PROPERTIES(a) nameBank, routingNumber READONLY 
 ;
@@ -17,7 +23,15 @@ EXTEND FORM account
 newBankAccount 'Банковский счет' () {
     NEWSESSION {
         NEW b = BankAccount {
-            
+            SHOW account OBJECTS a = b;  
+        }
+    }
+} IMAGE 'add.png';
+
+newBankAccount 'Банковский счет' (Partner p) {
+    NEWSESSION {
+        NEW b = BankAccount {
+            holder(b) <- p;
             SHOW account OBJECTS a = b;  
         }
     }
@@ -27,4 +41,8 @@ EXTEND FORM accounts
     PROPERTIES newBankAccount() DRAW a TOOLBAR
     
     LIST BankAccount OBJECT a
+;
+
+EXTEND FORM partner
+    PROPERTIES newBankAccount(p) DRAW a TOOLBAR
 ;

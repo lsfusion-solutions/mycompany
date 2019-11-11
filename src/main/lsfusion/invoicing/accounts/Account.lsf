@@ -19,6 +19,13 @@ default 'По умолчанию' (Account a) = defaultAccount(holder(a)) = a CH
 
 notes 'Примечания' = DATA ISTRING[50] (Account);
 
+CLASS AccountType 'Тип счета';
+
+name 'Имя' (AccountType o) = staticCaption(o) IF o IS AccountType CHARWIDTH 15;
+
+type  = ABSTRACT CASE AccountType (Account);
+nameType 'Тип счета' (Account a) = name(type(a));
+
 changeDefault (Account a) {
     INPUT b = BOOLEAN DO {
         IF b THEN
@@ -61,9 +68,9 @@ newAccount 'Счет' (Partner p) {
 
 EXTEND FORM partner
     OBJECTS a = Account
-    PROPERTIES(a) READONLY number, notes, default
+    PROPERTIES(a) READONLY number, nameType, notes, default
     PROPERTIES (a) NESTEDSESSION EDIT, DELETE 
-    PROPERTIES newAccount(p) DRAW a TOOLBAR
+//    PROPERTIES newAccount(p) DRAW a TOOLBAR
         
     FILTERS holder(a) = p
 ;

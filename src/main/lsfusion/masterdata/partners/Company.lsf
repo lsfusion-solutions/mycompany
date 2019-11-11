@@ -6,6 +6,12 @@ NAMESPACE MasterData;
 
 CLASS Company 'Компания' : LegalEntity;
 
+EXTEND CLASS PartnerType {
+    company 'Компания'
+}
+
+type (Partner p) += WHEN p IS Company THEN PartnerType.company;
+
 newCompany 'Компания' () {
     NEWSESSION {
         NEW c = Company {

@@ -6,10 +6,24 @@ NAMESPACE Invoicing;
 
 CLASS CashAccount 'Касса' : Account;
 
+EXTEND CLASS AccountType {
+    cash 'Касса'
+}
+
+type(Account a) += WHEN a IS CashAccount THEN AccountType.cash;
+
 newCashAccount 'Касса' () {
     NEWSESSION {
+        NEW c = CashAccount { 
+            SHOW account OBJECTS a = c;  
+        }
+    }
+} IMAGE 'add.png';
+
+newCashAccount 'Касса' (Partner p) {
+    NEWSESSION {
         NEW c = CashAccount {
-            
+            holder(c) <- p;
             SHOW account OBJECTS a = c;  
         }
     }
@@ -19,4 +33,8 @@ EXTEND FORM accounts
     PROPERTIES newCashAccount() DRAW a TOOLBAR
     
     LIST CashAccount OBJECT a
+;
+
+EXTEND FORM partner
+    PROPERTIES newCashAccount(p) DRAW a TOOLBAR
 ;

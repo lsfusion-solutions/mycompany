@@ -19,17 +19,24 @@ active 'Активный' (Partner p) = NOT archived(p) CHARWIDTH 10;
 
 showName = ABSTRACT CASE BOOLEAN (Partner);
 
+CLASS PartnerType 'Тип партнера';
+
+name 'Имя' (PartnerType o) = staticCaption(o) IF o IS PartnerType CHARWIDTH 15;
+
+type  = ABSTRACT CASE PartnerType (Partner);
+nameType 'Тип партнера' (Partner p) = name(type(p));
+
 FORM partner 'Контрагент'
     OBJECTS p = Partner PANEL 
-    PROPERTIES(p) name SHOWIF showName(p), address, city, state, zip, phone, email, archived
+    PROPERTIES(p) nameType, name SHOWIF showName(p), address, city, state, zip, phone, email, archived
     
     EDIT Partner OBJECT p
 ;
 
 FORM partners 'Контрагенты'
     OBJECTS p = Partner
-    PROPERTIES(p) READONLY name, address, city, state, zip, phone, email
-    PROPERTIES(p) NEWSESSION NEW ,EDIT, DELETE 
+    PROPERTIES(p) READONLY nameType, name, address, city, state, zip, phone, email
+    PROPERTIES(p) NEWSESSION EDIT, DELETE 
     FILTERGROUP active
         FILTER 'Активный' active(p) 'F10' DEFAULT
         FILTER 'Неактивный' archived(p) 'F9'
@@ -47,6 +54,7 @@ DESIGN partner {
     OBJECTS {
         NEW header {
             type = CONTAINERH;
+            MOVE PROPERTY (nameType(p));
             MOVE PROPERTY (name(p)); 
         }
         NEW pane {
