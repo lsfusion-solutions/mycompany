@@ -19,11 +19,11 @@ registerPayment 'Оформить платеж' (Invoice i){
         NEW p = Payment {
             invoice(p) <- i;
             date(p) <- currentDateTime();
-            amount(p) <- totalAmount(i);
+            amount(p) <- totalAmount(i) (-) paid(i);
             fromAccount(p) <- partnerAccount(i);
             DIALOG payment OBJECTS p = p DO {
                 IF (totalAmount(i) > paid(i)) THEN {
-                    ASK 'Оплачена не вся сумма. Закрыть счет ?' DO {
+                    ASK 'Оплачена не вся сумма. Закрыть накладную ?' DO {
                         done(i) <- TRUE;
                     }
                 } ELSE done(i) <- TRUE; 
