@@ -1,0 +1,18 @@
+MODULE ScrapCost;
+
+REQUIRE CostLedger, Scrap, CostLocation;
+
+NAMESPACE Inventory;
+
+cost 'Себестоимость (сумма, временно полежит здесь)' = DATA NUMERIC[14,2] (ScrapLine);
+
+CLASS ScrapCostLedger : OutCostLedger;
+scrapLedger = AGGR ScrapCostLedger WHERE quantity(ScrapLine line) AND done(scrap(line));
+
+dateTime(ScrapCostLedger l) += date(scrap(line(l)));
+location(ScrapCostLedger l) += costLocation(locationFrom(scrap(line(l))));
+
+product(ScrapCostLedger l) += product(line(l));
+quantity(ScrapCostLedger l) += quantity(line(l));
+
+//sum (ScrapCostLedger l) += cost(line(l));
