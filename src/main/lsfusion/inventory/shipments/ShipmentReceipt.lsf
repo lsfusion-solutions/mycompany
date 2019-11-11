@@ -1,0 +1,32 @@
+MODULE ShipmentReceipt;
+
+REQUIRE ShipmentDone, ReceiptDone;
+
+NAMESPACE Inventory;
+
+return 'Возврат' (Shipment s) {    
+    NEWSESSION {
+        NEW nr = Receipt {
+            scheduledDate(nr) <- currentDateTime();
+            location(nr) <- location(s);
+            partner(nr) <- partner(s);
+                FOR shipment(ShipmentLine l) = s INLINE NEW nl = ReceiptLine DO {
+                    receipt(nl) <- nr;
+                    product(nl) <- product(l);
+                    initialDemand(nl) <- done(l);
+                    done(nl) <- initialDemand(nl);
+                }
+                SHOW receipt OBJECTS r = nr DOCKED;
+        }
+    }
+}
+
+EXTEND FORM shipment
+    PROPERTIES(s) return SHOWIF status(s) = ShipmentStatus.done AND NOT isTransfer(type(s))
+;
+
+DESIGN shipment {
+    statusActions {
+        MOVE PROPERTY(return(s));             
+    }    
+}

@@ -32,6 +32,8 @@ META defineTaxCalc(doc, let)
     
     taxes 'Налоги' ( ###doc##Line l) = GROUP CONCAT name(Tax t) IF in(l, t), ', ' ORDER t CHARWIDTH 8;
     
+    taxLine 'Сумма налогов' ( ###doc##Line l) = GROUP SUM taxAmount(Tax t, l) IF in(l, t);
+    
     changeTax ( ###doc##Line l) {
         setTax (Tax t) <- in(l, t);
         DIALOG changeTax DO {
@@ -41,7 +43,9 @@ META defineTaxCalc(doc, let)
 END
 
 META defineTaxForm(doc, let)
-    EXTEND FORM doc      
+    EXTEND FORM doc  
+        PROPERTIES(l) READONLYIF readonly(l) taxLine
+            
         OBJECTS t = Tax
         PROPERTIES READONLY name(t), taxAmount(t, let), taxAmount(t, l)
         FILTERS countLine(let, t)
