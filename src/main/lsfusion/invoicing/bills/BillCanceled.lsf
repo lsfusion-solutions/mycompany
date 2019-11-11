@@ -24,7 +24,8 @@ status(Bill b) += WHEN canceled(b) THEN BillStatus.canceled;
 colorStatus(Bill b) += WHEN status(b) == BillStatus.canceled THEN RGB(181,195,247);
 
 EXTEND FORM bill
-    PROPERTIES(b) cancel SHOWIF NOT status(b) = BillStatus.done, canceled SHOWIF status(b) = BillStatus.canceled READONLY 
+    PROPERTIES(b) cancel SHOWIF NOT (status(b) = BillStatus.done OR status(b) = BillStatus.canceled), 
+                            canceled SHOWIF status(b) = BillStatus.canceled READONLY 
 ;
 
 EXTEND FORM bills    
