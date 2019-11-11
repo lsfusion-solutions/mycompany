@@ -7,6 +7,7 @@ NAMESPACE Invoicing;
 FORM printInvoice 'Расходная накладная'
     OBJECTS i = Invoice PANEL 
     PROPERTIES(i) date, dueDate, namePartner, nameStatus
+    PROPERTIES(i) untaxedAmount, totalAmount, paid
     
     OBJECTS l = InvoiceLine
     PROPERTIES(l) itemName, quantity, unitPrice, taxes, untaxedAmount
@@ -15,10 +16,6 @@ FORM printInvoice 'Расходная накладная'
     OBJECTS t = Tax
     PROPERTIES name(t), taxAmount(t, i)
     FILTERS countLine(i, t)
-    
-    OBJECTS ii = Invoice PANEL
-    PROPERTIES(ii) untaxedAmount, totalAmount, paid
-    FILTERS ii = i
 ;
 
 print(Invoice i) {
