@@ -4,14 +4,13 @@ REQUIRE Invoice, Bill, Payment;
 
 NAMESPACE Invoicing;
 
-bill 'Счет' = DATA Bill (Payment);
-
-paid 'Оплачено' (Bill b) = GROUP SUM amount(Payment p) IF bill(p) = b;
+paid 'Оплачено' = DATA NUMERIC[14,2](Payment, Bill);
+payment 'Оплачено' (Bill b) = GROUP SUM paid(Payment p, b);
 
 EXTEND FORM bills
-    PROPERTIES(b) READONLY paid
+    PROPERTIES(b) READONLY payment
 ;
 
 EXTEND FORM bill
-    PROPERTIES (bb) paid
+    PROPERTIES (bb) payment
 ;

@@ -4,14 +4,13 @@ REQUIRE Invoice, Payment;
 
 NAMESPACE Invoicing;
 
-invoice 'Накладная' = DATA Invoice (Payment);
-
-paid 'Оплачено' (Invoice i) = GROUP SUM amount(Payment p) IF invoice(p) = i;
+paid 'Оплачено' = DATA NUMERIC[14,2](Payment, Invoice);
+payment 'Оплачено' (Invoice i) = GROUP SUM paid(Payment p, i);
 
 EXTEND FORM invoices   
-    PROPERTIES(i) READONLY paid  
+    PROPERTIES(i) READONLY payment  
 ;
 
 EXTEND FORM invoice
-    PROPERTIES (ii) paid
+    PROPERTIES (ii) payment
 ;

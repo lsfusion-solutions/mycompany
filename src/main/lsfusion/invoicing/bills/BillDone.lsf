@@ -17,16 +17,21 @@ registerPayment 'Оформить платеж' (Bill b){
     
     NEWSESSION {
         NEW p = Payment {
-            bill(p) <- b;
             date(p) <- currentDateTime();
-            amount(p) <- totalAmount(b) (-) paid(b);
+            amount(p) <- totalAmount(b) (-) payment(b);
             fromAccount(p) <- partnerAccount(b);
             DIALOG payment OBJECTS p = p DO {
-                IF (totalAmount(b) > paid(b)) THEN {
+                IF (totalAmount(b) > amount(p) (+) payment(b)) THEN {
                     ASK 'Оплачена не вся сумма. Закрыть накладную ?' DO {
                         done(b) <- TRUE;
+                        paid(p, b) <- amount(p);
+                    } ELSE {
+                        paid(p, b) <- amount(p);
                     }
-                } ELSE done(b) <- TRUE; 
+                } ELSE {
+                    done(b) <- TRUE; 
+                    paid(p, b) <- amount(p);
+                }
                 APPLY;
             }   
         } 
