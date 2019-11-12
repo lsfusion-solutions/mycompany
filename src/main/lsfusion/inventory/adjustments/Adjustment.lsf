@@ -24,15 +24,15 @@ location 'Место хранения' = DATA Location (AdjustmentLine);
 nameLocation 'Место хранения' (AdjustmentLine l) = canonicalName(location(l));
 
 theoreticalQuantity 'Теоритическое кол-во' = DATA NUMERIC[16,3] (AdjustmentLine);
-realQuantity 'Практическое кол-во' = DATA NUMERIC[16,3] (AdjustmentLine);
+realQuantity 'Фактическое кол-во' = DATA NUMERIC[16,3] (AdjustmentLine);
 
 CLASS AdjustmentType 'Тип инвентаризации' {
     all 'Все',
     category 'По категории',
-    manual 'В ручную'
+    manual 'Вручную'
 }
 
-WHEN LOCAL CHANGED (location(AdjustmentLine l)) OR CHANGED (product(l)) AND location(l) AND product(l) DO {
+WHEN LOCAL (CHANGED (location(AdjustmentLine l)) OR CHANGED (product(l))) AND location(l) AND product(l) DO {
     theoreticalQuantity(l) <- onHand(location(l), product(l));
     realQuantity(l) <- theoreticalQuantity(l);
 }
