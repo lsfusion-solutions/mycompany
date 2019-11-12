@@ -1,0 +1,38 @@
+MODULE AdjustmentCanceled;
+
+REQUIRE AdjustmentDone;
+
+NAMESPACE Inventory;
+
+EXTEND CLASS AdjustmentStatus {
+    canceled 'Отменен'
+}
+
+canceled 'Отменен' = DATA BOOLEAN (Adjustment);
+
+cancel 'Отменить' (Adjustment a) {
+    APPLY; 
+       IF canceled() THEN RETURN;
+           
+       NEWSESSION {
+           canceled(a) <- TRUE;
+           APPLY;
+       }
+}
+
+status(Adjustment a) += WHEN canceled(a) THEN AdjustmentStatus.canceled;
+colorStatus(Adjustment a) += WHEN status(a) == AdjustmentStatus.canceled THEN RGB(181,195,247);
+
+EXTEND FORM adjustment
+    PROPERTIES(a) cancel SHOWIF NOT (status(a) = AdjustmentStatus.done OR status(a) = AdjustmentStatus.canceled), 
+                            canceled SHOWIF status(a) = AdjustmentStatus.canceled READONLY 
+;
+
+DESIGN adjustment {
+    statusActions {
+        MOVE PROPERTY(cancel(a));             
+    }
+    status {
+        MOVE PROPERTY(canceled(a));                               
+    }    
+}

@@ -1,0 +1,72 @@
+MODULE AdjustmentDone;
+
+REQUIRE AdjustmentInProgress, Utils;
+
+NAMESPACE Inventory;
+
+done 'Принять' = DATA BOOLEAN (Adjustment);
+
+EXTEND CLASS AdjustmentStatus {
+    done 'Принят'
+}
+
+status(Adjustment a) += WHEN done(a) THEN AdjustmentStatus.done;
+
+difference (AdjustmentLine l) = abs(theoreticalQuantity(l) - realQuantity(l));
+
+CLASS InAdjustment : InvLedger;
+inAdjustment = AGGR InAdjustment WHERE theoreticalQuantity(AdjustmentLine line) > realQuantity(line);
+
+done(InAdjustment a) += done(adjustment(line(a)));
+dateTime(InAdjustment a) += dateTime(adjustment(line(a)));
+fromLocation(InAdjustment a) += location(line(a));
+
+product(InAdjustment a) += product(line(a));
+quantity(InAdjustment a) += difference(line(a));
+description(InAdjustment a) += 'Инвенторизация' IF a IS InAdjustment;
+
+CLASS OutAdjustment : InvLedger;
+outAdjustment = AGGR OutAdjustment WHERE theoreticalQuantity(AdjustmentLine line) < realQuantity(line);
+
+done(OutAdjustment a) += done(adjustment(line(a)));
+dateTime(OutAdjustment a) += dateTime(adjustment(line(a)));
+toLocation(OutAdjustment a) += location(line(a));
+
+product(OutAdjustment a) += product(line(a));
+quantity(OutAdjustment a) += difference(line(a));
+description(OutAdjustment a) += 'Инвенторизация' IF a IS OutAdjustment;
+
+validate 'Принят' (Adjustment a) {
+    APPLY; // сохраняем изменения
+    IF canceled() THEN RETURN;
+    NEWSESSION {
+        done(a) <- TRUE;
+        APPLY;
+    }    
+}
+
+showTab(Adjustment a) = IF status(a) = AdjustmentStatus.done THEN TRUE;
+
+EXTEND FORM adjustment
+    PROPERTIES(a) validate SHOWIF status(a) = AdjustmentStatus.inProgress, done READONLY 
+    
+    OBJECTS i = InvLedger
+    PROPERTIES(i) nameProduct, nameFromLocation, nameToLocation, quantity
+    FILTERS adjustment(line[InAdjustment](i)) = a OR adjustment(line[OutAdjustment](i)) = a
+;
+
+DESIGN adjustment {                               
+    statusActions {                  
+        MOVE PROPERTY(validate(a));
+    }
+    status {
+        MOVE PROPERTY(done(a));                              
+    }  
+    body {
+        NEW tab2 {
+            showIf = showTab(a);
+            caption = 'Изменения';
+            MOVE BOX (i);
+        }
+    }                
+}

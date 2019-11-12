@@ -1,0 +1,44 @@
+MODULE AdjustmentStatus;
+
+REQUIRE Adjustment;
+
+NAMESPACE Inventory;
+
+CLASS AdjustmentStatus 'Статус инвентаризации' {
+    draft 'Черновик'
+}
+
+name 'Имя' (AdjustmentStatus o) = staticCaption(o) IF o IS AdjustmentStatus CHARWIDTH 15;
+
+status 'Статус' = ABSTRACT CASE AdjustmentStatus (Adjustment);
+nameStatus 'Статус' (Adjustment a) = name(status(a));
+colorStatus 'Цвет' = ABSTRACT CASE COLOR (Adjustment);
+
+status(Adjustment a) += WHEN a IS Adjustment THEN AdjustmentStatus.draft;
+colorStatus(Adjustment a) += WHEN status(a) == AdjustmentStatus.draft THEN RGB(187,242,210);
+
+EXTEND FORM adjustment
+    PROPERTIES(a) nameStatus BACKGROUND colorStatus(a)
+;
+
+EXTEND FORM adjustments
+    PROPERTIES(a) nameStatus BEFORE dateTime(a) BACKGROUND colorStatus(a)
+;
+
+DESIGN adjustment {
+    OBJECTS {        
+        NEW statusPane FIRST {
+            caption = 'Статусы';
+            type = CONTAINERH;
+            alignment = STRETCH;                          
+            NEW statusActions {
+                type = CONTAINERH;                    
+                flex = 1;                
+            }
+            NEW status {
+                type = CONTAINERH;                
+                MOVE PROPERTY(nameStatus(a)); 
+            }
+        }               
+    }
+}

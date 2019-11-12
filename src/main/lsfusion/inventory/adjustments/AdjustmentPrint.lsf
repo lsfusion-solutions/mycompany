@@ -1,0 +1,28 @@
+MODULE AdjustmentPrint;
+
+REQUIRE AdjustmentCanceled;
+
+NAMESPACE Inventory;
+
+FORM printAdjustment 'Результат инвентаризации'
+    OBJECTS a = Adjustment PANEL 
+    PROPERTIES(a)  nameStatus, dateTime, nameType
+    
+    OBJECTS l = AdjustmentLine
+    PROPERTIES(l) nameLocation, nameProduct, realQuantity
+    FILTERS adjustment(l) = a
+;
+
+print(Adjustment a) {
+    PRINT printAdjustment OBJECTS a = a; 
+}
+
+EXTEND FORM adjustment
+    PROPERTIES(a) print
+;
+
+DESIGN adjustment {
+    statusActions {
+        MOVE PROPERTY(print(a)) {caption = 'Печатать'; charWidth=10;}
+    }
+}
