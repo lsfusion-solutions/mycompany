@@ -1,22 +1,22 @@
 MODULE MetaTax;
 
 META defineTaxCalc(doc, let)
-    untaxedAmount 'Сумма'  = DATA NUMERIC[14,2] (###doc##Line);
+    subtotal 'Сумма до налогов'  = DATA NUMERIC[14,2] (###doc##Line);
     
     WHEN LOCAL SETCHANGED (quantity(###doc##Line l)) OR SETCHANGED (unitPrice(l)) DO {
-        untaxedAmount(l) <- NUMERIC[14,2](quantity(l) * unitPrice(l));
+        subtotal(l) <- NUMERIC[14,2](quantity(l) * unitPrice(l));
     }
     
     in 'Вкл' = DATA BOOLEAN (###doc##Line, Tax);
     WHEN LOCAL CHANGED(item(###doc##Line l)) DO
         in(l, Tax t) <- in(item(l), t);
         
-    untaxedAmount 'Сумма до налогов' (###doc let) = GROUP SUM untaxedAmount(###doc##Line l) IF doc(l) = let;
+    untaxedAmount 'Сумма до налогов' (###doc let) = GROUP SUM subtotal(###doc##Line l) IF doc(l) = let;
     
     taxAmount 'Сумма налога (строка)' (Tax t, ###doc##Line l) = DATA NUMERIC[14,2] (Tax, ###doc##Line);
     
-    WHEN LOCAL CHANGED (untaxedAmount(###doc##Line l) IF in(l, Tax t)) DO
-        taxAmount (t, l) <- NUMERIC[14,2] (value(t) / 100 * untaxedAmount(l));
+    WHEN LOCAL CHANGED (subtotal(###doc##Line l) IF in(l, Tax t)) DO
+        taxAmount (t, l) <- NUMERIC[14,2] (value(t) / 100 * subtotal(l));
     
     CONSTRAINT (DROPPED (Tax t IS Tax) AND PREV (taxAmount(t, ###doc##Line l))) 
                                                             MESSAGE 'Нельзя удалять налог, участвующий в рассчетах';
@@ -44,7 +44,7 @@ END
 
 META defineTaxForm(doc, let)
     EXTEND FORM doc  
-        PROPERTIES(l) READONLYIF readonly(l) taxLine
+        PROPERTIES(l) READONLYIF readonly(l) subtotal
             
         OBJECTS t = Tax
         PROPERTIES READONLY name(t), taxAmount(t, let), taxAmount(t, l)
