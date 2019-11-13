@@ -1,5 +1,5 @@
 MODULE Order;
-REQUIRE System, Time, Utils, Purchase, Location, Partner, Item, Numerator, Incoterms, PaymentTerms, TaxItem, MetaTax;
+REQUIRE System, Time, Utils, Purchase, Location, Partner, Item, Numerator, Incoterms, PaymentTerms, TaxItem, MetaTax, ItemMeasure, Individual;
 
 NAMESPACE Purchase;
 
@@ -17,7 +17,7 @@ WHEN LOCAL SET(Order o IS Order) DO {
     number(o) <- curStringValue(numerator());
     series(o) <- series(numerator());
     incrementValueSession(numerator());   
-} 
+}
 seriesNumber 'СерияНомер' (Order o) = CONCAT '', series(o), number(o);
 
 location 'Место доставки' = DATA Location (Order);
@@ -39,6 +39,9 @@ incotermName 'Условие поставки' (Order o)= name(incoterm(o));
 paymentterm 'Условие оплаты' = DATA PaymentTerm (Order);
 paymenttermName 'Условие оплаты' (Order o)= name(paymentterm(o));
 
+representative 'Представитель заказчика' = DATA Individual (Order);
+representativeName 'Представитель заказчика' (Order o)= name(representative(o));
+  
 CLASS OrderLine 'Спецификация';
 order =  DATA Order (OrderLine) NONULL  DELETE;
 readonly = ABSTRACT CASE BOOLEAN (OrderLine);
@@ -48,18 +51,12 @@ itemName 'Номенклатура' (OrderLine l) = name(item(l));
 
 description 'Описание' = DATA STRING[100] (OrderLine);
 quantity 'Количество' = DATA NUMERIC[16,3] (OrderLine);
+unitMeasure 'Ед.изм.' = DATA ItemMeasure (OrderLine);
 unitPrice 'Цена' = DATA NUMERIC[10,2] (OrderLine);
 
 scheduledDate 'Срок дата' = DATA DATE (OrderLine);
 scheduledTime 'Срок время' = DATA TIME (OrderLine);
 scheduledDateTime 'Срок поставки' (OrderLine l) = dateTimeToDateTime(scheduledDate(l),scheduledTime(l));
-
-//untaxedAmount 'Стоимость (без налогов)' =  DATA NUMERIC[14,2] (OrderLine);
-//@paramOrderLineProperty(untaxedAmount,'Стоимость (без налогов)')
-//если сумму не меняли руками, то пересчитываем
-//WHEN LOCAL ( SETCHANGED (quantity(OrderLine l)) OR SETCHANGED (unitPrice(l)) ) AND NOT CHANGED(untaxedAmount(l)) DO {
-//    untaxedAmount(l) <- NUMERIC[14,2](quantity(l) * unitPrice(l));
-//}
 
 @defineTaxCalc(order, o);
 
@@ -76,11 +73,13 @@ FORM order 'Заказ'
     PROPERTIES (o) SHOWIF (useTime()=TRUE) scheduledTime
     PROPERTIES (o) incotermName
     PROPERTIES (o) paymenttermName
+    PROPERTIES (o) representativeName
                  
     OBJECTS l = OrderLine
     PROPERTIES (l) itemName
     PROPERTIES (l) description
     PROPERTIES (l) quantity
+    PROPERTIES (l) unitMeasure
     PROPERTIES (l) unitPrice
     PROPERTIES (l) scheduledDate
     PROPERTIES (l) SHOWIF (useTime()=TRUE) scheduledTime
