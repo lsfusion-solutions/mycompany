@@ -23,9 +23,11 @@ toLocation 'Место хранения (Куда)' = DATA Location (Shipment);
 nameToLocation 'Место хранения (Куда)' (Shipment s) = name(toLocation(s));
 
 WHEN LOCAL CHANGED(type(Shipment s)) DO { 
-    IF defaultLocationFrom(type(s)) THEN location(s) <- defaultLocationFrom(type(s));
-    IF (isTransfer(type(s))) AND defaultLocationTo(type(s)) THEN toLocation(s) <- defaultLocationTo(type(s));
+    IF defaultLocationFrom(type(s)) THEN location(s) <- defaultLocationFrom(type(s));    
+    toLocation(s) <- defaultLocationTo(type(s)); 
 }
+
+CONSTRAINT isTransfer(type(Shipment s)) AND NOT toLocation(s) MESSAGE 'Нужно указать место хранения (Куда) при трансфере';
 
 partner 'Партнер' = DATA Partner (Shipment);
 namePartner 'Партнер' (Shipment s) = name(partner(s));
@@ -111,7 +113,7 @@ DESIGN shipment {
                     MOVE PROPERTY(nameType(s)) {notNull = TRUE;}
                     MOVE PROPERTY(nameLocation(s)) {notNull = TRUE;}
                     MOVE PROPERTY(namePartner(s));
-                    MOVE PROPERTY(nameToLocation(s));
+                    MOVE PROPERTY(nameToLocation(s)) {notNull = TRUE;}
                 }
                 NEW box3 {
                     type = CONTAINERH;
