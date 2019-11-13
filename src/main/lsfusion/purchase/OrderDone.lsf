@@ -1,0 +1,32 @@
+MODULE OrderDone;
+
+REQUIRE Order, OrderStatus, OrderConfirm;
+
+NAMESPACE Purchase;
+
+EXTEND CLASS OrderStatus{
+    orderDone 'Заказ выполнен'
+}
+
+doneDateTime = DATA DATETIME (Order);
+
+doneOrder 'Заказ выполнен' (Order o){
+    doneDateTime(o) <- currentDateTime();
+    MESSAGE 'Заказ выполенен';    
+}
+
+status(Order o) += WHEN doneDateTime(o) THEN OrderStatus.orderDone;
+colorStatus(Order o) += WHEN status(o) == OrderStatus.orderDone THEN RGB(252,247,149);
+
+EXTEND FORM order
+     PROPERTIES (o) SHOWIF (status(o)=OrderStatus.orderConfirmed) doneOrder;
+;
+
+DESIGN order {
+    statusPane {
+        statusActions {
+            MOVE PROPERTY (doneOrder(o));
+        }
+    }
+}
+

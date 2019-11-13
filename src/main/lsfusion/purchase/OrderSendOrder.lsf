@@ -1,0 +1,21 @@
+MODULE OrderSendOrder;
+
+REQUIRE Order, OrderStatus, OrderConfirm;
+
+NAMESPACE Purchase;
+
+sendOrder 'Отправить заказ' (Order o){
+    MESSAGE 'Заказ отправлен';    
+}
+
+EXTEND FORM order
+     PROPERTIES (o) SHOWIF confirmedDateTime(o) sendOrder;
+;
+
+DESIGN order {
+    statusPane {
+        statusActions {
+            MOVE PROPERTY (sendOrder(o));
+        }
+    }
+}

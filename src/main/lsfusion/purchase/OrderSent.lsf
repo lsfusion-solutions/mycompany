@@ -1,0 +1,17 @@
+MODULE OrderSent;
+
+REQUIRE Purchase, Order, OrderStatus;
+
+NAMESPACE Purchase;
+
+EXTEND CLASS OrderStatus{
+    requestSent 'Запрос отправлен'
+}
+sentRequestDateTime 'Запрос отправлен' = DATA DATETIME (Order);
+
+status(Order o) += WHEN sentRequestDateTime(o) THEN OrderStatus.requestSent;
+colorStatus(Order i) += WHEN status(i) == OrderStatus.requestSent THEN RGB(252,247,149);
+
+EXTEND FORM orders
+    PROPERTIES (o) SHOWIF showActionsTime() sentRequestDateTime AFTER createDateTime(o) ;
+;

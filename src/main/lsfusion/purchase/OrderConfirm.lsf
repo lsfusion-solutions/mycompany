@@ -1,0 +1,35 @@
+MODULE OrderConfirm;
+
+REQUIRE Order, OrderStatus, OrderSent;
+
+NAMESPACE Purchase;
+
+EXTEND CLASS OrderStatus{
+    orderConfirmed 'Заказ оформлен'
+}
+
+confirmedDateTime 'Заказ подтвержден' = DATA DATETIME (Order);
+
+confirmOrder 'Подтвердить заказ' (Order o){
+    confirmedDateTime(o) <- currentDateTime();
+    MESSAGE 'Запрос отменен';    
+}
+
+status(Order o) += WHEN confirmedDateTime(o) THEN OrderStatus.orderConfirmed;
+colorStatus(Order o) += WHEN status(o) == OrderStatus.orderConfirmed THEN RGB(252,247,149);
+
+EXTEND FORM order 
+     PROPERTIES (o) SHOWIF (status(o)=OrderStatus.requestDraft OR status(o)=OrderStatus.requestSent)  confirmOrder;
+;
+
+DESIGN order {
+    statusPane {
+        statusActions {
+            MOVE PROPERTY (confirmOrder(o));
+        }
+    }
+}
+
+EXTEND FORM orders
+    PROPERTIES (o) SHOWIF showActionsTime() confirmedDateTime BEFORE seriesNumber(o) ;
+;

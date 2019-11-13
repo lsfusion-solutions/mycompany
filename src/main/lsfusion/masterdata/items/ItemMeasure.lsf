@@ -1,0 +1,46 @@
+MODULE ItemMeasure;
+
+REQUIRE MasterData;
+
+NAMESPACE MasterData;
+
+CLASS GroupMeasure 'Группа единиц измерения';
+name 'Наименование' = DATA STRING[50] (GroupMeasure) IN base;
+
+CLASS ItemMeasure 'Единицы измерения';
+code 'Код' = DATA STRING[10] (ItemMeasure);
+name 'Наименование' = DATA STRING[50] (ItemMeasure);
+group 'Группа' = DATA GroupMeasure (ItemMeasure);
+groupName 'Группа' (ItemMeasure i) = name(group(i));
+baseMeasure 'Базовая единица' = DATA ItemMeasure (ItemMeasure);
+baseMeasureName 'Базовая единица' (ItemMeasure i) = name(baseMeasure(i)); 
+coefficient 'Коэффициент к базовой' = DATA DOUBLE (ItemMeasure);
+
+FORM groupMeasures 'Группы единиц измерения'
+    OBJECTS g = GroupMeasure
+    PROPERTIES (g) name
+    PROPERTIES (g) NEW,DELETE   
+;
+
+FORM itemMeasures 'Единицы измерения'
+    OBJECTS i = ItemMeasure
+    PROPERTIES (i) code, name, groupName, baseMeasureName, coefficient
+    PROPERTIES (i) NEW,DELETE
+;
+
+FORM itemMeasuresList 'Единицы измерения'
+    OBJECTS i = ItemMeasure
+    PROPERTIES (i) code, name
+    PROPERTIES (i) NEW,DELETE
+    LIST ItemMeasure OBJECT i
+;
+
+
+NAVIGATOR {
+    masterData {
+        NEW itemMeasures;
+    }
+}
+
+
+

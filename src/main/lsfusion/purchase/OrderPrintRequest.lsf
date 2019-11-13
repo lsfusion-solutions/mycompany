@@ -1,0 +1,22 @@
+MODULE OrderPrintRequest;
+
+REQUIRE Order, OrderStatus, OrderSent;
+
+NAMESPACE Purchase;
+
+printRequest 'Печать запрос' (Order o) {
+    sentRequestDateTime(o) <- currentDateTime();
+    MESSAGE 'Запрос напечатан';
+}  
+ 
+EXTEND FORM order
+     PROPERTIES (o) SHOWIF (status(o)=OrderStatus.requestDraft OR status(o)=OrderStatus.requestSent)  printRequest;
+;
+
+DESIGN order {
+    statusPane {
+        statusActions {
+            MOVE PROPERTY (printRequest(o));             
+        }
+    }
+}

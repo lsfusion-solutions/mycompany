@@ -1,0 +1,39 @@
+// Incoterms 2010
+//    exw 'Ex Works',
+//    fca 'Free carrier',
+//    fac 'Free alongside ship',
+//    fob 'Free on boat',
+//    cfr 'Cost and freight',
+//    cif 'Cost, insurance and freight',
+//    cpt 'Carriage paid to',
+//    cip 'Carriage, insurance paid to',
+//    dat 'Delivered at terminal',  
+//    dap 'Delivered at place',
+//    ddp 'Delivered duty paid'     
+MODULE Incoterms;
+
+REQUIRE Invoicing;
+
+CLASS Incoterm 'Условия поставки';
+
+code 'Код'= DATA STRING[5] (Incoterm);
+name 'Наименование'= DATA STRING[50] (Incoterm);
+
+FORM incoterms 'Условия поставки'
+    OBJECTS i = Incoterm
+    PROPERTIES (i) code, name, NEW, DELETE
+;
+
+FORM incotermsList 'Условия поставки'
+    OBJECTS i = Incoterm
+    PROPERTIES (i) code, name
+    LIST Incoterm OBJECT i
+;
+
+NAVIGATOR {
+    invoicing {
+        settings{
+            NEW incoterms;
+        }
+    }
+}

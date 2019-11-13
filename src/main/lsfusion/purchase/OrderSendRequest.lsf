@@ -1,0 +1,23 @@
+MODULE OrderSendRequest;
+
+REQUIRE Order, OrderStatus, OrderSent;
+
+NAMESPACE Purchase;
+
+sendRequest 'Отправить запрос' (Order o){
+    sentRequestDateTime(o) <- currentDateTime();
+    MESSAGE 'Запрос отправлен';    
+}
+
+EXTEND FORM order
+     PROPERTIES (o) SHOWIF (status(o)=OrderStatus.requestDraft OR status(o)=OrderStatus.requestSent) sendRequest;
+;
+
+DESIGN order {
+    statusPane {
+        statusActions {
+            MOVE PROPERTY (sendRequest(o));
+        }
+    }
+}
+

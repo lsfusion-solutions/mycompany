@@ -1,0 +1,35 @@
+MODULE OrderCancel;
+
+REQUIRE Order, OrderStatus;
+
+NAMESPACE Purchase;
+
+EXTEND CLASS OrderStatus{
+    orderCanceled 'Заказ отменен'
+}
+
+canceledDateTime = DATA DATETIME (Order);
+
+cancelOrder 'Отмена заказа' (Order o){
+    canceledDateTime(o) <- currentDateTime();    
+    MESSAGE 'Заказ отменен';    
+}
+
+status(Order o) += WHEN canceledDateTime(o) THEN OrderStatus.orderCanceled;
+colorStatus(Order o) += WHEN status(o) == OrderStatus.orderCanceled THEN RGB(252,247,149);
+
+EXTEND FORM order
+     PROPERTIES (o) cancelOrder
+;
+
+DESIGN order {
+    statusPane {
+        statusActions {
+            MOVE PROPERTY (cancelOrder(o));
+        }
+    }
+}
+
+EXTEND FORM orders
+    PROPERTIES (o) SHOWIF showActionsTime() canceledDateTime BEFORE seriesNumber(o) ;
+;
