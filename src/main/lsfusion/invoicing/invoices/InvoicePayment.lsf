@@ -1,11 +1,15 @@
 MODULE InvoicePayment;
 
-REQUIRE Invoice, Payment;
+REQUIRE InvoiceStatus, Payment;
 
 NAMESPACE Invoicing;
 
 paid 'Оплачено' = DATA NUMERIC[14,2](Payment, Invoice);
 paid 'Оплачено' (Invoice i) = GROUP SUM paid(Payment p, i);
+
+invoiced 'Оплачено' (Payment p) = GROUP SUM paid(p, Invoice i);
+toInvoice 'Остаток' (Payment p) = amount(p) (-) invoiced(p);
+
 
 EXTEND FORM invoices   
     PROPERTIES(i) READONLY paid  
@@ -13,4 +17,49 @@ EXTEND FORM invoices
 
 EXTEND FORM invoice
     PROPERTIES (ii) paid
+;
+
+addPayment 'Привязать' (Payment p, Invoice i) {
+    APPLY; 
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {
+        IF toInvoice(p) >= totalAmount(i) (-) paid(i) THEN paid(p, i) <- totalAmount(i) (-) paid(i);
+        ELSE paid(p, i) <- toInvoice(p);
+        APPLY;
+    }
+}
+
+EXTEND FORM invoice
+    OBJECTS p = Payment
+    PROPERTIES(p) date, nameFromAccountHolder, fromAccountNumber, toInvoice
+    FILTERS paid(p, i)
+    
+    OBJECTS pp = Payment
+    PROPERTIES(pp) date, nameFromAccountHolder, fromAccountNumber, toInvoice
+    PROPERTIES addPayment(pp,i) DRAW pp TOOLBAR
+    FILTERS nameFromAccountHolder(pp) = namePartner(i), toInvoice(pp) > 0
+    
+;
+
+DESIGN invoice {
+    pane{
+        NEW pane3 BEFORE pane2{
+            fill =1;
+            type = CONTAINERV; 
+            MOVE BOX (p);
+            MOVE BOX (pp);
+        }
+    }
+}
+
+EXTEND FORM payments
+    PROPERTIES(p) READONLY toInvoice
+;
+
+EXTEND FORM payment
+    OBJECTS i = Invoice
+    PROPERTIES(i) nameStatus, date, dueDate, namePartner, notes, untaxedAmount, totalTax, totalAmount
+    PROPERTIES paid(p, i)                  
+    FILTERS paid(p, i)
 ;

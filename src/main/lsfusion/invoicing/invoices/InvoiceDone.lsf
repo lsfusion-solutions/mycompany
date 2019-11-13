@@ -14,6 +14,11 @@ registerPayment 'Оформить платеж' (Invoice i){
     APPLY; 
     IF canceled() THEN RETURN;
     IF done(i) THEN RETURN;
+    IF totalAmount(i) = paid(i) THEN {
+        done(i) <- TRUE;
+        APPLY;
+        RETURN;
+    }
     
     NEWSESSION {
         NEW p = Payment {
