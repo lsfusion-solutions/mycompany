@@ -18,10 +18,10 @@ registerPayment 'Оформить платеж' (Invoice i){
     NEWSESSION {
         NEW p = Payment {
             date(p) <- currentDateTime();
-            amount(p) <- totalAmount(i) (-) payment(i);
+            amount(p) <- totalAmount(i) (-) paid(i);
             fromAccount(p) <- partnerAccount(i);
             DIALOG payment OBJECTS p = p DO {
-                IF (totalAmount(i) > amount(p) (+) payment(i)) THEN {
+                IF (totalAmount(i) > amount(p) (+) paid(i)) THEN {
                     ASK 'Оплачена не вся сумма. Закрыть накладную ?' DO {
                         done(i) <- TRUE;
                         paid(p, i) <- amount(p);
