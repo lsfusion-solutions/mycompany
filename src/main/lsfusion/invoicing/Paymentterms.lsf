@@ -1,0 +1,21 @@
+MODULE PaymentTerms;
+
+REQUIRE Invoicing;
+
+CLASS PaymentTerm 'Условия оплаты';
+
+name 'Наименование' = DATA STRING[50] (PaymentTerm) IN base;
+days 'Дни' = DATA INTEGER (PaymentTerm);
+
+FORM paymentTerms 'Условия оплаты'
+    OBJECTS p = PaymentTerm
+    PROPERTIES (p) name, days, NEW, DELETE 
+;
+
+NAVIGATOR {
+    invoicing {
+        settings{
+            NEW paymentTerms;
+        }
+    }
+}

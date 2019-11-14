@@ -1,0 +1,45 @@
+MODULE OrderStatus;
+
+REQUIRE Purchase, Order;
+
+NAMESPACE Purchase;
+
+CLASS OrderStatus 'Статус заказа'{
+    requestDraft 'Запрос поставщику'
+}
+
+name 'Имя' (OrderStatus s) = staticCaption(s) IF s IS OrderStatus CHARWIDTH 15;
+
+status 'Статус' = ABSTRACT CASE OrderStatus (Order);
+nameStatus 'Статус' (Order o) = name(status(o));
+colorStatus 'Цвет' = ABSTRACT CASE COLOR (Order);
+
+readonly (OrderLine l) += WHEN NOT status(order(l)) = OrderStatus.requestDraft THEN TRUE;
+readonly (Order o) += WHEN NOT status(o) = OrderStatus.requestDraft THEN TRUE;
+
+status(Order o) += WHEN o IS Order THEN OrderStatus.requestDraft;
+colorStatus(Order o) += WHEN status(o) == OrderStatus.requestDraft THEN RGB(187,242,210);
+
+EXTEND FORM order
+    PROPERTIES(o) nameStatus BACKGROUND colorStatus(o)
+;
+
+EXTEND FORM orders
+    PROPERTIES(o) nameStatus BEFORE createDateTime(o) BACKGROUND colorStatus(o)  
+;
+
+DESIGN order {
+    NEW statusPane FIRST {
+        caption = 'Статусы';
+        type = CONTAINERH;
+        alignment = STRETCH;                          
+        NEW statusActions {
+            type = CONTAINERH;                    
+            flex = 1;            
+        }
+        NEW status {
+            type = CONTAINERH;                
+            MOVE PROPERTY(nameStatus(o)); 
+        }
+    }
+}                

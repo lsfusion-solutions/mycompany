@@ -1,0 +1,160 @@
+MODULE Order;
+REQUIRE System, Time, Utils, Purchase, Location, Partner, Item, Numerator, Incoterms, PaymentTerms, TaxItem, MetaTax, ItemMeasure, Individual;
+
+NAMESPACE Purchase;
+
+CLASS Order;
+readonly = ABSTRACT CASE BOOLEAN (Order);
+
+createDate 'Создан дата' = DATA DATE (Order);
+createTime 'Создан время' = DATA TIME (Order);
+WHEN LOCAL SET(Order o IS Order) DO {createDate(o) <- currentDate(); createTime(o) <- currentTime();}
+createDateTime 'Создан' (Order o)= dateTimeToDateTime(createDate(o),createTime(o));
+
+number 'Номер' = DATA STRING[10] (Order);
+series 'Серия' = DATA STRING[2] (Order);
+WHEN LOCAL SET(Order o IS Order) DO {
+    number(o) <- curStringValue(numerator());
+    series(o) <- series(numerator());
+    incrementValueSession(numerator());   
+}
+seriesNumber 'СерияНомер' (Order o) = CONCAT '', series(o), number(o);
+
+location 'Место доставки' = DATA Location (Order);
+locationName 'Место доставки' (Order o) = name(location(o));
+
+partner 'Поставщик' = DATA Partner (Order);
+partnerName 'Поставщик' (Order o) = name(partner(o));
+ 
+partnerRefer 'Входящий номер поставщика' = DATA STRING[30] (Order);
+
+scheduledDate 'Срок дата' = DATA DATE (Order);   
+scheduledTime 'Срок время' = DATA TIME (Order);
+WHEN LOCAL SET(Order o IS Order) DO {scheduledTime(o) <- 00:00;}
+scheduledDateTime 'Срок поставки' (Order o) = dateTimeToDateTime(scheduledDate(o),scheduledTime(o));
+
+incoterm 'Условие поставки'= DATA Incoterm (Order);
+incotermName 'Условие поставки' (Order o)= name(incoterm(o));
+
+paymentterm 'Условие оплаты' = DATA PaymentTerm (Order);
+paymenttermName 'Условие оплаты' (Order o)= name(paymentterm(o));
+
+representative 'Представитель заказчика' = DATA Individual (Order);
+representativeName 'Представитель заказчика' (Order o)= name(representative(o));
+  
+CLASS OrderLine 'Спецификация';
+order =  DATA Order (OrderLine) NONULL  DELETE;
+readonly = ABSTRACT CASE BOOLEAN (OrderLine);
+
+item = DATA Item (OrderLine);
+itemName 'Номенклатура' (OrderLine l) = name(item(l));
+
+description 'Описание' = DATA STRING[100] (OrderLine);
+quantity 'Количество' = DATA NUMERIC[16,3] (OrderLine);
+unitMeasure 'Ед.изм.' = DATA ItemMeasure (OrderLine);
+unitPrice 'Цена' = DATA NUMERIC[10,2] (OrderLine);
+
+scheduledDate 'Срок дата' = DATA DATE (OrderLine);
+scheduledTime 'Срок время' = DATA TIME (OrderLine);
+scheduledDateTime 'Срок поставки' (OrderLine l) = dateTimeToDateTime(scheduledDate(l),scheduledTime(l));
+
+@defineTaxCalc(order, o);
+
+FORM order 'Заказ'
+    OBJECTS o = Order PANEL
+    PROPERTIES (o) createDate
+    PROPERTIES (o) SHOWIF (useTime()=TRUE) createTime  
+    PROPERTIES (o) series  
+    PROPERTIES (o) number  
+    PROPERTIES (o) locationName  
+    PROPERTIES (o) partnerName
+    PROPERTIES (o) partnerRefer
+    PROPERTIES (o) scheduledDate
+    PROPERTIES (o) SHOWIF (useTime()=TRUE) scheduledTime
+    PROPERTIES (o) incotermName
+    PROPERTIES (o) paymenttermName
+    PROPERTIES (o) representativeName
+                 
+    OBJECTS l = OrderLine
+    PROPERTIES (l) itemName
+    PROPERTIES (l) description
+    PROPERTIES (l) quantity
+    PROPERTIES (l) unitMeasure
+    PROPERTIES (l) unitPrice
+    PROPERTIES (l) scheduledDate
+    PROPERTIES (l) SHOWIF (useTime()=TRUE) scheduledTime
+    PROPERTIES (l) NEW,DELETE
+     
+    FILTERS order(l)=o
+    EDIT Order OBJECT o    
+;      
+
+DESIGN order{
+    OBJECTS {
+        NEW header{
+            type = CONTAINERH;
+            NEW attr {
+                NEW create{
+                    type = CONTAINERH;
+                    MOVE PROPERTY(createDate(o)) {caption='Создан';};
+                    MOVE PROPERTY(createTime(o)) {caption='';};
+                }
+                NEW numser{
+                    type = CONTAINERH; 
+                    MOVE PROPERTY(series(o));
+                    MOVE PROPERTY(number(o));
+                }    
+                MOVE PROPERTY(locationName(o));
+            }
+            NEW contr {
+                marginLeft = 30;
+                MOVE PROPERTY(partnerName(o));
+                MOVE PROPERTY(partnerRefer(o));
+                NEW schelule{
+                    type = CONTAINERH;               
+                    MOVE PROPERTY(scheduledDate(o)) {caption='Срок поставки';};
+                    MOVE PROPERTY(scheduledTime(o)) {caption='';};
+                }
+                MOVE PROPERTY(incotermName(o));
+                MOVE PROPERTY(paymenttermName(o));
+            }
+        }
+        NEW details{
+            fill = 1;
+            type = TABBED;
+            NEW box {
+                caption = 'Строка накладной';
+                fill = 1;
+                MOVE BOX (l);
+                NEW pane {
+                    type = SPLITH;
+                    fill = 1;
+                }
+            }
+        }
+    }        
+}
+
+//отключил т.к. не могу здесь получить св-во orderConfirmed, или даже статус проверить
+//FORM rfqs 'Запросы цен'
+//     OBJECTS o = Order
+//     PROPERTIES (o) READONLY createDateTime,seriesNumber,locationName,partnerName
+//     PROPERTIES(o) READONLY untaxedAmount, totalTax, totalAmount         
+//     PROPERTIES (o) NEWEDIT NEWSESSION,EDIT NEWSESSION,DELETE 
+//;
+
+FORM orders 'Заказы'
+     OBJECTS o = Order
+     PROPERTIES (o) READONLY createDateTime,seriesNumber,locationName,partnerName,scheduledDateTime
+     PROPERTIES (o) NEWEDIT NEWSESSION,EDIT NEWSESSION,DELETE 
+;
+
+
+@defineTaxForm(order, o);
+
+NAVIGATOR {
+    purchase{
+        NEW orders BEFORE settings;
+    }
+}
+
