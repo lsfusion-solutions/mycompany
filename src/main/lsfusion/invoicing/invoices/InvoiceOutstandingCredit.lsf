@@ -6,12 +6,14 @@ NAMESPACE Invoicing;
 
 CLASS ABSTRACT InvoiceOutstandingCredit 'Закрытие задолженности';
 
-date = ABSTRACT DATETIME (InvoiceOutstandingCredit);
+date 'Дата' = ABSTRACT DATETIME (InvoiceOutstandingCredit);
 amount = ABSTRACT NUMERIC[14,2] (InvoiceOutstandingCredit);
+
 
 account = ABSTRACT Account (InvoiceOutstandingCredit);
 accountNumber 'Счет партнера' (InvoiceOutstandingCredit c) = number(account(c));
-namePartner 'Партнер' (InvoiceOutstandingCredit c) = nameAccountHolder(account(c));
+partner = ABSTRACT Partner (InvoiceOutstandingCredit);
+namePartner 'Партнер' (InvoiceOutstandingCredit c) = name(partner(c));
 
 paid 'Оплачено' = DATA NUMERIC[14,2](InvoiceOutstandingCredit, Invoice);
 paid 'Оплачено' (Invoice i) = (GROUP SUM paid(InvoiceOutstandingCredit c, i)) (+) (GROUP SUM paid(i, Invoice ii));

@@ -9,6 +9,7 @@ isCreditNote 'Акт расхождения' (Invoice i) = i IS CreditNote;
 
 EXTEND CLASS CreditNote : InvoiceOutstandingCredit;
 amount(CreditNote c) += totalAmount(c);
+partner (CreditNote c) += partner[Invoice](c);
 account(CreditNote c) += partnerAccount(c);
 date(CreditNote c) += date[Invoice](c);
 
@@ -19,7 +20,7 @@ creditNote 'Создать акт расхождения' (Invoice i) {
     NEWSESSION { 
         NEW ni = CreditNote {
             date[Invoice](ni) <- currentDateTime();
-            partner(ni) <- partner(i);
+            partner[Invoice](ni) <- partner(i);
             notes(ni) <- notes(i);
             ready(ni) <- TRUE;
             FOR invoice(InvoiceLine l) = i INLINE NEW nl = InvoiceLine DO {

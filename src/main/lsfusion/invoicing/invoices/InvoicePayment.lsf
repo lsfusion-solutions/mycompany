@@ -4,9 +4,13 @@ REQUIRE InvoiceStatus, Payment, InvoiceOutstandingCredit;
 
 NAMESPACE Invoicing;
 
+partner (Payment p) = IF holder(toAccount(p)) IS Company THEN holder(fromAccount(p))
+                                    ELSE holder(toAccount(p));
+
 EXTEND CLASS Payment : InvoiceOutstandingCredit;
 amount(Payment p) += amount(p);
 account(Payment p) += fromAccount(p);
+partner(Payment p) += partner(p);
 date(Payment p) += date(p);
 
 //paid 'Оплачено' = DATA NUMERIC[14,2](Payment, Invoice);
