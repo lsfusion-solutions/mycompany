@@ -1,6 +1,6 @@
 MODULE InvoiceOutstandingCredit;
 
-REQUIRE Invoice;
+REQUIRE Invoice, Utils;
 
 NAMESPACE Invoicing;
 
@@ -35,8 +35,7 @@ addPayment 'Привязать' (InvoiceOutstandingCredit p, Invoice i) {
     IF canceled() THEN RETURN;
     
     NEWSESSION {
-        IF toInvoice(p) >= totalAmount(i) (-) paid(i) THEN paid(p, i) <- totalAmount(i) (-) paid(i);
-        ELSE paid(p, i) <- toInvoice(p);
+        paid(p, i) <- min(toInvoice(p), toPay(i));
         APPLY;
     }
 }
