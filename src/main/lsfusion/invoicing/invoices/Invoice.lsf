@@ -1,6 +1,6 @@
 MODULE Invoice;
 
-REQUIRE Invoicing, TaxItem, Account, Time, MetaTax;
+REQUIRE Invoicing, TaxItem, Account, Time, MetaTax, InvoicingSettings;
 
 NAMESPACE Invoicing;
 
@@ -32,6 +32,17 @@ CONSTRAINT partnerAccount(Invoice i) AND NOT partner(i) = holder(partnerAccount(
 
 notes 'Примечания' = DATA ISTRING[50] (Invoice);
 
+series 'Серия' = DATA STRING[2] (Invoice);
+number 'Номер' = DATA STRING[28] (Invoice) NONULL;
+
+WHEN LOCAL SETCHANGED (Invoice i IS Invoice) DO {
+    number(i) <- curStringValue(numerator());
+    series(i) <- series(numerator());
+    incrementValueSession(numerator());   
+}
+
+seriesNumber 'Серия/Номер' (Invoice i) = CONCAT '/', series(i), number(i); 
+
 CLASS InvoiceLine 'Строка накладной';
 
 invoice 'Накладная' = DATA Invoice (InvoiceLine) NONULL DELETE;
@@ -49,7 +60,7 @@ readonly = ABSTRACT CASE BOOLEAN (Invoice);
 
 FORM invoice 'Расходная накладная'
     OBJECTS  i = Invoice PANEL 
-    PROPERTIES(i) READONLYIF readonly(i)  date, dueDate, namePartner, partnerAccountNumber, notes
+    PROPERTIES(i) READONLYIF readonly(i)  date, dueDate, namePartner, partnerAccountNumber, series, number, notes
         
     OBJECTS l = InvoiceLine
     PROPERTIES(l) READONLYIF readonly(l) itemName, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 

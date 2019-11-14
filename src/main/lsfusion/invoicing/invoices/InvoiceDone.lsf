@@ -10,15 +10,14 @@ EXTEND CLASS InvoiceStatus {
     done 'Оплачено'
 }
 
+WHEN SET (totalAmount(Invoice i) = paid(i)) DO {
+    done(i) <- TRUE;
+}
+
 registerPayment 'Оформить платеж' (Invoice i){
     APPLY; 
     IF canceled() THEN RETURN;
     IF done(i) THEN RETURN;
-    IF totalAmount(i) = paid(i) THEN {
-        done(i) <- TRUE;
-        APPLY;
-        RETURN;
-    }
     
     NEWSESSION {
         NEW p = Payment {
@@ -30,13 +29,9 @@ registerPayment 'Оформить платеж' (Invoice i){
                     ASK 'Оплачена не вся сумма. Закрыть накладную ?' DO {
                         done(i) <- TRUE;
                         paid(p, i) <- amount(p);
-                    } ELSE {
-                        paid(p, i) <- amount(p);
-                    }
-                } ELSE {
-                    done(i) <- TRUE; 
-                    paid(p, i) <- amount(p);
+                    } 
                 }
+                paid(p, i) <- amount(p);
                 APPLY; 
             }
         } 
