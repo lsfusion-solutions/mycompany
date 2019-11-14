@@ -15,6 +15,8 @@ accountNumber 'Счет партнера' (InvoiceOutstandingCredit c) = number(
 partner = ABSTRACT Partner (InvoiceOutstandingCredit);
 namePartner 'Партнер' (InvoiceOutstandingCredit c) = name(partner(c));
 
+number 'Номер' = ABSTRACT STRING[28] (InvoiceOutstandingCredit);
+
 paid 'Оплачено' = DATA NUMERIC[14,2](InvoiceOutstandingCredit, Invoice);
 paid 'Оплачено' (Invoice i) = (GROUP SUM paid(InvoiceOutstandingCredit c, i)) (+) (GROUP SUM paid(i, Invoice ii));
 toPay 'Остаток' (Invoice i) = totalAmount(i) (-) paid(i);
@@ -43,12 +45,12 @@ addPayment 'Привязать' (InvoiceOutstandingCredit p, Invoice i) {
 
 EXTEND FORM invoice
     OBJECTS p = InvoiceOutstandingCredit
-    PROPERTIES(p) date, namePartner, accountNumber
+    PROPERTIES(p) date, number
     PROPERTIES paid(p, i)
     FILTERS paid(p, i)
     
     OBJECTS pp = InvoiceOutstandingCredit
-    PROPERTIES(pp) date, namePartner, accountNumber, toInvoice
+    PROPERTIES(pp) date, number, toInvoice
     PROPERTIES addPayment(pp,i) DRAW pp TOOLBAR
     FILTERS partner(pp) = partner(i), toInvoice(pp) > 0, NOT pp = i
     
