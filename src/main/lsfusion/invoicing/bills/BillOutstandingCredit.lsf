@@ -6,15 +6,18 @@ NAMESPACE Invoicing;
 
 CLASS ABSTRACT BillOutstandingCredit 'Закрытие задолженности';
 
-date = ABSTRACT DATETIME (BillOutstandingCredit);
+date 'Дата' = ABSTRACT DATETIME (BillOutstandingCredit);
 amount = ABSTRACT NUMERIC[14,2] (BillOutstandingCredit);
 
 account = ABSTRACT Account (BillOutstandingCredit);
 accountNumber 'Счет партнера' (BillOutstandingCredit c) = number(account(c));
 namePartner 'Партнер' (BillOutstandingCredit c) = nameAccountHolder(account(c));
 
+number 'Номер' = ABSTRACT STRING[28] (BillOutstandingCredit);
+
 paid 'Оплачено' = DATA NUMERIC[14,2](BillOutstandingCredit, Bill);
-paid 'Оплачено' (Bill b) = GROUP SUM paid(BillOutstandingCredit c, b);// (+) paid(i, i);
+paid 'Оплачено' (Bill b) = (GROUP SUM paid(BillOutstandingCredit c, b)) (+) (GROUP SUM paid(b, Bill bb));
+toPay 'Остаток' (Bill b) = totalAmount(b) (-) paid(b);
 
 billed 'Оплачено' (BillOutstandingCredit c) = GROUP SUM paid(c, Bill i);
 toBill 'Остаток' (BillOutstandingCredit c) = amount(c) (-) billed(c);
@@ -40,19 +43,21 @@ addBillPayment 'Привязать' (BillOutstandingCredit p, Bill b) {
 
 EXTEND FORM bill
     OBJECTS p = BillOutstandingCredit
-    PROPERTIES(p) date, namePartner, accountNumber, toBill
+    PROPERTIES(p) READONLY date, number
+    PROPERTIES READONLY paid(p, b)
     FILTERS paid(p, b)
     
     OBJECTS pp = BillOutstandingCredit
-    PROPERTIES(pp) date, namePartner, accountNumber, toBill
-    PROPERTIES addBillPayment(pp,b) DRAW pp TOOLBAR
-    FILTERS namePartner(pp) = namePartner(b), toBill(pp) > 0
+    PROPERTIES(pp) READONLY date, number, toBill
+    PROPERTIES addBillPayment(pp, b) DRAW pp TOOLBAR
+    FILTERS partner(pp) = partner(b), toBill(pp) > 0, NOT pp = b
     
 ;
 
 DESIGN bill {
     pane {
-        NEW pane3 BEFORE total {
+        NEW outstandingCredit BEFORE total {
+            caption = 'Платежи';
             fill =1;
             type = CONTAINERV; 
             MOVE BOX (p);

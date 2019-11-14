@@ -10,15 +10,14 @@ EXTEND CLASS BillStatus {
     done 'Оплачено'
 }
 
+WHEN SET (totalAmount(Bill b) = paid(i)) DO {
+    done(b) <- TRUE;
+}
+
 registerPayment 'Оформить платеж' (Bill b){
     APPLY; 
     IF canceled() THEN RETURN;
     IF done(b) THEN RETURN;
-    IF totalAmount(b) = paid(b) THEN {
-        done(b) <- TRUE;
-        APPLY;
-        RETURN;
-    }
     
    NEWSESSION {
        NEW p = Payment {
@@ -30,13 +29,9 @@ registerPayment 'Оформить платеж' (Bill b){
                    ASK 'Оплачена не вся сумма. Закрыть накладную ?' DO {
                        done(b) <- TRUE;
                        paid(p, b) <- amount(p);
-                   } ELSE {
-                       paid(p, b) <- amount(p);
                    }
-               } ELSE {
-                   done(b) <- TRUE; 
-                   paid(p, b) <- amount(p);
                }
+               paid(p, b) <- amount(p);
                APPLY; 
            }
        } 

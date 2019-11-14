@@ -23,7 +23,6 @@ creditNote 'Создать акт расхождения' (Invoice i) {
             date[Invoice](ni) <- currentDateTime();
             partner[Invoice](ni) <- partner(i);
             notes(ni) <- notes(i);
-            ready(ni) <- TRUE;
             FOR invoice(InvoiceLine l) = i INLINE NEW nl = InvoiceLine DO {
                 invoice(nl) <- ni;
                 item(nl) <- item(l);
@@ -45,13 +44,13 @@ EXTEND FORM invoice
 
 EXTEND FORM invoice
     OBJECTS in = Invoice
-    PROPERTIES(in) date, number
-    PROPERTIES paid(i, in)
+    PROPERTIES(in) READONLY date, number
+    PROPERTIES READONLY paid(i, in)
     FILTERS paid(i, in), NOT i = in
     
     OBJECTS inv = Invoice
-    PROPERTIES(inv) date, number, toPay
-    PROPERTIES addPayment(i,inv) DRAW inv TOOLBAR
+    PROPERTIES(inv) READONLY date, number, toPay
+    PROPERTIES addPayment(i, inv) DRAW inv TOOLBAR
     FILTERS partner(inv) = partner(i), toPay(inv) > 0, NOT i = inv,
         NOT status(inv) = InvoiceStatus.done AND NOT status(inv) = InvoiceStatus.canceled
     

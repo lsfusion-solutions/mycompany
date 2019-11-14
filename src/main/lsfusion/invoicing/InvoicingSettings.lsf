@@ -4,12 +4,27 @@ REQUIRE Numerator, Invoicing;
 
 NAMESPACE Invoicing;
 
-numerator 'Нумератор' = DATA Numerator();
-nameNumerator 'Нумератор' = name(numerator());
+numeratorInvoice 'Нумератор расходных накладных' = DATA Numerator() CHARWIDTH 20;
+nameNumeratorInvoice 'Нумератор расходных накладных' = name(numeratorInvoice());
+
+numeratorBill 'Нумератор приходных накладных' = DATA Numerator() CHARWIDTH 20;
+nameNumeratorBill 'Нумератор приходных накладных' = name(numeratorBill());
+
+numeratorPayment 'Нумератор платежей' = DATA Numerator() CHARWIDTH 20;
+nameNumeratorPayment 'Нумератор платежей' = name(numeratorBill());
 
 FORM invoicingSettings 'Настройки'
-  PROPERTIES nameNumerator()
+  PROPERTIES nameNumeratorInvoice(), nameNumeratorBill(), nameNumeratorPayment()
 ;
+
+DESIGN invoicingSettings {
+    OBJECTS {
+        type = CONTAINERV;
+        MOVE PROPERTY (nameNumeratorInvoice());
+        MOVE PROPERTY (nameNumeratorBill());
+        MOVE PROPERTY (nameNumeratorPayment());
+    }
+}
 
 NAVIGATOR {
     invoicing {

@@ -27,10 +27,10 @@ balance 'Баланс' (Account a) = inAmount(a) (-) outAmount(a);
 series 'Серия' = DATA STRING[2] (Payment);
 number 'Номер' = DATA STRING[28] (Payment) NONULL;
 
-WHEN LOCAL SETCHANGED (Payment p IS Payment) DO {
-    number(p) <- curStringValue(numerator());
-    series(p) <- series(numerator());
-    incrementValueSession(numerator());   
+WHEN SETCHANGED (Payment p IS Payment) DO {
+    number(p) <- curStringValue(numeratorPayment());
+    series(p) <- series(numeratorPayment());
+    incrementValueSession(numeratorPayment());   
 }
 
 seriesNumber 'Серия/Номер' (Payment p) = CONCAT '/', series(p), number(p); 

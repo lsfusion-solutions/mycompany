@@ -35,10 +35,10 @@ notes 'Примечания' = DATA ISTRING[50] (Invoice);
 series 'Серия' = DATA STRING[2] (Invoice);
 number 'Номер' = DATA STRING[28] (Invoice) NONULL;
 
-WHEN LOCAL SETCHANGED (Invoice i IS Invoice) DO {
-    number(i) <- curStringValue(numerator());
-    series(i) <- series(numerator());
-    incrementValueSession(numerator());   
+WHEN SETCHANGED (Invoice i IS Invoice) DO {
+    number(i) <- curStringValue(numeratorInvoice());
+    series(i) <- series(numeratorInvoice());
+    incrementValueSession(numeratorInvoice());   
 }
 
 seriesNumber 'Серия/Номер' (Invoice i) = CONCAT '/', series(i), number(i); 

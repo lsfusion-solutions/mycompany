@@ -1,6 +1,6 @@
 MODULE Refund;
 
-REQUIRE BillReady, BillOutstandingCredit;
+REQUIRE BillCanceled, BillOutstandingCredit;
 
 NAMESPACE Invoicing;
 
@@ -11,6 +11,7 @@ EXTEND CLASS Refund : BillOutstandingCredit;
 amount(Refund c) += totalAmount(c);
 account(Refund c) += partnerAccount(c);
 date(Refund c) += date[Bill](c);
+number(Refund c) += number[Bill](c);
 
 refund 'Создать акт возврата' (Bill b) {
     APPLY; 
@@ -19,9 +20,8 @@ refund 'Создать акт возврата' (Bill b) {
     NEWSESSION { 
         NEW ni = Refund {
             date[Bill](ni) <- currentDateTime();
-            partner(ni) <- partner(b);
+            partner[Bill](ni) <- partner(b);
             notes(ni) <- notes(b);
-            ready(ni) <- TRUE;
             FOR bill(BillLine l) = b INLINE NEW nl = BillLine DO {
                 bill(nl) <- ni;
                 item(nl) <- item(l);
@@ -45,6 +45,40 @@ DESIGN bill {
     statusActions {
         MOVE PROPERTY(refund(b));                
     }   
+}
+
+EXTEND FORM bill
+    OBJECTS bi = Bill
+    PROPERTIES(bi) READONLY date, number
+    PROPERTIES READONLY paid(b, bi)
+    FILTERS paid(b, bi), NOT b = bi
+    
+    OBJECTS bil = Bill
+    PROPERTIES(bil) READONLY date, number, toPay
+    PROPERTIES addBillPayment(b, bil) DRAW bil TOOLBAR
+    FILTERS partner(bil) = partner(b), toPay(bil) > 0, NOT b = bil,
+        NOT status(bil) = BillStatus.done AND NOT status(bil) = BillStatus.canceled
+    
+;
+
+DESIGN bill {
+    statusActions {
+        MOVE PROPERTY(refund(b));                
+    }
+    
+    pane {
+        NEW outstandingCreditPane BEFORE total{
+            type = TABBED;
+            fill = 1;
+            MOVE outstandingCredit;
+            NEW creditInvoices {
+                caption = 'Накладные';
+                showIf = b IS Refund;
+                MOVE BOX(bi);
+                MOVE BOX(bil);
+            }
+        }
+    }
 }
 
 EXTEND FORM bills

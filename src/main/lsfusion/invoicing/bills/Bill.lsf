@@ -1,6 +1,6 @@
 MODULE Bill;
 
-REQUIRE Invoicing, TaxItem, Account, Time, MetaTax;
+REQUIRE Invoicing, TaxItem, Account, Time, MetaTax, InvoicingSettings;
 
 NAMESPACE Invoicing;
 
@@ -28,8 +28,21 @@ partnerAccountNumber 'Счет партнера' (Bill b) = number(partnerAccoun
 CONSTRAINT partnerAccount(Bill b) AND NOT partner(b) = holder(partnerAccount(b))
     CHECKED BY partnerAccount
     MESSAGE 'Счет должен принадлежать выбранному партнеру';
+    
+referenceNUmber 'Код поставщика' = DATA STRING[30] (Bill) NONULL;
 
 notes 'Примечания' = DATA ISTRING[50] (Bill);
+
+series 'Серия' = DATA STRING[2] (Bill);
+number 'Номер' = DATA STRING[28] (Bill) NONULL;
+
+WHEN SETCHANGED (Bill b IS Bill) DO {
+    number(b) <- curStringValue(numeratorBill());
+    series(b) <- series(numeratorBill());
+    incrementValueSession(numeratorBill());   
+}
+
+seriesNumber 'Серия/Номер' (Bill b) = CONCAT '/', series(b), number(b); 
 
 CLASS BillLine 'Строка накладной';
 
@@ -49,7 +62,8 @@ readonly = ABSTRACT CASE BOOLEAN (Bill);
 
 FORM bill 'Приходная накладная'
     OBJECTS  b = Bill PANEL 
-    PROPERTIES(b) READONLYIF readonly(b) date, dueDate, namePartner, partnerAccountNumber, notes
+    PROPERTIES(b) READONLYIF readonly(b) date, dueDate, namePartner, partnerAccountNumber, 
+                                series, number, referenceNUmber, notes
         
     OBJECTS l = BillLine
     PROPERTIES(l) READONLYIF readonly(l) itemName, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
