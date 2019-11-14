@@ -7,7 +7,7 @@ NAMESPACE Inventory;
 @defineDocHistory(shipment, s);
 
 WHEN SETCHANGED (ShipmentLine l IS ShipmentLine) AND shipment(l) = Shipment s 
-                    AND status(s) = ShipmentStatus.waiting DO {     
+                    AND NOT status(s) = ShipmentStatus.draft DO {     
     NEW h = ShipmentHistory {
         shipment(h) <- s;
         date(h) <- currentDateTime();
@@ -18,7 +18,7 @@ WHEN SETCHANGED (ShipmentLine l IS ShipmentLine) AND shipment(l) = Shipment s
 }
 
 WHEN DROPPED (ShipmentLine l IS ShipmentLine) AND PREV(shipment(l)) = Shipment s 
-                    AND status(s) = ShipmentStatus.waiting DO {     
+                    AND NOT status(s) = ShipmentStatus.draft DO {     
     NEW h = ShipmentHistory {
         shipment(h) <- s;
         date(h) <- currentDateTime();
@@ -29,7 +29,7 @@ WHEN DROPPED (ShipmentLine l IS ShipmentLine) AND PREV(shipment(l)) = Shipment s
 }
 
 WHEN CHANGED (initialDemand(ShipmentLine l)) AND shipment(l) = Shipment s 
-                    AND status(s) = ShipmentStatus.waiting DO {     
+                    AND NOT status(s) = ShipmentStatus.draft DO {     
     NEW h = ShipmentHistory {
         shipment(h) <- s;
         date(h) <- currentDateTime();
@@ -40,7 +40,7 @@ WHEN CHANGED (initialDemand(ShipmentLine l)) AND shipment(l) = Shipment s
 }
 
 WHEN CHANGED (nameProduct(ShipmentLine l)) AND shipment(l) = Shipment s 
-                    AND status(s) = ShipmentStatus.waiting DO {     
+                    AND NOT status(s) = ShipmentStatus.draft DO {     
     NEW h = ShipmentHistory {
         shipment(h) <- s;
         date(h) <- currentDateTime();
