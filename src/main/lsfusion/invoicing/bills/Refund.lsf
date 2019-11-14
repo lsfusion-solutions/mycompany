@@ -1,0 +1,69 @@
+MODULE Refund;
+
+REQUIRE BillReady, BillOutstandingCredit;
+
+NAMESPACE Invoicing;
+
+CLASS Refund 'Акт возврата' : Bill;
+isRefund 'Акт возврата' (Bill b) = b IS Refund;
+
+EXTEND CLASS Refund : BillOutstandingCredit;
+amount(Refund c) += totalAmount(c);
+account(Refund c) += partnerAccount(c);
+date(Refund c) += date[Bill](c);
+
+refund 'Создать акт возврата' (Bill b) {
+    APPLY; 
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION { 
+        NEW ni = Refund {
+            date[Bill](ni) <- currentDateTime();
+            partner(ni) <- partner(b);
+            notes(ni) <- notes(b);
+            ready(ni) <- TRUE;
+            FOR bill(BillLine l) = b INLINE NEW nl = BillLine DO {
+                bill(nl) <- ni;
+                item(nl) <- item(l);
+                quantity(nl) <- quantity(l);
+                unitPrice(nl) <- unitPrice(l);
+                FOR in(l, Tax t) DO {
+                    in(nl,t) <- in(l,t);
+                }
+            }
+            SHOW bill OBJECTS b = ni DOCKED;
+        }
+        
+    }
+}
+
+EXTEND FORM bill
+    PROPERTIES(b) refund SHOWIF status(b) = BillStatus.ready AND NOT isRefund(b)
+;
+
+DESIGN bill {
+    statusActions {
+        MOVE PROPERTY(refund(b));                
+    }   
+}
+
+EXTEND FORM bills
+    FILTERS NOT isRefund(b)
+;
+
+FORM refunds 'Акты возврата'
+    OBJECTS b = Bill
+    PROPERTIES(b) READONLY nameStatus BACKGROUND colorStatus(b), date, dueDate, namePartner, notes, 
+                                                                untaxedAmount, totalTax, totalAmount, toBill
+    PROPERTIES(b) NEW, EDIT, DELETE 
+    FILTERS isRefund(b)
+;
+
+NAVIGATOR {
+    invoicing {
+        operations {
+            NEW refunds;
+        }
+    }
+}
+

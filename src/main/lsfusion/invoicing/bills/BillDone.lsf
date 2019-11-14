@@ -14,28 +14,33 @@ registerPayment 'Оформить платеж' (Bill b){
     APPLY; 
     IF canceled() THEN RETURN;
     IF done(b) THEN RETURN;
-    
-    NEWSESSION {
-        NEW p = Payment {
-            date(p) <- currentDateTime();
-            amount(p) <- totalAmount(b) (-) paid(b);
-            fromAccount(p) <- partnerAccount(b);
-            DIALOG payment OBJECTS p = p DO {
-                IF (totalAmount(b) > amount(p) (+) paid(b)) THEN {
-                    ASK 'Оплачена не вся сумма. Закрыть накладную ?' DO {
-                        done(b) <- TRUE;
-                        paid(p, b) <- amount(p);
-                    } ELSE {
-                        paid(p, b) <- amount(p);
-                    }
-                } ELSE {
-                    done(b) <- TRUE; 
-                    paid(p, b) <- amount(p);
-                }
-                APPLY;
-            }   
-        } 
+    IF totalAmount(b) = paid(b) THEN {
+        done(b) <- TRUE;
+        APPLY;
+        RETURN;
     }
+    
+   NEWSESSION {
+       NEW p = Payment {
+           date(p) <- currentDateTime();
+           amount(p) <- totalAmount(b) (-) paid(b);
+           fromAccount(p) <- partnerAccount(b);
+           DIALOG payment OBJECTS p = p DO {
+               IF (totalAmount(b) > amount(p) (+) paid(b)) THEN {
+                   ASK 'Оплачена не вся сумма. Закрыть накладную ?' DO {
+                       done(b) <- TRUE;
+                       paid(p, b) <- amount(p);
+                   } ELSE {
+                       paid(p, b) <- amount(p);
+                   }
+               } ELSE {
+                   done(b) <- TRUE; 
+                   paid(p, b) <- amount(p);
+               }
+               APPLY; 
+           }
+       } 
+   }
 }
 
 EXTEND FORM bill

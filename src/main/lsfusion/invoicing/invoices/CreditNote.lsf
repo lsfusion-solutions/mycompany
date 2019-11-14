@@ -1,0 +1,97 @@
+MODULE CreditNote;
+
+REQUIRE InvoiceCanceled, InvoiceOutstandingCredit;
+
+NAMESPACE Invoicing;
+
+CLASS CreditNote 'Акт расхождения' : Invoice;
+isCreditNote 'Акт расхождения' (Invoice i) = i IS CreditNote;
+
+EXTEND CLASS CreditNote : InvoiceOutstandingCredit;
+amount(CreditNote c) += totalAmount(c);
+account(CreditNote c) += partnerAccount(c);
+date(CreditNote c) += date[Invoice](c);
+
+creditNote 'Создать акт расхождения' (Invoice i) {
+    APPLY; 
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION { 
+        NEW ni = CreditNote {
+            date[Invoice](ni) <- currentDateTime();
+            partner(ni) <- partner(i);
+            notes(ni) <- notes(i);
+            ready(ni) <- TRUE;
+            FOR invoice(InvoiceLine l) = i INLINE NEW nl = InvoiceLine DO {
+                invoice(nl) <- ni;
+                item(nl) <- item(l);
+                quantity(nl) <- quantity(l);
+                unitPrice(nl) <- unitPrice(l);
+                FOR in(l, Tax t) DO {
+                    in(nl,t) <- in(l,t);
+                }
+            }
+            SHOW invoice OBJECTS i = ni DOCKED;
+        }
+        
+    }
+}
+
+EXTEND FORM invoice
+    PROPERTIES(i) creditNote SHOWIF status(i) = InvoiceStatus.ready AND NOT isCreditNote(i)
+;
+
+EXTEND FORM invoice
+    OBJECTS in = Invoice
+    PROPERTIES(in) date, namePartner, partnerAccountNumber
+    PROPERTIES paid(i, in)
+    FILTERS paid(i, in), NOT i = in
+    
+    OBJECTS inv = Invoice
+    PROPERTIES(inv) date, namePartner, partnerAccountNumber, toPay
+    PROPERTIES addPayment(i,inv) DRAW inv TOOLBAR
+    FILTERS partner(inv) = partner(i), toPay(inv) > 0, NOT i = inv,
+        NOT status(inv) = InvoiceStatus.done AND NOT status(inv) = InvoiceStatus.canceled
+    
+;
+
+DESIGN invoice {
+    statusActions {
+        MOVE PROPERTY(creditNote(i));                
+    }
+    
+    pane {
+        NEW outstandingCreditPane BEFORE total{
+            type = TABBED;
+            fill = 1;
+            MOVE outstandingCredit;
+            NEW creditInvoices {
+                caption = 'Накладные';
+                showIf = i IS CreditNote;
+                MOVE BOX(in);
+                MOVE BOX(inv);
+            }
+        }
+    }
+}
+
+EXTEND FORM invoices
+    FILTERS NOT isCreditNote(i)
+;
+
+FORM creditNotes 'Акты расхождения'
+    OBJECTS i = Invoice
+    PROPERTIES(i) READONLY nameStatus BACKGROUND colorStatus(i), date, dueDate, namePartner, notes, 
+                                                                untaxedAmount, totalTax, totalAmount, toInvoice
+    PROPERTIES(i) NEW, EDIT, DELETE 
+    FILTERS isCreditNote(i)
+;
+
+NAVIGATOR {
+    invoicing {
+        operations {
+            NEW creditNotes;
+        }
+    }
+}
+

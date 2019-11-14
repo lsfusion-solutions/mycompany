@@ -1,0 +1,62 @@
+MODULE BillOutstandingCredit;
+
+REQUIRE Bill;
+
+NAMESPACE Invoicing;
+
+CLASS ABSTRACT BillOutstandingCredit 'Закрытие задолженности';
+
+date = ABSTRACT DATETIME (BillOutstandingCredit);
+amount = ABSTRACT NUMERIC[14,2] (BillOutstandingCredit);
+
+account = ABSTRACT Account (BillOutstandingCredit);
+accountNumber 'Счет партнера' (BillOutstandingCredit c) = number(account(c));
+namePartner 'Партнер' (BillOutstandingCredit c) = nameAccountHolder(account(c));
+
+paid 'Оплачено' = DATA NUMERIC[14,2](BillOutstandingCredit, Bill);
+paid 'Оплачено' (Bill b) = GROUP SUM paid(BillOutstandingCredit c, b);// (+) paid(i, i);
+
+billed 'Оплачено' (BillOutstandingCredit c) = GROUP SUM paid(c, Bill i);
+toBill 'Остаток' (BillOutstandingCredit c) = amount(c) (-) billed(c);
+
+EXTEND FORM bills   
+    PROPERTIES(b) READONLY paid  
+;
+
+EXTEND FORM bill
+    PROPERTIES (bb) paid
+;
+
+addBillPayment 'Привязать' (BillOutstandingCredit p, Bill b) {
+    APPLY; 
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {
+        IF toBill(p) >= totalAmount(b) (-) paid(b) THEN paid(p, b) <- totalAmount(b) (-) paid(b);
+        ELSE paid(p, b) <- toBill(p);
+        APPLY;
+    }
+}
+
+EXTEND FORM bill
+    OBJECTS p = BillOutstandingCredit
+    PROPERTIES(p) date, namePartner, accountNumber, toBill
+    FILTERS paid(p, b)
+    
+    OBJECTS pp = BillOutstandingCredit
+    PROPERTIES(pp) date, namePartner, accountNumber, toBill
+    PROPERTIES addBillPayment(pp,b) DRAW pp TOOLBAR
+    FILTERS namePartner(pp) = namePartner(b), toBill(pp) > 0
+    
+;
+
+DESIGN bill {
+    pane {
+        NEW pane3 BEFORE total {
+            fill =1;
+            type = CONTAINERV; 
+            MOVE BOX (p);
+            MOVE BOX (pp);
+        }
+    }
+}

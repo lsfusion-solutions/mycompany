@@ -1,17 +1,13 @@
 MODULE BillPayment;
 
-REQUIRE Invoice, Bill, Payment;
+REQUIRE BillOutstandingCredit, Payment;
 
 NAMESPACE Invoicing;
 
-paid 'Оплачено' = DATA NUMERIC[14,2](Payment, Bill);
-paid 'Оплачено' (Bill b) = GROUP SUM paid(Payment p, b);
+EXTEND CLASS Payment : BillOutstandingCredit;
+amount(Payment p) += amount(p);
+account(Payment p) += fromAccount(p);
+date(Payment p) += date(p);
 
-EXTEND FORM bills
-    PROPERTIES(b) READONLY paid
-;
 
-EXTEND FORM bill
-    PROPERTIES (bb) paid
-;
 

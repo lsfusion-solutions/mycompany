@@ -1,0 +1,65 @@
+MODULE InvoiceOutstandingCredit;
+
+REQUIRE Invoice;
+
+NAMESPACE Invoicing;
+
+CLASS ABSTRACT InvoiceOutstandingCredit 'Закрытие задолженности';
+
+date = ABSTRACT DATETIME (InvoiceOutstandingCredit);
+amount = ABSTRACT NUMERIC[14,2] (InvoiceOutstandingCredit);
+
+account = ABSTRACT Account (InvoiceOutstandingCredit);
+accountNumber 'Счет партнера' (InvoiceOutstandingCredit c) = number(account(c));
+namePartner 'Партнер' (InvoiceOutstandingCredit c) = nameAccountHolder(account(c));
+
+paid 'Оплачено' = DATA NUMERIC[14,2](InvoiceOutstandingCredit, Invoice);
+paid 'Оплачено' (Invoice i) = (GROUP SUM paid(InvoiceOutstandingCredit c, i)) (+) (GROUP SUM paid(i, Invoice ii));
+toPay 'Остаток' (Invoice i) = totalAmount(i) (-) paid(i);
+
+invoiced 'Оплачено' (InvoiceOutstandingCredit c) = GROUP SUM paid(c, Invoice i);
+toInvoice 'Остаток' (InvoiceOutstandingCredit c) = amount(c) (-) invoiced(c);
+
+EXTEND FORM invoices   
+    PROPERTIES(i) READONLY paid  
+;
+
+EXTEND FORM invoice
+    PROPERTIES (ii) paid
+;
+
+addPayment 'Привязать' (InvoiceOutstandingCredit p, Invoice i) {
+    APPLY; 
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {
+        IF toInvoice(p) >= totalAmount(i) (-) paid(i) THEN paid(p, i) <- totalAmount(i) (-) paid(i);
+        ELSE paid(p, i) <- toInvoice(p);
+        APPLY;
+    }
+}
+
+EXTEND FORM invoice
+    OBJECTS p = InvoiceOutstandingCredit
+    PROPERTIES(p) date, namePartner, accountNumber
+    PROPERTIES paid(p, i)
+    FILTERS paid(p, i)
+    
+    OBJECTS pp = InvoiceOutstandingCredit
+    PROPERTIES(pp) date, namePartner, accountNumber, toInvoice
+    PROPERTIES addPayment(pp,i) DRAW pp TOOLBAR
+    FILTERS partner(pp) = partner(i), toInvoice(pp) > 0, NOT pp = i
+    
+;
+
+DESIGN invoice {
+    pane {
+        NEW outstandingCredit BEFORE total {
+            caption = 'Платежи';
+            fill =1;
+            type = CONTAINERV; 
+            MOVE BOX (p);
+            MOVE BOX (pp);
+        }
+    }
+}
