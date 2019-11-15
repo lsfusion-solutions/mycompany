@@ -36,7 +36,7 @@ notes 'Примечания' = DATA ISTRING[50] (Bill);
 series 'Серия' = DATA STRING[2] (Bill);
 number 'Номер' = DATA STRING[28] (Bill) NONULL;
 
-WHEN SETCHANGED (Bill b IS Bill) DO {
+WHEN SETCHANGED (Bill b IS Bill  AND numeratorBill() AND NOT number(b)) DO {
     number(b) <- curStringValue(numeratorBill());
     series(b) <- series(numeratorBill());
     incrementValueSession(numeratorBill());   

@@ -35,7 +35,7 @@ notes 'Примечания' = DATA ISTRING[50] (Invoice);
 series 'Серия' = DATA STRING[2] (Invoice);
 number 'Номер' = DATA STRING[28] (Invoice) NONULL;
 
-WHEN SETCHANGED (Invoice i IS Invoice) DO {
+WHEN SETCHANGED (Invoice i IS Invoice  AND numeratorInvoice() AND NOT number(i)) DO {
     number(i) <- curStringValue(numeratorInvoice());
     series(i) <- series(numeratorInvoice());
     incrementValueSession(numeratorInvoice());   
@@ -94,7 +94,7 @@ DESIGN invoice {
 FORM invoices 'Расходная накладная'
     OBJECTS i = Invoice
     PROPERTIES(i) READONLY date, dueDate, namePartner, notes    
-    PROPERTIES(i) NEWSESSION NEW, EDIT
+    PROPERTIES(i) NEWSESSION EDIT
     PROPERTIES(i) NEWSESSION READONLYIF readonly(i) DELETE
            
     LIST Invoice OBJECT i;

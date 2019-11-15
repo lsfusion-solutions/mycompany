@@ -13,6 +13,22 @@ account(Refund c) += partnerAccount(c);
 date(Refund c) += date[Bill](c);
 number(Refund c) += number[Bill](c);
 
+CLASS BillType 'Тип накладной' {
+    bill 'Накладная',
+    refund 'Возврат'
+}
+
+name 'Имя' (BillType o) = staticCaption(o) IF o IS BillType CHARWIDTH 15;
+
+type 'Тип' (Bill b)=  IF(isRefund(b)) THEN ISTRING[30](name(BillType.refund))
+                        ELSE ISTRING[30](name(BillType.bill));
+
+type(Refund c) += type[Bill](c);
+
+EXTEND FORM bill
+    PROPERTIES(b) type
+;
+
 refund 'Создать акт возврата' (Bill b) {
     APPLY; 
     IF canceled() THEN RETURN;
@@ -37,24 +53,51 @@ refund 'Создать акт возврата' (Bill b) {
     }
 }
 
+registerPayment 'Оформить платеж' (Bill b){
+    APPLY; 
+    IF canceled() THEN RETURN;
+    IF done(b) THEN RETURN;
+    
+   NEWSESSION {
+       NEW p = Payment {
+           date(p) <- currentDateTime();
+           amount(p) <- totalAmount(b) (-) paid(b);
+           IF isRefund(b) THEN fromAccount(p) <- partnerAccount(b);
+               ELSE toAccount(p) <- partnerAccount(b);
+           DIALOG payment OBJECTS p = p DO {
+               IF (totalAmount(b) > amount(p) (+) paid(b)) THEN {
+                   ASK 'Оплачена не вся сумма. Закрыть накладную ?' DO {
+                       done(b) <- TRUE;
+                       paid(p, b) <- amount(p);
+                   }
+               }
+               paid(p, b) <- amount(p);
+               APPLY; 
+           }
+       } 
+   }
+}
+
 EXTEND FORM bill
-    PROPERTIES(b) refund SHOWIF status(b) = BillStatus.ready AND NOT isRefund(b)
+    PROPERTIES(b) refund SHOWIF status(b) = BillStatus.ready AND NOT isRefund(b),
+                registerPayment SHOWIF status(b) = BillStatus.ready
 ;
 
 DESIGN bill {
     statusActions {
-        MOVE PROPERTY(refund(b));                
+        MOVE PROPERTY(refund(b)); 
+        MOVE PROPERTY(registerPayment(b));               
     }   
 }
 
 EXTEND FORM bill
     OBJECTS bi = Bill
-    PROPERTIES(bi) READONLY date, number
+    PROPERTIES(bi) READONLY date, number, type
     PROPERTIES READONLY paid(b, bi)
     FILTERS paid(b, bi), NOT b = bi
     
     OBJECTS bil = Bill
-    PROPERTIES(bil) READONLY date, number, toPay
+    PROPERTIES(bil) READONLY date, number, type, toPay
     PROPERTIES addBillPayment(b, bil) DRAW bil TOOLBAR
     FILTERS partner(bil) = partner(b), toPay(bil) > 0, NOT b = bil,
         NOT status(bil) = BillStatus.done AND NOT status(bil) = BillStatus.canceled
@@ -81,23 +124,23 @@ DESIGN bill {
     }
 }
 
-EXTEND FORM bills
-    FILTERS NOT isRefund(b)
-;
-
-FORM refunds 'Акты возврата'
-    OBJECTS b = Bill
-    PROPERTIES(b) READONLY nameStatus BACKGROUND colorStatus(b), date, dueDate, namePartner, notes, 
-                                                                untaxedAmount, totalTax, totalAmount, toBill
-    PROPERTIES(b) NEW, EDIT, DELETE 
-    FILTERS isRefund(b)
-;
-
-NAVIGATOR {
-    invoicing {
-        operations {
-            NEW refunds;
+addBill 'Накладная' () {
+    NEWSESSION {
+        NEW b = Bill {
+            SHOW bill OBJECTS b = b;  
         }
     }
-}
+}IMAGE 'add.png';
 
+addRefund 'Возврат' () {
+    NEWSESSION {
+        NEW r = Refund {
+            SHOW bill OBJECTS b = r;  
+        }
+    }
+}IMAGE 'add.png';
+
+EXTEND FORM bills
+    PROPERTIES addBill() DRAW b TOOLBAR
+    PROPERTIES addRefund() DRAW b TOOLBAR
+;

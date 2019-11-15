@@ -13,6 +13,8 @@ account = ABSTRACT Account (BillOutstandingCredit);
 accountNumber 'Счет партнера' (BillOutstandingCredit c) = number(account(c));
 namePartner 'Партнер' (BillOutstandingCredit c) = nameAccountHolder(account(c));
 
+type 'Тип' = ABSTRACT ISTRING[30](BillOutstandingCredit);
+
 number 'Номер' = ABSTRACT STRING[28] (BillOutstandingCredit);
 
 paid 'Оплачено' = DATA NUMERIC[14,2](BillOutstandingCredit, Bill);
@@ -43,12 +45,12 @@ addBillPayment 'Привязать' (BillOutstandingCredit p, Bill b) {
 
 EXTEND FORM bill
     OBJECTS p = BillOutstandingCredit
-    PROPERTIES(p) READONLY date, number
+    PROPERTIES(p) READONLY date, number, type
     PROPERTIES READONLY paid(p, b)
     FILTERS paid(p, b)
     
     OBJECTS pp = BillOutstandingCredit
-    PROPERTIES(pp) READONLY date, number, toBill
+    PROPERTIES(pp) READONLY date, number, type, toBill
     PROPERTIES addBillPayment(pp, b) DRAW pp TOOLBAR
     FILTERS partner(pp) = partner(b), toBill(pp) > 0, NOT pp = b
     

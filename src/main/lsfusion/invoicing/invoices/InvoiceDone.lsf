@@ -14,32 +14,8 @@ WHEN SET (totalAmount(Invoice i) = paid(i)) DO {
     done(i) <- TRUE;
 }
 
-registerPayment 'Оформить платеж' (Invoice i){
-    APPLY; 
-    IF canceled() THEN RETURN;
-    IF done(i) THEN RETURN;
-    
-    NEWSESSION {
-        NEW p = Payment {
-            date(p) <- currentDateTime();
-            amount(p) <- totalAmount(i) (-) paid(i);
-            fromAccount(p) <- partnerAccount(i);
-            DIALOG payment OBJECTS p = p DO {
-                IF (totalAmount(i) > amount(p) (+) paid(i)) THEN {
-                    ASK 'Оплачена не вся сумма. Закрыть накладную ?' DO {
-                        done(i) <- TRUE;
-                        paid(p, i) <- amount(p);
-                    } 
-                }
-                paid(p, i) <- amount(p);
-                APPLY; 
-            }
-        } 
-    }
-}
-
 EXTEND FORM invoice
-    PROPERTIES(i) registerPayment SHOWIF status(i) = InvoiceStatus.ready, done READONLY 
+    PROPERTIES(i) done READONLY 
 ;
 
 EXTEND FORM invoices 
@@ -50,9 +26,6 @@ EXTEND FORM invoices
 status(Invoice b) += WHEN done(b) THEN InvoiceStatus.done;
 
 DESIGN invoice {                               
-    statusActions {                  
-        MOVE PROPERTY(registerPayment(i));
-    }
     status {
         MOVE PROPERTY(done(i));                              
     }                 
