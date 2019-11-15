@@ -4,12 +4,22 @@ REQUIRE Invoicing;
 
 CLASS PaymentTerm 'Условия оплаты';
 
-name 'Наименование' = DATA STRING[50] (PaymentTerm) IN base;
-days 'Дни' = DATA INTEGER (PaymentTerm);
+name 'Наименование' = DATA ISTRING[50] (PaymentTerm) NONULL IN base;
+days 'Дни' = DATA INTEGER (PaymentTerm) NONULL;
+
+FORM paymentTerm 'Условие оплаты'
+    OBJECTS p = PaymentTerm PANEL 
+    PROPERTIES(p) name, days
+    
+    EDIT PaymentTerm OBJECT p
+;
 
 FORM paymentTerms 'Условия оплаты'
     OBJECTS p = PaymentTerm
-    PROPERTIES (p) name, days, NEW, DELETE 
+    PROPERTIES(p) READONLY name, days
+    PROPERTIES(p) NEWSESSION NEW, EDIT, DELETE 
+    
+    LIST PaymentTerm OBJECT p
 ;
 
 NAVIGATOR {

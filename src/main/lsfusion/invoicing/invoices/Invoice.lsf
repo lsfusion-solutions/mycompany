@@ -1,6 +1,6 @@
 MODULE Invoice;
 
-REQUIRE Invoicing, TaxItem, Account, Time, MetaTax, InvoicingSettings;
+REQUIRE Invoicing, TaxItem, Account, Time, MetaTax, InvoicingSettings, PaymentTerms;
 
 NAMESPACE Invoicing;
 
@@ -43,6 +43,13 @@ WHEN SETCHANGED (Invoice i IS Invoice  AND numeratorInvoice() AND NOT number(i))
 
 seriesNumber 'Серия/Номер' (Invoice i) = CONCAT '/', series(i), number(i); 
 
+paymentTerms 'Условия оплаты' = DATA PaymentTerm (Invoice); 
+namePaymentTerms 'Условия оплаты' (Invoice i) = name(paymentTerms(i));
+
+WHEN LOCAL SETCHANGED (paymentTerms(Invoice i)) AND date(i) DO {
+    dueDate(i) <- sumDay(date(i), days(paymentTerms(i)));
+}
+
 CLASS InvoiceLine 'Строка накладной';
 
 invoice 'Накладная' = DATA Invoice (InvoiceLine) NONULL DELETE;
@@ -62,7 +69,8 @@ readonly = ABSTRACT CASE BOOLEAN (Invoice);
 
 FORM invoice 'Расходная накладная'
     OBJECTS  i = Invoice PANEL 
-    PROPERTIES(i) READONLYIF readonly(i)  date, dueDate, namePartner, partnerAccountNumber, series, number, notes
+    PROPERTIES(i) READONLYIF readonly(i)  date, dueDate, namePartner, partnerAccountNumber, series, number, notes,
+                             namePaymentTerms
         
     OBJECTS l = InvoiceLine
     PROPERTIES(l) READONLYIF readonly(l) nameItem, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
