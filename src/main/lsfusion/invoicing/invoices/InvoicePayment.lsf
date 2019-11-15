@@ -1,6 +1,6 @@
 MODULE InvoicePayment;
 
-REQUIRE CreditNote, Payment;
+REQUIRE InvoiceDone, InvoiceOutstandingCredit, Payment;
 
 NAMESPACE Invoicing;
 
@@ -16,12 +16,10 @@ number(Payment p) += number(p);
 type(Payment p) += 'Платеж' IF p IS Payment;
 
 isCreditNote 'Возврат' = ABSTRACT BOOLEAN (InvoiceOutstandingCredit);
-isCreditNote(CreditNote c) += isCreditNote[Invoice](c);
 
 registerPayment 'Оформить платеж' (Invoice i){
     APPLY; 
     IF canceled() THEN RETURN;
-    IF done(i) THEN RETURN;
     
     NEWSESSION {
         NEW p = Payment {

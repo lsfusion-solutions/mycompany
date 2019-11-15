@@ -1,6 +1,6 @@
 MODULE Refund;
 
-REQUIRE BillCanceled, BillOutstandingCredit;
+REQUIRE BillPayment;
 
 NAMESPACE Invoicing;
 
@@ -24,6 +24,7 @@ type 'Тип' (Bill b)=  IF(isRefund(b)) THEN ISTRING[30](name(BillType.refund))
                         ELSE ISTRING[30](name(BillType.bill));
 
 type(Refund c) += type[Bill](c);
+isRefund(Refund r) += isRefund[Bill](r);
 
 EXTEND FORM bill
     PROPERTIES(b) type
@@ -75,8 +76,7 @@ EXTEND FORM bill
     PROPERTIES(bil) READONLY date, number, type, toPay
     PROPERTIES addBillPayment(b, bil) DRAW bil TOOLBAR
     FILTERS partner(bil) = partner(b), toPay(bil) > 0, NOT b = bil,
-        NOT status(bil) = BillStatus.done AND NOT status(bil) = BillStatus.canceled
-    
+            status(bil) = BillStatus.ready
 ;
 
 DESIGN bill {
@@ -115,7 +115,7 @@ addRefund 'Возврат' () {
             SHOW bill OBJECTS b = r;  
         }
     }
-}IMAGE 'add.png';
+} IMAGE 'add.png';
 
 EXTEND FORM bills
     PROPERTIES addBill() DRAW b TOOLBAR

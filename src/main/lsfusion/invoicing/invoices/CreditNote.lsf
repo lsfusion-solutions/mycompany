@@ -1,6 +1,6 @@
 MODULE CreditNote;
 
-REQUIRE InvoiceCanceled, InvoiceOutstandingCredit;
+REQUIRE InvoicePayment, InvoiceOutstandingCredit;
 
 NAMESPACE Invoicing;
 
@@ -24,6 +24,7 @@ name 'Имя' (InvoiceType o) = staticCaption(o) IF o IS InvoiceType CHARWIDTH 1
 type 'Тип' (Invoice i) = IF(isCreditNote(i)) THEN ISTRING[30](name(InvoiceType.creditNote))
                                      ELSE ISTRING[30](name(InvoiceType.invoice));
 type(CreditNote c) += type[Invoice](c);
+isCreditNote(CreditNote c) += isCreditNote[Invoice](c);
 
 EXTEND FORM invoice
     PROPERTIES(i) type
@@ -67,8 +68,7 @@ EXTEND FORM invoice
     PROPERTIES(inv) READONLY date, number, type, toPay
     PROPERTIES addPayment(i, inv) DRAW inv TOOLBAR
     FILTERS partner(inv) = partner(i), toPay(inv) > 0, NOT i = inv,
-        NOT status(inv) = InvoiceStatus.done AND NOT status(inv) = InvoiceStatus.canceled
-    
+            status(inv) = InvoiceStatus.ready
 ;
 
 DESIGN invoice {
