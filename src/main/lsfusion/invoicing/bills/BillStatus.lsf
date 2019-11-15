@@ -33,44 +33,10 @@ colorStatus(Bill b) += WHEN status(b) == BillStatus.draft THEN RGB(187,242,210);
 readonly (BillLine l) += WHEN NOT status(bill(l)) = BillStatus.draft THEN TRUE;
 readonly (Bill b) += WHEN NOT status(b) = BillStatus.draft THEN TRUE;
 
-copyBill 'Копировать' (Bill b)  { 
-    NEWSESSION {
-        NEW nb = Bill {
-            partner(nb) <- partner(b);
-            notes(nb) <- notes(b);
-            FOR bill(BillLine l) = b INLINE NEW nl = BillLine DO {
-                bill(nl) <- nb;
-                item(nl) <- item(l);
-                quantity(nl) <- quantity(l);
-                unitPrice(nl) <- unitPrice(l);
-            }
-            SHOW bill OBJECTS b = nb DOCKED;
-        }
-    }
-}
-
-EXTEND FORM bill
-    PROPERTIES(b) copyBill
-;
-
 DESIGN bill {
     OBJECTS {        
-        NEW statusPane FIRST {
-            caption = 'Статусы';
-            type = CONTAINERH;
-            alignment = STRETCH;                          
-            NEW statusActions {
-                type = CONTAINERH;                    
-                flex = 1; 
-                NEW primary {
-                    type = CONTAINERH;
-                }
-                NEW  secondary {
-                    type = CONTAINERH;
-                    MOVE PROPERTY (copyBill(b));  
-                }          
-            }
-            NEW status {
+        statusPane {                         
+            NEW status AFTER statusActions{
                 type = CONTAINERH;                
                 MOVE PROPERTY(nameStatus(b)); 
             }

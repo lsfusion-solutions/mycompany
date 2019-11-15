@@ -70,9 +70,48 @@ FORM invoice 'Расходная накладная'
     
     EDIT Invoice OBJECT i;
 ;
+
+copyInvoice 'Копировать' (Invoice i)  { 
+    NEWSESSION {
+        NEW ni = Invoice {
+            partner(ni) <- partner(i);
+            notes(ni) <- notes(i);
+            FOR invoice(InvoiceLine l) = i INLINE NEW nl = InvoiceLine DO {
+                invoice(nl) <- ni;
+                item(nl) <- item(l);
+                quantity(nl) <- quantity(l);
+                unitPrice(nl) <- unitPrice(l);
+                FOR in(l, Tax t) DO {
+                    in(nl,t) <- in(l,t);
+                }
+            }
+            SHOW invoice OBJECTS i = ni DOCKED;
+        }
+    }
+}
+
+EXTEND FORM invoice
+    PROPERTIES(i) copyInvoice
+;
     
 DESIGN invoice {
     OBJECTS {
+        NEW statusPane FIRST {
+            caption = 'Статусы';
+            type = CONTAINERH;
+            alignment = STRETCH;                          
+            NEW statusActions {
+                type = CONTAINERH;                    
+                flex = 1; 
+                NEW primary {
+                    type = CONTAINERH;
+                }
+                NEW  secondary {
+                    type = CONTAINERH;
+                    MOVE PROPERTY (copyInvoice(i));  
+                }            
+            }
+        }
         NEW header{
             MOVE BOX (i);
             PROPERTY (namePartner(i)) {notNull = TRUE;}

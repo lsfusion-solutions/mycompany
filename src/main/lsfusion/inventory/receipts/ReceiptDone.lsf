@@ -7,6 +7,11 @@ NAMESPACE Inventory;
 // Принят
 done 'Принят' = DATA BOOLEAN (Receipt);
 
+done 'Принятое количествово' = DATA NUMERIC[16,3] (ReceiptLine);
+
+CONSTRAINT done(ReceiptLine l) < 0 OR done(l) > initialDemand(l) 
+    MESSAGE 'Отгруженое количество должно быть от 0 до исходного';
+
 validate 'Принят' (Receipt r) {
     APPLY; // сохраняем изменения
     IF canceled() THEN RETURN; // если сработало ограничение, то выходим
@@ -51,6 +56,9 @@ readonlyHeader (Receipt r) += WHEN status(r) = ReceiptStatus.done THEN TRUE;
 EXTEND FORM receipt
     PROPERTIES(r) validate SHOWIF status(r) = ReceiptStatus.ready, done READONLY 
     PROPERTIES (r)  executionDate READONLY AFTER scheduledDate(r) SHOWIF done(r)
+    
+    PROPERTIES(l) done READONLYIF NOT status(r) = ReceiptStatus.ready BACKGROUND 
+                       IF status(r) = ReceiptStatus.ready THEN RGB(198,230,247)
 ;
 DESIGN receipt {
     PROPERTY(validate(r)) { background = RGB(219,160,232);}//#DBA0E8

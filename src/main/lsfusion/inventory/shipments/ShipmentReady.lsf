@@ -42,8 +42,7 @@ EXTEND FORM shipment
     PROPERTIES(s) checkAvailability SHOWIF status(s) = ShipmentStatus.waiting OR (status(s) = ShipmentStatus.ready AND countLinesDemand(s)), 
                   undo SHOWIF status(s) = ShipmentStatus.ready, ready READONLY 
        
-    PROPERTIES(l) reserved READONLY, done READONLYIF NOT status(s) = ShipmentStatus.ready BACKGROUND 
-                                          IF status(s) = ShipmentStatus.ready THEN RGB(198,230,247)
+    PROPERTIES(l) reserved READONLY
     FILTERS shipment(l) = s
 ;
 
@@ -66,6 +65,3 @@ DESIGN shipment {
         MOVE PROPERTY(ready(s));                               
     }    
 }
-
-CONSTRAINT done(ShipmentLine l) < 0 OR done(l) > initialDemand(l) 
-    MESSAGE 'Отгруженое количество должно быть от 0 до исходного';

@@ -5,8 +5,6 @@ REQUIRE Inventory, ReceiptStatus, ResLedger;
 NAMESPACE Inventory;
 
 // К приемке
-done 'Принятое количествово' = DATA NUMERIC[16,3] (ReceiptLine);
-
 ready 'К приемке' = DATA BOOLEAN (Receipt);
 
 markAsToDo 'В работу' (Receipt r) {
@@ -25,9 +23,6 @@ EXTEND CLASS ReceiptStatus {
 
 EXTEND FORM receipt
     PROPERTIES(r) markAsToDo SHOWIF status(r) = ReceiptStatus.draft, ready READONLY 
-
-    PROPERTIES(l) done READONLYIF NOT status(r) = ReceiptStatus.ready BACKGROUND 
-                IF status(r) = ReceiptStatus.ready THEN RGB(198,230,247)
 ;
 
 EXTEND FORM receipts    
@@ -48,6 +43,3 @@ DESIGN receipt {
         MOVE PROPERTY(ready(r));                               
     }
 }
-
-CONSTRAINT done(ReceiptLine l) < 0 OR done(l) > initialDemand(l) 
-    MESSAGE 'Отгруженое количество должно быть от 0 до исходного';
