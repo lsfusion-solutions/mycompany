@@ -1,0 +1,55 @@
+MODULE OrderReceipt;
+
+REQUIRE Purchase, Order, Receipt, ReceiptStatus, ReceiptDone, OrderStatus, OrderConfirm, OrderCancel;
+
+orderLine 'ссылка на заказ' = DATA OrderLine (ReceiptLine);
+order 'ссылка на заказ' = DATA Order (Receipt);
+
+received 'Оприходовано на слад' (OrderLine ol) = GROUP SUM done(ReceiptLine rl) IF orderLine(rl)=ol AND done(receipt(rl));
+initialDemand 'Запланировано' (OrderLine ol) = GROUP SUM initialDemand(ReceiptLine rl) IF orderLine(rl)=ol AND (ready(receipt(rl)) OR done(receipt(rl)));
+
+checkReceipt 'Сверка прихода' (Order o) {
+        IF canceled(o) THEN RETURN;
+            NEW nr = Receipt {
+                partner(nr) <- vendor(o);
+                scheduledDate(nr) <- scheduledDate(o);
+                location(nr) <- location(o);
+                type(nr) <- typeRecieptDefault();
+                number(nr) <- curStringValue(numerator(type(nr)));
+                series(nr) <- series(numerator(type(nr)));
+                incrementValueSession(numerator(type(nr)));
+                ready(nr) <- TRUE;           
+                order(nr) <- o;    
+                FOR order(OrderLine ol) = o AND NOT (quantity(ol)-initialDemand(ol)<=0) INLINE NEW rl = ReceiptLine DO {
+                    receipt(rl) <- nr;
+                    product(rl) <- item(ol);
+                    initialDemand(rl) <- quantity(ol);
+                    orderLine(rl) <- ol;
+                }
+            }
+}
+
+dateReceipt 'Дата прихода' (ReceiptLine rl) = scheduledDate(receipt(rl));
+statusReceipt 'Статус' (ReceiptLine rl) = nameStatus(receipt(rl));
+
+FORM orderReceiptShow 'Оприходовано на склад'
+    OBJECTS ol = OrderLine
+    OBJECTS rl = ReceiptLine
+    PROPERTIES (rl) dateReceipt, statusReceipt, initialDemand, done
+    FILTERS orderLine(rl) = ol
+;
+DESIGN orderReceiptShow{
+    MOVE BOX(rl) FIRST {caption='';}
+}
+
+showReceipts (OrderLine l){
+    DIALOG orderReceiptShow OBJECTS ol = l; 
+}
+WHEN SET(confirmed(Order o)) DO{
+//  OR ((GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) IF order(l) = o) AND confirmed(o))
+    checkReceipt(o);
+}  
+
+EXTEND FORM order
+    PROPERTIES (l) SHOWIF confirmed(o) received ON CHANGE showReceipts(l)
+;

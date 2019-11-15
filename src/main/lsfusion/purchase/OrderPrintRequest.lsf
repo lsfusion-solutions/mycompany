@@ -6,11 +6,12 @@ NAMESPACE Purchase;
 
 printRequest 'Печать запрос' (Order o) {
     sentRequestDateTime(o) <- currentDateTime();
+    sent(o) <- TRUE;
     MESSAGE 'Запрос напечатан';
 }  
  
 EXTEND FORM order
-     PROPERTIES (o) SHOWIF (status(o)=OrderStatus.requestDraft OR status(o)=OrderStatus.requestSent)  printRequest;
+     PROPERTIES (o) SHOWIF (status(o)=OrderStatus.requestDraft OR status(o)=OrderStatus.requestSent)  printRequest BACKGROUND (CASE WHEN NOT sent(o) THEN nextAction());
 ;
 
 DESIGN order {

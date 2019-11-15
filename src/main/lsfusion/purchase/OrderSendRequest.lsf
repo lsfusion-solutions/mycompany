@@ -6,11 +6,12 @@ NAMESPACE Purchase;
 
 sendRequest 'Отправить запрос' (Order o){
     sentRequestDateTime(o) <- currentDateTime();
+    sent(o) <- TRUE;
     MESSAGE 'Запрос отправлен';    
 }
 
 EXTEND FORM order
-     PROPERTIES (o) SHOWIF (status(o)=OrderStatus.requestDraft OR status(o)=OrderStatus.requestSent) sendRequest;
+     PROPERTIES (o) SHOWIF (status(o)=OrderStatus.requestDraft OR status(o)=OrderStatus.requestSent) sendRequest BACKGROUND (CASE WHEN NOT sent(o) THEN nextAction());
 ;
 
 DESIGN order {

@@ -8,14 +8,16 @@ EXTEND CLASS OrderStatus{
     orderCanceled 'Заказ отменен'
 }
 
-canceledDateTime = DATA DATETIME (Order);
+canceledDateTime 'Отменен' = DATA DATETIME (Order);
+canceled 'Отменен' = DATA BOOLEAN (Order);
 
-cancelOrder 'Отмена заказа' (Order o){
-    canceledDateTime(o) <- currentDateTime();    
+cancelOrder 'Отменить' (Order o){
+    canceledDateTime(o) <- currentDateTime();
+    canceled(o) <- TRUE;    
     MESSAGE 'Заказ отменен';    
 }
 
-status(Order o) += WHEN canceledDateTime(o) THEN OrderStatus.orderCanceled;
+status(Order o) += WHEN canceled(o) THEN OrderStatus.orderCanceled;
 colorStatus(Order o) += WHEN status(o) == OrderStatus.orderCanceled THEN RGB(252,247,149);
 
 EXTEND FORM order
@@ -31,5 +33,5 @@ DESIGN order {
 }
 
 EXTEND FORM orders
-    PROPERTIES (o) SHOWIF showActionsTime() canceledDateTime BEFORE seriesNumber(o) ;
+    PROPERTIES (o) READONLY SHOWIF showActionsTime() canceledDateTime BEFORE seriesNumber(o) ;
 ;
