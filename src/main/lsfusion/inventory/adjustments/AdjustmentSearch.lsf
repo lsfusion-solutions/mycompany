@@ -1,0 +1,54 @@
+MODULE AdjustmentSearch;
+
+REQUIRE Adjustment, BarCode;
+
+NAMESPACE Inventory;
+
+
+realQuantity 'Фактическое кол-во' (Adjustment, Product, Location) = 
+    GROUP SUM realQuantity(AdjustmentLine l) BY adjustment(l), product(l), location(l);
+    
+showSearch = ABSTRACT CASE BOOLEAN (Adjustment);
+
+addAdjustmentLine(Adjustment a, Product p, Location loc) {
+    INPUT q = NUMERIC[16,3] DO {
+        IF q THEN {
+            FOR product(AdjustmentLine line) = p AND location(line) = loc AND adjustment(line) = a DO {
+                realQuantity(line) <- q;
+                RETURN;
+            }
+            NEW l = AdjustmentLine {
+                adjustment(l) <- a;
+                product(l) <- p;
+                location(l) <- loc;
+                theoreticalQuantity(l) <- onHand(loc, p);
+                realQuantity(l) <- q;
+            }
+        }
+    }
+}
+
+EXTEND FORM adjustment
+    TREE locations lt = Location PARENT parent(lt)
+    PROPERTIES READONLY name(lt)
+    ORDER name(lt)
+        
+    OBJECTS lp = (loc = Location, p = Product)
+    PROPERTIES READONLY 'Склад' = canonicalName(loc), 'Товар' = name(p) 
+    PROPERTIES(loc,p) READONLY onHand
+    PROPERTIES realQuantity(a, p, loc) ON CHANGE addAdjustmentLine(a, p, loc)
+    FILTERS level(loc, lt), onHand(loc, p)
+;
+
+DESIGN adjustment {
+    body {
+        NEW search {
+            showIf = showSearch(a);
+            fill = 1;
+            type = SPLITH;
+            caption = 'Подбор';
+            MOVE BOX (TREE locations);
+            MOVE BOX (lp) {fill = 2;}
+        }
+    }
+}

@@ -1,6 +1,6 @@
 MODULE AdjustmentInProgress;
 
-REQUIRE AdjustmentStatus;
+REQUIRE AdjustmentStatus, AdjustmentSearch;
 
 NAMESPACE Inventory;
 
@@ -24,6 +24,7 @@ status(Adjustment a) += WHEN inProgress(a) THEN AdjustmentStatus.inProgress;
 colorStatus(Adjustment a) += WHEN status(a) == AdjustmentStatus.inProgress THEN RGB(252,247,149);
 
 readonly (AdjustmentLine l) += WHEN NOT status(adjustment(l)) = AdjustmentStatus.inProgress THEN TRUE;
+showSearch (Adjustment a) += WHEN status(a) = AdjustmentStatus.inProgress AND type(a) = AdjustmentType.manual THEN TRUE;
 
 EXTEND FORM adjustment
     PROPERTIES(a) markAsToDo SHOWIF status(a) = AdjustmentStatus.draft, inProgress READONLY

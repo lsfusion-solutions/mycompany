@@ -32,7 +32,8 @@ CLASS AdjustmentType 'Тип инвентаризации' {
     manual 'Вручную'
 }
 
-WHEN LOCAL (CHANGED (location(AdjustmentLine l)) OR CHANGED (product(l))) AND location(l) AND product(l) DO {
+WHEN LOCAL (CHANGED (location(AdjustmentLine l)) OR CHANGED (product(l))) AND location(l) AND product(l)
+                                                        AND NOT theoreticalQuantity(l) DO {
     theoreticalQuantity(l) <- onHand(location(l), product(l));
     realQuantity(l) <- theoreticalQuantity(l);
 }
