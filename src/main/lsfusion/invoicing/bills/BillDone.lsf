@@ -1,6 +1,6 @@
 MODULE BillDone;
 
-REQUIRE Invoicing, BillReady, Time;
+REQUIRE Invoicing, BillReady, BillOutstandingCredit, Time;
 
 NAMESPACE Invoicing;
 
@@ -10,7 +10,7 @@ EXTEND CLASS BillStatus {
     done 'Оплачено'
 }
 
-WHEN SET (totalAmount(Bill b) = paid(i)) DO {
+WHEN SET (totalAmount(Bill b) = paid(b)) DO {
     done(b) <- TRUE;
 }
 
