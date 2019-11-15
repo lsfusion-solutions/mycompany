@@ -139,24 +139,3 @@ NAVIGATOR {
         NEW shipments;
     }
 }
-
-copyShipment 'Копировать' (Shipment s)  { 
-    NEWSESSION {
-        NEW ns = Shipment {
-            type(ns) <- type(s);
-            location(ns) <- location(s);
-            toLocation(ns) <- toLocation(s);
-            notes(ns) <- notes(s);
-            FOR shipment(ShipmentLine l) = s INLINE NEW nl = ShipmentLine DO {
-                shipment(nl) <- ns;
-                product(nl) <- product(l);
-                initialDemand(nl) <- initialDemand(l);
-            }
-            SHOW shipment OBJECTS s = ns DOCKED;
-        }
-    }
-}
-
-EXTEND FORM shipments
-    PROPERTIES(s) copyShipment TOOLBAR 
-;

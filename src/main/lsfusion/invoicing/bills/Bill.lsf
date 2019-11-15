@@ -110,21 +110,5 @@ NAVIGATOR {
         }
     }
 }
-    
-copyBill 'Копировать' (Bill b)  { 
-    NEWSESSION {
-        NEW nb = Bill {
-            partner(nb) <- partner(b);
-            notes(nb) <- notes(b);
-            FOR bill(BillLine l) = b INLINE NEW nl = BillLine DO {
-                bill(nl) <- nb;
-                item(nl) <- item(l);
-                quantity(nl) <- quantity(l);
-                unitPrice(nl) <- unitPrice(l);
-            }
-            SHOW bill OBJECTS b = nb DOCKED;
-        }
-    }
-}
 
 @defineTaxForm(bill, b);

@@ -124,24 +124,3 @@ NAVIGATOR {
         NEW receipts;
     }
 }
-
-copyReceipt 'Копировать' (Receipt r)  { 
-    NEWSESSION {
-        NEW nr = Receipt {
-            type(nr) <- type(r);
-            location(nr) <- location(r);
-            partner(nr) <- partner(r);
-            notes(nr) <- notes(r);
-            FOR receipt(ReceiptLine l) = r INLINE NEW nl = ReceiptLine DO {
-                receipt(nl) <- nr;
-                product(nl) <- product(l);
-                initialDemand(nl) <- initialDemand(l);
-            }
-            SHOW receipt OBJECTS r = nr DOCKED;
-        }
-    }
-}
-
-EXTEND FORM receipts
-    PROPERTIES(r) copyReceipt TOOLBAR 
-;

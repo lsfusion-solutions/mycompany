@@ -42,6 +42,27 @@ EXTEND FORM receipts
 status(Receipt r) += WHEN r IS Receipt THEN ReceiptStatus.draft;
 colorStatus(Receipt r) += WHEN status(r) == ReceiptStatus.draft THEN RGB(187,242,210);
 
+copyReceipt 'Копировать' (Receipt r)  { 
+    NEWSESSION {
+        NEW nr = Receipt {
+            type(nr) <- type(r);
+            location(nr) <- location(r);
+            partner(nr) <- partner(r);
+            notes(nr) <- notes(r);
+            FOR receipt(ReceiptLine l) = r INLINE NEW nl = ReceiptLine DO {
+                receipt(nl) <- nr;
+                product(nl) <- product(l);
+                initialDemand(nl) <- initialDemand(l);
+            }
+            SHOW receipt OBJECTS r = nr DOCKED;
+        }
+    }
+}
+
+EXTEND FORM receipt
+    PROPERTIES(r) copyReceipt 
+;
+
 DESIGN receipt {
     OBJECTS {        
         NEW statusPane FIRST {
@@ -50,7 +71,8 @@ DESIGN receipt {
             alignment = STRETCH;                          
             NEW statusActions {
                 type = CONTAINERH;                    
-                flex = 1;                
+                flex = 1; 
+                MOVE PROPERTY (copyReceipt(r));             
             }
             NEW status {
                 type = CONTAINERH;                

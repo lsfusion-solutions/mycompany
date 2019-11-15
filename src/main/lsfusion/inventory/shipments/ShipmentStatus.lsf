@@ -31,6 +31,26 @@ status(Shipment s) += WHEN s IS Shipment THEN ShipmentStatus.draft;
 readonly (Shipment s) += WHEN NOT status(s) = ShipmentStatus.draft THEN TRUE;
 colorStatus(Shipment s) += WHEN status(s) == ShipmentStatus.draft THEN RGB(187,242,210);
 
+copyShipment 'Копировать' (Shipment s)  { 
+    NEWSESSION {
+        NEW ns = Shipment {
+            type(ns) <- type(s);
+            location(ns) <- location(s);
+            toLocation(ns) <- toLocation(s);
+            notes(ns) <- notes(s);
+            FOR shipment(ShipmentLine l) = s INLINE NEW nl = ShipmentLine DO {
+                shipment(nl) <- ns;
+                product(nl) <- product(l);
+                initialDemand(nl) <- initialDemand(l);
+            }
+            SHOW shipment OBJECTS s = ns DOCKED;
+        }
+    }
+}
+
+EXTEND FORM shipment
+    PROPERTIES(s) copyShipment
+;
 
 DESIGN shipment {
     OBJECTS {        
@@ -40,7 +60,8 @@ DESIGN shipment {
             alignment = STRETCH;                          
             NEW statusActions {
                 type = CONTAINERH;                    
-                flex = 1;                
+                flex = 1; 
+                MOVE PROPERTY(copyShipment(s));               
             }
             NEW status {
                 type = CONTAINERH;                
