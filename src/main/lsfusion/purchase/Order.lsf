@@ -1,5 +1,5 @@
 MODULE Order;
-REQUIRE System, Time, Utils, Purchase, Location, Partner, Item, Numerator, Incoterms, PaymentTerms, TaxItem, MetaTax, ItemMeasure, Individual, LegalEntity, Company;
+REQUIRE System, Time, Utils, Purchase, Location, Partner, Item, Numerator, Incoterms, PaymentTerms, TaxItem, MetaTax, ItemMeasure, Individual, LegalEntity, Company, Doc;
 
 NAMESPACE Purchase;
 
@@ -36,7 +36,9 @@ namePaymentterm 'Условие оплаты' (Order o)= name(paymentterm(o));
 
 representative 'Наш представитель' = DATA Individual (Order);
 nameRepresentative 'Наш представитель' (Order o)= name(representative(o));
-CONSTRAINT NOT type(legalEntity(representative(Order o))) = PartnerType.company AND o IS Order MESSAGE 'Должен быть наш работник';
+//CONSTRAINT (NOT type(legalEntity(representative(Order o))) = PartnerType.company OR NOT type(representative(o))= PartnerType.individual) AND o IS Order CHECKED MESSAGE 'Должен быть наш работник';
+CONSTRAINT NOT type(representative(Order o))=PartnerType.individual AND o IS Order CHECKED MESSAGE 'Должен быть наш работник';
+CONSTRAINT NOT type(legalEntity(representative(Order o))) = PartnerType.company AND o IS Order CHECKED MESSAGE 'Должен быть наш работник';
   
 CLASS OrderLine 'Спецификация';
 order =  DATA Order (OrderLine) NONULL  DELETE;

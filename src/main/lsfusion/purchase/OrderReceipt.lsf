@@ -1,14 +1,15 @@
 MODULE OrderReceipt;
 
-REQUIRE Purchase, Order, Receipt, ReceiptStatus, ReceiptDone, OrderStatus, OrderConfirm, OrderCancel;
+REQUIRE Purchase, Order, Receipt, ReceiptStatus, ReceiptDone, OrderStatus, OrderConfirm, OrderCancel, ReceiptCanceled;
 
 orderLine 'ссылка на заказ' = DATA OrderLine (ReceiptLine);
 order 'ссылка на заказ' = DATA Order (Receipt);
 
-received 'Оприходовано на слад' (OrderLine ol) = GROUP SUM done(ReceiptLine rl) IF orderLine(rl)=ol AND done(receipt(rl));
-initialDemand 'Запланировано' (OrderLine ol) = GROUP SUM initialDemand(ReceiptLine rl) IF orderLine(rl)=ol AND (ready(receipt(rl)) OR done(receipt(rl)));
+doneReceipt 'Оприходовано на склад' (OrderLine ol) = GROUP SUM done(ReceiptLine rl) IF orderLine(rl)=ol AND done(receipt(rl)) AND NOT canceled(receipt(rl));
+initReceipt 'Запланирован приход на склад' (OrderLine ol) = GROUP SUM initialDemand(ReceiptLine rl) IF orderLine(rl)=ol AND ready(receipt(rl)) AND NOT canceled(receipt(rl));
+deficitReceipt 'Недопоступило' (Order o) =  GROUP SUM abs(initReceipt(OrderLine ol)(-)quantity(ol)) IF order(ol)=o;
 
-checkReceipt 'Сверка прихода' (Order o) {
+createReceipt 'Добавить приход на склад' (Order o) {
         IF canceled(o) THEN RETURN;
             NEW nr = Receipt {
                 partner(nr) <- vendor(o);
@@ -20,10 +21,10 @@ checkReceipt 'Сверка прихода' (Order o) {
                 incrementValueSession(numerator(type(nr)));
                 ready(nr) <- TRUE;           
                 order(nr) <- o;    
-                FOR order(OrderLine ol) = o AND NOT (quantity(ol)-initialDemand(ol)<=0) INLINE NEW rl = ReceiptLine DO {
+                FOR order(OrderLine ol) = o AND NOT (quantity(ol)-initReceipt(ol)<=0) INLINE NEW rl = ReceiptLine DO {
                     receipt(rl) <- nr;
                     product(rl) <- item(ol);
-                    initialDemand(rl) <- quantity(ol);
+                    initialDemand(rl) <- quantity(ol)(-)initReceipt(ol);
                     orderLine(rl) <- ol;
                 }
             }
@@ -47,9 +48,19 @@ showReceipts (OrderLine l){
 }
 WHEN SET(confirmed(Order o)) DO{
 //  OR ((GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) IF order(l) = o) AND confirmed(o))
-    checkReceipt(o);
+    createReceipt(o);
 }  
 
 EXTEND FORM order
-    PROPERTIES (l) SHOWIF confirmed(o) received ON CHANGE showReceipts(l)
+    PROPERTIES (o) SHOWIF (confirmed(o) AND deficitReceipt(o)>0) createReceipt   
+    PROPERTIES (l) SHOWIF confirmed(o) initReceipt ON CHANGE showReceipts(l)
+    PROPERTIES (l) SHOWIF confirmed(o) doneReceipt ON CHANGE showReceipts(l)    
 ;
+
+DESIGN order {
+    statusPane{
+        statusActions{
+            MOVE PROPERTY(createReceipt(o)) FIRST;
+        }
+    }
+}
