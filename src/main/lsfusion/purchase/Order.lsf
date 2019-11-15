@@ -1,15 +1,13 @@
 MODULE Order;
-REQUIRE System, Time, Utils, Purchase, Location, Partner, Item, Numerator, Incoterms, PaymentTerms, TaxItem, MetaTax, ItemMeasure, Individual;
+REQUIRE System, Time, Utils, Purchase, Location, Partner, Item, Numerator, Incoterms, PaymentTerms, TaxItem, MetaTax, ItemMeasure, Individual, LegalEntity, Company;
 
 NAMESPACE Purchase;
 
 CLASS Order;
 readonly = ABSTRACT CASE BOOLEAN (Order);
 
-createDate 'Создан дата' = DATA DATE (Order);
-createTime 'Создан время' = DATA TIME (Order);
-WHEN LOCAL SET(Order o IS Order) DO {createDate(o) <- currentDate(); createTime(o) <- currentTime();}
-createDateTime 'Создан' (Order o)= dateTimeToDateTime(createDate(o),createTime(o));
+date 'Создан'  = DATA DATETIME (Order);
+WHEN LOCAL SET(Order o IS Order) DO { date(o) <- currentDateTime();}
 
 number 'Номер' = DATA STRING[10] (Order);
 series 'Серия' = DATA STRING[2] (Order);
@@ -21,73 +19,79 @@ WHEN SET(Order o IS Order) DO {
 seriesNumber 'СерияНомер' (Order o) = CONCAT '', series(o), number(o);
 
 location 'Место доставки' = DATA Location (Order);
-locationName 'Место доставки' (Order o) = name(location(o));
+nameLocation 'Место доставки' (Order o) = name(location(o));
 
-partner 'Поставщик' = DATA Partner (Order);
-partnerName 'Поставщик' (Order o) = name(partner(o));
+vendor 'Поставщик' = DATA Partner (Order) NONULL;
+nameVendor 'Поставщик' (Order o) = name(vendor(o));
  
-partnerRefer 'Входящий номер поставщика' = DATA STRING[30] (Order);
+referVendor 'Входящий номер поставщика' = DATA STRING[30] (Order);
 
-scheduledDate 'Срок дата' = DATA DATE (Order);   
-scheduledTime 'Срок время' = DATA TIME (Order);
-WHEN LOCAL SET(Order o IS Order) DO {scheduledTime(o) <- 00:00;}
-scheduledDateTime 'Срок поставки' (Order o) = dateTimeToDateTime(scheduledDate(o),scheduledTime(o));
+scheduledDate 'Срок поставки' = DATA DATETIME (Order);   
 
 incoterm 'Условие поставки'= DATA Incoterm (Order);
-incotermName 'Условие поставки' (Order o)= name(incoterm(o));
+nameIncoterm 'Условие поставки' (Order o)= name(incoterm(o));
 
 paymentterm 'Условие оплаты' = DATA PaymentTerm (Order);
-paymenttermName 'Условие оплаты' (Order o)= name(paymentterm(o));
+namePaymentterm 'Условие оплаты' (Order o)= name(paymentterm(o));
 
-representative 'Представитель заказчика' = DATA Individual (Order);
-representativeName 'Представитель заказчика' (Order o)= name(representative(o));
+representative 'Наш представитель' = DATA Individual (Order);
+nameRepresentative 'Наш представитель' (Order o)= name(representative(o));
+CONSTRAINT NOT type(legalEntity(representative(Order o))) = PartnerType.company AND o IS Order MESSAGE 'Должен быть наш работник';
   
 CLASS OrderLine 'Спецификация';
 order =  DATA Order (OrderLine) NONULL  DELETE;
 readonly = ABSTRACT CASE BOOLEAN (OrderLine);
 
-item = DATA Item (OrderLine);
+item = DATA Item (OrderLine) NONULL;
 itemName 'Номенклатура' (OrderLine l) = name(item(l));
 
-description 'Описание' = DATA STRING[100] (OrderLine);
+description 'Описание' = DATA STRING[200] (OrderLine);
 quantity 'Количество' = DATA NUMERIC[16,3] (OrderLine);
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (OrderLine);
+CodeUnitMeasure 'Ед.изм.' (OrderLine l) = code(unitMeasure(l));
 unitPrice 'Цена' = DATA NUMERIC[10,2] (OrderLine);
 
-scheduledDate 'Срок дата' = DATA DATE (OrderLine);
-scheduledTime 'Срок время' = DATA TIME (OrderLine);
-scheduledDateTime 'Срок поставки' (OrderLine l) = dateTimeToDateTime(scheduledDate(l),scheduledTime(l));
+scheduledDate 'Срок дата' = DATA DATETIME (OrderLine);
+WHEN LOCAL SET (OrderLine ol IS OrderLine) DO {scheduledDate(ol) <- scheduledDate(order(ol));}
 
 @defineTaxCalc(order, o);
 
 FORM order 'Заказ'
     OBJECTS o = Order PANEL
-    PROPERTIES (o) createDate
-    PROPERTIES (o) SHOWIF (useTime()=TRUE) createTime  
-    PROPERTIES (o) series  
-    PROPERTIES (o) number  
-    PROPERTIES (o) locationName  
-    PROPERTIES (o) partnerName
-    PROPERTIES (o) partnerRefer
+    PROPERTIES (o) READONLY date
+    PROPERTIES (o) READONLY series  
+    PROPERTIES (o) READONLY number  
+    PROPERTIES (o) nameLocation
+    PROPERTIES (o) nameVendor
+    PROPERTIES (o) referVendor
     PROPERTIES (o) scheduledDate
-    PROPERTIES (o) SHOWIF (useTime()=TRUE) scheduledTime
-    PROPERTIES (o) incotermName
-    PROPERTIES (o) paymenttermName
-    PROPERTIES (o) representativeName
+    PROPERTIES (o) nameIncoterm
+    PROPERTIES (o) namePaymentterm
+    PROPERTIES (o) nameRepresentative
                  
     OBJECTS l = OrderLine
     PROPERTIES (l) itemName
     PROPERTIES (l) description
     PROPERTIES (l) quantity
-    PROPERTIES (l) unitMeasure
+    PROPERTIES (l) CodeUnitMeasure
     PROPERTIES (l) unitPrice
     PROPERTIES (l) scheduledDate
-    PROPERTIES (l) SHOWIF (useTime()=TRUE) scheduledTime
     PROPERTIES (l) NEW,DELETE
      
     FILTERS order(l)=o
     EDIT Order OBJECT o    
 ;      
+
+EXTEND FORM order  
+    PROPERTIES(l) taxes ON CHANGE changeTax(l);       
+
+EXTEND FORM order  
+    PROPERTIES(l) READONLYIF readonly(l) subtotal
+            
+    OBJECTS oo = Order PANEL 
+    PROPERTIES(oo) untaxedAmount, totalTax, totalAmount
+    FILTERS oo = o    
+;          
 
 DESIGN order{
     OBJECTS {
@@ -96,40 +100,53 @@ DESIGN order{
             NEW attr {
                 NEW create{
                     type = CONTAINERH;
-                    MOVE PROPERTY(createDate(o)) {caption='Создан';};
-                    MOVE PROPERTY(createTime(o)) {caption='';};
+                    MOVE PROPERTY(date(o)) {caption='Создан';};
                 }
                 NEW numser{
                     type = CONTAINERH; 
                     MOVE PROPERTY(series(o));
                     MOVE PROPERTY(number(o));
                 }    
-                MOVE PROPERTY(locationName(o));
+                MOVE PROPERTY(nameLocation(o));
+                MOVE PROPERTY(nameRepresentative(o));
             }
             NEW contr {
                 marginLeft = 30;
-                MOVE PROPERTY(partnerName(o));
-                MOVE PROPERTY(partnerRefer(o));
+                MOVE PROPERTY(nameVendor(o));
+                MOVE PROPERTY(referVendor(o));
                 NEW schelule{
                     type = CONTAINERH;               
                     MOVE PROPERTY(scheduledDate(o)) {caption='Срок поставки';};
-                    MOVE PROPERTY(scheduledTime(o)) {caption='';};
                 }
-                MOVE PROPERTY(incotermName(o));
-                MOVE PROPERTY(paymenttermName(o));
+                MOVE PROPERTY(nameIncoterm(o));
+                MOVE PROPERTY(namePaymentterm(o));
             }
         }
         NEW details{
             fill = 1;
             type = TABBED;
-            NEW box {
-                caption = 'Строка накладной';
-                fill = 1;
-                MOVE BOX (l);
-                NEW pane {
-                    type = SPLITH;
-                    fill = 1;
-                }
+            fill = 1;
+            MOVE BOX (l);
+            PROPERTY (unitPrice(l)) {pattern='#,##0.00';};
+            PROPERTY (subtotal(l))  {pattern='#,##0.00';};            
+            NEW pane {
+               type = SPLITH;
+               fill = 1;
+            }
+        }
+        NEW paneDown
+        {
+            align = END;
+            type = CONTAINERH; 
+            NEW paneExecution{
+                type = CONTAINERV;
+            }         
+            NEW paneSum {
+                MOVE BOX (oo) { caption='ИТОГО';};                
+                GROUP(,oo) {type = CONTAINERV;}
+                PROPERTY (untaxedAmount(oo)) {pattern='#,##0.00';};
+                PROPERTY (totalTax(oo)) {pattern='#,##0.00';};
+                PROPERTY (totalAmount(oo)) {pattern='#,##0.00';};                     
             }
         }
     }        
@@ -145,12 +162,18 @@ DESIGN order{
 
 FORM orders 'Заказы'
      OBJECTS o = Order
-     PROPERTIES (o) READONLY createDateTime,seriesNumber,locationName,partnerName,scheduledDateTime
+     PROPERTIES (o) READONLY date,seriesNumber,nameLocation,nameVendor,scheduledDate
      PROPERTIES (o) NEWEDIT NEWSESSION,EDIT NEWSESSION,DELETE 
 ;
 
-
-@defineTaxForm(order, o);
+EXTEND FORM orders 
+    PROPERTIES(o) READONLY untaxedAmount, totalTax, totalAmount     
+;
+DESIGN orders{
+    PROPERTY (untaxedAmount(o)) {pattern='#,##0.00';}
+    PROPERTY (totalTax(o)) {pattern='#,##0.00';}
+    PROPERTY (totalAmount(o)) {pattern='#,##0.00';}
+}
 
 NAVIGATOR {
     purchase{

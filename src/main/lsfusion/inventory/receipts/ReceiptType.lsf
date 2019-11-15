@@ -17,14 +17,14 @@ maxQuantity 'Максимальное кол-во товара' = DATA NUMERIC[1
 countTypes 'Кол-во типов' () = GROUP SUM 1 IF r IS ReceiptType; 
 lastType 'Последний тип' = GROUP LAST r AS ReceiptType ORDER r;
 
-FORM typeRec 'Тип поступления'
+FORM receiptType 'Тип поступления'
     OBJECTS o = ReceiptType PANEL 
     PROPERTIES(o) name, nameNumerator, nameDefaultLocation, maxQuantity
      
     EDIT ReceiptType OBJECT o;
 ;
 
-FORM typesRec 'Типы поступления'
+FORM receiptTypes 'Типы поступления'
     OBJECTS o = ReceiptType
     PROPERTIES(o) READONLY name, nameNumerator, nameDefaultLocation, maxQuantity
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
@@ -33,6 +33,6 @@ FORM typesRec 'Типы поступления'
 
 NAVIGATOR {
     settings {
-        NEW typesRec;
+        NEW receiptTypes;
     }
 }

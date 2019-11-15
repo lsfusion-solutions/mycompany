@@ -1,0 +1,71 @@
+MODULE OrderBill;
+
+REQUIRE Order, Bill, BillStatus, BillDone,OrderStatus, Time, OrderConfirm;
+
+lineOrder 'ссылка на заказ' = DATA OrderLine (BillLine);
+order 'ссылка на заказ' = DATA Order (Bill);
+
+billed 'Оформлено по накладным' (OrderLine ol) = GROUP SUM quantity(BillLine bl) IF lineOrder(bl)=ol AND ready(bill(bl))  ;
+payed 'Оплачено' (OrderLine ol) = GROUP SUM quantity(BillLine bl) IF lineOrder(bl)=ol AND done(bill(bl));
+deficit 'Недопоступило' (Order o) =  GROUP SUM abs(billed(OrderLine ol)(-)quantity(ol)) IF order(ol)=o AND ol IS OrderLine;
+
+createBill 'Оформить приходную накладную' (Order o) {
+        IF canceled() THEN RETURN;
+               
+        NEWSESSION {
+            NEW nb = Bill {
+                partner(nb) <- vendor(o);
+                date(nb) <- scheduledDate(o);
+                order(nb) <- o;
+                referenceNUmber(nb) <- referVendor(o);
+                FOR order(OrderLine ol) = o INLINE NEW bl = BillLine DO {
+                    bill(bl) <- nb;
+                    item(bl) <- item(ol);
+                    quantity(bl) <- quantity(ol);
+                    unitPrice(bl) <- unitPrice(ol);
+                    lineOrder(bl) <- ol;
+                }                            
+                executeLocalEvents();
+                FOR bill(BillLine bl) = nb DO {
+                    in(bl,Tax t) <- in(lineOrder(bl),t);
+                }                                
+                SHOW bill OBJECTS b = nb DOCKED;
+            }
+        }
+}
+
+billDate 'Дата счета' (BillLine bl) = date(bill(bl));
+billStatus 'Статус' (BillLine bl) = nameStatus(bill(bl));
+
+FORM orderBillShow 'Выставлено счетов'
+    OBJECTS ol = OrderLine
+    OBJECTS bl = BillLine
+    PROPERTIES (bl) billDate, billStatus, quantity
+    FILTERS lineOrder(bl) = ol
+;
+
+DESIGN orderBillShow{
+    MOVE BOX(bl) FIRST {caption='';}
+}
+
+showBills (OrderLine l){
+    DIALOG orderBillShow OBJECTS ol = l; 
+}
+
+EXTEND FORM order
+    PROPERTIES (o) SHOWIF (confirmed(o) AND deficit(o)>0) createBill
+    PROPERTIES (l) SHOWIF confirmed(o) billed ON CHANGE showBills(l)
+    PROPERTIES (l) SHOWIF confirmed(o)  payed ON CHANGE showBills(l)
+;
+ 
+DESIGN order {
+    statusPane{
+        statusActions{
+            MOVE PROPERTY(createBill(o)) FIRST;
+        }
+    }
+}
+
+
+
+
