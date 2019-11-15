@@ -1,6 +1,6 @@
 MODULE InvoicePayment;
 
-REQUIRE InvoiceStatus, Payment, InvoiceOutstandingCredit;
+REQUIRE CreditNote, Payment;
 
 NAMESPACE Invoicing;
 
@@ -15,11 +15,44 @@ date(Payment p) += date(p);
 number(Payment p) += number(p);
 type(Payment p) += 'Платеж' IF p IS Payment;
 
-//paid 'Оплачено' = DATA NUMERIC[14,2](Payment, Invoice);
-//paid 'Оплачено' (Invoice i) = GROUP SUM paid(Payment p, i);
+isCreditNote 'Возврат' = ABSTRACT BOOLEAN (InvoiceOutstandingCredit);
+isCreditNote(CreditNote c) += isCreditNote[Invoice](c);
 
-//invoiced 'Оплачено' (Payment p) = GROUP SUM paid(p, Invoice i);
-//toInvoice 'Остаток' (Payment p) = amount(p) (-) invoiced(p);
+registerPayment 'Оформить платеж' (Invoice i){
+    APPLY; 
+    IF canceled() THEN RETURN;
+    IF done(i) THEN RETURN;
+    
+    NEWSESSION {
+        NEW p = Payment {
+            date(p) <- currentDateTime();
+            amount(p) <- totalAmount(i) (-) paid(i);
+            IF isCreditNote(i) THEN toAccount(p) <- partnerAccount(i);
+                ELSE fromAccount(p) <- partnerAccount(i);
+            DIALOG payment OBJECTS p = p DO {
+                IF (totalAmount(i) > amount(p) (+) paid(i)) THEN {
+                    ASK 'Оплачена не вся сумма. Закрыть накладную ?' DO {
+                        done(i) <- TRUE;
+                    } 
+                }
+                paid(p, i) <- amount(p);
+                APPLY; 
+            }
+        } 
+    }
+}
+
+EXTEND FORM invoice
+    PROPERTIES(i) registerPayment SHOWIF status(i) = InvoiceStatus.ready
+;
+
+DESIGN invoice {
+    statusActions{
+        primary {
+            MOVE PROPERTY(registerPayment(i));
+        }
+    }
+}
 
 EXTEND FORM payments
     PROPERTIES(p) READONLY toInvoice

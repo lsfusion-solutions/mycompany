@@ -1,6 +1,6 @@
 MODULE BillPayment;
 
-REQUIRE BillOutstandingCredit, Payment;
+REQUIRE Refund, Payment;
 
 NAMESPACE Invoicing;
 
@@ -11,5 +11,41 @@ date(Payment p) += date(p);
 number(Payment p) += number(p);
 type(Payment p) += 'Платеж' IF p IS Payment;
 
+isRefund 'Возврат' = ABSTRACT BOOLEAN (BillOutstandingCredit);
+isRefund(Refund r) += isRefund[Bill](r);
 
+registerPayment 'Оформить платеж' (Bill b){
+    APPLY; 
+    IF canceled() THEN RETURN;
+    IF done(b) THEN RETURN;
+    
+   NEWSESSION {
+       NEW p = Payment {
+           date(p) <- currentDateTime();
+           amount(p) <- totalAmount(b) (-) paid(b);
+           IF isRefund(b) THEN fromAccount(p) <- partnerAccount(b);
+               ELSE toAccount(p) <- partnerAccount(b);
+           DIALOG payment OBJECTS p = p DO {
+               IF (totalAmount(b) > amount(p) (+) paid(b)) THEN {
+                   ASK 'Оплачена не вся сумма. Закрыть накладную ?' DO {
+                       done(b) <- TRUE;
+                   }
+               }
+               paid(p, b) <- amount(p);
+               APPLY; 
+           }
+       } 
+   }
+}
 
+EXTEND FORM bill
+    PROPERTIES(b) registerPayment SHOWIF status(b) = BillStatus.ready 
+;
+
+DESIGN bill {
+    statusActions{
+        primary {
+            MOVE PROPERTY(registerPayment(b));
+        }
+    }
+}

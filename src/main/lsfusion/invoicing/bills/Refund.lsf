@@ -1,6 +1,6 @@
 MODULE Refund;
 
-REQUIRE BillPayment, BillCanceled, BillOutstandingCredit;
+REQUIRE BillCanceled, BillOutstandingCredit;
 
 NAMESPACE Invoicing;
 
@@ -53,40 +53,14 @@ refund 'Создать акт возврата' (Bill b) {
     }
 }
 
-registerPayment 'Оформить платеж' (Bill b){
-    APPLY; 
-    IF canceled() THEN RETURN;
-    IF done(b) THEN RETURN;
-    
-   NEWSESSION {
-       NEW p = Payment {
-           date(p) <- currentDateTime();
-           amount(p) <- totalAmount(b) (-) paid(b);
-           IF isRefund(b) THEN fromAccount(p) <- partnerAccount(b);
-               ELSE toAccount(p) <- partnerAccount(b);
-           DIALOG payment OBJECTS p = p DO {
-               IF (totalAmount(b) > amount(p) (+) paid(b)) THEN {
-                   ASK 'Оплачена не вся сумма. Закрыть накладную ?' DO {
-                       done(b) <- TRUE;
-                   }
-               }
-               paid(p, b) <- amount(p);
-               APPLY; 
-           }
-       } 
-   }
-}
-
 EXTEND FORM bill
-    PROPERTIES(b) refund SHOWIF status(b) = BillStatus.ready AND NOT isRefund(b),
-                registerPayment SHOWIF status(b) = BillStatus.ready
+    PROPERTIES(b) refund SHOWIF status(b) = BillStatus.ready AND NOT isRefund(b)
 ;
 
 DESIGN bill {
     statusActions {
         primary {
-            MOVE PROPERTY(refund(b)); 
-            MOVE PROPERTY(registerPayment(b));
+            MOVE PROPERTY(refund(b));
         }               
     }   
 }
