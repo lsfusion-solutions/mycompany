@@ -93,11 +93,20 @@ DESIGN invoice {
     }
 }
 
+addInvoice 'Накладная' () {
+    NEWSESSION {
+        NEW i = Invoice {
+            SHOW invoice OBJECTS i = i;  
+        }
+    }
+}IMAGE 'add.png';
+
 FORM invoices 'Расходная накладная'
     OBJECTS i = Invoice
     PROPERTIES(i) READONLY date, dueDate, namePartner, notes    
     PROPERTIES(i) NEWSESSION EDIT
     PROPERTIES(i) NEWSESSION READONLYIF readonly(i) DELETE
+    PROPERTIES addInvoice() DRAW i TOOLBAR
            
     LIST Invoice OBJECT i;
 ;

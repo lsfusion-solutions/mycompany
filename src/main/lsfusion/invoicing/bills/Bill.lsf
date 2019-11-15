@@ -96,11 +96,20 @@ DESIGN bill {
     }
 }
 
+addBill 'Накладная' () {
+    NEWSESSION {
+        NEW b = Bill {
+            SHOW bill OBJECTS b = b;  
+        }
+    }
+}IMAGE 'add.png';
+
 FORM bills 'Приходная накладная'
     OBJECTS b = Bill
     PROPERTIES(b) READONLY date, dueDate, namePartner, notes     
     PROPERTIES(b) NEWSESSION EDIT
     PROPERTIES(b) NEWSESSION READONLYIF readonly(b) DELETE
+    PROPERTIES addBill() DRAW b TOOLBAR
            
     LIST Bill OBJECT b;
 ;
