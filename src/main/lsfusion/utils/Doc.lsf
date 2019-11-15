@@ -53,7 +53,7 @@ META defineDocSearch (doc, it, fun, let)
     }
 END
 
-META defineDocHistory(doc, let)
+META defineDocHistory(doc, let, class, fun)
 
     CLASS ###doc##History 'История изменений';
     
@@ -97,5 +97,49 @@ META defineDocHistory(doc, let)
             }
         }
     }
-END
+    
+    WHEN SETCHANGED (###doc##Line l IS ###doc##Line) AND ##doc(l) = ###doc ##let 
+                        AND NOT status(##let) = ###doc##Status.draft DO {     
+        NEW h = ###doc##History {
+            ##doc(h) <- ##let;
+            date(h) <- currentDateTime();
+            user(h) <- currentUser();
+            type(h) <- 'Добавлена строка';
+            description (h) <- 'Добавлена строка с индексом ' + index(l);
+        }
+    }
+    
+    WHEN DROPPED (###doc##Line l IS ###doc##Line) AND PREV(##doc(l)) = ###doc ##let 
+                        AND NOT status(##let) = ###doc##Status.draft DO {     
+        NEW h = ###doc##History {
+            ##doc(h) <- ##let;
+            date(h) <- currentDateTime();
+            user(h) <- currentUser();
+            type(h) <- 'Удалена строка';
+            description (h) <- 'Удалена строка с индексом ' + PREV(index(l));
+        }
+    }
+    
+    WHEN CHANGED (##fun(###doc##Line l)) AND ##doc(l) = ###doc ##let 
+                        AND NOT status(##let) = ###doc##Status.draft DO {     
+        NEW h = ###doc##History {
+            ##doc(h) <- ##let;
+            date(h) <- currentDateTime();
+            user(h) <- currentUser();
+            type(h) <- 'Изменено исходное кол-во';
+            description (h) <- 'Изменено исходное кол-во продукта ' + name###class(l) + ' на ' + ##fun(l);
+        }
+    }
+    
+    WHEN CHANGED (name###class(###doc##Line l)) AND ##doc(l) = ###doc ##let 
+                        AND NOT status(##let) = ###doc##Status.draft DO {     
+        NEW h = ###doc##History {
+            ##doc(h) <- ##let;
+            date(h) <- currentDateTime();
+            user(h) <- currentUser();
+            type(h) <- 'Изменен продукт';
+            description (h) <- 'Изменен продукт в строке ' + index(l) + ' на ' + name###class(l);
+        }
+    }
 
+END

@@ -49,10 +49,12 @@ CLASS BillLine 'Строка накладной';
 bill 'Приходная накладная' = DATA Bill (BillLine) NONULL DELETE;
 
 item 'Номенклатура' = DATA Item (BillLine);
-itemName 'Номенклатура' (BillLine l) = name(item(l)) IN id;
+nameItem 'Номенклатура' (BillLine l) = name(item(l)) IN id;
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (BillLine) NONULL;
 unitPrice 'Цена за штуку' = DATA NUMERIC[10,2] (BillLine) NONULL;
+
+index 'Индекс' = PARTITION SUM 1 ORDER BillLine l BY bill(l) IN id MATERIALIZED;
 
 readonly = ABSTRACT CASE BOOLEAN (BillLine);
 readonly = ABSTRACT CASE BOOLEAN (Bill);
@@ -66,7 +68,7 @@ FORM bill 'Приходная накладная'
                                 series, number, referenceNUmber, notes
         
     OBJECTS l = BillLine
-    PROPERTIES(l) READONLYIF readonly(l) itemName, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
+    PROPERTIES(l) READONLYIF readonly(l) nameItem, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
     FILTERS bill(l) = b
 
     EDIT Bill OBJECT b;

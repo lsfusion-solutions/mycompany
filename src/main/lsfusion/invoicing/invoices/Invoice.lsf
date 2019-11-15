@@ -48,10 +48,12 @@ CLASS InvoiceLine 'Строка накладной';
 invoice 'Накладная' = DATA Invoice (InvoiceLine) NONULL DELETE;
 
 item 'Номенклатура' = DATA Item (InvoiceLine);
-itemName 'Номенклатура' (InvoiceLine l) = name(item(l)) IN id;
+nameItem 'Номенклатура' (InvoiceLine l) = name(item(l)) IN id;
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (InvoiceLine) NONULL;
 unitPrice 'Цена за штуку' = DATA NUMERIC[10,2] (InvoiceLine) NONULL;
+
+index 'Индекс' = PARTITION SUM 1 ORDER InvoiceLine l BY invoice(l) IN id MATERIALIZED;
 
 readonly = ABSTRACT CASE BOOLEAN (InvoiceLine);
 readonly = ABSTRACT CASE BOOLEAN (Invoice);
@@ -63,7 +65,7 @@ FORM invoice 'Расходная накладная'
     PROPERTIES(i) READONLYIF readonly(i)  date, dueDate, namePartner, partnerAccountNumber, series, number, notes
         
     OBJECTS l = InvoiceLine
-    PROPERTIES(l) READONLYIF readonly(l) itemName, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
+    PROPERTIES(l) READONLYIF readonly(l) nameItem, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
     FILTERS invoice(l) = i
     
     EDIT Invoice OBJECT i;

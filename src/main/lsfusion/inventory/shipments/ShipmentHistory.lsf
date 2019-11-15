@@ -4,48 +4,4 @@ REQUIRE ShipmentStatus, Doc;
 
 NAMESPACE Inventory;
 
-@defineDocHistory(shipment, s);
-
-WHEN SETCHANGED (ShipmentLine l IS ShipmentLine) AND shipment(l) = Shipment s 
-                    AND NOT status(s) = ShipmentStatus.draft DO {     
-    NEW h = ShipmentHistory {
-        shipment(h) <- s;
-        date(h) <- currentDateTime();
-        user(h) <- currentUser();
-        type(h) <- 'Добавлена строка';
-        description (h) <- 'Добавлена строка с индексом ' + index(l);
-    }
-}
-
-WHEN DROPPED (ShipmentLine l IS ShipmentLine) AND PREV(shipment(l)) = Shipment s 
-                    AND NOT status(s) = ShipmentStatus.draft DO {     
-    NEW h = ShipmentHistory {
-        shipment(h) <- s;
-        date(h) <- currentDateTime();
-        user(h) <- currentUser();
-        type(h) <- 'Удалена строка';
-        description (h) <- 'Удалена строка с индексом ' + PREV(index(l));
-    }
-}
-
-WHEN CHANGED (initialDemand(ShipmentLine l)) AND shipment(l) = Shipment s 
-                    AND NOT status(s) = ShipmentStatus.draft DO {     
-    NEW h = ShipmentHistory {
-        shipment(h) <- s;
-        date(h) <- currentDateTime();
-        user(h) <- currentUser();
-        type(h) <- 'Изменено исходное кол-во';
-        description (h) <- 'Изменено исходное кол-во продукта ' + nameProduct(l) + ' на ' + initialDemand(l);
-    }
-}
-
-WHEN CHANGED (nameProduct(ShipmentLine l)) AND shipment(l) = Shipment s 
-                    AND NOT status(s) = ShipmentStatus.draft DO {     
-    NEW h = ShipmentHistory {
-        shipment(h) <- s;
-        date(h) <- currentDateTime();
-        user(h) <- currentUser();
-        type(h) <- 'Изменен продукт';
-        description (h) <- 'Изменен продукт в строке ' + index(l) + ' на ' + nameProduct(l);
-    }
-}
+@defineDocHistory(shipment, s, product, initialDemand);
