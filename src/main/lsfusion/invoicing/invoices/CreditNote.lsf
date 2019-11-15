@@ -69,7 +69,6 @@ registerPayment 'Оформить платеж' (Invoice i){
                 IF (totalAmount(i) > amount(p) (+) paid(i)) THEN {
                     ASK 'Оплачена не вся сумма. Закрыть накладную ?' DO {
                         done(i) <- TRUE;
-                        paid(p, i) <- amount(p);
                     } 
                 }
                 paid(p, i) <- amount(p);
@@ -100,8 +99,10 @@ EXTEND FORM invoice
 
 DESIGN invoice {
     statusActions {
-        MOVE PROPERTY(creditNote(i)); 
-        MOVE PROPERTY(registerPayment(i));               
+        primary {
+            MOVE PROPERTY(creditNote(i)); 
+            MOVE PROPERTY(registerPayment(i));
+        }               
     }
     
     pane {

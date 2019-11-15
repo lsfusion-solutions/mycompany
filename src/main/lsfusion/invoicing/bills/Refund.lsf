@@ -68,7 +68,6 @@ registerPayment 'Оформить платеж' (Bill b){
                IF (totalAmount(b) > amount(p) (+) paid(b)) THEN {
                    ASK 'Оплачена не вся сумма. Закрыть накладную ?' DO {
                        done(b) <- TRUE;
-                       paid(p, b) <- amount(p);
                    }
                }
                paid(p, b) <- amount(p);
@@ -85,8 +84,10 @@ EXTEND FORM bill
 
 DESIGN bill {
     statusActions {
-        MOVE PROPERTY(refund(b)); 
-        MOVE PROPERTY(registerPayment(b));               
+        primary {
+            MOVE PROPERTY(refund(b)); 
+            MOVE PROPERTY(registerPayment(b));
+        }               
     }   
 }
 
@@ -106,7 +107,9 @@ EXTEND FORM bill
 
 DESIGN bill {
     statusActions {
-        MOVE PROPERTY(refund(b));                
+        primary {
+            MOVE PROPERTY(refund(b));
+        }                
     }
     
     pane {
