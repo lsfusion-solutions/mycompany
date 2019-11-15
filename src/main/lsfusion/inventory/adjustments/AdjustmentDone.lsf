@@ -4,10 +4,10 @@ REQUIRE AdjustmentInProgress, Utils;
 
 NAMESPACE Inventory;
 
-done 'Принять' = DATA BOOLEAN (Adjustment);
+done 'Завершена' = DATA BOOLEAN (Adjustment);
 
 EXTEND CLASS AdjustmentStatus {
-    done 'Принят'
+    done 'Завершена'
 }
 
 status(Adjustment a) += WHEN done(a) THEN AdjustmentStatus.done;
@@ -17,10 +17,10 @@ difference (AdjustmentLine l) = theoreticalQuantity(l) - realQuantity(l);
 CLASS InvAdjustment;
 
 CLASS InAdjustment : InvAdjustment;
-inAdjustment = AGGR InAdjustment WHERE difference(AdjustmentLine line) < 0;
+inAdjustment = AGGR InAdjustment WHERE difference(AdjustmentLine line) < 0 AND done(adjustment(line));
 
 CLASS OutAdjustment : InvAdjustment;
-outAdjustment = AGGR OutAdjustment WHERE difference(AdjustmentLine line) > 0;
+outAdjustment = AGGR OutAdjustment WHERE difference(AdjustmentLine line) > 0 AND done(adjustment(line));
 
 line (InvAdjustment a) = MULTI line[InAdjustment](a), line[OutAdjustment](a) MATERIALIZED INDEXED;
 adjustment (InvAdjustment a) = adjustment(line(a)) MATERIALIZED INDEXED;
@@ -38,7 +38,7 @@ product(InvAdjustment a) += product(a);
 quantity(InvAdjustment a) += difference(line(a));
 description(InvAdjustment a) += 'Инвентаризация' IF a IS InvAdjustment;
 
-validate 'Принят' (Adjustment a) {
+validate 'Завершить' (Adjustment a) {
     APPLY; // сохраняем изменения
     IF canceled() THEN RETURN;
     NEWSESSION {
