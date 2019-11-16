@@ -19,8 +19,13 @@ registerPayment 'Оформить платеж' (Bill b){
         NEW p = Payment {
             date(p) <- currentDateTime();
             amount(p) <- totalAmount(b) (-) paid(b);
-            IF isRefund(b) THEN fromAccountHolder(p) <- partner(b);
-               ELSE toAccountHolder(p) <- partner(b);
+            IF isRefund(b) THEN {
+                fromPartner(p) <- partner(b);
+                fromAccount(p) <- partnerAccount(b);
+            } ELSE {
+                toPartner(p) <- partner(b);
+                toAccount(p) <- partnerAccount(b);
+            }               
             DIALOG payment OBJECTS p = p DO {
                IF (totalAmount(b) > amount(p) (+) paid(b)) THEN {
                    ASK 'Оплачена не вся сумма. Закрыть накладную ?' DO {
@@ -35,8 +40,8 @@ registerPayment 'Оформить платеж' (Bill b){
 }
 
 canBeMatched(Payment p, Bill b) = 
-    IF ((isIncoming(p) AND isRefund(b) AND fromAccountHolder(p) = partner(b) AND status(b) = BillStatus.ready AND amountLeft(p) > 0)
-    OR (isOutgoing(p) AND NOT isRefund(b) AND toAccountHolder(p) = partner(b) AND status(b) = BillStatus.ready AND amountLeft(p) > 0)) 
+    IF ((isIncoming(p) AND isRefund(b) AND fromPartner(p) = partner(b) AND status(b) = BillStatus.ready AND amountLeft(p) > 0)
+    OR (isOutgoing(p) AND NOT isRefund(b) AND toPartner(p) = partner(b) AND status(b) = BillStatus.ready AND amountLeft(p) > 0)) 
     THEN TRUE;
 canBeMatched(Payment p, Bill b) += canBeMatched(p, b);
 
