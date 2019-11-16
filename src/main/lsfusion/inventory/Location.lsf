@@ -1,19 +1,25 @@
 MODULE Location;
 
-REQUIRE Inventory;
+REQUIRE Inventory, Partner;
 
 NAMESPACE Inventory;
 
 CLASS Location 'Место хранения';
 
 name 'Название' = DATA ISTRING[30] (Location)IN id;
-
 parent 'Родитель' = DATA Location (Location);
 nameParent 'Родительское место хранения' (Location l) = name(parent(l));
+@addressesCalc(location,l);
 
 level 'Уровень' (Location child, Location parent) =
    RECURSION 1l IF child IS Location AND parent == child
         STEP 2l IF parent == parent($parent) MATERIALIZED;
+
+hierarchyAddress (Location l) =  GROUP LAST address(Location parent) ORDER DESC level(l,parent);
+hierarchyCity (Location l) =  GROUP LAST city(Location parent) ORDER DESC level(l,parent);
+hierarchyState  (Location l) =  GROUP LAST state(Location parent) ORDER DESC level(l,parent);
+hierarchyZip  (Location l) =  GROUP LAST zip(Location parent) ORDER DESC level(l,parent);      
+fullAddress (Location l) = CONCAT ' \n', hierarchyAddress(l), hierarchyCity(l), hierarchyState(l), hierarchyZip(l);
         
 canonicalName 'Каноническое имя' (Location l) =
    GROUP CONCAT name(Location parent), ' / ' ORDER DESC level(l, parent) CHARWIDTH 50 IN id;
@@ -32,6 +38,9 @@ FORM locations 'Места хранения'
     
     LIST Location OBJECT l
 ;
+
+@addressesForm(location,l);
+
 
 newLocation 'Место хранения' (Location ll) {
     NEWSESSION {

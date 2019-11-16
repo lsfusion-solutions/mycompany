@@ -1,0 +1,52 @@
+MODULE OrderPrintRequest;
+
+REQUIRE Order, OrderStatus, OrderSent;
+
+NAMESPACE Purchase;
+
+FORM printRequest 'Запрос поставщику'
+    OBJECTS o = Order PANEL 
+    PROPERTIES(o) sentRequestDateTime, scheduledDate, nameVendor, number, nameLocation
+    
+    OBJECTS p = Partner
+    PROPERTIES (p) name, fullAddress, phone
+    FILTERS p = vendor(o)
+    
+    OBJECTS c = Partner
+    PROPERTIES (c) name, fullAddress, phone
+    FILTERS type(c) = PartnerType.company   
+    
+    OBJECTS l = OrderLine
+    PROPERTIES(l) nameItem, description, scheduledDate, quantity
+    FILTERS order(l) = o
+;
+
+printRequest 'Печать запрос' (Order o) {
+    sentRequestDateTime(o) <- currentDateTime();
+    sent(o) <- TRUE;
+    PRINT printRequest OBJECTS o = o;   
+    MESSAGE 'Запрос напечатан';    
+}  
+
+reprintRequest 'Печать запрос' (Order o) {
+    sentRequestDateTime(o) <- currentDateTime();
+    sent(o) <- TRUE;
+    PRINT printRequest OBJECTS o = o;   
+    MESSAGE 'Запрос напечатан';    
+}  
+
+ 
+EXTEND FORM order
+     PROPERTIES (o) SHOWIF (status(o)=OrderStatus.draft)  printRequest BACKGROUND (CASE WHEN NOT sent(o) THEN nextAction())
+     PROPERTIES (o) SHOWIF (status(o)=OrderStatus.requestSent)  reprintRequest
+;
+
+DESIGN order {
+    statusPane {
+        statusActions {
+            MOVE PROPERTY (printRequest(o)) FIRST;             
+            MOVE PROPERTY (reprintRequest(o));             
+        }
+    }
+}
+
