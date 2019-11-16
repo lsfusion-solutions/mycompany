@@ -25,8 +25,14 @@ type 'Тип' (Invoice i) = IF(isCreditNote(i)) THEN ISTRING[30](name(InvoiceTyp
 type(CreditNote c) += type[Invoice](c);
 isCreditNote(CreditNote c) += isCreditNote[Invoice](c);
 
+typeColor (CreditNote c) = IF type[Invoice](c) = ISTRING[30](name(InvoiceType.creditNote)) THEN RGB(250,67,71);
+
 EXTEND FORM invoice
-    PROPERTIES(i) type
+    PROPERTIES(i) type  BACKGROUND typeColor(i)
+;
+
+EXTEND FORM invoices
+    PROPERTIES(i) type AFTER nameStatus(i) BACKGROUND typeColor(i)
 ;
 
 creditNote 'Создать акт расхождения' (Invoice i) {

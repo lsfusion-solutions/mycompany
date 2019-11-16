@@ -26,8 +26,14 @@ type 'Тип' (Bill b)=  IF(isRefund(b)) THEN ISTRING[30](name(BillType.refund))
 type(Refund c) += type[Bill](c);
 isRefund(Refund r) += isRefund[Bill](r);
 
+typeColor (Refund r) = IF type[Bill](r) = ISTRING[30](name(BillType.refund)) THEN RGB(250,67,71);
+
 EXTEND FORM bill
-    PROPERTIES(b) type
+    PROPERTIES(b) type BACKGROUND typeColor(b)
+;
+
+EXTEND FORM bills
+    PROPERTIES(b) type AFTER nameStatus(b) BACKGROUND typeColor(b)
 ;
 
 refund 'Создать акт возврата' (Bill b) {
