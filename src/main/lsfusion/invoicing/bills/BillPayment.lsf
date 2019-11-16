@@ -20,8 +20,8 @@ registerPayment 'Оформить платеж' (Bill b){
         NEW p = Payment {
             date(p) <- currentDateTime();
             amount(p) <- totalAmount(b) (-) paid(b);
-            IF isRefund(b) THEN fromAccount(p) <- partnerAccount(b);
-               ELSE toAccount(p) <- partnerAccount(b);
+            IF isRefund(b) THEN fromAccountHolder(p) <- partner(b);
+               ELSE toAccountHolder(p) <- partner(b);
             DIALOG payment OBJECTS p = p DO {
                IF (totalAmount(b) > amount(p) (+) paid(b)) THEN {
                    ASK 'Оплачена не вся сумма. Закрыть накладную ?' DO {

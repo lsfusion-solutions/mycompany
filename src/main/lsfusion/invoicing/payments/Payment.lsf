@@ -51,6 +51,19 @@ CONSTRAINT toAccount(Payment p) AND fromAccount(p) AND
                 NOT (holder(toAccount(p)) IS Company OR holder(fromAccount(p)) IS Company)
                 CHECKED BY toAccount, fromAccount
                 MESSAGE 'Один из счетов должен принадлежать компании';
+                
+CONSTRAINT toAccountHolder(Payment p) AND fromAccountHolder(p) AND 
+                NOT (toAccountHolder(p) IS Company OR fromAccountHolder(p) IS Company)
+                CHECKED BY toAccountHolder, fromAccountHolder
+                MESSAGE 'Один из держателей счетов должен быть компанией';
+    
+CONSTRAINT (toAccountHolder(Payment p) AND toAccount(p)) AND NOT (holder(toAccount(p)) = toAccountHolder(p))
+                CHECKED BY  toAccount
+                MESSAGE  'Счет и держатель счета не совпадают';
+                
+CONSTRAINT (fromAccountHolder(Payment p) AND fromAccount(p)) AND NOT (holder(fromAccount(p)) = fromAccountHolder(p))
+                CHECKED BY fromAccount
+                MESSAGE  'Счет и держатель счета не совпадают';
 
 FORM payment 'Платеж'
     OBJECTS p = Payment PANEL 

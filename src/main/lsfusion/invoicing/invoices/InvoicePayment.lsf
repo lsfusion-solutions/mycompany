@@ -24,8 +24,8 @@ registerPayment 'Оформить платеж' (Invoice i){
         NEW p = Payment {
             date(p) <- currentDateTime();
             amount(p) <- totalAmount(i) (-) paid(i);
-            IF isCreditNote(i) THEN toAccount(p) <- partnerAccount(i);
-                ELSE fromAccount(p) <- partnerAccount(i);
+            IF isCreditNote(i) THEN toAccountHolder(p) <- partner(i);
+                ELSE fromAccountHolder(p) <- partner(i);
             DIALOG payment OBJECTS p = p DO {
                 IF (totalAmount(i) > amount(p) (+) paid(i)) THEN {
                     ASK 'Оплачена не вся сумма. Закрыть накладную ?' DO {
