@@ -9,6 +9,7 @@ CLASS Location 'Место хранения';
 name 'Название' = DATA ISTRING[30] (Location)IN id;
 parent 'Родитель' = DATA Location (Location);
 nameParent 'Родительское место хранения' (Location l) = name(parent(l));
+partner 'Владелец' = DATA Partner (Location); 
 @addressesCalc(location,l);
 
 level 'Уровень' (Location child, Location parent) =
@@ -18,8 +19,11 @@ level 'Уровень' (Location child, Location parent) =
 hierarchyAddress (Location l) =  GROUP LAST address(Location parent) ORDER DESC level(l,parent);
 hierarchyCity (Location l) =  GROUP LAST city(Location parent) ORDER DESC level(l,parent);
 hierarchyState  (Location l) =  GROUP LAST state(Location parent) ORDER DESC level(l,parent);
-hierarchyZip  (Location l) =  GROUP LAST zip(Location parent) ORDER DESC level(l,parent);      
-fullAddress (Location l) = CONCAT ' \n', hierarchyAddress(l), hierarchyCity(l), hierarchyState(l), hierarchyZip(l);
+hierarchyZip  (Location l) =  GROUP LAST zip(Location parent) ORDER DESC level(l,parent);
+  
+concatAddress (Location l, STRING sep) = (OVERRIDE hierarchyAddress(l)+sep,'') + (OVERRIDE hierarchyCity(l)+sep,'') + (OVERRIDE hierarchyState(l)+sep,'') + (OVERRIDE hierarchyZip(l),'');
+  
+fullAddress 'Адрес' (Location l) = concatAddress(l,', ');    
         
 canonicalName 'Каноническое имя' (Location l) =
    GROUP CONCAT name(Location parent), ' / ' ORDER DESC level(l, parent) CHARWIDTH 50 IN id;

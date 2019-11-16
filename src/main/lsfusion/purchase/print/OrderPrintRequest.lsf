@@ -1,21 +1,19 @@
 MODULE OrderPrintRequest;
 
-REQUIRE Order, OrderStatus, OrderSent;
+REQUIRE Order, OrderStatus, OrderSent, Partner;
 
 NAMESPACE Purchase;
 
+phoneVendor 'Телефон поставщика' (Order o) = phone(vendor(o));
+fullAddressVendor 'Адрес поставщика' (Order o) = concatAddress(vendor(o),'\n'); 
+fullAddressLocation 'Адрес места доставки' (Order o ) = concatAddress(location(o),'\n');
+fullAddressCompany 'Адрес компании' (Order o) = concatAddress(partner(location(o)),'\n');
+phoneCompany 'Телефон компании' (Order o) = phone(partner(location(o)));
+
 FORM printRequest 'Запрос поставщику'
     OBJECTS o = Order PANEL 
-    PROPERTIES(o) sentRequestDateTime, scheduledDate, nameVendor, number, nameLocation
-    
-    OBJECTS p = Partner
-    PROPERTIES (p) name, fullAddress, phone
-    FILTERS p = vendor(o)
-    
-    OBJECTS c = Partner
-    PROPERTIES (c) name, fullAddress, phone
-    FILTERS type(c) = PartnerType.company   
-    
+    PROPERTIES(o) sentRequestDateTime, scheduledDate, number, nameLocation, fullAddressLocation, nameVendor, fullAddressVendor, phoneVendor, fullAddressCompany, phoneCompany
+      
     OBJECTS l = OrderLine
     PROPERTIES(l) nameItem, description, scheduledDate, quantity
     FILTERS order(l) = o
@@ -34,7 +32,6 @@ reprintRequest 'Печать запрос' (Order o) {
     PRINT printRequest OBJECTS o = o;   
     MESSAGE 'Запрос напечатан';    
 }  
-
  
 EXTEND FORM order
      PROPERTIES (o) SHOWIF (status(o)=OrderStatus.draft)  printRequest BACKGROUND (CASE WHEN NOT sent(o) THEN nextAction())
