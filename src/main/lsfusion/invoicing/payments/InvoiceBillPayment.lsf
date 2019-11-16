@@ -1,0 +1,19 @@
+MODULE InvoiceBillPayment;
+
+REQUIRE InvoicePayment, BillPayment, Utils;
+
+NAMESPACE Invoicing;
+
+WHEN LOCAL CHANGED (invoiced(Payment p)) OR CHANGED (amount(p)) OR CHANGED (billed(p)) DO {
+     amountLeft(p) <- amount(p) (-) (invoiced(p) (+) billed(p));
+}
+
+WHEN SETCHANGED (reference(Payment p)) DO {
+    FOR isISubstring(reference(p),seriesNumber(Invoice i)) DO {
+        addPayment(p, i);
+    } ELSE {
+        FOR isISubstring(reference(p),seriesNumber(Bill b)) DO {
+            addBillPayment(p, b);
+        }
+    }
+}

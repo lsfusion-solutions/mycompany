@@ -7,10 +7,13 @@ NAMESPACE Invoicing;
 CLASS ABSTRACT InvoiceOutstandingCredit 'Закрытие задолженности';
 
 date 'Дата' = ABSTRACT DATETIME (InvoiceOutstandingCredit);
-amount = ABSTRACT NUMERIC[14,2] (InvoiceOutstandingCredit);
+amount 'Сумма' = ABSTRACT NUMERIC[14,2] (InvoiceOutstandingCredit);
+amountLeft 'Остаток' = ABSTRACT NUMERIC[14,2] (InvoiceOutstandingCredit);
 
 partner = ABSTRACT Partner (InvoiceOutstandingCredit);
 namePartner 'Партнер' (InvoiceOutstandingCredit c) = name(partner(c));
+
+canBeMatched = ABSTRACT BOOLEAN (InvoiceOutstandingCredit, Invoice);
 
 type 'Тип' = ABSTRACT ISTRING[30](InvoiceOutstandingCredit);
 
@@ -21,7 +24,6 @@ paid 'Оплачено' (Invoice i) = (GROUP SUM paid(InvoiceOutstandingCredit c
 toPay 'Остаток' (Invoice i) = totalAmount(i) (-) paid(i);
 
 invoiced 'Оплачено' (InvoiceOutstandingCredit c) = GROUP SUM paid(c, Invoice i);
-toInvoice 'Остаток' (InvoiceOutstandingCredit c) = amount(c) (-) invoiced(c);
 
 EXTEND FORM invoices   
     PROPERTIES(i) READONLY paid  
@@ -36,7 +38,7 @@ addPayment 'Привязать' (InvoiceOutstandingCredit p, Invoice i) {
     IF canceled() THEN RETURN;
     
     NEWSESSION {
-        paid(p, i) <- min(toInvoice(p), toPay(i));
+        paid(p, i) <- min(Invoicing.amountLeft[InvoiceOutstandingCredit](p), toPay(i));
         APPLY;
     }
 }
@@ -48,10 +50,9 @@ EXTEND FORM invoice
     FILTERS paid(p, i)
     
     OBJECTS pp = InvoiceOutstandingCredit
-    PROPERTIES(pp) READONLY date, number, type, toInvoice
+    PROPERTIES(pp) READONLY date, number, type, Invoicing.amountLeft[InvoiceOutstandingCredit]
     PROPERTIES addPayment(pp, i) DRAW pp TOOLBAR
-    FILTERS partner(pp) = partner(i), toInvoice(pp) > 0, NOT pp = i
-    
+    FILTERS canBeMatched(pp, i)   
 ;
 
 DESIGN invoice {

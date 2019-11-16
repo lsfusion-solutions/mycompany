@@ -1,14 +1,20 @@
 MODULE Refund;
 
-REQUIRE BillPayment;
+REQUIRE BillOutstandingCredit, BillDone;
 
 NAMESPACE Invoicing;
 
 CLASS Refund 'Акт возврата' : Bill;
 isRefund 'Акт возврата' (Bill b) = b IS Refund;
+amountLeft 'Остаток' =  DATA NUMERIC[14,2] (Refund);
+
+WHEN LOCAL SETCHANGED (isRefund(Refund r)) DO {
+    amountLeft(r) <- totalAmount(r);
+}
 
 EXTEND CLASS Refund : BillOutstandingCredit;
 amount(Refund c) += totalAmount(c);
+amountLeft(Refund c) += amountLeft(c);
 partner (Refund c) += partner[Bill](c);
 date(Refund c) += date[Bill](c);
 number(Refund c) += number[Bill](c);
@@ -24,9 +30,13 @@ type 'Тип' (Bill b)=  IF(isRefund(b)) THEN ISTRING[30](name(BillType.refund))
                         ELSE ISTRING[30](name(BillType.bill));
 
 type(Refund c) += type[Bill](c);
-isRefund(Refund r) += isRefund[Bill](r);
 
 typeColor (Refund r) = IF type[Bill](r) = ISTRING[30](name(BillType.refund)) THEN RGB(250,67,71);
+
+canBeMatched(Refund r, Bill b) = 
+            IF partner[BillOutstandingCredit](r) = partner(b) AND amountLeft(r) > 0 AND NOT r = b AND status(b) = BillStatus.ready
+            THEN TRUE;
+canBeMatched(Refund r, Bill b) += canBeMatched(r, b);
 
 EXTEND FORM bill
     PROPERTIES(b) type BACKGROUND typeColor(b)
@@ -81,8 +91,7 @@ EXTEND FORM bill
     OBJECTS bil = Bill
     PROPERTIES(bil) READONLY date, number, type, toPay
     PROPERTIES addBillPayment(b, bil) DRAW bil TOOLBAR
-    FILTERS partner(bil) = partner(b), toPay(bil) > 0, NOT b = bil,
-            status(bil) = BillStatus.ready
+    FILTERS canBeMatched[Refund, Bill](b, bil)
 ;
 
 DESIGN bill {

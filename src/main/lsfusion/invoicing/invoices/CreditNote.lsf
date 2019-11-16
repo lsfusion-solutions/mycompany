@@ -1,14 +1,20 @@
 MODULE CreditNote;
 
-REQUIRE InvoicePayment, InvoiceOutstandingCredit;
+REQUIRE InvoiceDone, InvoiceOutstandingCredit;
 
 NAMESPACE Invoicing;
 
 CLASS CreditNote 'Акт расхождения' : Invoice;
 isCreditNote 'Акт расхождения' (Invoice i) = i IS CreditNote;
+amountLeft 'Остаток' =  DATA NUMERIC[14,2] (CreditNote);
+
+WHEN LOCAL SETCHANGED (isCreditNote(CreditNote c)) DO {
+    amountLeft(c) <- totalAmount(c);
+}
 
 EXTEND CLASS CreditNote : InvoiceOutstandingCredit;
 amount(CreditNote c) += totalAmount(c);
+amountLeft(CreditNote c) += amountLeft(c);
 partner (CreditNote c) += partner[Invoice](c);
 date(CreditNote c) += date[Invoice](c);
 number(CreditNote c) += number[Invoice](c);
@@ -23,9 +29,13 @@ name 'Имя' (InvoiceType o) = staticCaption(o) IF o IS InvoiceType CHARWIDTH 1
 type 'Тип' (Invoice i) = IF(isCreditNote(i)) THEN ISTRING[30](name(InvoiceType.creditNote))
                                      ELSE ISTRING[30](name(InvoiceType.invoice));
 type(CreditNote c) += type[Invoice](c);
-isCreditNote(CreditNote c) += isCreditNote[Invoice](c);
 
 typeColor (CreditNote c) = IF type[Invoice](c) = ISTRING[30](name(InvoiceType.creditNote)) THEN RGB(250,67,71);
+
+canBeMatched(CreditNote c, Invoice i) = 
+            IF partner[InvoiceOutstandingCredit](c) = partner(i) AND amountLeft(c) > 0 AND NOT c = i AND status(i) = InvoiceStatus.ready
+            THEN TRUE;
+canBeMatched(CreditNote c, Invoice i) += canBeMatched(c, i);
 
 EXTEND FORM invoice
     PROPERTIES(i) type  BACKGROUND typeColor(i)
@@ -72,8 +82,7 @@ EXTEND FORM invoice
     OBJECTS inv = Invoice
     PROPERTIES(inv) READONLY date, number, type, toPay
     PROPERTIES addPayment(i, inv) DRAW inv TOOLBAR
-    FILTERS partner(inv) = partner(i), toPay(inv) > 0, NOT i = inv,
-            status(inv) = InvoiceStatus.ready
+    FILTERS canBeMatched[CreditNote, Invoice](i, inv)
 ;
 
 DESIGN invoice {

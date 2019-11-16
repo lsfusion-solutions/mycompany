@@ -1,16 +1,15 @@
 MODULE BillPayment;
 
-REQUIRE BillOutstandingCredit, BillDone, Payment;
+REQUIRE Refund, Payment;
 
 NAMESPACE Invoicing;
 
 EXTEND CLASS Payment : BillOutstandingCredit;
 amount(Payment p) += amount(p);
+amountLeft(Payment p) += amountLeft(p);
 date(Payment p) += date(p);
 number(Payment p) += number(p);
 type(Payment p) += 'Платеж' IF p IS Payment;
-
-isRefund 'Возврат' = ABSTRACT BOOLEAN (BillOutstandingCredit);
 
 registerPayment 'Оформить платеж' (Bill b){
     APPLY; 
@@ -35,6 +34,12 @@ registerPayment 'Оформить платеж' (Bill b){
    }
 }
 
+canBeMatched(Payment p, Bill b) = 
+    IF ((isIncoming(p) AND isRefund(b) AND fromAccountHolder(p) = partner(b) AND status(b) = BillStatus.ready AND amountLeft(p) > 0)
+    OR (isOutgoing(p) AND NOT isRefund(b) AND toAccountHolder(p) = partner(b) AND status(b) = BillStatus.ready AND amountLeft(p) > 0)) 
+    THEN TRUE;
+canBeMatched(Payment p, Bill b) += canBeMatched(p, b);
+
 EXTEND FORM bill
     PROPERTIES(b) registerPayment SHOWIF status(b) = BillStatus.ready 
 ;
@@ -43,6 +48,27 @@ DESIGN bill {
     statusActions{
         primary {
             MOVE PROPERTY(registerPayment(b));
+        }
+    }
+}
+
+EXTEND FORM payment
+    OBJECTS b = Bill
+    PROPERTIES(b) READONLY nameStatus, date, dueDate, namePartner, notes, untaxedAmount, totalTax, totalAmount
+    PROPERTIES READONLY paid(p, b)                  
+    FILTERS paid(p, b)
+    
+    OBJECTS bb = Bill
+    PROPERTIES(bb) READONLY nameStatus, date, dueDate, namePartner, notes, untaxedAmount, totalTax, totalAmount, paid
+    PROPERTIES addBillPayment(p, bb) DRAW bb TOOLBAR
+    FILTERS canBeMatched(p, bb)
+;
+
+DESIGN payment {
+    details {
+        bills {
+            MOVE BOX (b);
+            MOVE BOX (bb);
         }
     }
 }

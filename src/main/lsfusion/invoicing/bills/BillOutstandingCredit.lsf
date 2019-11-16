@@ -1,6 +1,6 @@
 MODULE BillOutstandingCredit;
 
-REQUIRE Bill;
+REQUIRE Bill, Utils;
 
 NAMESPACE Invoicing;
 
@@ -8,9 +8,12 @@ CLASS ABSTRACT BillOutstandingCredit 'Закрытие задолженност�
 
 date 'Дата' = ABSTRACT DATETIME (BillOutstandingCredit);
 amount = ABSTRACT NUMERIC[14,2] (BillOutstandingCredit);
+amountLeft 'Остаток' = ABSTRACT NUMERIC[14,2] (BillOutstandingCredit);
 
 partner = ABSTRACT Partner (BillOutstandingCredit);
 namePartner 'Партнер' (BillOutstandingCredit c) = name(partner(c));
+
+canBeMatched = ABSTRACT BOOLEAN (BillOutstandingCredit, Bill);
 
 type 'Тип' = ABSTRACT ISTRING[30](BillOutstandingCredit);
 
@@ -21,7 +24,6 @@ paid 'Оплачено' (Bill b) = (GROUP SUM paid(BillOutstandingCredit c, b)) 
 toPay 'Остаток' (Bill b) = totalAmount(b) (-) paid(b);
 
 billed 'Оплачено' (BillOutstandingCredit c) = GROUP SUM paid(c, Bill i);
-toBill 'Остаток' (BillOutstandingCredit c) = amount(c) (-) billed(c);
 
 EXTEND FORM bills   
     PROPERTIES(b) READONLY paid  
@@ -36,8 +38,7 @@ addBillPayment 'Привязать' (BillOutstandingCredit p, Bill b) {
     IF canceled() THEN RETURN;
     
     NEWSESSION {
-        IF toBill(p) >= totalAmount(b) (-) paid(b) THEN paid(p, b) <- totalAmount(b) (-) paid(b);
-        ELSE paid(p, b) <- toBill(p);
+        paid(p, b) <- min(Invoicing.amountLeft[BillOutstandingCredit](p), toPay(b));
         APPLY;
     }
 }
@@ -49,9 +50,9 @@ EXTEND FORM bill
     FILTERS paid(p, b)
     
     OBJECTS pp = BillOutstandingCredit
-    PROPERTIES(pp) READONLY date, number, type, toBill
+    PROPERTIES(pp) READONLY date, number, type, Invoicing.amountLeft[BillOutstandingCredit]
     PROPERTIES addBillPayment(pp, b) DRAW pp TOOLBAR
-    FILTERS partner(pp) = partner(b), toBill(pp) > 0, NOT pp = b
+    FILTERS canBeMatched(pp, b)
     
 ;
 

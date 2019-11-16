@@ -29,7 +29,7 @@ WHEN LOCAL CHANGED (fromAccountHolder(Payment p)) DO {
     fromAccount(p) <- defaultAccount(fromAccountHolder(p));
 }
 
-amount 'Сумма' = DATA NUMERIC[14,2] (Payment);
+amount 'Сумма' = DATA NUMERIC[14,2] (Payment) NONULL;
 
 inAmount 'Доход' (Account a) = GROUP SUM amount(Payment p) IF toAccount(p) = a;
 outAmount 'Расход' (Account a) = GROUP SUM amount(Payment p) IF fromAccount(p) = a;
@@ -46,6 +46,14 @@ WHEN SETCHANGED (Payment p IS Payment  AND numeratorPayment() AND NOT number(p))
 }
 
 seriesNumber 'Серия/Номер' (Payment p) = CONCAT '/', series(p), number(p); 
+
+isIncoming 'Входящий' (Payment p) = IF toAccountHolder(p) IS Company THEN TRUE;
+isOutgoing 'Входящий' (Payment p) = IF fromAccountHolder(p) IS Company THEN TRUE;
+
+amountLeft 'Остаток' = DATA NUMERIC[14,2] (Payment);
+
+notes 'Примечания' = DATA ISTRING[50] (Payment);
+reference 'Сылка' = DATA ISTRING[50] (Payment);
 
 CONSTRAINT toAccount(Payment p) AND fromAccount(p) AND 
                 NOT (holder(toAccount(p)) IS Company OR holder(fromAccount(p)) IS Company)
@@ -67,8 +75,8 @@ CONSTRAINT (fromAccountHolder(Payment p) AND fromAccount(p)) AND NOT (holder(fro
 
 FORM payment 'Платеж'
     OBJECTS p = Payment PANEL 
-    PROPERTIES(p) date,  amount, series, number, fromAccountNumber, nameFromAccountHolder, 
-                         toAccountNumber, nameToAccountHolder 
+    PROPERTIES(p) date,  amount, amountLeft READONLY, reference, fromAccountNumber, nameFromAccountHolder, 
+                         toAccountNumber, nameToAccountHolder, series, number, notes
                
     
     EDIT Payment OBJECT p
@@ -77,7 +85,7 @@ FORM payment 'Платеж'
 FORM payments 'Платежи'
     OBJECTS p = Payment
     PROPERTIES(p) READONLY date, fromAccountNumber, nameFromAccountHolder, toAccountNumber, nameToAccountHolder, 
-                amount 
+                amount, amountLeft, reference, notes
     PROPERTIES (p) NEWSESSION NEW, EDIT, DELETE 
     
     LIST Payment OBJECT p
@@ -87,6 +95,28 @@ NAVIGATOR {
     invoicing {
         operations {
             NEW payments;
+        }
+    }
+}
+
+DESIGN payment {
+    OBJECTS {
+        NEW header {
+            MOVE BOX (p);
+        }
+        NEW details {
+            type = TABBED;
+            fill = 1;
+            NEW invoices {
+                type = SPLITV;
+                fill = 1;
+                caption = 'Расходные накладные';
+            }
+            NEW bills {
+                type = SPLITV;
+                fill = 1;
+                caption = 'Приходные накладные';
+            }
         }
     }
 }
