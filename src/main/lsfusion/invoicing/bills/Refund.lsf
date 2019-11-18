@@ -22,12 +22,13 @@ CLASS BillType 'Тип накладной' {
 
 name 'Имя' (BillType o) = staticCaption(o) IF o IS BillType CHARWIDTH 15;
 
-type 'Тип' (Bill b)=  IF(isRefund(b)) THEN ISTRING[30](name(BillType.refund))
-                        ELSE ISTRING[30](name(BillType.bill));
+type 'Тип' (Bill b)=  IF(isRefund(b)) THEN BillType.refund
+                        ELSE BillType.bill;
+nameType 'Тип' (Bill b) = name(type(b));
 
-type(Refund c) += type[Bill](c);
+type(Refund c) += ISTRING[30](nameType[Bill](c));
 
-typeColor (Refund r) = IF type[Bill](r) = ISTRING[30](name(BillType.refund)) THEN RGB(250,67,71);
+typeColor (Refund r) = IF type[Bill](r) = BillType.refund THEN RGB(250,67,71);
 
 canBeMatched(Refund r, Bill b) = 
             partner[BillOutstandingCredit](r) = partner(b) 
@@ -38,11 +39,11 @@ canBeMatched(Refund r, Bill b) =
 canBeMatched(Refund r, Bill b) += canBeMatched(r, b);
 
 EXTEND FORM bill
-    PROPERTIES(b) type BACKGROUND typeColor(b)
+    PROPERTIES(b) nameType BACKGROUND typeColor(b)
 ;
 
 EXTEND FORM bills
-    PROPERTIES(b) type AFTER nameStatus(b) BACKGROUND typeColor(b)
+    PROPERTIES(b) nameType AFTER nameStatus(b) BACKGROUND typeColor(b)
 ;
 
 refund 'Создать акт возврата' (Bill b) {
@@ -83,12 +84,12 @@ DESIGN bill {
 
 EXTEND FORM bill
     OBJECTS bi = Bill
-    PROPERTIES(bi) READONLY date, number, type
+    PROPERTIES(bi) READONLY date, number, nameType
     PROPERTIES READONLY paid(b, bi)
     FILTERS paid(b, bi), NOT b = bi
     
     OBJECTS bil = Bill
-    PROPERTIES(bil) READONLY date, number, type, toPay
+    PROPERTIES(bil) READONLY date, number, nameType, toPay
     PROPERTIES addBillPayment(b, bil) DRAW bil TOOLBAR
     FILTERS canBeMatched[Refund, Bill](b, bil)
 ;
