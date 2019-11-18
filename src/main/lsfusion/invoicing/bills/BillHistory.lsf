@@ -4,4 +4,93 @@ REQUIRE BillStatus, Doc;
 
 NAMESPACE Invoicing;
 
-@defineDocHistory(bill, b, item, quantity);
+@defineDocHistory(bill, b, item, quantity){
+
+    CLASS BillHistory 'История изменений';
+    
+    bill = DATA Bill (BillHistory);
+
+    date 'Дата' = DATA DATETIME (BillHistory);
+    user 'Пользователь' = DATA User (BillHistory) CHARWIDTH 15;
+    nameUser 'Пользователь' (BillHistory l) = name(user(l));
+    type 'Тип' = DATA ISTRING[100](BillHistory);
+    description 'Описание' = DATA TEXT (BillHistory);
+     
+    WHEN SETCHANGED (status(Bill b)) DO {     
+        NEW l = BillHistory {
+            bill(l) <- b;
+            date(l) <- currentDateTime();
+            user(l) <- currentUser();
+            type(l) <- 'Изменен статус';
+            description (l) <- 'Изменен статус на ' + staticCaption(status(b));
+        }
+            
+        
+    }
+
+    EXTEND FORM bill
+        OBJECTS billl = BillHistory
+        PROPERTIES(billl) READONLY date, nameUser, type, description, pdescription = description PANEL
+        FILTERS bill(billl) = b
+    ;
+    
+    DESIGN bill {
+        details {
+            NEW history {
+                caption = 'История';
+                fill = 1;
+                type = SPLITH;
+                MOVE BOX(billl) { 
+                    fill = 2;
+                    PROPERTY(description(billl)) { valueHeight = 18; }
+                }
+                MOVE PROPERTY(pdescription) { panelCaptionAbove = TRUE; fill = 1; }
+            }
+        }
+    }
+    
+    WHEN SETCHANGED (BillLine l IS BillLine) AND bill(l) = Bill b 
+                        AND NOT status(b) = BillStatus.draft DO {     
+        NEW h = BillHistory {
+            bill(h) <- b;
+            date(h) <- currentDateTime();
+            user(h) <- currentUser();
+            type(h) <- 'Добавлена строка';
+            description (h) <- 'Добавлена строка с индексом ' + index(l);
+        }
+    }
+    
+    WHEN DROPPED (BillLine l IS BillLine) AND PREV(bill(l)) = Bill b 
+                        AND NOT status(b) = BillStatus.draft DO {     
+        NEW h = BillHistory {
+            bill(h) <- b;
+            date(h) <- currentDateTime();
+            user(h) <- currentUser();
+            type(h) <- 'Удалена строка';
+            description (h) <- 'Удалена строка с индексом ' + PREV(index(l));
+        }
+    }
+    
+    WHEN CHANGED (quantity(BillLine l)) AND bill(l) = Bill b 
+                        AND NOT status(b) = BillStatus.draft DO {     
+        NEW h = BillHistory {
+            bill(h) <- b;
+            date(h) <- currentDateTime();
+            user(h) <- currentUser();
+            type(h) <- 'Изменено исходное кол-во';
+            description (h) <- 'Изменено исходное кол-во продукта ' + nameItem(l) + ' на ' + quantity(l);
+        }
+    }
+    
+    WHEN CHANGED (nameItem(BillLine l)) AND bill(l) = Bill b 
+                        AND NOT status(b) = BillStatus.draft DO {     
+        NEW h = BillHistory {
+            bill(h) <- b;
+            date(h) <- currentDateTime();
+            user(h) <- currentUser();
+            type(h) <- 'Изменен продукт';
+            description (h) <- 'Изменен продукт в строке ' + index(l) + ' на ' + nameItem(l);
+        }
+    }
+
+};

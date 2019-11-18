@@ -50,8 +50,6 @@ seriesNumber 'Серия/Номер' (Payment p) = CONCAT '/', series(p), number
 isIncoming 'Входящий' (Payment p) = toPartner(p) IS Company;
 isOutgoing 'Входящий' (Payment p) = fromPartner(p) IS Company;
 
-amountLeft 'Остаток' = DATA NUMERIC[14,2] (Payment);
-
 notes 'Примечания' = DATA ISTRING[50] (Payment);
 reference 'Сылка' = DATA ISTRING[50] (Payment);
 
@@ -75,7 +73,7 @@ CONSTRAINT (fromPartner(Payment p) AND fromAccount(p)) AND NOT (holder(fromAccou
 
 FORM payment 'Платеж'
     OBJECTS p = Payment PANEL 
-    PROPERTIES(p) date,  amount, amountLeft READONLY, reference, fromAccountNumber, nameFromPartner, 
+    PROPERTIES(p) date,  amount, reference, fromAccountNumber, nameFromPartner, 
                          toAccountNumber, nameToPartner, series, number, notes
                
     
@@ -85,7 +83,7 @@ FORM payment 'Платеж'
 FORM payments 'Платежи'
     OBJECTS p = Payment
     PROPERTIES(p) READONLY date, fromAccountNumber, nameFromPartner, toAccountNumber, nameToPartner, 
-                amount, amountLeft, reference, notes
+                amount, reference, notes
     PROPERTIES (p) NEWSESSION NEW, EDIT, DELETE 
     
     LIST Payment OBJECT p

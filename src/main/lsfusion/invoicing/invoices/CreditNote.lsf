@@ -6,11 +6,7 @@ NAMESPACE Invoicing;
 
 CLASS CreditNote 'Акт расхождения' : Invoice;
 isCreditNote 'Акт расхождения' (Invoice i) = i IS CreditNote;
-amountLeft 'Остаток' =  DATA NUMERIC[14,2] (CreditNote);
-
-WHEN LOCAL SETCHANGED (isCreditNote(CreditNote c)) DO {
-    amountLeft(c) <- totalAmount(c);
-}
+amountLeft 'Остаток' (CreditNote c) = totalAmount(c) (-) invoiced(c);
 
 EXTEND CLASS CreditNote : InvoiceOutstandingCredit;
 amount(CreditNote c) += totalAmount(c);
@@ -33,7 +29,12 @@ type(CreditNote c) += type[Invoice](c);
 typeColor (CreditNote c) = IF type[Invoice](c) = ISTRING[30](name(InvoiceType.creditNote)) THEN RGB(250,67,71);
 
 canBeMatched(CreditNote c, Invoice i) = 
-    partner[InvoiceOutstandingCredit](c) = partner(i) AND amountLeft(c) > 0 AND status(i) = InvoiceStatus.ready;
+            IF partner[InvoiceOutstandingCredit](c) = partner(i) 
+                AND amountLeft(c) > 0 
+                AND NOT c = i 
+                AND status(i) = InvoiceStatus.ready 
+                AND NOT isCreditNote(i)
+            THEN TRUE;
 canBeMatched(CreditNote c, Invoice i) += canBeMatched(c, i);
 
 EXTEND FORM invoice

@@ -6,11 +6,7 @@ NAMESPACE Invoicing;
 
 CLASS Refund 'Акт возврата' : Bill;
 isRefund 'Акт возврата' (Bill b) = b IS Refund;
-amountLeft 'Остаток' =  DATA NUMERIC[14,2] (Refund);
-
-WHEN LOCAL SETCHANGED (isRefund(Refund r)) DO {
-    amountLeft(r) <- totalAmount(r);
-}
+amountLeft 'Остаток' (Refund r) = totalAmount(r) (-) billed(r);
 
 EXTEND CLASS Refund : BillOutstandingCredit;
 amount(Refund c) += totalAmount(c);
@@ -34,7 +30,12 @@ type(Refund c) += type[Bill](c);
 typeColor (Refund r) = IF type[Bill](r) = ISTRING[30](name(BillType.refund)) THEN RGB(250,67,71);
 
 canBeMatched(Refund r, Bill b) = 
-    partner[BillOutstandingCredit](r) = partner(b) AND amountLeft(r) > 0 AND status(b) = BillStatus.ready;
+            IF partner[BillOutstandingCredit](r) = partner(b) 
+                AND amountLeft(r) > 0 
+                AND NOT r = b 
+                AND status(b) = BillStatus.ready 
+                AND NOT isRefund(b)
+            THEN TRUE;
 canBeMatched(Refund r, Bill b) += canBeMatched(r, b);
 
 EXTEND FORM bill

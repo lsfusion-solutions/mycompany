@@ -4,12 +4,6 @@ REQUIRE ShipmentDone, CostLedger, CostLocation;
 
 NAMESPACE Inventory;
 
-cost 'Себестоимость (сумма, временно полежит здесь)' = DATA NUMERIC[14,2] (ShipmentLine);
-
-WHEN SETCHANGED (product(ShipmentLine l)) AND cost(product(l)) DO {
-    cost(l) <- NUMERIC[14,2](cost(product(l)) * initialDemand(l));
-}
-
 // расходная проводка
 CLASS ShipmentOutCostLedger : OutCostLedger;
 outCostLedger = AGGR ShipmentOutCostLedger WHERE done(ShipmentLine line) AND done(shipment(line))

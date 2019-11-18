@@ -61,7 +61,7 @@ nameItem 'Номенклатура' (BillLine l) = name(item(l)) IN id;
 quantity 'Кол-во' = DATA NUMERIC[16,3] (BillLine) NONULL;
 unitPrice 'Цена за штуку' = DATA NUMERIC[10,2] (BillLine) NONULL;
 
-WHEN SETCHANGED (item(BillLine l)) AND cost(item(l)) DO {
+WHEN LOCAL SETCHANGED (item(BillLine l)) AND cost(item(l)) DO {
     unitPrice(l) <- cost(item(l));
 }
 
@@ -70,12 +70,12 @@ index 'Индекс' = PARTITION SUM 1 ORDER BillLine l BY bill(l) IN id MATERIA
 readonly = ABSTRACT CASE BOOLEAN (BillLine);
 readonly = ABSTRACT CASE BOOLEAN (Bill);
 
-// налоги
-@defineTaxCalc(bill, b);
-
 CONSTRAINT item(BillLine l) AND NOT canBePurchased(item(l))
             CHECKED BY canBePurchased 
             MESSAGE 'Наменклатура не предназначена для закупки';
+
+// налоги
+@defineTaxCalc(bill, b);
 
 FORM bill 'Приходная накладная'
     OBJECTS  b = Bill PANEL 
