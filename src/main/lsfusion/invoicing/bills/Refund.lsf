@@ -30,12 +30,11 @@ type(Refund c) += type[Bill](c);
 typeColor (Refund r) = IF type[Bill](r) = ISTRING[30](name(BillType.refund)) THEN RGB(250,67,71);
 
 canBeMatched(Refund r, Bill b) = 
-            IF partner[BillOutstandingCredit](r) = partner(b) 
-                AND amountLeft(r) > 0 
-                AND NOT r = b 
-                AND status(b) = BillStatus.ready 
-                AND NOT isRefund(b)
-            THEN TRUE;
+            partner[BillOutstandingCredit](r) = partner(b) 
+            AND amountLeft(r) > 0 
+            AND NOT r = b 
+            AND status(b) = BillStatus.ready 
+            AND NOT isRefund(b);
 canBeMatched(Refund r, Bill b) += canBeMatched(r, b);
 
 EXTEND FORM bill

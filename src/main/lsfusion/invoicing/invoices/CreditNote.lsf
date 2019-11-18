@@ -29,12 +29,11 @@ type(CreditNote c) += type[Invoice](c);
 typeColor (CreditNote c) = IF type[Invoice](c) = ISTRING[30](name(InvoiceType.creditNote)) THEN RGB(250,67,71);
 
 canBeMatched(CreditNote c, Invoice i) = 
-            IF partner[InvoiceOutstandingCredit](c) = partner(i) 
-                AND amountLeft(c) > 0 
-                AND NOT c = i 
-                AND status(i) = InvoiceStatus.ready 
-                AND NOT isCreditNote(i)
-            THEN TRUE;
+            partner[InvoiceOutstandingCredit](c) = partner(i) 
+            AND amountLeft(c) > 0 
+            AND NOT c = i 
+            AND status(i) = InvoiceStatus.ready 
+            AND NOT isCreditNote(i);
 canBeMatched(CreditNote c, Invoice i) += canBeMatched(c, i);
 
 EXTEND FORM invoice
