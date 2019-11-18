@@ -44,9 +44,8 @@ registerPayment 'Оформить платеж' (Invoice i){
 }
 
 canBeMatched(Payment p, Invoice i) = 
-    IF ((isIncoming(p) AND NOT isCreditNote(i) AND fromPartner(p) = partner(i) AND status(i) = InvoiceStatus.ready AND amountLeft(p) > 0)
-    OR (isOutgoing(p) AND isCreditNote(i) AND toPartner(p) = partner(i) AND status(i) = InvoiceStatus.ready AND amountLeft(p) > 0)) 
-    THEN TRUE;
+    ((isIncoming(p) AND NOT isCreditNote(i) AND fromPartner(p) = partner(i) AND status(i) = InvoiceStatus.ready AND amountLeft(p) > 0) OR
+     (isOutgoing(p) AND isCreditNote(i) AND toPartner(p) = partner(i) AND status(i) = InvoiceStatus.ready AND amountLeft(p) > 0)); 
 canBeMatched(Payment p, Invoice i) += canBeMatched(p, i);
 
 EXTEND FORM invoice
