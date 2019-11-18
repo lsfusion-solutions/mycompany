@@ -32,8 +32,7 @@ CLASS AdjustmentType 'Тип инвентаризации' {
     manual 'Вручную'
 }
 
-WHEN LOCAL (CHANGED (location(AdjustmentLine l)) OR CHANGED (product(l))) AND location(l) AND product(l)
-                                                        AND NOT theoreticalQuantity(l) DO {
+WHEN LOCAL (SETCHANGED (location(AdjustmentLine l)) OR SETCHANGED (product(l))) AND location(l) AND product(l) DO {
     theoreticalQuantity(l) <- onHand(location(l), product(l));
     realQuantity(l) <- theoreticalQuantity(l);
 }
@@ -48,14 +47,18 @@ nameCategory 'Категория' (Adjustment a) = name(category(a));
 
 readonly = ABSTRACT CASE BOOLEAN (AdjustmentLine);
 
+background (AdjustmentLine l) = CASE WHEN theoreticalQuantity(l) < realQuantity(l) THEN RGB(152,251,152)
+                                              WHEN theoreticalQuantity(l) > realQuantity(l) THEN RGB(252,184,205);
+
+
 FORM adjustment 'Инвентаризация'
     OBJECTS a = Adjustment PANEL 
     PROPERTIES(a) READONLY dateTime, nameLocation, nameType, notes, 
                             nameCategory SHOWIF type(a) = AdjustmentType.category 
     
     OBJECTS l = AdjustmentLine
-    PROPERTIES(l) READONLYIF NOT (type(a) = AdjustmentType.manual) nameProduct, nameLocation, theoreticalQuantity 
-    PROPERTIES(l) realQuantity READONLYIF readonly(l) 
+    PROPERTIES(l) READONLYIF NOT (type(a) = AdjustmentType.manual) nameProduct, nameLocation, theoreticalQuantity BACKGROUND background(l)
+    PROPERTIES(l) realQuantity READONLYIF readonly(l) BACKGROUND background(l)
     PROPERTIES(l) NEW SHOWIF type(a) = AdjustmentType.manual, DELETE SHOWIF type(a) = AdjustmentType.manual
     FILTERS adjustment(l) = a
     

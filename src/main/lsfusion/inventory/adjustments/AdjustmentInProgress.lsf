@@ -28,6 +28,11 @@ showSearch (Adjustment a) += WHEN status(a) = AdjustmentStatus.inProgress AND ty
 
 EXTEND FORM adjustment
     PROPERTIES(a) markAsToDo SHOWIF status(a) = AdjustmentStatus.draft, inProgress READONLY
+    
+    FILTERGROUP adjustment
+        FILTER 'Расхождения' NOT theoreticalQuantity(l) = realQuantity(l) 'F10'
+        FILTER 'Излишки'  theoreticalQuantity(l) < realQuantity(l) 'F9'
+        FILTER 'Недостачи'  theoreticalQuantity(l) > realQuantity(l) 'F8'
 ;
 
 DESIGN adjustment {
