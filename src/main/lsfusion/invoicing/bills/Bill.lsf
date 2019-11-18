@@ -29,7 +29,7 @@ CONSTRAINT partnerAccount(Bill b) AND NOT partner(b) = holder(partnerAccount(b))
     CHECKED BY partnerAccount
     MESSAGE 'Счет должен принадлежать выбранному партнеру';
     
-referenceNUmber 'Код поставщика' = DATA STRING[30] (Bill) NONULL;
+vendorReference 'Код поставщика' = DATA STRING[30] (Bill);
 
 notes 'Примечания' = DATA ISTRING[50] (Bill);
 
@@ -80,7 +80,7 @@ CONSTRAINT item(BillLine l) AND NOT canBePurchased(item(l))
 FORM bill 'Приходная накладная'
     OBJECTS  b = Bill PANEL 
     PROPERTIES(b) READONLYIF readonly(b) date, dueDate, namePartner, partnerAccountNumber, 
-                                series, number, referenceNUmber, notes, namePaymentTerms
+                                series, number, vendorReference, notes, namePaymentTerms
         
     OBJECTS l = BillLine
     PROPERTIES(l) READONLYIF readonly(l) nameItem, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
