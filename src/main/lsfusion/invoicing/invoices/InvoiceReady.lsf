@@ -5,12 +5,12 @@ REQUIRE Invoicing, InvoiceStatus;
 NAMESPACE Invoicing;
 
 EXTEND CLASS InvoiceStatus {
-    ready 'К платежу'
+    ready 'К оплате'
 }
 
-ready 'К платежу' = DATA BOOLEAN (Invoice);
+ready 'К оплате' = DATA BOOLEAN (Invoice);
 
-markAsToDo 'К платежу' (Invoice i) {
+markAsToDo 'К оплате' (Invoice i) {
     APPLY; 
         IF canceled() THEN RETURN;
         
@@ -26,7 +26,7 @@ EXTEND FORM invoice
 
 EXTEND FORM invoices    
     EXTEND FILTERGROUP status
-        FILTER 'К платежу' status(i) = InvoiceStatus.ready 'F8'    
+        FILTER 'К оплате' status(i) = InvoiceStatus.ready 'F8'    
 ;
 
 status(Invoice i) += WHEN ready(i) THEN InvoiceStatus.ready;
