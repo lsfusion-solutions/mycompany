@@ -2,7 +2,7 @@ MODULE Doc;
 
 REQUIRE Authentication, Time, BarCode;
 
-META defineDocSearch (doc, it, fun, let)
+META defineDocSearch (doc, it, fun, let, check)
     quantity 'Кол-во' (###doc i, ###it p) = 
         GROUP SUM fun(###doc##Line l) BY doc(l), it(l);
     last###doc##Line 'Последняя строка' (###doc i, ###it p) = 
@@ -34,7 +34,7 @@ META defineDocSearch (doc, it, fun, let)
         OBJECTS itm = ###it
         PROPERTIES(itm) READONLY name, idBarCode
         PROPERTIES(let, itm) quantity ON CHANGE changeQuantity(let, itm)
-        FILTERS level(category(itm), c)
+        FILTERS level(category(itm), c), ##check(itm)
     ;
     
     DESIGN doc {

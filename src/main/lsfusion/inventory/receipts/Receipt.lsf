@@ -2,7 +2,7 @@ MODULE Receipt;
 
 REQUIRE System, Time,
         Inventory, Location, Partner, Product,
-        ReceiptType;
+        ReceiptType, ItemPurchase;
 
 NAMESPACE Inventory;
 
@@ -59,6 +59,10 @@ index 'Индекс' = PARTITION SUM 1 ORDER ReceiptLine l BY receipt(l) IN id M
 readonly = ABSTRACT CASE BOOLEAN (ReceiptLine); 
 readonly = ABSTRACT CASE BOOLEAN (Receipt);
 readonlyHeader = ABSTRACT CASE BOOLEAN (Receipt);
+
+CONSTRAINT product(ReceiptLine l) AND NOT canBePurchased(product(l))
+            CHECKED BY canBePurchased 
+            MESSAGE 'Наменклатура не предназначена для закупки';
 
 FORM receipt 'Поступление'
     OBJECTS r = Receipt PANEL

@@ -1,6 +1,6 @@
 MODULE Invoice;
 
-REQUIRE Invoicing, TaxItem, Account, Time, MetaTax, InvoicingSettings, PaymentTerms;
+REQUIRE Invoicing, TaxItem, Account, Time, MetaTax, InvoicingSettings, PaymentTerms, ItemSale, ItemPurchase;
 
 NAMESPACE Invoicing;
 
@@ -60,10 +60,18 @@ nameItem 'Номенклатура' (InvoiceLine l) = name(item(l)) IN id;
 quantity 'Кол-во' = DATA NUMERIC[16,3] (InvoiceLine) NONULL;
 unitPrice 'Цена за штуку' = DATA NUMERIC[10,2] (InvoiceLine) NONULL;
 
+WHEN SETCHANGED (item(InvoiceLine l)) AND cost(item(l)) DO {
+    unitPrice(l) <- cost(item(l));
+}
+
 index 'Индекс' = PARTITION SUM 1 ORDER InvoiceLine l BY invoice(l) IN id MATERIALIZED;
 
 readonly = ABSTRACT CASE BOOLEAN (InvoiceLine);
 readonly = ABSTRACT CASE BOOLEAN (Invoice);
+
+CONSTRAINT item(InvoiceLine l) AND NOT canBeSold(item(l))
+            CHECKED BY canBeSold 
+            MESSAGE 'Наменклатура не предназначена для продажи';
 
 @defineTaxCalc(invoice, i);
 

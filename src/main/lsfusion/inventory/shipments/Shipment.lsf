@@ -2,7 +2,7 @@ MODULE Shipment;
 
 REQUIRE System, Time,
         Inventory, Location, Partner, Product,
-        ShipmentType;
+        ShipmentType, ItemSale, ItemPurchase;
 
 NAMESPACE Inventory;
 
@@ -72,6 +72,10 @@ index 'Индекс' = PARTITION SUM 1 ORDER ShipmentLine l BY shipment(l) IN id
 readonly = ABSTRACT CASE BOOLEAN (ShipmentLine);
 readonly = ABSTRACT CASE BOOLEAN (Shipment);
 readonlyHeader = ABSTRACT CASE BOOLEAN (Shipment);
+
+CONSTRAINT product(ShipmentLine l) AND NOT canBeSold(product(l))
+            CHECKED BY canBeSold 
+            MESSAGE 'Наменклатура не предназначена для продажи';
 
 FORM shipment 'Отгрузка'
     OBJECTS s = Shipment PANEL 

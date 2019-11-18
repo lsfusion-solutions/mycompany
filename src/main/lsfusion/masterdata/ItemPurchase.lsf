@@ -1,0 +1,27 @@
+MODULE ItemPurchase;
+
+REQUIRE MasterData, Item;
+
+NAMESPACE MasterData;
+
+canBePurchased 'Предназначен для закупки' = DATA BOOLEAN (Item);
+
+WHEN SET(Item i IS Item) DO {
+    canBePurchased(i) <- TRUE;
+}
+
+cost 'Себестоймость' = DATA NUMERIC[10,2] (Item) NONULL;
+
+EXTEND FORM item 
+    PROPERTIES(i) canBePurchased, cost
+;
+
+DESIGN item {
+    pane {
+        NEW purchase {
+            caption = 'Закупка';
+            MOVE PROPERTY (canBePurchased(i));
+            MOVE PROPERTY (cost(i));
+        }
+    }
+}
