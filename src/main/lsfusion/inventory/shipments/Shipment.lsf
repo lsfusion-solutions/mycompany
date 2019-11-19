@@ -2,7 +2,7 @@ MODULE Shipment;
 
 REQUIRE System, Time,
         Inventory, Location, Partner, Product,
-        ShipmentType, ItemSale;
+        ShipmentType, ItemSale, PartnerPurchase;
 
 NAMESPACE Inventory;
 
@@ -32,6 +32,10 @@ CONSTRAINT isTransfer(type(Shipment s)) AND NOT toLocation(s) MESSAGE 'Нужн�
 partner 'Партнер' = DATA Partner (Shipment);
 namePartner 'Партнер' (Shipment s) = name(partner(s));
 notes 'Примечания' = DATA ISTRING[50] (Shipment);
+
+CONSTRAINT partner(Shipment s) AND NOT isCustomer(partner(s)) 
+                CHECKED BY isCustomer
+                MESSAGE 'Партнер должен быть вендором';
 
 // Номер
 series 'Серия' = DATA STRING[2] (Shipment);

@@ -1,6 +1,6 @@
 MODULE Bill;
 
-REQUIRE Invoicing, TaxItem, Account, Time, MetaTax, InvoicingSettings, PaymentTerms, ItemPurchase;
+REQUIRE Invoicing, TaxItem, Account, Time, MetaTax, InvoicingSettings, PaymentTerms, ItemPurchase, PartnerSale;
 
 NAMESPACE Invoicing;
 
@@ -18,6 +18,10 @@ partner 'Партнер' = DATA Partner (Bill) NONULL;
 namePartner 'Партнер' (Bill b) = name(partner(b));
 
 partnerAccount 'Счет партнера'  = DATA Account(Bill);
+
+CONSTRAINT partner(Bill b) AND NOT isVendor(partner(b)) 
+                CHECKED BY isVendor
+                MESSAGE 'Партнер должен быть вендором';
 
 WHEN LOCAL CHANGED (partner(Bill b)) DO {
     partnerAccount(b) <- defaultAccount(partner(b));

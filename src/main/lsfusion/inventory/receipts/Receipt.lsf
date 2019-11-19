@@ -2,7 +2,7 @@ MODULE Receipt;
 
 REQUIRE System, Time,
         Inventory, Location, Partner, Product,
-        ReceiptType, ItemPurchase;
+        ReceiptType, ItemPurchase, PartnerSale;
 
 NAMESPACE Inventory;
 
@@ -38,6 +38,10 @@ WHEN LOCAL CHANGED(type(Receipt r)) AND defaultLocation(type(r)) DO location(r) 
 partner 'Партнер' = DATA Partner (Receipt);
 namePartner 'Партнер' (Receipt r) = name(partner(r));
 notes 'Примечания' = DATA ISTRING[50] (Receipt);
+
+CONSTRAINT partner(Receipt r) AND NOT isVendor(partner(r)) 
+                CHECKED BY isVendor
+                MESSAGE 'Партнер должен быть вендором';
 
 CLASS ReceiptLine 'Строка поступления';
 

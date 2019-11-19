@@ -1,6 +1,6 @@
 MODULE Order;
 REQUIRE System, Time, Utils, Purchase, Location, Partner, Item, Numerator, Incoterms, PaymentTerms, TaxItem, MetaTax, 
-        ItemMeasure, Individual, LegalEntity, Company, Doc, ItemPurchase;
+        ItemMeasure, Individual, LegalEntity, Company, Doc, ItemPurchase, PartnerSale, PartnerPurchase;
 
 NAMESPACE Purchase;
 
@@ -24,6 +24,10 @@ nameLocation 'Место доставки' (Order o) = name(location(o));
 
 vendor 'Поставщик' = DATA Partner (Order) NONULL;
 nameVendor 'Поставщик' (Order o) = name(vendor(o));
+
+CONSTRAINT vendor(Order o) AND NOT isVendor(vendor(o)) AND NOT isCustomer(vendor(o))
+                CHECKED BY isVendor, isCustomer
+                MESSAGE 'Партнер должен быть либо вендором, либо покупателем';
  
 vendorReference 'Входящий номер поставщика' = DATA STRING[30] (Order);
 
