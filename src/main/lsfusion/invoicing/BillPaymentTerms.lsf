@@ -1,0 +1,29 @@
+MODULE BillPaymentTerms;
+
+REQUIRE Partner, PaymentTerms, PartnerSale, Bill;
+
+NAMESPACE Invoicing;
+
+vendorPaymentTerms 'Условия оплаты' = DATA PaymentTerm (Partner);
+nameVendorPaymentTerms 'Условия оплаты'(Partner p) = name(vendorPaymentTerms(p));
+
+paymentTerms 'Условия оплаты' = DATA PaymentTerm (Bill); 
+namePaymentTerms 'Условия оплаты' (Bill b) = name(paymentTerms(b));
+
+WHEN LOCAL SETCHANGED (paymentTerms(Bill b)) AND date(b) DO {
+    dueDate(b) <- sumDay(date(b), days(paymentTerms(b)));
+}
+
+EXTEND FORM partner 
+    PROPERTIES(p) nameVendorPaymentTerms
+;
+
+DESIGN partner {
+    vendor {
+        MOVE PROPERTY (nameVendorPaymentTerms(p));
+    }
+}
+
+EXTEND FORM bill
+    PROPERTIES(b) namePaymentTerms AFTER notes(b)
+;

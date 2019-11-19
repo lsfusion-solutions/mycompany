@@ -1,6 +1,6 @@
 MODULE Bill;
 
-REQUIRE Invoicing, TaxItem, Account, Time, MetaTax, InvoicingSettings, PaymentTerms, ItemPurchase, PartnerSale;
+REQUIRE Invoicing, TaxItem, Account, Time, MetaTax, InvoicingSettings, ItemPurchase, PartnerSale;
 
 NAMESPACE Invoicing;
 
@@ -48,13 +48,6 @@ WHEN SETCHANGED (Bill b IS Bill  AND numeratorBill() AND NOT number(b)) DO {
 
 seriesNumber 'Серия/Номер' (Bill b) = CONCAT '/', series(b), number(b);
 
-paymentTerms 'Условия оплаты' = DATA PaymentTerm (Bill); 
-namePaymentTerms 'Условия оплаты' (Bill b) = name(paymentTerms(b));
-
-WHEN LOCAL SETCHANGED (paymentTerms(Bill b)) AND date(b) DO {
-    dueDate(b) <- sumDay(date(b), days(paymentTerms(b)));
-}
-
 CLASS BillLine 'Строка накладной';
 
 bill 'Приходная накладная' = DATA Bill (BillLine) NONULL DELETE;
@@ -84,7 +77,7 @@ CONSTRAINT item(BillLine l) AND NOT canBePurchased(item(l))
 FORM bill 'Приходная накладная'
     OBJECTS  b = Bill PANEL 
     PROPERTIES(b) READONLYIF readonly(b) date, dueDate, namePartner, partnerAccountNumber, 
-                                series, number, vendorReference, notes, namePaymentTerms
+                                series, number, vendorReference, notes
         
     OBJECTS l = BillLine
     PROPERTIES(l) READONLYIF readonly(l) nameItem, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
