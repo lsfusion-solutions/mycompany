@@ -15,17 +15,41 @@ CONSTRAINT location(ReceiptPutAway p) AND NOT level(location(p), location(receip
                     CHECKED BY location[ReceiptPutAway]
                     MESSAGE 'Место хранения должно быть дочерним от места хранения из документа потупления';
 
-put 'Распределено' = DATA NUMERIC[16,3] (ReceiptPutAway); 
+quantity 'Кол-во' = DATA NUMERIC[16,3] (ReceiptPutAway); 
 
-put 'Распределено' (ReceiptLine l) = GROUP SUM put(ReceiptPutAway p) IF receiptLine(p) = l;
+put 'Распределено' (ReceiptLine l) = GROUP SUM quantity(ReceiptPutAway p) IF receiptLine(p) = l;
 
 CONSTRAINT put(ReceiptLine l) > done(l) MESSAGE 'Распределенное количество не может быть больше принятого';
 
 EXTEND FORM receipt    
     OBJECTS p = ReceiptPutAway
-    PROPERTIES(p) nameLocation, put
-    PROPERTIES(p) READONLYIF NOT status(r) = ReceiptStatus.done NEW, DELETE 
+    PROPERTIES(p) nameLocation, quantity
+    PROPERTIES(p) READONLYIF NOT status(r) = ReceiptStatus.done DELETE
     FILTERS receiptLine(p) = l
+;
+
+FORM putAwayLoc 'Места хранения'
+    OBJECTS loc = Location
+    
+    OBJECTS l = Location
+    PROPERTIES(l) READONLY name, nameParent, canonicalName
+    FILTERS level(l,loc)
+    
+;
+
+newPutAway 'Добавить распределение' (ReceiptLine ln) {
+    DIALOG putAwayLoc OBJECTS loc = location(receipt(ln)) INPUT q DO {
+        NEW p = ReceiptPutAway {
+            receiptLine(p) <- ln;
+            location(p) <- q;
+            SEEK receipt.p = p;
+            ACTIVATE PROPERTY receipt.quantity(p);
+        } 
+    }
+} CHANGEKEY 'INSERT';
+
+EXTEND FORM receipt
+    PROPERTIES newPutAway(l) DRAW p TOOLBAR SHOWIF status(r) = ReceiptStatus.done
 ;
 
 DESIGN receipt {
@@ -39,14 +63,14 @@ DESIGN receipt {
 }
 
 CLASS ReceiptPutAwayLedger : InvLedger;
-putAwayLedger = AGGR ReceiptPutAwayLedger WHERE put(ReceiptPutAway line);
+putAwayLedger = AGGR ReceiptPutAwayLedger WHERE quantity(ReceiptPutAway line);
 
 done(ReceiptPutAwayLedger l) += done(receipt(receiptLine(line(l))));
 dateTime(ReceiptPutAwayLedger l) += executionDate(receipt(receiptLine(line(l))));
 toLocation(ReceiptPutAwayLedger l) += location(line(l));
 
 product(ReceiptPutAwayLedger l) += product(receiptLine(line(l)));
-quantity(ReceiptPutAwayLedger l) += put(line(l));
+quantity(ReceiptPutAwayLedger l) += quantity(line(l));
 
 description(ReceiptPutAwayLedger l) += 'Поступление' IF l IS ReceiptPutAwayLedger;
 partner(ReceiptPutAwayLedger l) += partner(receipt(receiptLine(line(l))));
