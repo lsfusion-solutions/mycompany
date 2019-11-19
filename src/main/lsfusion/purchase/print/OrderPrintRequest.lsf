@@ -1,29 +1,24 @@
 MODULE OrderPrintRequest;
 
-REQUIRE Order, OrderStatus, OrderSent, Partner;
+REQUIRE  Order, OrderStatus, OrderSent, Partner, OrderPrintOrder;
 
 NAMESPACE Purchase;
-
-phoneVendor 'Телефон поставщика' (Order o) = phone(vendor(o));
-fullAddressVendor 'Адрес поставщика' (Order o) = concatAddress(vendor(o),'\n'); 
-fullAddressLocation 'Адрес места доставки' (Order o ) = concatAddress(location(o),'\n');
-fullAddressCompany 'Адрес компании' (Order o) = concatAddress(partner(location(o)),'\n');
-phoneCompany 'Телефон компании' (Order o) = phone(partner(location(o)));
-
-FORM printRequest 'Запрос поставщику'
+ 
+FORM printRequest 'Запрос поставщику'   
     OBJECTS o = Order PANEL 
-    PROPERTIES(o) sentRequestDateTime, scheduledDate, number, nameLocation, fullAddressLocation, nameVendor, fullAddressVendor, phoneVendor, fullAddressCompany, phoneCompany
-      
+    PROPERTIES(o) sentRequestDateTime, scheduledDate, number, nameLocation, fullAddressLocation, nameVendor, fullAddressVendor, phoneVendor, nameCompany, fullAddressCompany, phoneCompany
+        
     OBJECTS l = OrderLine
     PROPERTIES(l) nameItem, description, scheduledDate, quantity
     FILTERS order(l) = o
-;
-
+; 
+    
 printRequest 'Печать запрос' (Order o) {
     sentRequestDateTime(o) <- currentDateTime();
     sent(o) <- TRUE;
-    PRINT printRequest OBJECTS o = o;   
+    PRINT printRequest OBJECTS o = o;
     MESSAGE 'Запрос напечатан';    
+    MESSAGE fullAddressCompany(o);
 }  
 
 reprintRequest 'Печать запрос' (Order o) {

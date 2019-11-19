@@ -1,0 +1,41 @@
+MODULE OrderPrintOrder;
+
+REQUIRE  Order, OrderStatus, OrderConfirm, Partner,OrderPrintData;
+
+NAMESPACE Purchase;
+
+FORM printOrder 'Заказ поставщику'   
+    OBJECTS o = Order PANEL 
+    PROPERTIES(o) scheduledDate, number, nameLocation, fullAddressLocation, nameVendor, fullAddressVendor, phoneVendor, nameCompany, fullAddressCompany, phoneCompany, confirmedDateTime
+        
+    OBJECTS l = OrderLine
+    PROPERTIES(l) nameItem, description, scheduledDate, quantity, taxes, subtotal, unitPrice, unitMeasure
+    FILTERS order(l) = o
+; 
+      
+printOrder 'Печать заказ' (Order o) {
+    sentRequestDateTime(o) <- currentDateTime();
+    sent(o) <- TRUE; 
+    PRINT printOrder OBJECTS o = o;
+    MESSAGE 'Запрос напечатан';    
+}  
+
+reprintOrder 'Печать заказ' (Order o) {
+    sentRequestDateTime(o) <- currentDateTime();
+    sent(o) <- TRUE;
+    PRINT printOrder OBJECTS o = o;
+    MESSAGE 'Запрос напечатан';    
+}  
+
+EXTEND FORM order
+     PROPERTIES (o) SHOWIF (status(o)=OrderStatus.orderConfirmed)  printOrder BACKGROUND (CASE WHEN confirmed(o) THEN nextAction())
+;
+
+DESIGN order {
+    statusPane {
+        statusActions {
+            MOVE PROPERTY (printOrder(o)) FIRST;             
+        }
+    }
+}
+

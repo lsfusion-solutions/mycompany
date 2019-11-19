@@ -9,7 +9,8 @@ CLASS Location 'Место хранения';
 name 'Название' = DATA ISTRING[30] (Location)IN id;
 parent 'Родитель' = DATA Location (Location);
 nameParent 'Родительское место хранения' (Location l) = name(parent(l));
-partner 'Владелец' = DATA Partner (Location); 
+owner 'Владелец' = DATA Partner (Location); 
+ownerName 'Владелец' (Location l)= name(owner(l)); 
 @addressesCalc(location,l);
 
 level 'Уровень' (Location child, Location parent) =
@@ -30,14 +31,14 @@ canonicalName 'Каноническое имя' (Location l) =
    
 FORM location 'Место хранения'
     OBJECTS l = Location PANEL
-    PROPERTIES(l) name, nameParent
-    
-    EDIT Location OBJECT l
+    PROPERTIES(l) name, nameParent, ownerName 
+     
+    EDIT Location OBJECT l  
 ;
 
 FORM locations 'Места хранения'
     OBJECTS l = Location
-    PROPERTIES(l) READONLY name, nameParent, canonicalName
+    PROPERTIES(l) READONLY name, nameParent, canonicalName, ownerName
     PROPERTIES(l) NEWSESSION NEW, EDIT, DELETE
     
     LIST Location OBJECT l
