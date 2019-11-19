@@ -1,0 +1,55 @@
+MODULE ReceiptPutAway;
+
+REQUIRE ReceiptDone;
+
+NAMESPACE Inventory;
+
+CLASS ReceiptPutAway 'Распределение';
+
+receiptLine 'Строка поступления' = DATA ReceiptLine (ReceiptPutAway) NONULL DELETE;
+
+location 'Место хранения' = DATA Location (ReceiptPutAway);
+nameLocation 'Место хранения' (ReceiptPutAway p) = name(location(p));
+
+CONSTRAINT location(ReceiptPutAway p) AND NOT level(location(p), location(receipt(receiptLine(p)))) 
+                    CHECKED BY location[ReceiptPutAway]
+                    MESSAGE 'Место хранения должно быть дочерним от места хранения из документа потупления';
+
+put 'Распределено' = DATA NUMERIC[16,3] (ReceiptPutAway); 
+
+put 'Распределено' (ReceiptLine l) = GROUP SUM put(ReceiptPutAway p) IF receiptLine(p) = l;
+
+CONSTRAINT put(ReceiptLine l) > done(l) MESSAGE 'Распределенное количество не может быть больше принятого';
+
+EXTEND FORM receipt    
+    OBJECTS p = ReceiptPutAway
+    PROPERTIES(p) nameLocation, put
+    PROPERTIES(p) READONLYIF NOT status(r) = ReceiptStatus.done NEW, DELETE 
+    FILTERS receiptLine(p) = l
+;
+
+DESIGN receipt {
+    OBJECTS {
+        lines {
+            NEW putaway {
+                MOVE BOX(p);
+            }
+        }
+    }
+}
+
+CLASS ReceiptPutAwayLedger : InvLedger;
+putAwayLedger = AGGR ReceiptPutAwayLedger WHERE put(ReceiptPutAway line);
+
+done(ReceiptPutAwayLedger l) += done(receipt(receiptLine(line(l))));
+dateTime(ReceiptPutAwayLedger l) += executionDate(receipt(receiptLine(line(l))));
+toLocation(ReceiptPutAwayLedger l) += location(line(l));
+
+product(ReceiptPutAwayLedger l) += product(receiptLine(line(l)));
+quantity(ReceiptPutAwayLedger l) += put(line(l));
+
+description(ReceiptPutAwayLedger l) += 'Поступление' IF l IS ReceiptPutAwayLedger;
+partner(ReceiptPutAwayLedger l) += partner(receipt(receiptLine(line(l))));
+
+series(ReceiptPutAwayLedger l) += series(receipt(receiptLine(line(l))));
+number(ReceiptPutAwayLedger l) += number(receipt(receiptLine(line(l))));

@@ -40,7 +40,7 @@ namePartner 'Партнер' (Receipt r) = name(partner(r));
 notes 'Примечания' = DATA ISTRING[50] (Receipt);
 
 CONSTRAINT partner(Receipt r) AND NOT isVendor(partner(r)) 
-                CHECKED BY isVendor
+                CHECKED BY partner[Receipt]
                 MESSAGE 'Партнер должен быть вендором';
 
 CLASS ReceiptLine 'Строка поступления';
@@ -65,7 +65,7 @@ readonly = ABSTRACT CASE BOOLEAN (Receipt);
 readonlyHeader = ABSTRACT CASE BOOLEAN (Receipt);
 
 CONSTRAINT product(ReceiptLine l) AND NOT canBePurchased(product(l))
-            CHECKED BY canBePurchased 
+            CHECKED BY product 
             MESSAGE 'Наменклатура не предназначена для закупки';
 
 FORM receipt 'Поступление'
@@ -154,10 +154,17 @@ DESIGN receipt {
             NEW details {
                 fill = 1;
                 type = TABBED;
-                MOVE BOX(l) {
+                NEW lines {
                     caption = 'Строки';
-                    PROPERTY(nameProduct(l)) {notNull = TRUE;}
-                    PROPERTY(initialDemand(l));
+                    type = SPLITH;
+                    NEW reclines {
+                        fill = 2;
+                        MOVE BOX(l) {
+                            caption = 'Строки';
+                            PROPERTY(nameProduct(l)) {notNull = TRUE;}
+                            PROPERTY(initialDemand(l));
+                        }
+                    }    
                 }                  
             }
         }          

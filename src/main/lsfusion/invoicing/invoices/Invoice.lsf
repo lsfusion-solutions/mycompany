@@ -21,7 +21,7 @@ namePartner 'Партнер' (Invoice b) = name(partner(b));
 partnerAccount 'Счет партнера'  = DATA Account(Invoice);
 
 CONSTRAINT partner(Invoice i) AND NOT isCustomer(partner(i)) 
-                CHECKED BY isCustomer
+                CHECKED BY partner
                 MESSAGE 'Партнер должен быть покупателем';
 
 WHEN LOCAL CHANGED (partner(Invoice i)) DO {
@@ -74,7 +74,7 @@ readonly = ABSTRACT CASE BOOLEAN (InvoiceLine);
 readonly = ABSTRACT CASE BOOLEAN (Invoice);
 
 CONSTRAINT item(InvoiceLine l) AND NOT canBeSold(item(l))
-            CHECKED BY canBeSold 
+            CHECKED BY item 
             MESSAGE 'Наменклатура не предназначена для продажи';
 
 @defineTaxCalc(invoice, i);

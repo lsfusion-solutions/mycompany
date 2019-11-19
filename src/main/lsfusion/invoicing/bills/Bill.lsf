@@ -20,7 +20,7 @@ namePartner 'Партнер' (Bill b) = name(partner(b));
 partnerAccount 'Счет партнера'  = DATA Account(Bill);
 
 CONSTRAINT partner(Bill b) AND NOT isVendor(partner(b)) 
-                CHECKED BY isVendor
+                CHECKED BY partner
                 MESSAGE 'Партнер должен быть вендором';
 
 WHEN LOCAL CHANGED (partner(Bill b)) DO {
@@ -75,7 +75,7 @@ readonly = ABSTRACT CASE BOOLEAN (BillLine);
 readonly = ABSTRACT CASE BOOLEAN (Bill);
 
 CONSTRAINT item(BillLine l) AND NOT canBePurchased(item(l))
-            CHECKED BY canBePurchased 
+            CHECKED BY item 
             MESSAGE 'Наменклатура не предназначена для закупки';
 
 // налоги

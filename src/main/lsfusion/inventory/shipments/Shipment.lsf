@@ -34,7 +34,7 @@ namePartner 'Партнер' (Shipment s) = name(partner(s));
 notes 'Примечания' = DATA ISTRING[50] (Shipment);
 
 CONSTRAINT partner(Shipment s) AND NOT isCustomer(partner(s)) 
-                CHECKED BY isCustomer
+                CHECKED BY partner[Shipment]
                 MESSAGE 'Партнер должен быть вендором';
 
 // Номер
@@ -78,7 +78,7 @@ readonly = ABSTRACT CASE BOOLEAN (Shipment);
 readonlyHeader = ABSTRACT CASE BOOLEAN (Shipment);
 
 CONSTRAINT product(ShipmentLine l) AND NOT canBeSold(product(l))
-            CHECKED BY canBeSold 
+            CHECKED BY product 
             MESSAGE 'Наменклатура не предназначена для продажи';
 
 FORM shipment 'Отгрузка'
