@@ -1,6 +1,6 @@
 MODULE ShipmentInv;
 
-REQUIRE ShipmentDone, InvLedger;
+REQUIRE ShipmentPicking, InvLedger;
 
 NAMESPACE Inventory;
 
@@ -12,7 +12,7 @@ fromLocation(ShipmentLine l) += location(shipment(l));
 toLocation(ShipmentLine l) += toLocation(shipment(l));
 
 product(ShipmentLine l) += product(l);
-quantity(ShipmentLine l) += done(l);
+quantity(ShipmentLine l) += done(l) (-) put(l);
 
 description(ShipmentLine l) += 'Отгрузка' IF l IS ShipmentLine;
 partner(ShipmentLine l) += partner(shipment(l));

@@ -1,0 +1,83 @@
+MODULE ShipmentPicking;
+
+REQUIRE ShipmentDone;
+
+NAMESPACE Inventory;
+
+CLASS ShipmentPicking 'Распределение';
+
+shipmentLine 'Строка отгрузки' = DATA ShipmentLine (ShipmentPicking) NONULL DELETE;
+
+location 'Место хранения' = DATA Location (ShipmentPicking);
+nameLocation 'Место хранения' (ShipmentPicking p) = name(location(p));
+
+CONSTRAINT location(ShipmentPicking p) AND NOT level(location(p), toLocation(shipment(shipmentLine(p)))) 
+                    CHECKED BY location[ShipmentPicking]
+                    MESSAGE 'Место хранения должно быть дочерним от места хранения из документа отгрузки';
+
+quantity 'Кол-во' = DATA NUMERIC[16,3] (ShipmentPicking); 
+
+put 'Распределено' (ShipmentLine l) = GROUP SUM quantity(ShipmentPicking p) IF shipmentLine(p) = l;
+
+CONSTRAINT put(ShipmentLine l) > done(l) MESSAGE 'Распределенное количество не может быть больше отгруженого';
+
+EXTEND FORM shipment  
+    PROPERTIES(l) READONLY put SHOWIF isTransfer(type(s))
+  
+    OBJECTS p = ShipmentPicking
+    PROPERTIES(p) nameLocation, quantity
+    PROPERTIES(p) READONLYIF NOT status(s) = ShipmentStatus.done DELETE
+    FILTERS shipmentLine(p) = l
+;
+
+FORM pickingLoc 'Места хранения'
+    OBJECTS loc = Location
+    
+    OBJECTS l = Location
+    PROPERTIES(l) READONLY name, nameParent, canonicalName
+    FILTERS level(l,loc)
+    
+;
+
+newPicking 'Добавить распределение' (ShipmentLine ln) {
+    DIALOG pickingLoc OBJECTS l INPUT, loc = toLocation(shipment(ln)) DO {
+        NEW p = ShipmentPicking {
+            shipmentLine(p) <- ln;
+            location(p) <- l;
+            SEEK shipment.p = p;
+            ACTIVATE PROPERTY shipment.quantity(p);
+        } 
+    }
+} CHANGEKEY 'INSERT';
+
+EXTEND FORM shipment
+    PROPERTIES newPicking(l) DRAW p TOOLBAR SHOWIF status(s) = ShipmentStatus.done
+;
+
+DESIGN shipment {
+    OBJECTS {
+        lines {
+            NEW picking {
+                showIf = isTransfer(type(s));
+                MOVE BOX(p);
+            }
+        }
+    }
+}
+
+CLASS ShipmentPickingLedger : InvLedger;
+pickingLedger = AGGR ShipmentPickingLedger WHERE quantity(ShipmentPicking line);
+
+done(ShipmentPickingLedger l) += done(shipment(shipmentLine(line(l))));
+dateTime(ShipmentPickingLedger l) += executionDate(shipment(shipmentLine(line(l))));
+fromLocation(ShipmentPickingLedger l) += location(shipment(shipmentLine(line(l))));
+toLocation(ShipmentPickingLedger l) += location(line(l));
+
+product(ShipmentPickingLedger l) += product(shipmentLine(line(l)));
+quantity(ShipmentPickingLedger l) += quantity(line(l));
+
+description(ShipmentPickingLedger l) += 'Отгрузка' IF l IS ShipmentPickingLedger;
+partner(ShipmentPickingLedger l) += partner(shipment(shipmentLine(line(l))));
+
+series(ShipmentPickingLedger l) += series(shipment(shipmentLine(line(l))));
+number(ShipmentPickingLedger l) += number(shipment(shipmentLine(line(l))));

@@ -21,7 +21,9 @@ put 'Распределено' (ReceiptLine l) = GROUP SUM quantity(ReceiptPutAw
 
 CONSTRAINT put(ReceiptLine l) > done(l) MESSAGE 'Распределенное количество не может быть больше принятого';
 
-EXTEND FORM receipt    
+EXTEND FORM receipt  
+    PROPERTIES(l) READONLY put
+  
     OBJECTS p = ReceiptPutAway
     PROPERTIES(p) nameLocation, quantity
     PROPERTIES(p) READONLYIF NOT status(r) = ReceiptStatus.done DELETE
@@ -38,10 +40,10 @@ FORM putAwayLoc 'Места хранения'
 ;
 
 newPutAway 'Добавить распределение' (ReceiptLine ln) {
-    DIALOG putAwayLoc OBJECTS loc = location(receipt(ln)) INPUT q DO {
+    DIALOG putAwayLoc OBJECTS l INPUT, loc = location(receipt(ln)) DO {
         NEW p = ReceiptPutAway {
             receiptLine(p) <- ln;
-            location(p) <- q;
+            location(p) <- l;
             SEEK receipt.p = p;
             ACTIVATE PROPERTY receipt.quantity(p);
         } 
