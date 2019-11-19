@@ -4,56 +4,7 @@ REQUIRE Invoicing, Invoice, Doc;
 
 NAMESPACE Invoicing;
 
-@defineDocSearch(invoice, item, quantity, i, canBeSold){
-    quantity 'Кол-во' (Invoice i, Item p) = 
-        GROUP SUM quantity(InvoiceLine l) BY invoice(l), item(l);
-    lastInvoiceLine 'Последняя строка' (Invoice i, Item p) = 
-        GROUP LAST InvoiceLine l ORDER l BY invoice(l), item(l);
-        
-        changeQuantity 'Изменить кол-во' (Invoice i, Item p) {
-            INPUT q = NUMERIC[14,3] DO {
-                IF lastInvoiceLine(i, p) THEN {
-                    IF q THEN
-                        quantity(InvoiceLine l) <- q IF l = lastInvoiceLine(i, p)
-                            WHERE invoice(l) = i AND item(l) = p;
-                    ELSE
-                        DELETE InvoiceLine l WHERE invoice(l) = i AND item(l) == p;
-                }ELSE
-                    IF q THEN
-                        NEW l = InvoiceLine{
-                            invoice(l) <- i;
-                            item(l) <- p;
-                            quantity(l) <- q;
-                        }
-            }
-        }
-    
-    EXTEND FORM invoice
-        TREE categories c = Category PARENT parent(c)
-        PROPERTIES READONLY name(c)
-        ORDER name(c)
-        
-        OBJECTS itm = Item
-        PROPERTIES(itm) READONLY name, idBarCode
-        PROPERTIES(i, itm) quantity ON CHANGE changeQuantity(i, itm)
-        FILTERS level(category(itm), c), canBeSold(itm)
-    ;
-    
-    DESIGN invoice {
-        details {
-            NEW search {
-                showIf = NOT readonly(l);
-                caption = 'Подбор';
-                type = SPLITH;
-                fill = 1;
-                MOVE BOX(TREE categories);
-                MOVE BOX(itm) { 
-                    fill = 2;
-                }
-            }
-        }
-    }
-};
+@defineDocSearch(invoice, item, quantity, i, canBeSold);
 
 EXTEND FORM invoice
     FILTERGROUP active
