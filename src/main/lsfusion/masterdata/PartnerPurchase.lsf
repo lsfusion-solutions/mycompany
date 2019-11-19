@@ -6,6 +6,19 @@ NAMESPACE MasterData;
 
 isCustomer 'Покупатель' = DATA BOOLEAN (Partner);
 
+WHEN SET(Partner p IS Partner) DO {
+     isCustomer(p) <- TRUE;
+}
+
 EXTEND FORM partner 
     PROPERTIES(p) isCustomer
 ;
+
+DESIGN partner {
+    tabs {
+        NEW customer {
+            caption = 'Покупатель';
+            MOVE PROPERTY (isCustomer(p));
+        }
+    }
+}
