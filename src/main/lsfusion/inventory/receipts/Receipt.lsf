@@ -13,6 +13,7 @@ type 'Тип' = DATA ReceiptType (Receipt) NONULL;
 nameType 'Тип' (Receipt r) = name(type(r));
 
 WHEN LOCAL SET(Receipt r IS Receipt) AND countTypes() = 1 DO type(r) <- lastType(); 
+WHEN LOCAL SET (type(Receipt r)) DO putAway(type(r)) <- NULL;
 
 scheduledDate 'Дата приемки' = DATA DATETIME (Receipt) NONULL IN id;
 scheduledDate (Receipt r) <- currentDateTime() WHEN SET(r IS Receipt);

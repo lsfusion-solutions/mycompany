@@ -21,8 +21,41 @@ put 'Распределено' (ShipmentLine l) = GROUP SUM quantity(ShipmentPic
 
 CONSTRAINT put(ShipmentLine l) > done(l) MESSAGE 'Распределенное количество не может быть больше отгруженого';
 
+EXTEND CLASS ShipmentStatus {
+    picked 'Распределен'
+}
+
+picked 'Распределен' = DATA BOOLEAN (Shipment);
+
+markAsPicked 'Распределить' (Shipment s) {
+    APPLY; 
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {
+        picked(s) <- TRUE;
+        APPLY;
+    }
+}
+
+status(Shipment s) += WHEN picked(s) THEN ShipmentStatus.picked;
+
+EXTEND FORM shipment
+    PROPERTIES (s) markAsPicked SHOWIF status(s) = ShipmentStatus.done, picked READONLY
+;
+
+DESIGN shipment {
+    statusActions {
+        primary {
+            MOVE PROPERTY (markAsPicked(s));
+        }
+    }
+    status {
+        MOVE PROPERTY (picked(s));
+    }
+}
+
 EXTEND FORM shipment  
-    PROPERTIES(l) READONLY put SHOWIF isTransfer(type(s))
+    PROPERTIES(l) READONLY put SHOWIF picking(type(s))
   
     OBJECTS p = ShipmentPicking
     PROPERTIES(p) nameLocation, quantity
@@ -51,14 +84,14 @@ newPicking 'Добавить распределение' (ShipmentLine ln) {
 } CHANGEKEY 'INSERT';
 
 EXTEND FORM shipment
-    PROPERTIES newPicking(l) DRAW p TOOLBAR SHOWIF status(s) = ShipmentStatus.done
+    PROPERTIES newPicking(l) DRAW p TOOLBAR SHOWIF picking(type(s))
 ;
 
 DESIGN shipment {
     OBJECTS {
         lines {
             NEW picking {
-                showIf = isTransfer(type(s));
+                showIf = picking(type(s));
                 MOVE BOX(p);
             }
         }

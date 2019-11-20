@@ -21,8 +21,41 @@ put 'Распределено' (ReceiptLine l) = GROUP SUM quantity(ReceiptPutAw
 
 CONSTRAINT put(ReceiptLine l) > done(l) MESSAGE 'Распределенное количество не может быть больше принятого';
 
+EXTEND CLASS ReceiptStatus {
+    putAway 'Распределен'
+}
+
+putAway 'Распределен' = DATA BOOLEAN (Receipt);
+
+markAsPutAway 'Распределить' (Receipt r) {
+    APPLY; 
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {
+        putAway(r) <- TRUE;
+        APPLY;
+    }
+}
+
+status(Receipt r) += WHEN putAway(r) THEN ReceiptStatus.putAway;
+
+EXTEND FORM receipt
+    PROPERTIES (r) markAsPutAway SHOWIF status(r) = ReceiptStatus.done, putAway READONLY
+;
+
+DESIGN receipt {
+    statusActions {
+        primary {
+            MOVE PROPERTY (markAsPutAway(r));
+        }
+    }
+    status {
+        MOVE PROPERTY (putAway(r));
+    }
+}
+
 EXTEND FORM receipt  
-    PROPERTIES(l) READONLY put
+    PROPERTIES(l) READONLY put SHOWIF putAway(type(r))
   
     OBJECTS p = ReceiptPutAway
     PROPERTIES(p) nameLocation, quantity
@@ -51,14 +84,14 @@ newPutAway 'Добавить распределение' (ReceiptLine ln) {
 } CHANGEKEY 'INSERT';
 
 EXTEND FORM receipt
-    PROPERTIES newPutAway(l) DRAW p TOOLBAR SHOWIF status(r) = ReceiptStatus.done
+    PROPERTIES newPutAway(l) DRAW p TOOLBAR SHOWIF putAway(type(r))
 ;
 
 DESIGN receipt {
     OBJECTS {
         lines {
             NEW putaway {
-                MOVE BOX(p);
+                MOVE BOX(p) {showIf = putAway(type(r));}
             }
         }
     }
