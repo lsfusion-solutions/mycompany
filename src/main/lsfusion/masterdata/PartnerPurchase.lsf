@@ -4,21 +4,21 @@ REQUIRE MasterData, Partner;
 
 NAMESPACE MasterData;
 
-isCustomer 'Покупатель' = DATA BOOLEAN (Partner);
+isVendor 'Поставщик' = DATA BOOLEAN (Partner);
 
 WHEN LOCAL SET(Partner p IS Partner) DO {
-     isCustomer(p) <- TRUE;
+     isVendor(p) <- TRUE;
 }
 
 EXTEND FORM partner 
-    PROPERTIES(p) isCustomer
+    PROPERTIES(p) isVendor
 ;
 
 DESIGN partner {
     tabs {
-        NEW customer {
-            caption = 'Покупатель';
-            MOVE PROPERTY (isCustomer(p));
+        NEW vendor {
+            caption = 'Поставщик';
+            MOVE PROPERTY (isVendor(p));
         }
     }
 }

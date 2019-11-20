@@ -1,0 +1,46 @@
+MODULE Pricelist;
+
+REQUIRE Item, Partner, ItemPurchase, PartnerPurchase;
+
+NAMESPACE Purchse; 
+
+CLASS Pricelist 'Прайс-листы';
+
+item 'Номенклатура' = DATA Item (Pricelist);
+itemName 'Номенклатура' (Pricelist p) = name(item(p));
+vendor 'Поставщик ' = DATA Partner (Pricelist);
+vendorName 'Поставщик '(Pricelist p) = name(vendor(p));
+unitPrice 'Цена' = DATA NUMERIC[10,2] (Pricelist);
+startDate 'Начало действия' = DATA DATETIME (Pricelist);
+endDate 'Окончание действия' = DATA DATETIME (Pricelist);
+
+EXTEND FORM item 
+    OBJECTS pl = Pricelist
+    PROPERTIES(pl) vendorName, unitPrice, startDate, endDate
+    PROPERTIES(pl) NEW,DELETE 
+    FILTERS item(pl)=i
+;
+
+DESIGN item {
+    pane {
+        purchase {
+            MOVE BOX(pl);
+        }
+    }
+}
+
+EXTEND FORM partner 
+    OBJECTS pl = Pricelist
+    PROPERTIES(pl) itemName, unitPrice, startDate, endDate
+    PROPERTIES(pl) NEW,DELETE 
+    FILTERS vendor(pl)=p
+;
+
+DESIGN partner {
+    tabs {
+        vendor {
+            MOVE BOX (pl);
+        }
+    }
+}
+  
