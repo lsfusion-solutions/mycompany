@@ -1,22 +1,45 @@
 MODULE Pricelist;
 
-REQUIRE Item, Partner, ItemPurchase, PartnerPurchase;
+REQUIRE Item, Partner, ItemPurchase, PartnerPurchase,TaxItem,Order;
 
 NAMESPACE Purchse; 
 
 CLASS Pricelist 'Прайс-листы';
 
 item 'Номенклатура' = DATA Item (Pricelist);
-itemName 'Номенклатура' (Pricelist p) = name(item(p));
+nameItem 'Номенклатура' (Pricelist p) = name(item(p));
 vendor 'Поставщик ' = DATA Partner (Pricelist);
-vendorName 'Поставщик '(Pricelist p) = name(vendor(p));
+nameVendor 'Поставщик '(Pricelist p) = name(vendor(p));
+nameItemVendor 'Наименование у поставщика' = DATA STRING[200] (Pricelist);
+codeItemVendor 'Код у поставщика' = DATA STRING[20] (Pricelist);
 unitPrice 'Цена' = DATA NUMERIC[10,2] (Pricelist);
+leadDays 'Срок поставки (дни)' = DATA INTEGER (Pricelist);
+minimalQuantity 'Минимальный объем' = DATA NUMERIC[16,3] (Pricelist);
 startDate 'Начало действия' = DATA DATETIME (Pricelist);
 endDate 'Окончание действия' = DATA DATETIME (Pricelist);
+pricelist (Partner v, Item i, DATETIME d) =
+    GROUP LAST Pricelist p IF item(p) = i AND vendor(p) = v AND NOT startDate(p) > d AND NOT endDate(p) < d
+          ORDER startDate(p), p;
+
+in 'Вкл' = DATA BOOLEAN (Pricelist, Tax);
+taxes 'Налоги' (Pricelist pl) = GROUP CONCAT name(Tax t) IF in(pl, t), ', ' ORDER t CHARWIDTH 8; 
+changeTax ( Pricelist pl) {
+    setTax (Tax t) <- in(pl, t);
+    DIALOG changeTax DO {
+        in(pl, Tax t) <- setTax(t);
+    } 
+} 
+
+WHEN LOCAL SET (Pricelist pl IS Pricelist) DO {in(pl,Tax t) <- inPurchase(item(pl),t);}
+
+WHEN LOCAL CHANGED (item(OrderLine ol) ) DO {
+ 
+//  in(ol,Taxes t) = in(taxVendor(vendor(order(ol))),t);
+}
 
 EXTEND FORM item 
     OBJECTS pl = Pricelist
-    PROPERTIES(pl) vendorName, unitPrice, startDate, endDate
+    PROPERTIES(pl) nameVendor, nameItemVendor, codeItemVendor, unitPrice, leadDays, minimalQuantity, taxes ON CHANGE changeTax(pl), startDate, endDate
     PROPERTIES(pl) NEW,DELETE 
     FILTERS item(pl)=i
 ;
@@ -24,14 +47,14 @@ EXTEND FORM item
 DESIGN item {
     pane {
         purchase {
-            MOVE BOX(pl);
+            MOVE BOX(pl) {showIf=canBePurchased(i);};
         }
     }
 }
 
 EXTEND FORM partner 
     OBJECTS pl = Pricelist
-    PROPERTIES(pl) itemName, unitPrice, startDate, endDate
+    PROPERTIES(pl) nameItem,  nameItemVendor, codeItemVendor, unitPrice, startDate, endDate
     PROPERTIES(pl) NEW,DELETE 
     FILTERS vendor(pl)=p
 ;
@@ -39,7 +62,7 @@ EXTEND FORM partner
 DESIGN partner {
     tabs {
         vendor {
-            MOVE BOX (pl);
+            MOVE BOX (pl) {showIf=isVendor(p);};
         }
     }
 }

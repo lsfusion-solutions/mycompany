@@ -1,6 +1,6 @@
 MODULE ItemPurchase;
 
-REQUIRE MasterData, Item;
+REQUIRE MasterData, Item, TaxItem;
 
 NAMESPACE MasterData;
 
@@ -11,17 +11,28 @@ WHEN LOCAL SET(Item i IS Item) DO {
 }
 
 cost 'Себестоимость' = DATA NUMERIC[10,2] (Item) CHARWIDTH 15 NOFLEX;
+inPurchase 'Вкл' = DATA BOOLEAN (Item, Tax);
+taxesPurchase 'Налоги поставщиков' (Item i) = GROUP CONCAT name(Tax t) IF inPurchase(i, t), ', ' ORDER t CHARWIDTH 8; 
+changeTaxPurchase (Item i) {
+    setTax (Tax t) <- inPurchase(i, t);
+    DIALOG changeTax DO {
+        inPurchase(i, Tax t) <- setTax(t);
+    } 
+} 
 
 EXTEND FORM item 
-    PROPERTIES(i) canBePurchased, cost
+    PROPERTIES(i) canBePurchased, cost, taxesPurchase ON CHANGE changeTaxPurchase(i)
 ;
 
 DESIGN item {
     pane {
         NEW purchase {
             caption = 'Закупка';
-            MOVE PROPERTY (canBePurchased(i));
-            MOVE PROPERTY (cost(i));
+            NEW purchaseOptions{
+                MOVE PROPERTY (canBePurchased(i));
+                MOVE PROPERTY (cost(i));
+                MOVE PROPERTY (taxesPurchase(i)) {width=50;} //{showIf=canBePurchased(i);};
+            }
         }
     }
 }
