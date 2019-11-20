@@ -55,8 +55,6 @@ DESIGN receipt {
 }
 
 EXTEND FORM receipt  
-    PROPERTIES(l) READONLY put SHOWIF putAway(type(r)) AND ready(r)
-  
     OBJECTS p = ReceiptPutAway
     PROPERTIES(p) nameLocation, quantity
     PROPERTIES(p) READONLYIF (NOT ready(r)) OR putAway(r) DELETE
@@ -78,17 +76,21 @@ DESIGN putAwayLoc {
 newPutAway 'Разместить' (ReceiptLine ln) {
     DIALOG putAwayLoc OBJECTS l INPUT, loc = location(receipt(ln)) DO {
         DIALOG dialogQuantity OBJECTS q = done(ln) (-) put(ln) INPUT DO {
-            NEW p = ReceiptPutAway {
-                receiptLine(p) <- ln;
-                location(p) <- l;
-                quantity(p) <- q;
-                SEEK receipt.p = p;
+            IF q > 0 THEN {
+                NEW p = ReceiptPutAway {
+                    receiptLine(p) <- ln;
+                    location(p) <- l;
+                    quantity(p) <- q;
+                    SEEK receipt.p = p;
+                }
             } 
         }
     }
 } CHANGEKEY 'ADD';
 
 EXTEND FORM receipt
+    PROPERTIES(l) put SHOWIF putAway(type(r)) AND ready(r) ON CHANGE newPutAway(l)
+    
     PROPERTIES READONLYIF (NOT ready(r)) OR putAway(r) newPutAway(l) DRAW p TOOLBAR SHOWIF putAway(type(r)) AND ready(r)
 ;
 
