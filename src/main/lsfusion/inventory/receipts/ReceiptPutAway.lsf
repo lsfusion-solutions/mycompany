@@ -1,6 +1,6 @@
 MODULE ReceiptPutAway;
 
-REQUIRE ReceiptDone;
+REQUIRE ReceiptDone, Input;
 
 NAMESPACE Inventory;
 
@@ -69,19 +69,25 @@ FORM putAwayLoc 'Места хранения'
     OBJECTS l = Location
     PROPERTIES(l) READONLY name, nameParent, canonicalName
     FILTERS level(l,loc)
-    
 ;
+
+DESIGN putAwayLoc {
+    PROPERTY(formOk()) { changeKey = 'ENTER'; }
+}
 
 newPutAway 'Добавить распределение' (ReceiptLine ln) {
     DIALOG putAwayLoc OBJECTS l INPUT, loc = location(receipt(ln)) DO {
-        NEW p = ReceiptPutAway {
-            receiptLine(p) <- ln;
-            location(p) <- l;
-            SEEK receipt.p = p;
-            ACTIVATE PROPERTY receipt.quantity(p);
-        } 
+        DIALOG dialogQuantity OBJECTS q = done(ln) (-) put(ln) INPUT DO {
+            NEW p = ReceiptPutAway {
+                receiptLine(p) <- ln;
+                location(p) <- l;
+                quantity(p) <- q;
+                SEEK receipt.p = p;
+                ACTIVATE PROPERTY receipt.quantity(p);
+            } 
+        }
     }
-} CHANGEKEY 'INSERT';
+} CHANGEKEY 'ADD';
 
 EXTEND FORM receipt
     PROPERTIES newPutAway(l) DRAW p TOOLBAR SHOWIF putAway(type(r))
