@@ -1,6 +1,6 @@
 MODULE Invoice;
 
-REQUIRE Invoicing, TaxItem, Account, Time, MetaTax, InvoicingSettings, ItemSale, PartnerPurchase;
+REQUIRE Invoicing, TaxItem, Account, Time, MetaTax, InvoicingSettings, ItemSale, PartnerPurchase, Company;
 
 NAMESPACE Invoicing;
 
@@ -12,13 +12,12 @@ WHEN LOCAL SET (Invoice i IS Invoice) DO {
     date(i) <- currentDateTime();
 }
 
-
 dueDate 'Дата к оплате' = DATA DATETIME (Invoice);
 
 partner 'Партнер' = DATA Partner (Invoice) NONULL;
 namePartner 'Партнер' (Invoice b) = name(partner(b));
 
-partnerAccount 'Счет партнера'  = DATA Account(Invoice);
+partnerAccount 'Счет партнера'  = DATA Account (Invoice);
 
 CONSTRAINT partner(Invoice i) AND NOT isCustomer(partner(i)) 
                 CHECKED BY partner
@@ -33,6 +32,32 @@ partnerAccountNumber 'Счет партнера' (Invoice i) = number(partnerAcc
 CONSTRAINT partnerAccount(Invoice i) AND NOT partner(i) = holder(partnerAccount(i))
     CHECKED BY partnerAccount
     MESSAGE 'Счет должен принадлежать выбранному партнеру';
+    
+company 'Компания' = DATA Partner (Invoice) NONULL;
+nameCompany 'Компания' (Invoice i) = name(company(i));
+
+WHEN LOCAL SET (Invoice i IS Invoice) DO {
+    IF ((GROUP SUM 1 IF Partner p IS Company) = 1) THEN {
+        FOR Partner p IS Company DO {
+            company(i) <- p;
+        }
+    }
+}
+
+companyAccount 'Счет компании' = DATA Account (Invoice);
+companyAccountNumber 'Счет компании' (Invoice i) = number(companyAccount(i));
+
+WHEN LOCAL CHANGED (company(Invoice i)) DO {
+    companyAccount(i) <- defaultAccount(company(i));
+}
+
+CONSTRAINT companyAccount(Invoice i) AND NOT company(i) = holder(companyAccount(i))
+    CHECKED BY companyAccount
+    MESSAGE 'Счет должен принадлежать выбранной компании';
+    
+CONSTRAINT company(Invoice i) AND NOT company(i) IS Company
+    CHECKED BY company
+    MESSAGE 'Счет должен принадлежать компании';
 
 notes 'Примечания' = DATA ISTRING[50] (Invoice);
 
@@ -74,7 +99,8 @@ CONSTRAINT item(InvoiceLine l) AND NOT canBeSold(item(l))
 
 FORM invoice 'Расходная накладная'
     OBJECTS  i = Invoice PANEL 
-    PROPERTIES(i) READONLYIF readonly(i)  date, dueDate, namePartner, partnerAccountNumber, series, number, notes
+    PROPERTIES(i) READONLYIF readonly(i)  date, dueDate, namePartner, partnerAccountNumber,
+                             nameCompany, companyAccountNumber, series, number, notes
         
     OBJECTS l = InvoiceLine
     PROPERTIES(l) READONLYIF readonly(l) nameItem, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
@@ -118,15 +144,30 @@ DESIGN invoice {
                 NEW primary {
                     type = CONTAINERH;
                 }
-                NEW  secondary {
+                NEW secondary {
                     type = CONTAINERH;
                     MOVE PROPERTY (copyInvoice(i));  
                 }            
             }
         }
         NEW header{
-            MOVE BOX (i);
-            PROPERTY (namePartner(i)) {notNull = TRUE;}
+            NEW line1 {
+                type = CONTAINERH;
+                fill = 1;
+                MOVE PROPERTY (date(i));
+                MOVE PROPERTY (dueDate(i));
+                MOVE PROPERTY (series(i));
+                MOVE PROPERTY (number(i));
+            }
+            NEW line2 {
+                type = CONTAINERH;
+                fill = 1;
+                MOVE PROPERTY (nameCompany(i)) {notNull = TRUE;}
+                MOVE PROPERTY (companyAccountNumber(i));
+                MOVE PROPERTY (namePartner(i)) {notNull = TRUE;}
+                MOVE PROPERTY (partnerAccountNumber(i));
+                MOVE PROPERTY (notes(i));
+            }
         }
         NEW details{
             fill = 1;

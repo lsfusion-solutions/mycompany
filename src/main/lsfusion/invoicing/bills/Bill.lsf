@@ -1,6 +1,6 @@
 MODULE Bill;
 
-REQUIRE Invoicing, TaxItem, Account, Time, MetaTax, InvoicingSettings, ItemPurchase, PartnerSale;
+REQUIRE Invoicing, TaxItem, Account, Time, MetaTax, InvoicingSettings, ItemPurchase, PartnerSale, Company;
 
 NAMESPACE Invoicing;
 
@@ -32,6 +32,32 @@ partnerAccountNumber 'Счет партнера' (Bill b) = number(partnerAccoun
 CONSTRAINT partnerAccount(Bill b) AND NOT partner(b) = holder(partnerAccount(b))
     CHECKED BY partnerAccount
     MESSAGE 'Счет должен принадлежать выбранному партнеру';
+    
+company 'Компания' = DATA Partner (Bill) NONULL;
+nameCompany 'Компания' (Bill b) = name(company(b));
+
+WHEN LOCAL SET (Bill b IS Bill) DO {
+    IF ((GROUP SUM 1 IF Partner p IS Company) = 1) THEN {
+        FOR Partner p IS Company DO {
+            company(b) <- p;
+        }
+    }
+}
+
+companyAccount 'Счет компании' = DATA Account (Bill);
+companyAccountNumber 'Счет компании' (Bill b) = number(companyAccount(b));
+
+WHEN LOCAL CHANGED (company(Bill b)) DO {
+    companyAccount(b) <- defaultAccount(company(b));
+}
+
+CONSTRAINT companyAccount(Bill b) AND NOT company(b) = holder(companyAccount(b))
+    CHECKED BY companyAccount
+    MESSAGE 'Счет должен принадлежать выбранной компании';
+
+CONSTRAINT company(Bill b) AND NOT company(b) IS Company
+    CHECKED BY company
+    MESSAGE 'Счет должен принадлежать компании';
     
 vendorReference 'Код поставщика' = DATA STRING[30] (Bill);
 
@@ -77,7 +103,7 @@ CONSTRAINT item(BillLine l) AND NOT canBePurchased(item(l))
 FORM bill 'Приходная накладная'
     OBJECTS  b = Bill PANEL 
     PROPERTIES(b) READONLYIF readonly(b) date, dueDate, namePartner, partnerAccountNumber, 
-                                series, number, vendorReference, notes
+                             nameCompany, companyAccountNumber, series, number, vendorReference, notes
         
     OBJECTS l = BillLine
     PROPERTIES(l) READONLYIF readonly(l) nameItem, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
@@ -125,8 +151,24 @@ DESIGN bill {
             }
         }
         NEW header{
-            MOVE BOX (b);
-            PROPERTY (namePartner(b)) {notNull = TRUE;}
+            NEW line1 {
+                type = CONTAINERH;
+                fill = 1;
+                MOVE PROPERTY (date(b));
+                MOVE PROPERTY (dueDate(b));
+                MOVE PROPERTY (series(b));
+                MOVE PROPERTY (number(b));
+            }
+            NEW line2 {
+                type = CONTAINERH;
+                fill = 1;
+                MOVE PROPERTY (nameCompany(b)) {notNull = TRUE;}
+                MOVE PROPERTY (companyAccountNumber(b));
+                MOVE PROPERTY (namePartner(b)) {notNull = TRUE;}
+                MOVE PROPERTY (partnerAccountNumber(b));
+                MOVE PROPERTY (vendorReference(b));
+                MOVE PROPERTY (notes(b));
+            }
         }
         NEW details{
             fill = 1;

@@ -22,9 +22,13 @@ registerPayment 'Оформить платеж' (Bill b){
             IF isRefund(b) THEN {
                 fromPartner(p) <- partner(b);
                 fromAccount(p) <- partnerAccount(b);
+                toPartner(p) <- company(b);
+                toAccount(p) <- companyAccount(b);
             } ELSE {
                 toPartner(p) <- partner(b);
                 toAccount(p) <- partnerAccount(b);
+                fromPartner(p) <- company(b);
+                fromAccount(p) <- companyAccount(b);
             }               
             DIALOG payment OBJECTS p = p DO {
                IF (totalAmount(b) > amount(p) (+) paid(b)) THEN {
@@ -51,7 +55,7 @@ EXTEND FORM bill
 DESIGN bill {
     statusActions{
         primary {
-            MOVE PROPERTY(registerPayment(b));
+            MOVE PROPERTY(registerPayment(b)) FIRST;
         }
     }
 }

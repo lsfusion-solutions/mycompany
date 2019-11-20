@@ -26,9 +26,13 @@ registerPayment 'Оформить платеж' (Invoice i){
             IF isCreditNote(i) THEN {
                 toPartner(p) <- partner(i);
                 toAccount(p) <- partnerAccount(i);
+                fromPartner(p) <- company(i);
+                fromAccount(p) <- companyAccount(i);
             } ELSE {
                 fromPartner(p) <- partner(i);
                 fromAccount(p) <- partnerAccount(i);
+                toPartner(p) <- company(i);
+                toAccount(p) <- companyAccount(i);
             }
             DIALOG payment OBJECTS p = p DO {
                 IF (totalAmount(i) > amount(p) (+) paid(i)) THEN {
@@ -55,7 +59,7 @@ EXTEND FORM invoice
 DESIGN invoice {
     statusActions{
         primary {
-            MOVE PROPERTY(registerPayment(i));
+            MOVE PROPERTY(registerPayment(i)) FIRST;
         }
     }
 }

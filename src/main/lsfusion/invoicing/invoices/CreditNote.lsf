@@ -42,11 +42,17 @@ EXTEND FORM invoice
     PROPERTIES(i) nameType  BACKGROUND typeColor(i)
 ;
 
+DESIGN invoice {
+    line1 {
+        MOVE PROPERTY (nameType(i)) AFTER PROPERTY (dueDate(i));
+    }
+}
+
 EXTEND FORM invoices
     PROPERTIES(i) nameType AFTER nameStatus(i) BACKGROUND typeColor(i)
 ;
 
-creditNote 'Создать возврат' (Invoice i) {
+creditNote 'Создать акт расхождения' (Invoice i) {
     APPLY; 
     IF canceled() THEN RETURN;
     

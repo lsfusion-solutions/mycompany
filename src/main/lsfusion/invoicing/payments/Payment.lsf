@@ -9,21 +9,21 @@ CLASS Payment 'Платеж';
 date 'Дата' = DATA DATETIME (Payment) NONULL;
 date(Payment p) <- currentDateTime() WHEN SET(p IS Payment);
 
-toAccount 'Счет (куда)' = DATA Account (Payment) NONULL;
-toAccountNumber 'Номер счета (куда)' (Payment p) = number(toAccount(p));
+toAccount 'Счет получателя' = DATA Account (Payment);
+toAccountNumber 'Счет получателя' (Payment p) = number(toAccount(p));
 
-toPartner 'Держатель счета (куда)' = DATA Partner (Payment) NONULL;
-nameToPartner 'Держатель счета (куда)' (Payment p) = name(toPartner(p));
+toPartner 'Получатель' = DATA Partner (Payment) NONULL;
+nameToPartner 'Получатель' (Payment p) = name(toPartner(p));
 
 WHEN LOCAL CHANGED (toPartner(Payment p)) DO {
     toAccount(p) <- defaultAccount(toPartner(p));
 }
 
-fromAccount 'Счет (откуда)' = DATA Account (Payment) NONULL;
-fromAccountNumber 'Номер счета (откуда)' (Payment p) = number(fromAccount(p));
+fromAccount 'Счет плательщика' = DATA Account (Payment);
+fromAccountNumber 'Счет плательщика' (Payment p) = number(fromAccount(p));
 
-fromPartner 'Держатель счета (откуда)' = DATA Partner (Payment) NONULL;
-nameFromPartner 'Держатель счета (откуда)' (Payment p) = name(fromPartner(p));
+fromPartner 'Плательщик' = DATA Partner (Payment) NONULL;
+nameFromPartner 'Плательщик' (Payment p) = name(fromPartner(p));
 
 WHEN LOCAL CHANGED (fromPartner(Payment p)) DO {
     fromAccount(p) <- defaultAccount(fromPartner(p));
@@ -100,7 +100,24 @@ NAVIGATOR {
 DESIGN payment {
     OBJECTS {
         NEW header {
-            MOVE BOX (p);
+            NEW line1 {
+                type = CONTAINERH;
+                fill = 1;
+                MOVE PROPERTY (date(p));
+                MOVE PROPERTY (amount(p));
+                MOVE PROPERTY (series(p));
+                MOVE PROPERTY (number(p));
+                MOVE PROPERTY (reference(p));                
+            }
+            NEW line2 {
+                type = CONTAINERH;
+                fill = 1;
+                MOVE PROPERTY (nameFromPartner(p)) {notNull = TRUE;}
+                MOVE PROPERTY (fromAccountNumber(p));
+                MOVE PROPERTY (nameToPartner(p)) {notNull = TRUE;}
+                MOVE PROPERTY (toAccountNumber(p));
+                MOVE PROPERTY (notes(p));
+            }       
         }
         NEW details {
             type = TABBED;
