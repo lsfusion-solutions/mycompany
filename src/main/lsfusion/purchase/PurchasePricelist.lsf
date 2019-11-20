@@ -1,6 +1,6 @@
-MODULE Pricelist;
+MODULE PurchasePricelist;
 
-REQUIRE Item, Partner, ItemPurchase, PartnerPurchase,TaxItem,Order;
+REQUIRE Item, Partner, ItemPurchase, PartnerPurchase,TaxItem,PurchaseOrder;
 
 NAMESPACE Purchse; 
 
@@ -32,9 +32,10 @@ changeTax ( Pricelist pl) {
 
 WHEN LOCAL SET (Pricelist pl IS Pricelist) DO {in(pl,Tax t) <- inPurchase(item(pl),t);}
 
-WHEN LOCAL CHANGED (item(OrderLine ol) ) DO {
- 
-//  in(ol,Taxes t) = in(taxVendor(vendor(order(ol))),t);
+WHEN LOCAL CHANGED (item(OrderLine ol)) DO {
+    unitPrice(ol) <- unitPrice(pricelist(vendor(order(ol)),item(ol),date(order(ol))));
+    description(ol) <- nameItemVendor(pricelist(vendor(order(ol)),item(ol),date(order(ol)))); 
+    in(ol, Tax t) <- OVERRIDE in(pricelist(vendor(order(ol)),item(ol),date(order(ol))),t), inPurchase(item(ol),t); 
 }
 
 EXTEND FORM item 
