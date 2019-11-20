@@ -4,7 +4,7 @@ REQUIRE ShipmentDone;
 
 NAMESPACE Inventory;
 
-CLASS ShipmentPicking 'Распределение';
+CLASS ShipmentPicking 'Размещение';
 
 shipmentLine 'Строка отгрузки' = DATA ShipmentLine (ShipmentPicking) NONULL DELETE;
 
@@ -17,17 +17,17 @@ CONSTRAINT location(ShipmentPicking p) AND NOT level(location(p), toLocation(shi
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (ShipmentPicking); 
 
-put 'Распределено' (ShipmentLine l) = GROUP SUM quantity(ShipmentPicking p) IF shipmentLine(p) = l;
+put 'Размещено' (ShipmentLine l) = GROUP SUM quantity(ShipmentPicking p) IF shipmentLine(p) = l;
 
-CONSTRAINT put(ShipmentLine l) > done(l) MESSAGE 'Распределенное количество не может быть больше отгруженого';
+CONSTRAINT put(ShipmentLine l) > done(l) MESSAGE 'Размещенное количество не может быть больше отгруженого';
 
 EXTEND CLASS ShipmentStatus {
-    picked 'Распределен'
+    picked 'Размещен'
 }
 
-picked 'Распределен' = DATA BOOLEAN (Shipment);
+picked 'Размещен' = DATA BOOLEAN (Shipment);
 
-markAsPicked 'Распределить' (Shipment s) {
+markAsPicked 'Разместить' (Shipment s) {
     APPLY; 
     IF canceled() THEN RETURN;
     
@@ -55,11 +55,11 @@ DESIGN shipment {
 }
 
 EXTEND FORM shipment  
-    PROPERTIES(l) READONLY put SHOWIF picking(type(s))
+    PROPERTIES(l) READONLY put SHOWIF picking(type(s)) AND ready(s) AND isTransfer(type(s))
   
     OBJECTS p = ShipmentPicking
     PROPERTIES(p) nameLocation, quantity
-    PROPERTIES(p) READONLYIF NOT status(s) = ShipmentStatus.done DELETE
+    PROPERTIES(p) READONLYIF (NOT ready(s)) OR picked(s) DELETE
     FILTERS shipmentLine(p) = l
 ;
 
@@ -72,7 +72,7 @@ FORM pickingLoc 'Места хранения'
     
 ;
 
-newPicking 'Добавить распределение' (ShipmentLine ln) {
+newPicking 'Добавить размещение' (ShipmentLine ln) {
     DIALOG pickingLoc OBJECTS l INPUT, loc = toLocation(shipment(ln)) DO {
         NEW p = ShipmentPicking {
             shipmentLine(p) <- ln;
@@ -84,14 +84,14 @@ newPicking 'Добавить распределение' (ShipmentLine ln) {
 } CHANGEKEY 'INSERT';
 
 EXTEND FORM shipment
-    PROPERTIES newPicking(l) DRAW p TOOLBAR SHOWIF picking(type(s))
+    PROPERTIES READONLYIF (NOT ready(s)) OR picked(s) newPicking(l) DRAW p TOOLBAR SHOWIF picking(type(s)) AND ready(s) AND isTransfer(type(s))
 ;
 
 DESIGN shipment {
     OBJECTS {
         lines {
             NEW picking {
-                showIf = picking(type(s));
+                showIf = (picking(type(s)) AND ready(s) AND isTransfer(type(s)));
                 MOVE BOX(p);
             }
         }

@@ -21,7 +21,6 @@ checkAvailability 'Зарезервировать' (Shipment s) {
         
         IF GROUP SUM 1 IF reserved(ShipmentLine l) AND shipment(l) = s THEN{
             ready(s) <- TRUE;
-            IF isTransfer(type(s)) THEN picking(type(s)) <- TRUE;
             APPLY;
         }
     }
@@ -33,7 +32,6 @@ undo 'Снять резервирование' (Shipment s) {
             reserved(l) <- NULL;      
         }
         ready(s) <- NULL;
-        picking(type(s)) <- NULL;
         APPLY;
     }
 }

@@ -4,7 +4,7 @@ REQUIRE ReceiptDone, Input;
 
 NAMESPACE Inventory;
 
-CLASS ReceiptPutAway 'Распределение';
+CLASS ReceiptPutAway 'Размещение';
 
 receiptLine 'Строка поступления' = DATA ReceiptLine (ReceiptPutAway) NONULL DELETE;
 
@@ -17,17 +17,17 @@ CONSTRAINT location(ReceiptPutAway p) AND NOT level(location(p), location(receip
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (ReceiptPutAway); 
 
-put 'Распределено' (ReceiptLine l) = GROUP SUM quantity(ReceiptPutAway p) IF receiptLine(p) = l;
+put 'Размещено' (ReceiptLine l) = GROUP SUM quantity(ReceiptPutAway p) IF receiptLine(p) = l;
 
-CONSTRAINT put(ReceiptLine l) > done(l) MESSAGE 'Распределенное количество не может быть больше принятого';
+CONSTRAINT put(ReceiptLine l) > done(l) MESSAGE 'Размещенное количество не может быть больше принятого';
 
 EXTEND CLASS ReceiptStatus {
-    putAway 'Распределен'
+    putAway 'Размещен'
 }
 
-putAway 'Распределен' = DATA BOOLEAN (Receipt);
+putAway 'Размещен' = DATA BOOLEAN (Receipt);
 
-markAsPutAway 'Распределить' (Receipt r) {
+markAsPutAway 'Разместить' (Receipt r) {
     APPLY; 
     IF canceled() THEN RETURN;
     
@@ -55,11 +55,11 @@ DESIGN receipt {
 }
 
 EXTEND FORM receipt  
-    PROPERTIES(l) READONLY put SHOWIF putAway(type(r))
+    PROPERTIES(l) READONLY put SHOWIF putAway(type(r)) AND ready(r)
   
     OBJECTS p = ReceiptPutAway
     PROPERTIES(p) nameLocation, quantity
-    PROPERTIES(p) READONLYIF NOT status(r) = ReceiptStatus.done DELETE
+    PROPERTIES(p) READONLYIF (NOT ready(r)) OR putAway(r) DELETE
     FILTERS receiptLine(p) = l
 ;
 
@@ -75,7 +75,7 @@ DESIGN putAwayLoc {
     PROPERTY(formOk()) { changeKey = 'ENTER'; }
 }
 
-newPutAway 'Добавить распределение' (ReceiptLine ln) {
+newPutAway 'Добавить размещение' (ReceiptLine ln) {
     DIALOG putAwayLoc OBJECTS l INPUT, loc = location(receipt(ln)) DO {
         DIALOG dialogQuantity OBJECTS q = done(ln) (-) put(ln) INPUT DO {
             NEW p = ReceiptPutAway {
@@ -90,14 +90,14 @@ newPutAway 'Добавить распределение' (ReceiptLine ln) {
 } CHANGEKEY 'ADD';
 
 EXTEND FORM receipt
-    PROPERTIES newPutAway(l) DRAW p TOOLBAR SHOWIF putAway(type(r))
+    PROPERTIES READONLYIF (NOT ready(r)) OR putAway(r) newPutAway(l) DRAW p TOOLBAR SHOWIF putAway(type(r)) AND ready(r)
 ;
 
 DESIGN receipt {
     OBJECTS {
         lines {
             NEW putaway {
-                MOVE BOX(p) {showIf = putAway(type(r));}
+                MOVE BOX(p) {showIf = (putAway(type(r)) AND ready(r));}
             }
         }
     }

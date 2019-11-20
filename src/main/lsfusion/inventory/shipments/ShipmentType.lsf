@@ -8,7 +8,7 @@ CLASS ShipmentType 'Тип отгрузки';
 
 name 'Название' = DATA ISTRING[50](ShipmentType);
 isTransfer 'Трансфер?' = DATA BOOLEAN (ShipmentType) CHARWIDTH 10;
-picking 'Распределение' = DATA BOOLEAN (ShipmentType);
+picking 'Размещение' = DATA BOOLEAN (ShipmentType);
 
 numerator 'Нумератор' = DATA Numerator (ShipmentType);
 nameNumerator 'Нумератор' (ShipmentType o) = name(numerator(o));
@@ -27,7 +27,7 @@ CONSTRAINT defaultLocationTo(ShipmentType s) == defaultLocationFrom(s)
 FORM shipmentType 'Тип отгрузки'
     OBJECTS o = ShipmentType PANEL 
     PROPERTIES(o) name, isTransfer, nameNumerator, nameDefaultLocationTo SHOWIF isTransfer(o), 
-                nameDefaultLocationFrom, maxQuantity
+                nameDefaultLocationFrom, maxQuantity, picking
      
     EDIT ShipmentType OBJECT o;
 ;
@@ -35,7 +35,7 @@ FORM shipmentType 'Тип отгрузки'
 FORM shipmentTypes 'Типы отгрузки'
     OBJECTS o = ShipmentType
     PROPERTIES(o) READONLY name, isTransfer, nameNumerator, nameDefaultLocationTo, 
-                nameDefaultLocationFrom, maxQuantity
+                nameDefaultLocationFrom, maxQuantity, picking
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
     LIST ShipmentType OBJECT o;
 ;
