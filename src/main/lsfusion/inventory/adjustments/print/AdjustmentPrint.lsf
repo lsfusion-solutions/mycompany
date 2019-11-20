@@ -4,9 +4,14 @@ REQUIRE AdjustmentCanceled;
 
 NAMESPACE Inventory;
 
+companyAddress 'Адрес' (Adjustment a) = concatAddress(company(a),'\n'); 
+companyPhone 'Телефон' (Adjustment a) = phone(company(a));
+companyEmail 'Электронная почта' (Adjustment a) = email(company(a));
+companyWebsite 'Веб сайт' (Adjustment a) = website(company(a));
+
 FORM printAdjustment 'Результат инвентаризации'
     OBJECTS a = Adjustment PANEL 
-    PROPERTIES(a)  nameStatus, dateTime, nameType
+    PROPERTIES(a)  nameStatus, dateTime, nameType, nameCompany, companyAddress, companyPhone, companyEmail, companyWebsite
     
     OBJECTS l = AdjustmentLine
     PROPERTIES(l) nameLocation, nameProduct, realQuantity

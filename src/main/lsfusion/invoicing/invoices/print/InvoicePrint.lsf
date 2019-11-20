@@ -4,9 +4,17 @@ REQUIRE InvoiceDone;
 
 NAMESPACE Invoicing;
 
+partnerAddress 'Адрес' (Invoice i) = concatAddress(partner(i),'\n'); 
+partnerPhone 'Телефон' (Invoice i) = phone(partner(i));
+companyAddress 'Адрес' (Invoice i) = concatAddress(company(i),'\n');
+companyPhone 'Телефон' (Invoice i) = phone(company(i));
+companyEmail 'Электронная почта' (Invoice i) = email(company(i));
+companyWebsite 'Веб сайт' (Invoice i) = website(company(i));
+
 FORM printInvoice 'Расходная накладная'
     OBJECTS i = Invoice PANEL 
-    PROPERTIES(i) date, dueDate, namePartner, nameStatus, number
+    PROPERTIES(i) date, dueDate, namePartner, nameStatus, number, partnerAddress, partnerPhone
+    PROPERTIES(i) nameCompany, companyAddress, companyPhone, companyEmail, companyWebsite
     PROPERTIES(i) untaxedAmount, totalAmount, paid
     
     OBJECTS l = InvoiceLine

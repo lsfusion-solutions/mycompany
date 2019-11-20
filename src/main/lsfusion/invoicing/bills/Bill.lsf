@@ -151,32 +151,34 @@ DESIGN bill {
             }
         }
         NEW header{
-            NEW dates {
-                caption = 'Даты';
-                type = CONTAINERH;
-                fill = 1;
-                MOVE PROPERTY (date(b));
-                MOVE PROPERTY (dueDate(b));
-            }
             NEW options {
                 caption = 'Опции';
                 type = CONTAINERH;
                 fill = 1;
+                MOVE PROPERTY (date(b));
+                MOVE PROPERTY (dueDate(b));
                 MOVE PROPERTY (series(b));
                 MOVE PROPERTY (number(b));
                 MOVE PROPERTY (vendorReference(b));
             }
             NEW namesAndAccounts {
-                caption = 'Стороны и счета';
                 type = CONTAINERH;
                 fill = 1;
-                MOVE PROPERTY (nameCompany(b)) {notNull = TRUE;}
-                MOVE PROPERTY (companyAccountNumber(b));
-                MOVE PROPERTY (namePartner(b)) {notNull = TRUE;}
-                MOVE PROPERTY (partnerAccountNumber(b));  
+                NEW from {
+                    type = CONTAINERH;
+                    caption = 'Плательщик';
+                    MOVE PROPERTY (nameCompany(b)) {notNull = TRUE;}
+                    MOVE PROPERTY (companyAccountNumber(b));
+                }
+                NEW to {
+                    type = CONTAINERH;
+                    caption = 'Получатель';
+                    MOVE PROPERTY (namePartner(b)) {notNull = TRUE;}
+                    MOVE PROPERTY (partnerAccountNumber(b));  
+                } 
             }
-            NEW notes {
-                caption = 'Примечания';
+            NEW additions {
+                caption = 'Дополнительно';
                 type = CONTAINERH;
                 fill = 1;
                 MOVE PROPERTY (notes(b));

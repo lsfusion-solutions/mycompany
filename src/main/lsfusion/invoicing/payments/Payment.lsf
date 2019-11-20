@@ -121,16 +121,23 @@ DESIGN payment {
                 MOVE PROPERTY (reference(p));    
             }
             NEW namesAndAccounts {
-                caption = 'Стороны и счета';
                 type = CONTAINERH;
                 fill = 1;
-                MOVE PROPERTY (nameFromPartner(p)) {notNull = TRUE;}
-                MOVE PROPERTY (fromAccountNumber(p));
-                MOVE PROPERTY (nameToPartner(p)) {notNull = TRUE;}
-                MOVE PROPERTY (toAccountNumber(p));
+                NEW from {
+                    type = CONTAINERH;
+                    caption = 'Плательщик';
+                    MOVE PROPERTY (nameFromPartner(p)) {notNull = TRUE;}
+                    MOVE PROPERTY (fromAccountNumber(p));
+                }
+                NEW to { 
+                    type = CONTAINERH;
+                    caption = 'Получатель';
+                    MOVE PROPERTY (nameToPartner(p)) {notNull = TRUE;}
+                    MOVE PROPERTY (toAccountNumber(p));
+                }
             } 
-            NEW notes {
-                caption = 'Примечания';
+            NEW additions {
+                caption = 'Дополнительно';
                 type = CONTAINERH;
                 fill = 1;
                 MOVE PROPERTY (notes(p));

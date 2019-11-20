@@ -4,9 +4,14 @@ REQUIRE ReceiptDone;
 
 NAMESPACE Inventory;
 
+locationAddress 'Адрес' (Receipt r)  = concatAddress(location(r),'\n');
+partnerAddress 'Адрес' (Receipt r) = concatAddress(partner(r),'\n'); 
+partnerPhone 'Телефон' (Receipt r) = phone(partner(r));
+
 FORM printReceipt 'Задание на поступление'
     OBJECTS r = Receipt PANEL 
-    PROPERTIES(r) nameLocation, namePartner, nameStatus, scheduledDate, number
+    PROPERTIES(r) nameLocation, namePartner, nameStatus, scheduledDate, number,
+                    locationAddress, partnerAddress, partnerPhone
     
     OBJECTS l = ReceiptLine
     PROPERTIES(l) index, nameProduct, initialDemand, done

@@ -40,7 +40,7 @@ markAsPutAway 'Разместить' (Receipt r) {
 status(Receipt r) += WHEN putAway(r) THEN ReceiptStatus.putAway;
 
 EXTEND FORM receipt
-    PROPERTIES (r) markAsPutAway SHOWIF status(r) = ReceiptStatus.done, putAway READONLY
+    PROPERTIES (r) markAsPutAway SHOWIF putAway(type(r)) AND status(r) = ReceiptStatus.done, putAway READONLY
 ;
 
 DESIGN receipt {

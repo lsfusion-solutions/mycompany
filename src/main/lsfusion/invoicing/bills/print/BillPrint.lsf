@@ -4,9 +4,18 @@ REQUIRE BillDone;
 
 NAMESPACE Invoicing;
 
+partnerAddress 'Адрес' (Bill b) = concatAddress(partner(b),'\n'); 
+partnerPhone 'Телефон' (Bill b) = phone(partner(b));
+companyAddress 'Адрес' (Bill b) = concatAddress(company(b),'\n');
+companyPhone 'Телефон' (Bill b) = phone(company(b));
+companyEmail 'Электронная почта' (Bill b) = email(company(b));
+companyWebsite 'Веб сайт' (Bill b) = website(company(b));
+
+
 FORM printBill 'Приходная накладная'
     OBJECTS b = Bill PANEL 
-    PROPERTIES(b) date, dueDate, namePartner, nameStatus, number
+    PROPERTIES(b) date, dueDate, namePartner, nameStatus, number, partnerAddress, partnerPhone
+    PROPERTIES(b) nameCompany, companyAddress, companyPhone, companyEmail, companyWebsite
     PROPERTIES(b) untaxedAmount, totalAmount, paid
     
     OBJECTS l = BillLine
