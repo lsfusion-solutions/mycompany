@@ -1,6 +1,6 @@
 MODULE MetaTax;
 
-META defineTaxCalc(doc, let)
+META defineTaxCalc(doc, let, type)
     subtotal 'Сумма до налогов'  = DATA NUMERIC[14,2] (###doc##Line);
     
     WHEN LOCAL SETCHANGED (quantity(###doc##Line l)) OR SETCHANGED (unitPrice(l)) DO {
@@ -9,7 +9,7 @@ META defineTaxCalc(doc, let)
     
     in 'Вкл' = DATA BOOLEAN (###doc##Line, Tax);
     WHEN LOCAL CHANGED(item(###doc##Line l)) DO
-        in(l, Tax t) <- in(item(l), t);
+        in(l, Tax t) <- ##type##In(item(l), t);
         
     untaxedAmount 'Сумма до налогов' (###doc let) = GROUP SUM subtotal(###doc##Line l) IF doc(l) = let;
     

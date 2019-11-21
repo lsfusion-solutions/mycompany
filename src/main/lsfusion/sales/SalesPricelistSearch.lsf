@@ -1,0 +1,55 @@
+MODULE SalesPricelistSearch;
+
+REQUIRE SalesOrderStatus, Doc, SalesPricelist;
+
+NAMESPACE Sales;
+
+    unitPrice 'Цена' (Pricelist pr, Item it) = 
+        GROUP SUM unitPrice(PricelistLine prl) BY pricelist(prl), item(prl);
+    lastPricelistLine 'Последняя строка' (Pricelist pr, Item p) = 
+        GROUP LAST PricelistLine prl ORDER prl BY pricelist(prl), item(prl);
+        
+        changePrice 'Изменить цену' (Pricelist pr, Item it) {
+            INPUT q = NUMERIC[14,2] DO {
+                IF lastPricelistLine(pr, it) THEN {
+                    IF q THEN
+                        unitPrice(PricelistLine prl) <- q IF prl = lastPricelistLine(pr, it)
+                            WHERE pricelist(prl) = pr AND item(prl) = it;
+                    ELSE
+                        DELETE PricelistLine prl WHERE pricelist(prl) = pr AND item(prl) == it;
+                }ELSE
+                    IF q THEN
+                        NEW prl = PricelistLine{
+                            pricelist(prl) <- pr;
+                            item(prl) <- it;
+                            unitPrice(prl) <- q;
+                        }
+            }
+        }
+    
+    EXTEND FORM pricelist
+        TREE categories c = Category PARENT parent(c)
+        PROPERTIES READONLY name(c)
+        ORDER name(c)
+        
+        OBJECTS itm = Item
+        PROPERTIES(itm) READONLY name, idBarCode
+        PROPERTIES(pr, itm) unitPrice ON CHANGE changePrice(pr, itm)
+        FILTERS level(category(itm), c), canBeSold(itm)
+    ;
+    
+    DESIGN pricelist {
+        details {
+            NEW search {
+                //showIf = NOT readonly(pr);
+                caption = 'Подбор';
+                type = SPLITH;
+                fill = 1;
+                MOVE BOX(TREE categories);
+                MOVE BOX(itm) { 
+                    PROPERTY (unitPrice(pr,itm)) {pattern='#,##0.00';};               
+                    fill = 2;
+                }
+            }
+        }
+    }

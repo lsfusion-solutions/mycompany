@@ -34,20 +34,20 @@ changeTax ( Pricelist pl) {
 } 
 
 WHEN LOCAL SET (Pricelist pl IS Pricelist) DO { 
-    in(pl,Tax t) <- inPurchase(item(pl),t);
+    in(pl,Tax t) <- purchaseIn(item(pl),t);
     unitMeasure(pl) <- unitMeasurePurchase(item(pl));
     
 }
 
 WHEN LOCAL CHANGED (item(Pricelist pl)) DO { 
-    in(pl,Tax t) <- inPurchase(item(pl),t);
+    in(pl,Tax t) <- purchaseIn(item(pl),t);
     unitMeasure(pl) <- unitMeasurePurchase(item(pl));   
 }
 
 WHEN LOCAL CHANGED (item(OrderLine ol)) DO {
     unitPrice(ol) <- unitPrice(pricelist(vendor(order(ol)),item(ol),date(order(ol))));
     description(ol) <- OVERRIDE nameItemVendor(pricelist(vendor(order(ol)),item(ol),date(order(ol)))), name(item(ol)); 
-    in(ol, Tax t) <- OVERRIDE in(pricelist(vendor(order(ol)),item(ol),date(order(ol))),t), inPurchase(item(ol),t); 
+    in(ol, Tax t) <- OVERRIDE in(pricelist(vendor(order(ol)),item(ol),date(order(ol))),t), purchaseIn(item(ol),t); 
 }
 
 EXTEND FORM item 

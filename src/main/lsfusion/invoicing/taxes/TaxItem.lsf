@@ -1,20 +1,10 @@
 MODULE TaxItem;
 
-REQUIRE Tax, Item, ItemSale;
+REQUIRE Tax, Item, ItemSale, ItemPurchase;
 
 NAMESPACE Invoicing;
 
-in 'Вкл' = DATA BOOLEAN (Item, Tax) CHARWIDTH 5;
-
-taxes 'Налоги' (Item i) = GROUP CONCAT name(Tax t) IF in(i, t), ', ' ORDER t CHARWIDTH 8;
-
 setTax 'Вкл' = DATA LOCAL BOOLEAN (Tax);
-
-WHEN LOCAL CHANGED(in(Item i, Tax t)) DO {
-    FOR taxGroup(t) = taxGroup(Tax tx) AND NOT t = tx DO {
-        in(i, tx) <- NULL;
-    }
-}
 
 WHEN LOCAL CHANGED(setTax(Tax t)) DO {
     FOR taxGroup(t) = taxGroup(Tax tx) AND NOT t = tx DO {
@@ -22,30 +12,61 @@ WHEN LOCAL CHANGED(setTax(Tax t)) DO {
     }
 }
 
-
 FORM changeTax 'Установить налог'
     OBJECTS t = Tax
     PROPERTIES(t) setTax, name READONLY
 ;
 
-changeTax (Item i) {
-    setTax (Tax t) <- in(i, t);
-    
+//налоги для продаж
+salesIn 'Вкл' = DATA BOOLEAN (Item, Tax) CHARWIDTH 5;
+salesTaxes 'Налоги реализации' (Item i) = GROUP CONCAT name(Tax t) IF salesIn(i, t), ', ' ORDER t CHARWIDTH 8;
+
+WHEN LOCAL CHANGED(salesIn(Item i, Tax t)) DO {
+    FOR taxGroup(t) = taxGroup(Tax tx) AND NOT t = tx DO {
+        salesIn(i, tx) <- NULL;
+    }
+}
+
+changeSalesTax (Item i) {
+    setTax (Tax t) <- salesIn(i, t);  
     DIALOG changeTax DO {
-        in(i, Tax t) <- setTax(t);
+        salesIn(i, Tax t) <- setTax(t);
     } 
 }
 
+//входящие налоги поставщиков
+purchaseIn 'Вкл' = DATA BOOLEAN (Item, Tax);
+purchaseTaxes 'Налоги поставщиков' (Item i) = GROUP CONCAT name(Tax t) IF purchaseIn(i, t), ', ' ORDER t CHARWIDTH 8;
+
+WHEN LOCAL CHANGED(purchaseIn(Item i, Tax t)) DO {
+    FOR taxGroup(t) = taxGroup(Tax tx) AND NOT t = tx DO {
+        purchaseIn(i, tx) <- NULL;
+    }
+}
+ 
+changePurchaseTax (Item i) {
+    setTax (Tax t) <- purchaseIn(i, t);
+    DIALOG changeTax DO {
+        purchaseIn(i, Tax t) <- setTax(t);
+    } 
+} 
+
 EXTEND FORM item
-    PROPERTIES (i) taxes ON CHANGE changeTax(i)
+    PROPERTIES (i) salesTaxes ON CHANGE changeSalesTax(i)
+    PROPERTIES (i) purchaseTaxes ON CHANGE changePurchaseTax(i)
 ;
 
 DESIGN item {
         pane {
             sale{
                 salesOptions{
-                    MOVE PROPERTY (taxes(i));
+                    MOVE PROPERTY (salesTaxes(i));
                 }                    
+            }
+            purchase{
+                purchaseOptions{
+                    MOVE PROPERTY (purchaseTaxes(i));                
+                }
             }
         }
 }

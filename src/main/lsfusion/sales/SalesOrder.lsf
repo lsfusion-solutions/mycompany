@@ -1,8 +1,9 @@
-MODULE PurchaseOrder;
-REQUIRE System, Time, Utils, Purchase, Location, Partner, Item, Numerator, Incoterms, PaymentTerms, TaxItem, MetaTax, 
-        ItemMeasure, Individual, LegalEntity, Company, Doc, ItemPurchase, PartnerPurchase, PartnerSale;
+MODULE SalesOrder;
 
-NAMESPACE Purchase;
+REQUIRE System, Time, Utils, Sales, Location, Partner, Item, Numerator, Incoterms, PaymentTerms, TaxItem, MetaTax, 
+        ItemMeasure, Individual, LegalEntity, Company, Doc, ItemSale, PartnerSale, PartnerPurchase;
+
+NAMESPACE Sales;
 
 CLASS Order;
 readonly = ABSTRACT CASE BOOLEAN (Order);
@@ -19,17 +20,17 @@ WHEN SET(Order o IS Order) DO {
 }
 seriesNumber 'СерияНомер' (Order o) = CONCAT '', series(o), number(o);
 
-location 'Место доставки' = DATA Location (Order);
-nameLocation 'Место доставки' (Order o) = name(location(o));
+location 'Место отгрузки' = DATA Location (Order);
+nameLocation 'Место отгрузки' (Order o) = name(location(o));
 
-vendor 'Поставщик' = DATA Partner (Order) NONULL;
-nameVendor 'Поставщик' (Order o) = name(vendor(o));
+customer 'Заказчик' = DATA Partner (Order) NONULL;
+nameCustomer 'Заказчик' (Order o) = name(customer(o));
 
-CONSTRAINT vendor(Order o) AND NOT isVendor(vendor(o)) AND NOT isCustomer(vendor(o))
+CONSTRAINT customer(Order o) AND NOT isVendor(customer(o)) AND NOT isCustomer(customer(o))
                 CHECKED BY isVendor, isCustomer
-                MESSAGE 'Партнер должен быть либо вендором, либо покупателем';
+                MESSAGE 'Партнер должен быть либо постащиком, либо заказчиком';
  
-vendorReference 'Входящий номер поставщика' = DATA STRING[30] (Order);
+vendorReference 'Входящий номер заказчика' = DATA STRING[30] (Order);
 
 scheduledDate 'Срок поставки' = DATA DATETIME (Order);   
 
@@ -62,7 +63,12 @@ unitPrice 'Цена' = DATA NUMERIC[10,2] (OrderLine);
 scheduledDate 'Срок дата' = DATA DATETIME (OrderLine);
 WHEN LOCAL SET (OrderLine ol IS OrderLine) DO {scheduledDate(ol) <- scheduledDate(order(ol));}
 
-@defineTaxCalc(order, o,purchase);
+@defineTaxCalc(order, o, sales);
+
+WHEN LOCAL CHANGED (item(OrderLine ol)) DO {
+    unitPrice(ol) <- salesPrice(item(ol));
+    in(ol, Tax t) <- salesIn(item(ol),t); 
+}
 
 FORM order 'Заказ'
     OBJECTS o = Order PANEL
@@ -70,7 +76,7 @@ FORM order 'Заказ'
     PROPERTIES (o) READONLY series  
     PROPERTIES (o) READONLY number  
     PROPERTIES (o) nameLocation
-    PROPERTIES (o) nameVendor
+    PROPERTIES (o) nameCustomer
     PROPERTIES (o) vendorReference
     PROPERTIES (o) scheduledDate
     PROPERTIES (o) nameIncoterm
@@ -120,7 +126,7 @@ DESIGN order{
             }
             NEW contr {
                 marginLeft = 30;
-                MOVE PROPERTY(nameVendor(o));
+                MOVE PROPERTY(nameCustomer(o));
                 MOVE PROPERTY(vendorReference(o));
                 NEW schelule{
                     type = CONTAINERH;               
@@ -133,7 +139,6 @@ DESIGN order{
         NEW details{
             fill = 1;
             type = TABBED;
-            fill = 1;
             MOVE BOX (l);
             PROPERTY (unitPrice(l)) {pattern='#,##0.00';};
             PROPERTY (subtotal(l))  {pattern='#,##0.00';};            
@@ -170,7 +175,7 @@ DESIGN order{
 
 FORM orders 'Заказы'
      OBJECTS o = Order
-     PROPERTIES (o) READONLY date,seriesNumber,nameLocation,nameVendor,scheduledDate
+     PROPERTIES (o) READONLY date,seriesNumber,nameLocation,nameCustomer,scheduledDate
      PROPERTIES (o) NEWEDIT NEWSESSION,EDIT NEWSESSION,DELETE NEWSESSION
 ;
 
@@ -184,8 +189,8 @@ DESIGN orders{
 }
 
 NAVIGATOR {
-    purchase{
-        NEW orders BEFORE settings;
+    sales{
+        NEW orders FIRST;
     }
 }
 
