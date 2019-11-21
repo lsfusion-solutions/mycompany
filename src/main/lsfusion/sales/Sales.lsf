@@ -1,31 +1,16 @@
 MODULE Sales;
 
-REQUIRE Numerator, ShipmentType, Item;
+REQUIRE SalesSetting, SalesOrder, SalesOrderHistory, SalesOrderSearch,
+        SalesOrderStatus,
+        SalesPricelist,SalesPricelistSearch;
 
 NAMESPACE Sales;
 
-numerator 'Нумератор' = DATA Numerator();
-numeratorName 'Нумератор' = name(numerator());
-typeShipmentDefault 'Тип складского расхода по умолчанию' = DATA ShipmentType();
-nameTypeShipmentDefault 'Тип складского расхода по умолчанию' = name(typeShipmentDefault()); 
-showActionsTime 'Показывать время действий в таблице' = DATA BOOLEAN();
-nextAction 'Подсветка следующего действия' = RGB(0,0,0);
- 
-FORM settings 'Настройки'
-  PROPERTIES numeratorName(), showActionsTime()
-; 
-
-DESIGN settings{
-    NEW options{
-        type = CONTAINERV;
-        MOVE PROPERTY(numeratorName());
-        MOVE PROPERTY(showActionsTime());
-    } 
-}
-
 NAVIGATOR {
     NEW FOLDER sales 'Продажи' WINDOW toolbar{
+        NEW orders;
         NEW items;
+        NEW pricelist;
         NEW settings;   
     }    
 }
