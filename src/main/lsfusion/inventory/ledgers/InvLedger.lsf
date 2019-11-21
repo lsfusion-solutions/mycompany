@@ -66,3 +66,9 @@ EXTEND FORM location
 EXTEND FORM locations
     PROPERTIES(l) READONLY recPositiveOnHand
 ;
+
+dateReceived 'Дата последнего прихода' (Location l, Product p) = 
+    GROUP LAST dateTime(InvLedger il) ORDER dateTime(il) WHERE toLocation(il) = l AND product(il) = p;
+    
+dateShipped 'Дата последней отгрузки' (Location l, Product p) = 
+    GROUP LAST dateTime(InvLedger il) ORDER dateTime(il) WHERE fromLocation(il) = l AND product(il) = p;

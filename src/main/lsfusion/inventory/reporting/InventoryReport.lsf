@@ -22,7 +22,7 @@ FORM inventoryReport 'Текущие остатки'
     OBJECTS lp = (l = Location, p = Product)
     PROPERTIES READONLY 'Склад' = canonicalName(l), 'Товар' = name(p) 
     PROPERTIES(l,p) reserved, available, onHand SHOWIF NOT selectedDateTime()
-    PROPERTIES onHandDateTime(l, p) SHOWIF selectedDateTime()
+    PROPERTIES(l,p) onHandDateTime SHOWIF selectedDateTime(), dateReceived, dateShipped
     FILTERS level(l, lt),
             level(category(p), c),
             IF selectedDateTime() THEN onHandDateTime(l,p) ELSE onHand(l, p)
