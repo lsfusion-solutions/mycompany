@@ -1,16 +1,20 @@
 MODULE ItemPurchase;
 
-REQUIRE MasterData, Item, TaxItem;
+REQUIRE MasterData, Item, TaxItem, ItemMeasure;
 
 NAMESPACE MasterData;
 
 canBePurchased 'Предназначен для закупки' = DATA BOOLEAN (Item);
 
-WHEN LOCAL SET(Item i IS Item) DO {
+cost 'Себестоимость' = DATA NUMERIC[10,2] (Item) CHARWIDTH 15 NOFLEX;
+unitMeasurePurchase 'Единицы в приходе (по умолчанию)' = DATA ItemMeasure (Item);
+nameUnitMeasurePurchase 'Единицы в приходе (по умолчанию)' (Item i) = name(unitMeasure(i));
+
+WHEN LOCAL SET(Item i IS Item) DO { 
     canBePurchased(i) <- TRUE;
+    unitMeasurePurchase(i) <- GROUP LAST ItemMeasure im IF default(im);
 }
 
-cost 'Себестоимость' = DATA NUMERIC[10,2] (Item) CHARWIDTH 15 NOFLEX;
 inPurchase 'Вкл' = DATA BOOLEAN (Item, Tax);
 taxesPurchase 'Налоги поставщиков' (Item i) = GROUP CONCAT name(Tax t) IF inPurchase(i, t), ', ' ORDER t CHARWIDTH 8; 
 changeTaxPurchase (Item i) {
@@ -21,7 +25,7 @@ changeTaxPurchase (Item i) {
 } 
 
 EXTEND FORM item 
-    PROPERTIES(i) canBePurchased, cost, taxesPurchase ON CHANGE changeTaxPurchase(i)
+    PROPERTIES(i) canBePurchased, cost, nameUnitMeasurePurchase, taxesPurchase ON CHANGE changeTaxPurchase(i)
 ;
 
 DESIGN item {
@@ -31,7 +35,8 @@ DESIGN item {
             NEW purchaseOptions{
                 MOVE PROPERTY (canBePurchased(i));
                 MOVE PROPERTY (cost(i));
-                MOVE PROPERTY (taxesPurchase(i)) {width=50;} //{showIf=canBePurchased(i);};
+                MOVE PROPERTY (nameUnitMeasurePurchase(i));
+                MOVE PROPERTY (taxesPurchase(i)); //{showIf=canBePurchased(i);};
             }
         }
     }

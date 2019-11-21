@@ -5,11 +5,19 @@ REQUIRE MasterData, Item, Category;
 NAMESPACE MasterData;
 
 CLASS Product 'Товар' : Item;
-weight 'Вес' = DATA NUMERIC[10,2] (Product);
+weight 'Вес единицы' = DATA NUMERIC[10,2] (Product);
 
 EXTEND FORM item
     PROPERTIES(i) weight
 ;
+
+DESIGN item{
+    header{
+        extProp{
+            MOVE PROPERTY (weight(i));
+        }
+    }
+}
 
 newProduct 'Товар' (Category c) {
     NEWSESSION {

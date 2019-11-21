@@ -50,10 +50,10 @@ receipt 'Документ' = DATA Receipt (ReceiptLine) NONULL DELETE INDEXED;
 product 'Продукт' = DATA Product (ReceiptLine) NONULL INDEXED;
 nameProduct 'Продукт' (ReceiptLine l) = name(product(l)) IN id;
 
-initialDemand 'Исходное количество' = DATA NUMERIC[16,3] (ReceiptLine) NONULL;
+initialDemand 'Планируемое количество' = DATA NUMERIC[16,3] (ReceiptLine) NONULL;
 
 CONSTRAINT initialDemand(ReceiptLine l) < 0 OR initialDemand(l) > maxQuantity(type(receipt(l))) 
-    AND maxQuantity(type(receipt(l))) MESSAGE 'Исходное количество должно быть от 0 до максимально разрешенного';
+    AND maxQuantity(type(receipt(l))) MESSAGE 'Планируемое количество должно быть от 0 до максимально разрешенного';
 
 // при редактировании строки открываем редактирование документа
 edit (ReceiptLine l) + { edit(receipt(l)); } 
@@ -66,7 +66,7 @@ readonlyHeader = ABSTRACT CASE BOOLEAN (Receipt);
 
 CONSTRAINT product(ReceiptLine l) AND NOT canBePurchased(product(l))
             CHECKED BY product 
-            MESSAGE 'Наменклатура не предназначена для закупки';
+            MESSAGE 'Номенклатура не предназначена для закупки';
 
 FORM receipt 'Поступление'
     OBJECTS r = Receipt PANEL

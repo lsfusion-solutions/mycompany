@@ -17,6 +17,9 @@ leadDays 'Срок поставки (дни)' = DATA INTEGER (Pricelist);
 minimalQuantity 'Минимальный объем' = DATA NUMERIC[16,3] (Pricelist);
 startDate 'Начало действия' = DATA DATETIME (Pricelist);
 endDate 'Окончание действия' = DATA DATETIME (Pricelist);
+unitMeasure 'Единицы поставщика' = DATA ItemMeasure (Pricelist);
+nameUnitMeasure 'Единицы поставщика' (Pricelist pl) = name(unitMeasure(pl));
+
 pricelist (Partner v, Item i, DATETIME d) =
     GROUP LAST Pricelist p IF item(p) = i AND vendor(p) = v AND NOT startDate(p) > d AND NOT endDate(p) < d
           ORDER startDate(p), p;
@@ -30,17 +33,26 @@ changeTax ( Pricelist pl) {
     } 
 } 
 
-WHEN LOCAL SET (Pricelist pl IS Pricelist) DO {in(pl,Tax t) <- inPurchase(item(pl),t);}
+WHEN LOCAL SET (Pricelist pl IS Pricelist) DO { 
+    in(pl,Tax t) <- inPurchase(item(pl),t);
+    unitMeasure(pl) <- unitMeasurePurchase(item(pl));
+    
+}
+
+WHEN LOCAL CHANGED (item(Pricelist pl)) DO { 
+    in(pl,Tax t) <- inPurchase(item(pl),t);
+    unitMeasure(pl) <- unitMeasurePurchase(item(pl));   
+}
 
 WHEN LOCAL CHANGED (item(OrderLine ol)) DO {
     unitPrice(ol) <- unitPrice(pricelist(vendor(order(ol)),item(ol),date(order(ol))));
-    description(ol) <- nameItemVendor(pricelist(vendor(order(ol)),item(ol),date(order(ol)))); 
+    description(ol) <- OVERRIDE nameItemVendor(pricelist(vendor(order(ol)),item(ol),date(order(ol)))), name(item(ol)); 
     in(ol, Tax t) <- OVERRIDE in(pricelist(vendor(order(ol)),item(ol),date(order(ol))),t), inPurchase(item(ol),t); 
 }
 
 EXTEND FORM item 
     OBJECTS pl = Pricelist
-    PROPERTIES(pl) nameVendor, nameItemVendor, codeItemVendor, unitPrice, leadDays, minimalQuantity, taxes ON CHANGE changeTax(pl), startDate, endDate
+    PROPERTIES(pl) nameVendor, nameItemVendor, codeItemVendor, unitPrice, nameUnitMeasure, minimalQuantity, leadDays, taxes ON CHANGE changeTax(pl), startDate, endDate
     PROPERTIES(pl) NEW,DELETE 
     FILTERS item(pl)=i
 ;
@@ -55,7 +67,7 @@ DESIGN item {
 
 EXTEND FORM partner 
     OBJECTS pl = Pricelist
-    PROPERTIES(pl) nameItem,  nameItemVendor, codeItemVendor, unitPrice, startDate, endDate
+    PROPERTIES(pl) nameItem, nameItemVendor, codeItemVendor, unitPrice, nameUnitMeasure, minimalQuantity, leadDays, taxes ON CHANGE changeTax(pl), startDate, endDate
     PROPERTIES(pl) NEW,DELETE 
     FILTERS vendor(pl)=p
 ;
@@ -63,7 +75,7 @@ EXTEND FORM partner
 DESIGN partner {
     tabs {
         vendor {
-            MOVE BOX (pl) {showIf=isVendor(p);};
+           MOVE BOX (pl) {showIf=isVendor(p);};
         }
     }
 }

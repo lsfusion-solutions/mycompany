@@ -55,7 +55,7 @@ DESIGN shipment {
 }
 
 EXTEND FORM shipment  
-    PROPERTIES(l) READONLY put SHOWIF picking(type(s)) AND ready(s) AND isTransfer(type(s))
+    PROPERTIES(l) READONLY put SHOWIF picking(type(s)) AND ready(s) //AND isTransfer(type(s))
   
     OBJECTS p = ShipmentPicking
     PROPERTIES(p) nameLocation, quantity
@@ -83,14 +83,14 @@ newPicking 'Добавить размещение' (ShipmentLine ln) {
 } CHANGEKEY 'INSERT';
 
 EXTEND FORM shipment
-    PROPERTIES READONLYIF (NOT ready(s)) OR picked(s) newPicking(l) DRAW p TOOLBAR SHOWIF picking(type(s)) AND ready(s) AND isTransfer(type(s))
+    PROPERTIES READONLYIF (NOT ready(s)) OR picked(s) newPicking(l) DRAW p TOOLBAR SHOWIF picking(type(s)) AND ready(s)// AND isTransfer(type(s))
 ;
 
 DESIGN shipment {
     OBJECTS {
         lines {
             NEW picking {
-                showIf = (picking(type(s)) AND ready(s) AND isTransfer(type(s)));
+                showIf = (picking(type(s)) AND ready(s));// AND isTransfer(type(s)));
                 MOVE BOX(p);
             }
         }
