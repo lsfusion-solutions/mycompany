@@ -31,8 +31,7 @@ EXTEND FORM shipments
 
 status(Shipment s) += WHEN waiting(s) THEN ShipmentStatus.waiting;
 colorStatus(Shipment s) += WHEN status(s) == ShipmentStatus.waiting THEN RGB(250,150,157);
-readonly (ShipmentLine l) += WHEN NOT 
-                (status(shipment(l)) = ShipmentStatus.waiting  OR status(shipment(l)) = ShipmentStatus.draft) THEN TRUE;
+readonly (ShipmentLine l) += WHEN NOT status(shipment(l)) = ShipmentStatus.draft THEN TRUE;
 
 DESIGN shipment {
     statusActions {

@@ -19,3 +19,20 @@ partner(ShipmentResLedger r) += partner(shipment(line(r)));
 
 series(ShipmentResLedger r) += series(shipment(line(r)));
 number(ShipmentResLedger r) += number(shipment(line(r)));
+
+CLASS ShipmentPickedLedger : ResLedger;
+
+pickedLedger = AGGR ShipmentPickedLedger WHERE quantity(ShipmentPicking p) AND status(shipment(shipmentLine(p))) = ShipmentStatus.ready;
+
+dateTime(ShipmentPickedLedger r) += executionDate(shipment(shipmentLine(p(r))));
+
+location(ShipmentPickedLedger r) += location(p(r));
+
+product(ShipmentPickedLedger r) += product(shipmentLine(p(r)));
+reserved(ShipmentPickedLedger r) += quantity(p(r));
+
+description(ShipmentPickedLedger r) += 'Отгрузка' IF p(r) IS ShipmentPicking;
+partner(ShipmentPickedLedger r) += partner(shipment(shipmentLine(p(r))));
+
+series(ShipmentPickedLedger r) += series(shipment(shipmentLine(p(r))));
+number(ShipmentPickedLedger r) += number(shipment(shipmentLine(p(r))));

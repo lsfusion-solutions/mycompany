@@ -1,6 +1,6 @@
 MODULE ShipmentReady;
 
-REQUIRE Inventory, ShipmentWaiting, Utils, ResLedger;
+REQUIRE Inventory, Utils, ShipmentPicking;
 
 NAMESPACE Inventory;
 
@@ -16,10 +16,11 @@ checkAvailability 'Зарезервировать' (Shipment s) {
     
     NEWSESSION {
         FOR shipment(ShipmentLine l) = s DO {
-            reserved(l) <- reserved(l) (+) min(initialDemand(l) (-) reserved(l), available(location(s),product(l)));
+            IF picked(l) < initialDemand(l) OR NOT picked(l) THEN {
+                reserved(l) <- reserved(l) (+) min(initialDemand(l) (-) reserved(l) (-) picked(l), available(location(s),product(l)));
+            }
         }
-        
-        IF GROUP SUM 1 IF reserved(ShipmentLine l) AND shipment(l) = s THEN{
+        IF GROUP SUM 1 IF (reserved(ShipmentLine l) OR picked(l)) AND shipment(l) = s THEN{
             ready(s) <- TRUE;
             APPLY;
         }
@@ -29,20 +30,25 @@ checkAvailability 'Зарезервировать' (Shipment s) {
 undo 'Снять резервирование' (Shipment s) {
     NEWSESSION {
         FOR shipment(ShipmentLine l) = s DO {
-            reserved(l) <- NULL;      
+            reserved(l) <- NULL;
+            FOR (shipmentLine(ShipmentPicking p) = l) DO {
+                quantity(p) <- NULL;
+            }     
         }
         ready(s) <- NULL;
         APPLY;
     }
 }
 
-countLinesDemand (Shipment s) = GROUP SUM 1 IF shipment(ShipmentLine sl) = s AND NOT initialDemand(sl) = reserved(sl);
+countLinesDemand (Shipment s) = GROUP SUM 1 IF shipment(ShipmentLine sl) = s AND NOT initialDemand(sl) = reserved(sl) (+) picked(sl);
 
 EXTEND FORM shipment
-    PROPERTIES(s) checkAvailability SHOWIF status(s) = ShipmentStatus.waiting OR (status(s) = ShipmentStatus.ready AND countLinesDemand(s)), 
+    PROPERTIES(s) checkAvailability SHOWIF (status(s) = ShipmentStatus.waiting 
+                                    OR (status(s) = ShipmentStatus.ready AND countLinesDemand(s))) 
+                                    AND pickCreated(s), 
                   undo SHOWIF status(s) = ShipmentStatus.ready, ready READONLY 
        
-    PROPERTIES(l) reserved READONLY
+    PROPERTIES(l) reserved, picked READONLY
     FILTERS shipment(l) = s
 ;
 

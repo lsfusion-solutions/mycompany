@@ -18,7 +18,7 @@ validate 'Отгружен' (Shipment s) {
     NEWSESSION {
         IF NOT GROUP SUM done(ShipmentLine l) IF shipment(l) = s THEN
             ASK 'Не заполены отгруженые количества. Проставить ожидаемыми?' DO {
-                done(ShipmentLine l) <- reserved(l) WHERE shipment(l) = s;
+                done(ShipmentLine l) <- reserved(l) (+) picked(l) WHERE shipment(l) = s;
             } ELSE RETURN;
         
         IF GROUP SUM 1 IF shipment(ShipmentLine l) = s AND NOT done(l) = initialDemand(l) THEN {
@@ -52,7 +52,8 @@ EXTEND CLASS ShipmentStatus {
 
 readonlyHeader (Shipment s) += WHEN status(s) = ShipmentStatus.done THEN TRUE;
 
-available 'Доступный остаток' (ShipmentLine l) = available(location(shipment(l)), product(l));
+available 'Доступный остаток' (ShipmentLine l) = 
+    GROUP SUM available(Location loc, product(l)) IF level(loc, location(shipment(l)));
 
 EXTEND FORM shipment
     PROPERTIES(s) validate SHOWIF status(s) = ShipmentStatus.ready, done READONLY 

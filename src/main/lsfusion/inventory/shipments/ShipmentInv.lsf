@@ -1,6 +1,6 @@
 MODULE ShipmentInv;
 
-REQUIRE ShipmentPicking, InvLedger;
+REQUIRE ShipmentDone, InvLedger;
 
 NAMESPACE Inventory;
 
@@ -12,10 +12,28 @@ fromLocation(ShipmentLine l) += location(shipment(l));
 toLocation(ShipmentLine l) += toLocation(shipment(l));
 
 product(ShipmentLine l) += product(l);
-quantity(ShipmentLine l) += done(l) (-) put(l);
+quantity(ShipmentLine l) += done(l) (-) picked(l);
 
 description(ShipmentLine l) += 'Отгрузка' IF l IS ShipmentLine;
 partner(ShipmentLine l) += partner(shipment(l));
 
 series(ShipmentLine l) += series(shipment(l));
 number(ShipmentLine l) += number(shipment(l));
+
+CLASS ShipmentPickingInv : InvLedger;
+
+pickLedger = AGGR ShipmentPickingInv WHERE quantity(ShipmentPicking p) AND status(shipment(shipmentLine(p))) = ShipmentStatus.done;
+
+done(ShipmentPickingInv l) += done(shipment(shipmentLine(p(l))));
+dateTime(ShipmentPickingInv l) += executionDate(shipment(shipmentLine(p(l))));
+fromLocation(ShipmentPickingInv l) += location(p(l));
+toLocation(ShipmentPickingInv l) += toLocation(shipment(shipmentLine(p(l))));
+
+product(ShipmentPickingInv l) += product(shipmentLine(p(l)));
+quantity(ShipmentPickingInv l) += quantity(p(l));
+
+description(ShipmentPickingInv l) += 'Отгрузка' IF l IS ShipmentPickingInv;
+partner(ShipmentPickingInv l) += partner(shipment(shipmentLine(p(l))));
+
+series(ShipmentPickingInv l) += series(shipment(shipmentLine(p(l))));
+number(ShipmentPickingInv l) += number(shipment(shipmentLine(p(l))));
