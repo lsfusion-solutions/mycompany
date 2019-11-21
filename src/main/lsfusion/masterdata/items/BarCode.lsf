@@ -60,4 +60,22 @@ EXTEND FORM items
     PROPERTIES(i) READONLYIF isReadonly() idBarCode BEFORE canonicalNameCategory(i)
 ;
 
+META defineBarCodeAdd(doc, let, itm)
+    ##docBarCode 'Штрих код' = DATA ISTRING[20] (###doc) CHANGEKEY 'F4';
+    
+    addProduct 'Добавить продукт' (###doc ##let) {
+        INPUT q = ISTRING[20] DO {
+            IF (GROUP LAST item(BarCode bar) ORDER name(item(bar)) WHERE (id(bar) = q AND item(bar) IS ###itm)) THEN {
+                NEW l = ###doc##Line {
+                    ##doc(l) <- ##let;
+                    ##itm(l) <- GROUP LAST item(BarCode bar) ORDER name(item(bar)) WHERE (id(bar) = q AND item(bar) IS ###itm);
+                }
+            } ELSE MESSAGE 'Штрих код не найден';
+        }
+    };
+    
+    EXTEND FORM ##doc
+        PROPERTIES(##let) ##docBarCode DRAW l TOOLBAR ON CHANGE addProduct(##let)
+    ;
+END
 
