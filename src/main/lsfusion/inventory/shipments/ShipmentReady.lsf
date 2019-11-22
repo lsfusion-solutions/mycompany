@@ -41,13 +41,15 @@ undo 'Снять резервирование' (Shipment s) {
 }
 
 countLinesDemand (Shipment s) = GROUP SUM 1 IF shipment(ShipmentLine sl) = s AND NOT initialDemand(sl) = reserved(sl) (+) picked(sl);
+editPick (ShipmentLine l) += WHEN NOT (status(shipment(l)) == ShipmentStatus.waiting 
+    OR (status(shipment(l)) = ShipmentStatus.ready AND countLinesDemand(shipment(l)))) THEN TRUE;
 
 EXTEND FORM shipment
     PROPERTIES(s) checkAvailability SHOWIF (status(s) = ShipmentStatus.waiting 
                                     OR (status(s) = ShipmentStatus.ready AND countLinesDemand(s))),
                   undo SHOWIF status(s) = ShipmentStatus.ready, ready READONLY 
        
-    PROPERTIES(l) reserved, picked READONLY
+    PROPERTIES(l) reserved, picked READONLY SHOWIF picking(type(s)) AND waiting(s)
     FILTERS shipment(l) = s
 ;
 

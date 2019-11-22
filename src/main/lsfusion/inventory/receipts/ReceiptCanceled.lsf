@@ -1,6 +1,6 @@
 MODULE ReceiptCanceled;
 
-REQUIRE ReceiptDone;
+REQUIRE ReceiptPutAway;
 
 NAMESPACE Inventory;
     
@@ -26,7 +26,7 @@ colorStatus(Receipt r) += WHEN status(r) == ReceiptStatus.canceled THEN RGB(181,
 readonlyHeader (Receipt r) += WHEN status(r) = ReceiptStatus.canceled THEN TRUE;
 
 EXTEND FORM receipt
-    PROPERTIES(r) cancel SHOWIF NOT (status(r) = ReceiptStatus.done OR status(r) = ReceiptStatus.canceled), 
+    PROPERTIES(r) cancel SHOWIF NOT (status(r) = ReceiptStatus.done OR status(r) = ReceiptStatus.canceled OR status(r) = ReceiptStatus.putAway), 
                             canceled SHOWIF status(r) = ReceiptStatus.canceled READONLY 
 ;
 

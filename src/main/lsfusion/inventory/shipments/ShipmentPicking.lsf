@@ -8,15 +8,16 @@ CLASS ShipmentPicking 'Отбор';
 
 reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ShipmentLine, Location);
 done 'Отгружено' = DATA NUMERIC[16,3] (ShipmentLine, Location);
-available 'Доступно' (ShipmentLine l, Location loc) = available(loc, product(l)) (-) reserved(l, loc);
+available 'Доступно' (ShipmentLine l, Location loc) = available(loc, product(l));
 
 CONSTRAINT reserved(ShipmentLine l, Location loc) < 0 MESSAGE 'Зарезервированое кол-во не может быть меньше 0';
 
+editPick = ABSTRACT CASE BOOLEAN (ShipmentLine);
 
 EXTEND FORM shipment
     OBJECTS loc = Location
     PROPERTIES READONLY canonicalName(loc)
-    PROPERTIES available(l, loc) READONLY, reserved(l, loc), done(l, loc) READONLY
+    PROPERTIES available(l, loc) READONLY, reserved(l, loc) READONLYIF editPick(l), done(l, loc) READONLY
 
     FILTERS level(loc, location(shipment(l))), available(l, loc)
 ;

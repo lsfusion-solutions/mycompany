@@ -22,8 +22,8 @@ number(ShipmentResLedger r) += number(shipment(line(r)));
 
 CLASS ShipmentPickedLedger : ResLedger;
 
-pickedLedger = AGGR ShipmentPickedLedger WHERE done(ShipmentLine l, Location loc) AND level(loc, location(shipment(l)))
-                                                                       AND status(shipment(l)) = ShipmentStatus.ready;
+pickedLedger = AGGR ShipmentPickedLedger WHERE reserved(ShipmentLine l, Location loc) AND level(loc, location(shipment(l)))
+                                                                       AND status(shipment(l)) = ShipmentStatus.waiting;
 
 dateTime(ShipmentPickedLedger r) += executionDate(shipment(l(r)));
 
