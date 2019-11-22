@@ -11,6 +11,7 @@ done 'Отгружено' = DATA NUMERIC[16,3] (ShipmentLine, Location);
 available 'Доступно' (ShipmentLine l, Location loc) = available(loc, product(l));
 
 CONSTRAINT reserved(ShipmentLine l, Location loc) < 0 MESSAGE 'Зарезервированое кол-во не может быть меньше 0';
+CONSTRAINT reserved(ShipmentLine l, Location loc) > available(l, loc) MESSAGE 'Зарезервированое кол-во не может быть больше доступного';
 
 editPick = ABSTRACT CASE BOOLEAN (ShipmentLine);
 
