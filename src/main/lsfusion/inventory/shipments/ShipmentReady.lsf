@@ -31,8 +31,8 @@ undo 'Снять резервирование' (Shipment s) {
     NEWSESSION {
         FOR shipment(ShipmentLine l) = s DO {
             reserved(l) <- NULL;
-            FOR (shipmentLine(ShipmentPicking p) = l) DO {
-                quantity(p) <- NULL;
+            FOR (reserved(l, Location loc) IF level(loc, location(shipment(l)))) DO {
+                reserved(l, loc) <- NULL;
             }     
         }
         ready(s) <- NULL;
@@ -44,8 +44,7 @@ countLinesDemand (Shipment s) = GROUP SUM 1 IF shipment(ShipmentLine sl) = s AND
 
 EXTEND FORM shipment
     PROPERTIES(s) checkAvailability SHOWIF (status(s) = ShipmentStatus.waiting 
-                                    OR (status(s) = ShipmentStatus.ready AND countLinesDemand(s))) 
-                                    AND pickCreated(s), 
+                                    OR (status(s) = ShipmentStatus.ready AND countLinesDemand(s))),
                   undo SHOWIF status(s) = ShipmentStatus.ready, ready READONLY 
        
     PROPERTIES(l) reserved, picked READONLY

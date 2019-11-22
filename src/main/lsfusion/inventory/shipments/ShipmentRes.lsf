@@ -22,17 +22,18 @@ number(ShipmentResLedger r) += number(shipment(line(r)));
 
 CLASS ShipmentPickedLedger : ResLedger;
 
-pickedLedger = AGGR ShipmentPickedLedger WHERE quantity(ShipmentPicking p) AND status(shipment(shipmentLine(p))) = ShipmentStatus.ready;
+pickedLedger = AGGR ShipmentPickedLedger WHERE done(ShipmentLine l, Location loc) AND level(loc, location(shipment(l)))
+                                                                       AND status(shipment(l)) = ShipmentStatus.ready;
 
-dateTime(ShipmentPickedLedger r) += executionDate(shipment(shipmentLine(p(r))));
+dateTime(ShipmentPickedLedger r) += executionDate(shipment(l(r)));
 
-location(ShipmentPickedLedger r) += location(p(r));
+location(ShipmentPickedLedger r) += loc(r);
 
-product(ShipmentPickedLedger r) += product(shipmentLine(p(r)));
-reserved(ShipmentPickedLedger r) += quantity(p(r));
+product(ShipmentPickedLedger r) += product(l(r));
+reserved(ShipmentPickedLedger r) += reserved(l(r),loc(r));
 
-description(ShipmentPickedLedger r) += 'Отгрузка' IF p(r) IS ShipmentPicking;
-partner(ShipmentPickedLedger r) += partner(shipment(shipmentLine(p(r))));
+description(ShipmentPickedLedger r) += 'Отгрузка' IF r IS ShipmentPickedLedger;
+partner(ShipmentPickedLedger r) += partner(shipment(l(r)));
 
-series(ShipmentPickedLedger r) += series(shipment(shipmentLine(p(r))));
-number(ShipmentPickedLedger r) += number(shipment(shipmentLine(p(r))));
+series(ShipmentPickedLedger r) += series(shipment(l(r)));
+number(ShipmentPickedLedger r) += number(shipment(l(r)));

@@ -6,51 +6,33 @@ NAMESPACE Inventory;
 
 CLASS ShipmentPicking 'Отбор';
 
-shipmentLine 'Строка отгрузки' = DATA ShipmentLine (ShipmentPicking) NONULL DELETE;
-location 'Место хранения' = DATA Location (ShipmentPicking);
-nameLocation 'Место хранения' (ShipmentPicking p) = canonicalName(location(p));
-available 'Доступно' (ShipmentPicking p) = available(location(p), product(shipmentLine(p)));
-quantity 'Отобрать' = DATA NUMERIC[16,3] (ShipmentPicking);
-pickCreated = DATA BOOLEAN (Shipment);
+reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ShipmentLine, Location);
+done 'Отгружено' = DATA NUMERIC[16,3] (ShipmentLine, Location);
+available 'Доступно' (ShipmentLine l, Location loc) = available(loc, product(l)) (-) reserved(l, loc);
 
-createPick 'Создать отбор' (Shipment s) {
-    FOR shipment(ShipmentLine l) = s DO {
-        FOR Location loc IF level(loc, location(shipment(l))) AND available(loc, product(l)) DO {
-            NEW sp = ShipmentPicking {
-                shipmentLine(sp) <- l;
-                location(sp) <- loc;
-            }
-        }
-    }
-    pickCreated(s) <- TRUE;  
-}
+CONSTRAINT reserved(ShipmentLine l, Location loc) < 0 MESSAGE 'Зарезервированое кол-во не может быть меньше 0';
+
 
 EXTEND FORM shipment
-    OBJECTS prod = Product
-    FILTERS prod = product(l)
+    OBJECTS loc = Location
+    PROPERTIES READONLY canonicalName(loc)
+    PROPERTIES available(l, loc) READONLY, reserved(l, loc), done(l, loc) READONLY
 
-    OBJECTS  sp = ShipmentPicking
-    PROPERTIES(sp) nameLocation, available, quantity
-    PROPERTIES createPick(s) SHOWIF picking(type(s)) AND waiting(s) AND NOT pickCreated(s)
-    FILTERS shipmentLine(sp) = l
+    FILTERS level(loc, location(shipment(l))), available(l, loc)
 ;
 
 DESIGN shipment {
-    primary {
-        MOVE PROPERTY (createPick(s));
-    }
     lines {
         NEW picking {
+            caption = 'Отбор';
             fill = 1;
             showIf = (picking(type(s)) AND waiting(s));
-            MOVE BOX (sp);
+            MOVE BOX (loc);
         }
     }
 }
 
-CONSTRAINT quantity(ShipmentPicking p) > available(p) MESSAGE 'Нельзя отобрать товара больше чем доступно';
-
-picked 'Отобрано' (ShipmentLine l) = GROUP SUM quantity(ShipmentPicking p) IF shipmentLine(p) = l;
+picked 'Отобрано' (ShipmentLine l) = GROUP SUM reserved(l, Location loc) IF level(loc, location(shipment(l)));
 
 CONSTRAINT  picked(ShipmentLine l) > initialDemand(l) MESSAGE 'Нельзя отобрать товара больше чем исходное кол-во';
 

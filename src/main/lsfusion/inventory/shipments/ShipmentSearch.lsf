@@ -4,12 +4,13 @@ REQUIRE Shipment, ResLedger, Doc;
 
 NAMESPACE Inventory;
 
-available 'Доступный остаток' (Shipment s, Product p) = available(location(s), p);
+available 'Доступный остаток' (Shipment s, Product p) =  
+                                            GROUP SUM available(Location loc, p) IF level(loc, location(s));
 
 @defineDocSearch(shipment, product, initialDemand, s, canBeSold);
 
 EXTEND FORM shipment
-    PROPERTIES (s, itm) available
+    PROPERTIES(s, itm) available
     FILTERGROUP  available
         FILTER 'Остатки' available(s, itm) 'F5' DEFAULT
     

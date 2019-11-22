@@ -22,18 +22,19 @@ number(ShipmentLine l) += number(shipment(l));
 
 CLASS ShipmentPickingInv : InvLedger;
 
-pickLedger = AGGR ShipmentPickingInv WHERE quantity(ShipmentPicking p) AND status(shipment(shipmentLine(p))) = ShipmentStatus.done;
+pickLedger = AGGR ShipmentPickingInv WHERE done(ShipmentLine l, Location loc) AND level(loc, location(shipment(l)))
+                                     AND status(shipment(l)) = ShipmentStatus.done;
 
-done(ShipmentPickingInv l) += done(shipment(shipmentLine(p(l))));
-dateTime(ShipmentPickingInv l) += executionDate(shipment(shipmentLine(p(l))));
-fromLocation(ShipmentPickingInv l) += location(p(l));
-toLocation(ShipmentPickingInv l) += toLocation(shipment(shipmentLine(p(l))));
+done(ShipmentPickingInv p) += done(shipment(l(p)));
+dateTime(ShipmentPickingInv p) += executionDate(shipment(l(p)));
+fromLocation(ShipmentPickingInv p) += loc(p);
+toLocation(ShipmentPickingInv p) += toLocation(shipment(l(p)));
 
-product(ShipmentPickingInv l) += product(shipmentLine(p(l)));
-quantity(ShipmentPickingInv l) += quantity(p(l));
+product(ShipmentPickingInv p) += product(l(p));
+quantity(ShipmentPickingInv p) += done(l(p), loc(p));
 
-description(ShipmentPickingInv l) += 'Отгрузка' IF l IS ShipmentPickingInv;
-partner(ShipmentPickingInv l) += partner(shipment(shipmentLine(p(l))));
+description(ShipmentPickingInv p) += 'Отгрузка' IF p IS ShipmentPickingInv;
+partner(ShipmentPickingInv p) += partner(shipment(l(p)));
 
-series(ShipmentPickingInv l) += series(shipment(shipmentLine(p(l))));
-number(ShipmentPickingInv l) += number(shipment(shipmentLine(p(l))));
+series(ShipmentPickingInv p) += series(shipment(l(p)));
+number(ShipmentPickingInv p) += number(shipment(l(p)));
