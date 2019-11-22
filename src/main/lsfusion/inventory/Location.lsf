@@ -6,7 +6,7 @@ NAMESPACE Inventory;
 
 CLASS Location 'Место хранения';
 
-name 'Название' = DATA ISTRING[30] (Location)IN id;
+name 'Название' = DATA ISTRING[30] (Location) IN id;
 parent 'Родитель' = DATA Location (Location);
 nameParent 'Родительское место хранения' (Location l) = name(parent(l));
 owner 'Владелец' = DATA Partner (Location); 
@@ -22,7 +22,8 @@ hierarchyCity (Location l) =  GROUP LAST city(Location parent) ORDER DESC level(
 hierarchyState  (Location l) =  GROUP LAST state(Location parent) ORDER DESC level(l,parent);
 hierarchyZip  (Location l) =  GROUP LAST zip(Location parent) ORDER DESC level(l,parent);
   
-concatAddress (Location l, STRING sep) = (OVERRIDE hierarchyAddress(l)+sep,'') + (OVERRIDE hierarchyCity(l)+sep,'') + (OVERRIDE hierarchyState(l)+sep,'') + (OVERRIDE hierarchyZip(l),'');
+concatAddress (Location l, STRING sep) = (OVERRIDE hierarchyAddress(l)+sep,'') + 
+            (OVERRIDE hierarchyCity(l)+sep,'') + (OVERRIDE hierarchyState(l)+sep,'') + (OVERRIDE hierarchyZip(l),'');
   
 fullAddress 'Адрес' (Location l) = concatAddress(l,', ');    
         

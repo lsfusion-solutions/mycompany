@@ -37,7 +37,7 @@ CONSTRAINT partnerAccount(Bill b) AND NOT partner(b) = holder(partnerAccount(b))
 company 'Компания' = DATA Partner (Bill) NONULL;
 nameCompany 'Компания' (Bill b) = name(company(b));
 
-WHEN LOCAL SET (Bill b IS Bill) DO {
+WHEN LOCAL SET(Bill b IS Bill) DO {
     IF ((GROUP SUM 1 IF Partner p IS Company) = 1) THEN {
         FOR Partner p IS Company DO {
             company(b) <- p;
@@ -48,7 +48,7 @@ WHEN LOCAL SET (Bill b IS Bill) DO {
 companyAccount 'Счет компании' = DATA Account (Bill);
 companyAccountNumber 'Счет компании' (Bill b) = number(companyAccount(b));
 
-WHEN LOCAL CHANGED (company(Bill b)) DO {
+WHEN LOCAL CHANGED(company(Bill b)) DO {
     companyAccount(b) <- defaultAccount(company(b));
 }
 
@@ -67,7 +67,7 @@ notes 'Примечания' = DATA ISTRING[50] (Bill);
 series 'Серия' = DATA STRING[2] (Bill);
 number 'Номер' = DATA STRING[28] (Bill) NONULL;
 
-WHEN SETCHANGED (Bill b IS Bill  AND numeratorBill() AND NOT number(b)) DO {
+WHEN SETCHANGED(Bill b IS Bill  AND numeratorBill() AND NOT number(b)) DO {
     number(b) <- curStringValue(numeratorBill());
     series(b) <- series(numeratorBill());
     incrementValueSession(numeratorBill());   
@@ -85,7 +85,7 @@ nameItem 'Номенклатура' (BillLine l) = name(item(l)) IN id;
 quantity 'Кол-во' = DATA NUMERIC[16,3] (BillLine) NONULL;
 unitPrice 'Цена за штуку' = DATA NUMERIC[10,2] (BillLine) NONULL;
 
-WHEN LOCAL SETCHANGED (item(BillLine l)) AND cost(item(l)) DO {
+WHEN LOCAL SETCHANGED(item(BillLine l)) AND cost(item(l)) DO {
     unitPrice(l) <- cost(item(l));
 }
 
@@ -147,7 +147,7 @@ DESIGN bill {
                 }
                 NEW  secondary {
                     type = CONTAINERH;
-                    MOVE PROPERTY (copyBill(b));  
+                    MOVE PROPERTY(copyBill(b));  
                 }          
             }
         }
@@ -156,11 +156,11 @@ DESIGN bill {
                 caption = 'Опции';
                 type = CONTAINERH;
                 fill = 1;
-                MOVE PROPERTY (date(b));
-                MOVE PROPERTY (dueDate(b));
-                MOVE PROPERTY (series(b));
-                MOVE PROPERTY (number(b));
-                MOVE PROPERTY (vendorReference(b));
+                MOVE PROPERTY(date(b));
+                MOVE PROPERTY(dueDate(b));
+                MOVE PROPERTY(series(b));
+                MOVE PROPERTY(number(b));
+                MOVE PROPERTY(vendorReference(b));
             }
             NEW namesAndAccounts {
                 type = CONTAINERH;
@@ -168,21 +168,21 @@ DESIGN bill {
                 NEW from {
                     type = CONTAINERH;
                     caption = 'Плательщик';
-                    MOVE PROPERTY (nameCompany(b)) {notNull = TRUE;}
-                    MOVE PROPERTY (companyAccountNumber(b));
+                    MOVE PROPERTY(nameCompany(b)) { notNull = TRUE; }
+                    MOVE PROPERTY(companyAccountNumber(b));
                 }
                 NEW to {
                     type = CONTAINERH;
                     caption = 'Получатель';
-                    MOVE PROPERTY (namePartner(b)) {notNull = TRUE;}
-                    MOVE PROPERTY (partnerAccountNumber(b));  
+                    MOVE PROPERTY(namePartner(b))  {notNull = TRUE; }
+                    MOVE PROPERTY(partnerAccountNumber(b));  
                 } 
             }
             NEW additions {
                 caption = 'Дополнительно';
                 type = CONTAINERH;
                 fill = 1;
-                MOVE PROPERTY (notes(b));
+                MOVE PROPERTY(notes(b));
             }
             
         }
@@ -192,7 +192,7 @@ DESIGN bill {
             NEW box {
                 caption = 'Строка накладной';
                 fill = 1;
-                MOVE BOX (l);
+                MOVE BOX(l);
                 NEW pane {
                     type = CONTAINERH;
                     fill = 1;

@@ -68,25 +68,25 @@ WHEN LOCAL CHANGED (item(OrderLine ol) AND NOT description(ol)) DO { description
 
 FORM order 'Заказ'
     OBJECTS o = Order PANEL
-    PROPERTIES (o) READONLY date
-    PROPERTIES (o) READONLY series  
-    PROPERTIES (o) READONLY number  
-    PROPERTIES (o) nameLocation
-    PROPERTIES (o) nameVendor
-    PROPERTIES (o) vendorReference
-    PROPERTIES (o) scheduledDate
-    PROPERTIES (o) nameIncoterm
-    PROPERTIES (o) namePaymentterm
-    PROPERTIES (o) nameRepresentative
+    PROPERTIES(o) READONLY date
+    PROPERTIES(o) READONLY series  
+    PROPERTIES(o) READONLY number  
+    PROPERTIES(o) nameLocation
+    PROPERTIES(o) nameVendor
+    PROPERTIES(o) vendorReference
+    PROPERTIES(o) scheduledDate
+    PROPERTIES(o) nameIncoterm
+    PROPERTIES(o) namePaymentterm
+    PROPERTIES(o) nameRepresentative
                  
     OBJECTS l = OrderLine
-    PROPERTIES (l) nameItem
-    PROPERTIES (l) description
-    PROPERTIES (l) quantity
-    PROPERTIES (l) codeUnitMeasure
-    PROPERTIES (l) unitPrice
-    PROPERTIES (l) scheduledDate
-    PROPERTIES (l) NEW,DELETE
+    PROPERTIES(l) nameItem
+    PROPERTIES(l) description
+    PROPERTIES(l) quantity
+    PROPERTIES(l) codeUnitMeasure
+    PROPERTIES(l) unitPrice
+    PROPERTIES(l) scheduledDate
+    PROPERTIES(l) NEW,DELETE
      
     FILTERS order(l)=o
     EDIT Order OBJECT o    
@@ -110,7 +110,7 @@ DESIGN order{
             NEW attr {
                 NEW create{
                     type = CONTAINERH;
-                    MOVE PROPERTY(date(o)) {caption='Создан';};
+                    MOVE PROPERTY(date(o)) { caption='Создан'; };
                 }
                 NEW numser{
                     type = CONTAINERH; 
@@ -126,7 +126,7 @@ DESIGN order{
                 MOVE PROPERTY(vendorReference(o));
                 NEW schelule{
                     type = CONTAINERH;               
-                    MOVE PROPERTY(scheduledDate(o)) {caption='Срок поставки';};
+                    MOVE PROPERTY(scheduledDate(o)) { caption='Срок поставки'; }
                 }
                 MOVE PROPERTY(nameIncoterm(o));
                 MOVE PROPERTY(namePaymentterm(o));
@@ -136,9 +136,9 @@ DESIGN order{
             fill = 1;
             type = TABBED;
             fill = 1;
-            MOVE BOX (l);
-            PROPERTY (unitPrice(l)) {pattern='#,##0.00';};
-            PROPERTY (subtotal(l))  {pattern='#,##0.00';};            
+            MOVE BOX(l);
+            PROPERTY(unitPrice(l)) { pattern='#,##0.00'; }
+            PROPERTY(subtotal(l))  { pattern='#,##0.00'; }            
             NEW pane {
                type = SPLITH;
                fill = 1;
@@ -152,11 +152,11 @@ DESIGN order{
                 type = CONTAINERV;
             }         
             NEW paneSum {
-                MOVE BOX (oo) { caption='ИТОГО';};                
+                MOVE BOX(oo) { caption='ИТОГО'; }                
                 GROUP(,oo) {type = CONTAINERV;}
-                PROPERTY (untaxedAmount(oo)) {pattern='#,##0.00';};
-                PROPERTY (totalTax(oo)) {pattern='#,##0.00';};
-                PROPERTY (totalAmount(oo)) {pattern='#,##0.00';};                     
+                PROPERTY(untaxedAmount(oo)) { pattern='#,##0.00'; }
+                PROPERTY(totalTax(oo)) { pattern='#,##0.00'; }
+                PROPERTY(totalAmount(oo)) { pattern='#,##0.00'; }                     
             }
         }
     }        
@@ -172,16 +172,16 @@ DESIGN order{
 
 FORM orders 'Заказы'
      OBJECTS o = Order
-     PROPERTIES (o) READONLY date,seriesNumber,nameLocation,nameVendor,scheduledDate
-     PROPERTIES (o) NEWEDIT NEWSESSION,EDIT NEWSESSION,DELETE NEWSESSION
+     PROPERTIES(o) READONLY date,seriesNumber,nameLocation,nameVendor,scheduledDate
+     PROPERTIES(o) NEWEDIT NEWSESSION,EDIT NEWSESSION,DELETE NEWSESSION
 ;
 
 EXTEND FORM orders 
     PROPERTIES(o) READONLY untaxedAmount, totalTax, totalAmount     
 ;
 DESIGN orders{
-    PROPERTY (untaxedAmount(o)) {pattern='#,##0.00';}
-    PROPERTY (totalTax(o)) {pattern='#,##0.00';}
-    PROPERTY (totalAmount(o)) {pattern='#,##0.00';}
+    PROPERTY(untaxedAmount(o)) { pattern='#,##0.00'; }
+    PROPERTY(totalTax(o)) { pattern='#,##0.00'; }
+    PROPERTY(totalAmount(o)) { pattern='#,##0.00'; }
 }
 

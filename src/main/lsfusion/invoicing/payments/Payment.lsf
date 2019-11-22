@@ -15,7 +15,7 @@ toAccountNumber 'Счет получателя' (Payment p) = number(toAccount(p
 toPartner 'Получатель' = DATA Partner (Payment) NONULL;
 nameToPartner 'Получатель' (Payment p) = name(toPartner(p));
 
-WHEN LOCAL CHANGED (toPartner(Payment p)) DO {
+WHEN LOCAL CHANGED(toPartner(Payment p)) DO {
     toAccount(p) <- defaultAccount(toPartner(p));
 }
 
@@ -25,7 +25,7 @@ fromAccountNumber 'Счет плательщика' (Payment p) = number(fromAcc
 fromPartner 'Плательщик' = DATA Partner (Payment) NONULL;
 nameFromPartner 'Плательщик' (Payment p) = name(fromPartner(p));
 
-WHEN LOCAL CHANGED (fromPartner(Payment p)) DO {
+WHEN LOCAL CHANGED(fromPartner(Payment p)) DO {
     fromAccount(p) <- defaultAccount(fromPartner(p));
 }
 
@@ -39,7 +39,7 @@ balance 'Баланс' (Account a) = inAmount(a) (-) outAmount(a);
 series 'Серия' = DATA STRING[2] (Payment);
 number 'Номер' = DATA STRING[28] (Payment) NONULL;
 
-WHEN SETCHANGED (Payment p IS Payment  AND numeratorPayment() AND NOT number(p)) DO {
+WHEN SETCHANGED(Payment p IS Payment  AND numeratorPayment() AND NOT number(p)) DO {
     number(p) <- curStringValue(numeratorPayment());
     series(p) <- series(numeratorPayment());
     incrementValueSession(numeratorPayment());   
@@ -84,7 +84,7 @@ FORM payments 'Платежи'
     OBJECTS p = Payment
     PROPERTIES(p) READONLY date, fromAccountNumber, nameFromPartner, toAccountNumber, nameToPartner, 
                 amount, reference, notes
-    PROPERTIES (p) NEWSESSION NEW, EDIT, DELETE 
+    PROPERTIES(p) NEWSESSION NEW, EDIT, DELETE 
     
     LIST Payment OBJECT p
 ;
@@ -104,21 +104,21 @@ DESIGN payment {
                 caption = 'Дата';
                 type = CONTAINERH;
                 fill = 1;
-                MOVE PROPERTY (date(p));          
+                MOVE PROPERTY(date(p));          
             }
             NEW amounts {
                 caption = 'Суммы';
                 type = CONTAINERH;
                 fill = 1;
-                MOVE PROPERTY (amount(p));
+                MOVE PROPERTY(amount(p));
             }
             NEW options {
                 caption = 'Опции';
                 type = CONTAINERH;
                 fill = 1;
-                MOVE PROPERTY (series(p));
-                MOVE PROPERTY (number(p));
-                MOVE PROPERTY (reference(p));    
+                MOVE PROPERTY(series(p));
+                MOVE PROPERTY(number(p));
+                MOVE PROPERTY(reference(p));    
             }
             NEW namesAndAccounts {
                 type = CONTAINERH;
@@ -126,21 +126,21 @@ DESIGN payment {
                 NEW from {
                     type = CONTAINERH;
                     caption = 'Плательщик';
-                    MOVE PROPERTY (nameFromPartner(p)) {notNull = TRUE;}
-                    MOVE PROPERTY (fromAccountNumber(p));
+                    MOVE PROPERTY(nameFromPartner(p)) { notNull = TRUE; }
+                    MOVE PROPERTY(fromAccountNumber(p));
                 }
                 NEW to { 
                     type = CONTAINERH;
                     caption = 'Получатель';
-                    MOVE PROPERTY (nameToPartner(p)) {notNull = TRUE;}
-                    MOVE PROPERTY (toAccountNumber(p));
+                    MOVE PROPERTY(nameToPartner(p)) { notNull = TRUE; }
+                    MOVE PROPERTY(toAccountNumber(p));
                 }
             } 
             NEW additions {
                 caption = 'Дополнительно';
                 type = CONTAINERH;
                 fill = 1;
-                MOVE PROPERTY (notes(p));
+                MOVE PROPERTY(notes(p));
             }     
         }
         NEW details {

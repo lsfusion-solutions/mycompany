@@ -15,11 +15,11 @@ namePartner 'Партнер' (BillOutstandingCredit c) = name(partner(c));
 
 canBeMatched = ABSTRACT BOOLEAN (BillOutstandingCredit, Bill);
 
-type 'Тип' = ABSTRACT ISTRING[30](BillOutstandingCredit);
+type 'Тип' = ABSTRACT ISTRING[30] (BillOutstandingCredit);
 
 number 'Номер' = ABSTRACT STRING[28] (BillOutstandingCredit);
 
-paid 'Оплачено' = DATA NUMERIC[14,2](BillOutstandingCredit, Bill);
+paid 'Оплачено' = DATA NUMERIC[14,2] (BillOutstandingCredit, Bill);
 paid 'Оплачено' (Bill b) = (GROUP SUM paid(BillOutstandingCredit c, b)) (+) (GROUP SUM paid(b, Bill bb));
 toPay 'Остаток' (Bill b) = totalAmount(b) (-) paid(b);
 
@@ -30,7 +30,7 @@ EXTEND FORM bills
 ;
 
 EXTEND FORM bill
-    PROPERTIES (bb) paid
+    PROPERTIES(bb) paid
 ;
 
 addBillPayment 'Привязать' (BillOutstandingCredit p, Bill b) {
@@ -62,8 +62,8 @@ DESIGN bill {
             caption = 'Платежи';
             fill =1;
             type = CONTAINERV; 
-            MOVE BOX (p);
-            MOVE BOX (pp);
+            MOVE BOX(p);
+            MOVE BOX(pp);
         }
     }
 }

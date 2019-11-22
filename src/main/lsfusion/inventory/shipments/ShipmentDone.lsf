@@ -63,9 +63,8 @@ EXTEND CLASS ShipmentStatus {
 
 readonlyHeader (Shipment s) += WHEN status(s) = ShipmentStatus.done THEN TRUE;
 
-available 'Доступный остаток' (ShipmentLine l) = IF picking(type(shipment(l))) THEN
-    GROUP SUM available(Location loc, product(l)) IF level(loc, location(shipment(l)))
-    ELSE available(location(shipment(l)), product(l));
+available 'Доступный остаток' (ShipmentLine l) = 
+                                GROUP SUM available(Location loc, product(l)) IF level(loc, location(shipment(l)));
 
 EXTEND FORM shipment
     PROPERTIES(s) validate SHOWIF status(s) = ShipmentStatus.ready, done READONLY 

@@ -15,11 +15,11 @@ namePartner 'Партнер' (InvoiceOutstandingCredit c) = name(partner(c));
 
 canBeMatched = ABSTRACT BOOLEAN (InvoiceOutstandingCredit, Invoice);
 
-type 'Тип' = ABSTRACT ISTRING[30](InvoiceOutstandingCredit);
+type 'Тип' = ABSTRACT ISTRING[30] (InvoiceOutstandingCredit);
 
 number 'Номер' = ABSTRACT STRING[28] (InvoiceOutstandingCredit);
 
-paid 'Оплачено' = DATA NUMERIC[14,2](InvoiceOutstandingCredit, Invoice);
+paid 'Оплачено' = DATA NUMERIC[14,2] (InvoiceOutstandingCredit, Invoice);
 paid 'Оплачено' (Invoice i) = (GROUP SUM paid(InvoiceOutstandingCredit c, i)) (+) (GROUP SUM paid(i, Invoice ii));
 toPay 'Остаток' (Invoice i) = totalAmount(i) (-) paid(i);
 
@@ -30,7 +30,7 @@ EXTEND FORM invoices
 ;
 
 EXTEND FORM invoice
-    PROPERTIES (ii) paid
+    PROPERTIES(ii) paid
 ;
 
 addPayment 'Привязать' (InvoiceOutstandingCredit p, Invoice i) {
@@ -61,8 +61,8 @@ DESIGN invoice {
             caption = 'Платежи';
             fill =1;
             type = CONTAINERV; 
-            MOVE BOX (p);
-            MOVE BOX (pp);
+            MOVE BOX(p);
+            MOVE BOX(pp);
         }
     }
 }

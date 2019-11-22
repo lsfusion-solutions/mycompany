@@ -3,7 +3,7 @@ MODULE MetaTax;
 META defineTaxCalc(doc, let, type)
     subtotal 'Сумма до налогов'  = DATA NUMERIC[14,2] (###doc##Line);
     
-    WHEN LOCAL SETCHANGED (quantity(###doc##Line l)) OR SETCHANGED (unitPrice(l)) DO {
+    WHEN LOCAL SETCHANGED(quantity(###doc##Line l)) OR SETCHANGED(unitPrice(l)) DO {
         subtotal(l) <- NUMERIC[14,2](quantity(l) * unitPrice(l));
     }
     
@@ -15,10 +15,10 @@ META defineTaxCalc(doc, let, type)
     
     taxAmount 'Сумма налога (строка)' (Tax t, ###doc##Line l) = DATA NUMERIC[14,2] (Tax, ###doc##Line);
     
-    WHEN LOCAL CHANGED (subtotal(###doc##Line l) IF in(l, Tax t)) DO
+    WHEN LOCAL CHANGED(subtotal(###doc##Line l) IF in(l, Tax t)) DO
         taxAmount (t, l) <- NUMERIC[14,2] (value(t) / 100 * subtotal(l));
     
-    CONSTRAINT (DROPPED (Tax t IS Tax) AND PREV (taxAmount(t, ###doc##Line l))) 
+    CONSTRAINT (DROPPED(Tax t IS Tax) AND PREV(taxAmount(t, ###doc##Line l))) 
                                                             MESSAGE 'Нельзя удалять налог, участвующий в рассчетах';
     
     taxAmount 'Сумма налога (общая)' (Tax t, ###doc let) = 
@@ -59,11 +59,11 @@ META defineTaxForm(doc, let)
         pane {
             NEW taxes {
                 fill = 1;
-                MOVE BOX (t);
+                MOVE BOX(t);
             }
             NEW total {
-                MOVE BOX (let##let); 
-                GROUP(,let##let) {type = CONTAINERV;}      
+                MOVE BOX(let##let); 
+                GROUP(,let##let) { type = CONTAINERV; }      
             }
         }
     }

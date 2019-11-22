@@ -64,10 +64,10 @@ META defineDocHistory(doc, let, class, fun)
     date 'Дата' = DATA DATETIME (###doc##History);
     user 'Пользователь' = DATA User (###doc##History) CHARWIDTH 15;
     nameUser 'Пользователь' (###doc##History l) = name(user(l));
-    type 'Тип' = DATA ISTRING[100](###doc##History);
+    type 'Тип' = DATA ISTRING[100] (###doc##History);
     description 'Описание' = DATA TEXT (###doc##History);
      
-    WHEN SETCHANGED (status(###doc let)) DO {     
+    WHEN SETCHANGED(status(###doc let)) DO {     
         NEW l = ###doc##History {
             ##doc(l) <- let;
             date(l) <- currentDateTime();
@@ -100,7 +100,7 @@ META defineDocHistory(doc, let, class, fun)
         }
     }
     
-    WHEN SETCHANGED (###doc##Line l IS ###doc##Line) AND ##doc(l) = ###doc ##let 
+    WHEN SETCHANGED(###doc##Line l IS ###doc##Line) AND ##doc(l) = ###doc ##let 
                         AND NOT status(##let) = ###doc##Status.draft DO {     
         NEW h = ###doc##History {
             ##doc(h) <- ##let;
@@ -111,7 +111,7 @@ META defineDocHistory(doc, let, class, fun)
         }
     }
     
-    WHEN DROPPED (###doc##Line l IS ###doc##Line) AND PREV(##doc(l)) = ###doc ##let 
+    WHEN DROPPED(###doc##Line l IS ###doc##Line) AND PREV(##doc(l)) = ###doc ##let 
                         AND NOT status(##let) = ###doc##Status.draft DO {     
         NEW h = ###doc##History {
             ##doc(h) <- ##let;
@@ -122,7 +122,7 @@ META defineDocHistory(doc, let, class, fun)
         }
     }
     
-    WHEN CHANGED (##fun(###doc##Line l)) AND ##doc(l) = ###doc ##let 
+    WHEN CHANGED(##fun(###doc##Line l)) AND ##doc(l) = ###doc ##let 
                         AND NOT status(##let) = ###doc##Status.draft DO {     
         NEW h = ###doc##History {
             ##doc(h) <- ##let;
@@ -133,7 +133,7 @@ META defineDocHistory(doc, let, class, fun)
         }
     }
     
-    WHEN CHANGED (name###class(###doc##Line l)) AND ##doc(l) = ###doc ##let 
+    WHEN CHANGED(name###class(###doc##Line l)) AND ##doc(l) = ###doc ##let 
                         AND NOT status(##let) = ###doc##Status.draft DO {     
         NEW h = ###doc##History {
             ##doc(h) <- ##let;
@@ -143,5 +143,4 @@ META defineDocHistory(doc, let, class, fun)
             description (h) <- 'Изменен продукт в строке ' + index(l) + ' на ' + name###class(l);
         }
     }
-
 END

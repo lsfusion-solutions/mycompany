@@ -8,7 +8,7 @@ CLASS Invoice 'Расходная накладная';
 
 date 'Дата накладной' = DATA DATETIME (Invoice) NONULL IN id;
 
-WHEN LOCAL SET (Invoice i IS Invoice) DO {
+WHEN LOCAL SET(Invoice i IS Invoice) DO {
     date(i) <- currentDateTime();
 }
 
@@ -23,7 +23,7 @@ CONSTRAINT partner(Invoice i) AND NOT isCustomer(partner(i))
                 CHECKED BY partner
                 MESSAGE 'Партнер должен быть покупателем';
 
-WHEN LOCAL CHANGED (partner(Invoice i)) DO {
+WHEN LOCAL CHANGED(partner(Invoice i)) DO {
     partnerAccount(i) <- defaultAccount(partner(i));
 }
 
@@ -36,7 +36,7 @@ CONSTRAINT partnerAccount(Invoice i) AND NOT partner(i) = holder(partnerAccount(
 company 'Компания' = DATA Partner (Invoice) NONULL;
 nameCompany 'Компания' (Invoice i) = name(company(i));
 
-WHEN LOCAL SET (Invoice i IS Invoice) DO {
+WHEN LOCAL SET(Invoice i IS Invoice) DO {
     IF ((GROUP SUM 1 IF Partner p IS Company) = 1) THEN {
         FOR Partner p IS Company DO {
             company(i) <- p;
@@ -47,7 +47,7 @@ WHEN LOCAL SET (Invoice i IS Invoice) DO {
 companyAccount 'Счет компании' = DATA Account (Invoice);
 companyAccountNumber 'Счет компании' (Invoice i) = number(companyAccount(i));
 
-WHEN LOCAL CHANGED (company(Invoice i)) DO {
+WHEN LOCAL CHANGED(company(Invoice i)) DO {
     companyAccount(i) <- defaultAccount(company(i));
 }
 
@@ -64,7 +64,7 @@ notes 'Примечания' = DATA ISTRING[50] (Invoice);
 series 'Серия' = DATA STRING[2] (Invoice);
 number 'Номер' = DATA STRING[28] (Invoice) NONULL;
 
-WHEN SETCHANGED (Invoice i IS Invoice  AND numeratorInvoice() AND NOT number(i)) DO {
+WHEN SETCHANGED(Invoice i IS Invoice  AND numeratorInvoice() AND NOT number(i)) DO {
     number(i) <- curStringValue(numeratorInvoice());
     series(i) <- series(numeratorInvoice());
     incrementValueSession(numeratorInvoice());   
@@ -82,7 +82,7 @@ nameItem 'Номенклатура' (InvoiceLine l) = name(item(l)) IN id;
 quantity 'Кол-во' = DATA NUMERIC[16,3] (InvoiceLine) NONULL;
 unitPrice 'Цена за штуку' = DATA NUMERIC[10,2] (InvoiceLine) NONULL;
 
-WHEN LOCAL SETCHANGED (item(InvoiceLine l)) AND salesPrice(item(l)) DO {
+WHEN LOCAL SETCHANGED(item(InvoiceLine l)) AND salesPrice(item(l)) DO {
     unitPrice(l) <- salesPrice(item(l));
 }
 
@@ -146,7 +146,7 @@ DESIGN invoice {
                 }
                 NEW secondary {
                     type = CONTAINERH;
-                    MOVE PROPERTY (copyInvoice(i));  
+                    MOVE PROPERTY(copyInvoice(i));  
                 }            
             }
         }
@@ -155,10 +155,10 @@ DESIGN invoice {
                 caption = 'Опции';
                 type = CONTAINERH;
                 fill = 1;
-                MOVE PROPERTY (date(i));
-                MOVE PROPERTY (dueDate(i));
-                MOVE PROPERTY (series(i));
-                MOVE PROPERTY (number(i));
+                MOVE PROPERTY(date(i));
+                MOVE PROPERTY(dueDate(i));
+                MOVE PROPERTY(series(i));
+                MOVE PROPERTY(number(i));
             }
             NEW namesAndAccounts {
                 type = CONTAINERH;
@@ -166,21 +166,21 @@ DESIGN invoice {
                 NEW from {
                     type = CONTAINERH;
                     caption = 'Плательщик';
-                    MOVE PROPERTY (namePartner(i)) {notNull = TRUE;}
-                    MOVE PROPERTY (partnerAccountNumber(i));
+                    MOVE PROPERTY(namePartner(i)) { notNull = TRUE; }
+                    MOVE PROPERTY(partnerAccountNumber(i));
                 }
                 NEW to {
                     type = CONTAINERH;
                     caption = 'Получатель';
-                    MOVE PROPERTY (nameCompany(i)) {notNull = TRUE;}
-                    MOVE PROPERTY (companyAccountNumber(i));
+                    MOVE PROPERTY(nameCompany(i)) { notNull = TRUE ;}
+                    MOVE PROPERTY(companyAccountNumber(i));
                 }   
             }
             NEW additions {
                 caption = 'Дополнительно';
                 type = CONTAINERH;
                 fill = 1;
-                MOVE PROPERTY (notes(i));
+                MOVE PROPERTY(notes(i));
             }
         }
         NEW details{
@@ -189,7 +189,7 @@ DESIGN invoice {
             NEW box {
                 caption = 'Строка накладной';
                 fill = 1;
-                MOVE BOX (l);
+                MOVE BOX(l);
                 NEW pane {
                     type = CONTAINERH;
                     fill = 1;

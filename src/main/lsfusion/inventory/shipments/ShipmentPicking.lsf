@@ -7,11 +7,15 @@ NAMESPACE Inventory;
 CLASS ShipmentPicking 'Отбор';
 
 reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ShipmentLine, Location);
+picked 'Отобрано' (ShipmentLine l) = GROUP SUM reserved(l, Location loc) IF level(loc, location(shipment(l)));
+
+CONSTRAINT  picked(ShipmentLine l) > initialDemand(l) MESSAGE 'Нельзя отобрать товара больше чем исходное кол-во';
+
 done 'Отгружено' = DATA NUMERIC[16,3] (ShipmentLine, Location);
 available 'Доступно' (ShipmentLine l, Location loc) = available(loc, product(l));
 
 CONSTRAINT reserved(ShipmentLine l, Location loc) < 0 MESSAGE 'Зарезервированое кол-во не может быть меньше 0';
-CONSTRAINT available(ShipmentLine l, Location loc) < reserved(l, loc) MESSAGE 'Зарезервированое кол-во не может быть больше доступного';
+CONSTRAINT available(ShipmentLine l, Location loc) < 0 MESSAGE 'Зарезервированое кол-во не может быть больше доступного';
 
 editPick = ABSTRACT CASE BOOLEAN (ShipmentLine);
 
@@ -33,11 +37,6 @@ DESIGN shipment {
         }
     }
 }
-
-picked 'Отобрано' (ShipmentLine l) = GROUP SUM reserved(l, Location loc) IF level(loc, location(shipment(l)));
-
-CONSTRAINT  picked(ShipmentLine l) > initialDemand(l) MESSAGE 'Нельзя отобрать товара больше чем исходное кол-во';
-
 
 //CLASS ShipmentPicking 'Размещение';
 //
@@ -81,11 +80,11 @@ CONSTRAINT  picked(ShipmentLine l) > initialDemand(l) MESSAGE 'Нельзя от
 //DESIGN shipment {
 //    statusActions {
 //        primary {
-//            MOVE PROPERTY (markAsPicked(s));
+//            MOVE PROPERTY(markAsPicked(s));
 //        }
 //    }
 //    status {
-//        MOVE PROPERTY (picked(s));
+//        MOVE PROPERTY(picked(s));
 //    }
 //}
 //

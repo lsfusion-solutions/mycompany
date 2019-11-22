@@ -51,15 +51,15 @@ pricelistCustomer (Partner p, Item i, DATETIME d) = OVERRIDE
           ORDER startDate(pricelist(prl)), pricelist(prl), prl)         
           ;
 
-WHEN LOCAL SET (PricelistLine prl IS PricelistLine) DO { 
+WHEN LOCAL SET(PricelistLine prl IS PricelistLine) DO { 
     in(prl,Tax t) <- salesIn(item(prl),t);  
 }
 
-WHEN LOCAL CHANGED (item(PricelistLine prl)) DO { 
+WHEN LOCAL CHANGED(item(PricelistLine prl)) DO { 
     in(prl,Tax t) <- salesIn(item(prl),t);
 }
 
-WHEN LOCAL CHANGED (item(OrderLine ol)) DO {
+WHEN LOCAL CHANGED(item(OrderLine ol)) DO {
     unitPrice(ol) <- unitPrice(pricelistCustomer(customer(order(ol)),item(ol),date(order(ol))));
     in(ol, Tax t) <- in(pricelistCustomer(customer(order(ol)),item(ol),date(order(ol))),t); 
 }
@@ -119,22 +119,22 @@ DESIGN pricelist{
             type = CONTAINERH;
             NEW col1{
                 type = CONTAINERV;
-                MOVE PROPERTY (number(pr));
-                MOVE PROPERTY (startDate(pr));
-                MOVE PROPERTY (endDate(pr));                
+                MOVE PROPERTY(number(pr));
+                MOVE PROPERTY(startDate(pr));
+                MOVE PROPERTY(endDate(pr));                
             }
             NEW col2{
-                MOVE PROPERTY (nameCustomer(pr));
+                MOVE PROPERTY(nameCustomer(pr));
             }
             NEW col3{
-                MOVE PROPERTY (default(pr));
+                MOVE PROPERTY(default(pr));
             }
         }
         NEW details {
             fill = 1;
             type = TABBED;
             MOVE BOX(prl) {
-                PROPERTY (unitPrice(prl)) {pattern='#,##0.00';};                          
+                PROPERTY(unitPrice(prl)) {pattern='#,##0.00';};                          
             };
         }
     }

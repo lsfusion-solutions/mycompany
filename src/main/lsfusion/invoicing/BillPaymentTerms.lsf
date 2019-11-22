@@ -10,7 +10,7 @@ nameVendorPaymentTerms 'Условия оплаты'(Partner p) = name(vendorPay
 paymentTerms 'Условия оплаты' = DATA PaymentTerm (Bill); 
 namePaymentTerms 'Условия оплаты' (Bill b) = name(paymentTerms(b));
 
-WHEN LOCAL SETCHANGED (paymentTerms(Bill b)) AND date(b) DO {
+WHEN LOCAL SETCHANGED(paymentTerms(Bill b)) AND date(b) DO {
     dueDate(b) <- sumDay(date(b), days(paymentTerms(b)));
 }
 
@@ -21,7 +21,7 @@ EXTEND FORM partner
 DESIGN partner {
     vendor {
         vendorOptions{
-            MOVE PROPERTY (nameVendorPaymentTerms(p)) AFTER PROPERTY(isVendor(p));
+            MOVE PROPERTY(nameVendorPaymentTerms(p)) AFTER PROPERTY(isVendor(p));
         } 
     }
 }
@@ -32,6 +32,6 @@ EXTEND FORM bill
 
 DESIGN bill {
     additions {
-        MOVE PROPERTY (namePaymentTerms(b)) FIRST;
+        MOVE PROPERTY(namePaymentTerms(b)) FIRST;
     }
 }
