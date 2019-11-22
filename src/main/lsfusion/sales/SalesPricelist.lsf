@@ -44,12 +44,20 @@ changeTax ( PricelistLine prl) {
     } 
 } 
 
-pricelistCustomer (Partner p, Item i, DATETIME d) = OVERRIDE 
-    (GROUP LAST PricelistLine prl IF item(prl) = i AND customer(pricelist(prl)) = p AND NOT startDate(pricelist(prl)) > d AND NOT endDate(pricelist(prl)) < d
-          ORDER startDate(pricelist(prl)), pricelist(prl), prl),
-    (GROUP LAST PricelistLine prl IF item(prl) = i AND default(pricelist(prl)) AND NOT startDate(pricelist(prl)) > d AND NOT endDate(pricelist(prl)) < d
-          ORDER startDate(pricelist(prl)), pricelist(prl), prl)         
-          ;
+pricelist 'Прайс-лист' = DATA Pricelist (Order);
+namePricelist 'Прайс-лист' (Order o) = name(pricelist(o));
+EXTEND FORM order
+    PROPERTIES (o) namePricelist
+;
+DESIGN order {
+    header{
+        invoicing{
+            MOVE PROPERTY (namePricelist(o));
+        }
+    }
+}
+
+pricelistItem (Pricelist pr, Item i) = GROUP LAST PricelistLine prl IF item(prl) = i AND pricelist(prl) = pr ORDER prl;
 
 WHEN LOCAL SET(PricelistLine prl IS PricelistLine) DO { 
     in(prl,Tax t) <- salesIn(item(prl),t);  
@@ -60,8 +68,16 @@ WHEN LOCAL CHANGED(item(PricelistLine prl)) DO {
 }
 
 WHEN LOCAL CHANGED(item(OrderLine ol)) DO {
-    unitPrice(ol) <- unitPrice(pricelistCustomer(customer(order(ol)),item(ol),date(order(ol))));
-    in(ol, Tax t) <- in(pricelistCustomer(customer(order(ol)),item(ol),date(order(ol))),t); 
+    unitPrice(ol) <- unitPrice(pricelistItem(pricelist(order(ol)),item(ol)));
+    in(ol, Tax t) <- in(pricelistItem(pricelist(order(ol)),item(ol)),t); 
+//    unitPrice(ol) <- unitPrice(pricelistCustomer(customer(order(ol)),item(ol),date(order(ol))));
+//    in(ol, Tax t) <- in(pricelistCustomer(customer(order(ol)),item(ol),date(order(ol))),t); 
+}
+
+WHEN LOCAL SET(customer(Order o)) DO { 
+    pricelist(o) <- OVERRIDE 
+                    (GROUP LAST Pricelist pr IF customer(pr)=customer(o) AND NOT startDate(pr) > date(o) AND NOT endDate(pr) < date(o) ORDER startDate(pr), pr),
+                    (GROUP LAST Pricelist pr IF default(pr) AND NOT startDate(pr) > date(o) AND NOT endDate(pr) < date(o) ORDER startDate(pr), pr);                    
 }
 
 EXTEND FORM item   

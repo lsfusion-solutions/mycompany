@@ -68,6 +68,7 @@ WHEN LOCAL CHANGED(item(PricelistLine prl)) DO {
 WHEN LOCAL CHANGED(item(OrderLine ol)) DO {
    unitPrice(ol) <- OVERRIDE unitPrice(pricelist(vendor(order(ol)),item(ol),date(order(ol)))), cost(item(ol));
    description(ol) <- OVERRIDE nameItemVendor(pricelist(vendor(order(ol)),item(ol),date(order(ol)))), name(item(ol)); 
+   unitMeasure(ol) <- OVERRIDE unitMeasure(pricelist(vendor(order(ol)),item(ol),date(order(ol)))), unitMeasurePurchase(item(ol));   
    in(ol, Tax t) <- OVERRIDE in(pricelist(vendor(order(ol)),item(ol),date(order(ol))),t), purchaseIn(item(ol),t);
 }
 
