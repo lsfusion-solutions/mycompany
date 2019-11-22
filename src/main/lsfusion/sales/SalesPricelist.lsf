@@ -1,39 +1,38 @@
 MODULE SalesPricelist;
 
-REQUIRE Item, Partner, ItemSale, PartnerSale,TaxItem,SalesOrder;
+REQUIRE Item, Partner, ItemSale, PartnerSale,TaxItem,SalesSetting,SalesOrder;
 
 NAMESPACE Sales; 
-
-usePricelists = DATA BOOLEAN ();
-EXTEND FORM settings
-    PROPERTIES usePricelists() 
-;
-DESIGN settings{
-    options{
-        MOVE PROPERTY (usePricelists());
-    }
-}
-
 
 CLASS Pricelist 'Прайс-листы';
 
 customer 'Заказчик' = DATA Partner (Pricelist);
 nameCustomer 'Заказчик' (Pricelist pr) = name(customer(pr));
+
 number 'Номер' = DATA STRING[20] (Pricelist);
+
 startDate 'Начало действия' = DATA DATETIME (Pricelist);
+
 endDate 'Окончание действия' = DATA DATETIME (Pricelist);
+
 default 'Общий прайс' = DATA BOOLEAN (Pricelist);
-name 'Название' (Pricelist pr) = CONCAT ' ', number(pr), ' от' + STRING(startDate(pr));
+
+name 'Название' (Pricelist pr) = CONCAT ' ', number(pr), ' от' + STRING(startDate(pr)) , nameCustomer(pr) ;;
 
 CLASS PricelistLine 'Номенклатура';
 
 pricelist 'Прайс-лист' = DATA Pricelist (PricelistLine);
-namePricelist 'Прайс-лист' (PricelistLine prl)= name(pricelist(prl)); 
+namePricelist 'Прайс-лист' (PricelistLine prl)= name(pricelist(prl));
+defaultPricelist 'Общий прайс' (PricelistLine prl)= default(pricelist(prl));
+
 item 'Номенклатура' = DATA Item (PricelistLine);
 nameItem 'Номенклатура' (PricelistLine prl) = name(item(prl));
 nameUnitMeasure 'Единицы' (PricelistLine prl) = name(unitMeasure(item(prl)));
+
 unitPrice 'Цена' = DATA NUMERIC[10,2] (PricelistLine);
+
 minimalQuantity 'Минимальный объем' = DATA NUMERIC[16,3] (PricelistLine);
+
 leadDays 'Срок поставки (дни)' = DATA INTEGER (PricelistLine);
 
 in 'Вкл' = DATA BOOLEAN (PricelistLine, Tax);
@@ -54,49 +53,49 @@ pricelistCustomer (Partner p, Item i, DATETIME d) = OVERRIDE
 
 WHEN LOCAL SET (PricelistLine prl IS PricelistLine) DO { 
     in(prl,Tax t) <- salesIn(item(prl),t);  
-    }
+}
 
 WHEN LOCAL CHANGED (item(PricelistLine prl)) DO { 
     in(prl,Tax t) <- salesIn(item(prl),t);
 }
 
 WHEN LOCAL CHANGED (item(OrderLine ol)) DO {
-    IF usePricelists() THEN { 
-        unitPrice(ol) <- unitPrice(pricelistCustomer(customer(order(ol)),item(ol),date(order(ol))));
-        in(ol, Tax t) <- in(pricelistCustomer(customer(order(ol)),item(ol),date(order(ol))),t); 
-    } 
+    unitPrice(ol) <- unitPrice(pricelistCustomer(customer(order(ol)),item(ol),date(order(ol))));
+    in(ol, Tax t) <- in(pricelistCustomer(customer(order(ol)),item(ol),date(order(ol))),t); 
 }
 
 EXTEND FORM item   
-    OBJECTS prl = PricelistLine 
-    PROPERTIES(prl) SHOWIF usePricelists() READONLY namePricelist, unitPrice, minimalQuantity, leadDays, taxes ON CHANGE changeTax(prl)
+    OBJECTS prls = PricelistLine 
+    PROPERTIES(prls) READONLY namePricelist, unitPrice, minimalQuantity, leadDays, taxes ON CHANGE changeTax(prls), defaultPricelist
+    FILTERS item(prls)=i
 ;
 
 DESIGN item {
     pane {
         sale {
-            MOVE BOX(prl) {showIf=canBeSold(i) AND usePricelists();};
+            MOVE BOX(prls) {showIf=canBeSold(i);};
         }
     }
 }
 
 EXTEND FORM partner 
-    OBJECTS pr = Pricelist 
-    PROPERTIES(pr) SHOWIF usePricelists() number, startDate, endDate, NEW,DELETE 
-    FILTERS customer(pr)=p
-    OBJECTS prl = PricelistLine
-    PROPERTIES(prl) SHOWIF usePricelists() nameItem, unitPrice, nameUnitMeasure READONLY, minimalQuantity, leadDays, taxes ON CHANGE changeTax(prl), NEW,DELETE 
-    FILTERS pricelist(prl)=pr
+    OBJECTS prs = Pricelist 
+    PROPERTIES(prs) number, startDate, endDate, NEW,DELETE 
+    FILTERS customer(prs)=p
+
+    OBJECTS prls = PricelistLine
+    PROPERTIES(prls) nameItem, unitPrice, nameUnitMeasure READONLY, minimalQuantity, leadDays, taxes ON CHANGE changeTax(prls), NEW,DELETE 
+    FILTERS pricelist(prls)=prs
 ;
 
 DESIGN partner {
     tabs {
-        vendor {
+        customer {
             NEW pricelist {
-                showIf=isCustomer(p) AND usePricelists();
+                showIf=isCustomer(p);
                 type = CONTAINERH;
-                MOVE BOX(pr);
-                MOVE BOX(prl);
+                MOVE BOX(prs);
+                MOVE BOX(prls);
             }
         }
     }
@@ -105,6 +104,7 @@ DESIGN partner {
 FORM pricelist 'Прайс-листы'
     OBJECTS pr = Pricelist PANEL
     PROPERTIES(pr) number, nameCustomer, startDate, endDate, default
+
     OBJECTS prl = PricelistLine
     PROPERTIES(prl) nameItem, unitPrice, nameUnitMeasure READONLY, minimalQuantity, leadDays, taxes ON CHANGE changeTax(prl)
     PROPERTIES(prl) NEW,DELETE 
@@ -142,11 +142,12 @@ DESIGN pricelist{
 
 FORM pricelistsList 'Прайс-листы'
     OBJECTS pr = Pricelist
-    PROPERTIES(pr) SHOWIF usePricelists() READONLY number, nameCustomer, startDate, endDate, default
+    PROPERTIES(pr) READONLY number, nameCustomer, startDate, endDate, default
     LIST Pricelist OBJECT pr
 ;
 
 FORM pricelists 'Прайс-листы'
     OBJECTS pr = Pricelist
-    PROPERTIES(pr) SHOWIF usePricelists() READONLY number, nameCustomer, startDate, endDate, default,NEW NEWSESSION ,EDIT NEWSESSION ,DELETE NEWSESSION 
+    PROPERTIES(pr) READONLY number, nameCustomer, startDate, endDate, default
+    PROPERTIES(pr) NEW NEWSESSION ,EDIT NEWSESSION ,DELETE NEWSESSION 
 ;

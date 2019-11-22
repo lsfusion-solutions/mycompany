@@ -42,7 +42,7 @@ namePaymentterm 'Условие оплаты' (Order o)= name(paymentterm(o));
 representative 'Наш представитель' = DATA Individual (Order);
 nameRepresentative 'Наш представитель' (Order o)= name(representative(o));
 //CONSTRAINT (NOT type(legalEntity(representative(Order o))) = PartnerType.company OR NOT type(representative(o))= PartnerType.individual) AND o IS Order CHECKED MESSAGE 'Должен быть наш работник';
-CONSTRAINT NOT type(representative(Order o))=PartnerType.individual AND o IS Order CHECKED MESSAGE 'Должен быть наш работник';
+CONSTRAINT NOT type(representative(Order o)) = PartnerType.individual AND o IS Order CHECKED MESSAGE 'Должен быть наш работник';
 CONSTRAINT NOT type(legalEntity(representative(Order o))) = PartnerType.company AND o IS Order CHECKED MESSAGE 'Должен быть наш работник';
   
 CLASS OrderLine 'Спецификация';
@@ -56,11 +56,13 @@ nameItem 'Номенклатура' (OrderLine l) = name(item(l));
 description 'Описание' = DATA STRING[200] (OrderLine);
 quantity 'Количество' = DATA NUMERIC[16,3] (OrderLine);
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (OrderLine);
-CodeUnitMeasure 'Ед.изм.' (OrderLine l) = code(unitMeasure(l));
+codeUnitMeasure 'Ед.изм.' (OrderLine l) = code(unitMeasure(l));
 unitPrice 'Цена' = DATA NUMERIC[10,2] (OrderLine);
 
 scheduledDate 'Срок дата' = DATA DATETIME (OrderLine);
 WHEN LOCAL SET (OrderLine ol IS OrderLine) DO {scheduledDate(ol) <- scheduledDate(order(ol));}
+
+WHEN LOCAL CHANGED (item(OrderLine ol) AND NOT description(ol)) DO { description(ol) <- nameItem(ol); } 
 
 @defineTaxCalc(order, o,purchase);
 
@@ -81,7 +83,7 @@ FORM order 'Заказ'
     PROPERTIES (l) nameItem
     PROPERTIES (l) description
     PROPERTIES (l) quantity
-    PROPERTIES (l) CodeUnitMeasure
+    PROPERTIES (l) codeUnitMeasure
     PROPERTIES (l) unitPrice
     PROPERTIES (l) scheduledDate
     PROPERTIES (l) NEW,DELETE

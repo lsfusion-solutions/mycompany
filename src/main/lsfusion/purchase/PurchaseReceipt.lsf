@@ -30,15 +30,17 @@ createReceipt 'Добавить приход на склад' (Order o) {
             }
 }
 
-dateReceipt 'Дата прихода' (ReceiptLine rl) = scheduledDate(receipt(rl));
-statusReceipt 'Статус' (ReceiptLine rl) = nameStatus(receipt(rl));
+scheduledDateReceipt 'Дата прихода' (ReceiptLine rl) = scheduledDate(receipt(rl));
+
+nameStatusReceipt 'Статус' (ReceiptLine rl) = nameStatus(receipt(rl));
 
 FORM orderReceiptShow 'Оприходовано на склад'
     OBJECTS ol = OrderLine
     OBJECTS rl = ReceiptLine
-    PROPERTIES (rl) dateReceipt, statusReceipt, initialDemand, done
+    PROPERTIES (rl) scheduledDateReceipt, nameStatusReceipt, initialDemand, done
     FILTERS orderLine(rl) = ol
 ;
+
 DESIGN orderReceiptShow{
     MOVE BOX(rl) FIRST {caption='';}
 }
@@ -46,6 +48,7 @@ DESIGN orderReceiptShow{
 showReceipts (OrderLine l){
     DIALOG orderReceiptShow OBJECTS ol = l; 
 }
+
 WHEN SET(confirmed(Order o)) DO{
 //  OR ((GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) IF order(l) = o) AND confirmed(o))
     createReceipt(o);
