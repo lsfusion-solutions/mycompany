@@ -5,7 +5,8 @@ REQUIRE ShipmentDone, ResLedger;
 NAMESPACE Inventory;
 
 CLASS ShipmentResLedger : ResLedger;
-resLedger = AGGR ShipmentResLedger WHERE reserved(ShipmentLine line) AND status(shipment(line)) = ShipmentStatus.ready;
+resLedger = AGGR ShipmentResLedger WHERE reserved(ShipmentLine line) AND 
+    (status(shipment(line)) = ShipmentStatus.ready OR status(shipment(line)) = ShipmentStatus.waiting);
 
 dateTime(ShipmentResLedger r) += executionDate(shipment(line(r)));
 
@@ -23,7 +24,7 @@ number(ShipmentResLedger r) += number(shipment(line(r)));
 CLASS ShipmentPickedLedger : ResLedger;
 
 pickedLedger = AGGR ShipmentPickedLedger WHERE reserved(ShipmentLine l, Location loc) AND level(loc, location(shipment(l)))
-                                                                       AND status(shipment(l)) = ShipmentStatus.waiting;
+                    AND (status(shipment(l)) = ShipmentStatus.waiting OR status(shipment(l)) = ShipmentStatus.ready);
 
 dateTime(ShipmentPickedLedger r) += executionDate(shipment(l(r)));
 

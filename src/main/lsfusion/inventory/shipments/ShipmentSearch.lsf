@@ -4,8 +4,9 @@ REQUIRE Shipment, ResLedger, Doc;
 
 NAMESPACE Inventory;
 
-available 'Доступный остаток' (Shipment s, Product p) =  
-                                            GROUP SUM available(Location loc, p) IF level(loc, location(s));
+available 'Доступный остаток' (Shipment s, Product p) = IF picking(type(s)) THEN 
+                                            GROUP SUM available(Location loc, p) IF level(loc, location(s))
+                                            ELSE available(location(s), p);
 
 @defineDocSearch(shipment, product, initialDemand, s, canBeSold);
 
