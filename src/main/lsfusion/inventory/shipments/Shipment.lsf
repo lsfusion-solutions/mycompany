@@ -59,7 +59,6 @@ product 'Продукт' = DATA Product (ShipmentLine) NONULL INDEXED;
 nameProduct 'Продукт' (ShipmentLine l) = name(product(l)) IN id;
 
 initialDemand 'Исходное количество' = DATA NUMERIC[16,3] (ShipmentLine) NONULL;
-reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ShipmentLine);
 
 CONSTRAINT initialDemand(ShipmentLine l) < 0 OR initialDemand(l) > maxQuantity(type(shipment(l))) 
     AND maxQuantity(type(shipment(l))) MESSAGE 'Исходное количество должно быть от 0 до максимально разрешенного';
@@ -172,14 +171,9 @@ DESIGN shipment {
                 type = TABBED;
                 NEW lines {
                     caption = 'Строки';
-                    type = SPLITH;
-                    NEW reclines {
-                        fill = 2;
-                        MOVE BOX(l) {
-                            caption = 'Строки';
-                            PROPERTY(nameProduct(l)) { notNull = TRUE; }
-                            PROPERTY(initialDemand(l));
-                        }
+                    MOVE BOX(l) {
+                        PROPERTY(nameProduct(l)) { notNull = TRUE; }
+                        PROPERTY(initialDemand(l));
                     }    
                 }                 
             }  

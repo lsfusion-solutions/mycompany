@@ -25,7 +25,7 @@ FORM inventoryReport 'Текущие остатки'
     PROPERTIES(l,p) onHandDateTime SHOWIF selectedDateTime(), dateReceived, dateShipped
     FILTERS level(l, lt),
             level(category(p), c),
-            IF selectedDateTime() THEN onHandDateTime(l,p) ELSE onHand(l, p)
+            IF selectedDateTime() THEN onHandDateTime(l, p) ELSE onHand(l, p)
                 
     OBJECTS il = InvLedger
     PROPERTIES(il) READONLY dateTime, series, number, description, namePartner, nameFromLocation, nameToLocation, 
@@ -39,7 +39,7 @@ FORM inventoryReport 'Текущие остатки'
     PROPERTIES READONLY 'Склад' = canonicalName(location), 'Товар' = name(product), 
                     level1(product), level2(product), level3(product), level4(product), 'Группа полная' = canonicalNameCategory(product)
     PROPERTIES(location,product) reserved, available, onHandDateTime, dateReceived, dateShipped
-    FILTERS onHandDateTime(location, product)
+    FILTERS IF selectedDateTime() THEN onHandDateTime(location, product) ELSE onHand(location, product)
 ;
 
 DESIGN inventoryReport {

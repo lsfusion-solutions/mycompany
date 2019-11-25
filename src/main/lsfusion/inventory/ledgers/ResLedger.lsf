@@ -29,8 +29,16 @@ description 'Описание' = ABSTRACT ISTRING[100] (ResLedger);
 reserved 'Зарезервировано' (Location l, Product p) = 
     GROUP SUM reserved(ResLedger sl) IF location(sl) = l 
                                         AND product(sl) = p MATERIALIZED; 
+
+reservedRec 'Зарезервировано (с учетом вложенности)' (Location l, Product p) = 
+    GROUP SUM reserved(Location child, p) IF level(child, l) MATERIALIZED;
                                         
 available 'Доступный остаток' (Location ll, Product p) = onHand(ll,p) (-) reserved(ll,p);
+prevAvailable 'Доступный остаток (без учета изменений)' (Location ll, Product p) = PREV(available(ll, p)); 
+
+availableRec 'Доступный остаток (с учетом вложенности)' (Location ll, Product p) = onHandRec(ll,p) (-) reservedRec(ll,p);
+prevAvailableRec 'Доступный остаток (с учетом вложенности без учета изменений)' (Location ll, Product p) = PREV(availableRec(ll, p)); 
+
 
 CONSTRAINT SET(available (Location ll, Product p) < 0) AND recPositiveOnHand(ll) 
             MESSAGE 'Доступный остаток не может быть отрицательным';

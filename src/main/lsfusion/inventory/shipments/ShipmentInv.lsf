@@ -4,37 +4,22 @@ REQUIRE ShipmentDone, InvLedger;
 
 NAMESPACE Inventory;
 
-EXTEND CLASS ShipmentLine : InvLedger;
+ledgerDone = ABSTRACT NUMERIC[16,3] (ShipmentLine);
+toDo (ShipmentLine l) = reserved(l) (-) ledgerDone(l);
 
-done(ShipmentLine l) += done(shipment(l));
-dateTime(ShipmentLine l) += executionDate(shipment(l));
-fromLocation(ShipmentLine l) += location(shipment(l));
-toLocation(ShipmentLine l) += toLocation(shipment(l));
+CLASS ShipmentInvLedger : InvLedger;
+invLedger = AGGR ShipmentInvLedger WHERE toDo(ShipmentLine line) > 0; 
 
-product(ShipmentLine l) += product(l);
-quantity(ShipmentLine l) += done(l) (-) picked(l);
+done(ShipmentInvLedger l) += done(shipment(line(l)));
+dateTime(ShipmentInvLedger l) += executionDate(shipment(line(l)));
+fromLocation(ShipmentInvLedger l) += location(shipment(line(l)));
+toLocation(ShipmentInvLedger l) += toLocation(shipment(line(l)));
 
-description(ShipmentLine l) += 'Отгрузка' IF l IS ShipmentLine;
-partner(ShipmentLine l) += partner(shipment(l));
+product(ShipmentInvLedger l) += product(line(l));
+quantity(ShipmentInvLedger l) += toDo(line(l));
 
-series(ShipmentLine l) += series(shipment(l));
-number(ShipmentLine l) += number(shipment(l));
+description(ShipmentInvLedger l) += 'Отгрузка' IF l IS ShipmentInvLedger;
+partner(ShipmentInvLedger l) += partner(shipment(line(l)));
 
-CLASS ShipmentPickingInv : InvLedger;
-
-pickLedger = AGGR ShipmentPickingInv WHERE done(ShipmentLine l, Location loc) AND level(loc, location(shipment(l)))
-                                     AND status(shipment(l)) = ShipmentStatus.done;
-
-done(ShipmentPickingInv p) += done(shipment(l(p)));
-dateTime(ShipmentPickingInv p) += executionDate(shipment(l(p)));
-fromLocation(ShipmentPickingInv p) += loc(p);
-toLocation(ShipmentPickingInv p) += toLocation(shipment(l(p)));
-
-product(ShipmentPickingInv p) += product(l(p));
-quantity(ShipmentPickingInv p) += done(l(p), loc(p));
-
-description(ShipmentPickingInv p) += 'Отгрузка' IF p IS ShipmentPickingInv;
-partner(ShipmentPickingInv p) += partner(shipment(l(p)));
-
-series(ShipmentPickingInv p) += series(shipment(l(p)));
-number(ShipmentPickingInv p) += number(shipment(l(p)));
+series(ShipmentInvLedger l) += series(shipment(line(l)));
+number(ShipmentInvLedger l) += number(shipment(line(l)));

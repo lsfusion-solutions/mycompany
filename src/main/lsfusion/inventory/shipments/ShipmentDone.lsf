@@ -6,31 +6,27 @@ NAMESPACE Inventory;
 
 done 'Отгружен' = DATA BOOLEAN (Shipment);
 
-done 'Отгруженое кол-во' = DATA NUMERIC[16,3] (ShipmentLine);
+done 'Отгружено' = DATA NUMERIC[16,3] (ShipmentLine);
 
 CONSTRAINT done(ShipmentLine l) < 0 OR done(l) > initialDemand(l) 
     MESSAGE 'Отгруженое количество должно быть от 0 до исходного';
 
+fillDone 'Заполнить Отгружено' (Shipment s) {
+    done(ShipmentLine l) <- reserved(l) WHERE shipment(l) = s;    
+}
+
+extraValidate ABSTRACT LIST (Shipment);
 validate 'Отгружен' (Shipment s) {
     APPLY; // сохраняем изменения
     IF canceled() THEN RETURN; // если сработало ограничение, то выходим
     
     NEWSESSION {
-        FOR shipment(ShipmentLine l) = s DO {
-            FOR reserved(l, Location loc) AND level(loc, location(shipment(l))) DO {
-                done(l, loc) <- reserved(l, loc);
-            }
-        }
+        extraValidate(s);
         
         IF NOT (GROUP SUM done(ShipmentLine l) IF shipment(l) = s) THEN
             ASK 'Не заполены отгруженые количества. Проставить ожидаемыми?' DO {
-                done(ShipmentLine l) <- reserved(l) (+) picked(l) WHERE shipment(l) = s;
+                fillDone(s);
             } ELSE RETURN;
-        
-        FOR shipment(ShipmentLine l) = s DO IF initialDemand(l) < done(l) THEN {
-            MESSAGE 'Отгруженое количество не может быть больше исходного';
-            RETURN;
-        }
         
         IF GROUP SUM 1 IF shipment(ShipmentLine l) = s AND NOT initialDemand(l) = done(l) THEN {
             ASK 'Отгружено не все количество. Создать дополнительную отгрузку?' DO {
@@ -63,14 +59,12 @@ EXTEND CLASS ShipmentStatus {
 
 readonlyHeader (Shipment s) += WHEN status(s) = ShipmentStatus.done THEN TRUE;
 
-available 'Доступный остаток' (ShipmentLine l) = 
-                                GROUP SUM available(Location loc, product(l)) IF level(loc, location(shipment(l)));
-
 EXTEND FORM shipment
     PROPERTIES(s) validate SHOWIF status(s) = ShipmentStatus.ready, done READONLY 
     PROPERTIES(s) executionDate READONLY AFTER scheduledDate(s) SHOWIF done(s)
     PROPERTIES(l) done READONLYIF NOT status(s) = ShipmentStatus.ready BACKGROUND 
-                       IF status(s) = ShipmentStatus.ready THEN RGB(198,230,247), available
+                       IF status(s) = ShipmentStatus.ready THEN RGB(198,230,247)
+    PROPERTIES(s) fillDone DRAW l TOOLBAR SHOWIF status(s) = ShipmentStatus.ready
 ;
 
 EXTEND FORM shipments 

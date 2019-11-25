@@ -1,149 +1,112 @@
 MODULE ShipmentPicking;
 
-REQUIRE ShipmentWaiting, ResLedger;
+REQUIRE ShipmentDone, ShipmentRes, ShipmentInv;
 
 NAMESPACE Inventory;
 
 CLASS ShipmentPicking 'Отбор';
 
 reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ShipmentLine, Location);
-picked 'Отобрано' (ShipmentLine l) = GROUP SUM reserved(l, Location loc) IF level(loc, location(shipment(l)));
+reservedRec 'Зарезервировано (с учетом вложенных)' (ShipmentLine l) = GROUP SUM reserved(l, Location loc) IF level(loc, location(shipment(l)));
+ledgerReserved (ShipmentLine l) += reservedRec(l);
+CONSTRAINT reserved(ShipmentLine l, Location loc) < 0 MESSAGE 'Зарезервированое кол-во не может быть меньше 0';
 
-CONSTRAINT  picked(ShipmentLine l) > initialDemand(l) MESSAGE 'Нельзя отобрать товара больше чем исходное кол-во';
+CONSTRAINT reserved(ShipmentLine l) (-) reservedRec(l) < 0 MESSAGE 'Нельзя зарезервировать товара по местам хранения больше чем в строке';
 
 done 'Отгружено' = DATA NUMERIC[16,3] (ShipmentLine, Location);
-available 'Доступно' (ShipmentLine l, Location loc) = available(loc, product(l));
+doneRec 'Отгружено (с учетом вложенных)' (ShipmentLine l) = GROUP SUM done(l, Location loc) IF level(loc, location(shipment(l)));
+ledgerDone (ShipmentLine l) += reservedRec(l);
+CONSTRAINT done(ShipmentLine l, Location loc) < 0 MESSAGE 'Отгруженное кол-во не может быть меньше 0';
 
-CONSTRAINT reserved(ShipmentLine l, Location loc) < 0 MESSAGE 'Зарезервированое кол-во не может быть меньше 0';
-CONSTRAINT available(ShipmentLine l, Location loc) < 0 MESSAGE 'Зарезервированое кол-во не может быть больше доступного';
+CONSTRAINT done(ShipmentLine l) (-) doneRec(l) < 0 MESSAGE 'Нельзя отгрузить товара по местам хранения больше чем в строке';
 
-editPick = ABSTRACT CASE BOOLEAN (ShipmentLine);
+available 'Доступно' (ShipmentLine l, Location loc) = prevAvailable(loc, product(l)) (+) PREV(reserved(l, loc));
+dateReceived 'Дата последнего прихода' (ShipmentLine l, Location loc) = prevDateReceived(loc, product(l));
+
+WHEN LOCAL CHANGED(done(ShipmentLine l)) AND picking(type(shipment(l))) DO 
+    done(l, Location loc) <- PARTITION UNGROUP done
+                                       LIMIT   reserved(l, loc)
+                                       ORDER dateReceived(l, loc), loc
+                                       BY l;
+
+extraCheckAvailability (Shipment s) +{
+    IF picking(type(s)) THEN {
+        reserved(ShipmentLine l, Location loc) <- 
+                (PARTITION UNGROUP reserved
+                           LIMIT   available(l, loc)
+                           ORDER dateReceived(l, loc), loc
+                           BY l)                
+                                WHERE shipment(l) = s;
+    }
+}
+
+extraUnreserve (Shipment s) +{
+    IF picking(type(s)) THEN {
+        reserved(ShipmentLine l, Location ll) <- NULL WHERE shipment(l) = s;
+    }
+}
+
+extraValidate (Shipment s) +{
+    IF picking(type(s)) THEN {
+        done(ShipmentLine l, Location loc) <- reserved(l, loc) WHERE shipment(l) = s;
+    }
+}
 
 EXTEND FORM shipment
     OBJECTS loc = Location
-    PROPERTIES READONLY canonicalName(loc)
-    PROPERTIES available(l, loc) READONLY, reserved(l, loc) READONLYIF editPick(l), done(l, loc) READONLY
+    PROPERTIES READONLY name(loc)
+    PROPERTIES READONLY dateReceived(l, loc), available(l, loc), reserved(l, loc)
+    PROPERTIES done(l, loc) READONLYIF NOT status(shipment(l)) = ShipmentStatus.ready
 
     FILTERS level(loc, location(shipment(l))), available(l, loc)
 ;
 
 DESIGN shipment {
     lines {
-        NEW picking {
-            caption = 'Отбор';
-            fill = 1;
+        type = SPLITH;
+        MOVE BOX(loc) {
             showIf = (picking(type(s)) AND waiting(s));
-            MOVE BOX (loc);
         }
     }
 }
 
-//CLASS ShipmentPicking 'Размещение';
-//
-//shipmentLine 'Строка отгрузки' = DATA ShipmentLine (ShipmentPicking) NONULL DELETE;
-//
-//location 'Место хранения' = DATA Location (ShipmentPicking);
-//nameLocation 'Место хранения' (ShipmentPicking p) = name(location(p));
-//
-//CONSTRAINT location(ShipmentPicking p) AND NOT level(location(p), toLocation(shipment(shipmentLine(p)))) 
-//                    CHECKED BY location[ShipmentPicking]
-//                    MESSAGE 'Место хранения должно быть дочерним от места хранения из документа отгрузки';
-//
-//quantity 'Кол-во' = DATA NUMERIC[16,3] (ShipmentPicking); 
-//
-//put 'Размещено' (ShipmentLine l) = GROUP SUM quantity(ShipmentPicking p) IF shipmentLine(p) = l;
-//
-//CONSTRAINT put(ShipmentLine l) > done(l) MESSAGE 'Размещенное количество не может быть больше отгруженого';
-//
-//EXTEND CLASS ShipmentStatus {
-//    picked 'Размещен'
-//}
-//
-//picked 'Размещен' = DATA BOOLEAN (Shipment);
-//
-//markAsPicked 'Разместить' (Shipment s) {
-//    APPLY; 
-//    IF canceled() THEN RETURN;
-//    
-//    NEWSESSION {
-//        picked(s) <- TRUE;
-//        APPLY;
-//    }
-//}
-//
-//status(Shipment s) += WHEN picked(s) THEN ShipmentStatus.picked;
-//
-//EXTEND FORM shipment
-//    PROPERTIES (s) markAsPicked SHOWIF picking(type(s)) AND status(s) = ShipmentStatus.done, picked READONLY
-//;
-//
-//DESIGN shipment {
-//    statusActions {
-//        primary {
-//            MOVE PROPERTY(markAsPicked(s));
-//        }
-//    }
-//    status {
-//        MOVE PROPERTY(picked(s));
-//    }
-//}
-//
-//EXTEND FORM shipment  
-//    PROPERTIES(l) READONLY put SHOWIF picking(type(s)) AND ready(s) AND isTransfer(type(s))
-//  
-//    OBJECTS p = ShipmentPicking
-//    PROPERTIES(p) nameLocation, quantity
-//    PROPERTIES(p) READONLYIF (NOT ready(s)) OR picked(s) DELETE
-//    FILTERS shipmentLine(p) = l
-//;
-//
-//FORM pickingLoc 'Места хранения'
-//    OBJECTS loc = Location
-//    
-//    OBJECTS l = Location
-//    PROPERTIES(l) READONLY name, nameParent, canonicalName
-//    FILTERS level(l,loc)
-//    
-//;
-//
-//newPicking 'Добавить размещение' (ShipmentLine ln) {
-//    DIALOG pickingLoc OBJECTS l INPUT, loc = toLocation(shipment(ln)) DO {
-//        NEW p = ShipmentPicking {
-//            shipmentLine(p) <- ln;
-//            location(p) <- l;
-//            SEEK shipment.p = p;
-//        } 
-//    }
-//} CHANGEKEY 'INSERT';
-//
-//EXTEND FORM shipment
-//    PROPERTIES READONLYIF (NOT ready(s)) OR picked(s) newPicking(l) DRAW p TOOLBAR SHOWIF picking(type(s)) AND ready(s) AND isTransfer(type(s))
-//;
-//
-//DESIGN shipment {
-//    OBJECTS {
-//        lines {
-//            NEW picking {
-//                showIf = (picking(type(s)) AND ready(s) AND isTransfer(type(s)));
-//                MOVE BOX(p);
-//            }
-//        }
-//    }
-//}
-//
-//CLASS ShipmentPickingLedger : InvLedger;
-//pickingLedger = AGGR ShipmentPickingLedger WHERE quantity(ShipmentPicking line);
-//
-//done(ShipmentPickingLedger l) += done(shipment(shipmentLine(line(l))));
-//dateTime(ShipmentPickingLedger l) += executionDate(shipment(shipmentLine(line(l))));
-//fromLocation(ShipmentPickingLedger l) += location(shipment(shipmentLine(line(l))));
-//toLocation(ShipmentPickingLedger l) += location(line(l));
-//
-//product(ShipmentPickingLedger l) += product(shipmentLine(line(l)));
-//quantity(ShipmentPickingLedger l) += quantity(line(l));
-//
-//description(ShipmentPickingLedger l) += 'Отгрузка' IF l IS ShipmentPickingLedger;
-//partner(ShipmentPickingLedger l) += partner(shipment(shipmentLine(line(l))));
-//
-//series(ShipmentPickingLedger l) += series(shipment(shipmentLine(line(l))));
-//number(ShipmentPickingLedger l) += number(shipment(shipmentLine(line(l))));
+// Проводим по резервам
+
+CLASS ShipmentPickingRes : ResLedger;
+
+pickedLedger = AGGR ShipmentPickingRes WHERE reserved(ShipmentLine l, Location loc)
+                    AND (status(shipment(l)) = ShipmentStatus.waiting OR status(shipment(l)) = ShipmentStatus.ready);
+
+dateTime(ShipmentPickingRes r) += executionDate(shipment(l(r)));
+
+location(ShipmentPickingRes r) += loc(r);
+
+product(ShipmentPickingRes r) += product(l(r));
+reserved(ShipmentPickingRes r) += reserved(l(r),loc(r));
+
+description(ShipmentPickingRes r) += 'Отгрузка' IF r IS ShipmentPickingRes;
+partner(ShipmentPickingRes r) += partner(shipment(l(r)));
+
+series(ShipmentPickingRes r) += series(shipment(l(r)));
+number(ShipmentPickingRes r) += number(shipment(l(r)));
+
+// Проводим по остаткам
+
+CLASS ShipmentPickingInv : InvLedger;
+
+pickLedger = AGGR ShipmentPickingInv WHERE done(ShipmentLine l, Location loc) AND level(loc, location(shipment(l)))
+                                     AND status(shipment(l)) = ShipmentStatus.done;
+
+done(ShipmentPickingInv p) += done(shipment(l(p)));
+dateTime(ShipmentPickingInv p) += executionDate(shipment(l(p)));
+fromLocation(ShipmentPickingInv p) += loc(p);
+toLocation(ShipmentPickingInv p) += toLocation(shipment(l(p)));
+
+product(ShipmentPickingInv p) += product(l(p));
+quantity(ShipmentPickingInv p) += done(l(p), loc(p));
+
+description(ShipmentPickingInv p) += 'Отгрузка' IF p IS ShipmentPickingInv;
+partner(ShipmentPickingInv p) += partner(shipment(l(p)));
+
+series(ShipmentPickingInv p) += series(shipment(l(p)));
+number(ShipmentPickingInv p) += number(shipment(l(p)));

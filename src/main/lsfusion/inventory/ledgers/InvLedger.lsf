@@ -50,6 +50,9 @@ onHand 'Текущий остаток' (Location ll, Product p) = inQuantity(ll,
 onHand 'Текущий остаток' (Location ll, Product p, DATETIME dt) = 
                                                             inQuantity(ll, p, dt) (-) outQuantity(ll, p, dt) IF dt;
 
+onHandRec 'Текущий остаток (с учетом вложенности)' (Location l, Product p) = 
+    GROUP SUM onHand(Location child, p) IF level(child, l) MATERIALIZED;
+
 positiveOnHand 'Только положительное кол-во товаров' = DATA BOOLEAN (Location) CHARWIDTH 15;
             
 recPositiveOnHand 'Только положительное кол-во товаров' (Location child) = 
@@ -69,6 +72,7 @@ EXTEND FORM locations
 
 dateReceived 'Дата последнего прихода' (Location l, Product p) = 
     GROUP LAST dateTime(InvLedger il) ORDER dateTime(il) WHERE toLocation(il) = l AND product(il) = p;
+prevDateReceived (Location l, Product p) = PREV(dateReceived(l, p));
     
 dateShipped 'Дата последней отгрузки' (Location l, Product p) = 
     GROUP LAST dateTime(InvLedger il) ORDER dateTime(il) WHERE fromLocation(il) = l AND product(il) = p;

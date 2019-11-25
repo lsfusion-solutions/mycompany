@@ -11,15 +11,6 @@ partnerPhone 'Телефон' (Shipment s) = phone(partner(s));
 
 notes 'Примечания' = DATA ISTRING[100] (ShipmentLine);
 
-WHEN SETCHANGED (done(Shipment s)) DO {
-    FOR shipment(ShipmentLine l) = s DO {
-        FOR done(l, Location loc) DO {
-            notes(l) <- CONCAT ' ', notes(l), name(loc),  ' ',  done(l, loc);
-        }
-        IF NOT notes(l) THEN notes(l) <- '';
-    }
-}
-
 FORM printShipment 'Задание на отгрузку'
     OBJECTS s = Shipment PANEL 
     PROPERTIES(s) nameLocation, nameToLocation SHOWIF NOT isTransfer(type(s)), namePartner SHOWIF isTransfer(type(s)), 
