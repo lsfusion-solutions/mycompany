@@ -21,17 +21,35 @@ FORM inventoryValuation 'Себестоимость остатков'
     PROPERTIES READONLY quantity(ol, il)
     FILTERS location(il) = l, product(il) = p
     
+    OBJECTS locProd = (location = Location, product = Product)
+    PROPERTIES READONLY 'Склад' = canonicalName(location), 'Товар' = name(product), 
+        level1(product), level2(product), level3(product), level4(product), 'Группа полная' = canonicalNameCategory(product),
+        costQuantity(location, product), costPrice(location, product), costSum(location, product)
+    FILTERS costQuantity(location, product)
+    
     FILTERGROUP filterIn
         FILTER 'По расходу' quantity(ol, il)
 ;
 
 DESIGN inventoryValuation {
     OBJECTS {
-        NEW details {
+        NEW header {
             fill = 1;
-            type = SPLITH;
-            MOVE BOX(ol);
-            MOVE BOX(il);
+            type = TABBED;
+            NEW valuation {
+                caption = 'Себестоймость остатков';
+                MOVE BOX (lp);
+                NEW details {
+                    fill = 1;
+                    type = SPLITH;
+                    MOVE BOX(ol);
+                    MOVE BOX(il);
+                }
+            }
+            NEW report {
+                caption = 'Отчет';
+                MOVE BOX (locProd);
+            }
         }
     }
 }

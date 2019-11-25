@@ -1,6 +1,6 @@
 MODULE Category;
 
-REQUIRE MasterData;
+REQUIRE MasterData, Hierarchy;
 
 NAMESPACE MasterData;
 
@@ -16,6 +16,29 @@ CONSTRAINT DROPPED(Category c IS Category) AND PREV(parent(Category child) = c)
 level 'Уровень' (Category child, Category parent) =
    RECURSION 1l IF child IS Category AND parent == child
         STEP 2l IF parent == parent($parent) MATERIALIZED;
+
+levelRoot '{hierarchy.level}' (Category child, Category parent) = PARTITION SUM 1 IF level(child, parent)
+                                                                  ORDER DESC level(child, parent)
+                                                                  BY child MATERIALIZED;
+categoryRoot (Category child, level) = GROUP NAGGR Category parent BY levelRoot(child, parent);  
+
+category1 (Category child) = categoryRoot(child, 1) MATERIALIZED;    
+nameCategory1 'Группа 1' (Category child) = name(category1(child));
+
+category2 (Category child) = categoryRoot(child, 2) MATERIALIZED;
+nameCategory2 'Группа 2' (Category child) = name(category2(child));
+    
+category3 (Category child) = categoryRoot(child, 3) MATERIALIZED;
+nameCategory3 'Группа 3' (Category child) = name(category3(child));
+    
+category4 (Category child) = categoryRoot(child, 4) MATERIALIZED; 
+nameCategory4 'Группа 4' (Category child) = name(category4(child));
+   
+category5 (Category child) = categoryRoot(child, 5) MATERIALIZED; 
+nameCategory5 'Группа 5' (Category child) = name(category5(child));
+   
+category6 (Category child) = categoryRoot(child, 6) MATERIALIZED;
+nameCategory6 'Группа 6' (Category child) = name(category6(child));    
         
 canonicalName 'Каноническое имя' (Category c) =
    GROUP CONCAT name(Category parent), ' / ' ORDER DESC level(c, parent) CHARWIDTH 50 IN id;

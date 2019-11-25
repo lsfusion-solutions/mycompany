@@ -6,7 +6,7 @@ NAMESPACE Inventory;
 
 selectedDateTime 'Выбрать дату' = DATA LOCAL DATETIME () PREREAD;
 onHandDateTime 'Остаток на дату' (Location l, Product p) = onHand(l, p, selectedDateTime());
-
+                                
 FORM inventoryReport 'Текущие остатки'
     OBJECTS invL = InvLedger PANEL 
     PROPERTIES selectedDateTime()
@@ -34,27 +34,47 @@ FORM inventoryReport 'Текущие остатки'
             product(il) = p,
             fromLocation(il) = l OR toLocation(il) = l,
             dateTime(il) <= selectedDateTime() OR NOT selectedDateTime()
+            
+    OBJECTS locProd = (location = Location, product = Product)
+    PROPERTIES READONLY 'Склад' = canonicalName(location), 'Товар' = name(product), 
+                    level1(product), level2(product), level3(product), level4(product), 'Группа полная' = canonicalNameCategory(product)
+    PROPERTIES(location,product) reserved, available, onHandDateTime, dateReceived, dateShipped
+    FILTERS onHandDateTime(location, product)
 ;
 
 DESIGN inventoryReport {
-   OBJECTS {
-       NEW pane {
-           type = SPLITH;
-           fill = 1;
-           NEW pane1 {
-               fill = 1;
-               type = SPLITV;
-               MOVE BOX(TREE locations){caption = 'Места хранения';};
-               MOVE BOX(TREE categories){caption = 'Категории';};
-           }
-           NEW pane2 {
-               fill = 2;
-               type = SPLITV;
-               MOVE BOX(lp);
-               MOVE BOX(il);
-           }               
-       }
-   }
+    OBJECTS {
+        NEW header {
+            fill = 1;
+            MOVE PROPERTY (selectedDateTime());
+            NEW invReport {
+                fill = 1;
+                type = TABBED;
+                NEW pane {
+                    caption = 'Текущие остатки';
+                    type = SPLITH;
+                    fill = 1;
+                    NEW pane1 {
+                        fill = 1;
+                        type = SPLITV;
+                        MOVE BOX(TREE locations){caption = 'Места хранения';};
+                        MOVE BOX(TREE categories){caption = 'Категории';};
+                    }
+                    NEW pane2 {
+                        fill = 2;
+                        type = SPLITV;
+                        MOVE BOX(lp);
+                        MOVE BOX(il);
+                    }               
+                }
+                NEW report {
+                    fill = 1;
+                    caption = 'Отчет';
+                    MOVE BOX (locProd);
+                }
+            }
+        }
+    }
 }
 
 NAVIGATOR {
