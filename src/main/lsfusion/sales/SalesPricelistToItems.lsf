@@ -1,0 +1,30 @@
+MODULE SalesPricelistToItems;
+
+REQUIRE SalesPricelist, Item;
+
+NAMESPACE Sales;
+
+EXTEND FORM item   
+
+    OBJECTS prls = PricelistLine 
+    PROPERTIES(prls) READONLY namePricelist, taxes ON CHANGE changeTax(prls)
+    PROPERTIES(prls) DELETE
+    FILTERS item(prls)=i
+    
+    OBJECTS tc = PriceType GRID
+    PROPERTIES (prls,tc) orderEditIn[PricelistLine,PriceType]
+    ORDER orderEditIn(prls,tc)
+    FILTERS editIn(prls, tc) 
+    
+    PROPERTIES(prls, tc) price COLUMNS (tc) HEADER headerNameData(tc)
+    
+;
+
+DESIGN item {
+    pane {
+        sale {
+            MOVE BOX(prls) {showIf=canBeSold(i);};
+            REMOVE BOX(tc);
+        }
+    }
+}

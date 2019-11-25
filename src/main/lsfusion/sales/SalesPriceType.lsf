@@ -1,0 +1,60 @@
+MODULE SalesPriceType;
+
+REQUIRE SalesNavigator, PartnerSale, Partner; 
+
+NAMESPACE Sales;
+
+CLASS PriceType 'Виды цены';
+
+name 'Наименование' = DATA ISTRING[100](PriceType);
+
+FORM pricelistType 'Вид цены'
+    OBJECTS pt = PriceType
+    PROPERTIES(pt) name
+    EDIT PriceType OBJECT pt
+;
+
+DESIGN pricelistType {
+    NEW pane {
+        fill = 1;
+        MOVE BOX(pt);
+    }
+}
+
+FORM pricelistTypes 'Виды цен'
+    OBJECTS pt = PriceType
+    PROPERTIES(pt) name
+    PROPERTIES(pt) NEW, DELETE 
+//    PROPERTIES(pt) NEWSESSION NEW, EDIT, DELETE 
+;   
+
+FORM pricelistTypeList 'Вид цены'
+    OBJECTS p = PriceType
+    PROPERTIES(p) READONLY name
+
+    LIST PriceType OBJECT p
+;
+
+priceType 'Тип цен для покупателя' =  DATA PriceType (Partner);
+namePriceType 'Тип цен для покупателя' (Partner p) =  name(priceType(p));
+
+EXTEND FORM partner 
+    PROPERTIES(p) namePriceType 
+;
+
+DESIGN partner {
+    tabs {
+        customer {
+            NEW pricelist {
+                showIf=isCustomer(p);
+                MOVE PROPERTY (namePriceType(p));
+            }
+        }
+    }
+}
+
+NAVIGATOR {
+    sales{
+        NEW pricelistTypes;    
+    }
+}

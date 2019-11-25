@@ -4,52 +4,36 @@ REQUIRE SalesOrderStatus, Doc, SalesPricelist;
 
 NAMESPACE Sales;
 
-unitPrice 'Цена' (Pricelist pr, Item it) = 
-    GROUP SUM unitPrice(PricelistLine prl) BY pricelist(prl), item(prl);
-lastPricelistLine 'Последняя строка' (Pricelist pr, Item p) = 
-    GROUP LAST PricelistLine prl ORDER prl BY pricelist(prl), item(prl);
-        
-changePrice 'Изменить цену' (Pricelist pr, Item it) {
-    INPUT q = NUMERIC[14,2] DO {
-        IF lastPricelistLine(pr, it) THEN {
-            IF q THEN
-                unitPrice(PricelistLine prl) <- q IF prl = lastPricelistLine(pr, it)
-                    WHERE pricelist(prl) = pr AND item(prl) = it;
-            ELSE
-                DELETE PricelistLine prl WHERE pricelist(prl) = pr AND item(prl) == it;
+// Подбор товаров
+detail= GROUP SUM 1 BY item(PricelistLine pl), pricelist(pl);
+
+in 'Вкл.' (Item item, Pricelist pr) = TRUE IF detail(item, pr);
+
+changeIn(Item item, Pricelist pricelist)  { 
+    INPUT b = BOOLEAN DO
+        IF detail(item, pricelist) THEN {
+            IF NOT b THEN
+                DELETE PricelistLine pl WHERE item == item(pl) AND pricelist == pricelist(pl);
         } ELSE
-            IF q THEN
-                NEW prl = PricelistLine {
-                    pricelist(prl) <- pr;
-                    item(prl) <- it;
-                    unitPrice(prl) <- q;
+            IF b THEN 
+                NEW d = PricelistLine {
+                   pricelist(d) <- pricelist;
+                   item(d) <- item;
                 }
-    }
 }
-    
+
 EXTEND FORM pricelist
-    TREE categories c = Category PARENT parent(c)
-    PROPERTIES READONLY name(c)
-    ORDER name(c)
-        
-    OBJECTS itm = Item
-    PROPERTIES(itm) READONLY name, idBarCode
-    PROPERTIES(pr, itm) unitPrice ON CHANGE changePrice(pr, itm)
-    FILTERS level(category(itm), c), canBeSold(itm)
+    OBJECTS item=Item
+    PROPERTIES in(item, pr) ON CHANGE changeIn(item, pr)
+    PROPERTIES READONLY name(item) 
 ;
-    
+
 DESIGN pricelist {
-    details {
-        NEW search {
-            //showIf = NOT readonly(pr);
+    details{
+        NEW container3{
             caption = 'Подбор';
-            type = SPLITH;
-            fill = 1;
-            MOVE BOX(TREE categories);
-            MOVE BOX(itm) { 
-                PROPERTY(unitPrice(pr,itm)) { pattern='#,##0.00'; }               
-                fill = 2;
-            }
-        }
+            MOVE BOX(item);
+        }   
+    
     }
 }
