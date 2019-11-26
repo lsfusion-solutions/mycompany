@@ -1,0 +1,32 @@
+MODULE CategoryImport;
+
+REQUIRE Category;
+
+NAMESPACE MasterData;
+
+categoryExport 'Экспорт категорий' () {
+    LOCAL f = EXCELFILE ();
+    EXPORT XLSX HEADER FROM name(Category c), nameParent(c), canonicalName(c) TO f;        
+    WRITE CLIENT f() TO 'C:/Users/Wolant/Desktop/category';
+}
+
+categoryImport 'Импорт категорий' () {
+    LOCAL name = ISTRING[50] (INTEGER);
+    LOCAL nameParent = ISTRING[50] (INTEGER);
+    LOCAL canonicalName = ISTRING[50] (INTEGER);
+    
+    INPUT f = EXCELFILE DO {
+        NEWSESSION {
+            IMPORT XLS HEADER FROM f TO name = A, nameParent = B, canonicalName = C;
+            
+            FOR imported(INTEGER i) DO {
+                NEW c = Category {
+                    name(c) <- name(i);
+                    parent(c) <- GROUP MAX Category cat IF name(cat) = nameParent(i);
+                }
+            } 
+            APPLY;
+            MESSAGE 'Импорт завершен';
+        }
+    }
+}

@@ -1,0 +1,37 @@
+MODULE ItemMeasureImport;
+
+REQUIRE ItemMeasure;
+
+NAMESPACE MasterData;
+
+itemMeasureExport 'Экспорт единиц измерения' () {
+    LOCAL f = EXCELFILE ();
+    EXPORT XLSX HEADER FROM code(ItemMeasure i), name(i), groupName(i), baseMeasureName(i), coefficient(i) TO f;   
+    WRITE CLIENT f() TO 'C:/Users/Wolant/Desktop/itemMeasure';
+}
+
+itemMeasureImport 'Импорт единиц измерения' () {
+    LOCAL code = ISTRING[10] (INTEGER);
+    LOCAL name = ISTRING[50] (INTEGER);
+    LOCAL group = ISTRING[10] (INTEGER);
+    LOCAL base = ISTRING[10] (INTEGER);
+    LOCAL coefficient = DOUBLE (INTEGER);
+    
+    INPUT f = EXCELFILE DO {
+        NEWSESSION {
+            IMPORT XLS HEADER FROM f TO code = A, name = B, group = C, base = D, coefficient = E;
+            
+            FOR imported(INTEGER i) DO {
+                NEW im = ItemMeasure {
+                    code(im) <- code(i);
+                    name(im) <- name(i);
+                    group(im) <- GROUP MAX GroupMeasure g IF name(g) = group(i);
+                    baseMeasure(im) <- GROUP MAX ItemMeasure it IF name(it) = base(i);
+                    coefficient(im) <- coefficient(i);
+                }
+            }
+            APPLY;
+            MESSAGE 'Импорт завершен';
+        }
+    }    
+}

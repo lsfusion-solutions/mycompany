@@ -1,0 +1,44 @@
+MODULE ItemImport;
+
+REQUIRE Product, BarCode, System;
+
+NAMESPACE MasterData;
+
+itemExport 'Экспорт номенклатур' () {
+    LOCAL f = EXCELFILE ();
+    EXPORT XLSX HEADER FROM name(Item i), nameCategory(i), idBarCode(i), nameUnitMeasure(i) TO f;   
+    WRITE CLIENT f() TO 'C:/Users/Wolant/Desktop/item';
+}
+
+itemImport 'Импорт номенклатур' () {
+    LOCAL name = ISTRING[50] (INTEGER);
+    LOCAL category = ISTRING[50] (INTEGER);
+    LOCAL id = ISTRING[20] (INTEGER);
+    LOCAL unitM = ISTRING[50] (INTEGER);
+       
+    INPUT f = EXCELFILE DO {
+        NEWSESSION {
+            IMPORT XLS HEADER FROM f TO name = A, category = B, id = C, unitM = D;   
+            
+            FOR imported(INTEGER i) DO {
+                NEW p = Product {
+                    name(p) <- name(i);
+                    category(p) <- GROUP MAX Category c IF name(c) = category(i);
+                    unitMeasure(p) <- GROUP MAX ItemMeasure m IF name(m) = unitM(i);
+                }
+            }
+            APPLY;
+            
+            IMPORT XLS HEADER FROM f TO name = A, category = B, id = C, unitM = D;
+            FOR imported(INTEGER i) DO {
+                NEW bc = BarCode {
+                    item(bc) <- GROUP MAX Product p IF name(p) = name(i);
+                    id(bc) <- id(i);
+                }
+            }
+            APPLY;
+            MESSAGE 'Импорт завершен';
+        }
+    }    
+}
+

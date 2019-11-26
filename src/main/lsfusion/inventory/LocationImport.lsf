@@ -1,0 +1,33 @@
+MODULE LocationImport;
+
+REQUIRE Location;
+
+NAMESPACE Inventory;
+
+locationExport 'Экспорт мест хранения' () {
+    LOCAL f = EXCELFILE ();
+    EXPORT XLSX HEADER FROM name(Location l), nameParent(l), canonicalName(l), ownerName(l), fullAddress(l) TO f;   
+    WRITE CLIENT f() TO 'C:/Users/Wolant/Desktop/location';
+}
+
+locationImport 'Импорт мест хранения' () {
+    LOCAL name = ISTRING[30] (INTEGER);
+    LOCAL nameParent = ISTRING[50] (INTEGER);
+    LOCAL nameOwner = ISTRING[50] (INTEGER);
+    
+    INPUT f = EXCELFILE DO {
+        NEWSESSION {   
+            IMPORT XLS HEADER FROM f TO name = A, nameParent = B, nameOwner = D;
+            
+            FOR imported(INTEGER i) DO {
+                NEW l = Location {
+                    name(l) <- name(i);
+                    parent(l) <- GROUP MAX Location loc IF name(loc) = nameParent(i);
+                    owner(l) <- GROUP MAX Partner p IF name(p) = nameOwner(i);
+                }
+            }
+            APPLY;
+            MESSAGE 'Импорт завершен';
+        }
+    }    
+}

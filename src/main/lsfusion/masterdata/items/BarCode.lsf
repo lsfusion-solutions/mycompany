@@ -11,7 +11,7 @@ nameItem 'Номенклатура' (BarCode b) = name(item(b));
 id 'Штрих код' = DATA STRING[20] (BarCode);
 
 dataDefaultBarCode = DATA BarCode (Item);
-calcDefaultBarCode (Item i) = GROUP LAST BarCode b ORDER DESC b WHERE item(b) =i;
+calcDefaultBarCode (Item i) = GROUP LAST BarCode b ORDER DESC b WHERE item(b) = i;
 
 defaultBarCode (Item i) = OVERRIDE dataDefaultBarCode(i), calcDefaultBarCode(i);
 default 'По умолчанию' (BarCode b) = defaultBarCode(item(b)) = b CHARWIDTH 10;
