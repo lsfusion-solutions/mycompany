@@ -15,7 +15,7 @@ CONSTRAINT reserved(ShipmentLine l) (-) reservedRec(l) < 0 MESSAGE 'Нельзя
 
 done 'Отгружено' = DATA NUMERIC[16,3] (ShipmentLine, Location);
 doneRec 'Отгружено (с учетом вложенных)' (ShipmentLine l) = GROUP SUM done(l, Location loc) IF level(loc, location(shipment(l)));
-ledgerDone (ShipmentLine l) += reservedRec(l);
+ledgerDone (ShipmentLine l) += doneRec(l);
 CONSTRAINT done(ShipmentLine l, Location loc) < 0 MESSAGE 'Отгруженное кол-во не может быть меньше 0';
 
 CONSTRAINT done(ShipmentLine l) (-) doneRec(l) < 0 MESSAGE 'Нельзя отгрузить товара по местам хранения больше чем в строке';
