@@ -33,7 +33,7 @@ extraCheckAvailability (Shipment s) +{
     IF picking(type(s)) THEN {
         reserved(ShipmentLine l, Location loc) <- 
                 (PARTITION UNGROUP reserved
-                           LIMIT   available(l, loc)
+                           LIMIT   available(l, loc) IF level(loc, location(shipment(l)))
                            ORDER dateReceived(l, loc), loc
                            BY l)                
                                 WHERE shipment(l) = s;
@@ -48,7 +48,7 @@ extraUnreserve (Shipment s) +{
 
 extraValidate (Shipment s) +{
     IF picking(type(s)) THEN {
-        done(ShipmentLine l, Location loc) <- reserved(l, loc) WHERE shipment(l) = s;
+        done(ShipmentLine l, Location loc) <- reserved(l, loc) WHERE shipment(l) = s AND NOT (GROUP SUM done(l, Location ll));
     }
 }
 
