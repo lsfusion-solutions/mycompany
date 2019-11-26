@@ -1,0 +1,60 @@
+MODULE ProductImport;
+
+REQUIRE Product, BarCode, System, Import;
+
+NAMESPACE MasterData;
+
+productExport 'Экспорт продуктов' () {
+    IF NOT (GROUP SUM 1 IF Product p AND p IS Product) THEN {
+        NEW p = Product {
+            id(p) <- 'Test';
+            name(p) <- 'Test';
+        }
+    }
+    LOCAL f = EXCELFILE ();
+    EXPORT XLSX HEADER FROM 'Код товара' = id(Product p), 'Наименование' = name(p), 'Код категории' = idCategory(p), 
+        'Штрих код' = idBarCode(p), 'Код учетной единицы' = idUnitMeasure(p) TO f;   
+    open(f());
+}
+
+productImport 'Импорт продуктов' () {
+    LOCAL id = STRING[50] (INTEGER);
+    LOCAL name = ISTRING[50] (INTEGER);
+    LOCAL idCategory = ISTRING[50] (INTEGER);
+    LOCAL barCode = ISTRING[20] (INTEGER);
+    LOCAL idUnitM = ISTRING[50] (INTEGER);
+       
+    INPUT f = EXCELFILE DO {
+        NEWSESSION {
+            IMPORT XLS HEADER FROM f TO id = A, name =B, idCategory = C, barCode = D, idUnitM = E;   
+            
+            FOR imported(INTEGER i) DO NEW p = Product {
+                id(p) <- id(i);
+                name(p) <- name(i);
+                category(p) <- GROUP MAX Category c IF id(c) = idCategory(i);
+                FOR idCode(BarCode b) = barCode(i) DO {
+                    item(b) <- p;
+                }
+                unitMeasure(p) <- GROUP MAX ItemMeasure m IF id(m) = idUnitM(i);
+            }
+            APPLY;
+            MESSAGE 'Импорт завершен';
+        }
+    }    
+}
+
+EXTEND FORM import 
+    PROPERTIES productExport(), productImport()
+;
+
+DESIGN import {
+    OBJECTS {
+        NEW product {
+            type = CONTAINERH;
+            caption = 'Номенклатуры';
+            MOVE PROPERTY(productImport());
+            MOVE PROPERTY(productExport());
+        }
+    }
+}
+

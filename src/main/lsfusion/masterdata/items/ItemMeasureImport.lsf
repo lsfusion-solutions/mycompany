@@ -1,37 +1,60 @@
 MODULE ItemMeasureImport;
 
-REQUIRE ItemMeasure;
+REQUIRE ItemMeasure, Import;
 
 NAMESPACE MasterData;
 
 itemMeasureExport 'Экспорт единиц измерения' () {
+    IF NOT (GROUP SUM 1 IF ItemMeasure i AND i IS ItemMeasure) THEN {
+        NEW i = ItemMeasure {
+            id(i) <- 'Test';
+            name(i) <- 'Test';
+        }
+    }
     LOCAL f = EXCELFILE ();
-    EXPORT XLSX HEADER FROM code(ItemMeasure i), name(i), groupName(i), baseMeasureName(i), coefficient(i) TO f;   
-    WRITE CLIENT f() TO 'C:/Users/Wolant/Desktop/itemMeasure';
+    EXPORT XLSX HEADER FROM 'Код' = id(ItemMeasure i), 'Код наименования' = code(i), 'Наименование' = name(i), 
+        'Код группы' = idGroup(i), 'Код базовой единицы' = idBaseMeasure(i), 'Коэффициент к базовой' = coefficient(i) TO f;   
+    open(f());
 }
 
 itemMeasureImport 'Импорт единиц измерения' () {
+    LOCAL id = STRING[50] (INTEGER);
     LOCAL code = ISTRING[10] (INTEGER);
     LOCAL name = ISTRING[50] (INTEGER);
-    LOCAL group = ISTRING[10] (INTEGER);
-    LOCAL base = ISTRING[10] (INTEGER);
+    LOCAL group = ISTRING[50] (INTEGER);
+    LOCAL base = ISTRING[50] (INTEGER);
     LOCAL coefficient = DOUBLE (INTEGER);
     
     INPUT f = EXCELFILE DO {
         NEWSESSION {
-            IMPORT XLS HEADER FROM f TO code = A, name = B, group = C, base = D, coefficient = E;
+            IMPORT XLS HEADER FROM f TO id = A, code = B, name = C, group = D, base = E, coefficient = F;
             
-            FOR imported(INTEGER i) DO {
-                NEW im = ItemMeasure {
-                    code(im) <- code(i);
-                    name(im) <- name(i);
-                    group(im) <- GROUP MAX GroupMeasure g IF name(g) = group(i);
-                    baseMeasure(im) <- GROUP MAX ItemMeasure it IF name(it) = base(i);
-                    coefficient(im) <- coefficient(i);
-                }
+            FOR imported(INTEGER i) DO NEW im = ItemMeasure {
+                id(im) <- id(i);
+                code(im) <- code(i);
+                name(im) <- name(i);
+                group(im) <- GROUP MAX GroupMeasure g IF id(g) = group(i);
+                baseMeasure(im) <- GROUP MAX ItemMeasure it IF id(it) = base(i);
+                coefficient(im) <- coefficient(i);
             }
+            
             APPLY;
             MESSAGE 'Импорт завершен';
         }
     }    
+}
+
+EXTEND FORM import 
+    PROPERTIES itemMeasureExport(), itemMeasureImport()
+;
+
+DESIGN import {
+    OBJECTS {
+        NEW itemMeasure {
+            type = CONTAINERH;
+            caption = 'Единицы измерения';
+            MOVE PROPERTY(itemMeasureImport());
+            MOVE PROPERTY(itemMeasureExport());
+        }
+    }
 }

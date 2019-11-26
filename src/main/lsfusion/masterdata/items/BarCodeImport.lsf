@@ -1,0 +1,52 @@
+MODULE BarCodeImport;
+
+REQUIRE BarCode, Import;
+
+NAMESPACE MasterData;
+
+barcodeExport 'Экспорт штрих кодов' () {
+    IF NOT (GROUP SUM 1 IF BarCode b AND b IS BarCode) THEN {
+        NEW b = BarCode {
+            idCode(b) <- 'Test';
+            id(b) <- 'Test';
+        }
+    }
+    LOCAL f = EXCELFILE ();
+    EXPORT XLSX HEADER FROM 'Код' = id(BarCode b), 'Код номенклатуры' = idItem(b), 'Штрих код' = idCode(b) TO f;        
+    open(f());
+}
+
+barcodeImport 'Импорт штрих кодов' () {
+    LOCAL id = STRING[50] (INTEGER);
+    LOCAL item = ISTRING[50] (INTEGER);
+    LOCAL code = ISTRING[20] (INTEGER);
+    
+    INPUT f = EXCELFILE DO {
+        NEWSESSION {
+            IMPORT XLS HEADER FROM f TO id = A, item = B, code = C;
+            FOR imported(INTEGER i) DO NEW b = BarCode {
+                    id(b) <- id(i);
+                    idCode(b) <- code(i);
+                    item(b) <- GROUP MAX Item it IF id(it) = item(i);
+            }
+            APPLY;
+            MESSAGE 'Импорт завершен';
+        }
+    }
+}
+
+EXTEND FORM import 
+    PROPERTIES barcodeExport(), barcodeImport()
+;
+
+DESIGN import {
+    OBJECTS {
+        NEW barcode {
+            type = CONTAINERH;
+            caption = 'Штрих коды';
+            MOVE PROPERTY(barcodeImport());
+            MOVE PROPERTY(barcodeExport());
+        }
+    }
+}
+

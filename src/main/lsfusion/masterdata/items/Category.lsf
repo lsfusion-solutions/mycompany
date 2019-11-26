@@ -5,9 +5,13 @@ REQUIRE MasterData, Hierarchy;
 NAMESPACE MasterData;
 
 CLASS Category 'Категория';
+id 'Код' = DATA STRING[50] (Category) IN id;
+category (STRING[50] id) = GROUP AGGR Category c BY id(c);
+
 name 'Наименование' = DATA ISTRING[50] (Category) IN id;
 
 parent 'Родитель' = DATA Category (Category) INDEXED;
+idParent 'Код родителя' (Category c) = id(parent(c));
 nameParent 'Родительская группа' (Category c) = name(parent(c));
 
 CONSTRAINT DROPPED(Category c IS Category) AND PREV(parent(Category child) = c)
@@ -45,7 +49,7 @@ canonicalName 'Каноническое имя' (Category c) =
    
 FORM category 'Категория'
    OBJECTS c = Category PANEL
-   PROPERTIES(c) name, nameParent
+   PROPERTIES(c) id, name, nameParent
   
    EDIT Category OBJECT c
 ;
@@ -61,7 +65,7 @@ newCategory 'Категория' (Category cc) {
 
 FORM categories 'Категории'
     OBJECTS c = Category
-    PROPERTIES(c) READONLY name, nameParent, canonicalName
+    PROPERTIES(c) READONLY id, name, nameParent, canonicalName
     PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE
 
    LIST Category OBJECT c

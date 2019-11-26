@@ -1,32 +1,57 @@
 MODULE CategoryImport;
 
-REQUIRE Category;
+REQUIRE Category, Import;
 
 NAMESPACE MasterData;
 
 categoryExport 'Экспорт категорий' () {
+    IF NOT (GROUP SUM 1 IF Category c AND c IS Category) THEN {
+        NEW c = Category {
+            id(c) <- 'Test';
+            name(c) <- 'Test';
+        }
+    }
     LOCAL f = EXCELFILE ();
-    EXPORT XLSX HEADER FROM name(Category c), nameParent(c), canonicalName(c) TO f;        
-    WRITE CLIENT f() TO 'C:/Users/Wolant/Desktop/category';
+    EXPORT XLSX HEADER FROM 'Код категории' = id(Category c), 'Наименование' = name(c), 'Код родительской категории' = idParent(c) TO f;        
+    open(f());
 }
 
 categoryImport 'Импорт категорий' () {
+    LOCAL id = STRING[50] (INTEGER);
     LOCAL name = ISTRING[50] (INTEGER);
-    LOCAL nameParent = ISTRING[50] (INTEGER);
-    LOCAL canonicalName = ISTRING[50] (INTEGER);
+    LOCAL parent = ISTRING[50] (INTEGER);
     
     INPUT f = EXCELFILE DO {
         NEWSESSION {
-            IMPORT XLS HEADER FROM f TO name = A, nameParent = B, canonicalName = C;
-            
-            FOR imported(INTEGER i) DO {
-                NEW c = Category {
+            IMPORT XLS HEADER FROM f TO id = A, name = B, parent = C;
+            FOR imported(INTEGER i) DO NEW c = Category {
+                    id(c) <- id(i);
                     name(c) <- name(i);
-                    parent(c) <- GROUP MAX Category cat IF name(cat) = nameParent(i);
-                }
-            } 
+            }
+            APPLY;
+            
+            IMPORT XLS HEADER FROM f TO id = A, name = B, parent = C;
+            FOR imported(INTEGER i) DO {
+                FOR id(Category c) = id(i) DO
+                parent(c) <- GROUP MAX Category cat IF id(cat) = parent(i);
+            }
             APPLY;
             MESSAGE 'Импорт завершен';
+        }
+    }
+}
+
+EXTEND FORM import 
+    PROPERTIES categoryExport(), categoryImport()
+;
+
+DESIGN import {
+    OBJECTS {
+        NEW category {
+            type = CONTAINERH;
+            caption = 'Категории';
+            MOVE PROPERTY(categoryImport());
+            MOVE PROPERTY(categoryExport());
         }
     }
 }

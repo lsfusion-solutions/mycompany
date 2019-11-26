@@ -1,33 +1,62 @@
 MODULE LocationImport;
 
-REQUIRE Location;
+REQUIRE Location, Import;
 
 NAMESPACE Inventory;
 
 locationExport 'Экспорт мест хранения' () {
+    IF NOT (GROUP SUM 1 IF Location l AND l IS Location) THEN {
+        NEW l = Location {
+            id(l) <- 'Test';
+            name(l) <- 'Test';
+        }
+    }
     LOCAL f = EXCELFILE ();
-    EXPORT XLSX HEADER FROM name(Location l), nameParent(l), canonicalName(l), ownerName(l), fullAddress(l) TO f;   
-    WRITE CLIENT f() TO 'C:/Users/Wolant/Desktop/location';
+    EXPORT XLSX HEADER FROM 'Код' = id(Location l), 'Название' = name(l), 'Код родителя' = idParent(l), 
+                            'Имя владельца' = ownerName(l) TO f;   
+    open(f());
 }
 
 locationImport 'Импорт мест хранения' () {
+    LOCAL id = STRING[50] (INTEGER);
     LOCAL name = ISTRING[30] (INTEGER);
-    LOCAL nameParent = ISTRING[50] (INTEGER);
-    LOCAL nameOwner = ISTRING[50] (INTEGER);
+    LOCAL parent = ISTRING[50] (INTEGER);
+    LOCAL owner = ISTRING[50] (INTEGER);
     
     INPUT f = EXCELFILE DO {
         NEWSESSION {   
-            IMPORT XLS HEADER FROM f TO name = A, nameParent = B, nameOwner = D;
+            IMPORT XLS HEADER FROM f TO id = A, name = B, parent = C, owner = D;
             
+            FOR imported(INTEGER i) DO NEW l = Location {
+                id(l) <- id(i);
+                name(l) <- name(i);
+                owner(l) <- GROUP MAX Partner p IF name(p) = owner(i);
+            }
+            APPLY;
+            
+            IMPORT XLS HEADER FROM f TO id = A, name = B, parent = C, owner = D;
             FOR imported(INTEGER i) DO {
-                NEW l = Location {
-                    name(l) <- name(i);
-                    parent(l) <- GROUP MAX Location loc IF name(loc) = nameParent(i);
-                    owner(l) <- GROUP MAX Partner p IF name(p) = nameOwner(i);
+                FOR id(Location l) = id(i) DO {
+                    parent(l) <- GROUP MAX Location loc IF id(loc) = parent(i);
                 }
             }
             APPLY;
             MESSAGE 'Импорт завершен';
         }
     }    
+}
+
+EXTEND FORM import 
+    PROPERTIES locationExport(), locationImport()
+;
+
+DESIGN import {
+    OBJECTS {
+        NEW location {
+            type = CONTAINERH;
+            caption = 'Места Хранения';
+            MOVE PROPERTY(locationImport());
+            MOVE PROPERTY(locationExport());
+        }
+    }
 }

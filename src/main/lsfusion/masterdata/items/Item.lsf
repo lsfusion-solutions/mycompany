@@ -5,12 +5,17 @@ REQUIRE MasterData, Category, Tax, ItemMeasure;
 NAMESPACE MasterData;
 
 CLASS ABSTRACT Item 'Номенклатура';
-name 'Имя' = DATA ISTRING[50] (Item) IN id;
+id 'Код' = DATA STRING[50] (Item) IN id;
+item (STRING[50] id) = GROUP AGGR Item i BY id(i);
+
+name 'Наименование' = DATA ISTRING[50] (Item) IN id;
 
 category 'Категория' = DATA Category (Item) NONULL INDEXED;
+idCategory 'Код категории' (Item i) = id(category(i));
 nameCategory 'Категория' (Item i) = name(category(i));
 canonicalNameCategory 'Категория (полная)' (Item i) = canonicalName(category(i));
 unitMeasure 'Единицы учетные' = DATA ItemMeasure (Item);
+idUnitMeasure 'Код учетной единицы' (Item i) = id(unitMeasure(i));
 nameUnitMeasure 'Единицы учетные' (Item i) = name(unitMeasure(i));
 WHEN LOCAL SET(Item i IS Item) DO {
     unitMeasure(i) <- GROUP LAST ItemMeasure im IF default(im);
@@ -26,13 +31,31 @@ level4 'Группа 4' (Item i) = nameCategory4(category(i));
 
 FORM item 'Номенклатура'
     OBJECTS i = Item PANEL
-    PROPERTIES(i) name, nameCategory, nameUnitMeasure, archived
+    PROPERTIES(i) id, name, nameCategory, nameUnitMeasure, archived
       
     EDIT Item OBJECT i
 ;
 
 DESIGN item {
     OBJECTS {
+        NEW header {
+            MOVE BOX(i);
+            type = CONTAINERH;
+            NEW mainProp {
+                type = CONTAINERV;
+                MOVE PROPERTY(id(i));
+                MOVE PROPERTY(name(i));
+                MOVE PROPERTY(nameCategory(i));
+                MOVE PROPERTY(nameUnitMeasure(i));
+            }        
+            NEW extProp {
+                type = CONTAINERV;
+            }        
+            NEW optProp {
+                type = CONTAINERV;
+                MOVE PROPERTY(archived(i));
+            }        
+            
         NEW header{                          
             MOVE PROPERTY(name(i)) {fill=1;};                  
             NEW pane {
@@ -71,7 +94,7 @@ FORM items 'Номенклатура'
     ORDER name(c)
 
     OBJECTS i = Item
-    PROPERTIES(i) READONLYIF isReadonly() name, nameCategory, canonicalNameCategory, nameUnitMeasure
+    PROPERTIES(i) READONLYIF isReadonly() id, name, nameCategory, canonicalNameCategory, nameUnitMeasure
     PROPERTIES(i) SHOWIF isReadonly() NEWSESSION EDIT, DELETE 
     FILTERS level(category(i), c)
     FILTERGROUP active
