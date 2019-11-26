@@ -1,0 +1,43 @@
+MODULE PaymentTerms;
+
+REQUIRE Invoicing;
+
+CLASS PaymentTerm 'Условия оплаты';
+
+name 'Наименование' = DATA ISTRING[50] (PaymentTerm) NONULL IN base;
+days 'Дни' = DATA INTEGER (PaymentTerm) NONULL;
+defaultForPurchase 'закупки' = DATA BOOLEAN (PaymentTerm);
+defaultForSales 'продажи' = DATA BOOLEAN (PaymentTerm);
+
+FORM paymentTerm 'Условие оплаты'
+    OBJECTS p = PaymentTerm PANEL 
+    PROPERTIES(p) name, days, defaultForPurchase, defaultForSales
+    
+    EDIT PaymentTerm OBJECT p
+;
+
+DESIGN paymentTerm {
+    OBJECTS{
+        NEW panel{            
+            MOVE PROPERTY(name(p));
+            MOVE PROPERTY(days(p));
+            MOVE PROPERTY(defaultForPurchase(p)) {caption='по умолчанию для поставщиков';}
+            MOVE PROPERTY(defaultForSales(p)) {caption='по умолчанию для покупателей';}
+        }
+    }
+}
+FORM paymentTerms 'Условия оплаты'
+    OBJECTS p = PaymentTerm
+    PROPERTIES(p) READONLY name, days, defaultForPurchase, defaultForSales
+    PROPERTIES(p) NEWSESSION NEW, EDIT, DELETE 
+    
+    LIST PaymentTerm OBJECT p
+;
+
+NAVIGATOR {
+    invoicing {
+        settings{
+            NEW paymentTerms;
+        }
+    }
+}

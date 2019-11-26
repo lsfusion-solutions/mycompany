@@ -13,6 +13,10 @@ namePaymentTerms 'Условия оплаты' (Invoice i) = name(paymentTerms(i
 WHEN LOCAL SETCHANGED(paymentTerms(Invoice i)) AND date(i) DO {
     dueDate(i) <- sumDay(date(i), days(paymentTerms(i)));
 }
+//если не указаны уловия оплаты для покупателя ставим дефолтный
+WHEN SET (Partner p IS Partner) DO {
+    IF isCustomer(p) AND NOT customerPaymentTerms(p) THEN customerPaymentTerms(p) <- GROUP LAST (PaymentTerm pt) IF defaultForSales(pt) ORDER pt;
+} 
 
 EXTEND FORM partner 
     PROPERTIES(p) nameCustomerPaymentTerms

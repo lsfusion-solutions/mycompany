@@ -7,10 +7,11 @@ NAMESPACE Sales;
 CLASS PriceType 'Виды цены';
 
 name 'Наименование' = DATA ISTRING[100](PriceType);
+default 'по умолчаню' = DATA BOOLEAN (PriceType); 
 
 FORM pricelistType 'Вид цены'
     OBJECTS pt = PriceType
-    PROPERTIES(pt) name
+    PROPERTIES(pt) name, default
     EDIT PriceType OBJECT pt
 ;
 
@@ -23,7 +24,7 @@ DESIGN pricelistType {
 
 FORM pricelistTypes 'Виды цен'
     OBJECTS pt = PriceType
-    PROPERTIES(pt) name
+    PROPERTIES(pt) name, default
     PROPERTIES(pt) NEW, DELETE 
 //    PROPERTIES(pt) NEWSESSION NEW, EDIT, DELETE 
 ;   
@@ -35,8 +36,13 @@ FORM pricelistTypeList 'Вид цены'
     LIST PriceType OBJECT p
 ;
 
+//добавляем для контрагента определение типа цен
 priceType 'Тип цен для покупателя' =  DATA PriceType (Partner);
 namePriceType 'Тип цен для покупателя' (Partner p) =  name(priceType(p));
+//если не указан тип цен при добавлении контрагента, ставим дефолтный
+WHEN SET (Partner p IS Partner) DO {
+    IF isCustomer(p) AND NOT priceType(p) THEN priceType(p) <- GROUP LAST (PriceType pt) IF default(pt) ORDER pt;
+} 
 
 EXTEND FORM partner 
     PROPERTIES(p) namePriceType 

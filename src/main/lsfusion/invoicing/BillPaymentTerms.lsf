@@ -14,6 +14,11 @@ WHEN LOCAL SETCHANGED(paymentTerms(Bill b)) AND date(b) DO {
     dueDate(b) <- sumDay(date(b), days(paymentTerms(b)));
 }
 
+//если не указаны уловия оплаты для поставщиков ставим дефолтный
+WHEN SET (Partner p IS Partner) DO {
+    IF isVendor(p) AND NOT vendorPaymentTerms(p) THEN vendorPaymentTerms(p) <- GROUP LAST (PaymentTerm pt) IF defaultForPurchase(pt) ORDER pt;
+} 
+
 EXTEND FORM partner 
     PROPERTIES(p) nameVendorPaymentTerms
 ;
