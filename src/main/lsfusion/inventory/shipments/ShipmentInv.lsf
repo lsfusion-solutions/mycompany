@@ -5,10 +5,10 @@ REQUIRE ShipmentDone, InvLedger;
 NAMESPACE Inventory;
 
 ledgerDone = ABSTRACT NUMERIC[16,3] (ShipmentLine);
-toDo (ShipmentLine l) = reserved(l) (-) ledgerDone(l);
+toDo (ShipmentLine l) = done(l) (-) ledgerDone(l);
 
 CLASS ShipmentInvLedger : InvLedger;
-invLedger = AGGR ShipmentInvLedger WHERE toDo(ShipmentLine line) > 0; 
+invLedger = AGGR ShipmentInvLedger WHERE toDo(ShipmentLine line) > 0 AND NOT status(shipment(line)) = ShipmentStatus.draft; 
 
 done(ShipmentInvLedger l) += done(shipment(line(l)));
 dateTime(ShipmentInvLedger l) += executionDate(shipment(line(l)));
