@@ -23,17 +23,26 @@ changeIn(Item item, Pricelist pricelist)  {
 }
 
 EXTEND FORM pricelist
+    TREE categories c = Category PARENT parent(c)
+    PROPERTIES READONLY name(c)
+    ORDER name(c)
+
     OBJECTS item=Item
     PROPERTIES in(item, pr) ON CHANGE changeIn(item, pr)
     PROPERTIES READONLY name(item) 
+    FILTERS level(category(item), c), canBeSold(item)  
 ;
 
 DESIGN pricelist {
-    details{
-        NEW container3{
+    details {
+        NEW search {
             caption = 'Подбор';
-            MOVE BOX(item);
-        }   
-    
+            type = SPLITH;
+            fill = 1;
+            MOVE BOX(TREE categories);
+            MOVE BOX(item) { 
+                fill = 2;
+            }
+        }       
     }
 }

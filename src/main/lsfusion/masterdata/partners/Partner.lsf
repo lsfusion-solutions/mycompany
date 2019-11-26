@@ -54,7 +54,7 @@ FORM partner 'Контрагент'
 
 FORM partners 'Контрагенты'
     OBJECTS p = Partner
-    PROPERTIES(p) READONLY nameType, name, phone, email
+    PROPERTIES(p) READONLY nameType, name, phone, email 
     PROPERTIES(p) NEWSESSION EDIT, DELETE 
     FILTERGROUP active
         FILTER 'Активный' active(p) 'F10' DEFAULT
@@ -74,26 +74,31 @@ NAVIGATOR {
 DESIGN partner {
     OBJECTS {
         NEW header {
-            type = CONTAINERH;
+            type = CONTAINERV;
             MOVE PROPERTY(nameType(p));
-            MOVE PROPERTY(name(p)); 
-        }
-        NEW pane {
-            type = CONTAINERH;
-            alignment = STRETCH;
-            NEW box1 {
-                MOVE PROPERTY(address(p));
-                MOVE PROPERTY(city(p));
-                MOVE PROPERTY(state(p));
-                MOVE PROPERTY(zip(p));
-            }
-            NEW box2 {
-                MOVE PROPERTY(phone(p));
-                MOVE PROPERTY(email(p));
-            }
-        }
-        NEW box {
-            MOVE PROPERTY(archived(p));        
+            MOVE PROPERTY(name(p));         
+            NEW pane {
+                marginTop=10;
+                marginBottom=10;
+                type = CONTAINERH;
+                alignment = STRETCH;
+                NEW box1 {
+                    MOVE PROPERTY(address(p));
+                    MOVE PROPERTY(city(p));
+                    MOVE PROPERTY(state(p));
+                    MOVE PROPERTY(zip(p));
+                }
+                NEW box2 {
+                    marginLeft=20;
+                    MOVE PROPERTY(phone(p));
+                    MOVE PROPERTY(email(p));
+                }
+                NEW box3 {
+                    marginLeft=20;
+                    type = CONTAINERV;
+                    MOVE PROPERTY(archived(p));                   
+                }
+            }    
         }
         NEW tabs {
             type = TABBED;

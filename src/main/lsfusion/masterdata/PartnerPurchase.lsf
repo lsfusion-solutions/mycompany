@@ -10,16 +10,24 @@ WHEN LOCAL SET(Partner p IS Partner) DO {
      isVendor(p) <- TRUE;
 }
 
+EXTEND FORM partners
+    PROPERTIES(p) isVendor
+;
+
 EXTEND FORM partner 
     PROPERTIES(p) isVendor
 ;
 
 DESIGN partner {
+    box3 {
+        MOVE PROPERTY(isVendor(p));    
+    }
     tabs {
         NEW vendor {
+            showIf = isVendor(p);
             caption = 'Поставщик';
-            NEW vendorOptions{           
-                MOVE PROPERTY(isVendor(p));
+            NEW vendorOptions{
+            
             }
         }
     }
