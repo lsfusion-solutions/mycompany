@@ -9,12 +9,12 @@ toLocationAddress 'Адрес' (Shipment s)  = concatAddress(toLocation(s),'\n')
 partnerAddress 'Адрес' (Shipment s) = concatAddress(partner(s),'\n'); 
 partnerPhone 'Телефон' (Shipment s) = phone(partner(s));
 
-notes 'Примечания' = DATA ISTRING[100] (ShipmentLine);
+notes 'Примечания' = ABSTRACT TEXT (ShipmentLine);
 
 FORM printShipment 'Задание на отгрузку'
     OBJECTS s = Shipment PANEL 
     PROPERTIES(s) nameLocation, nameToLocation SHOWIF NOT isTransfer(type(s)), namePartner SHOWIF isTransfer(type(s)), 
-                    nameType, nameStatus, scheduledDate, number, locationAddress, 
+                    scheduledDate, number, locationAddress, 
                     toLocationAddress SHOWIF NOT isTransfer(type(s)), partnerAddress SHOWIF isTransfer(type(s)), 
                     partnerPhone SHOWIF isTransfer(type(s))
     

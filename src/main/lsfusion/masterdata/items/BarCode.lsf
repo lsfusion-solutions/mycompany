@@ -5,13 +5,12 @@ REQUIRE MasterData, Item;
 NAMESPACE MasterData;
 
 CLASS BarCode 'Штрих код';
-id 'Код' = DATA STRING[50] (BarCode) IN id;
-barcode (STRING[50] id) = GROUP AGGR BarCode b BY id(b);
 
-item 'Номенклатура' = DATA Item (BarCode);
+item 'Номенклатура' = DATA Item (BarCode) NONULL DELETE;
 idItem 'Код номенклатуры' (BarCode b) = id(item(b));
 nameItem 'Номенклатура' (BarCode b) = name(item(b));
-idCode 'Штрих код' = DATA STRING[20] (BarCode);
+id 'Штрих код' = DATA STRING[20] (BarCode);
+barcode (STRING[50] id) = GROUP AGGR BarCode b BY id(b);
 
 dataDefaultBarCode = DATA BarCode (Item);
 calcDefaultBarCode (Item i) = GROUP LAST BarCode b ORDER DESC b WHERE item(b) = i;
@@ -22,7 +21,7 @@ default 'По умолчанию' (BarCode b) = defaultBarCode(item(b)) = b CHAR
 
 barCode (Item i) = defaultBarCode(i);
 
-idBarCode 'Штрих код' (Item i) = idCode(barCode(i));
+idBarCode 'Штрих код' (Item i) = id(barCode(i));
 
 changeDefault (BarCode b) {
     INPUT c = BOOLEAN DO {
@@ -36,7 +35,7 @@ setBarCode(Item i) {
         IF NOT barCode(i) THEN NEW b = BarCode {
             item(b) <- i;
         }
-        idCode(BarCode b) <- id WHERE b = barCode(i); 
+        id(BarCode b) <- id WHERE b = barCode(i); 
     }
 }
 
@@ -44,7 +43,7 @@ EXTEND FORM item
     PROPERTIES(i) idBarCode AFTER nameCategory(i) ON CHANGE setBarCode(i)
     
     OBJECTS b = BarCode
-    PROPERTIES(b) nameItem, id, idCode, default ON CHANGE changeDefault(b)
+    PROPERTIES(b) nameItem, id, default ON CHANGE changeDefault(b)
     PROPERTIES(b) NEW, DELETE
     FILTERS item(b) = i
 ;

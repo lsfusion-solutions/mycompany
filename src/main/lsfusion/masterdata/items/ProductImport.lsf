@@ -4,7 +4,7 @@ REQUIRE Product, BarCode, System, Import;
 
 NAMESPACE MasterData;
 
-productExport 'Экспорт продуктов' () {
+productExport 'Экспорт товаров' () {
     IF NOT (GROUP SUM 1 IF Product p AND p IS Product) THEN {
         NEW p = Product {
             id(p) <- 'Test';
@@ -17,7 +17,7 @@ productExport 'Экспорт продуктов' () {
     open(f());
 }
 
-productImport 'Импорт продуктов' () {
+productImport 'Импорт товаров' () {
     LOCAL id = STRING[50] (INTEGER);
     LOCAL name = ISTRING[50] (INTEGER);
     LOCAL idCategory = ISTRING[50] (INTEGER);
@@ -32,7 +32,7 @@ productImport 'Импорт продуктов' () {
                 id(p) <- id(i);
                 name(p) <- name(i);
                 category(p) <- GROUP MAX Category c IF id(c) = idCategory(i);
-                FOR idCode(BarCode b) = barCode(i) DO {
+                FOR id(BarCode b) = barCode(i) DO {
                     item(b) <- p;
                 }
                 unitMeasure(p) <- GROUP MAX ItemMeasure m IF id(m) = idUnitM(i);
@@ -51,7 +51,7 @@ DESIGN import {
     OBJECTS {
         NEW product {
             type = CONTAINERH;
-            caption = 'Номенклатуры';
+            caption = 'Товары';
             MOVE PROPERTY(productImport());
             MOVE PROPERTY(productExport());
         }

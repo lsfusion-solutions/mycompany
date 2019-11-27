@@ -1,6 +1,6 @@
 MODULE ShipmentPicking;
 
-REQUIRE ShipmentDone, ShipmentRes, ShipmentInv;
+REQUIRE ShipmentPrint, ShipmentRes, ShipmentInv;
 
 NAMESPACE Inventory;
 
@@ -51,6 +51,9 @@ extraValidate (Shipment s) +{
         done(ShipmentLine l, Location loc) <- reserved(l, loc) WHERE shipment(l) = s AND NOT (GROUP SUM done(l, Location ll));
     }
 }
+
+locations (ShipmentLine l) = GROUP CONCAT name(Location loc) + ' : ' + DOUBLE(done(l, loc)), ', ';
+notes(ShipmentLine l) += locations(l);
 
 EXTEND FORM shipment
     OBJECTS loc = Location

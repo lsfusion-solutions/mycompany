@@ -25,15 +25,12 @@ categoryImport 'Импорт категорий' () {
         NEWSESSION {
             IMPORT XLS HEADER FROM f TO id = A, name = B, parent = C;
             FOR imported(INTEGER i) DO NEW c = Category {
-                    id(c) <- id(i);
-                    name(c) <- name(i);
+                id(c) <- id(i);
+                name(c) <- name(i);
             }
-            APPLY;
             
-            IMPORT XLS HEADER FROM f TO id = A, name = B, parent = C;
-            FOR imported(INTEGER i) DO {
-                FOR id(Category c) = id(i) DO
-                parent(c) <- GROUP MAX Category cat IF id(cat) = parent(i);
+            FOR imported(INTEGER i) AND id(Category c) = id(i) DO {
+                parent(c) <- category(parent(i));
             }
             APPLY;
             MESSAGE 'Импорт завершен';
