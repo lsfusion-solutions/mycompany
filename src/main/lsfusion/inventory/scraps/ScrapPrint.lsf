@@ -1,0 +1,30 @@
+MODULE ScrapPrint;
+
+REQUIRE Scrap;
+
+NAMESPACE Inventory;
+
+locationAddress 'Адрес' (Scrap s)  = concatAddress(locationFrom(s),'\n');
+
+FORM printScrap
+    OBJECTS s = Scrap PANEL 
+    PROPERTIES(s) date, locationFrom, locationAddress
+    
+    OBJECTS l = ScrapLine
+    PROPERTIES(l) product, quantity
+    FILTERS scrap(l) = s
+;
+
+print(Scrap s) {
+    PRINT printScrap OBJECTS s = s; 
+}
+
+EXTEND FORM scrap
+    PROPERTIES(s) print
+;
+
+DESIGN scrap {
+    actions {
+        MOVE PROPERTY(print(s)) { caption = 'Печатать'; charWidth=10; }
+    }
+}

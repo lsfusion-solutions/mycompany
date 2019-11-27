@@ -6,21 +6,13 @@ NAMESPACE Inventory;
 
 CLASS Adjustment 'Инвентаризация';
 
-company 'Компания' = DATA Partner (Adjustment) NONULL;
-nameCompany 'Компания' (Adjustment a) = name(company(a));
-
-WHEN LOCAL SET (Adjustment a IS Adjustment) DO {
-    IF ((GROUP SUM 1 IF Partner p IS Company) = 1) THEN {
-        FOR Partner p IS Company DO {
-            company(a) <- p;
-        }
-    }
-}
-
 dateTime 'Дата' = DATA DATETIME (Adjustment);
 
 location 'Место хранения' = DATA Location (Adjustment) NONULL;
 nameLocation 'Место хранения' (Adjustment a) = name(location(a));
+
+company 'Компания' (Adjustment a) = owner(location(a));
+nameCompany 'Компания' (Adjustment a) = name(company(a));
 
 notes 'Примечания' = DATA ISTRING[50] (Adjustment);
 

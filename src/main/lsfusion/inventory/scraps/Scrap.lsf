@@ -9,8 +9,8 @@ CLASS Scrap 'Списание';
 done 'Проведен' = DATA BOOLEAN (Scrap) CHARWIDTH 10;
 date 'Дата' = DATA DATETIME (Scrap) NONULL;
 
-locationFrom 'Место хранения (откуда)' = DATA Location (Scrap);
-nameLocationFrom 'Место хранения (откуда)' (Scrap s) = name(locationFrom(s));
+locationFrom 'Место хранения' = DATA Location (Scrap);
+nameLocationFrom 'Место хранения' (Scrap s) = name(locationFrom(s));
 
 CLASS ScrapLine 'Строка списания';
 
@@ -45,6 +45,42 @@ NAVIGATOR {
         NEW scraps;
     }
 }
+
+copyScrap 'Копировать' (Scrap s) {
+    NEWSESSION {
+        NEW ns = Scrap {
+            date(ns) <- date(s);
+            locationFrom(ns) <- locationFrom(s);
+            FOR scrap(ScrapLine l) = s INLINE NEW nl = ScrapLine DO {
+                scrap(nl) <- ns;
+                product(nl) <- product(l);
+                quantity(nl) <- quantity(l);
+            }
+            SHOW scrap OBJECTS s = ns DOCKED;
+        }
+    }
+}
+
+EXTEND FORM scrap
+    PROPERTIES(s) copyScrap
+;
+
+DESIGN scrap {
+    OBJECTS {
+        NEW actions {
+            alignment = STRETCH;
+            type = CONTAINERH;
+            MOVE PROPERTY(copyScrap(s));
+        }
+        NEW details {
+            fill = 1;
+            MOVE BOX(s);
+            MOVE BOX(l);
+        }
+    }
+}
+
+
 EXTEND CLASS ScrapLine  : InvLedger;
 
 done(ScrapLine l) += done(scrap(l));

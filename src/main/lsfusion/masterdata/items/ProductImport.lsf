@@ -5,10 +5,12 @@ REQUIRE Product, BarCode, System, Import;
 NAMESPACE MasterData;
 
 productExport 'Экспорт товаров' () {
-    IF NOT (GROUP SUM 1 IF Product p AND p IS Product) THEN {
-        NEW p = Product {
-            id(p) <- 'Test';
-            name(p) <- 'Test';
+    NEWSESSION {
+        IF NOT (GROUP SUM 1 IF Product p AND p IS Product) THEN {
+            NEW p = Product {
+                id(p) <- 'Test';
+                name(p) <- 'Test';
+            }
         }
     }
     LOCAL f = EXCELFILE ();
