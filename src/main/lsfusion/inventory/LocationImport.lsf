@@ -30,14 +30,14 @@ locationImport 'Импорт мест хранения' () {
             FOR imported(INTEGER i) DO NEW l = Location {
                 id(l) <- id(i);
                 name(l) <- name(i);
-                owner(l) <- GROUP MAX Partner p IF name(p) = owner(i);
+                owner(l) <- partner(owner(i));
             }
             APPLY;
             
             IMPORT XLS HEADER FROM f TO id = A, name = B, parent = C, owner = D;
             FOR imported(INTEGER i) DO {
                 FOR id(Location l) = id(i) DO {
-                    parent(l) <- GROUP MAX Location loc IF id(loc) = parent(i);
+                    parent(l) <- location(parent(i));
                 }
             }
             APPLY;

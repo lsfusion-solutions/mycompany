@@ -1,0 +1,70 @@
+MODULE ReceiptImport;
+
+REQUIRE ReceiptDone, Import, InvLedger;
+
+NAMESPACE Inventory;
+
+receiptExport 'Экспорт поступлений' () {
+    LOCAL f = EXCELFILE ();
+    
+    IF NOT (GROUP SUM 1 IF onHand(Location l, Product p) AND l IS Location AND p IS Product) THEN
+        EXPORT XLSX HEADER FROM 'Код места хранения' = 'test', 'Код продукта' = 'test', 
+                                    'Кол-во' = '1' TO f;
+        ELSE EXPORT XLSX HEADER FROM 'Код места хранения' = id(Location l), 'Код продукта' = id(Product p), 
+                            'Кол-во' = onHand(l, p) WHERE onHand(l, p) TO f;   
+    open(f());
+}
+
+receiptImport 'Импорт поступлений' () {
+    LOCAL idLocation = STRING[50] (INTEGER);
+    LOCAL idProduct = ISTRING[50] (INTEGER);
+    LOCAL quantity = NUMERIC[16,3] (INTEGER);
+    
+    INPUT f = EXCELFILE DO {
+        NEWSESSION {
+            IMPORT XLS HEADER FROM f TO idLocation = A, idProduct = B, quantity = C;
+            
+            FOR imported(INTEGER i) DO NEW r = Receipt {
+                scheduledDate(r) <- currentDateTime();
+                number(r) <- ISTRING[28](idLocation(i));
+                location(r) <- location(idLocation(i));
+                
+                IF NOT (GROUP SUM 1 IF ReceiptType t AND t IS ReceiptType) THEN {
+                    NEW t = ReceiptType {
+                        name(t) <- 'Test';
+                    }
+                }
+                type(r) <- GROUP LAST ReceiptType t ORDER name(t);
+                
+                NEW l = ReceiptLine {
+                    receipt(l) <- r;
+                    product(l) <- item(idProduct(i));
+                    initialDemand(l) <- quantity(i);
+                    done(l) <- quantity(i);
+                }
+                
+                done(r) <- TRUE;
+            }
+            
+            APPLY;
+            MESSAGE 'Импорт завершен';
+        }
+    }
+}
+
+EXTEND FORM import 
+    PROPERTIES receiptImport(), receiptExport()
+;
+
+DESIGN import {
+    OBJECTS {
+        NEW receipt {
+            type = CONTAINERH;
+            caption = 'Поступления';
+            MOVE PROPERTY(receiptImport());
+            MOVE PROPERTY(receiptExport());
+        }
+    }
+}
+
+

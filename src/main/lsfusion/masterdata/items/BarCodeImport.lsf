@@ -26,7 +26,7 @@ barcodeImport 'Импорт штрих кодов' () {
             IMPORT XLS HEADER FROM f TO item = A, id = B;
             FOR imported(INTEGER i) DO NEW b = BarCode {
                 id(b) <- id(i);
-                item(b) <- GROUP MAX Item it IF id(it) = item(i);
+                item(b) <- item(item(i));
             }
             APPLY;
             MESSAGE 'Импорт завершен';

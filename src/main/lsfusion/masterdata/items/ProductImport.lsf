@@ -33,11 +33,8 @@ productImport 'Импорт товаров' () {
             FOR imported(INTEGER i) DO NEW p = Product {
                 id(p) <- id(i);
                 name(p) <- name(i);
-                category(p) <- GROUP MAX Category c IF id(c) = idCategory(i);
-                FOR id(BarCode b) = barCode(i) DO {
-                    item(b) <- p;
-                }
-                unitMeasure(p) <- GROUP MAX ItemMeasure m IF id(m) = idUnitM(i);
+                category(p) <- category(idCategory(i));
+                unitMeasure(p) <- itemMeasure(idUnitM(i));
             }
             APPLY;
             MESSAGE 'Импорт завершен';
