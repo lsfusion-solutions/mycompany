@@ -75,6 +75,8 @@ WHEN SETCHANGED(Bill b IS Bill  AND numeratorBill() AND NOT number(b)) DO {
 
 seriesNumber 'Серия/Номер' (Bill b) = CONCAT '/', series(b), number(b);
 
+sourceDocument 'Исходный документ' = DATA STRING[10] (Bill);
+
 CLASS BillLine 'Строка накладной';
 
 bill 'Приходная накладная' = DATA Bill (BillLine) NONULL DELETE;
@@ -103,7 +105,7 @@ CONSTRAINT item(BillLine l) AND NOT canBePurchased(item(l))
 
 FORM bill 'Приходная накладная'
     OBJECTS  b = Bill PANEL 
-    PROPERTIES(b) READONLYIF readonly(b) date, dueDate, namePartner, partnerAccountNumber, 
+    PROPERTIES(b) READONLYIF readonly(b) date, dueDate, namePartner, partnerAccountNumber, sourceDocument,
                              nameCompany, companyAccountNumber, series, number, vendorReference, notes
         
     OBJECTS l = BillLine
@@ -182,6 +184,7 @@ DESIGN bill {
                 caption = 'Дополнительно';
                 type = CONTAINERH;
                 fill = 1;
+                MOVE PROPERTY(sourceDocument(b));
                 MOVE PROPERTY(notes(b));
             }
             

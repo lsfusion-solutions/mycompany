@@ -20,7 +20,8 @@ createReceipt 'Добавить приход на склад' (Order o) {
                 series(nr) <- series(numerator(type(nr)));
                 incrementValueSession(numerator(type(nr)));
                 ready(nr) <- TRUE;           
-                order(nr) <- o;    
+                order(nr) <- o; 
+                sourceDocument(nr) <- number(o);    
                 FOR order(OrderLine ol) = o AND NOT (quantity(ol)-initReceipt(ol)<=0) INLINE NEW rl = ReceiptLine DO {
                     receipt(rl) <- nr;
                     product(rl) <- item(ol);

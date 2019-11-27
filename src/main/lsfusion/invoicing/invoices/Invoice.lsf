@@ -72,6 +72,8 @@ WHEN SETCHANGED(Invoice i IS Invoice  AND numeratorInvoice() AND NOT number(i)) 
 
 seriesNumber 'Серия/Номер' (Invoice i) = CONCAT '/', series(i), number(i); 
 
+sourceDocument 'Исходный документ' = DATA STRING[10] (Invoice);
+
 CLASS InvoiceLine 'Строка накладной';
 
 invoice 'Накладная' = DATA Invoice (InvoiceLine) NONULL DELETE;
@@ -99,7 +101,7 @@ CONSTRAINT item(InvoiceLine l) AND NOT canBeSold(item(l))
 
 FORM invoice 'Расходная накладная'
     OBJECTS  i = Invoice PANEL 
-    PROPERTIES(i) READONLYIF readonly(i)  date, dueDate, namePartner, partnerAccountNumber,
+    PROPERTIES(i) READONLYIF readonly(i)  date, dueDate, namePartner, partnerAccountNumber, sourceDocument,
                              nameCompany, companyAccountNumber, series, number, notes
         
     OBJECTS l = InvoiceLine
@@ -180,6 +182,7 @@ DESIGN invoice {
                 caption = 'Дополнительно';
                 type = CONTAINERH;
                 fill = 1;
+                MOVE PROPERTY(sourceDocument(i));
                 MOVE PROPERTY(notes(i));
             }
         }

@@ -51,6 +51,8 @@ WHEN SETCHANGED(type(Shipment o)) AND NOT CHANGED(number(o)) AND NOT CHANGED(ser
 
 WHEN SETCHANGED(type(Shipment s)) AND NOT isTransfer(type(s)) DO toLocation(s) <- NULL;
 
+sourceDocument 'Исходный документ' = DATA STRING[10] (Shipment);
+
 CLASS ShipmentLine 'Строка отгрузки';
 
 shipment 'Документ' = DATA Shipment (ShipmentLine) NONULL DELETE INDEXED;
@@ -82,7 +84,7 @@ CONSTRAINT product(ShipmentLine l) AND NOT canBeSold(product(l))
 
 FORM shipment 'Отгрузка'
     OBJECTS s = Shipment PANEL 
-    PROPERTIES(s) READONLYIF readonly(s) series, number, nameType, nameLocation, notes
+    PROPERTIES(s) READONLYIF readonly(s) series, number, nameType, nameLocation, notes, sourceDocument
     PROPERTIES(s) READONLYIF readonlyHeader(s) scheduledDate BEFORE series(s), 
         nameToLocation SHOWIF isTransfer(type(s)) BEFORE notes(s), namePartner SHOWIF NOT isTransfer(type(s)) BEFORE notes(s)
                   
@@ -163,6 +165,7 @@ DESIGN shipment {
                 NEW box3 {
                     type = CONTAINERH;
                     alignment = STRETCH; 
+                    MOVE PROPERTY(sourceDocument(s));
                     MOVE PROPERTY(notes(s));
                 }
             }

@@ -17,7 +17,8 @@ createBill 'Оформить приходную накладную' (Order o) {
             partner(nb) <- vendor(o);
             date(nb) <- scheduledDate(o);
             order(nb) <- o;
-            vendorReference(nb) <- vendorReference(o);               
+            vendorReference(nb) <- vendorReference(o); 
+            sourceDocument(nb) <- number(o);              
             FOR order(OrderLine ol) = o AND NOT (quantity(ol) - readyBill(ol)<=0) INLINE NEW bl = BillLine DO {
                 bill(bl) <- nb;
                 item(bl) <- item(ol);
