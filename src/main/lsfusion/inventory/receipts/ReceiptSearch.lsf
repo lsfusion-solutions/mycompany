@@ -4,12 +4,10 @@ REQUIRE Receipt, ResLedger, Doc;
 
 NAMESPACE Inventory;
 
-available 'Доступный остаток' (Receipt r, Product p) = available(location(r), p);
-
 @defineDocSearch(receipt, product, initialDemand, r, canBePurchased);
+
+available 'Доступный остаток' (Receipt r, Product p) = prevAvailableRec(location(r), p);
 
 EXTEND FORM receipt
     PROPERTIES(r, itm) available
-    FILTERGROUP active
-        FILTER 'Активный' active(itm) 'F10' DEFAULT 
 ;
