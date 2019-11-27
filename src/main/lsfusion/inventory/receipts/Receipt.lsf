@@ -85,7 +85,7 @@ FORM receipt 'Поступление'
 FORM receipts 'Поступления'
     OBJECTS r = Receipt
     PROPERTIES(r) READONLY scheduledDate, executionDate, series, number, nameType, nameLocation, namePartner, notes
-    PROPERTIES(r) NEWSESSION NEW, EDIT
+    PROPERTIES(r) NEWSESSION EDIT
     PROPERTIES(r) NEWSESSION READONLYIF readonly(r) DELETE
 ;
 
@@ -178,3 +178,15 @@ NAVIGATOR {
 }
 
 @defineBarCodeAdd(receipt, r, product);
+
+addReceipt 'Поступление' () {
+    NEWSESSION {
+        NEW r = Receipt {
+            SHOW receipt OBJECTS r = r;  
+        }
+    }
+}IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+
+EXTEND FORM receipts
+    PROPERTIES addReceipt() DRAW r TOOLBAR
+;

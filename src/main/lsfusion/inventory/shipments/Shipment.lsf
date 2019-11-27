@@ -100,7 +100,7 @@ FORM shipments 'Отгрузки'
     PROPERTIES(s) READONLY scheduledDate, executionDate, series, number, nameType, nameLocation,
                   nameToLocation, namePartner, notes
     PROPERTIES(s) NEWSESSION READONLYIF readonly(s) DELETE
-    PROPERTIES (s) NEWSESSION NEW, EDIT
+    PROPERTIES (s) NEWSESSION EDIT
 ;
 
 copyShipment 'Копировать' (Shipment s)  { 
@@ -188,3 +188,15 @@ NAVIGATOR {
 }
 
 @defineBarCodeAdd(shipment, s, product);
+
+addShipment 'Отгрузка' () {
+    NEWSESSION {
+        NEW s = Shipment {
+            SHOW shipment OBJECTS s = s;  
+        }
+    }
+}IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+
+EXTEND FORM shipments
+    PROPERTIES addShipment() DRAW s TOOLBAR
+;

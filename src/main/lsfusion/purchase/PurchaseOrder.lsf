@@ -179,7 +179,7 @@ DESIGN order{
 FORM orders 'Заказы'
      OBJECTS o = Order
      PROPERTIES(o) READONLY date,seriesNumber,nameLocation,nameVendor,scheduledDate
-     PROPERTIES(o) NEWEDIT NEWSESSION,EDIT NEWSESSION,DELETE NEWSESSION
+     PROPERTIES(o) EDIT NEWSESSION,DELETE NEWSESSION
 ;
 
 EXTEND FORM orders 
@@ -196,4 +196,16 @@ NAVIGATOR {
         NEW orders;       
     }
 }
+
+addOrder 'Заказ' () {
+    NEWSESSION {
+        NEW o = Order {
+            SHOW order OBJECTS o = o;  
+        }
+    }
+}IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+
+EXTEND FORM orders
+    PROPERTIES addOrder() DRAW o TOOLBAR
+;
 

@@ -35,7 +35,7 @@ FORM scrap 'Списание'
 FORM scraps 'Списания'
     OBJECTS s = Scrap 
     PROPERTIES(s)  READONLY done, date, nameLocationFrom
-    PROPERTIES (s) NEWSESSION NEW, EDIT, DELETE 
+    PROPERTIES (s) NEWSESSION EDIT, DELETE 
     
     LIST Scrap OBJECT s
 ;
@@ -90,3 +90,15 @@ fromLocation(ScrapLine l) += locationFrom(scrap(l));
 product(ScrapLine l) += product(l);
 quantity(ScrapLine l) += quantity(l);
 description(ScrapLine l) += 'Списание' IF l IS ScrapLine;
+
+addScrap 'Списание' () {
+    NEWSESSION {
+        NEW s = Scrap {
+            SHOW scrap OBJECTS s = s;  
+        }
+    }
+}IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+
+EXTEND FORM scraps
+    PROPERTIES addScrap() DRAW s TOOLBAR
+;
