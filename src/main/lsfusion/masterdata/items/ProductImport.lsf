@@ -6,7 +6,7 @@ NAMESPACE MasterData;
 
 productExport 'Экспорт товаров' () {
     NEWSESSION {
-        IF NOT (GROUP SUM 1 IF Product p AND p IS Product) THEN {
+        IF NOT (GROUP SUM 1 IF Product p IS Product) THEN {
             NEW p = Product {
                 id(p) <- '123';
                 name(p) <- 'Мой продукт';
@@ -16,7 +16,7 @@ productExport 'Экспорт товаров' () {
     }
     LOCAL f = EXCELFILE ();
     EXPORT XLSX HEADER FROM 'Код товара' = id(Product p), 'Наименование' = name(p), 'Код категории' = idCategory(p), 
-        'Штрих код' = idBarCode(p), 'Код учетной единицы' = idUnitMeasure(p) TO f;   
+        'Штрих код' = idBarCode(p), 'Код учетной единицы' = idUnitMeasure(p) WHERE p IS Product TO f;   
     open(f());
 }
 
@@ -29,12 +29,21 @@ productImport 'Импорт товаров' () {
        
     INPUT f = EXCELFILE DO {
         NEWSESSION {
-            IMPORT XLS HEADER FROM f TO id = A, name =B, idCategory = C, barCode = D, idUnitM = E;   
+            IMPORT XLS HEADER FROM f TO id = A, name =B, idCategory = C, barCode = D, idUnitM = E; 
+            
+            FOR [GROUP SUM 1 BY idCategory(INTEGER i)](num) AND NOT category[STRING](num) DO {
+                MESSAGE 'Отсутствуют необходимые объекты. Импорт отменен';
+                RETURN;
+            }  
             
             FOR imported(INTEGER i) DO NEW p = Product {
                 id(p) <- id(i);
                 name(p) <- name(i);
                 category(p) <- category(idCategory(i));
+                NEW b = BarCode {
+                    item(b) <- p;
+                    id(b) <- barCode(i);
+                }
                 unitMeasure(p) <- itemMeasure(idUnitM(i));
             }
             APPLY;

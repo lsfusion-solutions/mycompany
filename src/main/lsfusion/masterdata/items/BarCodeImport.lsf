@@ -20,15 +20,21 @@ barcodeExport 'Экспорт штрих кодов' () {
 
 barcodeImport 'Импорт штрих кодов' () {
     LOCAL id = STRING[20] (INTEGER);
-    LOCAL item = ISTRING[50] (INTEGER);
+    LOCAL idItem = ISTRING[50] (INTEGER);
 
     
     INPUT f = EXCELFILE DO {
         NEWSESSION {
-            IMPORT XLS HEADER FROM f TO item = A, id = B;
+            IMPORT XLS HEADER FROM f TO idItem = A, id = B;
+            
+            FOR [GROUP SUM 1 BY idItem(INTEGER i)](num) AND NOT item[STRING](num) DO {
+                MESSAGE 'Отсутствуют необходимые объекты. Импорт отменен';
+                RETURN;
+            }
+            
             FOR imported(INTEGER i) DO NEW b = BarCode {
                 id(b) <- id(i);
-                item(b) <- item(item(i));
+                item(b) <- item(idItem(i));
             }
             APPLY;
             MESSAGE 'Импорт завершен';

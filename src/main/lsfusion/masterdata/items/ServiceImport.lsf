@@ -1,0 +1,68 @@
+MODULE ServiceImport;
+
+REQUIRE ServiceP, BarCode, System, Import;
+
+NAMESPACE MasterData;
+
+serviceExport 'Экспорт услуг' () {
+    NEWSESSION {
+        IF NOT (GROUP SUM 1 IF Service s IS Service) THEN {
+            NEW s = Service {
+                id(s) <- '123';
+                name(s) <- 'Моя услуга';
+                category(s) <- GROUP LAST Category c IF c IS Category;
+            }
+        }
+    }
+    LOCAL f = EXCELFILE ();
+    EXPORT XLSX HEADER FROM 'Код услуги' = id(Service s), 'Наименование' = name(s), 'Код категории' = idCategory(s), 
+        'Штрих код' = idBarCode(s), 'Код учетной единицы' = idUnitMeasure(s) WHERE s IS Service TO f;   
+    open(f());
+}
+
+serviceImport 'Импорт услуг' () {
+    LOCAL id = STRING[50] (INTEGER);
+    LOCAL name = ISTRING[50] (INTEGER);
+    LOCAL idCategory = ISTRING[50] (INTEGER);
+    LOCAL barCode = ISTRING[20] (INTEGER);
+    LOCAL idUnitM = ISTRING[50] (INTEGER);
+       
+    INPUT f = EXCELFILE DO {
+        NEWSESSION {
+            IMPORT XLS HEADER FROM f TO id = A, name = B, idCategory = C, barCode = D, idUnitM = E; 
+            
+            FOR [GROUP SUM 1 BY idCategory(INTEGER i)](num) AND NOT category[STRING](num) DO {
+                MESSAGE 'Отсутствуют необходимые объекты. Импорт отменен';
+                RETURN;
+            }  
+            
+            FOR imported(INTEGER i) DO NEW s = Service {
+                id(s) <- id(i);
+                name(s) <- name(i);
+                category(s) <- category(idCategory(i));
+                NEW b = BarCode {
+                    item(b) <- s;
+                    id(b) <- barCode(i);
+                }
+                unitMeasure(s) <- itemMeasure(idUnitM(i));
+            }
+            APPLY;
+            MESSAGE 'Импорт завершен';
+        }
+    }    
+}
+
+EXTEND FORM import 
+    PROPERTIES serviceImport(), serviceExport()
+;
+
+DESIGN import {
+    OBJECTS {
+        NEW service {
+            type = CONTAINERH;
+            caption = 'Услуги';
+            MOVE PROPERTY(serviceImport());
+            MOVE PROPERTY(serviceExport());
+        }
+    }
+}

@@ -25,19 +25,28 @@ receiptImport 'Импорт остатков' () {
         NEWSESSION {
             IMPORT XLS HEADER FROM f TO idLocation = A, idProduct = B, quantity = C, cost = D;
             
+            FOR [GROUP SUM 1 BY idLocation(INTEGER i)](num) AND NOT location[STRING](num) DO {
+                MESSAGE 'Отсутствуют необходимые объекты. Импорт отменен';
+                RETURN;
+            }
             
-            FOR [GROUP SUM 1 BY idLocation(INTEGER i)](num) AND NOT rec('INIT_' + num) DO NEW nr = Receipt {
+            FOR [GROUP SUM 1 BY idProduct(INTEGER i)](num) AND NOT item[STRING](num) DO {
+                MESSAGE 'Отсутствуют необходимые объекты. Импорт отменен';
+                RETURN;
+            }
+            
+            IF NOT (GROUP SUM 1 IF ReceiptType t AND t IS ReceiptType) THEN {
+                MESSAGE 'Отсутствуют типы поступлений в базе данных. Импорт отменен';
+                RETURN;
+            }
+            
+            FOR [GROUP SUM 1 BY idLocation(INTEGER i)](num) AND NOT receipt('INIT_' + num) DO NEW nr = Receipt {
                 number(nr) <- 'INIT_' + num;
             }
             
             FOR INTEGER i = [GROUP MIN INTEGER ii BY idLocation(ii)](num) AND number(Receipt r) = 'INIT_' + num DO {
                 scheduledDate(r) <- currentDateTime();
                 location(r) <- location(idLocation(i));
-                
-                IF NOT (GROUP SUM 1 IF ReceiptType t AND t IS ReceiptType) THEN {
-                    MESSAGE 'Отсутствуют типы поступлений в базе данных. Импорт отменен';
-                    RETURN;
-                }
                 type(r) <- GROUP LAST ReceiptType t ORDER name(t);
                 done(r) <- TRUE;
             }
@@ -46,7 +55,7 @@ receiptImport 'Импорт остатков' () {
                 product(l) <- item(idProduct(i));
                 initialDemand(l) <- quantity(i);
                 done(l) <- quantity(i);
-                receipt(l) <- rec(idLocation(i));
+                receipt(l) <- receipt(idLocation(i));
                 cost(product(l)) <- NUMERIC[10,2](cost(i)/quantity(i));
             }
                         
