@@ -1,0 +1,22 @@
+MODULE InvoiceReport;
+
+REQUIRE CreditNote, InvoicePaymentTerms;
+
+NAMESPACE Invoicing;
+
+FORM reportingInvoices 'Отчет по накладным'
+    OBJECTS report = (i = Invoice, l = InvoiceLine)
+    PROPERTIES(i) date, dueDate, nameType, series, number, namePartner, partnerAccountNumber, nameCompany, 
+                    companyAccountNumber, namePaymentTerms, sourceDocument, notes, nameStatus,
+                    untaxedAmount, totalTax, totalAmount, paid
+    PROPERTIES(l) nameItem, quantity, unitPrice, taxes, subtotal
+    FILTERS invoice(l) = i
+;
+
+NAVIGATOR {
+    invoicing {
+        reports{
+            NEW reportingInvoices;        
+        }
+    }
+}

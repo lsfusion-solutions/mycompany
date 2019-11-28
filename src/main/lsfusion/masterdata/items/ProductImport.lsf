@@ -10,14 +10,15 @@ productExport 'Экспорт товаров' () {
             NEW p = Product {
                 id(p) <- '123';
                 name(p) <- 'Мой продукт';
-                category(p) <- GROUP LAST Category c IF c IS Category;
+                category(p) <- GROUP LAST Category c ORDER name(c) IF c IS Category;
             }
         }
+    
+        LOCAL f = EXCELFILE ();
+        EXPORT XLSX HEADER FROM 'Код товара' = id(Product p), 'Наименование' = name(p), 'Код категории' = idCategory(p), 
+            'Штрих код' = idBarCode(p), 'Код учетной единицы' = idUnitMeasure(p) WHERE p IS Product TO f;   
+        open(f());
     }
-    LOCAL f = EXCELFILE ();
-    EXPORT XLSX HEADER FROM 'Код товара' = id(Product p), 'Наименование' = name(p), 'Код категории' = idCategory(p), 
-        'Штрих код' = idBarCode(p), 'Код учетной единицы' = idUnitMeasure(p) WHERE p IS Product TO f;   
-    open(f());
 }
 
 productImport 'Импорт товаров' () {

@@ -10,14 +10,15 @@ serviceExport 'Экспорт услуг' () {
             NEW s = Service {
                 id(s) <- '123';
                 name(s) <- 'Моя услуга';
-                category(s) <- GROUP LAST Category c IF c IS Category;
+                category(s) <- GROUP LAST Category c ORDER name(c) IF c IS Category;
             }
         }
+    
+        LOCAL f = EXCELFILE ();
+        EXPORT XLSX HEADER FROM 'Код услуги' = id(Service s), 'Наименование' = name(s), 'Код категории' = idCategory(s), 
+            'Штрих код' = idBarCode(s), 'Код учетной единицы' = idUnitMeasure(s) WHERE s IS Service TO f;   
+        open(f());
     }
-    LOCAL f = EXCELFILE ();
-    EXPORT XLSX HEADER FROM 'Код услуги' = id(Service s), 'Наименование' = name(s), 'Код категории' = idCategory(s), 
-        'Штрих код' = idBarCode(s), 'Код учетной единицы' = idUnitMeasure(s) WHERE s IS Service TO f;   
-    open(f());
 }
 
 serviceImport 'Импорт услуг' () {
