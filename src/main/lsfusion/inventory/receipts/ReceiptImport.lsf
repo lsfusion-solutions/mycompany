@@ -24,27 +24,34 @@ receiptImport 'Импорт поступлений' () {
         NEWSESSION {
             IMPORT XLS HEADER FROM f TO idLocation = A, idProduct = B, quantity = C;
             
-            FOR imported(INTEGER i) DO NEW r = Receipt {
-                scheduledDate(r) <- currentDateTime();
-                number(r) <- ISTRING[28](idLocation(i));
-                location(r) <- location(idLocation(i));
-                
-                IF NOT (GROUP SUM 1 IF ReceiptType t AND t IS ReceiptType) THEN {
-                    NEW t = ReceiptType {
-                        name(t) <- 'Test';
-                    }
+            FOR imported(INTEGER i) DO {
+                IF (GROUP LAST location(Receipt rec) IF location(rec) = location(idLocation(i))) THEN NEW l = ReceiptLine {
+                        receipt(l) <- GROUP LAST Receipt rec IF location(rec) = location(idLocation(i));
+                        product(l) <- item(idProduct(i));
+                        initialDemand(l) <- quantity(i);
+                        done(l) <- quantity(i);
+                } ELSE NEW r = Receipt {
+                     scheduledDate(r) <- currentDateTime();
+                     number(r) <- ISTRING[28](idLocation(i));
+                     location(r) <- location(idLocation(i));
+                     
+                     IF NOT (GROUP SUM 1 IF ReceiptType t AND t IS ReceiptType) THEN {
+                         NEW t = ReceiptType {
+                             name(t) <- 'Тип';
+                         }
+                     }
+                     type(r) <- GROUP LAST ReceiptType t ORDER name(t);
+                     
+                     NEW l = ReceiptLine {
+                         receipt(l) <- r;
+                         product(l) <- item(idProduct(i));
+                         initialDemand(l) <- quantity(i);
+                         done(l) <- quantity(i);
+                     }
+                     done(r) <- TRUE;
                 }
-                type(r) <- GROUP LAST ReceiptType t ORDER name(t);
                 
-                NEW l = ReceiptLine {
-                    receipt(l) <- r;
-                    product(l) <- item(idProduct(i));
-                    initialDemand(l) <- quantity(i);
-                    done(l) <- quantity(i);
-                }
-                
-                done(r) <- TRUE;
-            }
+            } 
             
             APPLY;
             MESSAGE 'Импорт завершен';
