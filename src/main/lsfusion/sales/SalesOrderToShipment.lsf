@@ -1,0 +1,71 @@
+MODULE SalesOrderToShipment;
+
+REQUIRE SalesOrder, Shipment, ShipmentDone, ShipmentCanceled;
+
+NAMESPACE Sales;
+
+orderLine 'ссылка на заказ' = DATA OrderLine (ShipmentLine);
+order 'ссылка на заказ' = DATA Order (Shipment);
+
+doneShipment 'Отпущено со склада' (OrderLine ol) = GROUP SUM done(ShipmentLine rl) IF orderLine(rl)=ol AND done(shipment(rl)) AND NOT canceled(shipment(rl));
+initShipment 'Запланирован отпуск со склада ' (OrderLine ol) = GROUP SUM initialDemand(ShipmentLine rl) IF orderLine(rl)=ol AND ready(shipment(rl)) AND NOT canceled(shipment(rl));
+deficitShipment 'Недоотпущено' (Order o) =  GROUP SUM abs(initShipment(OrderLine ol)(-)quantity(ol)) IF order(ol)=o;
+
+createShipment 'Добавить отпуск со склада' (Order o) {
+        IF canceled(o) THEN RETURN;
+            NEW ns = Shipment {
+                partner(ns) <- customer(o);
+                scheduledDate(ns) <- commintmentDate(o);
+                location(ns) <- location(o);
+                type(ns) <- typeShipmentDefault();
+                number(ns) <- curStringValue(numerator(type(ns)));
+                series(ns) <- series(numerator(type(ns)));
+                incrementValueSession(numerator(type(ns)));
+                ready(ns) <- TRUE;           
+                order(ns) <- o; 
+                sourceDocument(ns) <- number(o);    
+                FOR order(OrderLine ol) = o AND NOT (quantity(ol)-initShipment(ol)<=0) INLINE NEW sl = ShipmentLine DO {
+                    shipment(sl) <- ns;
+                    product(sl) <- item(ol);
+                    initialDemand(sl) <- quantity(ol)(-)initShipment(ol);
+                    orderLine(sl) <- ol;
+                }
+            }
+}
+
+scheduledDateShipment 'Дата расхода' (ShipmentLine rl) = scheduledDate(shipment(rl));
+
+nameStatusShipment 'Статус' (ShipmentLine rl) = nameStatus(shipment(rl));
+
+FORM orderShipmentShow 'Расход со склада'
+    OBJECTS ol = OrderLine
+    OBJECTS rl = ShipmentLine
+    PROPERTIES(rl) scheduledDateShipment, nameStatusShipment, initialDemand, done
+    FILTERS orderLine(rl) = ol
+;
+
+DESIGN orderShipmentShow{
+    MOVE BOX(rl) FIRST {caption='';}
+}
+
+showShipments (OrderLine l){
+    DIALOG orderShipmentShow OBJECTS ol = l; 
+}
+
+WHEN SET(confirmed(Order o)) DO{
+    createShipment(o);
+}  
+
+EXTEND FORM order
+    PROPERTIES(o) SHOWIF (confirmed(o) AND deficitShipment(o)>0) createShipment   
+    PROPERTIES(l) SHOWIF confirmed(o) initShipment ON CHANGE showShipments(l)
+    PROPERTIES(l) SHOWIF confirmed(o) doneShipment ON CHANGE showShipments(l)    
+;
+
+DESIGN order {
+    statusPane{
+        statusActions{
+            MOVE PROPERTY(createShipment(o)) FIRST;
+        }
+    }
+}

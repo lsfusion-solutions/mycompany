@@ -1,0 +1,21 @@
+MODULE SalesSendOrder;
+
+REQUIRE SalesOrderStatus, SalesOrderStatusConfirm;
+
+NAMESPACE Sales;
+
+sendOrder 'Отправить заказ на email' (Order o){
+    MESSAGE 'Заказ отправлен';    
+}
+
+EXTEND FORM order
+     PROPERTIES(o) SHOWIF confirmed(o) sendOrder;
+;
+
+DESIGN order {
+    statusPane {
+        statusActions {
+            MOVE PROPERTY(sendOrder(o));
+        }
+    }
+}

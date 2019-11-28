@@ -32,6 +32,7 @@ namePricelist 'Прайс-лист' (PricelistLine prl)= name(pricelist(prl));
 item 'Номенклатура' = DATA Item (PricelistLine);
 nameItem 'Номенклатура' (PricelistLine prl) = name(item(prl));
 nameUnitMeasure 'Единицы' (PricelistLine prl) = name(unitMeasure(item(prl)));
+taxIncluded 'с налогами' (PricelistLine prl) = taxIncluded(pricelist(prl)) ;  
 
 editIn (PricelistLine pl, PriceType priceType) = editIn(pricelist(pl), priceType);
 orderEditIn (PricelistLine pl, PriceType priceType) = orderEditIn(pricelist(pl), priceType);
@@ -49,7 +50,9 @@ changeTax ( PricelistLine prl) {
 
 headerNameData (PriceType priceType) = name(priceType) CHARWIDTH 30;
 
-pricelistItem (Pricelist pr, Item i) = GROUP LAST PricelistLine prl IF item(prl) = i AND pricelist(prl) = pr ORDER prl;
+pricelistLine (PriceType pt, Item i, DATETIME d) = 
+    GROUP LAST PricelistLine prl IF item(prl) = i AND price(prl,pt) AND NOT startDate(pricelist(prl)) > d AND NOT endDate(pricelist(prl)) < d
+          ORDER startDate(pricelist(prl)), pricelist(prl), prl;
 
 WHEN LOCAL SET(PricelistLine prl IS PricelistLine) DO { 
     in(prl,Tax t) <- salesIn(item(prl),t);  
@@ -58,6 +61,13 @@ WHEN LOCAL SET(PricelistLine prl IS PricelistLine) DO {
 WHEN LOCAL CHANGED(item(PricelistLine prl)) DO { 
     in(prl,Tax t) <- salesIn(item(prl),t);
 }
+
+WHEN LOCAL CHANGED(item(OrderLine ol)) DO {    
+    in(ol, Tax t) <- OVERRIDE in(pricelistLine(priceType(order(ol)), item(ol),date(order(ol))), t), salesIn(item(ol),t);
+    unitPrice(ol) <- OVERRIDE NUMERIC[10,2] (price(pricelistLine(priceType(order(ol)), item(ol),date(order(ol))), priceType(customer(order(ol)))) / ( 1 + IF taxIncluded(pricelistLine(priceType(order(ol)),item(ol),date(order(ol)))) THEN (GROUP SUM value(Tax t) IF in(ol,t))/100)),
+                              salesPrice(item(ol));    
+}
+
 
 FORM pricelist 'Прайс-листы'
     OBJECTS pr = Pricelist PANEL

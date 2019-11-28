@@ -1,15 +1,15 @@
-MODULE PurchasePrintOrder;
+MODULE SalesPrintOrder;
 
-REQUIRE  PurchaseOrder, PurchaseOrderStatus, PurchaseOrderStatusConfirm, Partner,PurchasePrintData;
+REQUIRE  SalesOrder, SalesOrderStatus, SalesOrderStatusConfirm, Partner,SalesPrintData;
 
 NAMESPACE Purchase;
 
 FORM printOrder 'Заказ поставщику'   
     OBJECTS o = Order PANEL 
-    PROPERTIES(o) scheduledDate, number, nameLocation, fullAddressLocation, nameVendor, fullAddressVendor, phoneVendor, nameCompany, fullAddressCompany, phoneCompany, confirmedDateTime
+    PROPERTIES(o) commintmentDate, number, nameLocation, fullAddressLocation, nameCustomer, fullAddressVendor, phoneVendor, nameCompany, fullAddressCompany, phoneCompany, confirmedDateTime
         
     OBJECTS l = OrderLine
-    PROPERTIES(l) nameItem, description, scheduledDate, quantity, taxes, subtotal, unitPrice, unitMeasure
+    PROPERTIES(l) nameItem, description, quantity, taxes, subtotal, unitPrice, unitMeasure
     FILTERS order(l) = o
 ; 
       
@@ -34,7 +34,7 @@ EXTEND FORM order
 DESIGN order {
     statusPane {
         statusActions {
-            MOVE PROPERTY(printOrder(o)) FIRST;             
+            MOVE PROPERTY(printOrder(o));             
         }
     }
 }

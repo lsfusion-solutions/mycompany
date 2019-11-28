@@ -1,6 +1,6 @@
 MODULE SalesPriceType;
 
-REQUIRE SalesNavigator, PartnerSale, Partner; 
+REQUIRE SalesNavigator, PartnerSale, Partner, SalesOrder; 
 
 NAMESPACE Sales;
 
@@ -43,6 +43,12 @@ FORM pricelistTypeList 'Вид цены'
     LIST PriceType OBJECT pt
 ;
 
+NAVIGATOR {
+    sales{
+        NEW pricelistTypes;    
+    }
+}
+
 //добавляем для контрагента определение типа цен
 priceType 'Тип цен для покупателя' =  DATA PriceType (Partner);
 namePriceType 'Тип цен для покупателя' (Partner p) =  name(priceType(p));
@@ -66,8 +72,19 @@ DESIGN partner {
     }
 }
 
-NAVIGATOR {
-    sales{
-        NEW pricelistTypes;    
+//добавляем в заказ свойство типа цен от партнера
+priceType 'Тип цен' =  DATA PriceType (Order);
+namePriceType 'Тип цен' (Order o) =  name(priceType(o));
+ 
+WHEN LOCAL CHANGED (customer(Order o)) DO 
+    priceType(o) <- priceType(customer(o));
+
+EXTEND FORM order 
+    PROPERTIES(o) READONLY namePriceType
+;
+
+DESIGN order {
+    attr {
+        MOVE PROPERTY(namePriceType(o));   
     }
 }

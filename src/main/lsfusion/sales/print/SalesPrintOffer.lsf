@@ -1,15 +1,15 @@
-MODULE PurchasePrintRequest;
+MODULE SalesPrintOffer;
 
-REQUIRE  PurchaseOrder, PurchaseOrderStatus, PurchaseOrderStatusSent, Partner, PurchasePrintData;
+REQUIRE  SalesOrder, SalesOrderStatus, SalesOrderStatusSent, SalesOrderStatusDraft, Partner, SalesPrintData;
 
 NAMESPACE Purchase;
  
 FORM printRequest 'Запрос поставщику'   
     OBJECTS o = Order PANEL 
-    PROPERTIES(o) sentRequestDateTime, scheduledDate, number, nameLocation, fullAddressLocation, nameVendor, fullAddressVendor, phoneVendor, nameCompany, fullAddressCompany, phoneCompany
+    PROPERTIES(o) sentRequestDateTime, commintmentDate, number, nameLocation, fullAddressLocation, nameCustomer, fullAddressVendor, phoneVendor, nameCompany, fullAddressCompany, phoneCompany
         
     OBJECTS l = OrderLine
-    PROPERTIES(l) nameItem, description, scheduledDate, quantity
+    PROPERTIES(l) nameItem, description, quantity
     FILTERS order(l) = o
 ; 
     
@@ -22,15 +22,13 @@ printRequest 'Печать запрос' (Order o) {
 }  
 
 reprintRequest 'Печать запрос' (Order o) {
-    sentRequestDateTime(o) <- currentDateTime();
-    sent(o) <- TRUE;
     PRINT printRequest OBJECTS o = o;   
     MESSAGE 'Запрос напечатан';    
 }  
  
 EXTEND FORM order
      PROPERTIES(o) SHOWIF (status(o)=OrderStatus.draft)  printRequest BACKGROUND (CASE WHEN NOT sent(o) THEN nextAction())
-     PROPERTIES(o) SHOWIF (status(o)=OrderStatus.requestSent)  reprintRequest
+     PROPERTIES(o) SHOWIF (status(o)=OrderStatus.offerSent)  reprintRequest
 ;
 
 DESIGN order {

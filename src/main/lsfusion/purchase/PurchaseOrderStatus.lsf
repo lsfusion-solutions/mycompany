@@ -5,7 +5,7 @@ REQUIRE PurchaseOrder;
 NAMESPACE Purchase;
 
 CLASS OrderStatus 'Статус заказа'{
-    draft 'Черновик запроса'
+    null 'пустой'
 }
 
 name 'Имя' (OrderStatus s) = staticCaption(s) IF s IS OrderStatus CHARWIDTH 15;
@@ -13,12 +13,6 @@ name 'Имя' (OrderStatus s) = staticCaption(s) IF s IS OrderStatus CHARWIDTH 1
 status 'Статус' = ABSTRACT CASE OrderStatus (Order);
 nameStatus 'Статус' (Order o) = name(status(o));
 colorStatus 'Цвет' = ABSTRACT CASE COLOR (Order);
-
-readonly (OrderLine l) += WHEN NOT status(order(l)) = OrderStatus.draft THEN TRUE;
-readonly (Order o) += WHEN NOT status(o) = OrderStatus.draft THEN TRUE;
-
-status(Order o) += WHEN o IS Order THEN OrderStatus.draft;
-colorStatus(Order o) += WHEN status(o) == OrderStatus.draft THEN RGB(255,255,255);
 
 EXTEND FORM order
     PROPERTIES(o) nameStatus BACKGROUND colorStatus(o)

@@ -1,6 +1,6 @@
-MODULE PurchaseReceipt;
+MODULE PurchaseOrderToReceipt;
 
-REQUIRE PurchaseOrder, Receipt, ReceiptStatus, ReceiptDone, PurchaseOrderStatus, PurchaseOrderConfirm, PurchaseOrderCancel, ReceiptCanceled;
+REQUIRE PurchaseOrder, Receipt, ReceiptStatus, ReceiptDone, PurchaseOrderStatus, PurchaseOrderStatusConfirm, PurchaseOrderStatusCancel, ReceiptCanceled;
 
 orderLine 'ссылка на заказ' = DATA OrderLine (ReceiptLine);
 order 'ссылка на заказ' = DATA Order (Receipt);
@@ -51,7 +51,6 @@ showReceipts (OrderLine l){
 }
 
 WHEN SET(confirmed(Order o)) DO{
-//  OR ((GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) IF order(l) = o) AND confirmed(o))
     createReceipt(o);
 }  
 

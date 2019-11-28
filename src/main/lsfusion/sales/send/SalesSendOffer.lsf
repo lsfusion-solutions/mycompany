@@ -1,0 +1,32 @@
+MODULE SalesSendOffer;
+
+REQUIRE SalesOrderStatus, SalesOrderStatusDraft, SalesOrderStatusSent;
+
+NAMESPACE Sales;
+
+sendRequest 'Отправить предложение' (Order o){
+    sentRequestDateTime(o) <- currentDateTime();
+    sent(o) <- TRUE;
+    MESSAGE 'Предложение отправлено';    
+}
+
+resendRequest 'Отправить предложение' (Order o){
+    MESSAGE 'Предложение отправлено';    
+}
+
+
+EXTEND FORM order
+     PROPERTIES(o) SHOWIF (status(o)=OrderStatus.draft) sendRequest BACKGROUND nextAction()
+     PROPERTIES(o) SHOWIF (status(o)=OrderStatus.offerSent) resendRequest
+;
+
+DESIGN order {
+    statusPane {
+        statusActions {
+            MOVE PROPERTY(sendRequest(o)) FIRST;
+            MOVE PROPERTY(resendRequest(o));
+        }
+    }
+}
+
+
