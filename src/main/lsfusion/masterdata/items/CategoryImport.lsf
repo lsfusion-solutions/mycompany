@@ -5,10 +5,12 @@ REQUIRE Category, Import;
 NAMESPACE MasterData;
 
 categoryExport 'Экспорт категорий' () {
-    IF NOT (GROUP SUM 1 IF Category c AND c IS Category) THEN {
-        NEW c = Category {
-            id(c) <- 'Test';
-            name(c) <- 'Test';
+    NEWSESSION {
+        IF NOT (GROUP SUM 1 IF Category c AND c IS Category) THEN {
+            NEW c = Category {
+                id(c) <- '123';
+                name(c) <- 'Моя категория';
+            }
         }
     }
     LOCAL f = EXCELFILE ();

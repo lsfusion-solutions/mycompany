@@ -5,10 +5,12 @@ REQUIRE Location, Import;
 NAMESPACE Inventory;
 
 locationExport 'Экспорт мест хранения' () {
-    IF NOT (GROUP SUM 1 IF Location l AND l IS Location) THEN {
-        NEW l = Location {
-            id(l) <- 'Test';
-            name(l) <- 'Test';
+    NEWSESSION {
+        IF NOT (GROUP SUM 1 IF Location l AND l IS Location) THEN {
+            NEW l = Location {
+                id(l) <- '123';
+                name(l) <- 'Мой склад';
+            }
         }
     }
     LOCAL f = EXCELFILE ();
