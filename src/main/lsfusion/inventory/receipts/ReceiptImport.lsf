@@ -24,35 +24,31 @@ receiptImport 'Импорт поступлений' () {
         NEWSESSION {
             IMPORT XLS HEADER FROM f TO idLocation = A, idProduct = B, quantity = C;
             
-            FOR imported(INTEGER i) DO {
-                IF (GROUP LAST location(Receipt rec) IF location(rec) = location(idLocation(i))) THEN NEW l = ReceiptLine {
-                        receipt(l) <- GROUP LAST Receipt rec IF location(rec) = location(idLocation(i));
-                        product(l) <- item(idProduct(i));
-                        initialDemand(l) <- quantity(i);
-                        done(l) <- quantity(i);
-                } ELSE NEW r = Receipt {
-                     scheduledDate(r) <- currentDateTime();
-                     number(r) <- ISTRING[28](idLocation(i));
-                     location(r) <- location(idLocation(i));
-                     
-                     IF NOT (GROUP SUM 1 IF ReceiptType t AND t IS ReceiptType) THEN {
-                         NEW t = ReceiptType {
-                             name(t) <- 'Тип';
-                         }
-                     }
-                     type(r) <- GROUP LAST ReceiptType t ORDER name(t);
-                     
-                     NEW l = ReceiptLine {
-                         receipt(l) <- r;
-                         product(l) <- item(idProduct(i));
-                         initialDemand(l) <- quantity(i);
-                         done(l) <- quantity(i);
-                     }
-                     done(r) <- TRUE;
-                }
-                
-            } 
             
+            FOR [GROUP SUM 1 BY idLocation(INTEGER i)](num) AND NOT rec(num) DO NEW nr = Receipt {
+                number(nr) <- num;
+            }
+            
+            FOR INTEGER i = [GROUP MIN INTEGER ii BY idLocation(ii)](num) AND number(Receipt r) = num DO {
+                scheduledDate(r) <- currentDateTime();
+                location(r) <- location(idLocation(i));
+                
+                IF NOT (GROUP SUM 1 IF ReceiptType t AND t IS ReceiptType) THEN {
+                    NEW t = ReceiptType {
+                        name(t) <- 'Тип';
+                    }
+                }
+                type(r) <- GROUP LAST ReceiptType t ORDER name(t);
+                done(r) <- TRUE;
+            }
+            
+            FOR idProduct(INTEGER i) DO NEW l = ReceiptLine {
+                product(l) <- item(idProduct(i));
+                initialDemand(l) <- quantity(i);
+                done(l) <- quantity(i);
+                receipt(l) <- rec(idLocation(i));
+            }
+                        
             APPLY;
             MESSAGE 'Импорт завершен';
         }
