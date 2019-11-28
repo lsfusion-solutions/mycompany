@@ -16,7 +16,7 @@ startDate 'Начало действия' = DATA DATETIME (Pricelist);
 
 endDate 'Окончание действия' = DATA DATETIME (Pricelist);
 
-includeTax 'Цены с учетом налогов' = DATA BOOLEAN (Pricelist);
+taxIncluded 'с налогами' = DATA BOOLEAN (Pricelist);  
 
 editIn 'Изменять цены' = DATA BOOLEAN (Pricelist, PriceType);
 orderEditIn 'Порядок ввода' = DATA INTEGER (Pricelist, PriceType);
@@ -59,27 +59,9 @@ WHEN LOCAL CHANGED(item(PricelistLine prl)) DO {
     in(prl,Tax t) <- salesIn(item(prl),t);
 }
 
-pricelist 'Прайс-лист' = DATA Pricelist (Order);
-namePricelist 'Прайс-лист' (Order o) = name(pricelist(o));
-EXTEND FORM order
-    PROPERTIES (o) namePricelist
-;
-DESIGN order {
-    header{
-        invoicing{
-            MOVE PROPERTY (namePricelist(o));
-        }
-    }
-}
-
-WHEN LOCAL CHANGED(item(OrderLine ol)) DO {
-    unitPrice(ol) <- price(pricelistItem(pricelist(order(ol)),item(ol)),priceType(customer(order(ol))));
-    in(ol, Tax t) <- in(pricelistItem(pricelist(order(ol)),item(ol)),t); 
-}
-
 FORM pricelist 'Прайс-листы'
     OBJECTS pr = Pricelist PANEL
-    PROPERTIES(pr) name, number, startDate, endDate, includeTax
+    PROPERTIES(pr) name, number, startDate, endDate, taxIncluded
    
     OBJECTS t = PriceType
     PROPERTIES(t) READONLY name 
@@ -115,7 +97,7 @@ DESIGN pricelist{
                     MOVE PROPERTY(endDate(pr)) {caption = 'по ';};
                     MOVE PROPERTY(number(pr)) {marginLeft=10;};
                 }                
-                MOVE PROPERTY(includeTax(pr));
+                MOVE PROPERTY(taxIncluded(pr)) {caption='цены с учетом налогов';}
             }
             NEW col3{
                 fill=1;
@@ -141,13 +123,13 @@ DESIGN pricelist{
 
 FORM pricelistsList 'Прайс-листы'
     OBJECTS pr = Pricelist
-    PROPERTIES(pr) READONLY name, number, startDate, endDate
+    PROPERTIES(pr) READONLY name, number, startDate, endDate, taxIncluded
     LIST Pricelist OBJECT pr
 ;
 
 FORM pricelists 'Прайс-листы'
     OBJECTS pr = Pricelist
-    PROPERTIES(pr) READONLY name, number, startDate, endDate
+    PROPERTIES(pr) READONLY name, number, startDate, endDate, taxIncluded
     PROPERTIES(pr) NEW NEWSESSION ,EDIT NEWSESSION ,DELETE NEWSESSION 
 ;
 

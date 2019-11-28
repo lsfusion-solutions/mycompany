@@ -1,6 +1,6 @@
 MODULE MetaTax;
 
-META defineTaxCalc(doc, let, type)
+META defineTaxCalc(doc, let, isSales)
     subtotal 'Сумма до налогов'  = DATA NUMERIC[14,2] (###doc##Line);
     
     WHEN LOCAL SETCHANGED(quantity(###doc##Line l)) OR SETCHANGED(unitPrice(l)) DO {
@@ -9,12 +9,12 @@ META defineTaxCalc(doc, let, type)
     
     in 'Вкл' = DATA BOOLEAN (###doc##Line, Tax);
     WHEN LOCAL CHANGED(item(###doc##Line l)) DO
-        in(l, Tax t) <- ##type##In(item(l), t);
-        
-    untaxedAmount 'Сумма до налогов' (###doc let) = GROUP SUM subtotal(###doc##Line l) IF doc(l) = let;
+        IF ##isSales THEN in(l, Tax t) <- salesIn(item(l), t);
+        ELSE in(l, Tax t) <- purchaseIn(item(l), t);      
+     
     
     taxAmount 'Сумма налога (строка)' (Tax t, ###doc##Line l) = DATA NUMERIC[14,2] (Tax, ###doc##Line);
-    
+       
     WHEN LOCAL CHANGED(subtotal(###doc##Line l) IF in(l, Tax t)) DO
         taxAmount (t, l) <- NUMERIC[14,2] (value(t) / 100 * subtotal(l));
     
@@ -26,7 +26,11 @@ META defineTaxCalc(doc, let, type)
     
     totalTax 'Налог' (###doc let) = GROUP SUM taxAmount(Tax t, let);
     
-    totalAmount 'Итоговая сумма' (###doc let) = NUMERIC[14,2](untaxedAmount(let) (+) totalTax(let));
+    totalSum (###doc let) = GROUP SUM subtotal(###doc##Line l) IF doc(l) = let;
+    
+    untaxedAmount 'Сумма до налогов' (###doc let) = NUMERIC[14,2] ( totalSum(let) ) ;
+
+    totalAmount 'Итоговая сумма' (###doc let) = NUMERIC[14,2] ( totalSum(let) (+) totalTax(let) );
     
     countLine (###doc let, Tax t) = GROUP SUM 1 IF in( ###doc##Line l, t) AND doc(l) = let;
     

@@ -7,33 +7,40 @@ NAMESPACE Sales;
 CLASS PriceType 'Виды цены';
 
 name 'Наименование' = DATA ISTRING[100](PriceType);
-default 'по умолчаню' = DATA BOOLEAN (PriceType); 
+default 'по умолчаню' = DATA BOOLEAN (PriceType);
 
 FORM pricelistType 'Вид цены'
-    OBJECTS pt = PriceType
+    OBJECTS pt = PriceType PANEL 
     PROPERTIES(pt) name, default
     EDIT PriceType OBJECT pt
 ;
 
 DESIGN pricelistType {
-    NEW pane {
-        fill = 1;
-        MOVE BOX(pt);
+    OBJECTS {
+        NEW header {
+            type = CONTAINERV;        
+            caption='Виды цен';
+            fill = 1;
+            MOVE PROPERTY(name(pt));
+            NEW pane{
+                type = CONTAINERV;
+                MOVE PROPERTY(default(pt)) {caption='по умолчанию для новых покупателей';};
+            }
+        }
     }
 }
 
 FORM pricelistTypes 'Виды цен'
     OBJECTS pt = PriceType
-    PROPERTIES(pt) name, default
-    PROPERTIES(pt) NEW, DELETE 
-//    PROPERTIES(pt) NEWSESSION NEW, EDIT, DELETE 
+    PROPERTIES(pt) READONLY name, default
+    PROPERTIES(pt) NEWSESSION NEW, EDIT, DELETE 
 ;   
 
 FORM pricelistTypeList 'Вид цены'
-    OBJECTS p = PriceType
-    PROPERTIES(p) READONLY name
+    OBJECTS pt = PriceType
+    PROPERTIES(pt) READONLY name
 
-    LIST PriceType OBJECT p
+    LIST PriceType OBJECT pt
 ;
 
 //добавляем для контрагента определение типа цен

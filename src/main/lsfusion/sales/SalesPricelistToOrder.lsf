@@ -1,0 +1,21 @@
+MODULE SalesPricelistToOrder;
+
+REQUIRE SalesPricelist, SalesOrder, ItemSale;
+
+pricelist 'Прайс-лист' = DATA Pricelist (Order);
+namePricelist 'Прайс-лист' (Order o) = name(pricelist(o));
+EXTEND FORM order
+    PROPERTIES (o) namePricelist
+;
+DESIGN order {
+    header{
+        invoicing{
+            MOVE PROPERTY (namePricelist(o));
+        }
+    }
+}
+
+WHEN LOCAL CHANGED(item(OrderLine ol)) DO {    
+    in(ol, Tax t) <- OVERRIDE in(pricelistItem(pricelist(order(ol)), item(ol)), t), salesIn(item(ol),t);
+    unitPrice(ol) <- OVERRIDE NUMERIC[10,2] (price(pricelistItem(pricelist(order(ol)), item(ol)), priceType(customer(order(ol)))) / ( 1 + IF taxIncluded(pricelist(order(ol))) THEN (GROUP SUM value(Tax t) IF in(ol,t))/100)), salesPrice(item(ol));    
+}

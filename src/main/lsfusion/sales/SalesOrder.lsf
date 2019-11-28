@@ -77,7 +77,7 @@ WHEN LOCAL CHANGED(customer(Order o)) DO {
     deliveryAddress(o) <- concatAddress(customer(o),', ');
 }
 
-@defineTaxCalc(order, o, sales);
+@defineTaxCalc(order, o, TRUE);
 
 WHEN LOCAL CHANGED(item(OrderLine ol)) DO {
     description(ol) <- nameItem(ol);
@@ -111,7 +111,7 @@ FORM order 'Заказ'
     PROPERTIES(l) unitPrice
     PROPERTIES(l) cost
     PROPERTIES(l) discount
-    PROPERTIES(l) NEW,DELETE
+    PROPERTIES(l) DELETE
      
     FILTERS order(l)=o
     EDIT Order OBJECT o    
@@ -230,4 +230,18 @@ addOrder 'Заказ' () {
 
 EXTEND FORM orders
     PROPERTIES addOrder() DRAW o TOOLBAR
+;
+
+addLine 'Добавить товар' (Order o) {
+    NEW l = OrderLine {
+        order(l) <- o;
+        quantity(l) <- 1;
+        DIALOG items OBJECTS i INPUT DO {
+            item(l) <- i;
+        }
+    }
+}IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+
+EXTEND FORM order
+    PROPERTIES addLine(o) DRAW l TOOLBAR
 ;
