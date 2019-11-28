@@ -1,42 +1,42 @@
 MODULE ReceiptImport;
 
-REQUIRE ReceiptDone, Import, InvLedger;
+REQUIRE ReceiptDone, Import, InvLedger, CostLedger, ItemPurchase;
 
 NAMESPACE Inventory;
 
-receiptExport 'Экспорт поступлений' () {
+receiptExport 'Экспорт остатков' () {
     LOCAL f = EXCELFILE ();
     
     IF NOT (GROUP SUM 1 IF onHand(Location l, Product p) AND l IS Location AND p IS Product) THEN
         EXPORT XLSX HEADER FROM 'Код места хранения' = '123', 'Код продукта' = '123', 
                                     'Кол-во' = '1' TO f;
         ELSE EXPORT XLSX HEADER FROM 'Код места хранения' = id(Location l), 'Код продукта' = id(Product p), 
-                                    'Кол-во' = onHand(l, p) WHERE onHand(l, p) TO f;   
+                                    'Кол-во' = onHand(l, p), 'Себестоимость' =  costSum(l,p) WHERE onHand(l, p) TO f;   
     open(f());
 }
 
-receiptImport 'Импорт поступлений' () {
+receiptImport 'Импорт остатков' () {
     LOCAL idLocation = STRING[50] (INTEGER);
     LOCAL idProduct = ISTRING[50] (INTEGER);
     LOCAL quantity = NUMERIC[16,3] (INTEGER);
+    LOCAL cost = NUMERIC[16,3] (INTEGER);
     
     INPUT f = EXCELFILE DO {
         NEWSESSION {
-            IMPORT XLS HEADER FROM f TO idLocation = A, idProduct = B, quantity = C;
+            IMPORT XLS HEADER FROM f TO idLocation = A, idProduct = B, quantity = C, cost = D;
             
             
-            FOR [GROUP SUM 1 BY idLocation(INTEGER i)](num) AND NOT rec(num) DO NEW nr = Receipt {
-                number(nr) <- num;
+            FOR [GROUP SUM 1 BY idLocation(INTEGER i)](num) AND NOT rec('INIT_' + num) DO NEW nr = Receipt {
+                number(nr) <- 'INIT_' + num;
             }
             
-            FOR INTEGER i = [GROUP MIN INTEGER ii BY idLocation(ii)](num) AND number(Receipt r) = num DO {
+            FOR INTEGER i = [GROUP MIN INTEGER ii BY idLocation(ii)](num) AND number(Receipt r) = 'INIT_' + num DO {
                 scheduledDate(r) <- currentDateTime();
                 location(r) <- location(idLocation(i));
                 
                 IF NOT (GROUP SUM 1 IF ReceiptType t AND t IS ReceiptType) THEN {
-                    NEW t = ReceiptType {
-                        name(t) <- 'Тип';
-                    }
+                    MESSAGE 'Отсутствуют типы поступлений в базе данных. Импорт отменен';
+                    RETURN;
                 }
                 type(r) <- GROUP LAST ReceiptType t ORDER name(t);
                 done(r) <- TRUE;
@@ -47,6 +47,7 @@ receiptImport 'Импорт поступлений' () {
                 initialDemand(l) <- quantity(i);
                 done(l) <- quantity(i);
                 receipt(l) <- rec(idLocation(i));
+                cost(product(l)) <- NUMERIC[10,2](cost(i)/quantity(i));
             }
                         
             APPLY;
@@ -63,7 +64,7 @@ DESIGN import {
     OBJECTS {
         NEW receipt {
             type = CONTAINERH;
-            caption = 'Поступления';
+            caption = 'Остатки';
             MOVE PROPERTY(receiptImport());
             MOVE PROPERTY(receiptExport());
         }
