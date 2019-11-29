@@ -26,12 +26,12 @@ receiptImport 'Импорт остатков' () {
             IMPORT XLS HEADER FROM f TO idLocation = A, idProduct = B, quantity = C, cost = D;
             
             FOR [GROUP SUM 1 BY idLocation(INTEGER i)](num) AND NOT location[STRING](num) DO {
-                MESSAGE 'Отсутствуют необходимые объекты. Импорт отменен';
+                MESSAGE 'Отсутствует место хранения в базе данных с кодом ' + num + '. Импорт отменен';
                 RETURN;
             }
             
             FOR [GROUP SUM 1 BY idProduct(INTEGER i)](num) AND NOT item[STRING](num) DO {
-                MESSAGE 'Отсутствуют необходимые объекты. Импорт отменен';
+                MESSAGE 'Отсутствует товар в базе данных с кодом ' + num + '. Импорт отменен';
                 RETURN;
             }
             
