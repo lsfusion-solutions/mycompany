@@ -1,6 +1,86 @@
-MODULE SalesOrderInvoice;
+MODULE SalesOrderToInvoice;
 
-REQUIRE SalesOrder, Invoice;
+REQUIRE SalesOrder, Invoice, InvoiceStatus, InvoiceDone, InvoiceCanceled, SalesOrderStatus, Time, SalesOrderStatusConfirm, InvoicePaymentTerms;
 
 NAMESPACE Sales;
+
+lineOrder 'ссылка на заказ' = DATA OrderLine (InvoiceLine);
+order 'ссылка на заказ' = DATA Order (Invoice);
+
+readyInvoice 'Оформлено по накладным' (OrderLine ol) = GROUP SUM quantity(InvoiceLine bl) IF lineOrder(bl)=ol AND ready(invoice(bl)) AND NOT canceled(invoice(bl)) ;
+payedInvoice 'Оплачено' (OrderLine ol) = GROUP SUM quantity(InvoiceLine bl) IF lineOrder(bl)=ol AND done(invoice(bl)) AND NOT canceled(invoice(bl)) ;
+deficitInvoice 'Недооформлено' (Order o) =  GROUP SUM abs(readyInvoice(OrderLine ol) (-) quantity(ol)) IF order(ol)=o AND ol IS OrderLine;
+
+createInvoice 'Оформить накладную' (Order o) {
+    IF canceled() THEN RETURN;
+               
+    NEWSESSION {
+        NEW ni = Invoice {
+            partner(ni) <- customer(o);
+            date(ni) <- invoiceDate(o);
+            order(ni) <- o;
+            notes(ni) <- customerReference(o); 
+            paymentTerms(ni) <- paymentterm(o);
+            addressPartner(ni) <- addressCustomer(o);           
+            sourceDocument(ni) <- number(o);              
+            FOR order(OrderLine ol) = o AND NOT (quantity(ol) - readyInvoice(ol)<=0) INLINE NEW il = InvoiceLine DO {
+                invoice(il) <- ni;
+                item(il) <- item(ol);
+                quantity(il) <- quantity(ol) (-) readyInvoice(ol);
+                unitPrice(il) <- unitPrice(ol);
+                lineOrder(il) <- ol;
+            }                            
+            executeLocalEvents();
+            FOR invoice(InvoiceLine il) = ni DO {
+                in(il,Tax t) <- in(lineOrder(il),t);
+            }                                
+            SHOW invoice OBJECTS i = ni DOCKED;
+        }
+    }
+}
+
+invoiceDate 'Дата счета' (InvoiceLine bl) = date(invoice(bl));
+invoiceStatus 'Статус' (InvoiceLine bl) = nameStatus(invoice(bl));
+
+FORM orderInvoiceShow 'Оформлено накладными'
+    OBJECTS ol = OrderLine
+    OBJECTS il = InvoiceLine
+    PROPERTIES(il) invoiceDate, invoiceStatus, quantity
+    FILTERS lineOrder(il) = ol
+;
+
+DESIGN orderInvoiceShow{
+    MOVE BOX(il) FIRST {caption='';}
+}
+
+showInvoices (OrderLine l){
+    DIALOG orderInvoiceShow OBJECTS ol = l; 
+}
+
+EXTEND FORM order   
+    OBJECTS in = Invoice
+    PROPERTIES(in)  READONLY seriesNumber, date, nameStatus
+    FILTERS order(in) = o
+
+    PROPERTIES(o) SHOWIF (confirmed(o) AND deficitInvoice(o)>0) createInvoice
+    PROPERTIES(l) SHOWIF confirmed(o) readyInvoice ON CHANGE showInvoices(l)
+    PROPERTIES(l) SHOWIF confirmed(o) payedInvoice ON CHANGE showInvoices(l)
+;
+ 
+DESIGN order {
+    statusPane{
+        statusActions{
+            MOVE PROPERTY(createInvoice(o)) FIRST;
+        }
+    }
+    header{
+        relatedDoc  {
+            MOVE BOX(in);
+            REMOVE TOOLBARBOX(in);     
+        }
+    }
+}
+
+
+
 

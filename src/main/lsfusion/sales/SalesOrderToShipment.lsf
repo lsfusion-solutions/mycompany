@@ -47,13 +47,13 @@ nameStatusShipment 'Статус' (ShipmentLine rl) = nameStatus(shipment(rl));
 
 FORM orderShipmentShow 'Расход со склада'
     OBJECTS ol = OrderLine
-    OBJECTS rl = ShipmentLine
-    PROPERTIES(rl) scheduledDateShipment, nameStatusShipment, initialDemand, done
-    FILTERS orderLine(rl) = ol
+    OBJECTS sl = ShipmentLine
+    PROPERTIES(sl) scheduledDateShipment, nameStatusShipment, initialDemand, done
+    FILTERS orderLine(sl) = ol
 ;
 
 DESIGN orderShipmentShow{
-    MOVE BOX(rl) FIRST {caption='';}
+    MOVE BOX(sl) FIRST {caption='';}
 }
 
 showShipments (OrderLine l){
@@ -61,7 +61,21 @@ showShipments (OrderLine l){
 }
 
 EXTEND FORM order
+    OBJECTS sh = Shipment
+    PROPERTIES(sh)  READONLY seriesNumber, scheduledDate, executionDate, nameStatus
+    FILTERS order(sh) = o
     PROPERTIES(l) SHOWIF confirmed(o) initShipment ON CHANGE showShipments(l)
     PROPERTIES(l) SHOWIF confirmed(o) doneShipment ON CHANGE showShipments(l)
 //    PROPERTIES(l) SHOWIF confirmed(o) deficitShipment ON CHANGE showShipments(l)       
 ;
+
+DESIGN order {
+    header{
+        relatedDoc  {
+            MOVE BOX(sh);
+            REMOVE TOOLBARSYSTEM(sh);
+            PROPERTY (scheduledDate(sh)) {caption='Запланирована отгрузка';}
+            PROPERTY (executionDate(sh)) {caption='Дата отгрузки';}
+        }
+    }
+}
