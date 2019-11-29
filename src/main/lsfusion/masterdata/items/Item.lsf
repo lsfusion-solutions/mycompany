@@ -14,12 +14,11 @@ category 'Категория' = DATA Category (Item) NONULL INDEXED;
 idCategory 'Код категории' (Item i) = id(category(i));
 nameCategory 'Категория' (Item i) = name(category(i));
 canonicalNameCategory 'Категория (полная)' (Item i) = canonicalName(category(i));
-unitMeasure 'Единицы учетные' = DATA ItemMeasure (Item);
-idUnitMeasure 'Код учетной единицы' (Item i) = id(unitMeasure(i));
-nameUnitMeasure 'Единицы учетные' (Item i) = name(unitMeasure(i));
-WHEN LOCAL SET(Item i IS Item) DO {
-    unitMeasure(i) <- GROUP LAST ItemMeasure im IF default(im);
-}
+
+unitMeasure 'Единица измерения' = DATA ItemMeasure (Item);
+idUnitMeasure 'Код единицы измерения' (Item i) = id(unitMeasure(i));
+nameUnitMeasure 'Единица измерения' (Item i) = name(unitMeasure(i));
+WHEN LOCAL SET(Item i IS Item) DO unitMeasure(i) <- GROUP MAX ItemMeasure im IF default(im);
 
 archived 'Неактивный' = DATA BOOLEAN (Item) CHARWIDTH 10;
 active 'Активный' (Item i) = NOT archived(i) CHARWIDTH 10;
@@ -38,27 +37,20 @@ FORM item 'Номенклатура'
 
 DESIGN item {
     OBJECTS {        
-        NEW header{                          
-            MOVE PROPERTY(name(i)) {fill=1;};                  
+        NEW header {                          
+            MOVE PROPERTY(name(i)) { fill = 1; };                  
             NEW pane {
-                marginTop=10;
-                marginBottom=10;
-                MOVE PROPERTY(id(i));
                 type = CONTAINERH;
-                NEW mainProp {
-                    type = CONTAINERV;
+                NEW column1 {
+                    MOVE PROPERTY(id(i));
                     MOVE PROPERTY(nameCategory(i));
                 }        
-                NEW extProp {
-                    marginLeft=20;
+                NEW column2 {
                     MOVE PROPERTY(nameUnitMeasure(i));
-                    type = CONTAINERV;
                 }        
-                NEW optProp {
-                    marginLeft=20;
-                    type = CONTAINERV;
+                NEW column3 {
                     MOVE PROPERTY(archived(i));
-                }        
+                }
             }    
         }
         NEW tabs {
@@ -77,7 +69,7 @@ FORM items 'Номенклатуры'
     ORDER name(c)
 
     OBJECTS i = Item
-    PROPERTIES(i) READONLYIF isReadonly() name, id, nameCategory, canonicalNameCategory, nameUnitMeasure
+    PROPERTIES(i) READONLYIF isReadonly() name, id, nameCategory, nameUnitMeasure
     PROPERTIES(i) SHOWIF isReadonly() NEWSESSION EDIT, DELETE 
     FILTERS level(category(i), c)
     FILTERGROUP active
@@ -99,8 +91,6 @@ DESIGN items {
                 fill = 2; 
                 GRID(i) { defaultComponent = TRUE; }
             }
-            
-            
         }
     }
 }
