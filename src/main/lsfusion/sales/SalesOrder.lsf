@@ -225,7 +225,7 @@ DESIGN order {
 FORM orders 'Заказы'
      OBJECTS o = Order
      PROPERTIES(o) READONLY seriesNumber,date,commintmentDate,expectedDate,nameCustomer,nameRepresentative
-     PROPERTIES(o) EDIT NEWSESSION,DELETE NEWSESSION
+     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
 ;
 
 EXTEND FORM orders 
@@ -251,18 +251,4 @@ addOrder 'Заказ' () {
 
 EXTEND FORM orders
     PROPERTIES addOrder() DRAW o TOOLBAR
-;
-
-addLine 'Добавить товар' (Order o) {
-    NEW l = OrderLine {
-        order(l) <- o;
-        quantity(l) <- 1;
-        DIALOG items OBJECTS i INPUT DO {
-            item(l) <- i;
-        }
-    }
-}IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
-
-EXTEND FORM order
-    PROPERTIES addLine(o) DRAW l TOOLBAR
 ;

@@ -11,7 +11,7 @@ groupMeasure (STRING[50] id) = GROUP AGGR GroupMeasure g BY id(g);
 name 'Наименование' = DATA STRING[50] (GroupMeasure) IN base;
 
 CLASS ItemMeasure 'Единицы измерения';
-id 'Код' = DATA STRING[50] (ItemMeasure) IN id;
+id 'Код' = DATA STRING[50] (ItemMeasure) IN id CHARWIDTH 8;
 itemMeasure (STRING[50] id) = GROUP AGGR ItemMeasure i BY id(i);
 
 code 'Код наименования' = DATA STRING[10] (ItemMeasure);
@@ -33,13 +33,13 @@ FORM groupMeasures 'Группы единиц измерения'
 
 FORM itemMeasures 'Единицы измерения'
     OBJECTS i = ItemMeasure
-    PROPERTIES(i) id, code, name, groupName, baseMeasureName, coefficient, default
+    PROPERTIES(i) name, id, code, groupName, baseMeasureName, coefficient, default
     PROPERTIES(i) NEW,DELETE
 ;
 
 FORM itemMeasuresList 'Единицы измерения'
     OBJECTS i = ItemMeasure
-    PROPERTIES(i) id, code, name
+    PROPERTIES(i) name, id, code
     PROPERTIES(i) NEW,DELETE
     LIST ItemMeasure OBJECT i
 ;

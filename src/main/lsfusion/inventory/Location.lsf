@@ -5,7 +5,7 @@ REQUIRE Inventory, Partner;
 NAMESPACE Inventory;
 
 CLASS Location 'Место хранения';
-id 'Код' = DATA STRING[50] (Location) IN id;
+id 'Код' = DATA STRING[50] (Location) IN id CHARWIDTH 8;
 location (STRING[50] id) = GROUP AGGR Location l BY id(l);
 
 name 'Название' = DATA ISTRING[30] (Location) IN id;
@@ -35,14 +35,14 @@ canonicalName 'Каноническое имя' (Location l) =
    
 FORM location 'Место хранения'
     OBJECTS l = Location PANEL
-    PROPERTIES(l) id, name, nameParent, ownerName 
+    PROPERTIES(l) name, id, nameParent, ownerName 
      
     EDIT Location OBJECT l  
 ;
 
 FORM locations 'Места хранения'
     OBJECTS l = Location
-    PROPERTIES(l) READONLY id, name, nameParent, canonicalName, ownerName
+    PROPERTIES(l) READONLY name, id, nameParent, canonicalName, ownerName
     PROPERTIES(l) NEWSESSION NEW, EDIT, DELETE
     
     LIST Location OBJECT l

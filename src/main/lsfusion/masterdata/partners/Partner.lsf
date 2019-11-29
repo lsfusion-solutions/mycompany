@@ -22,7 +22,7 @@ META addressesForm (subject,let)
     ;   
 END
 
-id 'Код' = DATA STRING[50] (Partner) IN id;
+id 'Код' = DATA STRING[50] (Partner) IN id CHARWIDTH 8;
 partner (STRING[50] id) = GROUP AGGR Partner p BY id(p);
 
 name 'Наименование' = ABSTRACT ISTRING[92] (Partner) IN id;
@@ -50,14 +50,14 @@ nameType 'Тип партнера' (Partner p) = name(type(p));
 
 FORM partner 'Контрагент'
     OBJECTS p = Partner PANEL 
-    PROPERTIES(p) id, nameType, name SHOWIF showName(p), phone, email, archived
+    PROPERTIES(p) name SHOWIF showName(p), id, nameType, phone, email, archived
     
     EDIT Partner OBJECT p
 ;
 
 FORM partners 'Контрагенты'
     OBJECTS p = Partner
-    PROPERTIES(p) READONLY id, nameType, name, phone, email 
+    PROPERTIES(p) READONLY name, id, nameType, phone, email 
     PROPERTIES(p) NEWSESSION EDIT, DELETE 
     FILTERGROUP active
         FILTER 'Активный' active(p) 'F10' DEFAULT

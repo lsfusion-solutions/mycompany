@@ -12,10 +12,11 @@ barcodeExport 'Экспорт штрих кодов' () {
                 item(b) <- GROUP LAST Item i ORDER name(i) IF i IS Item;
             }
         }
+    
+        LOCAL f = EXCELFILE ();
+        EXPORT XLSX HEADER FROM 'Код номенклатуры' = idItem(BarCode b), 'Штрих код' = id(b) TO f;        
+        open(f());
     }
-    LOCAL f = EXCELFILE ();
-    EXPORT XLSX HEADER FROM 'Код номенклатуры' = idItem(BarCode b), 'Штрих код' = id(b) TO f;        
-    open(f());
 }
 
 barcodeImport 'Импорт штрих кодов' () {

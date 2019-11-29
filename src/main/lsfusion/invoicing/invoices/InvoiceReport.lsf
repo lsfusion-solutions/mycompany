@@ -4,12 +4,14 @@ REQUIRE CreditNote, InvoicePaymentTerms;
 
 NAMESPACE Invoicing;
 
+nameItemCategory 'Категория номенклатуры' (InvoiceLine l) = name(category(item(l)));
+
 FORM reportingInvoices 'Отчет по накладным'
     OBJECTS report = (i = Invoice, l = InvoiceLine)
     PROPERTIES(i) date, dueDate, nameType, series, number, namePartner, partnerAccountNumber, nameCompany, 
                     companyAccountNumber, namePaymentTerms, sourceDocument, notes, nameStatus,
                     untaxedAmount, totalTax, totalAmount, paid
-    PROPERTIES(l) nameItem, quantity, unitPrice, taxes, subtotal
+    PROPERTIES(l) nameItem, idItem, nameItemCategory, quantity, unitPrice, taxes, subtotal
     FILTERS invoice(l) = i
 ;
 

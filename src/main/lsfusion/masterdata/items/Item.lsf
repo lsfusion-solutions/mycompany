@@ -5,7 +5,7 @@ REQUIRE MasterData, Category, Tax, ItemMeasure;
 NAMESPACE MasterData;
 
 CLASS ABSTRACT Item 'Номенклатура';
-id 'Код' = DATA STRING[50] (Item) IN id;
+id 'Код' = DATA STRING[50] (Item) IN id CHARWIDTH 8;
 item (STRING[50] id) = GROUP AGGR Item i BY id(i);
 
 name 'Наименование' = DATA ISTRING[50] (Item) IN id;
@@ -31,7 +31,7 @@ level4 'Группа 4' (Item i) = nameCategory4(category(i));
 
 FORM item 'Номенклатура'
     OBJECTS i = Item PANEL
-    PROPERTIES(i) id, name, nameCategory, nameUnitMeasure, archived
+    PROPERTIES(i) name, id, nameCategory, nameUnitMeasure, archived
       
     EDIT Item OBJECT i
 ;
@@ -77,7 +77,7 @@ FORM items 'Номенклатуры'
     ORDER name(c)
 
     OBJECTS i = Item
-    PROPERTIES(i) READONLYIF isReadonly() id, name, nameCategory, canonicalNameCategory, nameUnitMeasure
+    PROPERTIES(i) READONLYIF isReadonly() name, id, nameCategory, canonicalNameCategory, nameUnitMeasure
     PROPERTIES(i) SHOWIF isReadonly() NEWSESSION EDIT, DELETE 
     FILTERS level(category(i), c)
     FILTERGROUP active

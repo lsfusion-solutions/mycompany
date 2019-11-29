@@ -12,11 +12,12 @@ locationExport 'Экспорт мест хранения' () {
                 name(l) <- 'Мой склад';
             }
         }
+    
+        LOCAL f = EXCELFILE ();
+        EXPORT XLSX HEADER FROM 'Код' = id(Location l), 'Название' = name(l), 'Код родителя' = idParent(l), 
+                                'Имя владельца' = ownerName(l) TO f;   
+        open(f());
     }
-    LOCAL f = EXCELFILE ();
-    EXPORT XLSX HEADER FROM 'Код' = id(Location l), 'Название' = name(l), 'Код родителя' = idParent(l), 
-                            'Имя владельца' = ownerName(l) TO f;   
-    open(f());
 }
 
 locationImport 'Импорт мест хранения' () {

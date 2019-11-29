@@ -12,11 +12,12 @@ itemMeasureExport 'Экспорт единиц измерения' () {
                 name(i) <- 'Ед измерения';
             }
         }
+    
+        LOCAL f = EXCELFILE ();
+        EXPORT XLSX HEADER FROM 'Код' = id(ItemMeasure i), 'Код наименования' = code(i), 'Наименование' = name(i), 
+            'Код группы' = idGroup(i), 'Код базовой единицы' = idBaseMeasure(i), 'Коэффициент к базовой' = coefficient(i) TO f;   
+        open(f());
     }
-    LOCAL f = EXCELFILE ();
-    EXPORT XLSX HEADER FROM 'Код' = id(ItemMeasure i), 'Код наименования' = code(i), 'Наименование' = name(i), 
-        'Код группы' = idGroup(i), 'Код базовой единицы' = idBaseMeasure(i), 'Коэффициент к базовой' = coefficient(i) TO f;   
-    open(f());
 }
 
 itemMeasureImport 'Импорт единиц измерения' () {
