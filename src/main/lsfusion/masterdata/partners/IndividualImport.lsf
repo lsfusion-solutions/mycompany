@@ -1,0 +1,82 @@
+MODULE IndividualImport;
+
+REQUIRE Individual, Import;
+
+NAMESPACE MasterData;
+
+individualExport 'Экспорт физических лиц' () {
+    NEWSESSION {
+        IF NOT (GROUP SUM 1 IF Individual i IS Individual) THEN {
+            NEW i = Individual {
+                id(i) <- '123';
+                firstName(i) <- 'Имя';
+                lastName(i) <- 'Фамилия';
+                middleName(i) <- 'Отчество';
+            }
+        }
+    
+        LOCAL f = EXCELFILE ();
+        EXPORT XLSX HEADER FROM 'Код' = id(Individual p), 'Имя' = firstName(p), 'Фамилия' = lastName(p), 
+            'Отчество' = middleName(p), 'Организация' = idLegalEntity(p), 'Адрес' = address(p), 'Город' = city(p), 
+            'Область' = state(p), 'Почтовый индекс' = zip(p), 'Телефон' = phone(p), 'Электронная почта' = email(p)
+                                 WHERE p IS Individual TO f;   
+        open(f());
+    }
+}
+
+individualImport 'Импорт физических лиц' () {
+    LOCAL id = STRING[50] (INTEGER);
+    LOCAL firstName = ISTRING[30] (INTEGER);
+    LOCAL lastName = ISTRING[30] (INTEGER);
+    LOCAL middleName = ISTRING[30] (INTEGER);
+    LOCAL legalEntity = ISTRING[50] (INTEGER);
+    LOCAL address = ISTRING[50] (INTEGER);
+    LOCAL city = ISTRING[30] (INTEGER);
+    LOCAL state = ISTRING[30] (INTEGER);
+    LOCAL zip = ISTRING[10] (INTEGER);
+    LOCAL phone = ISTRING[30] (INTEGER);
+    LOCAL email = ISTRING[30] (INTEGER);
+       
+    INPUT f = EXCELFILE DO {
+        NEWSESSION {
+            IMPORT XLS HEADER FROM f TO id, firstName, lastName, middleName, legalEntity, address, city, state, 
+                                        zip, phone, email; 
+            
+            FOR [GROUP SUM 1 BY legalEntity(INTEGER i)](num) AND NOT partner[STRING](num) DO {
+                MESSAGE 'Отсутствуют необходимые объекты. Импорт отменен';
+                RETURN;
+            }  
+            
+            FOR imported(INTEGER j) DO NEW i = Individual {
+                id(i) <- id(j);
+                firstName(i) <- firstName(j);
+                lastName(i) <- lastName(j);
+                middleName(i) <- middleName(j);
+                legalEntity(i) <- partner(legalEntity(j));
+                address(i) <- address(j);
+                city(i) <- city(j);
+                state(i) <- state(j);
+                zip(i) <- zip(j);
+                phone(i) <- phone(j);
+                email(i) <- email(j);
+            }
+            APPLY;
+            MESSAGE 'Импорт завершен';
+        }
+    }    
+}
+
+EXTEND FORM import 
+    PROPERTIES individualImport(), individualExport()
+;
+
+DESIGN import {
+    OBJECTS {
+        NEW individual {
+            type = CONTAINERH;
+            caption = 'Физ лица';
+            MOVE PROPERTY(individualImport());
+            MOVE PROPERTY(individualExport());
+        }
+    }
+}

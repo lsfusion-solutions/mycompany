@@ -1,0 +1,69 @@
+MODULE LegalEntityImport;
+
+REQUIRE LegalEntity, Import;
+
+NAMESPACE MasterData;
+
+legalEntityExport 'Экспорт организаций' () {
+    NEWSESSION {
+        IF NOT (GROUP SUM 1 IF LegalEntity l IS LegalEntity) THEN {
+            NEW l = LegalEntity {
+                id(l) <- '123';
+                name(l) <- 'Организация';
+            }
+        }
+    
+        LOCAL f = EXCELFILE ();
+        EXPORT XLSX HEADER FROM 'Код' = id(LegalEntity l), 'Организация' = name(l), 'Веб сайт' = website(l),
+            'Адрес' = address(l), 'Город' = city(l), 'Область' = state(l), 'Почтовый индекс' = zip(l), 
+            'Телефон' = phone(l), 'Электронная почта' = email(l) WHERE l IS LegalEntity TO f;   
+        open(f());
+    }
+}
+
+legalEntityImport 'Импорт организаций' () {
+    LOCAL id = STRING[50] (INTEGER);
+    LOCAL name = ISTRING[30] (INTEGER);
+    LOCAL website = ISTRING[30] (INTEGER);
+    LOCAL address = ISTRING[50] (INTEGER);
+    LOCAL city = ISTRING[30] (INTEGER);
+    LOCAL state = ISTRING[30] (INTEGER);
+    LOCAL zip = ISTRING[10] (INTEGER);
+    LOCAL phone = ISTRING[30] (INTEGER);
+    LOCAL email = ISTRING[30] (INTEGER);
+       
+    INPUT f = EXCELFILE DO {
+        NEWSESSION {
+            IMPORT XLS HEADER FROM f TO id, name, website, address, city, state, zip, phone, email; 
+            
+            FOR imported(INTEGER j) DO NEW l = LegalEntity {
+                id(l) <- id(j);
+                name(l) <- name(j);
+                website(l) <- website(j);
+                address(l) <- address(j);
+                city(l) <- city(j);
+                state(l) <- state(j);
+                zip(l) <- zip(j);
+                phone(l) <- phone(j);
+                email(l) <- email(j);
+            }
+            APPLY;
+            MESSAGE 'Импорт завершен';
+        }
+    }    
+}
+
+EXTEND FORM import 
+    PROPERTIES legalEntityImport(), legalEntityExport()
+;
+
+DESIGN import {
+    OBJECTS {
+        NEW legalEntity {
+            type = CONTAINERH;
+            caption = 'Организации';
+            MOVE PROPERTY(legalEntityImport());
+            MOVE PROPERTY(legalEntityExport());
+        }
+    }
+}
