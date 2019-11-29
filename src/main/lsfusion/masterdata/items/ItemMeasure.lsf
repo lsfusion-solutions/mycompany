@@ -28,19 +28,21 @@ default 'По умолчанию' = DATA BOOLEAN (ItemMeasure);
 FORM groupMeasures 'Группы единиц измерения'
     OBJECTS g = GroupMeasure
     PROPERTIES(g) id, name
-    PROPERTIES(g) NEW,DELETE   
+    PROPERTIES(g) NEW, DELETE   
+;
+
+FORM itemMeasure 'Единицы измерения'
+    OBJECTS i = ItemMeasure PANEL 
+    PROPERTIES(i) name, id, code, groupName, baseMeasureName, coefficient, default
+    
+    EDIT ItemMeasure OBJECT i
 ;
 
 FORM itemMeasures 'Единицы измерения'
     OBJECTS i = ItemMeasure
-    PROPERTIES(i) name, id, code, groupName, baseMeasureName, coefficient, default
-    PROPERTIES(i) NEW,DELETE
-;
-
-FORM itemMeasuresList 'Единицы измерения'
-    OBJECTS i = ItemMeasure
-    PROPERTIES(i) name, id, code
-    PROPERTIES(i) NEW,DELETE
+    PROPERTIES(i) READONLY name, id, code, groupName, baseMeasureName, coefficient, default
+    PROPERTIES(i) NEWSESSION NEW, EDIT, DELETE
+    
     LIST ItemMeasure OBJECT i
 ;
 
