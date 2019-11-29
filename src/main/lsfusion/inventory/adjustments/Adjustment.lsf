@@ -35,9 +35,9 @@ CLASS AdjustmentType 'Тип инвентаризации' {
     manual 'Вручную'
 }
 
-WHEN LOCAL (SETCHANGED (location(AdjustmentLine l)) OR SETCHANGED(product(l))) AND location(l) AND product(l) DO {
-    theoreticalQuantity(l) <- onHand(location(l), product(l));
-    realQuantity(l) <- theoreticalQuantity(l);
+WHEN LOCAL (SETCHANGED (location(AdjustmentLine l)) OR SETCHANGED(product(l))) AND q = onHand(location(l), product(l)) DO {
+    theoreticalQuantity(l) <- q;
+    realQuantity(l) <- q;
 }
 
 name 'Имя' (AdjustmentType o) = staticCaption(o) IF o IS AdjustmentType CHARWIDTH 15;
