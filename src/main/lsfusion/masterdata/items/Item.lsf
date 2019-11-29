@@ -1,12 +1,17 @@
 MODULE Item;
 
-REQUIRE MasterData, Category, Tax, ItemMeasure;
+REQUIRE MasterDataSettings, Category, Tax, ItemMeasure;
 
 NAMESPACE MasterData;
 
 CLASS ABSTRACT Item 'Номенклатура';
 id 'Код' = DATA STRING[50] (Item) IN id CHARWIDTH 8;
 item (STRING[50] id) = GROUP AGGR Item i BY id(i);
+
+WHEN SETCHANGED(Item i IS Item  AND numeratorItem() AND NOT id(i)) DO {
+    id(i) <- CONCAT '', series(numeratorItem()), curStringValue(numeratorItem());
+    incrementValueSession(numeratorItem());   
+}
 
 name 'Наименование' = DATA ISTRING[50] (Item) IN id;
 

@@ -1,6 +1,6 @@
 MODULE Bill;
 
-REQUIRE Invoicing, TaxItem, Account, Time, MetaTax, InvoicingSettings, ItemPurchase, PartnerPurchase, Company,
+REQUIRE Invoicing, TaxItem, Account, Time, MetaTax, ItemPurchase, PartnerPurchase, Company,
             BarCode;
 
 NAMESPACE Invoicing;
@@ -67,10 +67,23 @@ notes 'Примечания' = DATA ISTRING[50] (Bill);
 series 'Серия' = DATA STRING[2] (Bill);
 number 'Номер' = DATA STRING[28] (Bill) NONULL;
 
+numeratorBill 'Нумератор приходных накладных' = DATA Numerator() CHARWIDTH 20;
+nameNumeratorBill 'Нумератор приходных накладных' = name(numeratorBill());
+
 WHEN SETCHANGED(Bill b IS Bill  AND numeratorBill() AND NOT number(b)) DO {
     number(b) <- curStringValue(numeratorBill());
     series(b) <- series(numeratorBill());
     incrementValueSession(numeratorBill());   
+}
+
+EXTEND FORM settingsI 
+  PROPERTIES nameNumeratorBill()
+;
+
+DESIGN settingsI {
+    OBJECTS {
+        MOVE PROPERTY(nameNumeratorBill());
+    }
 }
 
 seriesNumber 'Серия/Номер' (Bill b) = CONCAT '/', series(b), number(b);

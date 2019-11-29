@@ -1,6 +1,6 @@
 MODULE Partner;
 
-REQUIRE MasterData, Utils;
+REQUIRE MasterDataSettings, Utils;
 
 NAMESPACE MasterData;
 
@@ -24,6 +24,11 @@ END
 
 id 'Код' = DATA STRING[50] (Partner) IN id CHARWIDTH 8;
 partner (STRING[50] id) = GROUP AGGR Partner p BY id(p);
+
+WHEN SETCHANGED(Partner p IS Partner  AND numeratorPartner() AND NOT id(p)) DO {
+    id(p) <- CONCAT '', series(numeratorPartner()), curStringValue(numeratorPartner());
+    incrementValueSession(numeratorPartner());   
+}
 
 name 'Наименование' = ABSTRACT ISTRING[92] (Partner) IN id;
 

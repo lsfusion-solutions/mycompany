@@ -8,6 +8,24 @@ CLASS Location 'Место хранения';
 id 'Код' = DATA STRING[50] (Location) IN id CHARWIDTH 8;
 location (STRING[50] id) = GROUP AGGR Location l BY id(l);
 
+numeratorLocation 'Нумератор мест хранения' = DATA Numerator() CHARWIDTH 20;
+nameNumeratorLocation 'Нумератор  мест хранения' = name(numeratorLocation());
+
+WHEN SETCHANGED(Location l IS Location  AND numeratorLocation() AND NOT id(l)) DO {
+    id(l) <- CONCAT '', series(numeratorLocation()), curStringValue(numeratorLocation());
+    incrementValueSession(numeratorLocation());   
+}
+
+EXTEND FORM settingsV
+  PROPERTIES nameNumeratorLocation()
+;
+
+DESIGN settingsV {
+    OBJECTS {
+        MOVE PROPERTY(nameNumeratorLocation());
+    }
+}
+
 name 'Название' = DATA ISTRING[30] (Location) IN id;
 parent 'Родитель' = DATA Location (Location);
 idParent 'Код родителя' (Location l) = id(parent(l));

@@ -1,12 +1,17 @@
 MODULE Category;
 
-REQUIRE MasterData, Hierarchy;
+REQUIRE MasterDataSettings, Hierarchy;
 
 NAMESPACE MasterData;
 
 CLASS Category 'Категория';
 id 'Код' = DATA STRING[50] (Category) IN id CHARWIDTH 8;
 category (STRING[50] id) = GROUP AGGR Category c BY id(c);
+
+WHEN SETCHANGED(Category c IS Category  AND numeratorPartner() AND NOT id(c)) DO {
+    id(c) <- CONCAT '', series(numeratorCategory()), curStringValue(numeratorCategory());
+    incrementValueSession(numeratorCategory());   
+}
 
 name 'Наименование' = DATA ISTRING[50] (Category) IN id;
 

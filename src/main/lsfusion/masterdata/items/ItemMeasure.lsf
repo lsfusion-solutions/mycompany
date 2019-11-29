@@ -1,6 +1,6 @@
 MODULE ItemMeasure;
 
-REQUIRE MasterData;
+REQUIRE MasterDataSettings;
 
 NAMESPACE MasterData;
 
@@ -13,6 +13,11 @@ name 'Наименование' = DATA STRING[50] (GroupMeasure) IN base;
 CLASS ItemMeasure 'Единицы измерения';
 id 'Код' = DATA STRING[50] (ItemMeasure) IN id CHARWIDTH 8;
 itemMeasure (STRING[50] id) = GROUP AGGR ItemMeasure i BY id(i);
+
+WHEN SETCHANGED(ItemMeasure i IS ItemMeasure  AND numeratorItemMeasure() AND NOT id(i)) DO {
+    id(i) <- CONCAT '', series(numeratorItemMeasure()), curStringValue(numeratorItemMeasure());
+    incrementValueSession(numeratorItemMeasure());   
+}
 
 code 'Код наименования' = DATA STRING[10] (ItemMeasure);
 name 'Наименование' = DATA STRING[50] (ItemMeasure) CHARWIDTH 8;

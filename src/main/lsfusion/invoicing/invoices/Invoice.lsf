@@ -1,6 +1,6 @@
 MODULE Invoice;
 
-REQUIRE Invoicing, TaxItem, Account, Time, MetaTax, InvoicingSettings, ItemSale, PartnerSale, Company, BarCode;
+REQUIRE Invoicing, TaxItem, Account, Time, MetaTax, ItemSale, PartnerSale, Company, BarCode;
 
 NAMESPACE Invoicing;
 
@@ -66,10 +66,23 @@ notes 'Примечания' = DATA ISTRING[50] (Invoice);
 series 'Серия' = DATA STRING[2] (Invoice);
 number 'Номер' = DATA STRING[28] (Invoice) NONULL;
 
+numeratorInvoice 'Нумератор расходных накладных' = DATA Numerator() CHARWIDTH 20;
+nameNumeratorInvoice 'Нумератор расходных накладных' = name(numeratorInvoice());
+
 WHEN SETCHANGED(Invoice i IS Invoice  AND numeratorInvoice() AND NOT number(i)) DO {
     number(i) <- curStringValue(numeratorInvoice());
     series(i) <- series(numeratorInvoice());
     incrementValueSession(numeratorInvoice());   
+}
+
+EXTEND FORM settingsI 
+  PROPERTIES nameNumeratorInvoice()
+;
+
+DESIGN settingsI {
+    OBJECTS {
+        MOVE PROPERTY(nameNumeratorInvoice());
+    }
 }
 
 seriesNumber 'Серия/Номер' (Invoice i) = CONCAT '/', series(i), number(i); 
