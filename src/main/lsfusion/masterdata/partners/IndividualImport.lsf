@@ -42,11 +42,6 @@ individualImport 'Импорт физических лиц' () {
             IMPORT XLS HEADER FROM f TO id, firstName, lastName, middleName, legalEntity, address, city, state, 
                                         zip, phone, email; 
             
-            FOR [GROUP SUM 1 BY legalEntity(INTEGER i)](num) AND NOT partner[STRING](num) DO {
-                MESSAGE 'Отсутствуют необходимые объекты. Импорт отменен';
-                RETURN;
-            }  
-            
             FOR imported(INTEGER j) DO NEW i = Individual {
                 id(i) <- id(j);
                 firstName(i) <- firstName(j);

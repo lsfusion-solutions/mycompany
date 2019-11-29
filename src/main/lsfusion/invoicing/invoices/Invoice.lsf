@@ -19,6 +19,8 @@ namePartner 'Партнер' (Invoice b) = name(partner(b));
 
 partnerAccount 'Счет партнера'  = DATA Account (Invoice);
 
+addressPartner 'Адрес партнера' = DATA STRING (Invoice); 
+
 CONSTRAINT partner(Invoice i) AND NOT isCustomer(partner(i)) 
                 CHECKED BY partner
                 MESSAGE 'Партнер должен быть покупателем';
@@ -101,7 +103,7 @@ CONSTRAINT item(InvoiceLine l) AND NOT canBeSold(item(l))
 
 FORM invoice 'Расходная накладная'
     OBJECTS  i = Invoice PANEL 
-    PROPERTIES(i) READONLYIF readonly(i)  date, dueDate, namePartner, partnerAccountNumber, sourceDocument,
+    PROPERTIES(i) READONLYIF readonly(i)  date, dueDate, namePartner, partnerAccountNumber, addressPartner, sourceDocument,
                              nameCompany, companyAccountNumber, series, number, notes
         
     OBJECTS l = InvoiceLine

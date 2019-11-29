@@ -21,12 +21,14 @@ nameProduct 'Продукт' (ScrapLine l) = name(product(l));
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (ScrapLine);
 
+readonly = ABSTRACT CASE BOOLEAN (Scrap);
+
 FORM scrap 'Списание'
     OBJECTS s = Scrap PANEL 
-    PROPERTIES(s) done, date, nameLocationFrom
+    PROPERTIES(s) READONLYIF readonly(s) date, nameLocationFrom
     
     OBJECTS l = ScrapLine
-    PROPERTIES(l) nameProduct, quantity
+    PROPERTIES(l) READONLYIF readonly(s) nameProduct, quantity, NEW, DELETE
     FILTERS scrap(l) = s
     
     EDIT Scrap OBJECT s
@@ -34,7 +36,7 @@ FORM scrap 'Списание'
 
 FORM scraps 'Списания'
     OBJECTS s = Scrap 
-    PROPERTIES(s)  READONLY done, date, nameLocationFrom
+    PROPERTIES(s)  READONLY date, nameLocationFrom
     PROPERTIES (s) NEWSESSION EDIT, DELETE 
     
     LIST Scrap OBJECT s
@@ -67,10 +69,14 @@ EXTEND FORM scrap
 
 DESIGN scrap {
     OBJECTS {
-        NEW actions {
+        NEW statusActions {
             alignment = STRETCH;
             type = CONTAINERH;
-            MOVE PROPERTY(copyScrap(s));
+            NEW actions {
+                flex = 1;
+                type = CONTAINERH;
+                MOVE PROPERTY(copyScrap(s));
+            }
         }
         NEW details {
             fill = 1;

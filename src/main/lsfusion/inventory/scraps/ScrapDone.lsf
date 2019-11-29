@@ -1,0 +1,43 @@
+MODULE ScrapDone;
+
+REQUIRE Scrap;
+
+NAMESPACE Inventory;
+
+CLASS ScrapStatus 'Статус прихода' {
+    draft 'Черновик',
+    done 'Проведен'
+}
+
+name 'Имя' (ScrapStatus o) = staticCaption(o) IF o IS ScrapStatus CHARWIDTH 15;
+
+status 'Статус' (Scrap s) = IF done(s) THEN ScrapStatus.done
+                                ELSE ScrapStatus.draft;
+nameStatus 'Статус' (Scrap s) = name(status(s));
+statusColor (Scrap s) = IF status(s) = ScrapStatus.draft THEN RGB(187,242,210); 
+
+toDone 'Провести' (Scrap s) {
+    done(s) <- TRUE;
+}
+
+readonly (Scrap s) += WHEN NOT status(s) = ScrapStatus.draft THEN TRUE;
+
+EXTEND FORM scrap
+    PROPERTIES(s) toDone SHOWIF status(s) = ScrapStatus.draft, nameStatus READONLY BACKGROUND statusColor(s)
+;
+
+EXTEND FORM scraps
+    PROPERTIES(s) nameStatus BEFORE date(s) BACKGROUND statusColor(s)
+;
+
+DESIGN scrap {
+    statusActions {
+        actions {
+            MOVE PROPERTY(toDone(s)) FIRST;
+        }
+        NEW status {
+            type = CONTAINERH;
+            MOVE PROPERTY(nameStatus(s));
+        }
+    }
+}

@@ -27,7 +27,7 @@ CONSTRAINT customer(Order o) AND NOT isVendor(customer(o)) AND NOT isCustomer(cu
                 CHECKED BY isVendor, isCustomer
                 MESSAGE 'Партнер должен быть либо постащиком, либо заказчиком';
 
-invoiceAddress 'Адрес для счета ' = DATA STRING (Order);
+addressCustomer 'Адрес получателя' = DATA STRING (Order);
 
 deliveryAddress 'Адрес доставки' = DATA STRING (Order);
 
@@ -49,7 +49,7 @@ invoiceDate 'Дата счета' = DATA DATETIME (Order);
 representative 'Наш представитель' = DATA Individual (Order);
 nameRepresentative 'Наш представитель' (Order o)= name(representative(o));
 
-vendorReference 'Входящий номер заказчика' = DATA STRING[30] (Order);
+customerReference 'Входящий номер заказчика' = DATA STRING[30] (Order);
 
 CONSTRAINT NOT type(representative(Order o))=PartnerType.individual AND o IS Order CHECKED MESSAGE 'Должен быть наш работник';
 CONSTRAINT NOT type(legalEntity(representative(Order o))) = PartnerType.company AND o IS Order CHECKED MESSAGE 'Должен быть наш работник';
@@ -73,7 +73,7 @@ discount 'Скидка %' =  DATA NUMERIC[4,2] (OrderLine);
 expectedDate 'Возможна поставка после' = DATA DATETIME (Order); //Здесь должна быть формула расчета даты создания заказа + макс срок поставки из товаров
 
 WHEN LOCAL CHANGED(customer(Order o)) DO {
-    invoiceAddress(o) <- concatAddress(customer(o),', ');
+    addressCustomer(o) <- concatAddress(customer(o),', ');
     deliveryAddress(o) <- concatAddress(customer(o),', ');
 }
 
@@ -91,7 +91,7 @@ FORM order 'Заказ'
     PROPERTIES(o) READONLY date
     PROPERTIES(o) READONLY seriesNumber  
     PROPERTIES(o) nameCustomer
-    PROPERTIES(o) invoiceAddress
+    PROPERTIES(o) addressCustomer
     PROPERTIES(o) deliveryAddress
     PROPERTIES(o) validity
     PROPERTIES(o) namePaymentterm
@@ -101,7 +101,7 @@ FORM order 'Заказ'
     PROPERTIES(o) commintmentDate
     PROPERTIES(o) invoiceDate
     PROPERTIES(o) nameRepresentative
-    PROPERTIES(o) vendorReference
+    PROPERTIES(o) customerReference
                  
     OBJECTS l = OrderLine
     PROPERTIES(l) nameItem
@@ -112,7 +112,7 @@ FORM order 'Заказ'
     PROPERTIES(l) cost
     PROPERTIES(l) discount
     PROPERTIES(l) DELETE
-     
+        
     FILTERS order(l)=o
     EDIT Order OBJECT o    
 ;      
@@ -134,40 +134,59 @@ DESIGN order {
             type = CONTAINERH;        
             MOVE PROPERTY(date(o));
             MOVE PROPERTY(seriesNumber(o));
+            MOVE PROPERTY(validity(o));
         }
         NEW header {            
+            fill = 1;
             type = CONTAINERH;
-            NEW attr {
+            NEW boxes{
                 type = CONTAINERV;
-                MOVE PROPERTY(nameCustomer(o));                
-                MOVE PROPERTY(validity(o));
-            }
-            NEW shipment {
-                caption = 'Поставка';
-                marginLeft = 30;
+                fill = 2; 
+                NEW attr {
+                    fill = 1;
+                    type = CONTAINERH;
+                    MOVE PROPERTY(nameCustomer(o)) {fill = 20;};                
+                }
+                NEW box1 {
+                    type = CONTAINERH;
+                    fill = 5;
+                    NEW shipment {
+                        fill =1;
+                        caption = 'Поставка';
+                        type = CONTAINERV;
+                        MOVE PROPERTY(expectedDate(o));
+                        MOVE PROPERTY(commintmentDate(o));
+                        MOVE PROPERTY(deliveryAddress(o));
+                        MOVE PROPERTY(nameIncoterm(o));
+                        MOVE PROPERTY(nameLocation(o));               
+                    }
+                    NEW invoicing {
+                        caption = 'Расчеты';
+                        fill =1;
+                        marginLeft = 30;
+                        type = CONTAINERV;
+                        MOVE PROPERTY(invoiceDate(o));
+                        MOVE PROPERTY(addressCustomer(o));
+                        MOVE PROPERTY(namePaymentterm(o));                         
+                    }
+                }
+                NEW box2 {
+                    fill = 1;
+                    NEW sales {
+                        caption = 'Продажи';
+                        MOVE PROPERTY(nameRepresentative(o));
+                        MOVE PROPERTY(customerReference(o));           
+                    }
+                }
+            }              
+            NEW relatedDoc{
+                fill = 1;
+                marginLeft = 50;
                 type = CONTAINERV;
-                MOVE PROPERTY(expectedDate(o));
-                MOVE PROPERTY(commintmentDate(o));
-                MOVE PROPERTY(deliveryAddress(o));
-                MOVE PROPERTY(nameIncoterm(o));
-                MOVE PROPERTY(nameLocation(o));               
-            }
-            NEW invoicing {
-                caption = 'Расчеты';
-                marginLeft = 30;
-                type = CONTAINERV;
-                MOVE PROPERTY(invoiceDate(o));
-                MOVE PROPERTY(invoiceAddress(o));
-                MOVE PROPERTY(namePaymentterm(o));                         
-            }
-            NEW sales {
-                marginLeft = 30;
-                MOVE PROPERTY(nameRepresentative(o));
-                MOVE PROPERTY(vendorReference(o));           
             }
         }
         NEW details {
-            fill = 1;
+            fill = 7;
             type = TABBED;
             MOVE BOX (l);
             PROPERTY(unitPrice(l)) { pattern='#,##0.00'; }
