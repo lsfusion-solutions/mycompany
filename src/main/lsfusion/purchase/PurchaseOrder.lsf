@@ -75,8 +75,7 @@ WHEN LOCAL CHANGED (item(OrderLine ol)) DO {
 FORM order 'Заказ'
     OBJECTS o = Order PANEL
     PROPERTIES(o) READONLY date
-    PROPERTIES(o) READONLY series  
-    PROPERTIES(o) READONLY number  
+    PROPERTIES(o) READONLY seriesNumber  
     PROPERTIES(o) nameLocation
     PROPERTIES(o) nameVendor
     PROPERTIES(o) vendorReference
@@ -111,55 +110,71 @@ EXTEND FORM order
 
 DESIGN order{
     OBJECTS {
-        NEW header{
+        NEW paneUp {    
+            fill = 1;
             type = CONTAINERH;
-            NEW attr {
-                NEW create{
-                    type = CONTAINERH;
-                    MOVE PROPERTY(date(o)) { caption='Создан'; };
-                }
-                NEW numser{
-                    type = CONTAINERH; 
-                    MOVE PROPERTY(series(o));
-                    MOVE PROPERTY(number(o));
+            NEW header {
+                fill = 2;
+                NEW title {
+                    type = CONTAINERH;        
+                    MOVE PROPERTY(date(o));
+                    MOVE PROPERTY(seriesNumber(o));
                 }    
-                MOVE PROPERTY(nameLocation(o));
-                MOVE PROPERTY(nameRepresentative(o));
-            }
-            NEW contr {
-                marginLeft = 30;
-                MOVE PROPERTY(nameVendor(o));
-                MOVE PROPERTY(vendorReference(o));
-                NEW schelule{
-                    type = CONTAINERH;               
-                    MOVE PROPERTY(scheduledDate(o)) { caption='Срок поставки'; }
+                NEW boxes{
+                    fill = 1; 
+                    NEW attr {
+                        fill = 1;
+                        type = CONTAINERH;
+                        MOVE PROPERTY(nameVendor(o)) { fill = 20; };                
+                        MOVE PROPERTY(vendorReference(o)) { fill = 1; };
+                    }
+                    NEW box1 {
+                        type = CONTAINERH;
+                        fill = 5;
+                        NEW receipt {
+                            fill = 1;
+                            caption = 'Поставка';
+                            MOVE PROPERTY(scheduledDate(o)) { caption='Срок поставки'; }
+                            MOVE PROPERTY(nameIncoterm(o));
+                            MOVE PROPERTY(nameLocation(o));               
+                        }
+                        NEW invoicing {
+                            caption = 'Расчеты';
+                            fill = 1;
+                            marginLeft = 30;
+                            MOVE PROPERTY(namePaymentterm(o));                         
+                        }
+                    }
+                    NEW box2 {
+                        fill = 1;
+                        NEW sales {
+                            caption = 'Продажи';
+                            MOVE PROPERTY(nameRepresentative(o));
+                        }
+                    }
                 }
-                MOVE PROPERTY(nameIncoterm(o));
-                MOVE PROPERTY(namePaymentterm(o));
             }
+            NEW relatedDoc {
+                fill = 1;
+                marginLeft = 50;
+            }                                            
         }
-        NEW details{
-            fill = 1;
+        NEW details {
+            fill = 7;
             type = TABBED;
-            fill = 1;
             MOVE BOX(l);
             PROPERTY(unitPrice(l)) { pattern='#,##0.00'; }
             PROPERTY(subtotal(l))  { pattern='#,##0.00'; }            
-            NEW pane {
-               type = SPLITH;
-               fill = 1;
-            }
         }
-        NEW paneDown
-        {
+        NEW paneDown {
             align = END;
             type = CONTAINERH; 
-            NEW paneExecution{
+            NEW paneExecution {
                 type = CONTAINERV;
             }         
             NEW paneSum {
                 MOVE BOX(oo) { caption='ИТОГО'; }                
-                GROUP(,oo) {type = CONTAINERV;}
+                GROUP(,oo) { type = CONTAINERV; }
                 PROPERTY(untaxedAmount(oo)) { pattern='#,##0.00'; }
                 PROPERTY(totalTax(oo)) { pattern='#,##0.00'; }
                 PROPERTY(totalAmount(oo)) { pattern='#,##0.00'; }                     
@@ -167,14 +182,6 @@ DESIGN order{
         }
     }        
 }
-
-//отключил т.к. не могу здесь получить св-во orderConfirmed, или даже статус проверить
-//FORM rfqs 'Запросы цен'
-//     OBJECTS o = Order
-//     PROPERTIES (o) READONLY createDateTime,seriesNumber,locationName,partnerName
-//     PROPERTIES(o) READONLY untaxedAmount, totalTax, totalAmount         
-//     PROPERTIES (o) NEWEDIT NEWSESSION,EDIT NEWSESSION,DELETE 
-//;
 
 FORM orders 'Заказы'
      OBJECTS o = Order
@@ -193,7 +200,19 @@ DESIGN orders{
 
 NAVIGATOR {
     purchase{
-        NEW orders;       
+        NEW orders FIRST;       
     }
 }
+
+addOrder 'Заказ' () {
+    NEWSESSION {
+        NEW o = Order {
+            SHOW order OBJECTS o = o;  
+        }
+    }
+}IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+
+EXTEND FORM orders
+    PROPERTIES addOrder() DRAW o TOOLBAR
+;
 

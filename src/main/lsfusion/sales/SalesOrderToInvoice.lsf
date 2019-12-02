@@ -7,9 +7,9 @@ NAMESPACE Sales;
 lineOrder 'ссылка на заказ' = DATA OrderLine (InvoiceLine);
 order 'ссылка на заказ' = DATA Order (Invoice);
 
-inInvoice 'Выписано по накладным' (OrderLine ol) = GROUP SUM quantity(InvoiceLine bl) IF lineOrder(bl)=ol AND NOT canceled(invoice(bl)) ;
-payedInvoice 'Оплачено' (OrderLine ol) = GROUP SUM quantity(InvoiceLine bl) IF lineOrder(bl)=ol AND done(invoice(bl)) AND NOT canceled(invoice(bl)) ;
-deficitInvoice 'Недооформлено' (Order o) =  GROUP SUM abs(inInvoice(OrderLine ol) (-) quantity(ol)) IF order(ol)=o AND ol IS OrderLine;
+inInvoice 'Выписано по накладным' (OrderLine ol) = GROUP SUM quantity(InvoiceLine bl) IF lineOrder(bl) = ol AND NOT canceled(invoice(bl));
+payedInvoice 'Оплачено' (OrderLine ol) = GROUP SUM quantity(InvoiceLine bl) IF lineOrder(bl) = ol AND done(invoice(bl)) AND NOT canceled(invoice(bl));
+deficitInvoice 'Недооформлено' (Order o) =  GROUP SUM abs(inInvoice(OrderLine ol) (-) quantity(ol)) IF order(ol) = o AND ol IS OrderLine;
 
 createInvoice 'Оформить накладную' (Order o) {
     IF canceled() THEN RETURN;
@@ -46,8 +46,7 @@ FORM orderInvoiceShow 'Оформлено накладными'
     OBJECTS ol = OrderLine
     
     OBJECTS il = InvoiceLine
-    PROPERTIES(il) invoiceDate, invoiceStatus, quantity
-    
+    PROPERTIES(il) invoiceDate, invoiceStatus, quantity    
     FILTERS lineOrder(il) = ol
 ;
 

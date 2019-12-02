@@ -2,33 +2,42 @@ MODULE PurchaseOrderToReceipt;
 
 REQUIRE PurchaseOrder, Receipt, ReceiptStatus, ReceiptDone, PurchaseOrderStatus, PurchaseOrderStatusConfirm, PurchaseOrderStatusCancel, ReceiptCanceled;
 
+NAMESPACE Purchase;
+
 orderLine 'ссылка на заказ' = DATA OrderLine (ReceiptLine);
 order 'ссылка на заказ' = DATA Order (Receipt);
 
 doneReceipt 'Оприходовано на склад' (OrderLine ol) = GROUP SUM done(ReceiptLine rl) IF orderLine(rl)=ol AND done(receipt(rl)) AND NOT canceled(receipt(rl));
 initReceipt 'Запланирован приход на склад' (OrderLine ol) = GROUP SUM initialDemand(ReceiptLine rl) IF orderLine(rl)=ol AND ready(receipt(rl)) AND NOT canceled(receipt(rl));
-deficitReceipt 'Недопоступило' (Order o) =  GROUP SUM abs(initReceipt(OrderLine ol)(-)quantity(ol)) IF order(ol)=o;
+deficitReceipt 'Недопоступило' (OrderLine ol) =  initReceipt(ol) (-) quantity(ol);
 
-createReceipt 'Добавить приход на склад' (Order o) {
-        IF canceled(o) THEN RETURN;
-            NEW nr = Receipt {
-                partner(nr) <- vendor(o);
-                scheduledDate(nr) <- scheduledDate(o);
-                location(nr) <- location(o);
-                type(nr) <- typeReceiptDefault();
-                number(nr) <- curStringValue(numerator(type(nr)));
-                series(nr) <- series(numerator(type(nr)));
-                incrementValueSession(numerator(type(nr)));
-                ready(nr) <- TRUE;           
-                order(nr) <- o; 
-                sourceDocument(nr) <- number(o);    
-                FOR order(OrderLine ol) = o AND NOT (quantity(ol)-initReceipt(ol)<=0) INLINE NEW rl = ReceiptLine DO {
-                    receipt(rl) <- nr;
-                    product(rl) <- item(ol);
-                    initialDemand(rl) <- quantity(ol)(-)initReceipt(ol);
-                    orderLine(rl) <- ol;
-                }
-            }
+deficitReceipt 'Недоопоступило' (Order o) =  GROUP SUM abs(deficitReceipt(OrderLine ol)) IF order(ol)=o;
+
+CONSTRAINT (quantity(OrderLine ol) - doneReceipt(ol)) < 0 AND confirmed(order(ol)) AND ol IS OrderLine MESSAGE 'По товару приход превышает количество в заказе';
+
+lastOpenReceipt 'Последний открытый приход' (Order o)= GROUP LAST Receipt r IF order(r)=o AND status(r)=ReceiptStatus.ready AND r IS Receipt ORDER r;
+
+WHEN ([GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) BY order(l)](Order o) OR SET (confirmed(o)) ) AND deficitReceipt(o)>0 AND status(o)=OrderStatus.orderConfirmed DO
+{
+    IF NOT lastOpenReceipt(o) THEN   
+        NEW ns = Receipt { 
+            partner(ns) <- vendor(o);
+            scheduledDate(ns) <- scheduledDate(o);
+            location(ns) <- location(o);
+            type(ns) <- typeReceiptDefault();
+            number(ns) <- curStringValue(numerator(type(ns)));
+            series(ns) <- series(numerator(type(ns)));
+            incrementValueSession(numerator(type(ns)));
+            ready(ns) <- TRUE;           
+            order(ns) <- o; 
+            sourceDocument(ns) <- number(o);    
+        }
+    FOR order(OrderLine ol) = o AND deficitReceipt(ol) AND ol IS OrderLine INLINE NEW rl = ReceiptLine DO {            
+        receipt(rl) <- lastOpenReceipt(o);
+        product(rl) <- item(ol);
+        initialDemand(rl) <- deficitReceipt(ol);
+        orderLine(rl) <- ol;
+    }
 }
 
 scheduledDateReceipt 'Дата прихода' (ReceiptLine rl) = scheduledDate(receipt(rl));
@@ -37,33 +46,40 @@ nameStatusReceipt 'Статус' (ReceiptLine rl) = nameStatus(receipt(rl));
 
 FORM orderReceiptShow 'Оприходовано на склад'
     OBJECTS ol = OrderLine
+    
     OBJECTS rl = ReceiptLine
     PROPERTIES(rl) scheduledDateReceipt, nameStatusReceipt, initialDemand, done
     FILTERS orderLine(rl) = ol
 ;
 
-DESIGN orderReceiptShow{
-    MOVE BOX(rl) FIRST {caption='';}
+DESIGN orderReceiptShow {
+    MOVE BOX(rl) FIRST { caption=''; }
 }
 
-showReceipts (OrderLine l){
+showReceipts (OrderLine l) {
     DIALOG orderReceiptShow OBJECTS ol = l; 
 }
 
-WHEN SET(confirmed(Order o)) DO{
-    createReceipt(o);
-}  
+showReceipt (Receipt r) {
+    SHOW receipt OBJECTS r = r;
+}
 
 EXTEND FORM order
-    PROPERTIES(o) SHOWIF (confirmed(o) AND deficitReceipt(o)>0) createReceipt   
     PROPERTIES(l) SHOWIF confirmed(o) initReceipt ON CHANGE showReceipts(l)
-    PROPERTIES(l) SHOWIF confirmed(o) doneReceipt ON CHANGE showReceipts(l)    
+    PROPERTIES(l) SHOWIF confirmed(o) doneReceipt ON CHANGE showReceipts(l)
+        
+    OBJECTS rc = Receipt
+    PROPERTIES(rc) seriesNumber ON CHANGE showReceipt(rc)
+    PROPERTIES(rc) READONLY scheduledDate, executionDate, nameStatus   
+    FILTERS order(rc) = o
 ;
 
 DESIGN order {
-    statusPane{
-        statusActions{
-            MOVE PROPERTY(createReceipt(o)) FIRST;
-        }
+    relatedDoc  {
+        MOVE BOX(rc);
+        REMOVE TOOLBARSYSTEM(rc);
+        PROPERTY (scheduledDate(rc)) { caption='Запланирован приход'; }
+        PROPERTY (executionDate(rc)) { caption='Дата прихода'; }
+        PROPERTY (seriesNumber(rc)) { charWidth = 15; }
     }
 }

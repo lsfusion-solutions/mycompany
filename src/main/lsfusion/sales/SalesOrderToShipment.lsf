@@ -15,11 +15,11 @@ deficitShipment 'Недоотпущено' (Order o) =  GROUP SUM abs(deficitShi
 
 CONSTRAINT (quantity(OrderLine ol) - doneShipment(ol)) < 0 AND confirmed(order(ol)) AND ol IS OrderLine MESSAGE 'По товару отгрузка превышает количество в заказе';
 
-lastOpenReceipt 'Последний открытый расход' (Order o)= GROUP LAST Shipment s IF order(s)=o AND status(s)=ShipmentStatus.ready AND s IS Shipment ORDER s;
+lastOpenShipment 'Последний открытый расход' (Order o)= GROUP LAST Shipment s IF order(s)=o AND status(s)=ShipmentStatus.ready AND s IS Shipment ORDER s;
 
 WHEN ([GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) BY order(l)](Order o) OR SET (confirmed(o)) ) AND deficitShipment(o)>0 AND status(o)=OrderStatus.orderConfirmed DO
 {
-    IF NOT lastOpenReceipt(o) THEN   
+    IF NOT lastOpenShipment(o) THEN   
         NEW ns = Shipment { 
             partner(ns) <- customer(o);
             scheduledDate(ns) <- commintmentDate(o);
@@ -33,7 +33,7 @@ WHEN ([GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) BY order(l)](Order o) OR SE
             sourceDocument(ns) <- number(o);    
         }
     FOR order(OrderLine ol) = o AND deficitShipment(ol) AND ol IS OrderLine INLINE NEW sl = ShipmentLine DO {            
-        shipment(sl) <- lastOpenReceipt(o);
+        shipment(sl) <- lastOpenShipment(o);
         product(sl) <- item(ol);
         initialDemand(sl) <- deficitShipment(ol);
         reserved(sl) <- deficitShipment(ol);
@@ -49,8 +49,7 @@ FORM orderShipmentShow 'Расход со склада'
     OBJECTS ol = OrderLine
     
     OBJECTS sl = ShipmentLine
-    PROPERTIES(sl) scheduledDateShipment, nameStatusShipment, initialDemand, done
-    
+    PROPERTIES(sl) scheduledDateShipment, nameStatusShipment, initialDemand, done   
     FILTERS orderLine(sl) = ol
 ;
 

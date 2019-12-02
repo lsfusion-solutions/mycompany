@@ -142,12 +142,13 @@ DESIGN order {
                     MOVE PROPERTY(seriesNumber(o));
                     MOVE PROPERTY(validity(o));
                 }    
-                NEW boxes{
+                NEW boxes {
                     fill = 1; 
                     NEW attr {
                         fill = 1;
                         type = CONTAINERH;
-                        MOVE PROPERTY(nameCustomer(o)) { fill = 20; };                
+                        MOVE PROPERTY(nameCustomer(o)) { fill = 20; }; 
+                        MOVE PROPERTY(customerReference(o)) { fill = 1; };               
                     }
                     NEW box1 {
                         type = CONTAINERH;
@@ -155,7 +156,7 @@ DESIGN order {
                         NEW shipment {
                             fill = 1;
                             caption = 'Поставка';
-                                MOVE PROPERTY(expectedDate(o));
+                            MOVE PROPERTY(expectedDate(o));
                             MOVE PROPERTY(commintmentDate(o));
                             MOVE PROPERTY(deliveryAddress(o));
                             MOVE PROPERTY(nameIncoterm(o));
@@ -174,13 +175,12 @@ DESIGN order {
                         fill = 1;
                         NEW sales {
                             caption = 'Продажи';
-                            MOVE PROPERTY(nameRepresentative(o));
-                            MOVE PROPERTY(customerReference(o));           
+                            MOVE PROPERTY(nameRepresentative(o));                                       
                         }
                     }
                 }
             }
-            NEW relatedDoc{
+            NEW relatedDoc {
                 fill = 1;
                 marginLeft = 50;
             }                                 
@@ -209,14 +209,6 @@ DESIGN order {
     }            
 }
 
-//отключил т.к. не могу здесь получить св-во orderConfirmed, или даже статус проверить
-//FORM rfqs 'Запросы цен'
-//     OBJECTS o = Order
-//     PROPERTIES (o) READONLY createDateTime,seriesNumber,locationName,partnerName
-//     PROPERTIES(o) READONLY untaxedAmount, totalTax, totalAmount         
-//     PROPERTIES (o) NEWEDIT NEWSESSION,EDIT NEWSESSION,DELETE 
-//;
-
 FORM orders 'Заказы'
      OBJECTS o = Order
      PROPERTIES(o) READONLY seriesNumber,date,commintmentDate,expectedDate,nameCustomer,nameRepresentative
@@ -226,6 +218,7 @@ FORM orders 'Заказы'
 EXTEND FORM orders 
     PROPERTIES(o) READONLY totalAmount     
 ;
+
 DESIGN orders {
     PROPERTY(totalAmount(o)) { pattern='#,##0.00'; }
 }
