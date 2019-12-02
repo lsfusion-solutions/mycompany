@@ -10,52 +10,42 @@ done 'Принят' = DATA BOOLEAN (Receipt);
 done 'Принятое количество' = DATA NUMERIC[16,3] (ReceiptLine);
 
 CONSTRAINT done(ReceiptLine l) < 0 OR done(l) > initialDemand(l) 
-    MESSAGE 'Отгруженое количество должно быть от 0 до исходного';
+    MESSAGE 'Принятое количество должно быть от 0 до исходного';
 
-validate 'Принят' (Receipt r) {
-    IF NOT ready(r) THEN {
-        FOR receipt(ReceiptLine l) = r DO {
-            IF NOT done(l) THEN {
-               MESSAGE 'Нужно указать принятое кол-во';
-               RETURN;
-            } ELSE
-            initialDemand(l) <- done(l); 
-        }
+CONSTRAINT immediateTransfer(Receipt r) AND (NOT done(ReceiptLine l) AND receipt(l) = r) MESSAGE 'Необходимо указать принятые кол-ва';
 
-        ready(r) <- TRUE;
-        done(r) <- TRUE;
-        executionDate(r) <- currentDateTime();
-        APPLY;
-        RETURN;    
-    }
+validate 'Принят' (Receipt r) {        
     APPLY; // сохраняем изменения
     IF canceled() THEN RETURN; // если сработало ограничение, то выходим
-    
+        
     NEWSESSION {
-        IF GROUP SUM done(ReceiptLine l) IF receipt(l) = r THEN {
-            IF GROUP SUM 1 IF receipt(ReceiptLine l) = r AND NOT done(l) = initialDemand(l) THEN {
-                ASK 'Принято не все количество. Создать дополнительную приемку ?' DO {
-                    NEW rn = Receipt {
-                        type(rn) <- type(r);
-                        partner(rn) <- partner(r);
-                        location(rn) <- location(r);
-                        scheduledDate(rn) <- scheduledDate(r);
-                        notes(rn) <- notes(r);
-                        FOR receipt(ReceiptLine l) = r AND (q = initialDemand(l) (-) done(l)) DO NEW ln = ReceiptLine {
-                            receipt(ln) <- rn;
-                            product(ln) <- product(l);
-                            initialDemand(ln) <- q;
+        IF NOT immediateTransfer(r) THEN {
+            IF GROUP SUM done(ReceiptLine l) IF receipt(l) = r THEN {
+                IF GROUP SUM 1 IF receipt(ReceiptLine l) = r AND NOT done(l) = initialDemand(l) THEN {
+                    ASK 'Принято не все количество. Создать дополнительную приемку ?' DO {
+                        NEW rn = Receipt {
+                            type(rn) <- type(r);
+                            partner(rn) <- partner(r);
+                            location(rn) <- location(r);
+                            scheduledDate(rn) <- scheduledDate(r);
+                            notes(rn) <- notes(r);
+                            FOR receipt(ReceiptLine l) = r AND (q = initialDemand(l) (-) done(l)) DO NEW ln = ReceiptLine {
+                                receipt(ln) <- rn;
+                                product(ln) <- product(l);
+                                initialDemand(ln) <- q;
+                            }
                         }
+                        initialDemand(ReceiptLine l) <- done(l) WHERE receipt(l) = r;
+                        DELETE ReceiptLine l WHERE receipt(l) = r AND NOT done(l);
                     }
-                    initialDemand(ReceiptLine l) <- done(l) WHERE receipt(l) = r;
-                    DELETE ReceiptLine l WHERE receipt(l) = r AND NOT done(l);
                 }
+            } ELSE {
+                ASK 'Не заполены принятые количества. Проставить ожидаемыми ?' DO {
+                    done(ReceiptLine l) <- initialDemand(l) WHERE receipt(l) = r;
+                } ELSE RETURN;
             }
-        } ELSE {
-            ASK 'Не заполены принятые количества. Проставить ожидаемыми ?' DO {
-                done(ReceiptLine l) <- initialDemand(l) WHERE receipt(l) = r;
-            } ELSE RETURN;
-        }
+        } ELSE ready(r) <- TRUE;
+        
         done(r) <- TRUE;
         executionDate(r) <- currentDateTime();
         APPLY;

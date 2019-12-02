@@ -11,59 +11,58 @@ done 'Отгружено' = DATA NUMERIC[16,3] (ShipmentLine);
 CONSTRAINT done(ShipmentLine l) < 0 OR done(l) > initialDemand(l) 
     MESSAGE 'Отгруженое количество должно быть от 0 до исходного';
 
+CONSTRAINT immediateTransfer(Shipment s) AND (NOT done(ShipmentLine l) AND shipment(l) = s) MESSAGE 'Необходимо указать отгруженые кол-ва';
+
 fillDone 'Заполнить Отгружено' (Shipment s) {
     done(ShipmentLine l) <- reserved(l) WHERE shipment(l) = s;    
 }
 
 extraValidate ABSTRACT LIST (Shipment);
-validate 'Отгружен' (Shipment s) {
-    IF NOT ready(s) THEN { 
-        FOR shipment(ShipmentLine l) = s DO {
-            IF NOT done(l) THEN {
-               MESSAGE 'Нужно указать отгруженное кол-во';
-               RETURN;
-            } ELSE
-            initialDemand(l) <- done(l); 
-        }
-        waiting(s) <- TRUE;
-        checkAvailability(s);
-        extraValidate(s);
-        done(s) <- TRUE;
-        executionDate(s) <- currentDateTime();
-        APPLY;
-        RETURN;
-    }
+validate 'Отгружен' (Shipment s) {   
     APPLY; // сохраняем изменения
     IF canceled() THEN RETURN; // если сработало ограничение, то выходим
     
     NEWSESSION {
-        extraValidate(s);
-        
-        IF NOT (GROUP SUM done(ShipmentLine l) IF shipment(l) = s) THEN
-            ASK 'Не заполены отгруженые количества. Проставить ожидаемыми?' DO {
-                fillDone(s);
-            } ELSE RETURN;
-        
-        IF GROUP SUM 1 IF shipment(ShipmentLine l) = s AND NOT initialDemand(l) = done(l) THEN {
-            ASK 'Отгружено не все количество. Создать дополнительную отгрузку?' DO {
-                NEW rn = Shipment {
-                    type(rn) <- type(s);
-                    partner(rn) <- partner(s);
-                    location(rn) <- location(s);
-                    toLocation(rn) <- toLocation(s);
-                    scheduledDate(rn) <- scheduledDate(s);
-                    number(rn) <- number(s);
-                    notes(rn) <- notes(s);
-                    FOR shipment(ShipmentLine l) = s AND (q = initialDemand(l) (-) done(l)) DO NEW ln = ShipmentLine {
-                        shipment(ln) <- rn;
-                        product(ln) <- product(l);
-                        initialDemand(ln) <- q;
+        IF NOT immediateTransfer(s) THEN {
+            extraValidate(s);
+            
+            IF NOT (GROUP SUM done(ShipmentLine l) IF shipment(l) = s) THEN
+                ASK 'Не заполены отгруженые количества. Проставить ожидаемыми?' DO {
+                    fillDone(s);
+                } ELSE RETURN;
+            
+            IF GROUP SUM 1 IF shipment(ShipmentLine l) = s AND NOT initialDemand(l) = done(l) THEN {
+                ASK 'Отгружено не все количество. Создать дополнительную отгрузку?' DO {
+                    NEW rn = Shipment {
+                        type(rn) <- type(s);
+                        partner(rn) <- partner(s);
+                        location(rn) <- location(s);
+                        toLocation(rn) <- toLocation(s);
+                        scheduledDate(rn) <- scheduledDate(s);
+                        number(rn) <- number(s);
+                        notes(rn) <- notes(s);
+                        FOR shipment(ShipmentLine l) = s AND (q = initialDemand(l) (-) done(l)) DO NEW ln = ShipmentLine {
+                            shipment(ln) <- rn;
+                            product(ln) <- product(l);
+                            initialDemand(ln) <- q;
+                        }
                     }
+                    initialDemand(ShipmentLine l) <- done(l) WHERE shipment(l) = s;
+                    DELETE ShipmentLine l WHERE shipment(l) = s AND NOT done(l);
                 }
-                initialDemand(ShipmentLine l) <- done(l) WHERE shipment(l) = s;
-                DELETE ShipmentLine l WHERE shipment(l) = s AND NOT done(l);
             }
+            
+        } ELSE {
+            FOR shipment(ShipmentLine l) = s DO {
+                IF done(l) > available(l) THEN {
+                    MESSAGE 'Отгруженые кол-ва не могут быть больше доступных';
+                    RETURN;
+                }
+            }
+            waiting(s) <- TRUE;
+            ready(s) <- TRUE;
         }
+        
         done(s) <- TRUE;
         executionDate(s) <- currentDateTime();
         APPLY;

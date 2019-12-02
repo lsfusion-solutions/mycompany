@@ -55,10 +55,13 @@ receipt 'Документ' = DATA Receipt (ReceiptLine) NONULL DELETE INDEXED;
 product 'Продукт' = DATA Product (ReceiptLine) NONULL INDEXED;
 nameProduct 'Продукт' (ReceiptLine l) = name(product(l)) IN id;
 
-initialDemand 'Планируемое количество' = DATA NUMERIC[16,3] (ReceiptLine) NONULL;
+initialDemand 'Планируемое количество' = DATA NUMERIC[16,3] (ReceiptLine);
 
 CONSTRAINT initialDemand(ReceiptLine l) < 0 OR initialDemand(l) > maxQuantity(type(receipt(l))) 
     AND maxQuantity(type(receipt(l))) MESSAGE 'Планируемое количество должно быть от 0 до максимально разрешенного';
+    
+CONSTRAINT ReceiptLine l IS ReceiptLine AND NOT(initialDemand(l)) AND NOT immediateTransfer(receipt(l))     
+            MESSAGE 'Необходимо заполнить планируемое кол-во';
 
 // при редактировании строки открываем редактирование документа
 edit (ReceiptLine l) + { edit(receipt(l)); } 
@@ -81,7 +84,8 @@ FORM receipt 'Поступление'
     OBJECTS l = ReceiptLine
     PROPERTIES(l) index READONLY
     PROPERTIES(l) READONLYIF readonly(l) nameProduct, 
-            initialDemand SHOWIF NOT immediateTransfer(r) BACKGROUND IF NOT readonly(l) THEN RGB(198,230,247), NEW, DELETE        
+            initialDemand SHOWIF NOT immediateTransfer(r) BACKGROUND IF NOT readonly(l) THEN RGB(198,230,247)
+    PROPERTIES(l) READONLYIF readonly(l) NEW, DELETE        
     FILTERS receipt(l) = r
    
     EDIT Receipt OBJECT r

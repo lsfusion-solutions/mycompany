@@ -62,14 +62,16 @@ shipment 'Документ' = DATA Shipment (ShipmentLine) NONULL DELETE INDEXED
 product 'Продукт' = DATA Product (ShipmentLine) NONULL INDEXED;
 nameProduct 'Продукт' (ShipmentLine l) = name(product(l)) IN id;
 
-initialDemand 'Планируемое количество' = DATA NUMERIC[16,3] (ShipmentLine) NONULL;
+initialDemand 'Планируемое количество' = DATA NUMERIC[16,3] (ShipmentLine);
 
 CONSTRAINT initialDemand(ShipmentLine l) < 0 OR initialDemand(l) > maxQuantity(type(shipment(l))) 
     AND maxQuantity(type(shipment(l))) MESSAGE 'Исходное количество должно быть от 0 до максимально разрешенного';
 
 CONSTRAINT location(Shipment s) == toLocation(s)
                 MESSAGE 'Места хранения откуда и куда не могут совпадать';
-
+                
+CONSTRAINT ShipmentLine l IS ShipmentLine AND NOT(initialDemand(l)) AND NOT immediateTransfer(shipment(l))     
+            MESSAGE 'Необходимо заполнить планируемое кол-во';
 
 // при редактировании строки открываем редактирование документа
 edit (ShipmentLine l) + { edit(shipment(l)); } 
