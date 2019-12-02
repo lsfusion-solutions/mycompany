@@ -1,0 +1,21 @@
+MODULE PurchaseReport;
+
+REQUIRE Purchase;
+
+NAMESPACE Purchase;
+
+FORM reportPurchaseOrders 'Отчет по заказам'
+    OBJECTS report = (o = Order, l = OrderLine)
+    PROPERTIES(o) READONLY status, date, seriesNumber, nameLocation, nameVendor, vendorReference, scheduledDate, nameIncoterm,
+                            namePaymentterm, nameRepresentative, untaxedAmount, totalTax, totalAmount
+    PROPERTIES(l) READONLY nameItem, description, quantity, codeUnitMeasure, unitPrice, scheduledDate, taxes, subtotal
+    FILTERS order(l) = o
+;
+
+NAVIGATOR {
+    purchase {
+        NEW FOLDER reports 'Отчеты' {
+            NEW reportPurchaseOrders;        
+        }
+    }
+}

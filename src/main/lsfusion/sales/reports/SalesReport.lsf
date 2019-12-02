@@ -1,0 +1,21 @@
+MODULE SalesReport;
+
+REQUIRE Sales;
+
+NAMESPACE Sales;
+
+FORM reportSalesOrders 'Отчет по заказам'
+    OBJECTS report = (o = Order, l = OrderLine)
+    PROPERTIES(o) READONLY status, date, seriesNumber, nameCustomer, addressCustomer, deliveryAddress, validity, namePaymentterm,
+        nameLocation, nameIncoterm, expectedDate, commintmentDate, invoiceDate, nameRepresentative, customerReference
+    PROPERTIES(l) READONLY nameItem, description, quantity, codeUnitMeasure, unitPrice, cost, discount, taxes, subtotal
+    FILTERS order(l) = o
+;
+
+NAVIGATOR {
+    sales {
+        NEW FOLDER reports 'Отчеты' {
+            NEW reportSalesOrders;        
+        }
+    }
+}
