@@ -1,0 +1,17 @@
+MODULE ManufacturingOrder;
+
+REQUIRE ManufacturingNavigator, ManufacturingSettings, Numerator;
+
+NAMESPACE Manufacturing;
+
+CLASS Order;
+
+number 'Номер' = DATA STRING[10] (Order);
+series 'Серия' = DATA STRING[2] (Order);
+WHEN SET(Order o IS Order) DO {
+    number(o) <- curStringValue(numerator());
+    series(o) <- series(numerator());
+    incrementValueSession(numerator());   
+}
+seriesNumber 'Номер' (Order o) = CONCAT '', series(o), number(o);
+
