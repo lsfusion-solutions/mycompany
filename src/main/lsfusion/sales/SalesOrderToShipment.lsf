@@ -47,35 +47,41 @@ nameStatusShipment 'Статус' (ShipmentLine rl) = nameStatus(shipment(rl));
 
 FORM orderShipmentShow 'Расход со склада'
     OBJECTS ol = OrderLine
+    
     OBJECTS sl = ShipmentLine
     PROPERTIES(sl) scheduledDateShipment, nameStatusShipment, initialDemand, done
+    
     FILTERS orderLine(sl) = ol
 ;
 
-DESIGN orderShipmentShow{
-    MOVE BOX(sl) FIRST {caption='';}
+DESIGN orderShipmentShow {
+    MOVE BOX(sl) FIRST { caption=''; }
 }
 
-showShipments (OrderLine l){
+showShipments (OrderLine l) {
     DIALOG orderShipmentShow OBJECTS ol = l; 
 }
 
+showShipment (Shipment sh) {
+    SHOW shipment OBJECTS s = sh; 
+}
+
 EXTEND FORM order
-    OBJECTS sh = Shipment
-    PROPERTIES(sh)  READONLY seriesNumber, scheduledDate, executionDate, nameStatus
-    FILTERS order(sh) = o
     PROPERTIES(l) SHOWIF confirmed(o) initShipment ON CHANGE showShipments(l)
     PROPERTIES(l) SHOWIF confirmed(o) doneShipment ON CHANGE showShipments(l)
-//    PROPERTIES(l) SHOWIF confirmed(o) deficitShipment ON CHANGE showShipments(l)       
+    
+    OBJECTS sh = Shipment
+    PROPERTIES(sh) seriesNumber ON CHANGE showShipment(sh)
+    PROPERTIES(sh) READONLY scheduledDate, executionDate, nameStatus   
+    FILTERS order(sh) = o
 ;
 
 DESIGN order {
-    header{
-        relatedDoc  {
-            MOVE BOX(sh);
-            REMOVE TOOLBARSYSTEM(sh);
-            PROPERTY (scheduledDate(sh)) {caption='Запланирована отгрузка';}
-            PROPERTY (executionDate(sh)) {caption='Дата отгрузки';}
-        }
+    relatedDoc  {
+        MOVE BOX(sh);
+        REMOVE TOOLBARSYSTEM(sh);
+        PROPERTY (scheduledDate(sh)) { caption='Запланирована отгрузка'; }
+        PROPERTY (executionDate(sh)) { caption='Дата отгрузки'; }
+        PROPERTY (seriesNumber(sh)) { charWidth = 15; }
     }
 }

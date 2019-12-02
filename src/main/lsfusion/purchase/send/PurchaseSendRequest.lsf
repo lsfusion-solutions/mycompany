@@ -10,14 +10,22 @@ sendRequest 'Отправить запрос' (Order o){
     MESSAGE 'Запрос отправлен';    
 }
 
+resendRequest 'Отправить запрос' (Order o){
+    sentRequestDateTime(o) <- currentDateTime();
+    sent(o) <- TRUE;
+    MESSAGE 'Запрос отправлен';    
+}
+
 EXTEND FORM order
-     PROPERTIES(o) SHOWIF (status(o)=OrderStatus.draft OR status(o)=OrderStatus.requestSent) sendRequest BACKGROUND (CASE WHEN NOT sent(o) THEN nextAction());
+     PROPERTIES(o) SHOWIF (status(o)=OrderStatus.draft) sendRequest
+     PROPERTIES(o) SHOWIF (status(o)=OrderStatus.requestSent) resendRequest
 ;
 
 DESIGN order {
     statusPane {
         statusActions {
-            MOVE PROPERTY(sendRequest(o));
+            MOVE PROPERTY(sendRequest(o)) FIRST { fontStyle = 'bold'; };
+            MOVE PROPERTY(resendRequest(o));
         }
     }
 }

@@ -1,6 +1,6 @@
 MODULE PurchaseOrderStatusConfirm;
 
-REQUIRE PurchaseOrder, PurchaseOrderStatus, PurchaseOrderStatusSent;
+REQUIRE PurchaseOrder, PurchaseOrderStatus, PurchaseOrderStatusDraft, PurchaseOrderStatusSent;
 
 NAMESPACE Purchase;
 
@@ -17,17 +17,25 @@ confirmOrder 'Подтвердить заказ' (Order o){
     MESSAGE 'Заказ подтвержден';    
 }
 
+confirmUnsentOrder 'Подтвердить заказ' (Order o){
+    confirmedDateTime(o) <- currentDateTime();
+    confirmed(o) <- TRUE;
+    MESSAGE 'Заказ подтвержден';    
+}
+
 status(Order o) += WHEN confirmed(o) THEN OrderStatus.orderConfirmed;
 colorStatus(Order o) += WHEN status(o) == OrderStatus.orderConfirmed THEN RGB(150,255,150);
 
 EXTEND FORM order 
-     PROPERTIES (o) SHOWIF (status(o)=OrderStatus.draft OR status(o)=OrderStatus.requestSent)  confirmOrder BACKGROUND (CASE WHEN NOT confirmed(o) THEN nextAction());
+     PROPERTIES (o) SHOWIF (status(o)=OrderStatus.requestSent)  confirmOrder
+     PROPERTIES (o) SHOWIF (status(o)=OrderStatus.draft)  confirmUnsentOrder
 ;
 
 DESIGN order {
     statusPane {
         statusActions {
-            MOVE PROPERTY(confirmOrder(o));
+            MOVE PROPERTY(confirmUnsentOrder(o));
+            MOVE PROPERTY(confirmOrder(o))  FIRST { fontStyle = 'bold'; };
         }
     }
 }

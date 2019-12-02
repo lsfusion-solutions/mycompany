@@ -17,18 +17,23 @@ confirmOrder 'Подтвердить заказ' (Order o){
     MESSAGE 'Заказ подтвержден';    
 }
 
+confirmOrderBeforeSend 'Подтвердить заказ' (Order o) { confirmOrder(o); }
+confirmOrderAfterSend 'Подтвердить заказ' (Order o) { confirmOrder(o); }
+
 status(Order o) += WHEN confirmed(o) THEN OrderStatus.orderConfirmed;
 colorStatus(Order o) += WHEN status(o) == OrderStatus.orderConfirmed THEN RGB(150,255,150);
 
 EXTEND FORM order 
-     PROPERTIES (o) SHOWIF (status(o)=OrderStatus.draft OR status(o)=OrderStatus.offerSent)  confirmOrder BACKGROUND (CASE WHEN NOT confirmed(o) AND sent(o) THEN nextAction())
+     PROPERTIES (o) SHOWIF (status(o)=OrderStatus.draft)  confirmOrderBeforeSend
+     PROPERTIES (o) SHOWIF (status(o)=OrderStatus.offerSent)  confirmOrderAfterSend
      PROPERTIES (o) confirmedDateTime
 ;
 
 DESIGN order {
     statusPane {
         statusActions {
-            MOVE PROPERTY(confirmOrder(o));
+            MOVE PROPERTY(confirmOrderBeforeSend(o));
+            MOVE PROPERTY(confirmOrderAfterSend(o)) FIRST { fontStyle = 'bold'; };
         }
     }
     title {

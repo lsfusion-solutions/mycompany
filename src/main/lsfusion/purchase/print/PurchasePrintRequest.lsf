@@ -1,6 +1,6 @@
 MODULE PurchasePrintRequest;
 
-REQUIRE  PurchaseOrder, PurchaseOrderStatus, PurchaseOrderStatusSent, Partner, PurchasePrintData;
+REQUIRE  PurchaseOrder, PurchaseOrderStatus, PurchaseOrderStatusSent, PurchaseOrderStatusDraft, Partner, PurchasePrintData;
 
 NAMESPACE Purchase;
  
@@ -29,14 +29,14 @@ reprintRequest 'Печать запрос' (Order o) {
 }  
  
 EXTEND FORM order
-     PROPERTIES(o) SHOWIF (status(o)=OrderStatus.draft)  printRequest BACKGROUND (CASE WHEN NOT sent(o) THEN nextAction())
+     PROPERTIES(o) SHOWIF (status(o)=OrderStatus.draft)  printRequest
      PROPERTIES(o) SHOWIF (status(o)=OrderStatus.requestSent)  reprintRequest
 ;
 
 DESIGN order {
     statusPane {
         statusActions {
-            MOVE PROPERTY(printRequest(o)) FIRST;             
+            MOVE PROPERTY(printRequest(o)) FIRST { fontStyle = 'bold'; };             
             MOVE PROPERTY(reprintRequest(o));             
         }
     }

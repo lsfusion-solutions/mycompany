@@ -2,9 +2,9 @@ MODULE SalesPrintOffer;
 
 REQUIRE  SalesOrder, SalesOrderStatus, SalesOrderStatusSent, SalesOrderStatusDraft, Partner, SalesPrintData;
 
-NAMESPACE Purchase;
+NAMESPACE Sales;
  
-FORM printRequest 'Запрос поставщику'   
+FORM printRequest 'Предложение покупателю'   
     OBJECTS o = Order PANEL 
     PROPERTIES(o) sentRequestDateTime, commintmentDate, number, nameLocation, fullAddressLocation, nameCustomer, fullAddressVendor, phoneVendor, nameCompany, fullAddressCompany, phoneCompany
         
@@ -13,28 +13,28 @@ FORM printRequest 'Запрос поставщику'
     FILTERS order(l) = o
 ; 
     
-printRequest 'Печать запрос' (Order o) {
+printRequest 'Печать предложение' (Order o) {
     sentRequestDateTime(o) <- currentDateTime();
     sent(o) <- TRUE;
     PRINT printRequest OBJECTS o = o;
-    MESSAGE 'Запрос напечатан';    
+    MESSAGE 'Предложение напечатано';    
     MESSAGE fullAddressCompany(o);
 }  
 
-reprintRequest 'Печать запрос' (Order o) {
+reprintRequest 'Печать предложение' (Order o) {
     PRINT printRequest OBJECTS o = o;   
-    MESSAGE 'Запрос напечатан';    
+    MESSAGE 'Предложение напечатано';    
 }  
  
 EXTEND FORM order
-     PROPERTIES(o) SHOWIF (status(o)=OrderStatus.draft)  printRequest BACKGROUND (CASE WHEN NOT sent(o) THEN nextAction())
+     PROPERTIES(o) SHOWIF (status(o)=OrderStatus.draft)  printRequest
      PROPERTIES(o) SHOWIF (status(o)=OrderStatus.offerSent)  reprintRequest
 ;
 
 DESIGN order {
     statusPane {
         statusActions {
-            MOVE PROPERTY(printRequest(o)) FIRST;             
+            MOVE PROPERTY(printRequest(o)) FIRST { fontStyle = 'bold'; };              
             MOVE PROPERTY(reprintRequest(o));             
         }
     }
