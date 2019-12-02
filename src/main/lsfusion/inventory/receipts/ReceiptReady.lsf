@@ -17,12 +17,14 @@ markAsToDo 'В работу' (Receipt r) {
     }
 }
 
+countLines (Receipt r) = GROUP SUM 1 IF receipt(ReceiptLine l) = r;
+
 EXTEND CLASS ReceiptStatus {
     ready 'К приемке'
 }
 
 EXTEND FORM receipt
-    PROPERTIES(r) markAsToDo SHOWIF status(r) = ReceiptStatus.draft AND NOT immediateTransfer(r), ready READONLY 
+    PROPERTIES(r) markAsToDo SHOWIF status(r) = ReceiptStatus.draft AND countLines(r) AND NOT immediateTransfer(r), ready READONLY 
 ;
 
 EXTEND FORM receipts    

@@ -59,7 +59,7 @@ EXTEND CLASS ReceiptStatus {
 readonlyHeader (Receipt r) += WHEN status(r) = ReceiptStatus.done THEN TRUE;
 
 EXTEND FORM receipt
-    PROPERTIES(r) validate SHOWIF status(r) = ReceiptStatus.ready OR (immediateTransfer(r) AND NOT done(r)), done READONLY
+    PROPERTIES(r) validate SHOWIF status(r) = ReceiptStatus.ready OR (immediateTransfer(r) AND NOT done(r) AND countLines(r)), done READONLY
     PROPERTIES (r)  executionDate READONLY AFTER scheduledDate(r) SHOWIF done(r)
     
     PROPERTIES(l) done READONLYIF NOT (status(r) = ReceiptStatus.ready OR (immediateTransfer(r) AND status(r) = ReceiptStatus.draft)) BACKGROUND 

@@ -19,9 +19,10 @@ markAsToDo 'К оплате' (Bill b) {
             APPLY;
         }
 }
+countLines (Bill b) = GROUP SUM 1 IF bill(BillLine l) = b;
 
 EXTEND FORM bill
-    PROPERTIES(b) markAsToDo SHOWIF status(b) = BillStatus.draft, ready READONLY
+    PROPERTIES(b) markAsToDo SHOWIF status(b) = BillStatus.draft AND countLines(b), ready READONLY
 ;
 
 EXTEND FORM bills    

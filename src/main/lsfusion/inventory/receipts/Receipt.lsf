@@ -75,7 +75,7 @@ readonlyHeader = ABSTRACT CASE BOOLEAN (Receipt);
 CONSTRAINT product(ReceiptLine l) AND NOT canBePurchased(product(l))
             CHECKED BY product 
             MESSAGE 'Номенклатура не предназначена для закупки';
-
+           
 FORM receipt 'Поступление'
     OBJECTS r = Receipt PANEL
     PROPERTIES(r) READONLYIF readonly(r) series, number, nameType, nameLocation, notes, sourceDocument
@@ -98,7 +98,7 @@ FORM receipts 'Поступления'
     PROPERTIES(r) NEWSESSION READONLYIF readonly(r) DELETE
 ;
 
-copyReceipt 'Копировать' (Receipt r)  { 
+copyReceipt 'Копировать' (Receipt r) { 
     NEWSESSION {
         NEW nr = Receipt {
             type(nr) <- type(r);
@@ -202,4 +202,3 @@ immediateReceipt 'Незапланированное поступление' () 
 EXTEND FORM receipts 
     PROPERTIES immediateReceipt() DRAW r TOOLBAR
 ;
-

@@ -11,7 +11,7 @@ done 'Отгружено' = DATA NUMERIC[16,3] (ShipmentLine);
 CONSTRAINT done(ShipmentLine l) < 0 OR done(l) > initialDemand(l) 
     MESSAGE 'Отгруженое количество должно быть от 0 до исходного';
 
-CONSTRAINT immediateTransfer(Shipment s) AND (NOT done(ShipmentLine l) AND shipment(l) = s) MESSAGE 'Необходимо указать отгруженые кол-ва';
+CONSTRAINT done(ShipmentLine l) > available(l) AND NOT done(shipment(l)) MESSAGE 'Отгруженые кол-ва не могут быть больше доступных';
 
 fillDone 'Заполнить Отгружено' (Shipment s) {
     done(ShipmentLine l) <- reserved(l) WHERE shipment(l) = s;    
@@ -53,12 +53,6 @@ validate 'Отгружен' (Shipment s) {
             }
             
         } ELSE {
-            FOR shipment(ShipmentLine l) = s DO {
-                IF done(l) > available(l) THEN {
-                    MESSAGE 'Отгруженые кол-ва не могут быть больше доступных';
-                    RETURN;
-                }
-            }
             waiting(s) <- TRUE;
             ready(s) <- TRUE;
         }
@@ -76,10 +70,11 @@ EXTEND CLASS ShipmentStatus {
 readonlyHeader (Shipment s) += WHEN status(s) = ShipmentStatus.done THEN TRUE;
 
 EXTEND FORM shipment
-    PROPERTIES(s) validate SHOWIF status(s) = ShipmentStatus.ready OR (immediateTransfer(s) AND NOT done(s)), done READONLY 
+    PROPERTIES(s) validate SHOWIF status(s) = ShipmentStatus.ready OR (immediateTransfer(s) AND NOT done(s) AND countLines(s)), 
+                        done READONLY 
     PROPERTIES(s) executionDate READONLY AFTER scheduledDate(s) SHOWIF done(s)
-    PROPERTIES(l) done READONLYIF NOT (status(s) = ShipmentStatus.ready OR (immediateTransfer(s) AND status(s) = ShipmentStatus.draft)) BACKGROUND 
-                       IF status(s) = ShipmentStatus.ready THEN RGB(198,230,247)
+    PROPERTIES(l) done READONLYIF NOT (status(s) = ShipmentStatus.ready OR (immediateTransfer(s) AND status(s) = ShipmentStatus.draft)) 
+                                        BACKGROUND IF status(s) = ShipmentStatus.ready THEN RGB(198,230,247)
     PROPERTIES(s) fillDone DRAW l TOOLBAR SHOWIF status(s) = ShipmentStatus.ready
 ;
 

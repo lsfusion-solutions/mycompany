@@ -41,10 +41,11 @@ unreserve 'Снять резервирование' (Shipment s) {
 }
 
 countLinesDemand (Shipment s) = GROUP SUM 1 IF shipment(ShipmentLine sl) = s AND NOT initialDemand(sl) = reserved(sl);
+countLines (Shipment s) = GROUP SUM 1 IF shipment(ShipmentLine l) = s;
 
 EXTEND FORM shipment
     PROPERTIES(s) checkAvailability SHOWIF (status(s) = ShipmentStatus.waiting 
-                                    OR (status(s) = ShipmentStatus.ready AND countLinesDemand(s))) AND NOT immediateTransfer(s),
+            OR (status(s) = ShipmentStatus.ready AND countLinesDemand(s))) AND NOT immediateTransfer(s) AND countLines(s), 
                   unreserve SHOWIF status(s) = ShipmentStatus.ready, ready READONLY 
        
     PROPERTIES(l) READONLY available, reserved SHOWIF NOT immediateTransfer(s)
