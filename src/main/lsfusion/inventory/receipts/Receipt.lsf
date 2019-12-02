@@ -8,6 +8,8 @@ NAMESPACE Inventory;
 
 CLASS Receipt 'Поступление';
 
+immediateTransfer 'Незапланированное поступление' = DATA BOOLEAN (Receipt);
+
 // Операция
 type 'Тип' = DATA ReceiptType (Receipt) NONULL;
 nameType 'Тип' (Receipt r) = name(type(r));
@@ -78,8 +80,8 @@ FORM receipt 'Поступление'
 
     OBJECTS l = ReceiptLine
     PROPERTIES(l) index READONLY
-    PROPERTIES(l) READONLYIF readonly(l) nameProduct, initialDemand BACKGROUND IF NOT readonly(l)
-                                                                THEN RGB(198,230,247), NEW, DELETE        
+    PROPERTIES(l) READONLYIF readonly(l) nameProduct, 
+            initialDemand SHOWIF NOT immediateTransfer(r) BACKGROUND IF NOT readonly(l) THEN RGB(198,230,247), NEW, DELETE        
     FILTERS receipt(l) = r
    
     EDIT Receipt OBJECT r
@@ -99,6 +101,7 @@ copyReceipt 'Копировать' (Receipt r)  {
             location(nr) <- location(r);
             partner(nr) <- partner(r);
             notes(nr) <- notes(r);
+            immediateTransfer(nr) <- immediateTransfer(r);
             FOR receipt(ReceiptLine l) = r INLINE NEW nl = ReceiptLine DO {
                 receipt(nl) <- nr;
                 product(nl) <- product(l);
@@ -182,4 +185,17 @@ NAVIGATOR {
 }
 
 @defineBarCodeAdd(receipt, r, product);
+
+immediateReceipt 'Незапланированное поступление' () {
+    NEWSESSION {
+        NEW r = Receipt {
+            immediateTransfer(r) <- TRUE;
+            SHOW receipt OBJECTS r = r DOCKED;
+        }
+    }
+}IMAGE 'add.png';
+
+EXTEND FORM receipts 
+    PROPERTIES immediateReceipt() DRAW r TOOLBAR
+;
 

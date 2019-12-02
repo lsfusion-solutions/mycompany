@@ -8,6 +8,8 @@ NAMESPACE Inventory;
 
 CLASS Shipment 'Отгрузка';
 
+immediateTransfer 'Незапланированное поступление' = DATA BOOLEAN (Shipment);
+
 type 'Тип' = DATA ShipmentType (Shipment) NONULL;
 nameType 'Тип' (Shipment s) = name(type(s));
 
@@ -90,8 +92,8 @@ FORM shipment 'Отгрузка'
                   
     OBJECTS l = ShipmentLine
     PROPERTIES(l) index READONLY
-    PROPERTIES(l) READONLYIF readonly(l) nameProduct, initialDemand BACKGROUND IF NOT readonly(l)
-                                                        THEN RGB(198,230,247) 
+    PROPERTIES(l) READONLYIF readonly(l) nameProduct, 
+        initialDemand SHOWIF NOT immediateTransfer(s) BACKGROUND IF NOT readonly(l) THEN RGB(198,230,247) 
     PROPERTIES(l) READONLYIF readonly(l) NEW, DELETE
              
     EDIT Shipment OBJECT s
@@ -112,6 +114,7 @@ copyShipment 'Копировать' (Shipment s)  {
             location(ns) <- location(s);
             toLocation(ns) <- toLocation(s);
             notes(ns) <- notes(s);
+            immediateTransfer(ns) <- immediateTransfer(s);
             FOR shipment(ShipmentLine l) = s INLINE NEW nl = ShipmentLine DO {
                 shipment(nl) <- ns;
                 product(nl) <- product(l);
@@ -191,4 +194,17 @@ NAVIGATOR {
 }
 
 @defineBarCodeAdd(shipment, s, product);
+
+immediateShipment 'Незапланированная отгрузка' () {
+    NEWSESSION {
+        NEW s = Shipment {
+            immediateTransfer(s) <- TRUE;
+            SHOW shipment OBJECTS s = s DOCKED;
+        }
+    }
+}IMAGE 'add.png';
+
+EXTEND FORM shipments 
+    PROPERTIES immediateShipment() DRAW s TOOLBAR
+;
 

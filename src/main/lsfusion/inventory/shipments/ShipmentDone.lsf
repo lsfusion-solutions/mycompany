@@ -17,6 +17,22 @@ fillDone 'Заполнить Отгружено' (Shipment s) {
 
 extraValidate ABSTRACT LIST (Shipment);
 validate 'Отгружен' (Shipment s) {
+    IF NOT ready(s) THEN { 
+        FOR shipment(ShipmentLine l) = s DO {
+            IF NOT done(l) THEN {
+               MESSAGE 'Нужно указать отгруженное кол-во';
+               RETURN;
+            } ELSE
+            initialDemand(l) <- done(l); 
+        }
+        waiting(s) <- TRUE;
+        checkAvailability(s);
+        extraValidate(s);
+        done(s) <- TRUE;
+        executionDate(s) <- currentDateTime();
+        APPLY;
+        RETURN;
+    }
     APPLY; // сохраняем изменения
     IF canceled() THEN RETURN; // если сработало ограничение, то выходим
     
@@ -61,9 +77,9 @@ EXTEND CLASS ShipmentStatus {
 readonlyHeader (Shipment s) += WHEN status(s) = ShipmentStatus.done THEN TRUE;
 
 EXTEND FORM shipment
-    PROPERTIES(s) validate SHOWIF status(s) = ShipmentStatus.ready, done READONLY 
+    PROPERTIES(s) validate SHOWIF status(s) = ShipmentStatus.ready OR (immediateTransfer(s) AND NOT done(s)), done READONLY 
     PROPERTIES(s) executionDate READONLY AFTER scheduledDate(s) SHOWIF done(s)
-    PROPERTIES(l) done READONLYIF NOT status(s) = ShipmentStatus.ready BACKGROUND 
+    PROPERTIES(l) done READONLYIF NOT (status(s) = ShipmentStatus.ready OR (immediateTransfer(s) AND status(s) = ShipmentStatus.draft)) BACKGROUND 
                        IF status(s) = ShipmentStatus.ready THEN RGB(198,230,247)
     PROPERTIES(s) fillDone DRAW l TOOLBAR SHOWIF status(s) = ShipmentStatus.ready
 ;
