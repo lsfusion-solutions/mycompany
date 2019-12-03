@@ -138,6 +138,8 @@ copyManufacturingOrder 'Копировать' (ManufacturingOrder m) {
             company(o) <- company(m);
             materialsLocation(o) <- materialsLocation(m);
             productsLocation(o) <- productsLocation(m);
+            
+            SHOW manufacturingOrder OBJECTS o = o DOCKED;
         }
     }
 }
@@ -163,6 +165,9 @@ DESIGN manufacturingOrder {
                     MOVE PROPERTY(copyManufacturingOrder(o));  
                 }            
             }
+             NEW status AFTER statusActions {
+                type = CONTAINERH;
+             }
         }
         NEW header {
             alignment = STRETCH;
