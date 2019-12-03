@@ -7,9 +7,9 @@ NAMESPACE Purchase;
 orderLine 'ссылка на заказ' = DATA OrderLine (ReceiptLine);
 order 'ссылка на заказ' = DATA Order (Receipt);
 
-doneReceipt 'Оприходовано на склад' (OrderLine ol) = GROUP SUM done(ReceiptLine rl) IF orderLine(rl)=ol AND done(receipt(rl)) AND NOT canceled(receipt(rl));
 initReceipt 'Запланирован приход на склад' (OrderLine ol) = GROUP SUM initialDemand(ReceiptLine rl) IF orderLine(rl)=ol AND ready(receipt(rl)) AND NOT canceled(receipt(rl));
-deficitReceipt 'Недопоступило' (OrderLine ol) =  initReceipt(ol) (-) quantity(ol);
+doneReceipt 'Оприходовано на склад' (OrderLine ol) = GROUP SUM done(ReceiptLine rl) IF orderLine(rl)=ol AND done(receipt(rl)) AND NOT canceled(receipt(rl));
+deficitReceipt 'Недопоступило' (OrderLine ol) =  quantity(ol) (-) initReceipt(ol);
 
 deficitReceipt 'Недоопоступило' (Order o) =  GROUP SUM abs(deficitReceipt(OrderLine ol)) IF order(ol)=o;
 

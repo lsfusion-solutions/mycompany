@@ -1,10 +1,10 @@
 MODULE Invoice;
 
-REQUIRE Invoicing, TaxItem, Account, Time, MetaTax, ItemSale, PartnerSale, Company, BarCode;
+REQUIRE InvoicingNavigator, TaxItem, Account, Time, MetaTax, ItemSale, PartnerSale, Company, BarCode;
 
 NAMESPACE Invoicing;
 
-CLASS Invoice 'Расходная накладная';
+CLASS Invoice 'Реализация товаров и услуг';
 
 date 'Дата накладной' = DATA DATETIME (Invoice) NONULL IN id;
 
@@ -66,8 +66,8 @@ notes 'Примечания' = DATA ISTRING[50] (Invoice);
 series 'Серия' = DATA STRING[2] (Invoice);
 number 'Номер' = DATA STRING[28] (Invoice) NONULL;
 
-numeratorInvoice 'Нумератор расходных накладных' = DATA Numerator() CHARWIDTH 20;
-nameNumeratorInvoice 'Нумератор расходных накладных' = name(numeratorInvoice());
+numeratorInvoice 'Нумератор документов реализации' = DATA Numerator() CHARWIDTH 20;
+nameNumeratorInvoice 'Нумератор документов реализации' = name(numeratorInvoice());
 
 WHEN SETCHANGED(Invoice i IS Invoice  AND numeratorInvoice() AND NOT number(i)) DO {
     number(i) <- curStringValue(numeratorInvoice());
@@ -89,9 +89,9 @@ seriesNumber 'Серия/Номер' (Invoice i) = CONCAT '/', series(i), number
 
 sourceDocument 'Исходный документ' = DATA STRING[10] (Invoice);
 
-CLASS InvoiceLine 'Строка накладной';
+CLASS InvoiceLine 'Строка документа';
 
-invoice 'Накладная' = DATA Invoice (InvoiceLine) NONULL DELETE;
+invoice 'Документ' = DATA Invoice (InvoiceLine) NONULL DELETE;
 
 item 'Номенклатура' = DATA Item (InvoiceLine);
 idItem 'Код номенклатуры' (InvoiceLine l) = id(item(l));
@@ -111,16 +111,16 @@ readonly = ABSTRACT CASE BOOLEAN (Invoice);
 
 CONSTRAINT item(InvoiceLine l) AND NOT canBeSold(item(l))
             CHECKED BY item 
-            MESSAGE 'Наменклатура не предназначена для продажи';
+            MESSAGE 'Номенклатура не предназначена для продажи';
 
-date 'Дата накладной' (InvoiceLine l) = date(invoice(l));
+date 'Дата документа' (InvoiceLine l) = date(invoice(l));
 partner 'Партнер' (InvoiceLine l) = partner(invoice(l));
 namePartner 'Партнер' (InvoiceLine l) = namePartner(invoice(l));
 nameCompany 'Компания' (InvoiceLine l) = nameCompany(invoice(l));
 
 @defineTaxCalc(invoice, i, TRUE);
 
-FORM invoice 'Расходная накладная'
+FORM invoice 'Документ реализации'
     OBJECTS  i = Invoice PANEL 
     PROPERTIES(i) READONLYIF readonly(i)  date, dueDate, namePartner, partnerAccountNumber, addressPartner, sourceDocument,
                              nameCompany, companyAccountNumber, series, number, notes
@@ -211,7 +211,7 @@ DESIGN invoice {
             fill = 1;
             type = TABBED;
             NEW box {
-                caption = 'Строка накладной';
+                caption = 'Строка документа';
                 fill = 1;
                 MOVE BOX(l);
                 NEW pane {
@@ -223,7 +223,7 @@ DESIGN invoice {
     }
 }
 
-addInvoice 'Накладная' () {
+addInvoice 'Документ' () {
     NEWSESSION {
         NEW i = Invoice {
             SHOW invoice OBJECTS i = i;  
@@ -231,7 +231,7 @@ addInvoice 'Накладная' () {
     }
 }IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
 
-FORM invoices 'Расходная накладная'
+FORM invoices 'Реализация товаров и услуг'
     OBJECTS i = Invoice
     PROPERTIES(i) READONLY date, dueDate, namePartner, notes    
     PROPERTIES(i) NEWSESSION EDIT
@@ -244,7 +244,7 @@ FORM invoices 'Расходная накладная'
 NAVIGATOR {
     invoicing {
         operations {
-            NEW invoices;
+            NEW invoices FIRST;
         }
     }
 }

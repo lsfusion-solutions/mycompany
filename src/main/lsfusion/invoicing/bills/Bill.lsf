@@ -1,13 +1,13 @@
 MODULE Bill;
 
-REQUIRE Invoicing, TaxItem, Account, Time, MetaTax, ItemPurchase, PartnerPurchase, Company,
+REQUIRE InvoicingNavigator, TaxItem, Account, Time, MetaTax, ItemPurchase, PartnerPurchase, Company,
             BarCode;
 
 NAMESPACE Invoicing;
 
-CLASS Bill 'Приходная накладная';
+CLASS Bill 'Приобретение товаров и услуг';
 
-date 'Дата накладной' = DATA DATETIME (Bill) NONULL IN id;
+date 'Дата приобретения' = DATA DATETIME (Bill) NONULL IN id;
 
 WHEN LOCAL SET (Bill b IS Bill) DO {
     date(b) <- currentDateTime();
@@ -22,7 +22,7 @@ partnerAccount 'Счет партнера'  = DATA Account(Bill);
 
 CONSTRAINT partner(Bill b) AND NOT isVendor(partner(b)) 
                 CHECKED BY partner
-                MESSAGE 'Партнер должен быть вендором';
+                MESSAGE 'Партнер должен быть поставщиком';
 
 WHEN LOCAL CHANGED (partner(Bill b)) DO {
     partnerAccount(b) <- defaultAccount(partner(b));
@@ -67,8 +67,8 @@ notes 'Примечания' = DATA ISTRING[50] (Bill);
 series 'Серия' = DATA STRING[2] (Bill);
 number 'Номер' = DATA STRING[28] (Bill) NONULL;
 
-numeratorBill 'Нумератор приходных накладных' = DATA Numerator() CHARWIDTH 20;
-nameNumeratorBill 'Нумератор приходных накладных' = name(numeratorBill());
+numeratorBill 'Нумератор документов приобретения' = DATA Numerator() CHARWIDTH 20;
+nameNumeratorBill 'Нумератор документов приобретения' = name(numeratorBill());
 
 WHEN SETCHANGED(Bill b IS Bill  AND numeratorBill() AND NOT number(b)) DO {
     number(b) <- curStringValue(numeratorBill());
@@ -92,7 +92,7 @@ sourceDocument 'Исходный документ' = DATA STRING[10] (Bill);
 
 CLASS BillLine 'Строка накладной';
 
-bill 'Приходная накладная' = DATA Bill (BillLine) NONULL DELETE;
+bill 'Приобретение товаров и услуг' = DATA Bill (BillLine) NONULL DELETE;
 
 item 'Номенклатура' = DATA Item (BillLine);
 nameItem 'Номенклатура' (BillLine l) = name(item(l)) IN id;
@@ -121,7 +121,7 @@ nameCompany 'Компания' (BillLine l) = nameCompany(bill(l));
 // налоги
 @defineTaxCalc(bill, b, NULL);
 
-FORM bill 'Приходная накладная'
+FORM bill 'Документ приобретение'
     OBJECTS  b = Bill PANEL 
     PROPERTIES(b) READONLYIF readonly(b) date, dueDate, namePartner, partnerAccountNumber, sourceDocument,
                              nameCompany, companyAccountNumber, series, number, vendorReference, notes
@@ -211,7 +211,7 @@ DESIGN bill {
             fill = 1;
             type = TABBED;
             NEW box {
-                caption = 'Строка накладной';
+                caption = 'Строка документа';
                 fill = 1;
                 MOVE BOX(l);
                 NEW pane {
@@ -223,7 +223,7 @@ DESIGN bill {
     }
 }
 
-addBill 'Накладная' () {
+addBill 'Документ' () {
     NEWSESSION {
         NEW b = Bill {
             SHOW bill OBJECTS b = b;  
@@ -231,7 +231,7 @@ addBill 'Накладная' () {
     }
 }IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
 
-FORM bills 'Приходная накладная'
+FORM bills 'Приобретение товаров и услуг'
     OBJECTS b = Bill
     PROPERTIES(b) READONLY date, dueDate, namePartner, notes     
     PROPERTIES(b) NEWSESSION EDIT
@@ -244,7 +244,7 @@ FORM bills 'Приходная накладная'
 NAVIGATOR {
     invoicing {
         operations {
-            NEW bills;
+            NEW bills FIRST;
         }
     }
 }

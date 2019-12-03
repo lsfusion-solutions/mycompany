@@ -1,9 +1,24 @@
 MODULE SalesOrderToShipment;
 
-REQUIRE SalesOrder, Shipment, ShipmentDone, ShipmentCanceled, SalesOrderStatusConfirm, SalesOrderStatusCancel;
+REQUIRE SalesOrder, Shipment, ShipmentDone, ShipmentCanceled, SalesOrderStatusConfirm, SalesOrderStatusCancel, SalesSetting;
 
 NAMESPACE Sales;
 
+//настройки
+typeShipmentDefault 'Тип складского расхода по умолчанию' = DATA ShipmentType();
+nameTypeShipmentDefault 'Тип складского расхода по умолчанию' = name(typeShipmentDefault());
+ 
+EXTEND FORM settings
+  PROPERTIES nameTypeShipmentDefault()
+;
+ 
+DESIGN settings{
+    options{
+        MOVE PROPERTY(nameTypeShipmentDefault());
+    } 
+}
+
+//форма заказа
 orderLine 'ссылка на заказ' = DATA OrderLine (ShipmentLine);
 order 'ссылка на заказ' = DATA Order (Shipment);
 
