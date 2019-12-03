@@ -1,17 +1,34 @@
 MODULE ManufacturingOrder;
 
-REQUIRE ManufacturingNavigator, ManufacturingSettings, Numerator;
+REQUIRE ManufacturingNavigator, ManufacturingSettings, Numerator, BoM, Individual;
 
 NAMESPACE Manufacturing;
 
-CLASS Order;
+CLASS ManufacturingOrder;
 
-number 'Номер' = DATA STRING[10] (Order);
-series 'Серия' = DATA STRING[2] (Order);
-WHEN SET(Order o IS Order) DO {
+number 'Номер' = DATA STRING[10] (ManufacturingOrder);
+series 'Серия' = DATA STRING[2] (ManufacturingOrder);
+WHEN SET(ManufacturingOrder o IS ManufacturingOrder) DO {
     number(o) <- curStringValue(numerator());
     series(o) <- series(numerator());
     incrementValueSession(numerator());   
 }
-seriesNumber 'Номер' (Order o) = CONCAT '', series(o), number(o);
+seriesNumber 'Номер' (ManufacturingOrder o) = CONCAT '', series(o), number(o);
+
+item 'Номенклатура' = DATA Item (ManufacturingOrder) NONULL DELETE;
+nameItem 'Номенклатура' (ManufacturingOrder m) = name(item(m));
+idItem 'Код номенклатуры' (ManufacturingOrder m) = id(item(m));
+
+quantity 'Кол-во' = DATA NUMERIC[16,3] (ManufacturingOrder);
+unitMeasure 'Ед.изм.' = DATA ItemMeasure (ManufacturingOrder);
+nameUnitMeasure 'Ед.изм.' (ManufacturingOrder m) = name(unitMeasure(m));
+
+WHEN LOCAL SET(item(ManufacturingOrder m)) DO {
+    unitMeasure(m) <- unitMeasure(item(m));
+} 
+
+bom 'Технологическая карта' = DATA Bom (ManufacturingOrder);
+deadline 'Дата старта' = DATA DATETIME (ManufacturingOrder);
+responsible 'Ответственный' = DATA Individual (ManufacturingOrder);
+location
 

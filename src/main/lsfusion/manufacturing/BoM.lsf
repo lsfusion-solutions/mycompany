@@ -51,6 +51,18 @@ quantity 'Кол-во' = DATA NUMERIC[16,3] (ByproductLine);
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (ByproductLine);
 nameUnitMeasure 'Ед.изм.' (ByproductLine l) = name(unitMeasure(l));
 
+WHEN LOCAL SET(item(Bom b)) DO {
+    unitMeasure(b) <- unitMeasure(item(b));
+} 
+
+WHEN LOCAL SET(item(ComponentLine c)) DO {
+    unitMeasure(c) <- unitMeasure(item(c));
+}
+
+WHEN LOCAL SET(item(ByproductLine l)) DO {
+    unitMeasure(l) <- unitMeasure(item(l));
+}
+
 FORM bom 'Технологическая карта'
     OBJECTS b = Bom PANEL 
     PROPERTIES(b) nameItem, quantity, nameUnitMeasure, reference, nameType, nameCompany, archived
@@ -58,9 +70,11 @@ FORM bom 'Технологическая карта'
     
     OBJECTS c = ComponentLine
     PROPERTIES(c) nameItem, quantity, nameUnitMeasure, NEW, DELETE 
+    FILTERS bom(c) = b
     
     OBJECTS l = ByproductLine
     PROPERTIES (l) nameItem, quantity, nameUnitMeasure, NEW, DELETE
+    FILTERS bom(l) = b
     
     EDIT Bom OBJECT b
 ;
