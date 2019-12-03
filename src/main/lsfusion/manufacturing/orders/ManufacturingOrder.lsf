@@ -20,7 +20,7 @@ item 'Номенклатура' = DATA Item (ManufacturingOrder) NONULL DELETE;
 nameItem 'Номенклатура' (ManufacturingOrder m) = name(item(m));
 idItem 'Код номенклатуры' (ManufacturingOrder m) = id(item(m));
 
-quantity 'Кол-во' = DATA NUMERIC[16,3] (ManufacturingOrder);
+quantity 'Кол-во' = DATA NUMERIC[16,3] (ManufacturingOrder) NONULL;
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (ManufacturingOrder);
 nameUnitMeasure 'Ед.изм.' (ManufacturingOrder m) = name(unitMeasure(m));
 
@@ -50,9 +50,9 @@ CONSTRAINT item(ManufacturingOrder m) AND bom(m) AND NOT item(m) = item(bom(m))
     CHECKED BY bom[ManufacturingOrder]
     MESSAGE 'Нужно выбрать технологическую карту для заданного продукта';
     
-materialsLocation 'Место хранения материалов' = DATA Location (ManufacturingOrder);
+materialsLocation 'Место хранения материалов' = DATA Location (ManufacturingOrder) NONULL;
 nameMaterialsLocation 'Место хранения материалов' (ManufacturingOrder m) = name(materialsLocation(m));
-productsLocation 'Место хранения произведенных товаров' = DATA Location (ManufacturingOrder);
+productsLocation 'Место хранения произведенных товаров' = DATA Location (ManufacturingOrder) NONULL;
 nameProductsLocation 'Место хранения произведенных товаров' (ManufacturingOrder m) = name(productsLocation(m));
 
 CLASS ConsumedLine 'Расходные материалы';
@@ -75,32 +75,26 @@ unitMeasure 'Ед.изм.' = DATA ItemMeasure (FinishedLine);
 nameUnitMeasure 'Ед.изм.' (FinishedLine l) = name(unitMeasure(l));
 done 'Произведено' = DATA NUMERIC[16,3] (FinishedLine);
 
-//WHEN SET (bom(ManufacturingOrder m)) DO {
-//    NEWSESSION {
-//        FOR bom(ComponentLine cl) = bom(m) DO NEW l = ConsumedLine {
-//            manufacturingOrder(l) <- m;
-//            item(l) <- item(cl);
-//            unitMeasure(l) <- unitMeasure(cl);
-//            toConsume(l) <- NUMERIC[16,3](quantity(cl) * quantity(m));
-//        }
-//        APPLY;
-//    }
-//}
-//
-//WHEN SET (bom(ManufacturingOrder m)) DO {
-//    NEWSESSION {
-//        FOR bom(ByproductLine bl) = bom(m) DO NEW l = FinishedLine {
-//            manufacturingOrder(l) <- m;
-//            item(l) <- item(bl);
-//            unitMeasure(l) <- unitMeasure(bl);
-//        }
-//        NEW l =FinishedLine {
-//             manufacturingOrder(l) <- m;
-//             item(l) <- item(m);
-//             unitMeasure(l) <- unitMeasure(m);
-//        }
-//    }
-//}
+WHEN SETCHANGED(bom(ManufacturingOrder m)) DO {
+    FOR bom(ComponentLine cl) = bom(m) DO NEW l = ConsumedLine {
+        manufacturingOrder(l) <- m;
+        item(l) <- item(cl);
+        unitMeasure(l) <- unitMeasure(cl);
+        toConsume(l) <- NUMERIC[16,3](quantity(cl) * quantity(m));
+    }
+    
+    FOR bom(ByproductLine bl) = bom(m) DO NEW l = FinishedLine {
+        manufacturingOrder(l) <- m;
+        item(l) <- item(bl);
+        unitMeasure(l) <- unitMeasure(bl);
+    }
+    
+    NEW l = FinishedLine {
+         manufacturingOrder(l) <- m;
+         item(l) <- item(m);
+         unitMeasure(l) <- unitMeasure(m);
+    }   
+}
 
 FORM manufacturingOrders 'Заказы на производство'
     OBJECTS o = ManufacturingOrder
@@ -116,11 +110,11 @@ FORM manufacturingOrder 'Заказ на производство'
                     nameMaterialsLocation, nameProductsLocation
     
     OBJECTS c = ConsumedLine
-    PROPERTIES(c) nameItem, nameUnitMeasure, toConsume, reserved, consumed
+    PROPERTIES(c) READONLY nameItem, nameUnitMeasure, toConsume, reserved, consumed
     FILTERS manufacturingOrder(c) = o
     
     OBJECTS l = FinishedLine
-    PROPERTIES(l) nameItem, nameUnitMeasure, done
+    PROPERTIES(l) READONLY nameItem, nameUnitMeasure, done
     FILTERS manufacturingOrder(l) = o
     
     EDIT ManufacturingOrder OBJECT o
@@ -177,7 +171,7 @@ DESIGN manufacturingOrder {
                 MOVE PROPERTY(nameItem(o)) { notNull = TRUE; }
                 NEW item {
                     type = CONTAINERH;
-                    MOVE PROPERTY(quantity(o));
+                    MOVE PROPERTY(quantity(o)) { notNull = TRUE; }
                     MOVE PROPERTY(nameUnitMeasure(o));
                 }
                 MOVE PROPERTY(referenceBom(o)) { notNull = TRUE; }
@@ -206,8 +200,8 @@ DESIGN manufacturingOrder {
             NEW misc {
                 fill = 1;
                 caption = 'Разное';
-                MOVE PROPERTY(nameMaterialsLocation(o));
-                MOVE PROPERTY(nameProductsLocation(o));
+                MOVE PROPERTY(nameMaterialsLocation(o)) { notNull = TRUE; }
+                MOVE PROPERTY(nameProductsLocation(o)) { notNull = TRUE; }
             }
         }   
     }

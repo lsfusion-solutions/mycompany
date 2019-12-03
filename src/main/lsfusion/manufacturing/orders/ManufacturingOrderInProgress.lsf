@@ -1,0 +1,57 @@
+MODULE ManufacturingOrderInProgress;
+
+REQUIRE ManufacturingOrderStatus, ResLedger;
+
+NAMESPACE Manufacturing;
+
+EXTEND CLASS ManufacturingOrderStatus {
+    inprogress 'В процессе'
+}
+
+inprogress 'В процессе' = DATA BOOLEAN (ManufacturingOrder);
+
+available (ConsumedLine l) = available(materialsLocation(manufacturingOrder(l)), item(l)); 
+
+checkAvailability 'Зарезервировать' (ManufacturingOrder m) {
+    APPLY; 
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {      
+        reserved(ConsumedLine l) <- min(toConsume(l), available(l)) WHERE manufacturingOrder(l) = m;
+
+        IF ((GROUP SUM 1 IF (reserved(ConsumedLine l) = toConsume(l) AND manufacturingOrder(l) = m)) = countConsumedLines(m)) 
+            THEN {
+            inprogress(m) <- TRUE;
+        }
+        APPLY;
+    }
+}
+
+unreserve 'Снять резервирование' (ManufacturingOrder m) {
+    NEWSESSION {
+        reserved(ConsumedLine l) <- NULL WHERE manufacturingOrder(l) = m;
+        inprogress(m) <- NULL;
+        APPLY;
+    }
+}
+
+status(ManufacturingOrder m) += WHEN inprogress(m) THEN ManufacturingOrderStatus.inprogress;
+colorStatus(ManufacturingOrder m) += WHEN status(m) == ManufacturingOrderStatus.inprogress THEN RGB(252,247,149);
+
+showUnreserve (ManufacturingOrder m) = IF GROUP SUM 1 IF reserved(ConsumedLine l) AND 
+    manufacturingOrder(l) = m AND status(m) = ManufacturingOrderStatus.draft THEN TRUE;
+
+EXTEND FORM manufacturingOrder
+    PROPERTIES(o) checkAvailability SHOWIF status(o) = ManufacturingOrderStatus.draft, unreserve SHOWIF showUnreserve(o)
+    PROPERTIES(o) READONLY inprogress
+;
+
+DESIGN manufacturingOrder {
+    primary {
+        MOVE PROPERTY(checkAvailability(o));
+        MOVE PROPERTY(unreserve(o));
+    }
+    status {
+        MOVE PROPERTY(inprogress(o));
+    }
+}
