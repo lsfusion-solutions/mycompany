@@ -1,6 +1,6 @@
 MODULE BoM;
 
-REQUIRE Manufacturing, Item, BoMType, Company, ManufacturingReadiness, Operation;
+REQUIRE Item, BoMType, Company, ManufacturingReadiness, Operation, ManufacturingNavigator;
 
 NAMESPACE Manufacturing;
 
@@ -15,7 +15,8 @@ quantity 'Кол-во' = DATA NUMERIC[16,3] (Bom);
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (Bom);
 nameUnitMeasure 'Ед.изм.' (Bom b) = name(unitMeasure(b));
 
-reference 'Код' = DATA ISTRING[50] (Bom);
+reference 'Код' = DATA STRING[50] (Bom) NONULL IN id;
+bom (STRING[50] reference) = GROUP AGGR Bom b BY reference(b);
 
 bomType 'Тип' = DATA BomType (Bom);
 nameType 'Тип' (Bom b) = name(bomType(b));
@@ -24,7 +25,7 @@ company 'Компания' = DATA Partner (Bom);
 nameCompany 'Компания' (Bom b) = name(company(b));
 
 CONSTRAINT company(Bom b) AND NOT company(b) IS Company
-    CHECKED BY company
+    CHECKED BY company[Bom]
     MESSAGE 'Нужно выбрать компанию';
 
 sequence 'Последовательность' = DATA INTEGER (Bom) CHARWIDTH 30;
@@ -51,15 +52,15 @@ quantity 'Кол-во' = DATA NUMERIC[16,3] (ByproductLine);
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (ByproductLine);
 nameUnitMeasure 'Ед.изм.' (ByproductLine l) = name(unitMeasure(l));
 
-WHEN LOCAL SET(item(Bom b)) DO {
+WHEN LOCAL SETCHANGED (item(Bom b)) DO {
     unitMeasure(b) <- unitMeasure(item(b));
 } 
 
-WHEN LOCAL SET(item(ComponentLine c)) DO {
+WHEN LOCAL SETCHANGED (item(ComponentLine c)) DO {
     unitMeasure(c) <- unitMeasure(item(c));
 }
 
-WHEN LOCAL SET(item(ByproductLine l)) DO {
+WHEN LOCAL SETCHANGED (item(ByproductLine l)) DO {
     unitMeasure(l) <- unitMeasure(item(l));
 }
 
@@ -97,7 +98,7 @@ DESIGN bom {
             }
             NEW rightHeader {
                 caption = '';
-                MOVE PROPERTY(reference(b));
+                MOVE PROPERTY(reference(b)) { notNull = TRUE; }
                 MOVE PROPERTY(nameType(b));
                 MOVE PROPERTY(nameCompany(b));
             }            

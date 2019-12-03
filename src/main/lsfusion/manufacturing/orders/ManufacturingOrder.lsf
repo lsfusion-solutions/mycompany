@@ -1,13 +1,14 @@
 MODULE ManufacturingOrder;
 
-REQUIRE ManufacturingNavigator, ManufacturingSettings, Numerator, BoM, Individual;
+REQUIRE ManufacturingNavigator, ManufacturingSettings, Numerator, BoM, Individual, SalesOrder;
 
 NAMESPACE Manufacturing;
 
-CLASS ManufacturingOrder;
+CLASS ManufacturingOrder 'Заказ на производство';
 
 number 'Номер' = DATA STRING[10] (ManufacturingOrder);
 series 'Серия' = DATA STRING[2] (ManufacturingOrder);
+
 WHEN SET(ManufacturingOrder o IS ManufacturingOrder) DO {
     number(o) <- curStringValue(numerator());
     series(o) <- series(numerator());
@@ -27,8 +28,152 @@ WHEN LOCAL SET(item(ManufacturingOrder m)) DO {
     unitMeasure(m) <- unitMeasure(item(m));
 } 
 
-bom 'Технологическая карта' = DATA Bom (ManufacturingOrder);
+bom 'Технологическая карта' = DATA Bom (ManufacturingOrder) NONULL;
+referenceBom 'Код технологической карты' (ManufacturingOrder m) = reference(bom(m));
 deadline 'Дата старта' = DATA DATETIME (ManufacturingOrder);
 responsible 'Ответственный' = DATA Individual (ManufacturingOrder);
-location
+nameResponsible 'Ответственный' (ManufacturingOrder m) = name(responsible(m));
+source 'Исходный документ' = DATA Order (ManufacturingOrder);
+numberSource 'Исходный документ' (ManufacturingOrder m) = seriesNumber(source(m));
+company 'Компания' = DATA Partner (ManufacturingOrder);
+nameCompany 'Компания' (ManufacturingOrder m) = name(company(m));
 
+CONSTRAINT company(ManufacturingOrder m) AND NOT company(m) IS Company
+    CHECKED BY company[ManufacturingOrder]
+    MESSAGE 'Нужно выбрать компанию';
+ 
+CONSTRAINT responsible(ManufacturingOrder m) AND company(m) AND NOT (legalEntity(responsible(m)) = company(m) AND responsible(m) IS Individual)
+    CHECKED BY responsible
+    MESSAGE 'Нужно выбрать сотрудника указанной компании';
+    
+CONSTRAINT item(ManufacturingOrder m) AND bom(m) AND NOT item(m) = item(bom(m))
+    CHECKED BY bom[ManufacturingOrder]
+    MESSAGE 'Нужно выбрать технологическую карту для заданного продукта';
+    
+materialsLocation 'Место хранения материалов' = DATA Location (ManufacturingOrder);
+nameMaterialsLocation 'Место хранения материалов' (ManufacturingOrder m) = name(materialsLocation(m));
+productsLocation 'Место хранения произведенных товаров' = DATA Location (ManufacturingOrder);
+nameProductsLocation 'Место хранения произведенных товаров' (ManufacturingOrder m) = name(productsLocation(m));
+
+CLASS ConsumedLine 'Расходные материалы';
+
+manufacturingOrder 'Заказ на производство' = DATA ManufacturingOrder (ConsumedLine) NONULL DELETE;
+item 'Номенклатура' = DATA Item (ConsumedLine);
+nameItem 'Номенклатура' (ConsumedLine l) = name(item(l));
+unitMeasure 'Ед.изм.' = DATA ItemMeasure (ConsumedLine);
+nameUnitMeasure 'Ед.изм.' (ConsumedLine l) = name(unitMeasure(l));
+toConsume 'К расходу' = DATA NUMERIC[16,3] (ConsumedLine);
+reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ConsumedLine);
+consumed 'Израсходовано' = DATA NUMERIC[16,3] (ConsumedLine);
+
+CLASS FinishedLine 'Готовые продукты';
+
+manufacturingOrder 'Заказ на производство' = DATA ManufacturingOrder (FinishedLine) NONULL DELETE;
+item 'Номенклатура' = DATA Item (FinishedLine);
+nameItem 'Номенклатура' (FinishedLine l) = name(item(l));
+unitMeasure 'Ед.изм.' = DATA ItemMeasure (FinishedLine);
+nameUnitMeasure 'Ед.изм.' (FinishedLine l) = name(unitMeasure(l));
+done 'Произведено' = DATA NUMERIC[16,3] (FinishedLine);
+
+//WHEN SET (bom(ManufacturingOrder m)) DO {
+//    NEWSESSION {
+//        FOR bom(ComponentLine cl) = bom(m) DO NEW l = ConsumedLine {
+//            manufacturingOrder(l) <- m;
+//            item(l) <- item(cl);
+//            unitMeasure(l) <- unitMeasure(cl);
+//            toConsume(l) <- NUMERIC[16,3](quantity(cl) * quantity(m));
+//        }
+//        APPLY;
+//    }
+//}
+//
+//WHEN SET (bom(ManufacturingOrder m)) DO {
+//    NEWSESSION {
+//        FOR bom(ByproductLine bl) = bom(m) DO NEW l = FinishedLine {
+//            manufacturingOrder(l) <- m;
+//            item(l) <- item(bl);
+//            unitMeasure(l) <- unitMeasure(bl);
+//        }
+//        NEW l =FinishedLine {
+//             manufacturingOrder(l) <- m;
+//             item(l) <- item(m);
+//             unitMeasure(l) <- unitMeasure(m);
+//        }
+//    }
+//}
+
+FORM manufacturingOrders 'Заказы на производство'
+    OBJECTS o = ManufacturingOrder
+    PROPERTIES(o) READONLY seriesNumber, deadline, nameItem, numberSource, quantity, nameUnitMeasure
+    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
+    
+    LIST ManufacturingOrder OBJECT o
+;
+
+FORM manufacturingOrder 'Заказ на производство'
+    OBJECTS o = ManufacturingOrder PANEL 
+    PROPERTIES(o) nameItem, quantity, nameUnitMeasure, referenceBom, deadline, nameResponsible, numberSource, nameCompany,
+                    nameMaterialsLocation, nameProductsLocation
+    
+    OBJECTS c = ConsumedLine
+    PROPERTIES(c) nameItem, nameUnitMeasure, toConsume, reserved, consumed
+    FILTERS manufacturingOrder(c) = o
+    
+    OBJECTS l = FinishedLine
+    PROPERTIES(l) nameItem, nameUnitMeasure, done
+    FILTERS manufacturingOrder(l) = o
+    
+    EDIT ManufacturingOrder OBJECT o
+;
+
+DESIGN manufacturingOrder {
+    OBJECTS {
+        NEW header {
+            alignment = STRETCH;
+            type = CONTAINERH;
+            NEW leftHeader {
+                caption = '';
+                MOVE PROPERTY(nameItem(o)) { notNull = TRUE; }
+                NEW item {
+                    type = CONTAINERH;
+                    MOVE PROPERTY(quantity(o));
+                    MOVE PROPERTY(nameUnitMeasure(o));
+                }
+                MOVE PROPERTY(referenceBom(o)) { notNull = TRUE; }
+            }
+            NEW rightHeader {
+                caption = '';
+                MOVE PROPERTY(deadline(o));  
+                MOVE PROPERTY(nameResponsible(o));
+                MOVE PROPERTY(numberSource(o));
+                MOVE PROPERTY(nameCompany(o));        
+            }
+        }
+        NEW details {
+            fill = 1;
+            type = TABBED;
+            NEW consumed {
+                fill = 1;
+                caption = 'Расходные материалы';
+                MOVE BOX(c);
+            }
+            NEW finished {
+                fill = 1;
+                caption = 'Готовые продукты';
+                MOVE BOX(l);
+            }
+            NEW misc {
+                fill = 1;
+                caption = 'Разное';
+                MOVE PROPERTY(nameMaterialsLocation(o));
+                MOVE PROPERTY(nameProductsLocation(o));
+            }
+        }   
+    }
+}
+
+NAVIGATOR {
+    manufacturing {
+        NEW manufacturingOrders;
+    }
+}
