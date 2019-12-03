@@ -100,17 +100,17 @@ DESIGN shipment {
 }
 
 EXTEND FORM partners
-    OBJECTS ship = (s = Shipment, sl = ShipmentLine)
-    PROPERTIES(s) nameStatus, executionDate, nameLocation, namePartner
-    PROPERTIES(sl) nameProduct, initialDemand, done
-    FILTERS shipment(sl) = s, partner(s) = p
+    OBJECTS sline = ShipmentLine
+    PROPERTIES(sline) READONLY nameStatus, executionDate, nameLocation, namePartner
+    PROPERTIES(sline) READONLY nameProduct, initialDemand, done
+    FILTERS partner(sline) = p
 ;
 
 DESIGN partners {
     operations {
         NEW shipments {
             caption = 'Отгрузки';
-            MOVE BOX(ship);
+            MOVE BOX(sline);
         }
     }
 }

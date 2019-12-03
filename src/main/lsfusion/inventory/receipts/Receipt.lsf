@@ -75,6 +75,11 @@ readonlyHeader = ABSTRACT CASE BOOLEAN (Receipt);
 CONSTRAINT product(ReceiptLine l) AND NOT canBePurchased(product(l))
             CHECKED BY product 
             MESSAGE 'Номенклатура не предназначена для закупки';
+
+partner (ReceiptLine l) = partner(receipt(l));            
+namePartner 'Партнер' (ReceiptLine l) = namePartner(receipt(l));
+nameLocation 'Место хранения' (ReceiptLine l) = nameLocation(receipt(l));
+executionDate 'Дата проведения' (ReceiptLine l) = executionDate(receipt(l));
            
 FORM receipt 'Поступление'
     OBJECTS r = Receipt PANEL

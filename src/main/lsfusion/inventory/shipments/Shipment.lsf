@@ -85,6 +85,11 @@ readonlyHeader = ABSTRACT CASE BOOLEAN (Shipment);
 CONSTRAINT product(ShipmentLine l) AND NOT canBeSold(product(l))
             CHECKED BY product 
             MESSAGE 'Наменклатура не предназначена для продажи';
+            
+partner (ShipmentLine l) = partner(shipment(l));            
+namePartner 'Партнер' (ShipmentLine l) = namePartner(shipment(l));
+nameLocation 'Место хранения' (ShipmentLine l) = nameLocation(shipment(l));
+executionDate 'Дата проведения' (ShipmentLine l) = executionDate(shipment(l));
 
 FORM shipment 'Отгрузка'
     OBJECTS s = Shipment PANEL 

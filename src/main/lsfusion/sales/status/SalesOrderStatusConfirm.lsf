@@ -46,33 +46,33 @@ EXTEND FORM orders
 ;
 
 EXTEND FORM items
-    OBJECTS sOrder = (so = Order, sl = OrderLine)
-    PROPERTIES(so) nameStatus, date, seriesNumber, nameCustomer, nameLocation
-    PROPERTIES(sl) nameItem, quantity, unitPrice
-    FILTERS order(sl) = so, item(sl) = i
+    OBJECTS sl = OrderLine
+    PROPERTIES(sl) READONLY nameStatus, date, seriesNumber, nameCustomer, nameLocation
+    PROPERTIES(sl) READONLY nameItem, quantity, unitPrice
+    FILTERS item(sl) = i
 ;
 
 DESIGN items {
     operations {
         NEW sOrders {
             caption = 'Заказы на продажу';
-            MOVE BOX(sOrder);
+            MOVE BOX(sl);
         }
     }
 }
 
 EXTEND FORM partners
-    OBJECTS sOrder = (so = Order, sl = OrderLine)
-    PROPERTIES(so) nameStatus, date, seriesNumber, nameCustomer, nameLocation
-    PROPERTIES(sl) nameItem, quantity, unitPrice
-    FILTERS order(sl) = so, customer(so) = p
+    OBJECTS sl = OrderLine
+    PROPERTIES(sl) READONLY nameStatus, date, seriesNumber, nameCustomer, nameLocation
+    PROPERTIES(sl) READONLY nameItem, quantity, unitPrice
+    FILTERS customer(sl) = p
 ;
 
 DESIGN partners {
     operations {
         NEW sOrders {
             caption = 'Заказы на продажу';
-            MOVE BOX(sOrder);
+            MOVE BOX(sl);
         }
     }
 }

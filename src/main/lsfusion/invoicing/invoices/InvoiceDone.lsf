@@ -32,33 +32,33 @@ DESIGN invoice {
 }
 
 EXTEND FORM items
-    OBJECTS invoice = (in = Invoice, il = InvoiceLine)
-    PROPERTIES(in) nameStatus, date, namePartner, nameCompany
-    PROPERTIES(il) nameItem, quantity, unitPrice
-    FILTERS invoice(il) = in, item(il) = i
+    OBJECTS il = InvoiceLine
+    PROPERTIES(il) READONLY nameStatus, date, namePartner, nameCompany
+    PROPERTIES(il) READONLY nameItem, quantity, unitPrice
+    FILTERS item(il) = i
 ;
 
 DESIGN items {
     operations {
         NEW invoices {
             caption = 'Расходные накладные';
-            MOVE BOX(invoice);
+            MOVE BOX(il);
         }
     }
 }
 
 EXTEND FORM partners
-    OBJECTS invoice = (in = Invoice, il = InvoiceLine)
-    PROPERTIES(in) nameStatus, date, namePartner, nameCompany
-    PROPERTIES(il) nameItem, quantity, unitPrice
-    FILTERS invoice(il) = in, partner(in) = p
+    OBJECTS il = InvoiceLine
+    PROPERTIES(il) READONLY nameStatus, date, namePartner, nameCompany
+    PROPERTIES(il) READONLY nameItem, quantity, unitPrice
+    FILTERS partner(il) = p
 ;
 
 DESIGN partners {
     operations {
         NEW invoices {
             caption = 'Расходные накладные';
-            MOVE BOX(invoice);
+            MOVE BOX(il);
         }
     }
 }

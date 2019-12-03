@@ -32,33 +32,33 @@ DESIGN bill {
 }
 
 EXTEND FORM items
-    OBJECTS bill = (b = Bill, bl = BillLine)
-    PROPERTIES(b) nameStatus, date, namePartner, nameCompany
-    PROPERTIES(bl) nameItem, quantity, unitPrice
-    FILTERS bill(bl) = b, item(bl) = i
+    OBJECTS bl = BillLine
+    PROPERTIES(bl) READONLY nameStatus, date, namePartner, nameCompany
+    PROPERTIES(bl) READONLY nameItem, quantity, unitPrice
+    FILTERS item(bl) = i
 ;
 
 DESIGN items {
     operations {
         NEW bills {
             caption = 'Приходные накладные';
-            MOVE BOX(bill);
+            MOVE BOX(bl);
         }
     }
 }
 
 EXTEND FORM partners
-    OBJECTS bill = (b = Bill, bl = BillLine)
-    PROPERTIES(b) nameStatus, date, namePartner, nameCompany
-    PROPERTIES(bl) nameItem, quantity, unitPrice
-    FILTERS bill(bl) = b, partner(b) = p
+    OBJECTS bl = BillLine
+    PROPERTIES(bl) READONLY nameStatus, date, namePartner, nameCompany
+    PROPERTIES(bl) READONLY nameItem, quantity, unitPrice
+    FILTERS partner(bl) = p
 ;
 
 DESIGN partners {
     operations {
         NEW bills {
             caption = 'Приходные накладные';
-            MOVE BOX(bill);
+            MOVE BOX(bl);
         }
     }
 }

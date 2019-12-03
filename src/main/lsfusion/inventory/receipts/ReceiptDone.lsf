@@ -94,17 +94,17 @@ DESIGN receipt {
 }
 
 EXTEND FORM partners
-    OBJECTS rec = (r = Receipt, rl = ReceiptLine)
-    PROPERTIES(r) nameStatus, executionDate, nameLocation, namePartner
-    PROPERTIES(rl) nameProduct, initialDemand, done
-    FILTERS receipt(rl) = r, partner(r) = p
+    OBJECTS rl = ReceiptLine
+    PROPERTIES(rl) READONLY nameStatus, executionDate, nameLocation, namePartner
+    PROPERTIES(rl) READONLY nameProduct, initialDemand, done
+    FILTERS partner(rl) = p
 ;
 
 DESIGN partners {
     operations {
         NEW receipts {
             caption = 'Поступления';
-            MOVE BOX(rec);
+            MOVE BOX(rl);
         }
     }
 }
