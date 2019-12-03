@@ -1,0 +1,41 @@
+MODULE ManufacturingOrderStatus;
+
+REQUIRE ManufacturingOrder;
+
+NAMESPACE Manufacturing;
+
+CLASS ManufacturingOrderStatus 'Статус заказа на производство' {
+    draft 'Черновик'
+}
+
+name 'Имя' (ManufacturingOrderStatus o) = staticCaption(o) IF o IS ManufacturingOrderStatus CHARWIDTH 15;
+
+status 'Статус' = ABSTRACT CASE ManufacturingOrderStatus (ManufacturingOrder);
+nameStatus 'Статус' (ManufacturingOrder m) = name(status(m));
+colorStatus 'Цвет' = ABSTRACT CASE COLOR (ManufacturingOrder);
+
+CLASS MaterialsAvailabilityStatus 'Доступность материалов' {
+    available 'доступны',
+    waiting 'в ожидании'
+}
+
+name 'Имя' (MaterialsAvailabilityStatus a) = staticCaption(a) IF a IS MaterialsAvailabilityStatus CHARWIDTH 15;
+
+countConsumedLines (ManufacturingOrder m) = GROUP SUM 1 IF manufacturingOrder(ConsumedLine l) = m;
+
+materialsAvailabilityStatus 'Доступность материалов' (ManufacturingOrder m) = IF 
+    countConsumedLines(m) = GROUP SUM 1 IF manufacturingOrder(ConsumedLine l) = m AND toConsume(l) = reserved(l) 
+    THEN MaterialsAvailabilityStatus.available
+    ELSE MaterialsAvailabilityStatus.waiting;
+nameMaterialsAvailabilityStatus 'Доступность материалов' (ManufacturingOrder m) = name(materialsAvailabilityStatus(m));
+colorMaterialsAvailabilityStatus 'Цвет' (ManufacturingOrder m) = 
+    IF materialsAvailabilityStatus(m) = MaterialsAvailabilityStatus.available THEN RGB(187,242,210)
+    ELSE RGB(250,150,157);
+
+status(ManufacturingOrder m) += WHEN m IS ManufacturingOrder THEN ManufacturingOrderStatus.draft;
+colorStatus(ManufacturingOrder m) += WHEN status(m) == ManufacturingOrderStatus.draft THEN RGB(187,242,210);
+
+EXTEND FORM manufacturingOrders
+    PROPERTIES(o) READONLY nameMaterialsAvailabilityStatus BACKGROUND colorMaterialsAvailabilityStatus(o), 
+                    nameStatus BACKGROUND colorStatus(o)
+;

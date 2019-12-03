@@ -126,8 +126,44 @@ FORM manufacturingOrder 'Заказ на производство'
     EDIT ManufacturingOrder OBJECT o
 ;
 
+copyManufacturingOrder 'Копировать' (ManufacturingOrder m) {
+    NEWSESSION {
+        NEW o = ManufacturingOrder {
+            item(o) <- item(m);
+            quantity(o) <- quantity(m);
+            unitMeasure(o) <- unitMeasure(m);
+            bom(o) <- bom(m);
+            responsible(o) <- responsible(m);
+            source(o) <- source(m);
+            company(o) <- company(m);
+            materialsLocation(o) <- materialsLocation(m);
+            productsLocation(o) <- productsLocation(m);
+        }
+    }
+}
+
+EXTEND FORM manufacturingOrder
+    PROPERTIES(o) copyManufacturingOrder
+;
+
 DESIGN manufacturingOrder {
     OBJECTS {
+        NEW statusPane FIRST {
+            caption = 'Статусы';
+            type = CONTAINERH;
+            alignment = STRETCH;                          
+            NEW statusActions {
+                type = CONTAINERH;                    
+                flex = 1; 
+                NEW primary {
+                    type = CONTAINERH;
+                }
+                NEW secondary {
+                    type = CONTAINERH;
+                    MOVE PROPERTY(copyManufacturingOrder(o));  
+                }            
+            }
+        }
         NEW header {
             alignment = STRETCH;
             type = CONTAINERH;
