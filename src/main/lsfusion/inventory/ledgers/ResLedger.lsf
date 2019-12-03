@@ -9,8 +9,10 @@ CLASS ResLedger;
 dateTime 'Время' = ABSTRACT DATETIME (ResLedger) MATERIALIZED;
 
 location 'Место хранения (откуда)' = ABSTRACT Location (ResLedger) MATERIALIZED;
+nameLocation 'Место хранения (откуда)' (ResLedger r) = name(location(r));
 
 product 'Товар' = ABSTRACT Product (ResLedger) MATERIALIZED;
+nameProduct 'Товар' (ResLedger r) = name(product(r));
 
 series 'Серия' = ABSTRACT STRING[2] (ResLedger);
 number 'Номер' = ABSTRACT STRING[28] (ResLedger);
@@ -42,3 +44,18 @@ prevAvailableRec 'Доступный остаток (с учетом вложе�
 
 CONSTRAINT SET(available (Location ll, Product p) < 0) AND recPositiveOnHand(ll) 
             MESSAGE 'Доступный остаток не может быть отрицательным';
+            
+EXTEND FORM items
+    OBJECTS res = ResLedger
+    PROPERTIES(res) dateTime, nameProduct, reserved, nameLocation, description
+    FILTERS product(res) = i
+;
+
+DESIGN items {
+    operations {
+        NEW resledger {
+            caption = 'Резервирование';
+            MOVE BOX(res);
+        }
+    }
+}

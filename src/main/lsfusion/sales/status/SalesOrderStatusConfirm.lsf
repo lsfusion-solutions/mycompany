@@ -44,3 +44,35 @@ DESIGN order {
 EXTEND FORM orders
     PROPERTIES(o) READONLY SHOWIF showActionsTime() confirmedDateTime BEFORE seriesNumber(o);
 ;
+
+EXTEND FORM items
+    OBJECTS sOrder = (so = Order, sl = OrderLine)
+    PROPERTIES(so) nameStatus, date, seriesNumber, nameCustomer, nameLocation
+    PROPERTIES(sl) nameItem, quantity, unitPrice
+    FILTERS order(sl) = so, item(sl) = i
+;
+
+DESIGN items {
+    operations {
+        NEW sOrders {
+            caption = 'Заказы на продажу';
+            MOVE BOX(sOrder);
+        }
+    }
+}
+
+EXTEND FORM partners
+    OBJECTS sOrder = (so = Order, sl = OrderLine)
+    PROPERTIES(so) nameStatus, date, seriesNumber, nameCustomer, nameLocation
+    PROPERTIES(sl) nameItem, quantity, unitPrice
+    FILTERS order(sl) = so, customer(so) = p
+;
+
+DESIGN partners {
+    operations {
+        NEW sOrders {
+            caption = 'Заказы на продажу';
+            MOVE BOX(sOrder);
+        }
+    }
+}

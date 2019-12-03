@@ -30,3 +30,35 @@ DESIGN invoice {
         MOVE PROPERTY(done(i));                              
     }                 
 }
+
+EXTEND FORM items
+    OBJECTS invoice = (in = Invoice, il = InvoiceLine)
+    PROPERTIES(in) nameStatus, date, namePartner, nameCompany
+    PROPERTIES(il) nameItem, quantity, unitPrice
+    FILTERS invoice(il) = in, item(il) = i
+;
+
+DESIGN items {
+    operations {
+        NEW invoices {
+            caption = 'Расходные накладные';
+            MOVE BOX(invoice);
+        }
+    }
+}
+
+EXTEND FORM partners
+    OBJECTS invoice = (in = Invoice, il = InvoiceLine)
+    PROPERTIES(in) nameStatus, date, namePartner, nameCompany
+    PROPERTIES(il) nameItem, quantity, unitPrice
+    FILTERS invoice(il) = in, partner(in) = p
+;
+
+DESIGN partners {
+    operations {
+        NEW invoices {
+            caption = 'Расходные накладные';
+            MOVE BOX(invoice);
+        }
+    }
+}

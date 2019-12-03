@@ -92,3 +92,19 @@ DESIGN receipt {
         MOVE PROPERTY(executionDate(r));
     }                  
 }
+
+EXTEND FORM partners
+    OBJECTS rec = (r = Receipt, rl = ReceiptLine)
+    PROPERTIES(r) nameStatus, executionDate, nameLocation, namePartner
+    PROPERTIES(rl) nameProduct, initialDemand, done
+    FILTERS receipt(rl) = r, partner(r) = p
+;
+
+DESIGN partners {
+    operations {
+        NEW receipts {
+            caption = 'Поступления';
+            MOVE BOX(rec);
+        }
+    }
+}

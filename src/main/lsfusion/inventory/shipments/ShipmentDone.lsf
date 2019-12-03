@@ -98,3 +98,19 @@ DESIGN shipment {
         MOVE PROPERTY(executionDate(s));
     }                  
 }
+
+EXTEND FORM partners
+    OBJECTS ship = (s = Shipment, sl = ShipmentLine)
+    PROPERTIES(s) nameStatus, executionDate, nameLocation, namePartner
+    PROPERTIES(sl) nameProduct, initialDemand, done
+    FILTERS shipment(sl) = s, partner(s) = p
+;
+
+DESIGN partners {
+    operations {
+        NEW shipments {
+            caption = 'Отгрузки';
+            MOVE BOX(ship);
+        }
+    }
+}

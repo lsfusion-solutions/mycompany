@@ -43,3 +43,39 @@ DESIGN order {
 EXTEND FORM orders
     PROPERTIES(o) READONLY SHOWIF showActionsTime() confirmedDateTime BEFORE seriesNumber(o);
 ;
+
+EXTEND FORM orders
+    PROPERTIES addOrder() DRAW o TOOLBAR
+;
+
+EXTEND FORM items
+    OBJECTS pOrder = (po = Order, pl = OrderLine)
+    PROPERTIES(po) date, seriesNumber, nameVendor, nameLocation
+    PROPERTIES(pl) nameItem, quantity, unitPrice
+    FILTERS order(pl) = po, item(pl) = i, confirmed(po)
+;
+
+DESIGN items {
+    operations {
+        NEW pOrders {
+            caption = 'Заказы на закупку';
+            MOVE BOX(pOrder);
+        }
+    }
+}
+
+EXTEND FORM partners
+    OBJECTS pOrder = (po = Order, pl = OrderLine)
+    PROPERTIES(po) date, seriesNumber, nameVendor, nameLocation
+    PROPERTIES(pl) nameItem, quantity, unitPrice
+    FILTERS order(pl) = po, vendor(po) = p, confirmed(po)
+;
+
+DESIGN partners {
+    operations {
+        NEW pOrders {
+            caption = 'Заказы на закупку';
+            MOVE BOX(pOrder);
+        }
+    }
+}

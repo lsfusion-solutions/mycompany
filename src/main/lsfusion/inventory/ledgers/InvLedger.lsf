@@ -76,3 +76,18 @@ prevDateReceived (Location l, Product p) = PREV(dateReceived(l, p));
     
 dateShipped 'Дата последней отгрузки' (Location l, Product p) = 
     GROUP LAST dateTime(InvLedger il) ORDER dateTime(il) WHERE fromLocation(il) = l AND product(il) = p;
+    
+EXTEND FORM items
+    OBJECTS inv = InvLedger
+    PROPERTIES(inv) dateTime, nameProduct, quantity, nameFromLocation, nameToLocation, description
+    FILTERS product(inv) = i
+;
+
+DESIGN items {
+    operations {
+        NEW invledger {
+            caption = 'Движения';
+            MOVE BOX(inv);
+        }
+    }
+}
