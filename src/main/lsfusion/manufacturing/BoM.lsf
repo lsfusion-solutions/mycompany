@@ -1,0 +1,132 @@
+MODULE BoM;
+
+REQUIRE Manufacturing, Item, BoMType, Company, ManufacturingReadiness, Operation;
+
+NAMESPACE Manufacturing;
+
+CLASS Bom 'Технологическая карта';
+
+archived 'Неактивный' = DATA BOOLEAN (Bom) CHARWIDTH 10;
+active 'Активный' (Bom b) = NOT archived(b) CHARWIDTH 10;
+
+item 'Номенклатура' = DATA Item (Bom) NONULL DELETE;
+nameItem 'Номенклатура' (Bom b) = name(item(b));
+quantity 'Кол-во' = DATA NUMERIC[16,3] (Bom);
+unitMeasure 'Ед.изм.' = DATA ItemMeasure (Bom);
+nameUnitMeasure 'Ед.изм.' (Bom b) = name(unitMeasure(b));
+
+reference 'Код' = DATA ISTRING[50] (Bom);
+
+bomType 'Тип' = DATA BomType (Bom);
+nameType 'Тип' (Bom b) = name(bomType(b));
+
+company 'Компания' = DATA Partner (Bom);
+nameCompany 'Компания' (Bom b) = name(company(b));
+
+CONSTRAINT company(Bom b) AND NOT company(b) IS Company
+    CHECKED BY company
+    MESSAGE 'Нужно выбрать компанию';
+
+sequence 'Последовательность' = DATA INTEGER (Bom) CHARWIDTH 30;
+manufacturingReadiness 'Начать производство' = DATA ManufacturingReadiness (Bom);
+nameReadiness 'Начать производство' (Bom b) = name(manufacturingReadiness(b));
+operation 'Операция' = DATA Operation (Bom);
+nameOperation 'Операция' (Bom b) = name(operation(b));
+
+CLASS ComponentLine 'Строка компонентов';
+
+bom 'Технологическая карта' = DATA Bom (ComponentLine) NONULL DELETE;
+item 'Номенклатура' = DATA Item (ComponentLine);
+nameItem 'Номенклатура' (ComponentLine l) = name(item(l));
+quantity 'Кол-во' = DATA NUMERIC[16,3] (ComponentLine);
+unitMeasure 'Ед.изм.' = DATA ItemMeasure (ComponentLine);
+nameUnitMeasure 'Ед.изм.' (ComponentLine l) = name(unitMeasure(l));
+
+CLASS ByproductLine 'Строка производных номенклатур';
+
+bom 'Технологическая карта' = DATA Bom (ByproductLine) NONULL DELETE;
+item 'Номенклатура' = DATA Item (ByproductLine);
+nameItem 'Номенклатура' (ByproductLine l) = name(item(l));
+quantity 'Кол-во' = DATA NUMERIC[16,3] (ByproductLine);
+unitMeasure 'Ед.изм.' = DATA ItemMeasure (ByproductLine);
+nameUnitMeasure 'Ед.изм.' (ByproductLine l) = name(unitMeasure(l));
+
+FORM bom 'Технологическая карта'
+    OBJECTS b = Bom PANEL 
+    PROPERTIES(b) nameItem, quantity, nameUnitMeasure, reference, nameType, nameCompany, archived
+    PROPERTIES(b) sequence, nameReadiness, nameOperation
+    
+    OBJECTS c = ComponentLine
+    PROPERTIES(c) nameItem, quantity, nameUnitMeasure, NEW, DELETE 
+    
+    OBJECTS l = ByproductLine
+    PROPERTIES (l) nameItem, quantity, nameUnitMeasure, NEW, DELETE
+    
+    EDIT Bom OBJECT b
+;
+
+DESIGN bom {
+    OBJECTS {
+        NEW header {
+            alignment = STRETCH;
+            type = CONTAINERH;
+            NEW leftHeader {
+                caption = '';
+                MOVE PROPERTY(nameItem(b)) { notNull = TRUE; }
+                MOVE PROPERTY(nameType(b));
+                MOVE PROPERTY(archived(b));
+                NEW item {
+                    type = CONTAINERH;
+                    MOVE PROPERTY(quantity(b));
+                    MOVE PROPERTY(nameUnitMeasure(b));
+                }
+            }
+            NEW rightHeader {
+                caption = '';
+                MOVE PROPERTY(reference(b));
+                MOVE PROPERTY(nameType(b));
+                MOVE PROPERTY(nameCompany(b));
+            }            
+        }
+        NEW details {
+            fill = 1;
+            type = TABBED;
+            NEW components {
+                fill = 1;
+                caption = 'Компоненты';
+                MOVE BOX(c);
+            }
+            NEW misc {
+                fill = 1;
+                caption = 'Разное';
+                type = CONTAINERH;
+                NEW left {
+                    MOVE PROPERTY(sequence(b));
+                }
+                NEW rigth {
+                    MOVE PROPERTY(nameReadiness(b));
+                    MOVE PROPERTY(nameOperation(b));
+                }
+            }
+            NEW byproducts {
+                fill = 1;
+                caption = 'Производные номенклатуры';
+                MOVE BOX(l);
+            }
+        }
+    }
+}
+
+FORM boms 'Технологические карты'
+    OBJECTS b = Bom
+    PROPERTIES(b) READONLY nameItem, quantity, nameUnitMeasure, reference, nameType, nameCompany, archived
+    PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE 
+    
+    LIST Bom OBJECT b
+;
+
+NAVIGATOR {
+    manufacturing {
+        NEW boms;
+    }
+}
