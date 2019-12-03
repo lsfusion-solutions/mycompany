@@ -70,7 +70,13 @@ unitPrice 'Цена' = DATA NUMERIC[10,2] (OrderLine);
 cost 'Себестоимость' = DATA NUMERIC[10,2] (OrderLine);
 discount 'Скидка %' =  DATA NUMERIC[4,2] (OrderLine);
 
-expectedDate 'Возможна поставка после' = DATA DATETIME (Order); //Здесь должна быть формула расчета даты создания заказа + макс срок поставки из товаров
+expectedDate 'Возможна поставка после' (OrderLine ol) = date(order(ol)) ;
+
+expectedDate 'Возможна поставка после' = DATA DATETIME (Order);      
+
+CONSTRAINT item(OrderLine l) AND NOT canBeSold(item(l))
+            CHECKED BY item 
+            MESSAGE 'Номенклатура не предназначена для продажи';
 
 WHEN LOCAL CHANGED(customer(Order o)) DO {
     addressCustomer(o) <- concatAddress(customer(o), ', ');
@@ -88,29 +94,12 @@ WHEN LOCAL CHANGED(item(OrderLine ol)) DO {
 
 FORM order 'Заказ'
     OBJECTS o = Order PANEL
-    PROPERTIES(o) READONLY date
-    PROPERTIES(o) READONLY seriesNumber  
-    PROPERTIES(o) nameCustomer
-    PROPERTIES(o) addressCustomer
-    PROPERTIES(o) deliveryAddress
-    PROPERTIES(o) validity
-    PROPERTIES(o) namePaymentterm
-    PROPERTIES(o) nameLocation
-    PROPERTIES(o) nameIncoterm
-    PROPERTIES(o) expectedDate READONLY 
-    PROPERTIES(o) commintmentDate
-    PROPERTIES(o) invoiceDate
-    PROPERTIES(o) nameRepresentative
-    PROPERTIES(o) customerReference
+    PROPERTIES(o) READONLY date, seriesNumber, expectedDate  
+    PROPERTIES(o) nameCustomer, addressCustomer, deliveryAddress, validity, namePaymentterm, nameLocation, nameIncoterm
+    PROPERTIES(o) commintmentDate, invoiceDate, nameRepresentative, customerReference
                  
     OBJECTS l = OrderLine
-    PROPERTIES(l) nameItem
-    PROPERTIES(l) description
-    PROPERTIES(l) quantity
-    PROPERTIES(l) codeUnitMeasure
-    PROPERTIES(l) unitPrice
-    PROPERTIES(l) cost
-    PROPERTIES(l) discount
+    PROPERTIES(l) nameItem, description, quantity, codeUnitMeasure, unitPrice, cost, discount
     PROPERTIES(l) DELETE
         
     FILTERS order(l)=o
@@ -135,7 +124,7 @@ DESIGN order {
             fill = 1;
             type = CONTAINERH;
             NEW header {            
-                fill = 2;                           
+                fill = 1.5;                           
                 NEW title {
                     type = CONTAINERH;        
                     MOVE PROPERTY(date(o));

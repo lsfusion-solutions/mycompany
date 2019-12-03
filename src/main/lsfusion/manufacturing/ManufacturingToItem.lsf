@@ -1,0 +1,19 @@
+MODULE ManufacturingToItem;
+
+REQUIRE Product;
+
+NAMESPACE Manufacturing;
+
+manufacturingLeadTime 'Плановое время производства, дней' = DATA INTEGER (Item);
+
+EXTEND FORM item
+    PROPERTIES(i) manufacturingLeadTime
+;
+
+DESIGN item {
+    product {
+        box1 {
+            MOVE PROPERTY(manufacturingLeadTime(i)) AFTER PROPERTY(customerLeadTime(i)) { charWidth = 5; };
+        }
+    }
+}

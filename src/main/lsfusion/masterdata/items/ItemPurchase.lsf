@@ -6,7 +6,6 @@ NAMESPACE MasterData;
 
 canBePurchased 'Предназначен для закупки' = DATA BOOLEAN (Item);
 
-cost 'Себестоимость' = DATA NUMERIC[10,2] (Item) CHARWIDTH 15 NOFLEX;
 unitMeasurePurchase 'Единицы в приходе (по умолчанию)' = DATA ItemMeasure (Item);
 nameUnitMeasurePurchase 'Единицы в приходе (по умолчанию)' (Item i) = name(unitMeasure(i));
 
@@ -15,9 +14,8 @@ WHEN LOCAL SET(Item i IS Item) DO {
     unitMeasurePurchase(i) <- GROUP LAST ItemMeasure im IF default(im);
 }
 
-
 EXTEND FORM item 
-    PROPERTIES(i) canBePurchased, cost, nameUnitMeasurePurchase
+    PROPERTIES(i) canBePurchased, nameUnitMeasurePurchase
 ;
 
 DESIGN item {
@@ -28,7 +26,6 @@ DESIGN item {
         NEW purchase {
             caption = 'Закупка';
             showIf = canBePurchased(i);
-            MOVE PROPERTY(cost(i)) { pattern = '#,##0.00'; };
             MOVE PROPERTY(nameUnitMeasurePurchase(i));
         }
     }

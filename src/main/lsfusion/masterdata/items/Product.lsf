@@ -5,16 +5,29 @@ REQUIRE MasterData, Item;
 NAMESPACE MasterData;
 
 CLASS Product 'Товар' : Item;
-weight 'Вес единицы' = DATA NUMERIC[10,2] (Product);
+weight 'Вес единицы, кг' = DATA NUMERIC[10,3] (Product);
+volume 'Объем единицы, м3 ' = DATA NUMERIC[10,3] (Product);
+customerLeadTime 'Плановое время поставки, дней' = DATA INTEGER (Product);
+descriptionForShipment 'Доп. информация для отгрузки' = DATA STRING (Product);   
+descriptionForReceipt 'Доп. информация для прихода' = DATA STRING (Product);   
+descriptionForTransfer 'Доп. информация для внутреннего перемещения' = DATA STRING (Product);   
 
 EXTEND FORM item
-    PROPERTIES(i) weight
+    PROPERTIES(i) weight, volume, customerLeadTime, descriptionForShipment, descriptionForReceipt, descriptionForTransfer
 ;
 
 DESIGN item{
-    pane{
-        column2 {
-            MOVE PROPERTY(weight(i));
+    tabs {
+        NEW product {
+            caption = 'Inventory';
+            NEW box1 {
+                MOVE PROPERTY(weight(i)) { charWidth = 5; };
+                MOVE PROPERTY(volume(i)) { charWidth = 5; };
+                MOVE PROPERTY(customerLeadTime(i)) { charWidth = 5; };
+            }  
+            MOVE PROPERTY(descriptionForShipment(i));  
+            MOVE PROPERTY(descriptionForReceipt(i));  
+            MOVE PROPERTY(descriptionForTransfer(i));  
         }
     }
 }

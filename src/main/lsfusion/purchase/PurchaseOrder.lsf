@@ -28,7 +28,7 @@ nameVendor 'Поставщик' (Order o) = name(vendor(o));
 
 CONSTRAINT vendor(Order o) AND NOT isVendor(vendor(o)) AND NOT isCustomer(vendor(o))
                 CHECKED BY isVendor, isCustomer
-                MESSAGE 'Партнер должен быть либо вендором, либо покупателем';
+                MESSAGE 'Партнер должен быть либо поставщиком, либо покупателем';
  
 vendorReference 'Входящий номер поставщика' = DATA STRING[30] (Order);
 
@@ -42,7 +42,6 @@ namePaymentterm 'Условие оплаты' (Order o)= name(paymentterm(o));
 
 representative 'Наш представитель' = DATA Individual (Order);
 nameRepresentative 'Наш представитель' (Order o)= name(representative(o));
-//CONSTRAINT (NOT type(legalEntity(representative(Order o))) = PartnerType.company OR NOT type(representative(o))= PartnerType.individual) AND o IS Order CHECKED MESSAGE 'Должен быть наш работник';
 CONSTRAINT NOT type(representative(Order o)) = PartnerType.individual AND o IS Order CHECKED MESSAGE 'Должен быть наш работник';
 CONSTRAINT NOT type(legalEntity(representative(Order o))) = PartnerType.company AND o IS Order CHECKED MESSAGE 'Должен быть наш работник';
   
@@ -65,6 +64,10 @@ WHEN LOCAL SET (OrderLine ol IS OrderLine) DO {scheduledDate(ol) <- scheduledDat
 
 WHEN LOCAL CHANGED (item(OrderLine ol) AND NOT description(ol)) DO { description(ol) <- nameItem(ol); } 
 
+CONSTRAINT item(OrderLine l) AND NOT canBePurchased(item(l))
+            CHECKED BY item 
+            MESSAGE 'Номенклатура не предназначена для закупки';
+
 @defineTaxCalc(order, o, NULL);
 
 WHEN LOCAL CHANGED (item(OrderLine ol)) DO {
@@ -74,23 +77,11 @@ WHEN LOCAL CHANGED (item(OrderLine ol)) DO {
 
 FORM order 'Заказ'
     OBJECTS o = Order PANEL
-    PROPERTIES(o) READONLY date
-    PROPERTIES(o) READONLY seriesNumber  
-    PROPERTIES(o) nameLocation
-    PROPERTIES(o) nameVendor
-    PROPERTIES(o) vendorReference
-    PROPERTIES(o) scheduledDate
-    PROPERTIES(o) nameIncoterm
-    PROPERTIES(o) namePaymentterm
-    PROPERTIES(o) nameRepresentative
+    PROPERTIES(o) READONLY date, seriesNumber  
+    PROPERTIES(o) nameLocation, nameVendor, vendorReference, scheduledDate, nameIncoterm, namePaymentterm, nameRepresentative
                  
     OBJECTS l = OrderLine
-    PROPERTIES(l) nameItem
-    PROPERTIES(l) description
-    PROPERTIES(l) quantity
-    PROPERTIES(l) codeUnitMeasure
-    PROPERTIES(l) unitPrice
-    PROPERTIES(l) scheduledDate
+    PROPERTIES(l) nameItem, description, quantity, codeUnitMeasure, unitPrice, scheduledDate
     PROPERTIES(l) NEW,DELETE
      
     FILTERS order(l)=o
@@ -114,7 +105,7 @@ DESIGN order{
             fill = 1;
             type = CONTAINERH;
             NEW header {
-                fill = 2;
+                fill = 1.5;
                 NEW title {
                     type = CONTAINERH;        
                     MOVE PROPERTY(date(o));

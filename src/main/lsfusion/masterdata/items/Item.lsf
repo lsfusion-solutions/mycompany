@@ -25,6 +25,8 @@ idUnitMeasure 'Код единицы измерения' (Item i) = id(unitMeasu
 nameUnitMeasure 'Единица измерения' (Item i) = name(unitMeasure(i));
 WHEN LOCAL SET(Item i IS Item) DO unitMeasure(i) <- GROUP MAX ItemMeasure im IF default(im);
 
+cost 'Плановая себестоимость' = DATA NUMERIC[10,2] (Item) CHARWIDTH 15 NOFLEX;
+
 archived 'Неактивный' = DATA BOOLEAN (Item) CHARWIDTH 10;
 active 'Активный' (Item i) = NOT archived(i) CHARWIDTH 10;
 
@@ -35,7 +37,7 @@ level4 'Группа 4' (Item i) = nameCategory4(category(i));
 
 FORM item 'Номенклатура'
     OBJECTS i = Item PANEL
-    PROPERTIES(i) name, id, nameCategory, nameUnitMeasure, archived
+    PROPERTIES(i) name, id, nameCategory, nameUnitMeasure, archived, cost
       
     EDIT Item OBJECT i
 ;
@@ -47,11 +49,12 @@ DESIGN item {
             NEW pane {
                 type = CONTAINERH;
                 NEW column1 {
-                    MOVE PROPERTY(id(i));
                     MOVE PROPERTY(nameCategory(i));
+                    MOVE PROPERTY(id(i));
                 }        
                 NEW column2 {
                     MOVE PROPERTY(nameUnitMeasure(i));
+                    MOVE PROPERTY(cost(i)) { pattern = '#,##0.00'; };
                 }        
                 NEW column3 {
                     MOVE PROPERTY(archived(i));
@@ -64,7 +67,6 @@ DESIGN item {
         }
     }  
 }
-
 
 FORM items 'Номенклатуры'
     TREE categories c = Category PARENT parent(c)
