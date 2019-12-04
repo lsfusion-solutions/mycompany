@@ -75,7 +75,9 @@ unitMeasure 'Ед.изм.' = DATA ItemMeasure (FinishedLine);
 nameUnitMeasure 'Ед.изм.' (FinishedLine l) = name(unitMeasure(l));
 done 'Произведено' = DATA NUMERIC[16,3] (FinishedLine);
 
-WHEN SETCHANGED(bom(ManufacturingOrder m)) DO {
+WHEN LOCAL SETCHANGED(bom(ManufacturingOrder m)) DO {
+    FOR manufacturingOrder(ConsumedLine l) = m DO DELETE l;
+    
     FOR bom(ComponentLine cl) = bom(m) DO NEW l = ConsumedLine {
         manufacturingOrder(l) <- m;
         product(l) <- product(cl);

@@ -1,0 +1,28 @@
+MODULE UnbuildOrderInventoryMoves;
+
+REQUIRE UnbuildOrderInv;
+
+NAMESPACE Manufacturing;
+
+quantityStr 'Кол-во' = ABSTRACT STRING (InvLedger);
+quantityStr 'Кол-во' (UnbuildLedger l) = CONCAT '', '+', quantity(l);
+quantityStr 'Кол-во' (UnbuildOrderLedger l) = CONCAT '', '-', quantity(l);
+
+quantityStr (UnbuildLedger l) += quantityStr(l);
+quantityStr (UnbuildOrderLedger l) += quantityStr(l);
+
+nameUnbuildLocation 'Место хранения' (InvLedger l) = CASE WHEN l IS UnbuildLedger THEN nameToLocation(l)
+                                                             WHEN l IS UnbuildOrderLedger THEN nameFromLocation(l);
+
+EXTEND FORM unbuildOrder
+    OBJECTS il = InvLedger
+    PROPERTIES(il) SHOWIF done(o) dateTime, quantityStr, nameProduct, nameUnbuildLocation
+    FILTERS seriesNumber(il) = seriesNumber(o)
+;
+
+DESIGN unbuildOrder {
+    details {
+        MOVE BOX(il) {caption = 'Изменения остатков'; }
+    }
+}
+
