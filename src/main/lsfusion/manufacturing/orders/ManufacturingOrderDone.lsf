@@ -1,0 +1,50 @@
+MODULE ManufacturingOrderDone;
+
+REQUIRE ManufacturingOrderInProgress;
+
+NAMESPACE Manufacturing;
+
+EXTEND CLASS ManufacturingOrderStatus {
+    done 'Завершен'
+}
+
+done 'Завершен' = DATA BOOLEAN (ManufacturingOrder);
+
+produce 'Произвести' (ManufacturingOrder m) {
+    NEWSESSION {
+        FOR manufacturingOrder(ConsumedLine l) = m DO {
+            consumed(l) <- reserved(l);
+        }
+        
+        FOR bom(ByproductLine bl) = bom(m) DO NEW l = FinishedLine {
+            manufacturingOrder(l) <- m;
+            product(l) <- product(bl);
+            unitMeasure(l) <- unitMeasure(bl);
+            done(l) <- NUMERIC[16,3](quantity(bl) * quantity(m));
+        }
+        
+        NEW l = FinishedLine {
+             manufacturingOrder(l) <- m;
+             product(l) <- product(m);
+             unitMeasure(l) <- unitMeasure(m);
+             done(l) <- quantity(m);
+        } 
+        done(m) <- TRUE;
+        APPLY;
+    }
+}
+
+status(ManufacturingOrder m) += WHEN done(m) THEN ManufacturingOrderStatus.done;
+
+EXTEND FORM manufacturingOrder
+    PROPERTIES(o) produce SHOWIF status(o) = ManufacturingOrderStatus.inprogress, done READONLY 
+;
+
+DESIGN manufacturingOrder {
+    primary {
+        MOVE PROPERTY(produce(o));
+    }
+    status {
+        MOVE PROPERTY(done(o));
+    }
+}

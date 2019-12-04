@@ -57,7 +57,7 @@ sourceDocument 'Исходный документ' = DATA STRING[10] (Shipment);
 
 CLASS ShipmentLine 'Строка отгрузки';
 
-shipment 'Документ' = DATA Shipment (ShipmentLine) NONULL DELETE INDEXED;
+shipment 'Документ' = DATA Shipment (ShipmentLine) NONULL DELETE INDEXED IN id;
 
 product 'Продукт' = DATA Product (ShipmentLine) NONULL INDEXED;
 nameProduct 'Продукт' (ShipmentLine l) = name(product(l)) IN id;
@@ -108,7 +108,7 @@ FORM shipment 'Отгрузка'
 
 FORM shipments 'Отгрузки'
     OBJECTS s = Shipment
-    PROPERTIES(s) READONLY scheduledDate, executionDate, series, number, nameType, nameLocation,
+    PROPERTIES(s) READONLY  scheduledDate, executionDate, series, number, nameType, nameLocation,
                   nameToLocation, namePartner, notes
     PROPERTIES(s) NEWSESSION READONLYIF readonly(s) DELETE
     PROPERTIES(s) NEWSESSION NEW, EDIT

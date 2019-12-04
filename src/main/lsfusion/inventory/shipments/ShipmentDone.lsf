@@ -11,7 +11,8 @@ done 'Отгружено' = DATA NUMERIC[16,3] (ShipmentLine);
 CONSTRAINT done(ShipmentLine l) < 0 OR done(l) > initialDemand(l) 
     MESSAGE 'Отгруженое количество должно быть от 0 до исходного';
 
-CONSTRAINT done(ShipmentLine l) > available(l) AND NOT done(shipment(l)) MESSAGE 'Отгруженые кол-ва не могут быть больше доступных';
+CONSTRAINT done(ShipmentLine l) > available(l) AND NOT done(shipment(l)) AND 
+            positiveOnHand(location(shipment(l))) MESSAGE 'Отгруженые кол-ва не могут быть больше доступных';
 
 fillDone 'Заполнить Отгружено' (Shipment s) {
     done(ShipmentLine l) <- reserved(l) WHERE shipment(l) = s;    

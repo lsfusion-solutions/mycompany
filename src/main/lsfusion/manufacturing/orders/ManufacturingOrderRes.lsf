@@ -1,0 +1,22 @@
+MODULE ManufacturingOrderRes;
+
+REQUIRE ManufacturingOrderDone;
+
+NAMESPACE Manufacturing;
+
+CLASS ManufacturingOrderResLedger : ResLedger;
+manLedger = AGGR ManufacturingOrderResLedger WHERE reserved(ConsumedLine line) AND 
+                    NOT status(manufacturingOrder(line)) = ManufacturingOrderStatus.done;
+
+dateTime(ManufacturingOrderResLedger r) += deadline(manufacturingOrder(line(r)));
+
+location(ManufacturingOrderResLedger r) += materialsLocation(manufacturingOrder(line(r)));
+
+product(ManufacturingOrderResLedger r) += (product(line(r)));
+reserved(ManufacturingOrderResLedger r) += reserved(line(r));
+
+description(ManufacturingOrderResLedger r) += 'Производство' IF line(r) IS ConsumedLine;
+partner(ManufacturingOrderResLedger r) += company(manufacturingOrder(line(r)));
+
+series(ManufacturingOrderResLedger r) += series(manufacturingOrder(line(r)));
+number(ManufacturingOrderResLedger r) += number(manufacturingOrder(line(r)));
