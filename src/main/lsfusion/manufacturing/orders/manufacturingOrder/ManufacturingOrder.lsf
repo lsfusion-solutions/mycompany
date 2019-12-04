@@ -14,7 +14,7 @@ WHEN SETCHANGED(ManufacturingOrder m IS ManufacturingOrder  AND numeratorOrder()
     series(m) <- series(numeratorOrder());
     incrementValueSession(numeratorOrder());   
 }
-seriesNumber 'Номер' (ManufacturingOrder o) = CONCAT '', series(o), number(o);
+seriesNumber 'Номер' (ManufacturingOrder o) = CONCAT '/', series(o), number(o);
 
 product 'Номенклатура' = DATA Product (ManufacturingOrder) NONULL DELETE;
 nameProduct 'Номенклатура' (ManufacturingOrder m) = name(product(m));
@@ -65,6 +65,10 @@ nameUnitMeasure 'Ед.изм.' (ConsumedLine l) = name(unitMeasure(l));
 toConsume 'К расходу' = DATA NUMERIC[16,3] (ConsumedLine);
 reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ConsumedLine);
 consumed 'Израсходовано' = DATA NUMERIC[16,3] (ConsumedLine);
+
+WHEN LOCAL SET(product(ConsumedLine l)) DO {
+    unitMeasure(l) <- unitMeasure(product(l));
+} 
 
 CLASS FinishedLine 'Готовые продукты';
 
