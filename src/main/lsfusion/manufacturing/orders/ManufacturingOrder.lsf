@@ -92,10 +92,12 @@ FORM manufacturingOrders 'Заказы на производство'
     LIST ManufacturingOrder OBJECT o
 ;
 
+readonly = ABSTRACT CASE BOOLEAN (ManufacturingOrder);
+
 FORM manufacturingOrder 'Заказ на производство'
     OBJECTS o = ManufacturingOrder PANEL 
-    PROPERTIES(o) nameProduct, quantity, nameUnitMeasure, referenceBom, deadline, nameResponsible, numberSource, nameCompany,
-                    nameMaterialsLocation, nameProductsLocation
+    PROPERTIES(o) READONLYIF  readonly(o) nameProduct, quantity, nameUnitMeasure, referenceBom, deadline, 
+        nameResponsible, numberSource, nameCompany, nameMaterialsLocation, nameProductsLocation
     
     OBJECTS c = ConsumedLine
     PROPERTIES(c) READONLY nameProduct, nameUnitMeasure, toConsume, reserved, consumed

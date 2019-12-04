@@ -34,6 +34,7 @@ colorMaterialsAvailabilityStatus 'Цвет' (ManufacturingOrder m) =
 
 status(ManufacturingOrder m) += WHEN m IS ManufacturingOrder THEN ManufacturingOrderStatus.draft;
 colorStatus(ManufacturingOrder m) += WHEN status(m) == ManufacturingOrderStatus.draft THEN RGB(187,242,210);
+readonly (ManufacturingOrder m) += WHEN NOT status(m) = ManufacturingOrderStatus.draft THEN TRUE;
 
 EXTEND FORM manufacturingOrders
     PROPERTIES(o) READONLY nameMaterialsAvailabilityStatus BACKGROUND colorMaterialsAvailabilityStatus(o), 
