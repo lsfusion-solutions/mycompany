@@ -1,0 +1,39 @@
+MODULE UnbuildOrderDone;
+
+REQUIRE UnbuilOrderStatus;
+
+NAMESPACE Manufacturing;
+
+done 'Завершен' = DATA BOOLEAN (UnbuildOrder);
+
+unbuild 'Разобрать' (UnbuildOrder o) {
+    APPLY;
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {
+        FOR bom(ComponentLine cl) = bom(o) DO NEW l = UnbuildOrderLine {
+                unbuildOrder(l) <- o;
+                date(l) <- currentDateTime();
+                product(l) <- product(cl);
+                quantity(l) <- NUMERIC[16,3](quantity(o) * quantity(cl));
+                unitMeasure(l) <- unitMeasure(cl);
+            }
+        done(o) <- TRUE;
+        APPLY;
+    }
+}
+
+status(UnbuildOrder o) += WHEN done(o) THEN UnbuildOrderStatus.done;
+
+EXTEND FORM unbuildOrder
+    PROPERTIES(o) unbuild SHOWIF status(o) = UnbuildOrderStatus.draft, done READONLY 
+;
+
+DESIGN unbuildOrder {
+    primary {
+        MOVE PROPERTY(unbuild(o)) { fontStyle = 'bold'; }
+    }
+    status {
+        MOVE PROPERTY(done(o));
+    }
+}

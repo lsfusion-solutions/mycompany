@@ -1,0 +1,34 @@
+MODULE UnbuilOrderStatus;
+
+REQUIRE UnbuildOrder;
+
+NAMESPACE Manufacturing;
+
+CLASS UnbuildOrderStatus 'Статус разбора' {
+    draft 'Черновик',
+    done 'Завершен'
+}
+
+name 'Имя' (UnbuildOrderStatus o) = staticCaption(o) IF o IS UnbuildOrderStatus CHARWIDTH 15;
+
+status 'Статус' = ABSTRACT CASE UnbuildOrderStatus (UnbuildOrder);
+nameStatus 'Статус' (UnbuildOrder o) = name(status(o));
+colorStatus 'Цвет' = ABSTRACT CASE COLOR (UnbuildOrder);
+
+status(UnbuildOrder o) += WHEN o IS UnbuildOrder THEN UnbuildOrderStatus.draft;
+colorStatus(UnbuildOrder o) += WHEN status(o) == UnbuildOrderStatus.draft THEN RGB(187,242,210);
+readonly (UnbuildOrder o) += WHEN NOT status(o) = UnbuildOrderStatus.draft THEN TRUE;
+
+EXTEND FORM unbuildOrders
+    PROPERTIES(o) READONLY nameStatus BACKGROUND colorStatus(o) BEFORE nameLocationFrom(o)                   
+;
+
+EXTEND FORM unbuildOrder
+    PROPERTIES(o) nameStatus BACKGROUND colorStatus(o)
+;
+
+DESIGN unbuildOrder {
+    status {
+        MOVE PROPERTY(nameStatus(o));
+    }
+}
