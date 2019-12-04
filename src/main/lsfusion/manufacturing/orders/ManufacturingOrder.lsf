@@ -6,13 +6,13 @@ NAMESPACE Manufacturing;
 
 CLASS ManufacturingOrder 'Заказ на производство';
 
-number 'Номер' = DATA STRING[10] (ManufacturingOrder);
+number 'Номер' = DATA STRING[28] (ManufacturingOrder);
 series 'Серия' = DATA STRING[2] (ManufacturingOrder);
 
-WHEN SET(ManufacturingOrder o IS ManufacturingOrder) DO {
-    number(o) <- curStringValue(numerator());
-    series(o) <- series(numerator());
-    incrementValueSession(numerator());   
+WHEN SETCHANGED(ManufacturingOrder m IS ManufacturingOrder  AND numeratorOrder() AND NOT number(m)) DO {
+    number(m) <- curStringValue(numeratorOrder());
+    series(m) <- series(numeratorOrder());
+    incrementValueSession(numeratorOrder());   
 }
 seriesNumber 'Номер' (ManufacturingOrder o) = CONCAT '', series(o), number(o);
 

@@ -1,0 +1,31 @@
+MODULE ManufacturingOrderPrint;
+
+REQUIRE ManufacturingOrderDone;
+
+NAMESPACE Manufacturing;
+
+printingDate 'Дата печати' (ManufacturingOrder m) = currentDateTime();
+from 'Откуда' (ConsumedLine l) = nameMaterialsLocation(manufacturingOrder(l));
+
+FORM printManufacturingOrder
+    OBJECTS m = ManufacturingOrder PANEL 
+    PROPERTIES(m) seriesNumber, nameResponsible, deadline, nameProduct, quantity, printingDate
+    
+    OBJECTS l = ConsumedLine
+    PROPERTIES(l) nameProduct, toConsume, from
+    FILTERS manufacturingOrder(l) = m
+;
+
+print 'Печать' (ManufacturingOrder m) {
+    PRINT printManufacturingOrder OBJECTS m = m; 
+}
+
+EXTEND FORM manufacturingOrder
+    PROPERTIES(o) print
+;
+
+DESIGN manufacturingOrder {
+    secondary {
+        MOVE PROPERTY(print(o));
+    }
+}
