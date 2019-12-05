@@ -135,9 +135,21 @@ nameCompany 'Компания' (InvoiceLine l) = nameCompany(invoice(l));
 
 @defineTaxCalc(invoice, i, TRUE);
 
+CLASS InvoiceType 'Тип документа' {
+    invoice 'Реализация'
+}
+
+name 'Имя' (InvoiceType i) = staticCaption(i) IF i IS InvoiceType CHARWIDTH 20;
+type 'Тип' = ABSTRACT CASE InvoiceType (Invoice);
+type (Invoice i) += WHEN TRUE AND i IS Invoice THEN InvoiceType.invoice;
+nameType 'Тип' (Invoice i) = name(type(i));
+
+colorType 'Цвет' = ABSTRACT CASE COLOR (Invoice);
+colorType (Invoice i) += WHEN type[Invoice](i) == InvoiceType.invoice THEN RGB(255,255,255);
+
 FORM invoice 'Документ реализации'
     OBJECTS  i = Invoice PANEL 
-    PROPERTIES(i) READONLYIF readonly(i)  date, dueDate, namePartner, partnerAccountNumber, addressPartner, sourceDocument,
+    PROPERTIES(i) READONLYIF readonly(i)  nameType BACKGROUND colorType(i), date, dueDate, namePartner, partnerAccountNumber, addressPartner, sourceDocument,
                              nameCompany, companyAccountNumber, seriesNumber, notes
         
     OBJECTS l = InvoiceLine
@@ -246,7 +258,7 @@ addInvoice 'Документ' () {
 
 FORM invoices 'Реализация товаров и услуг'
     OBJECTS i = Invoice
-    PROPERTIES(i) READONLY date, dueDate, namePartner, notes    
+    PROPERTIES(i) READONLY nameType BACKGROUND colorType(i), date, dueDate, namePartner, notes    
     PROPERTIES(i) NEWSESSION EDIT
     PROPERTIES(i) NEWSESSION READONLYIF readonly(i) DELETE
     PROPERTIES addInvoice() DRAW i TOOLBAR

@@ -15,20 +15,15 @@ partner (CreditNote c) += partner[Invoice](c);
 date(CreditNote c) += date[Invoice](c);
 number(CreditNote c) += number[Invoice](c);
 
-CLASS InvoiceType 'Тип документа' {
-    invoice 'Реализация',
+EXTEND CLASS InvoiceType {
     creditNote 'Возврат'
 }
 
-name 'Имя' (InvoiceType o) = staticCaption(o) IF o IS InvoiceType CHARWIDTH 10;
+type (Invoice i) += WHEN isCreditNote(i) THEN InvoiceType.creditNote;
 
-type 'Тип' (Invoice i) = IF(isCreditNote(i)) THEN InvoiceType.creditNote
-                                     ELSE InvoiceType.invoice;
-nameType 'Тип' (Invoice i) = name(type(i));
+//type(CreditNote c) += ISTRING[30] (nameType[Invoice](c));
 
-type(CreditNote c) += ISTRING[30] (nameType[Invoice](c));
-
-typeColor (CreditNote c) = IF type[Invoice](c) = InvoiceType.creditNote THEN RGB(250,67,71);
+colorType (CreditNote c) += WHEN type[Invoice](c) = InvoiceType.creditNote THEN RGB(250,67,71);
 
 canBeMatched(CreditNote c, Invoice i) = 
             partner[InvoiceOutstandingCredit](c) = partner(i) 
@@ -37,20 +32,6 @@ canBeMatched(CreditNote c, Invoice i) =
             AND status(i) = InvoiceStatus.ready 
             AND NOT isCreditNote(i);
 canBeMatched(CreditNote c, Invoice i) += canBeMatched(c, i);
-
-EXTEND FORM invoice
-    PROPERTIES(i) nameType  BACKGROUND typeColor(i)
-;
-
-DESIGN invoice {
-    title {
-        MOVE PROPERTY(nameType(i)) AFTER PROPERTY(seriesNumber(i));
-    }
-}
-
-EXTEND FORM invoices
-    PROPERTIES(i) nameType AFTER nameStatus(i) BACKGROUND typeColor(i)
-;
 
 creditNote 'Создать акт расхождения' (Invoice i) {
     APPLY; 
