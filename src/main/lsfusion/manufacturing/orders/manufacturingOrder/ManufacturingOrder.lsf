@@ -9,12 +9,39 @@ CLASS ManufacturingOrder 'Заказ на производство';
 number 'Номер' = DATA STRING[28] (ManufacturingOrder);
 series 'Серия' = DATA STRING[2] (ManufacturingOrder);
 
+numeratorOrder 'Нумератор заказов' = DATA Numerator();
+nameNumeratorOrder 'Нумератор заказов' = name(numeratorOrder());
+
+loadInitialData () + {
+    NEWSESSION {
+        NEW n = Numerator {
+            name(n) <- 'Производства';
+            series(n) <- 'MO';
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+            numeratorOrder() <- n;
+        }
+        APPLY;
+    }
+}
+
+EXTEND FORM options
+    PROPERTIES nameNumeratorOrder()
+;
+
+DESIGN options {
+    OBJECTS {
+        MOVE PROPERTY(nameNumeratorOrder());
+    }
+}
+
 WHEN SETCHANGED(ManufacturingOrder m IS ManufacturingOrder  AND numeratorOrder() AND NOT number(m)) DO {
     number(m) <- curStringValue(numeratorOrder());
     series(m) <- series(numeratorOrder());
     incrementValueSession(numeratorOrder());   
 }
-seriesNumber 'Номер' (ManufacturingOrder o) = CONCAT '', series(o), number(o);
+seriesNumber 'Номер' (ManufacturingOrder o) = CONCAT '/', series(o), number(o);
 
 product 'Номенклатура' = DATA Product (ManufacturingOrder) NONULL DELETE;
 nameProduct 'Номенклатура' (ManufacturingOrder m) = name(product(m));
@@ -66,6 +93,10 @@ toConsume 'К расходу' = DATA NUMERIC[16,3] (ConsumedLine);
 reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ConsumedLine);
 consumed 'Израсходовано' = DATA NUMERIC[16,3] (ConsumedLine);
 
+WHEN LOCAL SET(product(ConsumedLine l)) DO {
+    unitMeasure(l) <- unitMeasure(product(l));
+} 
+
 CLASS FinishedLine 'Готовые продукты';
 
 manufacturingOrder 'Заказ на производство' = DATA ManufacturingOrder (FinishedLine) NONULL DELETE;
@@ -75,7 +106,9 @@ unitMeasure 'Ед.изм.' = DATA ItemMeasure (FinishedLine);
 nameUnitMeasure 'Ед.изм.' (FinishedLine l) = name(unitMeasure(l));
 done 'Произведено' = DATA NUMERIC[16,3] (FinishedLine);
 
-WHEN SETCHANGED(bom(ManufacturingOrder m)) DO {
+WHEN LOCAL SETCHANGED(bom(ManufacturingOrder m)) DO {
+    FOR manufacturingOrder(ConsumedLine l) = m DO DELETE l;
+    
     FOR bom(ComponentLine cl) = bom(m) DO NEW l = ConsumedLine {
         manufacturingOrder(l) <- m;
         product(l) <- product(cl);
@@ -198,7 +231,7 @@ DESIGN manufacturingOrder {
 }
 
 NAVIGATOR {
-    manufacturing {
+    operations {
         NEW manufacturingOrders;
     }
 }

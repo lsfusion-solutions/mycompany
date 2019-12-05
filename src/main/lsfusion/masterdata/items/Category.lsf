@@ -8,7 +8,34 @@ CLASS Category 'Категория';
 id 'Код' = DATA STRING[50] (Category) IN id CHARWIDTH 8;
 category (STRING[50] id) = GROUP AGGR Category c BY id(c);
 
-WHEN SETCHANGED(Category c IS Category  AND numeratorPartner() AND NOT id(c)) DO {
+numeratorCategory 'Нумератор категорий' = DATA Numerator() CHARWIDTH 20;
+nameNumeratorCategory 'Нумератор категорий' = name(numeratorCategory());
+
+loadInitialData () + {
+    NEWSESSION {
+        NEW n = Numerator {
+            name(n) <- 'Категорий';
+            series(n) <- 'CT';
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+            numeratorCategory() <- n;
+        }
+        APPLY;
+    }
+}
+
+EXTEND FORM options
+    PROPERTIES nameNumeratorCategory()
+;
+
+DESIGN options {
+    general {
+        MOVE PROPERTY(nameNumeratorCategory());
+    }
+}
+
+WHEN SETCHANGED(Category c IS Category  AND numeratorCategory() AND NOT id(c)) DO {
     id(c) <- CONCAT '', series(numeratorCategory()), curStringValue(numeratorCategory());
     incrementValueSession(numeratorCategory());   
 }

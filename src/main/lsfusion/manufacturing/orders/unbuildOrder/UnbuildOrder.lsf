@@ -1,0 +1,183 @@
+MODULE UnbuildOrder;
+
+REQUIRE ManufacturingOrder;
+
+NAMESPACE Manufacturing;
+
+CLASS UnbuildOrder 'Заказ на разбор';
+
+number 'Номер' = DATA STRING[28] (UnbuildOrder);
+series 'Серия' = DATA STRING[2] (UnbuildOrder);
+
+numeratorUnbuild 'Нумератор разборов' = DATA Numerator();
+nameNumeratorUnbuild 'Нумератор разборов' = name(numeratorUnbuild());
+
+loadInitialData () + {
+    NEWSESSION {
+        NEW n = Numerator {
+            name(n) <- 'Разбора';
+            series(n) <- 'UO';
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+            numeratorUnbuild() <- n;
+        }
+        APPLY;
+    }
+}
+
+EXTEND FORM options
+    PROPERTIES nameNumeratorUnbuild()
+;
+
+DESIGN options {
+    OBJECTS {
+        MOVE PROPERTY(nameNumeratorUnbuild());
+    }
+}
+
+WHEN SETCHANGED(UnbuildOrder o IS UnbuildOrder  AND numeratorUnbuild() AND NOT number(o)) DO {
+    number(o) <- curStringValue(numeratorUnbuild());
+    series(o) <- series(numeratorUnbuild());
+    incrementValueSession(numeratorUnbuild());   
+}
+seriesNumber 'Номер' (UnbuildOrder o) = CONCAT '/', series(o), number(o);
+
+product 'Номенклатура' = DATA Product (UnbuildOrder) NONULL DELETE;
+nameProduct 'Номенклатура' (UnbuildOrder o) = name(product(o));
+idProduct 'Код номенклатуры' (UnbuildOrder o) = id(product(o));
+
+quantity 'Кол-во' = DATA NUMERIC[16,3] (UnbuildOrder) NONULL;
+unitMeasure 'Ед.изм.' = DATA ItemMeasure (UnbuildOrder);
+nameUnitMeasure 'Ед.изм.' (UnbuildOrder o) = name(unitMeasure(o));
+
+WHEN LOCAL SET(product(UnbuildOrder o)) DO {
+    unitMeasure(o) <- unitMeasure(product(o));
+} 
+
+bom 'Технологическая карта' = DATA Bom (UnbuildOrder) NONULL;
+referenceBom 'Код технологической карты' (UnbuildOrder o) = reference(bom(o));
+
+CONSTRAINT bom(UnbuildOrder o) AND NOT product(o) = product(bom(o))
+    CHECKED BY bom[UnbuildOrder]
+    MESSAGE 'Нужно указать технологическую карту выбранного продукта';
+
+locationFrom 'Место хранения (откуда)' = DATA Location (UnbuildOrder) NONULL;
+nameLocationFrom 'Место хранения (откуда)' (UnbuildOrder o) = name(locationFrom(o));
+locationTo 'Место хранения (куда)' = DATA Location (UnbuildOrder) NONULL;
+nameLocationTo 'Место хранения (куда)' (UnbuildOrder o) = name(locationTo(o));
+
+manufacturingOrder 'Заказ на производство' = DATA ManufacturingOrder (UnbuildOrder);
+manOrderReference 'Заказ на производство' (UnbuildOrder o) = seriesNumber(manufacturingOrder(o));
+
+CLASS UnbuildOrderLine 'Строка разбора';
+
+unbuildOrder 'Заказ на разбор' = DATA UnbuildOrder (UnbuildOrderLine) NONULL DELETE;
+date 'Дата' = DATA DATETIME (UnbuildOrderLine);
+
+product 'Номенклатура' = DATA Product (UnbuildOrderLine);
+nameProduct 'Номенклатура' (UnbuildOrderLine l) = name(product(l));
+
+quantity 'Кол-во' = DATA NUMERIC[16,3] (UnbuildOrderLine);
+unitMeasure 'Ед.изм.' = DATA ItemMeasure (UnbuildOrderLine);
+nameUnitMeasure 'Ед.изм.' (UnbuildOrderLine l) = name(unitMeasure(l));
+
+WHEN LOCAL SET(product(UnbuildOrderLine l)) DO {
+    unitMeasure(l) <- unitMeasure(product(l));
+} 
+
+FORM unbuildOrders 'Заказы на разбор'
+    OBJECTS o = UnbuildOrder
+    PROPERTIES(o) READONLY seriesNumber, nameProduct, referenceBom, quantity, nameUnitMeasure, nameLocationFrom
+    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
+        
+    LIST UnbuildOrder OBJECT o
+;
+
+readonly = ABSTRACT CASE BOOLEAN (UnbuildOrder);
+
+FORM unbuildOrder 'Заказ на разбор'
+    OBJECTS o = UnbuildOrder PANEL
+    PROPERTIES(o) READONLYIF readonly(o) nameProduct, referenceBom, quantity, nameUnitMeasure, nameLocationFrom, 
+                                manOrderReference, nameLocationTo
+    
+    OBJECTS l = UnbuildOrderLine
+    PROPERTIES(l) READONLY date, nameProduct, nameUnitMeasure, quantity
+    FILTERS unbuildOrder(l) = o
+    
+    EDIT UnbuildOrder OBJECT o
+;
+
+copyUnbuildOrder 'Копировать' (UnbuildOrder m) {
+    NEWSESSION {
+        NEW o = UnbuildOrder {
+            product(o) <- product(m);
+            quantity(o) <- quantity(m);
+            unitMeasure(o) <- unitMeasure(m);
+            bom(o) <- bom(m);
+            manufacturingOrder(o) <- manufacturingOrder(m);
+            locationFrom(o) <- locationFrom(m);
+            locationTo(o) <- locationTo(m);
+            
+            SHOW unbuildOrder OBJECTS o = o DOCKED;
+        }
+    }
+}
+
+EXTEND FORM unbuildOrder
+    PROPERTIES(o) copyUnbuildOrder
+;
+
+DESIGN unbuildOrder {
+    OBJECTS {
+        NEW statusPane FIRST {
+            caption = 'Статусы';
+            type = CONTAINERH;
+            alignment = STRETCH;                          
+            NEW statusActions {
+                type = CONTAINERH;                    
+                flex = 1; 
+                NEW primary {
+                    type = CONTAINERH;
+                }
+                NEW secondary {
+                    type = CONTAINERH;
+                    MOVE PROPERTY(copyUnbuildOrder(o));  
+                }            
+            }
+             NEW status AFTER statusActions {
+                type = CONTAINERH;
+             }
+        }
+        NEW header {
+            alignment = STRETCH;
+            type = CONTAINERH;
+            NEW leftHeader {
+                caption = '';
+                MOVE PROPERTY(nameProduct(o)) { notNull = TRUE; }
+                MOVE PROPERTY(referenceBom(o)) { notNull = TRUE; }
+                NEW item {
+                    type = CONTAINERH;
+                    MOVE PROPERTY(quantity(o)) { notNull = TRUE; }
+                    MOVE PROPERTY(nameUnitMeasure(o));
+                }
+            }
+            NEW rightHeader {
+                caption = '';
+                MOVE PROPERTY(manOrderReference(o)); 
+                MOVE PROPERTY(nameLocationFrom(o)) { notNull = TRUE; }
+                MOVE PROPERTY(nameLocationTo(o)) { notNull = TRUE; }       
+            }
+        }
+        NEW details {
+            fill = 1;
+            MOVE BOX(l);
+        }
+    }
+}
+
+NAVIGATOR {
+    operations {
+        NEW unbuildOrders;
+    }
+}

@@ -1,0 +1,30 @@
+MODULE ManufacturingOrderReport;
+
+REQUIRE ManufacturingOrderStatus;
+
+NAMESPACE Manufacturing;
+
+consumed 'Израсхлдовано (продукты)' (ManufacturingOrder m) = 
+    GROUP CONCAT nameProduct(ConsumedLine l) IF manufacturingOrder(l) = m, ', ';
+consumedQuantity 'Израсхлдовано (кол-во)' (ManufacturingOrder m) = 
+    GROUP SUM consumed(ConsumedLine l) IF manufacturingOrder(l) = m;
+
+produced 'Произведено (продукты)' (ManufacturingOrder m) = 
+    nameProduct(m) + GROUP CONCAT nameProduct(FinishedLine l) IF manufacturingOrder(l) = m, ', ';
+producedQuantity 'Произведено (кол-во)' (ManufacturingOrder m) = 
+    quantity(m) + GROUP SUM done(FinishedLine l) IF manufacturingOrder(l) = m;
+
+FORM manufacturingOrderReport 'Отчет по заказам на производство'
+    OBJECTS o = ManufacturingOrder
+    PROPERTIES(o) READONLY seriesNumber, nameProduct, quantity, nameUnitMeasure, referenceBom, deadline, nameResponsible, 
+        numberSource, nameCompany, nameMaterialsLocation, nameProductsLocation, consumed, consumedQuantity, produced, 
+        producedQuantity    
+;
+
+NAVIGATOR {
+    manufacturing {
+        reports {
+            NEW manufacturingOrderReport;        
+        }
+    }
+}

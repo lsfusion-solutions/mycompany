@@ -8,6 +8,33 @@ CLASS ABSTRACT Item 'Номенклатура';
 id 'Код' = DATA STRING[50] (Item) IN id CHARWIDTH 8;
 item (STRING[50] id) = GROUP AGGR Item i BY id(i);
 
+numeratorItem 'Нумератор номенклатур' = DATA Numerator() CHARWIDTH 20;
+nameNumeratorItem 'Нумератор номенклатур' = name(numeratorItem());
+
+loadInitialData () + {
+    NEWSESSION {
+        NEW n = Numerator {
+            name(n) <- 'Номенклатур';
+            series(n) <- 'IT';
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+            numeratorItem() <- n;
+        }
+        APPLY;
+    }
+}
+
+EXTEND FORM options
+    PROPERTIES nameNumeratorItem()
+;
+
+DESIGN options {
+    general {
+        MOVE PROPERTY(nameNumeratorItem());
+    }
+}
+
 WHEN SETCHANGED(Item i IS Item  AND numeratorItem() AND NOT id(i)) DO {
     id(i) <- CONCAT '', series(numeratorItem()), curStringValue(numeratorItem());
     incrementValueSession(numeratorItem());   
@@ -64,6 +91,9 @@ DESIGN item {
         NEW tabs {
             type = TABBED;
             fill = 1;
+            NEW image {
+                caption = 'Изображение';
+            }
         }
     }  
 }
@@ -82,7 +112,7 @@ FORM items 'Номенклатуры'
     FILTERGROUP active
         FILTER 'Активный' active(i) 'F10' DEFAULT 
         FILTER 'Неактивный' archived(i) 'F9'
-   
+        
     LIST Item OBJECT i
 ;
 
@@ -93,7 +123,15 @@ DESIGN items {
         NEW pane {
             type = SPLITH;
             fill = 1;
-            MOVE BOX(TREE categories);                
+            NEW options {
+                NEW categories {
+                    fill = 1;
+                    MOVE BOX(TREE categories);
+                }
+                NEW image {
+                    fill = 1;
+                }
+            }                
             NEW details {
                 fill = 2; 
                 MOVE BOX(i) { 

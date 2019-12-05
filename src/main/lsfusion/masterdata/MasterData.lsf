@@ -4,36 +4,27 @@ REQUIRE Numerator;
 
 NAMESPACE MasterData;
 
-numeratorCategory 'Нумератор категорий' = DATA Numerator() CHARWIDTH 20;
-nameNumeratorCategory 'Нумератор категорий' = name(numeratorCategory());
-
-numeratorItem 'Нумератор номенклатур' = DATA Numerator() CHARWIDTH 20;
-nameNumeratorItem 'Нумератор номенклатур' = name(numeratorItem());
-
-numeratorItemMeasure 'Нумератор единиц измерения' = DATA Numerator() CHARWIDTH 20;
-nameNumeratorItemMeasure 'Нумератор единиц измерения' = name(numeratorItemMeasure());
-
-numeratorPartner 'Нумератор контрагентов' = DATA Numerator() CHARWIDTH 20;
-nameNumeratorPartner 'Нумератор контрагентов' = name(numeratorPartner());
+loadInitialData 'Начальные настройки' ABSTRACT LIST();
+defaultData () = IF NOT GROUP SUM 1 IF Numerator n IS Numerator THEN TRUE ELSE NULL;
 
 FORM options 'Настройки'
-  PROPERTIES nameNumeratorCategory(), nameNumeratorItem(), nameNumeratorItemMeasure(), nameNumeratorPartner()
+    PROPERTIES loadInitialData() SHOWIF defaultData() TOOLBAR 
 ;
 
 DESIGN options {
     OBJECTS {
-        type = CONTAINERV;
-        MOVE PROPERTY(nameNumeratorCategory());
-        MOVE PROPERTY(nameNumeratorItem());
-        MOVE PROPERTY(nameNumeratorItemMeasure());
-        MOVE PROPERTY(nameNumeratorPartner());
+        type = TABBED;
+        NEW general {
+            caption = 'Общие';
+        } 
+        NEW import {
+            caption = 'Импорт/экспорт';
+        } 
     }
 }
 
 NAVIGATOR {
     masterData {
-        NEW FOLDER settings 'Настройка' {
-            NEW options;        
-        }
+        NEW options;        
     }
 }

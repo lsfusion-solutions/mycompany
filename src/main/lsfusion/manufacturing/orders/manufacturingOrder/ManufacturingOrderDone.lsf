@@ -11,6 +11,9 @@ EXTEND CLASS ManufacturingOrderStatus {
 done 'Завершен' = DATA BOOLEAN (ManufacturingOrder);
 
 produce 'Произвести' (ManufacturingOrder m) {
+    APPLY;
+    IF canceled() THEN RETURN;
+        
     NEWSESSION {
         FOR manufacturingOrder(ConsumedLine l) = m DO {
             consumed(l) <- reserved(l);

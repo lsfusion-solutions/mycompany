@@ -42,6 +42,20 @@ number 'Номер' = DATA STRING[28] (Payment) NONULL;
 numeratorPayment 'Нумератор платежей' = DATA Numerator() CHARWIDTH 20;
 nameNumeratorPayment 'Нумератор платежей' = name(numeratorPayment());
 
+loadInitialData () + {
+    NEWSESSION {
+        NEW n = Numerator {
+            name(n) <- 'Платежей';
+            series(n) <- 'PA';
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+            numeratorPayment() <- n;
+        }
+        APPLY;
+    }
+}
+
 WHEN SETCHANGED(Payment p IS Payment  AND numeratorPayment() AND NOT number(p)) DO {
     number(p) <- curStringValue(numeratorPayment());
     series(p) <- series(numeratorPayment());

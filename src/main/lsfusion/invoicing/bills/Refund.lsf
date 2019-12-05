@@ -15,20 +15,15 @@ partner (Refund c) += partner[Bill](c);
 date(Refund c) += date[Bill](c);
 number(Refund c) += number[Bill](c);
 
-CLASS BillType 'Тип документа' {
-    bill 'Приобретение',
+EXTEND CLASS BillType  {
     refund 'Возврат'
 }
 
-name 'Имя' (BillType o) = staticCaption(o) IF o IS BillType CHARWIDTH 10;
+type (Bill b) +=  WHEN isRefund(b) THEN BillType.refund;
 
-type 'Тип' (Bill b)=  IF(isRefund(b)) THEN BillType.refund
-                        ELSE BillType.bill;
-nameType 'Тип' (Bill b) = name(type(b));
+//type(Refund c) += ISTRING[30] (nameType[Bill](c));
 
-type(Refund c) += ISTRING[30] (nameType[Bill](c));
-
-typeColor (Refund r) = IF type[Bill](r) = BillType.refund THEN RGB(250,67,71);
+colorType (Refund r) += WHEN type[Bill](r) = BillType.refund THEN RGB(250,67,71);
 
 canBeMatched(Refund r, Bill b) = 
             partner[BillOutstandingCredit](r) = partner(b) 
@@ -38,19 +33,6 @@ canBeMatched(Refund r, Bill b) =
             AND NOT isRefund(b);
 canBeMatched(Refund r, Bill b) += canBeMatched(r, b);
 
-EXTEND FORM bill
-    PROPERTIES(b) nameType BACKGROUND typeColor(b)
-;
-
-DESIGN bill {
-    options {
-        MOVE PROPERTY(nameType(b)) AFTER PROPERTY(dueDate(b));
-    }
-}
-
-EXTEND FORM bills
-    PROPERTIES(b) nameType AFTER nameStatus(b) BACKGROUND typeColor(b)
-;
 
 refund 'Создать возврат' (Bill b) {
     APPLY; 

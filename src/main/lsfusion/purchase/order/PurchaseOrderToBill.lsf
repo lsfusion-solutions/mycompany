@@ -25,6 +25,7 @@ createBill 'Оформить накладную' (Order o) {
             FOR order(OrderLine ol) = o AND NOT (quantity(ol) - initBill(ol)<=0) INLINE NEW bl = BillLine DO {
                 bill(bl) <- nb;
                 item(bl) <- item(ol);
+                description(bl) <- description(ol);
                 quantity(bl) <- quantity(ol) (-) initBill(ol);
                 unitPrice(bl) <- unitPrice(ol);
                 lineOrder(bl) <- ol;

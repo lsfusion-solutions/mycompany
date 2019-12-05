@@ -69,6 +69,20 @@ number 'Номер' = DATA STRING[28] (Invoice) NONULL;
 numeratorInvoice 'Нумератор документов реализации' = DATA Numerator() CHARWIDTH 20;
 nameNumeratorInvoice 'Нумератор документов реализации' = name(numeratorInvoice());
 
+loadInitialData () + {
+    NEWSESSION {
+        NEW n = Numerator {
+            name(n) <- 'Документов реализации';
+            series(n) <- 'IN';
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+            numeratorInvoice() <- n;
+        }
+        APPLY;
+    }
+}
+
 WHEN SETCHANGED(Invoice i IS Invoice  AND numeratorInvoice() AND NOT number(i)) DO {
     number(i) <- curStringValue(numeratorInvoice());
     series(i) <- series(numeratorInvoice());
@@ -96,6 +110,7 @@ invoice 'Документ' = DATA Invoice (InvoiceLine) NONULL DELETE;
 item 'Номенклатура' = DATA Item (InvoiceLine);
 idItem 'Код номенклатуры' (InvoiceLine l) = id(item(l));
 nameItem 'Номенклатура' (InvoiceLine l) = name(item(l)) IN id;
+description 'Описание' = DATA STRING (InvoiceLine); 
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (InvoiceLine) NONULL;
 unitPrice 'Цена за штуку' = DATA NUMERIC[10,2] (InvoiceLine) NONULL;
@@ -120,13 +135,25 @@ nameCompany 'Компания' (InvoiceLine l) = nameCompany(invoice(l));
 
 @defineTaxCalc(invoice, i, TRUE);
 
+CLASS InvoiceType 'Тип документа' {
+    invoice 'Реализация'
+}
+
+name 'Имя' (InvoiceType i) = staticCaption(i) IF i IS InvoiceType CHARWIDTH 20;
+type 'Тип' = ABSTRACT CASE InvoiceType (Invoice);
+type (Invoice i) += WHEN TRUE AND i IS Invoice THEN InvoiceType.invoice;
+nameType 'Тип' (Invoice i) = name(type(i));
+
+colorType 'Цвет' = ABSTRACT CASE COLOR (Invoice);
+colorType (Invoice i) += WHEN type[Invoice](i) == InvoiceType.invoice THEN RGB(255,255,255);
+
 FORM invoice 'Документ реализации'
     OBJECTS  i = Invoice PANEL 
-    PROPERTIES(i) READONLYIF readonly(i)  date, dueDate, namePartner, partnerAccountNumber, addressPartner, sourceDocument,
-                             nameCompany, companyAccountNumber, series, number, notes
+    PROPERTIES(i) READONLYIF readonly(i)  nameType BACKGROUND colorType(i), date, dueDate, namePartner, partnerAccountNumber, addressPartner, sourceDocument,
+                             nameCompany, companyAccountNumber, seriesNumber, notes
         
     OBJECTS l = InvoiceLine
-    PROPERTIES(l) READONLYIF readonly(l) nameItem, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
+    PROPERTIES(l) READONLYIF readonly(l) nameItem, description, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
     FILTERS invoice(l) = i
     
     EDIT Invoice OBJECT i;
@@ -174,24 +201,22 @@ DESIGN invoice {
             }
         }
         NEW header{
-            NEW options {
-                caption = 'Опции';
+            NEW title {
                 type = CONTAINERH;
-                fill = 1;
-                MOVE PROPERTY(date(i));
-                MOVE PROPERTY(dueDate(i));
-                MOVE PROPERTY(series(i));
-                MOVE PROPERTY(number(i));
+                MOVE PROPERTY(date(i)) { caption = 'Дата документа'; };
+                MOVE PROPERTY(seriesNumber(i)) { caption = 'Номер'; };
+                MOVE PROPERTY(dueDate(i)) { caption = 'Срок оплаты'; };
+            }
+            NEW partner {
+                type = CONTAINERH;
+                caption = 'Покупатель';           
+                MOVE PROPERTY(namePartner(i)) { notNull = TRUE; }
+                MOVE PROPERTY(partnerAccountNumber(i));
+                                               
             }
             NEW namesAndAccounts {
                 type = CONTAINERH;
                 fill = 1;
-                NEW from {
-                    type = CONTAINERH;
-                    caption = 'Плательщик';
-                    MOVE PROPERTY(namePartner(i)) { notNull = TRUE; }
-                    MOVE PROPERTY(partnerAccountNumber(i));
-                }
                 NEW to {
                     type = CONTAINERH;
                     caption = 'Получатель';
@@ -233,7 +258,7 @@ addInvoice 'Документ' () {
 
 FORM invoices 'Реализация товаров и услуг'
     OBJECTS i = Invoice
-    PROPERTIES(i) READONLY date, dueDate, namePartner, notes    
+    PROPERTIES(i) READONLY nameType BACKGROUND colorType(i), date, dueDate, namePartner, notes    
     PROPERTIES(i) NEWSESSION EDIT
     PROPERTIES(i) NEWSESSION READONLYIF readonly(i) DELETE
     PROPERTIES addInvoice() DRAW i TOOLBAR
