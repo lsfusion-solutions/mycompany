@@ -9,6 +9,33 @@ CLASS ManufacturingOrder 'Заказ на производство';
 number 'Номер' = DATA STRING[28] (ManufacturingOrder);
 series 'Серия' = DATA STRING[2] (ManufacturingOrder);
 
+numeratorOrder 'Нумератор заказов' = DATA Numerator();
+nameNumeratorOrder 'Нумератор заказов' = name(numeratorOrder());
+
+MasterData.loadDefaultData[] () + {
+    NEWSESSION {
+        NEW n = Numerator {
+            name(n) <- 'Производства';
+            series(n) <- 'MO';
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+            numeratorOrder() <- n;
+        }
+        APPLY;
+    }
+}
+
+EXTEND FORM options
+    PROPERTIES nameNumeratorOrder()
+;
+
+DESIGN options {
+    OBJECTS {
+        MOVE PROPERTY(nameNumeratorOrder());
+    }
+}
+
 WHEN SETCHANGED(ManufacturingOrder m IS ManufacturingOrder  AND numeratorOrder() AND NOT number(m)) DO {
     number(m) <- curStringValue(numeratorOrder());
     series(m) <- series(numeratorOrder());

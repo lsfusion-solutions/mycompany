@@ -11,6 +11,26 @@ putAway 'Размещение' = DATA BOOLEAN (ReceiptType);
 
 numerator 'Нумератор' = DATA Numerator (ReceiptType);
 nameNumerator 'Нумератор' (ReceiptType o) = name(numerator(o));
+
+MasterData.loadDefaultData[] () + {
+    NEWSESSION {
+        NEW r = ReceiptType {
+            name(r) <- 'Стандартное поступление';
+            putAway(r) <- TRUE;
+
+            NEW n = Numerator {
+                name(n) <- 'Поступлений';
+                series(n) <- 'RC';
+                minValue(n) <- 1;
+                maxValue(n) <- 999999;
+                stringLength(n) <- 6;
+                numerator(r) <- n;
+            }
+        }
+        APPLY;
+    }
+}
+
 defaultLocation 'Место хранения по умолчанию' = DATA Location (ReceiptType);
 nameDefaultLocation 'Место хранения по умолчанию' (ReceiptType o) = name(defaultLocation(o));
 maxQuantity 'Максимальное кол-во товара' = DATA NUMERIC[16,3] (ReceiptType);

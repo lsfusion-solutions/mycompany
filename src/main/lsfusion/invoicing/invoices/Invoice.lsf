@@ -69,6 +69,20 @@ number 'Номер' = DATA STRING[28] (Invoice) NONULL;
 numeratorInvoice 'Нумератор документов реализации' = DATA Numerator() CHARWIDTH 20;
 nameNumeratorInvoice 'Нумератор документов реализации' = name(numeratorInvoice());
 
+MasterData.loadDefaultData[] () + {
+    NEWSESSION {
+        NEW n = Numerator {
+            name(n) <- 'Документов реализации';
+            series(n) <- 'IN';
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+            numeratorInvoice() <- n;
+        }
+        APPLY;
+    }
+}
+
 WHEN SETCHANGED(Invoice i IS Invoice  AND numeratorInvoice() AND NOT number(i)) DO {
     number(i) <- curStringValue(numeratorInvoice());
     series(i) <- series(numeratorInvoice());

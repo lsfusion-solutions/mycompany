@@ -70,6 +70,20 @@ number 'Номер' = DATA STRING[28] (Bill) NONULL;
 numeratorBill 'Нумератор документов приобретения' = DATA Numerator() CHARWIDTH 20;
 nameNumeratorBill 'Нумератор документов приобретения' = name(numeratorBill());
 
+MasterData.loadDefaultData[] () + {
+    NEWSESSION {
+        NEW n = Numerator {
+            name(n) <- 'Документов приобретения';
+            series(n) <- 'BL';
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+            numeratorBill() <- n;
+        }
+        APPLY;
+    }
+}
+
 WHEN SETCHANGED(Bill b IS Bill  AND numeratorBill() AND NOT number(b)) DO {
     number(b) <- curStringValue(numeratorBill());
     series(b) <- series(numeratorBill());

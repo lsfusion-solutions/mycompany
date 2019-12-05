@@ -9,6 +9,33 @@ CLASS UnbuildOrder 'Заказ на разбор';
 number 'Номер' = DATA STRING[28] (UnbuildOrder);
 series 'Серия' = DATA STRING[2] (UnbuildOrder);
 
+numeratorUnbuild 'Нумератор разборов' = DATA Numerator();
+nameNumeratorUnbuild 'Нумератор разборов' = name(numeratorUnbuild());
+
+MasterData.loadDefaultData[] () + {
+    NEWSESSION {
+        NEW n = Numerator {
+            name(n) <- 'Разбора';
+            series(n) <- 'UO';
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+            numeratorUnbuild() <- n;
+        }
+        APPLY;
+    }
+}
+
+EXTEND FORM options
+    PROPERTIES nameNumeratorUnbuild()
+;
+
+DESIGN options {
+    OBJECTS {
+        MOVE PROPERTY(nameNumeratorUnbuild());
+    }
+}
+
 WHEN SETCHANGED(UnbuildOrder o IS UnbuildOrder  AND numeratorUnbuild() AND NOT number(o)) DO {
     number(o) <- curStringValue(numeratorUnbuild());
     series(o) <- series(numeratorUnbuild());

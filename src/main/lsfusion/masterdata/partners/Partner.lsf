@@ -25,6 +25,33 @@ END
 id 'Код' = DATA STRING[50] (Partner) IN id CHARWIDTH 8;
 partner (STRING[50] id) = GROUP AGGR Partner p BY id(p);
 
+numeratorPartner 'Нумератор контрагентов' = DATA Numerator() CHARWIDTH 20;
+nameNumeratorPartner 'Нумератор контрагентов' = name(numeratorPartner());
+
+loadDefaultData () + {
+    NEWSESSION {
+        NEW n = Numerator {
+            name(n) <- 'Контрагентов';
+            series(n) <- 'PT';
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+            numeratorPartner() <- n;
+        }
+        APPLY;
+    }
+}
+
+EXTEND FORM options
+    PROPERTIES nameNumeratorPartner()
+;
+
+DESIGN options {
+    general {
+        MOVE PROPERTY(nameNumeratorPartner());
+    }
+}
+
 WHEN SETCHANGED(Partner p IS Partner  AND numeratorPartner() AND NOT id(p)) DO {
     id(p) <- CONCAT '', series(numeratorPartner()), curStringValue(numeratorPartner());
     incrementValueSession(numeratorPartner());   
