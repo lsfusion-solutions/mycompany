@@ -1,0 +1,33 @@
+MODULE ItemImage;
+
+REQUIRE Item;
+
+NAMESPACE MasterData;
+
+image 'Изображение' = DATA IMAGEFILE (Item);
+loadImage 'Загрузить изображение' (Item i)  { INPUT = image(i) CHANGE; }
+openImage 'Открыть изображение' (Item i)  { open(image(i)); }
+
+EXTEND FORM item
+    PROPERTIES(i) image , loadImage, openImage
+;
+
+DESIGN item {
+    image {
+        MOVE PROPERTY(image(i)) { fill = 1; caption = ''; }
+        MOVE PROPERTY(loadImage(i));
+        MOVE PROPERTY(openImage(i));
+    }
+}
+
+EXTEND FORM items
+    OBJECTS ii = Item PANEL 
+    PROPERTIES(ii) READONLY image
+    FILTERS ii = i
+;
+
+DESIGN items {
+    image {
+        MOVE PROPERTY(image(ii)) { fill = 1; caption = ''; }
+    }
+}
