@@ -104,12 +104,13 @@ seriesNumber 'Серия/Номер' (Bill b) = CONCAT '/', series(b), number(b)
 
 sourceDocument 'Исходный документ' = DATA STRING[10] (Bill);
 
-CLASS BillLine 'Строка накладной';
+CLASS BillLine 'Строки документа';
 
 bill 'Приобретение товаров и услуг' = DATA Bill (BillLine) NONULL DELETE;
 
 item 'Номенклатура' = DATA Item (BillLine);
 nameItem 'Номенклатура' (BillLine l) = name(item(l)) IN id;
+description 'Описание' = DATA STRING (BillLine); 
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (BillLine) NONULL;
 unitPrice 'Цена за штуку' = DATA NUMERIC[10,2] (BillLine) NONULL;
@@ -135,13 +136,26 @@ nameCompany 'Компания' (BillLine l) = nameCompany(bill(l));
 // налоги
 @defineTaxCalc(bill, b, NULL);
 
+
+CLASS BillType 'Тип документа' {
+    bill 'Приобретение'
+}
+
+name 'Имя' (BillType b) = staticCaption(b) IF b IS BillType CHARWIDTH 20;
+type 'Тип' = ABSTRACT CASE BillType (Bill);
+type (Bill b) += WHEN TRUE AND b IS Bill THEN BillType.bill;
+nameType 'Тип' (Bill b) = name(type(b));
+
+colorType 'Цвет' = ABSTRACT CASE COLOR (Bill);
+colorType (Bill b) += WHEN type[Bill](b) == BillType.bill THEN RGB(255,255,255);
+
 FORM bill 'Документ приобретение'
     OBJECTS  b = Bill PANEL 
-    PROPERTIES(b) READONLYIF readonly(b) date, dueDate, namePartner, partnerAccountNumber, sourceDocument,
-                             nameCompany, companyAccountNumber, series, number, vendorReference, notes
+    PROPERTIES(b) READONLYIF readonly(b) nameType BACKGROUND colorType(b), date, dueDate, namePartner, partnerAccountNumber, sourceDocument,
+                             nameCompany, companyAccountNumber, seriesNumber, vendorReference, notes
         
     OBJECTS l = BillLine
-    PROPERTIES(l) READONLYIF readonly(l) nameItem, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
+    PROPERTIES(l) READONLYIF readonly(l) nameItem, description, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
     FILTERS bill(l) = b
 
     EDIT Bill OBJECT b;
@@ -186,46 +200,44 @@ DESIGN bill {
             }
         }
         NEW header{
-            NEW options {
-                caption = 'Опции';
-                type = CONTAINERH;
-                fill = 1;
-                MOVE PROPERTY(date(b));
-                MOVE PROPERTY(dueDate(b));
-                MOVE PROPERTY(series(b));
-                MOVE PROPERTY(number(b));
-                MOVE PROPERTY(vendorReference(b));
+           // fill = 1;
+            NEW company {
+                MOVE PROPERTY(nameCompany(b)) { notNull = TRUE; caption = 'Компания получатель'; }           
             }
-            NEW namesAndAccounts {
-                type = CONTAINERH;
-                fill = 1;
-                NEW from {
+            NEW title {            
+                MOVE PROPERTY(nameType(b)) { caption = 'Тип документа'; };             
+                NEW dateNumber {                
                     type = CONTAINERH;
-                    caption = 'Плательщик';
-                    MOVE PROPERTY(nameCompany(b)) { notNull = TRUE; }
-                    MOVE PROPERTY(companyAccountNumber(b));
+                    MOVE PROPERTY(date(b)) { caption = 'Дата'; };
+                    MOVE PROPERTY(seriesNumber(b)) { caption = 'Номер'; charWidth = 10; };
                 }
-                NEW to {
-                    type = CONTAINERH;
-                    caption = 'Получатель';
-                    MOVE PROPERTY(namePartner(b))  {notNull = TRUE; }
-                    MOVE PROPERTY(partnerAccountNumber(b));  
-                } 
             }
-            NEW additions {
-                caption = 'Дополнительно';
+            NEW partner {
                 type = CONTAINERH;
-                fill = 1;
-                MOVE PROPERTY(sourceDocument(b));
-                MOVE PROPERTY(notes(b));
+                MOVE PROPERTY(namePartner(b))  { caption = 'Поставщик'; notNull = TRUE; fill = 10; }
+                MOVE PROPERTY(vendorReference(b)) { caption = 'Номер поставщика'; fill = 1; charWidth = 10; };
+            }           
+            NEW boxes {
+                type = CONTAINERH;
+                fill = 1;              
+                NEW additions {            
+                    caption = 'Дополнительно';
+                    MOVE PROPERTY(dueDate(b)) { caption = 'Срок действия'; }; 
+                    MOVE PROPERTY(sourceDocument(b)) { caption = 'Создан из'; }; 
+                    MOVE PROPERTY(notes(b));
+                }
+                NEW payment {
+                    caption = 'Оплата';
+                    MOVE PROPERTY(companyAccountNumber(b)) { caption = 'р/сч для оплаты'; };
+                    MOVE PROPERTY(partnerAccountNumber(b)) { caption = 'р/сч поставщика'; };              
+                }           
             }
-            
         }
         NEW details{
             fill = 1;
             type = TABBED;
             NEW box {
-                caption = 'Строка документа';
+                caption = 'Содержание документа';
                 fill = 1;
                 MOVE BOX(l);
                 NEW pane {
@@ -247,7 +259,7 @@ addBill 'Документ' () {
 
 FORM bills 'Приобретение товаров и услуг'
     OBJECTS b = Bill
-    PROPERTIES(b) READONLY date, dueDate, namePartner, notes     
+    PROPERTIES(b) READONLY nameType BACKGROUND colorType(b), date, dueDate, namePartner, notes         
     PROPERTIES(b) NEWSESSION EDIT
     PROPERTIES(b) NEWSESSION READONLYIF readonly(b) DELETE
     PROPERTIES addBill() DRAW b TOOLBAR

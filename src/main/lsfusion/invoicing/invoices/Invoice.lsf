@@ -110,6 +110,7 @@ invoice 'Документ' = DATA Invoice (InvoiceLine) NONULL DELETE;
 item 'Номенклатура' = DATA Item (InvoiceLine);
 idItem 'Код номенклатуры' (InvoiceLine l) = id(item(l));
 nameItem 'Номенклатура' (InvoiceLine l) = name(item(l)) IN id;
+description 'Описание' = DATA STRING (InvoiceLine); 
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (InvoiceLine) NONULL;
 unitPrice 'Цена за штуку' = DATA NUMERIC[10,2] (InvoiceLine) NONULL;
@@ -137,10 +138,10 @@ nameCompany 'Компания' (InvoiceLine l) = nameCompany(invoice(l));
 FORM invoice 'Документ реализации'
     OBJECTS  i = Invoice PANEL 
     PROPERTIES(i) READONLYIF readonly(i)  date, dueDate, namePartner, partnerAccountNumber, addressPartner, sourceDocument,
-                             nameCompany, companyAccountNumber, series, number, notes
+                             nameCompany, companyAccountNumber, seriesNumber, notes
         
     OBJECTS l = InvoiceLine
-    PROPERTIES(l) READONLYIF readonly(l) nameItem, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
+    PROPERTIES(l) READONLYIF readonly(l) nameItem, description, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
     FILTERS invoice(l) = i
     
     EDIT Invoice OBJECT i;
@@ -188,24 +189,22 @@ DESIGN invoice {
             }
         }
         NEW header{
-            NEW options {
-                caption = 'Опции';
+            NEW title {
                 type = CONTAINERH;
-                fill = 1;
-                MOVE PROPERTY(date(i));
-                MOVE PROPERTY(dueDate(i));
-                MOVE PROPERTY(series(i));
-                MOVE PROPERTY(number(i));
+                MOVE PROPERTY(date(i)) { caption = 'Дата документа'; };
+                MOVE PROPERTY(seriesNumber(i)) { caption = 'Номер'; };
+                MOVE PROPERTY(dueDate(i)) { caption = 'Срок оплаты'; };
+            }
+            NEW partner {
+                type = CONTAINERH;
+                caption = 'Покупатель';           
+                MOVE PROPERTY(namePartner(i)) { notNull = TRUE; }
+                MOVE PROPERTY(partnerAccountNumber(i));
+                                               
             }
             NEW namesAndAccounts {
                 type = CONTAINERH;
                 fill = 1;
-                NEW from {
-                    type = CONTAINERH;
-                    caption = 'Плательщик';
-                    MOVE PROPERTY(namePartner(i)) { notNull = TRUE; }
-                    MOVE PROPERTY(partnerAccountNumber(i));
-                }
                 NEW to {
                     type = CONTAINERH;
                     caption = 'Получатель';
