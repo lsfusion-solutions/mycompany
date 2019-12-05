@@ -201,44 +201,49 @@ DESIGN invoice {
             }
         }
         NEW header{
-            NEW title {
-                type = CONTAINERH;
-                MOVE PROPERTY(date(i)) { caption = 'Дата документа'; };
-                MOVE PROPERTY(seriesNumber(i)) { caption = 'Номер'; };
-                MOVE PROPERTY(dueDate(i)) { caption = 'Срок оплаты'; };
-            }
-            NEW partner {
-                type = CONTAINERH;
-                caption = 'Покупатель';           
-                MOVE PROPERTY(namePartner(i)) { notNull = TRUE; }
-                MOVE PROPERTY(partnerAccountNumber(i));
-                                               
-            }
-            NEW namesAndAccounts {
-                type = CONTAINERH;
-                fill = 1;
-                NEW to {
+            type = CONTAINERH;
+            NEW box1 {               
+                fill = 3;
+                NEW company {
+                    fill = 1;
+                    MOVE PROPERTY(nameCompany(i)) { notNull = TRUE; caption = 'Компания отправитель'; }           
+                }
+                NEW title {            
+                    fill = 1;
+                    MOVE PROPERTY(nameType(i)) { caption = 'Тип документа'; };             
+                    NEW dateNumber {                
+                        type = CONTAINERH;
+                        MOVE PROPERTY(date(i)) { caption = 'Дата'; };
+                        MOVE PROPERTY(seriesNumber(i)) { caption = 'Номер'; charWidth = 10; };
+                    }
+                }
+                NEW partner {
+                    fill = 1;
                     type = CONTAINERH;
-                    caption = 'Получатель';
-                    MOVE PROPERTY(nameCompany(i)) { notNull = TRUE ;}
-                    MOVE PROPERTY(companyAccountNumber(i));
-                }   
+                    MOVE PROPERTY(namePartner(i)) { caption = 'Покупатель'; notNull = TRUE; }                                              
+                }
             }
             NEW additions {
-                caption = 'Дополнительно';
-                type = CONTAINERH;
                 fill = 1;
-                MOVE PROPERTY(sourceDocument(i));
+                caption = 'Дополнительно';
+                MOVE PROPERTY(sourceDocument(i)) { caption = 'Создан из'; }
                 MOVE PROPERTY(notes(i));
+            }
+            NEW payment {
+                fill = 1;
+                caption = 'Оплата';
+                MOVE PROPERTY(dueDate(i)) { caption = 'Срок оплаты      '; } 
+                MOVE PROPERTY(companyAccountNumber(i)) { caption = 'р/сч для оплаты'; }
             }
         }
         NEW details{
-            fill = 1;
+            fill = 5;
             type = TABBED;
             NEW box {
-                caption = 'Строка документа';
+                caption = 'Содержание документа';
+                type = SPLITV;
                 fill = 1;
-                MOVE BOX(l);
+                MOVE BOX(l) { fill = 2; }
                 NEW pane {
                     type = CONTAINERH;
                     fill = 1;
