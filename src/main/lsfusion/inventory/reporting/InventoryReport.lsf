@@ -1,6 +1,6 @@
 MODULE InventoryReport;
 
-REQUIRE InvLedger, ResLedger;// ShipmentReady;
+REQUIRE InvLedger, ResLedger, ItemImage;
 
 NAMESPACE Inventory;
 
@@ -40,6 +40,10 @@ FORM inventoryReport 'Текущие остатки'
                     level1(product), level2(product), level3(product), level4(product), 'Группа полная' = canonicalNameCategory(product)
     PROPERTIES(location,product) reserved, available, onHandDateTime, dateReceived, dateShipped
     FILTERS IF selectedDateTime() THEN onHandDateTime(location, product) ELSE onHand(location, product)
+    
+    OBJECTS pr = Product PANEL 
+    PROPERTIES(pr) READONLY image
+    FILTERS pr = p
 ;
 
 DESIGN inventoryReport {
@@ -64,7 +68,17 @@ DESIGN inventoryReport {
                         fill = 2;
                         type = SPLITV;
                         MOVE BOX(lp);
-                        MOVE BOX(il);
+                        NEW tabs {
+                            type = TABBED;
+                            NEW ledger {
+                                caption = 'Регистр изменения остатка';
+                                MOVE BOX(il);
+                            }
+                            NEW image {
+                                caption = 'Изображение';
+                                MOVE PROPERTY(image(pr)) { caption = ''; fill = 1; } 
+                            }
+                        }
                     }               
                 }
                 NEW report {
