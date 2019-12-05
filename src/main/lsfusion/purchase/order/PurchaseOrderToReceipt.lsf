@@ -1,8 +1,21 @@
 MODULE PurchaseOrderToReceipt;
 
-REQUIRE PurchaseOrder, Receipt, ReceiptStatus, ReceiptDone, PurchaseOrderStatus, PurchaseOrderStatusConfirm, PurchaseOrderStatusCancel, ReceiptCanceled;
+REQUIRE PurchaseOrder, Inventory, PurchaseOrderStatus, PurchaseOrderStatusConfirm, PurchaseOrderStatusCancel;
 
 NAMESPACE Purchase;
+
+typeReceiptFromPurchase 'Тип складского прихода по умолчанию' = DATA ReceiptType ();
+nameTypeReceiptFromPurchase 'Тип складского прихода по умолчанию' = name(typeReceiptFromPurchase());
+
+EXTEND FORM settings
+  PROPERTIES nameTypeReceiptFromPurchase()
+;
+ 
+DESIGN settings{
+    options{
+        MOVE PROPERTY(nameTypeReceiptFromPurchase());
+    } 
+}
 
 orderLine 'ссылка на заказ' = DATA OrderLine (ReceiptLine);
 order 'ссылка на заказ' = DATA Order (Receipt);
@@ -24,7 +37,7 @@ WHEN ([GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) BY order(l)](Order o) OR SE
             partner(ns) <- vendor(o);
             scheduledDate(ns) <- scheduledDate(o);
             location(ns) <- location(o);
-            type(ns) <- typeReceiptDefault();
+            type(ns) <- typeReceiptFromPurchase();
             number(ns) <- curStringValue(numerator(type(ns)));
             series(ns) <- series(numerator(type(ns)));
             incrementValueSession(numerator(type(ns)));

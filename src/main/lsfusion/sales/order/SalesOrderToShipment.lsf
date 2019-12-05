@@ -1,20 +1,20 @@
 MODULE SalesOrderToShipment;
 
-REQUIRE SalesOrder, Shipment, ShipmentDone, ShipmentCanceled, SalesOrderStatusConfirm, SalesOrderStatusCancel, SalesSettings;
+REQUIRE SalesOrder, Inventory, SalesOrderStatusConfirm, SalesOrderStatusCancel, SalesSetting;
 
 NAMESPACE Sales;
 
 //настройки
-typeShipmentDefault 'Тип складского расхода по умолчанию' = DATA ShipmentType();
-nameTypeShipmentDefault 'Тип складского расхода по умолчанию' = name(typeShipmentDefault());
+typeShipmentFromSales 'Тип складского расхода по умолчанию' = DATA ShipmentType();
+nameTypeShipmentFromSales 'Тип складского расхода по умолчанию' = name(typeShipmentFromSales());
  
 EXTEND FORM settings
-  PROPERTIES nameTypeShipmentDefault()
+  PROPERTIES nameTypeShipmentFromSales()
 ;
  
 DESIGN settings{
     options{
-        MOVE PROPERTY(nameTypeShipmentDefault());
+        MOVE PROPERTY(nameTypeShipmentFromSales());
     } 
 }
 
@@ -39,7 +39,7 @@ WHEN ([GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) BY order(l)](Order o) OR SE
             partner(ns) <- customer(o);
             scheduledDate(ns) <- commintmentDate(o);
             location(ns) <- location(o);
-            type(ns) <- typeShipmentDefault();
+            type(ns) <- typeShipmentFromSales();
             number(ns) <- curStringValue(numerator(type(ns)));
             series(ns) <- series(numerator(type(ns)));
             incrementValueSession(numerator(type(ns)));

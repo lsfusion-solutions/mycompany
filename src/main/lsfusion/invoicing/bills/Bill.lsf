@@ -199,47 +199,53 @@ DESIGN bill {
             }
         }
         NEW header{
-           // fill = 1;
-            NEW company {
-                MOVE PROPERTY(nameCompany(b)) { notNull = TRUE; caption = 'Компания получатель'; }           
-            }
-            NEW title {            
-                MOVE PROPERTY(nameType(b)) { caption = 'Тип документа'; };             
-                NEW dateNumber {                
+      //      fill = 1;
+            type = CONTAINERH;            
+            NEW box1 {
+                fill = 3;
+                NEW company {
+                    fill = 1;
+                    MOVE PROPERTY(nameCompany(b)) { notNull = TRUE; caption = 'Компания получатель'; }           
+                }
+                NEW title {            
+                    fill = 1;
+                    MOVE PROPERTY(nameType(b)) { caption = 'Тип документа'; };             
+                    NEW dateNumber {                
+                        type = CONTAINERH;
+                        MOVE PROPERTY(date(b)) { caption = 'Дата'; };
+                        MOVE PROPERTY(seriesNumber(b)) { caption = 'Номер'; charWidth = 10; };
+                    }
+                }
+                NEW partner {
+                    fill = 1;
                     type = CONTAINERH;
-                    MOVE PROPERTY(date(b)) { caption = 'Дата'; };
-                    MOVE PROPERTY(seriesNumber(b)) { caption = 'Номер'; charWidth = 10; };
+                    MOVE PROPERTY(namePartner(b))  { caption = 'Поставщик'; notNull = TRUE; fill = 10; }
+                    MOVE PROPERTY(vendorReference(b)) { caption = 'Номер поставщика'; fill = 1; charWidth = 10; };
                 }
             }
-            NEW partner {
-                type = CONTAINERH;
-                MOVE PROPERTY(namePartner(b))  { caption = 'Поставщик'; notNull = TRUE; fill = 10; }
-                MOVE PROPERTY(vendorReference(b)) { caption = 'Номер поставщика'; fill = 1; charWidth = 10; };
+            NEW additions {            
+                fill = 1;
+                caption = 'Дополнительно';
+                MOVE PROPERTY(sourceDocument(b)) { caption = 'Создан из'; }; 
+                MOVE PROPERTY(notes(b));
+            }
+            NEW payment {
+                fill = 1;
+                caption = 'Оплата';
+                MOVE PROPERTY(dueDate(b)) { caption = 'Срок оплаты      '; }; 
+                MOVE PROPERTY(companyAccountNumber(b)) { caption = 'р/сч для оплаты'; };
+                MOVE PROPERTY(partnerAccountNumber(b)) { caption = 'р/сч поставщика'; };              
             }           
-            NEW boxes {
-                type = CONTAINERH;
-                fill = 1;              
-                NEW additions {            
-                    caption = 'Дополнительно';
-                    MOVE PROPERTY(dueDate(b)) { caption = 'Срок действия'; }; 
-                    MOVE PROPERTY(sourceDocument(b)) { caption = 'Создан из'; }; 
-                    MOVE PROPERTY(notes(b));
-                }
-                NEW payment {
-                    caption = 'Оплата';
-                    MOVE PROPERTY(companyAccountNumber(b)) { caption = 'р/сч для оплаты'; };
-                    MOVE PROPERTY(partnerAccountNumber(b)) { caption = 'р/сч поставщика'; };              
-                }           
-            }
         }
         NEW details{
-            fill = 1;
+            fill = 5;
             type = TABBED;
             NEW box {
                 caption = 'Содержание документа';
+                type = SPLITV;
                 fill = 1;
-                MOVE BOX(l);
-                NEW pane {
+                MOVE BOX(l) { fill = 2; };
+                NEW pane {                     
                     type = CONTAINERH;
                     fill = 1;
                 }

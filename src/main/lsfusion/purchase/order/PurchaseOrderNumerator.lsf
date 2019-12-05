@@ -1,0 +1,32 @@
+MODULE PurchaseOrderNumerator;
+
+REQUIRE PurchaseSetting;
+
+NAMESPACE Purchase;
+
+numeratorOrder 'Нумератор' = DATA Numerator();
+nameNumeratorOrder 'Нумератор' = name(numeratorOrder());
+
+loadInitialData () + {
+    NEWSESSION {
+        NEW n = Numerator {
+            name(n) <- 'Закупок';
+            series(n) <- 'PU';
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+            numeratorOrder() <- n;
+        }
+        APPLY;
+    }
+}
+
+EXTEND FORM settings
+  PROPERTIES nameNumeratorOrder()
+; 
+
+DESIGN settings{
+    options{
+        MOVE PROPERTY(nameNumeratorOrder()) FIRST;
+    }
+}
