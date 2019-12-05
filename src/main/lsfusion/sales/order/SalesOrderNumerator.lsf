@@ -1,0 +1,32 @@
+MODULE SalesOrderNumerator;
+
+REQUIRE Numerator, SalesSetting;
+
+NAMESPACE Sales;
+
+numerator 'Нумератор' = DATA Numerator();
+numeratorName 'Нумератор' = name(numerator());
+
+loadInitialData () + {
+    NEWSESSION {
+        NEW n = Numerator {
+            name(n) <- 'Продаж';
+            series(n) <- 'SA';
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+            numerator() <- n;
+        }
+        APPLY;
+    }
+}
+
+EXTEND FORM settings
+  PROPERTIES numeratorName()
+; 
+
+DESIGN settings{
+    options{
+        MOVE PROPERTY(numeratorName()) FIRST;
+    }
+}

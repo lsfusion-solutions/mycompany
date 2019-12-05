@@ -6,9 +6,11 @@ NAMESPACE MasterData;
 
 loadInitialData 'Начальные настройки' ABSTRACT LIST();
 defaultData () = IF NOT GROUP SUM 1 IF Numerator n IS Numerator THEN TRUE ELSE NULL;
+headersHeight = DATA INTEGER ();  
 
 FORM options 'Настройки'
-    PROPERTIES loadInitialData() SHOWIF defaultData() TOOLBAR 
+    PROPERTIES loadInitialData() SHOWIF defaultData() TOOLBAR
+    PROPERTIES headersHeight()
 ;
 
 DESIGN options {
@@ -16,6 +18,7 @@ DESIGN options {
         type = TABBED;
         NEW general {
             caption = 'Общие';
+            MOVE PROPERTY(headersHeight());
         } 
         NEW import {
             caption = 'Импорт/экспорт';
