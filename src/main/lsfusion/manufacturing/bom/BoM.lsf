@@ -1,6 +1,6 @@
 MODULE BoM;
 
-REQUIRE Product, BoMType, Company, ManufacturingReadiness, Operation, ManufacturingNavigator;
+REQUIRE Product, BoMType, Company, Operation, ManufacturingNavigator;
 
 NAMESPACE Manufacturing;
 
@@ -29,8 +29,7 @@ CONSTRAINT company(Bom b) AND NOT company(b) IS Company
     MESSAGE 'Нужно выбрать компанию';
 
 sequence 'Последовательность' = DATA INTEGER (Bom) CHARWIDTH 30;
-manufacturingReadiness 'Начать производство' = DATA ManufacturingReadiness (Bom);
-nameReadiness 'Начать производство' (Bom b) = name(manufacturingReadiness(b));
+
 operation 'Операция' = DATA Operation (Bom);
 nameOperation 'Операция' (Bom b) = name(operation(b));
 
@@ -67,7 +66,7 @@ WHEN LOCAL SETCHANGED (product(ByproductLine l)) DO {
 FORM bom 'Технологическая карта'
     OBJECTS b = Bom PANEL 
     PROPERTIES(b) nameProduct, quantity, nameUnitMeasure, reference, nameType, nameCompany, archived
-    PROPERTIES(b) sequence, nameReadiness, nameOperation
+    PROPERTIES(b) sequence, nameOperation
     
     OBJECTS c = ComponentLine
     PROPERTIES(c) nameProduct, quantity, nameUnitMeasure, NEW, DELETE 
@@ -118,8 +117,7 @@ DESIGN bom {
                 NEW left {
                     MOVE PROPERTY(sequence(b));
                 }
-                NEW rigth {
-                    MOVE PROPERTY(nameReadiness(b));
+                NEW right {
                     MOVE PROPERTY(nameOperation(b));
                 }
             }
