@@ -121,7 +121,7 @@ CONSTRAINT value(Item i, ItemAttribute a) AND NOT itemAttribute(attribute(i, a))
     CHECKED BY attribute[Item, ItemAttribute]
     MESSAGE 'Выбрано недопустимое значение для данной номенклатуры';
 
-FORM val
+FORM val 'Значение'
     OBJECTS v = ItemAttributeValue
     PROPERTIES READONLY value(v)
     
@@ -144,13 +144,16 @@ DESIGN item {
 }
 
 attributeFilter = DATA LOCAL ItemAttributeValue (ItemAttribute);
-filterOn 'Вкл' = DATA LOCAL BOOLEAN (ItemAttribute);
+value (ItemAttribute a) = value(attributeFilter(a));
+
+CONSTRAINT attributeFilter(ItemAttribute a) AND NOT itemAttribute(attributeFilter(a)) = a
+    CHECKED BY attributeFilter
+    MESSAGE 'Значение должно принадлежать атрибуту';
 
 EXTEND FORM items
     OBJECTS ia = ItemAttribute BEFORE i
-    PROPERTIES name(ia) READONLY, filterOn(ia)
-    //FILTERS attributeFilter(ia) = attribute(i, ia) OR NOT attributeFilter(ia)
-    FILTERS IF filterOn(ia) THEN value(i, ia)
+    PROPERTIES name(ia) READONLY, value(ia)
+    FILTERS attributeFilter(ia) = attribute(i, ia) OR NOT attributeFilter(ia)
     FILTERS valid(ia, c)
 ;
 
