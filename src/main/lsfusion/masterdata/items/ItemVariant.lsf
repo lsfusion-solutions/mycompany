@@ -1,7 +1,37 @@
 MODULE ItemVariant;
 
-REQUIRE Item;
+REQUIRE Item, ItemPurchase, ItemSale;
 
 NAMESPACE MasterData;
 
-CLASS ItemVariant : Item;
+variantOf 'Основная номенклатура' = DATA Item (Item);
+nameVariantOf 'Основная номенклатура' (Item i) = name(variantOf(i));
+
+readonly (Item i) += IF variantOf(i) THEN TRUE;
+
+WHEN LOCAL SETCHANGED(unitMeasure(variantOf(Item i))) DO {
+    unitMeasure(i) <- unitMeasure(variantOf(i));
+}
+
+WHEN LOCAL SETCHANGED(archived(variantOf(Item i))) DO {
+    archived(i) <- archived(variantOf(i));
+}
+
+WHEN LOCAL SETCHANGED(canBePurchased(variantOf(Item i))) DO {
+    canBePurchased(i) <- canBePurchased(variantOf(i));
+}
+
+WHEN LOCAL SETCHANGED(canBeSold(variantOf(Item i))) DO {
+    canBeSold(i) <- canBeSold(variantOf(i));
+}
+
+EXTEND FORM item
+    PROPERTIES(i) nameVariantOf
+;
+
+DESIGN item {
+    header {
+        MOVE PROPERTY(nameVariantOf(i)) AFTER PROPERTY(name(i));
+    }
+}
+
