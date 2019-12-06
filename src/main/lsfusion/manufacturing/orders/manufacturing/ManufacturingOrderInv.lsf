@@ -7,7 +7,7 @@ manILedger = AGGR ManufacturingOrderInv WHERE done(FinishedLine line) AND
                     status(manufacturingOrder(line)) = ManufacturingOrderStatus.done;
 
 done(ManufacturingOrderInv l) += done[ManufacturingOrder](manufacturingOrder(line(l)));
-dateTime(ManufacturingOrderInv l) += deadline(manufacturingOrder(line(l)));
+dateTime(ManufacturingOrderInv l) += manufacturingDate(manufacturingOrder(line(l)));
 toLocation(ManufacturingOrderInv l) += productsLocation(manufacturingOrder(line(l)));
 
 product(ManufacturingOrderInv l) += product(line(l));
@@ -22,7 +22,7 @@ manInvLedger = AGGR ManufacturingOrderInvLedger WHERE consumed(ConsumedLine line
                     status(manufacturingOrder(line)) = ManufacturingOrderStatus.done;
 
 done(ManufacturingOrderInvLedger l) += done(manufacturingOrder(line(l)));
-dateTime(ManufacturingOrderInvLedger l) += deadline(manufacturingOrder(line(l)));
+dateTime(ManufacturingOrderInvLedger l) += manufacturingDate(manufacturingOrder(line(l)));
 fromLocation(ManufacturingOrderInvLedger l) += materialsLocation(manufacturingOrder(line(l)));
 
 product(ManufacturingOrderInvLedger l) += product(line(l));

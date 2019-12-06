@@ -58,6 +58,7 @@ WHEN LOCAL SET(product(ManufacturingOrder m)) DO {
 bom 'Технологическая карта' = DATA Bom (ManufacturingOrder) NONULL;
 referenceBom 'Код технологической карты' (ManufacturingOrder m) = reference(bom(m));
 deadline 'Дата старта' = DATA DATETIME (ManufacturingOrder);
+manufacturingDate 'Дата производства' = DATA DATETIME (ManufacturingOrder);
 responsible 'Ответственный' = DATA Individual (ManufacturingOrder);
 nameResponsible 'Ответственный' (ManufacturingOrder m) = name(responsible(m));
 source 'Исходный документ' = DATA Order (ManufacturingOrder);
@@ -93,6 +94,8 @@ toConsume 'К расходу' = DATA NUMERIC[16,3] (ConsumedLine);
 reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ConsumedLine);
 consumed 'Израсходовано' = DATA NUMERIC[16,3] (ConsumedLine);
 
+dateReserved 'Дата резервирования' = DATA DATETIME (ConsumedLine);
+
 WHEN LOCAL SET(product(ConsumedLine l)) DO {
     unitMeasure(l) <- unitMeasure(product(l));
 } 
@@ -119,7 +122,7 @@ WHEN LOCAL SETCHANGED(bom(ManufacturingOrder m)) DO {
 
 FORM manufacturingOrders 'Заказы на производство'
     OBJECTS o = ManufacturingOrder
-    PROPERTIES(o) READONLY seriesNumber, deadline, nameProduct, numberSource, quantity, nameUnitMeasure
+    PROPERTIES(o) READONLY seriesNumber, deadline, manufacturingDate, nameProduct, numberSource, quantity, nameUnitMeasure
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
     
     LIST ManufacturingOrder OBJECT o
@@ -130,7 +133,7 @@ readonly = ABSTRACT CASE BOOLEAN (ManufacturingOrder);
 FORM manufacturingOrder 'Заказ на производство'
     OBJECTS o = ManufacturingOrder PANEL 
     PROPERTIES(o) READONLYIF  readonly(o) nameProduct, quantity, nameUnitMeasure, referenceBom, deadline, 
-        nameResponsible, numberSource, nameCompany, nameMaterialsLocation, nameProductsLocation
+        nameResponsible, numberSource, nameCompany, nameMaterialsLocation, nameProductsLocation, manufacturingDate READONLY 
     
     OBJECTS c = ConsumedLine
     PROPERTIES(c) READONLY nameProduct, nameUnitMeasure, toConsume, reserved, consumed
@@ -198,6 +201,7 @@ DESIGN manufacturingOrder {
                     MOVE PROPERTY(nameUnitMeasure(o));
                 }
                 MOVE PROPERTY(referenceBom(o)) { notNull = TRUE; }
+                MOVE PROPERTY(manufacturingDate(o));
             }
             NEW rightHeader {
                 caption = '';

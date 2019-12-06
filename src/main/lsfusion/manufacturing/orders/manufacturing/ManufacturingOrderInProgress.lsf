@@ -16,8 +16,11 @@ checkAvailability 'Зарезервировать' (ManufacturingOrder m) {
     APPLY; 
     IF canceled() THEN RETURN;
     
-    NEWSESSION {      
-        reserved(ConsumedLine l) <- min(toConsume(l), available(l)) WHERE manufacturingOrder(l) = m;
+    NEWSESSION { 
+        FOR manufacturingOrder(ConsumedLine l) = m DO {     
+            reserved(l) <- min(toConsume(l), available(l));
+            dateReserved(l) <- currentDateTime();
+        }
 
         IF ((GROUP SUM 1 IF (reserved(ConsumedLine l) = toConsume(l) AND manufacturingOrder(l) = m)) = countConsumedLines(m)) 
             THEN {

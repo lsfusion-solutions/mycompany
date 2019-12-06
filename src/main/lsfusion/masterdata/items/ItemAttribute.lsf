@@ -47,7 +47,7 @@ FORM attribute 'Атрибут'
     PROPERTIES(a) id, name, sequence, prefix, suffix
     
     TREE categories c = Category PARENT parent(c) 
-    PROPERTIES name(c) READONLY, set(a, c) 
+    PROPERTIES name(c) READONLY, set(a, c) BACKGROUND RGB(26,153,79) IF set(a, c)
     ORDER name(c)
            
     OBJECTS v = ItemAttributeValue
@@ -55,13 +55,8 @@ FORM attribute 'Атрибут'
     FILTERS itemAttribute(v) = a
     
     TREE cat cc = Category PARENT parent(cc)
-    PROPERTIES name(cc) READONLY, set(v, cc)
+    PROPERTIES name(cc) READONLY, set(v, cc) BACKGROUND RGB(26,153,79) IF set(v, cc)
     ORDER name(cc)
-    
-    EVENTS
-        ON INIT { EXPAND ALL TOP attribute.cc; }
-    EVENTS
-        ON INIT { EXPAND ALL TOP attribute.c; }
     
     EDIT ItemAttribute OBJECT a
 ;
@@ -74,11 +69,17 @@ DESIGN attribute {
             NEW attribute {
                 fill = 1;
                 caption = 'Атрибут';
-                MOVE PROPERTY(name(a));
-                MOVE PROPERTY(id(a));
-                MOVE PROPERTY(sequence(a));
-                MOVE PROPERTY(prefix(a));
-                MOVE PROPERTY(suffix(a));
+                NEW name {
+                    caption = 'Опции атрибута';
+                    MOVE PROPERTY(name(a));
+                    MOVE PROPERTY(id(a));
+                }
+                NEW itemValues {
+                    caption = 'Задает наименование номенклатуры';
+                    MOVE PROPERTY(sequence(a));
+                    MOVE PROPERTY(prefix(a));
+                    MOVE PROPERTY(suffix(a));
+                }
             }
             NEW details {
                 type = TABBED;
@@ -135,10 +136,27 @@ EXTEND FORM item
 
 DESIGN item {
     tabs {
-        NEW attributes {
+        NEW attributes FIRST {
             caption = 'Атрибуты';
             MOVE BOX(a);
         }
+    }
+}
+
+attributeFilter = DATA LOCAL ItemAttributeValue (ItemAttribute);
+filterOn 'Вкл' = DATA LOCAL BOOLEAN (ItemAttribute);
+
+EXTEND FORM items
+    OBJECTS ia = ItemAttribute BEFORE i
+    PROPERTIES name(ia) READONLY, filterOn(ia)
+    //FILTERS attributeFilter(ia) = attribute(i, ia) OR NOT attributeFilter(ia)
+    FILTERS IF filterOn(ia) THEN value(i, ia)
+    FILTERS valid(ia, c)
+;
+
+DESIGN items {
+    filters {
+        MOVE BOX(ia);
     }
 }
 
