@@ -20,7 +20,7 @@ FORM inventoryReport 'Текущие остатки'
     ORDER name(c)
     
     OBJECTS lp = (l = Location, p = Product)
-    PROPERTIES READONLY 'Склад' = canonicalName(l), 'Товар' = dataName(p) 
+    PROPERTIES READONLY 'Склад' = canonicalName(l), 'Товар' = name(p) 
     PROPERTIES(l,p) reserved, available, onHand SHOWIF NOT selectedDateTime()
     PROPERTIES(l,p) onHandDateTime SHOWIF selectedDateTime(), dateReceived, dateShipped
     FILTERS level(l, lt),
@@ -36,7 +36,7 @@ FORM inventoryReport 'Текущие остатки'
             dateTime(il) <= selectedDateTime() OR NOT selectedDateTime()
             
     OBJECTS locProd = (location = Location, product = Product)
-    PROPERTIES READONLY 'Склад' = canonicalName(location), 'Товар' = dataName(product), 
+    PROPERTIES READONLY 'Склад' = canonicalName(location), 'Товар' = name(product), 
                     level1(product), level2(product), level3(product), level4(product), 'Группа полная' = canonicalNameCategory(product)
     PROPERTIES(location,product) reserved, available, onHandDateTime, dateReceived, dateShipped
     FILTERS IF selectedDateTime() THEN onHandDateTime(location, product) ELSE onHand(location, product)
