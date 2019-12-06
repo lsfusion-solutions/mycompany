@@ -33,6 +33,8 @@ countCategory (ItemAttributeValue v) = GROUP SUM 1 IF set(v, Category c);
 
 CONSTRAINT set(ItemAttributeValue v, Category c) AND NOT valid(itemAttribute(v), c)
     MESSAGE 'Категория значения должна совпадать с категорией атрибута';
+    
+
 
 FORM attributes 'Атрибуты'
     OBJECTS a = ItemAttribute
@@ -47,7 +49,7 @@ FORM attribute 'Атрибут'
     PROPERTIES(a) id, name, sequence, prefix, suffix
     
     TREE categories c = Category PARENT parent(c) 
-    PROPERTIES name(c) READONLY, set(a, c) BACKGROUND RGB(26,153,79) IF set(a, c)
+    PROPERTIES name(c) READONLY, set(a, c) BACKGROUND RGB(26,153,79) IF GROUP LAST set(a, Category cc) ORDER level(cc, c)
     ORDER name(c)
            
     OBJECTS v = ItemAttributeValue
@@ -55,7 +57,7 @@ FORM attribute 'Атрибут'
     FILTERS itemAttribute(v) = a
     
     TREE cat cc = Category PARENT parent(cc)
-    PROPERTIES name(cc) READONLY, set(v, cc) BACKGROUND RGB(26,153,79) IF set(v, cc)
+    PROPERTIES name(cc) READONLY, set(v, cc) BACKGROUND RGB(26,153,79) IF GROUP LAST set(v, Category ccc) ORDER level(ccc, cc)
     ORDER name(cc)
     
     EDIT ItemAttribute OBJECT a
@@ -88,12 +90,13 @@ DESIGN attribute {
                     caption = 'Категории атрибута';
                 }
                 NEW values {
-                    type = SPLITV;
+                    type = SPLITH;
                     caption = 'Значения';
                     fill = 2;
-                    MOVE BOX(v);
+                    MOVE BOX(v) { fill = 1; }
                     MOVE BOX(TREE cat) {
                         caption = 'Категории значений';
+                        fill = 2;
                     }    
                 }
             }
