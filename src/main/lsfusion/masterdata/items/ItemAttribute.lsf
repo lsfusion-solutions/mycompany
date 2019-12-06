@@ -1,0 +1,132 @@
+MODULE ItemAttribute;
+
+REQUIRE Item;
+
+NAMESPACE MasterData;
+
+CLASS ItemAttribute 'Атрибут';
+
+id 'Код' = DATA STRING[50] (ItemAttribute) IN id CHARWIDTH 8;
+itemAttribute (STRING[50] id) = GROUP AGGR ItemAttribute i BY id(i);
+
+name 'Название' = DATA ISTRING[50] (ItemAttribute) IN id;
+
+set 'Вкл.' = DATA BOOLEAN (ItemAttribute, Category);
+
+valid (ItemAttribute a, Category c) = GROUP LAST set(a, Category cc) ORDER level(c, cc); 
+
+CLASS ItemAttributeValue 'Значение';
+
+itemAttribute 'Атрибут' = DATA ItemAttribute (ItemAttributeValue) NONULL;
+nameAttribute 'Атрибут' (ItemAttributeValue v) = name(itemAttribute(v));
+
+value 'Значение' = DATA STRING (ItemAttributeValue);
+
+set 'Вкл.' = DATA BOOLEAN (ItemAttributeValue, Category);
+valid (ItemAttributeValue v, Category c) = GROUP LAST set(v, Category cc) ORDER level(c, cc); 
+
+countCategory (ItemAttributeValue v) = GROUP SUM 1 IF set(v, Category c);
+
+CONSTRAINT set(ItemAttributeValue v, Category c) AND NOT valid(itemAttribute(v), c)
+    MESSAGE 'Категория значения должна совпадать с категорией атрибута';
+
+FORM attributes 'Атрибуты'
+    OBJECTS a = ItemAttribute
+    PROPERTIES(a) READONLY id, name
+    PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE 
+    
+    LIST ItemAttribute OBJECT a
+;
+
+FORM attribute 'Атрибут'
+    OBJECTS a = ItemAttribute PANEL
+    PROPERTIES(a) id, name
+    
+    TREE categories c = Category PARENT parent(c)
+    PROPERTIES name(c) READONLY, set(a, c)
+    ORDER name(c)
+           
+    OBJECTS v = ItemAttributeValue
+    PROPERTIES(v) value, NEW, DELETE
+    FILTERS itemAttribute(v) = a
+    
+    TREE cat cc = Category PARENT parent(cc)
+    PROPERTIES name(cc) READONLY, set(v, cc)
+    ORDER name(cc)
+    
+    EDIT ItemAttribute OBJECT a
+;
+
+DESIGN attribute {
+    OBJECTS {
+        NEW pane {
+            fill = 1;
+            type = SPLITH;
+            NEW categories {
+                fill = 1;
+                MOVE BOX(TREE categories) {
+                    caption = 'Категории атрибута';
+                }
+                MOVE BOX(TREE cat) {
+                    caption = 'Категории значений';
+                }
+            }
+            NEW objects {
+                fill = 2;
+                MOVE BOX(a);
+                MOVE BOX(v);
+            }
+        }
+    }
+}
+
+NAVIGATOR {
+    masterData {
+        NEW attributes;
+    }
+}
+
+attribute = DATA ItemAttributeValue (Item, ItemAttribute);
+value 'Значение' (Item i, ItemAttribute a) = value(attribute(i, a));
+
+CONSTRAINT value(Item i, ItemAttribute a) AND NOT (valid(attribute(i, a),category(i)) OR (NOT countCategory(attribute(i, a)) AND valid(a, category(i))))
+    CHECKED BY value[Item, ItemAttribute]
+    MESSAGE 'Категория номенклатуры должна совпадать с категорией значения';
+
+CONSTRAINT value(Item i, ItemAttribute a) AND NOT itemAttribute(attribute(i, a)) = a
+    CHECKED BY attribute[Item, ItemAttribute]
+    MESSAGE 'Выбрано недопустимое значение для данной номенклатуры';
+
+FORM val
+    OBJECTS v = ItemAttributeValue
+    PROPERTIES READONLY value(v)
+    
+    LIST ItemAttributeValue OBJECT v
+;
+
+EXTEND FORM item
+    OBJECTS a = ItemAttribute
+    PROPERTIES name(a) READONLY, value(i, a)
+    FILTERS valid(a, category(i))
+;
+
+DESIGN item {
+    tabs {
+        NEW attributes {
+            caption = 'Атрибуты';
+            MOVE BOX(a);
+        }
+    }
+}
+
+fullName 'Полное наименование' (Item i) = CONCAT ' ', name(i), GROUP CONCAT value(i, ItemAttribute a) IF value(i, a), ' ';
+
+EXTEND FORM item
+    PROPERTIES(i) READONLY fullName
+;
+
+DESIGN item {
+    header {
+        MOVE PROPERTY(fullName(i)) AFTER PROPERTY(name(i));
+    }
+} 
