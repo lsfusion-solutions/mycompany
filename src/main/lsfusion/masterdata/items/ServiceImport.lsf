@@ -9,13 +9,13 @@ serviceExport 'Экспорт услуг' () {
         IF NOT (GROUP SUM 1 IF Service s IS Service) THEN {
             NEW s = Service {
                 id(s) <- '123';
-                name(s) <- 'Моя услуга';
+                dataName(s) <- 'Моя услуга';
                 category(s) <- GROUP LAST Category c ORDER name(c) IF c IS Category;
             }
         }
     
         LOCAL f = EXCELFILE ();
-        EXPORT XLSX HEADER FROM 'Код услуги' = id(Service s), 'Наименование' = name(s), 'Код категории' = idCategory(s), 
+        EXPORT XLSX HEADER FROM 'Код услуги' = id(Service s), 'Наименование' = dataName(s), 'Код категории' = idCategory(s), 
             'Штрих код' = idBarCode(s), 'Код учетной единицы' = idUnitMeasure(s) WHERE s IS Service TO f;   
         open(f());
     }
@@ -39,7 +39,7 @@ serviceImport 'Импорт услуг' () {
             
             FOR imported(INTEGER i) DO NEW s = Service {
                 id(s) <- id(i);
-                name(s) <- name(i);
+                dataName(s) <- name(i);
                 category(s) <- category(idCategory(i));
                 NEW b = BarCode {
                     item(b) <- s;

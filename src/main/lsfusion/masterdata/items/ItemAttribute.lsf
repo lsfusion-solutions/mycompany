@@ -15,6 +15,10 @@ set 'Вкл.' = DATA BOOLEAN (ItemAttribute, Category);
 
 valid (ItemAttribute a, Category c) = GROUP LAST set(a, Category cc) ORDER level(c, cc); 
 
+sequence 'Последовательность' = DATA INTEGER (ItemAttribute);
+prefix 'Префикс' = DATA STRING[15] (ItemAttribute);
+suffix 'Суффикс' = DATA STRING[15] (ItemAttribute);
+
 CLASS ItemAttributeValue 'Значение';
 
 itemAttribute 'Атрибут' = DATA ItemAttribute (ItemAttributeValue) NONULL;
@@ -40,10 +44,10 @@ FORM attributes 'Атрибуты'
 
 FORM attribute 'Атрибут'
     OBJECTS a = ItemAttribute PANEL
-    PROPERTIES(a) id, name
+    PROPERTIES(a) id, name, sequence, prefix, suffix
     
-    TREE categories c = Category PARENT parent(c)
-    PROPERTIES name(c) READONLY, set(a, c)
+    TREE categories c = Category PARENT parent(c) 
+    PROPERTIES name(c) READONLY, set(a, c) 
     ORDER name(c)
            
     OBJECTS v = ItemAttributeValue
@@ -54,6 +58,11 @@ FORM attribute 'Атрибут'
     PROPERTIES name(cc) READONLY, set(v, cc)
     ORDER name(cc)
     
+    EVENTS
+        ON INIT { EXPAND ALL TOP attribute.cc; }
+    EVENTS
+        ON INIT { EXPAND ALL TOP attribute.c; }
+    
     EDIT ItemAttribute OBJECT a
 ;
 
@@ -62,19 +71,30 @@ DESIGN attribute {
         NEW pane {
             fill = 1;
             type = SPLITH;
-            NEW categories {
+            NEW attribute {
                 fill = 1;
+                caption = 'Атрибут';
+                MOVE PROPERTY(name(a));
+                MOVE PROPERTY(id(a));
+                MOVE PROPERTY(sequence(a));
+                MOVE PROPERTY(prefix(a));
+                MOVE PROPERTY(suffix(a));
+            }
+            NEW details {
+                type = TABBED;
+                fill = 5;
                 MOVE BOX(TREE categories) {
                     caption = 'Категории атрибута';
                 }
-                MOVE BOX(TREE cat) {
-                    caption = 'Категории значений';
+                NEW values {
+                    type = SPLITV;
+                    caption = 'Значения';
+                    fill = 2;
+                    MOVE BOX(v);
+                    MOVE BOX(TREE cat) {
+                        caption = 'Категории значений';
+                    }    
                 }
-            }
-            NEW objects {
-                fill = 2;
-                MOVE BOX(a);
-                MOVE BOX(v);
             }
         }
     }
@@ -88,6 +108,9 @@ NAVIGATOR {
 
 attribute = DATA ItemAttributeValue (Item, ItemAttribute);
 value 'Значение' (Item i, ItemAttribute a) = value(attribute(i, a));
+fullValue 'Полное значение' (Item i, ItemAttribute a) =IF value(i, a) THEN CONCAT '', prefix(a), value(i, a), suffix(a);
+
+suffixName(Item i) += STRING(GROUP CONCAT fullValue(i, ItemAttribute a) IF sequence(a), ' ' ORDER sequence(a));
 
 CONSTRAINT value(Item i, ItemAttribute a) AND NOT (valid(attribute(i, a),category(i)) OR (NOT countCategory(attribute(i, a)) AND valid(a, category(i))))
     CHECKED BY value[Item, ItemAttribute]
@@ -119,14 +142,6 @@ DESIGN item {
     }
 }
 
-fullName 'Полное наименование' (Item i) = CONCAT ' ', name(i), GROUP CONCAT value(i, ItemAttribute a) IF value(i, a), ' ';
 
-EXTEND FORM item
-    PROPERTIES(i) READONLY fullName
-;
 
-DESIGN item {
-    header {
-        MOVE PROPERTY(fullName(i)) AFTER PROPERTY(name(i));
-    }
-} 
+ 

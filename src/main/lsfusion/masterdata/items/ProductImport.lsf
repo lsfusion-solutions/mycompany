@@ -9,13 +9,13 @@ productExport 'Экспорт товаров' () {
         IF NOT (GROUP SUM 1 IF Product p IS Product) THEN {
             NEW p = Product {
                 id(p) <- '123';
-                name(p) <- 'Мой продукт';
+                dataName(p) <- 'Мой продукт';
                 category(p) <- GROUP LAST Category c ORDER name(c) IF c IS Category;
             }
         }
     
         LOCAL f = EXCELFILE ();
-        EXPORT XLSX HEADER FROM 'Код товара' = id(Product p), 'Наименование' = name(p), 'Код категории' = idCategory(p), 
+        EXPORT XLSX HEADER FROM 'Код товара' = id(Product p), 'Наименование' = dataName(p), 'Код категории' = idCategory(p), 
             'Штрих код' = idBarCode(p), 'Код учетной единицы' = idUnitMeasure(p) WHERE p IS Product TO f;   
         open(f());
     }
@@ -39,7 +39,7 @@ productImport 'Импорт товаров' () {
             
             FOR imported(INTEGER i) DO NEW p = Product {
                 id(p) <- id(i);
-                name(p) <- name(i);
+                dataName(p) <- name(i);
                 category(p) <- category(idCategory(i));
                 NEW b = BarCode {
                     item(b) <- p;

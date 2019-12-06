@@ -40,7 +40,11 @@ WHEN SETCHANGED(Item i IS Item  AND numeratorItem() AND NOT id(i)) DO {
     incrementValueSession(numeratorItem());   
 }
 
-name 'Наименование' = DATA ISTRING[50] (Item) IN id;
+dataName 'Наименование' = DATA ISTRING[200] (Item) IN id CHARWIDTH 20;
+prefixName 'Префикс' = ABSTRACT STRING (Item);
+suffixName 'Суффикс' = ABSTRACT STRING (Item);
+
+name 'Наименование (полное)' (Item i) = CONCAT '', prefixName(i), dataName(i), suffixName(i) CHARWIDTH 30;
 
 category 'Категория' = DATA Category (Item) NONULL INDEXED;
 idCategory 'Код категории' (Item i) = id(category(i));
@@ -64,7 +68,7 @@ level4 'Группа 4' (Item i) = nameCategory4(category(i));
 
 FORM item 'Номенклатура'
     OBJECTS i = Item PANEL
-    PROPERTIES(i) name, id, nameCategory, nameUnitMeasure, archived, cost
+    PROPERTIES(i) dataName, name, id, nameCategory, nameUnitMeasure, archived, cost
       
     EDIT Item OBJECT i
 ;
@@ -72,7 +76,8 @@ FORM item 'Номенклатура'
 DESIGN item {
     OBJECTS {        
         NEW header {                          
-            MOVE PROPERTY(name(i));                  
+            MOVE PROPERTY(dataName(i));
+            MOVE PROPERTY(name(i));                   
             NEW pane {
                 type = CONTAINERH;
                 NEW column1 {
@@ -106,7 +111,7 @@ FORM items 'Номенклатуры'
     ORDER name(c)
 
     OBJECTS i = Item
-    PROPERTIES(i) READONLYIF isReadonly() name, id, nameCategory, nameUnitMeasure
+    PROPERTIES(i) READONLYIF isReadonly() dataName, id, nameCategory, nameUnitMeasure
     PROPERTIES(i) SHOWIF isReadonly() NEWSESSION EDIT, DELETE 
     FILTERS level(category(i), c)
     FILTERGROUP active

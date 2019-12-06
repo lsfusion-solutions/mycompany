@@ -8,7 +8,7 @@ CLASS BarCode 'Штрих код';
 
 item 'Номенклатура' = DATA Item (BarCode) NONULL DELETE;
 idItem 'Код номенклатуры' (BarCode b) = id(item(b));
-nameItem 'Номенклатура' (BarCode b) = name(item(b));
+nameItem 'Номенклатура' (BarCode b) = dataName(item(b));
 id 'Штрих код' = DATA STRING[20] (BarCode);
 barcode (STRING[50] id) = GROUP AGGR BarCode b BY id(b);
 
@@ -61,7 +61,7 @@ DESIGN item {
 }
 
 EXTEND FORM items
-    PROPERTIES(i) READONLYIF isReadonly() idBarCode AFTER name(i)
+    PROPERTIES(i) READONLYIF isReadonly() idBarCode AFTER dataName(i)
 ;
 
 META defineBarCodeAdd(doc, let, itm)

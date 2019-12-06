@@ -44,7 +44,7 @@ WHEN SETCHANGED(ManufacturingOrder m IS ManufacturingOrder  AND numeratorOrder()
 seriesNumber 'Номер' (ManufacturingOrder o) = CONCAT '/', series(o), number(o);
 
 product 'Номенклатура' = DATA Product (ManufacturingOrder) NONULL DELETE;
-nameProduct 'Номенклатура' (ManufacturingOrder m) = name(product(m));
+nameProduct 'Номенклатура' (ManufacturingOrder m) = dataName(product(m));
 idProduct 'Код номенклатуры' (ManufacturingOrder m) = id(product(m));
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (ManufacturingOrder) NONULL;
@@ -86,7 +86,7 @@ CLASS ConsumedLine 'Расходные материалы';
 
 manufacturingOrder 'Заказ на производство' = DATA ManufacturingOrder (ConsumedLine) NONULL DELETE;
 product 'Номенклатура' = DATA Product (ConsumedLine);
-nameProduct 'Номенклатура' (ConsumedLine l) = name(product(l));
+nameProduct 'Номенклатура' (ConsumedLine l) = dataName(product(l));
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (ConsumedLine);
 nameUnitMeasure 'Ед.изм.' (ConsumedLine l) = name(unitMeasure(l));
 toConsume 'К расходу' = DATA NUMERIC[16,3] (ConsumedLine);
@@ -101,7 +101,7 @@ CLASS FinishedLine 'Готовые продукты';
 
 manufacturingOrder 'Заказ на производство' = DATA ManufacturingOrder (FinishedLine) NONULL DELETE;
 product 'Номенклатура' = DATA Product (FinishedLine);
-nameProduct 'Номенклатура' (FinishedLine l) = name(product(l));
+nameProduct 'Номенклатура' (FinishedLine l) = dataName(product(l));
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (FinishedLine);
 nameUnitMeasure 'Ед.изм.' (FinishedLine l) = name(unitMeasure(l));
 done 'Произведено' = DATA NUMERIC[16,3] (FinishedLine);
