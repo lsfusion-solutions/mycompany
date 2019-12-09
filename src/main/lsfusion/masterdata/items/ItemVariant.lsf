@@ -9,10 +9,8 @@ nameVariantOf 'Основная номенклатура' (Item i) = name(varian
 
 readonly (Item i) += IF variantOf(i) THEN TRUE;
 
-ON LOCAL {
-     FOR CHANGED(attribute(variantOf(Item i), ItemAttribute a)) DO {
+WHEN LOCAL CHANGED(attribute(variantOf(Item i), ItemAttribute a)) DO {
      attribute(i, a) <- attribute(variantOf(i), a);
-     }
 }
 
 WHEN LOCAL CHANGED(dataName(variantOf(Item i))) DO {
