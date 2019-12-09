@@ -44,7 +44,7 @@ dataName 'Наименование' = DATA ISTRING[200] (Item) IN id CHARWIDTH 2
 prefixName 'Префикс' = ABSTRACT STRING (Item);
 suffixName 'Суффикс' = ABSTRACT STRING (Item);
 
-name 'Наименование (полное)' (Item i) = CONCAT '', prefixName(i), dataName(i), suffixName(i) CHARWIDTH 30;
+name 'Наименование (полное)' (Item i) = CONCAT ' ', prefixName(i), dataName(i), suffixName(i) CHARWIDTH 30;
 
 category 'Категория' = DATA Category (Item) NONULL INDEXED;
 idCategory 'Код категории' (Item i) = id(category(i));
@@ -70,7 +70,7 @@ readonly = ABSTRACT BOOLEAN (Item);
 
 FORM item 'Номенклатура'
     OBJECTS i = Item PANEL
-    PROPERTIES(i) dataName, name, id, nameCategory, nameUnitMeasure READONLYIF readonly(i),
+    PROPERTIES(i) dataName READONLYIF readonly(i), name, id, nameCategory READONLYIF readonly(i), nameUnitMeasure READONLYIF readonly(i),
                     archived READONLYIF readonly(i), cost
       
     EDIT Item OBJECT i
