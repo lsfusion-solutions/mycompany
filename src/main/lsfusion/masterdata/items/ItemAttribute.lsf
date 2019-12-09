@@ -126,22 +126,30 @@ CONSTRAINT value(Item i, ItemAttribute a) AND NOT itemAttribute(attribute(i, a))
 CONSTRAINT DROPPED(ItemAttributeValue v IS ItemAttributeValue) AND PREV(attribute(Item i, ItemAttribute a)) = v
     MESSAGE 'Нельзя удалять значение, которое используется';
 
-FORM val 'Значение'
+FORM vals 'Значения'
     OBJECTS a = ItemAttribute PANEL 
 
     OBJECTS v = ItemAttributeValue
-    PROPERTIES value(v) READONLYIF value(v), nameAttribute(v) READONLY 
-    PROPERTIES(v) NEW, DELETE
+    PROPERTIES READONLY value(v), nameAttribute(v)
+    PROPERTIES(v) NEWSESSION NEW, EDIT, DELETE
     FILTERS itemAttribute(v) = a
     
     LIST ItemAttributeValue OBJECT v
+;
+
+FORM val 'Значение'
+    OBJECTS v = ItemAttributeValue PANEL 
+    PROPERTIES(v) value, nameAttribute
+    
+    EDIT ItemAttributeValue OBJECT v  
 ;
 
 isVariantSet = ABSTRACT BOOLEAN (Item, ItemAttribute);
 
 EXTEND FORM item
     OBJECTS a = ItemAttribute
-    PROPERTIES name(a) READONLY, value(i, a) READONLYIF (readonly(i) AND isVariantSet(i, a)) BACKGROUND RGB(204,207,205) IF readonly(i)
+    PROPERTIES name(a) READONLY, value(i, a) ON CHANGE { DIALOG vals OBJECTS a = a, v INPUT DO { attribute(i, a) <- v; } } 
+                    READONLYIF (readonly(i) AND isVariantSet(i, a)) BACKGROUND RGB(204,207,205) IF readonly(i)
     FILTERS valid(a, category(i))
 ;
 
@@ -172,6 +180,12 @@ DESIGN items {
     filters {
         MOVE BOX(ia);
     }
+}
+
+copy(Item n, Item o) + {
+   FOR attribute(o, ItemAttribute a) DO {
+       attribute(n, a) <- attribute(o, a);
+   }
 }
 
 

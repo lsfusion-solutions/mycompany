@@ -12,6 +12,22 @@ descriptionForShipment 'Доп. информация для отгрузки' = 
 descriptionForReceipt 'Доп. информация для прихода' = DATA STRING (Product);   
 descriptionForTransfer 'Доп. информация для внутреннего перемещения' = DATA STRING (Product);   
 
+copyProduct 'Копровать продукт' (Product p) {
+    NEWSESSION {
+        NEW np = Product {
+            weight(np) <- weight(p);
+            volume(np) <- volume(p);
+            customerLeadTime(np) <- customerLeadTime(p);
+            descriptionForShipment(np) <- descriptionForShipment(p);
+            descriptionForReceipt(np) <- descriptionForReceipt(p);
+            descriptionForTransfer(np) <- descriptionForTransfer(p);
+            copy(np, p);
+            SHOW item OBJECTS i = np;
+        }
+    }
+}
+
+
 EXTEND FORM item
     PROPERTIES(i) weight, volume, customerLeadTime, descriptionForShipment, descriptionForReceipt, descriptionForTransfer
 ;
@@ -42,7 +58,7 @@ newProduct 'Товар' (Category c) {
 } IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
 
 EXTEND FORM items
-    PROPERTIES newProduct(c) DRAW i TOOLBAR
+    PROPERTIES newProduct(c) DRAW i TOOLBAR, copyProduct(i) DRAW i TOOLBAR 
     
     LIST Product OBJECT i
 ;

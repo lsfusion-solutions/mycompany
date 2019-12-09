@@ -7,6 +7,10 @@ NAMESPACE MasterData;
 variantOf 'Основная номенклатура' = DATA Item (Item);
 nameVariantOf 'Основная номенклатура' (Item i) = name(variantOf(i));
 
+copy(Item n, Item o) + {
+     variantOf(n) <- variantOf(o);
+}
+
 readonly (Item i) += IF variantOf(i) THEN TRUE;
 isVariantSet(Item i, ItemAttribute a) += IF attribute(variantOf(i), a) THEN TRUE;
 
@@ -29,7 +33,6 @@ WHEN LOCAL CHANGED(unitMeasure(variantOf(Item i))) DO {
 WHEN LOCAL CHANGED(archived(variantOf(Item i))) DO {
     archived(i) <- archived(variantOf(i));
 }
-
 
 EXTEND FORM item
     PROPERTIES(i) nameVariantOf
