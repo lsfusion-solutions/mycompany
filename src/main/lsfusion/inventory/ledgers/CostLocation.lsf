@@ -5,6 +5,13 @@ REQUIRE Location;
 NAMESPACE Inventory;
 
 calcCost 'Расчет себестоимости' = DATA BOOLEAN (Location);
+EXTEND FORM location
+    PROPERTIES(l) calcCost
+;
+
+EXTEND FORM locations
+    PROPERTIES(l) READONLY calcCost
+;
 
 costLocation (Location l) = 
     GROUP LAST Location parent ORDER DESC level(l, parent) 

@@ -1,0 +1,33 @@
+MODULE ManufacturingOrderCost;
+
+REQUIRE ManufacturingOrderDone, CostLedger, CostLocation;
+
+NAMESPACE Manufacturing;
+
+// расходная проводка
+CLASS ConsumedOutCostLedger : OutCostLedger;
+outCostLedger = AGGR ConsumedOutCostLedger WHERE consumed(ConsumedLine line) AND done(manufacturingOrder(line));
+
+dateTime(ConsumedOutCostLedger l) += manufacturingDate(manufacturingOrder(line(l)));
+location(ConsumedOutCostLedger l) += costLocation(materialsLocation(manufacturingOrder(line(l))));
+
+product(ConsumedOutCostLedger l) += product(line(l));
+quantity(ConsumedOutCostLedger l) += consumed(line(l));
+
+edit(ConsumedOutCostLedger l) + { edit(line(l)); }
+
+// приходная проводка
+CLASS ConsumedInCostLedger : InCostLedger;
+inCostLedger = AGGR ConsumedInCostLedger WHERE done(FinishedLine line) AND done(manufacturingOrder(line));
+
+dateTime(ConsumedInCostLedger l) += manufacturingDate(manufacturingOrder(line(l)));
+location(ConsumedInCostLedger l) += costLocation(productsLocation(manufacturingOrder(line(l))));
+
+product(ConsumedInCostLedger l) += product(line(l));
+quantity(ConsumedInCostLedger l) += done(line(l));
+
+cost (ManufacturingOrder o) = GROUP SUM sum(ConsumedOutCostLedger l) IF manufacturingOrder(line(l)) = o;
+
+sum (ConsumedInCostLedger l) += cost(manufacturingOrder(line(l))) IF product(line(l)) = product(manufacturingOrder(line(l)));
+
+edit(ConsumedInCostLedger l) + { edit(line(l)); }
