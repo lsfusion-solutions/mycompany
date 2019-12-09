@@ -9,35 +9,25 @@ nameVariantOf 'Основная номенклатура' (Item i) = name(varian
 
 readonly (Item i) += IF variantOf(i) THEN TRUE;
 
-WHEN LOCAL SETCHANGED(variantOf(Item i)) DO {
-    FOR attribute(variantOf(i), ItemAttribute a) DO {
-        attribute(i, a) <- attribute(variantOf(i), a);
-    }
-    dataName(i) <- dataName(variantOf(i));
-    category(i) <- category(variantOf(i));
-    unitMeasure(i) <- unitMeasure(variantOf(i));
-    archived(i) <- archived(variantOf(i));
-}
-
 ON LOCAL {
-     FOR SETCHANGED(attribute(variantOf(Item i), ItemAttribute a)) DO {
+     FOR CHANGED(attribute(variantOf(Item i), ItemAttribute a)) DO {
      attribute(i, a) <- attribute(variantOf(i), a);
      }
 }
 
-WHEN LOCAL SETCHANGED(dataName(variantOf(Item i))) DO {
+WHEN LOCAL CHANGED(dataName(variantOf(Item i))) DO {
     dataName(i) <- dataName(variantOf(i));
 }
 
-WHEN LOCAL SETCHANGED(category(variantOf(Item i))) DO {
+WHEN LOCAL CHANGED(category(variantOf(Item i))) DO {
     category(i) <- category(variantOf(i));
 }
 
-WHEN LOCAL SETCHANGED(unitMeasure(variantOf(Item i))) DO {
+WHEN LOCAL CHANGED(unitMeasure(variantOf(Item i))) DO {
     unitMeasure(i) <- unitMeasure(variantOf(i));
 }
 
-WHEN LOCAL SETCHANGED(archived(variantOf(Item i))) DO {
+WHEN LOCAL CHANGED(archived(variantOf(Item i))) DO {
     archived(i) <- archived(variantOf(i));
 }
 
