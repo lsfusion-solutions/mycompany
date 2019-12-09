@@ -113,7 +113,7 @@ attribute = DATA ItemAttributeValue (Item, ItemAttribute);
 value 'Значение' (Item i, ItemAttribute a) = value(attribute(i, a));
 fullValue 'Полное значение' (Item i, ItemAttribute a) = (CONCAT '', prefix(a), value(i, a), suffix(a)) IF value(i, a);
 
-suffixName(Item i) += STRING(GROUP CONCAT fullValue(i, ItemAttribute a) IF sequence(a), ' ' ORDER sequence(a));
+suffixName(Item i) += STRING(GROUP CONCAT fullValue(i, ItemAttribute a) IF sequence(a), ' ' ORDER sequence(a), a);
 
 CONSTRAINT value(Item i, ItemAttribute a) AND NOT (valid(attribute(i, a), category(i)) OR (NOT countCategory(attribute(i, a)) AND valid(a, category(i))))
     CHECKED BY attribute[Item, ItemAttribute]
@@ -126,22 +126,33 @@ CONSTRAINT value(Item i, ItemAttribute a) AND NOT itemAttribute(attribute(i, a))
 CONSTRAINT DROPPED(ItemAttributeValue v IS ItemAttributeValue) AND PREV(attribute(Item i, ItemAttribute a)) = v
     MESSAGE 'Нельзя удалять значение, которое используется';
 
-FORM vals 'Значения'
-    OBJECTS a = ItemAttribute PANEL 
-
-    OBJECTS v = ItemAttributeValue
-    PROPERTIES READONLY value(v), nameAttribute(v)
-    PROPERTIES(v) NEWSESSION NEW, EDIT, DELETE
-    FILTERS itemAttribute(v) = a
-    
-    LIST ItemAttributeValue OBJECT v
-;
-
 FORM val 'Значение'
     OBJECTS v = ItemAttributeValue PANEL 
     PROPERTIES(v) value, nameAttribute
     
     EDIT ItemAttributeValue OBJECT v  
+;
+
+newVal 'Значение' (ItemAttribute a) {
+    NEWSESSION {
+        NEW v = ItemAttributeValue {
+            itemAttribute(v) <- a;
+            SHOW val OBJECTS v = v;
+        }
+    }
+}IMAGE 'add.png';
+
+FORM vals 'Значения'
+    OBJECTS a = ItemAttribute PANEL 
+    PROPERTIES(a) READONLY name
+
+    OBJECTS v = ItemAttributeValue
+    PROPERTIES READONLY value(v)
+    PROPERTIES newVal(a) DRAW v TOOLBAR 
+    PROPERTIES(v) NEWSESSION EDIT, DELETE
+    FILTERS itemAttribute(v) = a
+    
+    LIST ItemAttributeValue OBJECT v
 ;
 
 isVariantSet = ABSTRACT BOOLEAN (Item, ItemAttribute);
