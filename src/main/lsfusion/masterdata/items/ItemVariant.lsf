@@ -1,6 +1,6 @@
 MODULE ItemVariant;
 
-REQUIRE Item, ItemAttribute;
+REQUIRE ItemAttribute, BarCode;
 
 NAMESPACE MasterData;
 
@@ -34,9 +34,39 @@ EXTEND FORM item
     PROPERTIES(i) nameVariantOf
 ;
 
+addVariant 'Вариант' (Item ii) {
+    NEWSESSION {
+        NEW i = Item {
+            variantOf(i) <- ii;
+            SHOW item OBJECTS i = i;
+        }
+    }
+}IMAGE 'add.png';
+
+EXTEND FORM items 
+    OBJECTS ii = Item
+    PROPERTIES(ii) name, idBarCode, id, nameCategory, nameUnitMeasure
+    PROPERTIES addVariant(i) DRAW ii TOOLBAR 
+    FILTERS variantOf(ii) = i
+    
+    FILTERGROUP variants
+        FILTER 'Основные' NOT variantOf(i) 'F10'
+        FILTER 'Варианты' variantOf(i) 'F9'
+;
+
+
 DESIGN item {
     header {
         MOVE PROPERTY(nameVariantOf(i)) AFTER PROPERTY(name(i));
+    }
+}
+
+DESIGN items {
+    operations {
+        NEW variants {
+            caption = 'Варианты';
+            MOVE BOX(ii);
+        }
     }
 }
 
