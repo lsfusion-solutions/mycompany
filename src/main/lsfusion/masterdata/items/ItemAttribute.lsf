@@ -128,7 +128,7 @@ CONSTRAINT DROPPED(ItemAttributeValue v IS ItemAttributeValue) AND PREV(attribut
 
 FORM val 'Значение'
     OBJECTS v = ItemAttributeValue PANEL 
-    PROPERTIES(v) value, nameAttribute
+    PROPERTIES(v) value, nameAttribute READONLY 
     
     EDIT ItemAttributeValue OBJECT v  
 ;
@@ -159,7 +159,7 @@ isVariantSet = ABSTRACT BOOLEAN (Item, ItemAttribute);
 
 EXTEND FORM item
     OBJECTS a = ItemAttribute
-    PROPERTIES name(a) READONLY, value(i, a) ON CHANGE { DIALOG vals OBJECTS a = a, v INPUT DO { attribute(i, a) <- v; } } 
+    PROPERTIES name(a) READONLY, value(i, a) ON CHANGE { DIALOG vals OBJECTS a = a, v INPUT NULL DO { attribute(i, a) <- v; } } 
                     READONLYIF (readonly(i) AND isVariantSet(i, a)) BACKGROUND RGB(204,207,205) IF readonly(i)
     FILTERS valid(a, category(i))
 ;
