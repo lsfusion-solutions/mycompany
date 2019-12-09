@@ -4,11 +4,17 @@ REQUIRE Sales;
 
 NAMESPACE Sales;
 
+attribute(OrderLine l, ItemAttribute a) = value(attribute(item(l), a));
+
 FORM reportSalesOrders 'Отчет по заказам'
+    OBJECTS a = ItemAttribute
+
     OBJECTS report = (o = Order, l = OrderLine)
     PROPERTIES(o) READONLY status, date, seriesNumber, nameCustomer, addressCustomer, deliveryAddress, validity, namePaymentterm,
         nameLocation, nameIncoterm, expectedDate, commintmentDate, invoiceDate, nameRepresentative, customerReference
-    PROPERTIES(l) READONLY nameItem, description, quantity, codeUnitMeasure, unitPrice, cost, discount, taxes, subtotal
+    PROPERTIES(l) READONLY nameItem
+    PROPERTIES READONLY attribute(l, a) COLUMNS (a) HEADER name(a) 
+    PROPERTIES(l) READONLY description, quantity, codeUnitMeasure, unitPrice, cost, discount, taxes, subtotal
     FILTERS order(l) = o
 ;
 

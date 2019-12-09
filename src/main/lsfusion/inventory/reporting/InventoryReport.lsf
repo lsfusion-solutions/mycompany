@@ -1,6 +1,6 @@
 MODULE InventoryReport;
 
-REQUIRE InvLedger, ResLedger, ItemImage;
+REQUIRE InvLedger, ResLedger, ItemImage, ItemAttribute;
 
 NAMESPACE Inventory;
 
@@ -19,10 +19,12 @@ FORM inventoryReport 'Текущие остатки'
     PROPERTIES READONLY name(c)
     ORDER name(c)
     
+    OBJECTS a = ItemAttribute
+    
     OBJECTS lp = (l = Location, p = Product)
-    PROPERTIES READONLY 'Склад' = canonicalName(l), 'Товар' = name(p) 
-    PROPERTIES(l,p) reserved, available, onHand SHOWIF NOT selectedDateTime()
-    PROPERTIES(l,p) onHandDateTime SHOWIF selectedDateTime(), dateReceived, dateShipped
+    PROPERTIES READONLY 'Склад' = canonicalName(l), 'Товар' = name(p), value(p, a) COLUMNS (a) HEADER name(a)
+    PROPERTIES(l,p) READONLY reserved, available, onHand SHOWIF NOT selectedDateTime()
+    PROPERTIES(l,p) READONLY onHandDateTime SHOWIF selectedDateTime(), dateReceived, dateShipped
     FILTERS level(l, lt),
             level(category(p), c),
             IF selectedDateTime() THEN onHandDateTime(l, p) ELSE onHand(l, p)

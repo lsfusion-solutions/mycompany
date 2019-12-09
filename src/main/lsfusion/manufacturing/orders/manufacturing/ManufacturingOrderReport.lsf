@@ -1,6 +1,6 @@
 MODULE ManufacturingOrderReport;
 
-REQUIRE ManufacturingOrderStatus;
+REQUIRE ManufacturingOrderStatus, ItemAttribute;
 
 NAMESPACE Manufacturing;
 
@@ -14,9 +14,15 @@ produced 'Произведено (продукты)' (ManufacturingOrder m) =
 producedQuantity 'Произведено (кол-во)' (ManufacturingOrder m) = 
     quantity(m) + GROUP SUM done(FinishedLine l) IF manufacturingOrder(l) = m;
 
+attribute(ManufacturingOrder o, ItemAttribute a) = value(attribute(product(o), a));
+
 FORM manufacturingOrderReport 'Отчет по заказам на производство'
+    OBJECTS a = ItemAttribute
+    
     OBJECTS o = ManufacturingOrder
-    PROPERTIES(o) READONLY seriesNumber, nameProduct, quantity, nameUnitMeasure, referenceBom, deadline, nameResponsible, 
+    PROPERTIES(o) READONLY seriesNumber, nameProduct
+    PROPERTIES READONLY attribute(o, a) COLUMNS (a) HEADER name(a)
+    PROPERTIES(o) READONLY quantity, nameUnitMeasure, referenceBom, deadline, nameResponsible, 
         numberSource, nameCompany, nameMaterialsLocation, nameProductsLocation, consumed, consumedQuantity, produced, 
         producedQuantity    
 ;

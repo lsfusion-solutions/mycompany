@@ -1,17 +1,23 @@
 MODULE InvoiceReport;
 
-REQUIRE CreditNote, InvoicePaymentTerms;
+REQUIRE CreditNote, InvoicePaymentTerms, ItemAttribute;
 
 NAMESPACE Invoicing;
 
 nameItemCategory 'Категория номенклатуры' (InvoiceLine l) = name(category(item(l)));
 
+attribute(InvoiceLine l, ItemAttribute a) = value(attribute(item(l), a));
+
 FORM reportingInvoices 'Отчет по документам'
+    OBJECTS a = ItemAttribute
+
     OBJECTS report = (i = Invoice, l = InvoiceLine)
-    PROPERTIES(i) date, dueDate, nameType, series, number, namePartner, partnerAccountNumber, nameCompany, 
+    PROPERTIES(i) READONLY date, dueDate, nameType, series, number, namePartner, partnerAccountNumber, nameCompany, 
                     companyAccountNumber, namePaymentTerms, sourceDocument, notes, nameStatus,
                     untaxedAmount, totalTax, totalAmount, paid
-    PROPERTIES(l) nameItem, idItem, nameItemCategory, quantity, unitPrice, taxes, subtotal
+    PROPERTIES(l) READONLY nameItem, idItem, nameItemCategory 
+    PROPERTIES READONLY attribute(l, a) COLUMNS (a) HEADER name(a)
+    PROPERTIES(l) READONLY quantity, unitPrice, taxes, subtotal
     FILTERS invoice(l) = i
 ;
 
