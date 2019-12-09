@@ -24,7 +24,7 @@ CLASS ItemAttributeValue 'Значение';
 itemAttribute 'Атрибут' = DATA ItemAttribute (ItemAttributeValue) NONULL DELETE;
 nameAttribute 'Атрибут' (ItemAttributeValue v) = name(itemAttribute(v));
 
-value 'Значение' = DATA STRING (ItemAttributeValue);
+value 'Значение' = DATA STRING (ItemAttributeValue) IN id;
 
 set 'Вкл.' = DATA BOOLEAN (ItemAttributeValue, Category);
 valid (ItemAttributeValue v, Category c) = GROUP LAST set(v, Category cc) ORDER level(c, cc); 
@@ -38,7 +38,7 @@ CONSTRAINT set(ItemAttributeValue v, Category c) AND NOT valid(itemAttribute(v),
 
 FORM attributes 'Атрибуты'
     OBJECTS a = ItemAttribute
-    PROPERTIES(a) READONLY id, name
+    PROPERTIES(a) READONLY id, name, sequence
     PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE 
     
     LIST ItemAttribute OBJECT a
@@ -70,7 +70,6 @@ DESIGN attribute {
             type = SPLITH;
             NEW attribute {
                 fill = 1;
-                caption = 'Атрибут';
                 NEW name {
                     caption = 'Опции атрибута';
                     MOVE PROPERTY(name(a));
@@ -123,17 +122,26 @@ CONSTRAINT value(Item i, ItemAttribute a) AND NOT (valid(attribute(i, a), catego
 CONSTRAINT value(Item i, ItemAttribute a) AND NOT itemAttribute(attribute(i, a)) = a
     CHECKED BY attribute[Item, ItemAttribute]
     MESSAGE 'Выбрано недопустимое значение для данной номенклатуры';
+    
+CONSTRAINT DROPPED(ItemAttributeValue v IS ItemAttributeValue) AND PREV(attribute(Item i, ItemAttribute a)) = v
+    MESSAGE 'Нельзя удалять значение, которое используется';
 
 FORM val 'Значение'
+    OBJECTS a = ItemAttribute PANEL 
+
     OBJECTS v = ItemAttributeValue
-    PROPERTIES READONLY value(v)
+    PROPERTIES value(v) READONLYIF value(v), nameAttribute(v) READONLY 
+    PROPERTIES(v) NEW, DELETE
+    FILTERS itemAttribute(v) = a
     
     LIST ItemAttributeValue OBJECT v
 ;
 
+isVariantSet = ABSTRACT BOOLEAN (Item, ItemAttribute);
+
 EXTEND FORM item
     OBJECTS a = ItemAttribute
-    PROPERTIES name(a) READONLY, value(i, a) READONLYIF readonly(i) BACKGROUND RGB(250,150,157) IF readonly(i)
+    PROPERTIES name(a) READONLY, value(i, a) READONLYIF (readonly(i) AND isVariantSet(i, a)) BACKGROUND RGB(204,207,205) IF readonly(i)
     FILTERS valid(a, category(i))
 ;
 

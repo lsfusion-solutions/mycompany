@@ -18,7 +18,7 @@ checkAvailability 'Зарезервировать' (ManufacturingOrder m) {
     
     NEWSESSION { 
         FOR manufacturingOrder(ConsumedLine l) = m DO {     
-            reserved(l) <- min(toConsume(l), available(l));
+            reserved(l) <- reserved(l) (+) min(toConsume(l), available(l));
             dateReserved(l) <- currentDateTime();
         }
 

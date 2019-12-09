@@ -56,7 +56,7 @@ WHEN LOCAL SET(product(ManufacturingOrder m)) DO {
 } 
 
 bom 'Технологическая карта' = DATA Bom (ManufacturingOrder) NONULL;
-referenceBom 'Код технологической карты' (ManufacturingOrder m) = reference(bom(m));
+referenceBom 'Код технологической карты' (ManufacturingOrder m) = reference(bom(m)) CHARWIDTH 25;
 deadline 'Дата старта' = DATA DATETIME (ManufacturingOrder);
 manufacturingDate 'Дата производства' = DATA DATETIME (ManufacturingOrder);
 responsible 'Ответственный' = DATA Individual (ManufacturingOrder);
@@ -109,7 +109,8 @@ unitMeasure 'Ед.изм.' = DATA ItemMeasure (FinishedLine);
 nameUnitMeasure 'Ед.изм.' (FinishedLine l) = name(unitMeasure(l));
 done 'Произведено' = DATA NUMERIC[16,3] (FinishedLine);
 
-WHEN LOCAL SETCHANGED(bom(ManufacturingOrder m)) DO {
+
+WHEN LOCAL SETCHANGED(bom(ManufacturingOrder m)) OR SETCHANGED(quantity(m)) DO {
     FOR manufacturingOrder(ConsumedLine l) = m DO DELETE l;
     
     FOR bom(ComponentLine cl) = bom(m) DO NEW l = ConsumedLine {

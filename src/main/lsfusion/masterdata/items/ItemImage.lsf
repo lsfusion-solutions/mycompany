@@ -5,8 +5,8 @@ REQUIRE Item;
 NAMESPACE MasterData;
 
 image 'Изображение' = DATA IMAGEFILE (Item);
-loadImage 'Загрузить изображение' (Item i)  { INPUT = image(i) CHANGE; }
-openImage 'Открыть изображение' (Item i)  { open(image(i)); }
+loadImage 'Загрузить' (Item i)  { INPUT = image(i) CHANGE; }
+openImage 'Открыть' (Item i)  { open(image(i)); }
 
 EXTEND FORM item
     PROPERTIES(i) image , loadImage, openImage
@@ -15,8 +15,11 @@ EXTEND FORM item
 DESIGN item {
     image {
         MOVE PROPERTY(image(i)) { fill = 1; caption = ''; }
-        MOVE PROPERTY(loadImage(i));
-        MOVE PROPERTY(openImage(i));
+        NEW imageActions {
+            type = CONTAINERH;
+            MOVE PROPERTY(loadImage(i));
+            MOVE PROPERTY(openImage(i));
+        }
     }
 }
 

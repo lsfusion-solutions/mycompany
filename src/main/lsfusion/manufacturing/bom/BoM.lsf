@@ -1,6 +1,6 @@
 MODULE BoM;
 
-REQUIRE Product, BoMType, Company, Operation, ManufacturingNavigator;
+REQUIRE Product, BoMType, Company, Operation, ManufacturingNavigator, ManufacturingSettings;
 
 NAMESPACE Manufacturing;
 
@@ -11,12 +11,44 @@ active 'Активный' (Bom b) = NOT archived(b) CHARWIDTH 10;
 
 product 'Номенклатура' = DATA Product (Bom) NONULL DELETE;
 nameProduct 'Номенклатура' (Bom b) = name(product(b));
-quantity 'Кол-во' = DATA NUMERIC[16,3] (Bom);
+quantity 'Кол-во' = DATA NUMERIC[16,3] (Bom) NONULL;
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (Bom);
 nameUnitMeasure 'Ед.изм.' (Bom b) = name(unitMeasure(b));
 
-reference 'Код' = DATA STRING[50] (Bom) NONULL IN id;
+reference 'Код' = DATA STRING[50] (Bom) IN id;
 bom (STRING[50] reference) = GROUP AGGR Bom b BY reference(b);
+
+numeratorBom 'Нумератор заказов' = DATA Numerator();
+nameNumeratorBom 'Нумератор заказов' = name(numeratorBom());
+
+loadInitialData () + {
+    NEWSESSION {
+        NEW n = Numerator {
+            name(n) <- 'Технологических карт';
+            series(n) <- 'BM';
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+            numeratorBom() <- n;
+        }
+        APPLY;
+    }
+}
+
+EXTEND FORM options
+    PROPERTIES nameNumeratorBom()
+;
+
+DESIGN options {
+    OBJECTS {
+        MOVE PROPERTY(nameNumeratorBom());
+    }
+}
+
+WHEN SETCHANGED(Bom m IS Bom  AND numeratorBom() AND NOT reference(m)) DO {
+    reference(m) <- STRING[50](CONCAT '/', nameProduct(m), series(numeratorBom()), curStringValue(numeratorBom()));
+    incrementValueSession(numeratorBom());   
+}
 
 bomType 'Тип' = DATA BomType (Bom);
 nameType 'Тип' (Bom b) = name(bomType(b));
@@ -97,7 +129,7 @@ DESIGN bom {
             }
             NEW rightHeader {
                 caption = '';
-                MOVE PROPERTY(reference(b)) { notNull = TRUE; }
+                MOVE PROPERTY(reference(b));
                 MOVE PROPERTY(nameType(b));
                 MOVE PROPERTY(nameCompany(b));
             }            

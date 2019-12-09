@@ -1,6 +1,6 @@
 MODULE ItemVariant;
 
-REQUIRE ItemAttribute, BarCode;
+REQUIRE ItemAttribute, BarCode, Product, ServiceP;
 
 NAMESPACE MasterData;
 
@@ -8,6 +8,7 @@ variantOf 'Основная номенклатура' = DATA Item (Item);
 nameVariantOf 'Основная номенклатура' (Item i) = name(variantOf(i));
 
 readonly (Item i) += IF variantOf(i) THEN TRUE;
+isVariantSet(Item i, ItemAttribute a) += IF attribute(variantOf(i), a) THEN TRUE;
 
 WHEN LOCAL CHANGED(attribute(variantOf(Item i), ItemAttribute a)) DO {
      attribute(i, a) <- attribute(variantOf(i), a);
@@ -34,11 +35,15 @@ EXTEND FORM item
     PROPERTIES(i) nameVariantOf
 ;
 
-addVariant 'Вариант' (Item ii) {
+addVariant 'Разновидность' (Item ii) {
     NEWSESSION {
-        NEW i = Item {
-            variantOf(i) <- ii;
-            SHOW item OBJECTS i = i;
+        IF ii IS Product THEN NEW p = Product {
+                variantOf(p) <- ii;
+                SHOW item OBJECTS i = p;
+            }
+        ELSE NEW s = Service {
+            variantOf(s) <- ii;
+            SHOW item OBJECTS i = s;
         }
     }
 }IMAGE 'add.png';
@@ -51,7 +56,7 @@ EXTEND FORM items
     
     FILTERGROUP variants
         FILTER 'Основные' NOT variantOf(i) 'F10'
-        FILTER 'Варианты' variantOf(i) 'F9'
+        FILTER 'Разновидности' variantOf(i) 'F9'
 ;
 
 
@@ -64,7 +69,7 @@ DESIGN item {
 DESIGN items {
     operations {
         NEW variants {
-            caption = 'Варианты';
+            caption = 'Разновидности';
             MOVE BOX(ii);
         }
     }
