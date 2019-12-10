@@ -1,0 +1,141 @@
+MODULE InvoiceShipment;
+
+REQUIRE InvoiceCanceled, CreditNote, ReceiptCanceled, ShipmentCanceled;
+
+NAMESPACE Invoicing;
+
+createShipment 'Создать отгрузку' = DATA BOOLEAN (Invoice);
+
+location 'Место хранения' = DATA Location (Invoice);
+nameLocation 'Место хранения' (Invoice i) = name(location(i));
+toLocation 'Место хранения (куда)' = DATA Location (Invoice) NONULL;
+nameToLocation 'Место хранения (куда)' (Invoice i) = name(toLocation(i));
+
+typeReceiptFromInvoice 'Тип прихода на основе акта расхождения' = DATA ReceiptType ();
+nameTypeReceiptFromInvoice 'Тип прихода на основе акта расхождения' = name(typeReceiptFromInvoice());
+
+typeShipmentFromInvoice 'Тип отгрузки на основе реализации' = DATA ShipmentType ();
+nameTypeShipmentFromInvoice 'Тип отгрузки на основе реализации' = name(typeShipmentFromInvoice());
+
+EXTEND FORM options
+    PROPERTIES nameTypeReceiptFromInvoice(), nameTypeShipmentFromInvoice()
+;
+ 
+DESIGN options {
+    OBJECTS {
+        MOVE PROPERTY(nameTypeReceiptFromInvoice());
+        MOVE PROPERTY(nameTypeShipmentFromInvoice());
+    }
+}
+
+invoiceLine 'Ссылка на приобретение' = DATA InvoiceLine (ReceiptLine);
+invoice 'Ссылка на приобретение' = DATA Invoice (Receipt);
+
+invoiceLine 'Ссылка на приобретение' = DATA InvoiceLine (ShipmentLine);
+invoice 'Ссылка на приобретение' = DATA Invoice (Shipment);
+
+WHEN SET(ready(Invoice b)) AND createShipment(b) DO {
+    IF isCreditNote(b) THEN NEW ns = Receipt { 
+        partner(ns) <- partner(b);
+        scheduledDate(ns) <- date(b);
+        type(ns) <- typeReceiptFromInvoice();
+        location(ns) <- toLocation(b);
+        number(ns) <- curStringValue(numerator(type(ns)));
+        series(ns) <- series(numerator(type(ns)));
+        incrementValueSession(numerator(type(ns)));
+        ready(ns) <- TRUE;           
+        invoice(ns) <- b; 
+        sourceDocument(ns) <- seriesNumber(b); 
+        immediateTransfer(ns) <- TRUE;   
+    
+        FOR invoice(InvoiceLine l) = b INLINE NEW rl = ReceiptLine DO {            
+            receipt(rl) <- ns;
+            product(rl) <- item(l);
+            done(rl) <- quantity(l);
+            invoiceLine(rl) <- l;
+        }
+        
+        ready(ns) <- TRUE;
+        done(ns) <- TRUE;
+        executionDate(ns) <- currentDateTime();  
+    } ELSE NEW s = Shipment {
+        partner(s) <- partner(b);
+        scheduledDate(s) <- date(b);
+        type(s) <- typeShipmentFromInvoice();
+        location(s) <- location(b); 
+        toLocation(s) <- toLocation(b);
+        number(s) <- curStringValue(numerator(type(s)));
+        series(s) <- series(numerator(type(s)));
+        incrementValueSession(numerator(type(s)));
+        waiting(s) <- TRUE;           
+        invoice(s) <- b; 
+        sourceDocument(s) <- seriesNumber(b); 
+        immediateTransfer(s) <- TRUE;   
+            
+        FOR invoice(InvoiceLine l) = b INLINE NEW sl = ShipmentLine DO {            
+            shipment(sl) <- s;
+            product(sl) <- item(l);
+            done(sl) <- quantity(l);
+            invoiceLine(sl) <- l;
+        }
+
+        waiting(s) <- TRUE;
+        ready(s) <- TRUE;
+        done(s) <- TRUE;
+        executionDate(s) <- currentDateTime();  
+    } 
+}
+
+WHEN SET(canceled(Invoice b)) DO {
+    FOR invoice(Receipt r) = b DO {
+        canceled(r) <- TRUE;
+    }
+    FOR invoice(Shipment s) = b DO {
+        canceled(s) <- TRUE;
+    }
+}
+
+WHEN CHANGED(quantity(invoiceLine(ShipmentLine l))) DO {
+    done(l) <- quantity(invoiceLine(l));
+}
+
+WHEN CHANGED(quantity(invoiceLine(ReceiptLine l))) DO {
+    done(l) <- quantity(invoiceLine(l));
+}
+
+showReceipt 'Показать поступление' (Invoice b) {
+    FOR invoice(Receipt r) = b DO {
+        SHOW receipt OBJECTS r = r;
+    }
+}
+
+showShipment 'Показать отгрузку' (Invoice b) {
+    FOR invoice(Shipment s) = b DO {
+        SHOW shipment OBJECTS s = s;
+    }
+}
+
+EXTEND FORM invoice
+    PROPERTIES(i) nameLocation SHOWIF NOT isCreditNote(i), nameToLocation 
+    PROPERTIES(i) createShipment READONLYIF readonly(i)
+    PROPERTIES(i) showReceipt SHOWIF NOT (status(i) = InvoiceStatus.draft OR status(i) = InvoiceStatus.canceled) AND isCreditNote(i) AND createShipment(i)
+    PROPERTIES(i) showShipment SHOWIF NOT (status(i) = InvoiceStatus.draft OR status(i) = InvoiceStatus.canceled) AND NOT isCreditNote(i) AND createShipment(i)
+;
+
+DESIGN invoice {
+    header {
+        NEW locations {
+            caption = 'Места хранения';
+            fill = 1;
+            MOVE PROPERTY(nameLocation(i));
+            MOVE PROPERTY(nameToLocation(i)) { notNull = TRUE; }
+        }
+    }
+    secondary {
+        MOVE PROPERTY(showReceipt(i));
+        MOVE PROPERTY(showShipment(i));
+    }
+    additions {
+        MOVE PROPERTY(createShipment(i));
+    }
+}

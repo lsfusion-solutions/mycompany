@@ -1,6 +1,6 @@
 MODULE PurchaseOrderToBill;
 
-REQUIRE PurchaseOrder, Invoicing, PurchaseOrderStatus, Time, PurchaseOrderStatusConfirm;
+REQUIRE PurchaseOrder, BillPaymentTerms, BillCanceled, PurchaseOrderStatus, Time, PurchaseOrderStatusConfirm;
 
 NAMESPACE Purchase;
 
@@ -12,6 +12,7 @@ payedBill 'Оплачено' (OrderLine ol) = GROUP SUM quantity(BillLine bl) IF
 deficitBill 'Недопоступило' (Order o) =  GROUP SUM abs(initBill(OrderLine ol) (-) quantity(ol)) IF order(ol) = o AND ol IS OrderLine;
 
 createBill 'Оформить накладную' (Order o) {
+    APPLY;
     IF canceled() THEN RETURN;
                
     NEWSESSION {

@@ -8,27 +8,29 @@ typeReceiptFromPurchase 'Тип складского прихода по умо�
 nameTypeReceiptFromPurchase 'Тип складского прихода по умолчанию' = name(typeReceiptFromPurchase());
 
 EXTEND FORM options
-  PROPERTIES nameTypeReceiptFromPurchase()
+    PROPERTIES nameTypeReceiptFromPurchase()
 ;
  
-DESIGN options{
-    MOVE PROPERTY(nameTypeReceiptFromPurchase());
+DESIGN options {
+    OBJECTS {
+        MOVE PROPERTY(nameTypeReceiptFromPurchase());
+    }
 }
 
 orderLine 'ссылка на заказ' = DATA OrderLine (ReceiptLine);
 order 'ссылка на заказ' = DATA Order (Receipt);
 
-initReceipt 'Запланирован приход на склад' (OrderLine ol) = GROUP SUM initialDemand(ReceiptLine rl) IF orderLine(rl)=ol AND ready(receipt(rl)) AND NOT canceled(receipt(rl));
-doneReceipt 'Оприходовано на склад' (OrderLine ol) = GROUP SUM done(ReceiptLine rl) IF orderLine(rl)=ol AND done(receipt(rl)) AND NOT canceled(receipt(rl));
+initReceipt 'Запланирован приход на склад' (OrderLine ol) = GROUP SUM initialDemand(ReceiptLine rl) IF orderLine(rl) = ol AND ready(receipt(rl)) AND NOT canceled(receipt(rl));
+doneReceipt 'Оприходовано на склад' (OrderLine ol) = GROUP SUM done(ReceiptLine rl) IF orderLine(rl) = ol AND done(receipt(rl)) AND NOT canceled(receipt(rl));
 deficitReceipt 'Недопоступило' (OrderLine ol) =  quantity(ol) (-) initReceipt(ol);
 
 deficitReceipt 'Недоопоступило' (Order o) =  GROUP SUM abs(deficitReceipt(OrderLine ol)) IF order(ol)=o;
 
 CONSTRAINT (quantity(OrderLine ol) - doneReceipt(ol)) < 0 AND confirmed(order(ol)) AND ol IS OrderLine MESSAGE 'По товару приход превышает количество в заказе';
 
-lastOpenReceipt 'Последний открытый приход' (Order o)= GROUP LAST Receipt r IF order(r)=o AND status(r)=ReceiptStatus.ready AND r IS Receipt ORDER r;
+lastOpenReceipt 'Последний открытый приход' (Order o)= GROUP LAST Receipt r IF order(r) = o AND status(r) = ReceiptStatus.ready AND r IS Receipt ORDER r;
 
-WHEN ([GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) BY order(l)](Order o) OR SET (confirmed(o)) ) AND deficitReceipt(o)>0 AND status(o)=OrderStatus.orderConfirmed DO
+WHEN ([GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) BY order(l)](Order o) OR SET (confirmed(o))) AND deficitReceipt(o) > 0 AND status(o) = OrderStatus.orderConfirmed DO
 {
     IF NOT lastOpenReceipt(o) THEN   
         NEW ns = Receipt { 

@@ -16,17 +16,21 @@ available 'Доступный остаток' (ShipmentLine l) = prevAvailableRe
 
 extraCheckAvailability ABSTRACT (Shipment);
 
+precheckAvailability (Shipment s) {
+    reserved(ShipmentLine l) <- reserved(l) (+) min(initialDemand(l), available(l)) WHERE shipment(l) = s;
+    extraCheckAvailability(s);
+    IF GROUP SUM 1 IF (reserved(ShipmentLine l)) AND shipment(l) = s THEN {
+        ready(s) <- TRUE;
+    }
+}
+
 checkAvailability 'Зарезервировать' (Shipment s) {
     APPLY; 
     IF canceled() THEN RETURN;
     
     NEWSESSION {
-        reserved(ShipmentLine l) <- min(initialDemand(l), available(l)) WHERE shipment(l) = s;
-        extraCheckAvailability(s);
-        IF GROUP SUM 1 IF (reserved(ShipmentLine l)) AND shipment(l) = s THEN {
-            ready(s) <- TRUE;
-            APPLY;
-        }
+        precheckAvailability(s);
+        APPLY;
     }
 }
 
