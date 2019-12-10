@@ -66,7 +66,7 @@ CONSTRAINT set(ItemAttributeValue v, Category c) AND NOT valid(itemAttribute(v),
 // формы ввода атрибутов
 FORM attributes 'Атрибуты'
     OBJECTS a = ItemAttribute
-    PROPERTIES(a) READONLY id, name, sequence
+    PROPERTIES(a) READONLY id, name
     PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE 
     
     LIST ItemAttribute OBJECT a
@@ -74,7 +74,7 @@ FORM attributes 'Атрибуты'
 
 FORM attribute 'Атрибут'
     OBJECTS a = ItemAttribute PANEL
-    PROPERTIES(a) id, name, sequence, prefix, suffix
+    PROPERTIES(a) id, name
     
     TREE categories c = Category PARENT parent(c) 
     PROPERTIES name(c) READONLY, set(a, c) BACKGROUND (GROUP LAST set(a, Category cc) ORDER level(cc, c))
@@ -102,12 +102,6 @@ DESIGN attribute {
                     caption = 'Опции атрибута';
                     MOVE PROPERTY(name(a));
                     MOVE PROPERTY(id(a));
-                }
-                NEW itemValues {
-                    caption = 'Формирование наименования';
-                    MOVE PROPERTY(sequence(a));
-                    MOVE PROPERTY(prefix(a));
-                    MOVE PROPERTY(suffix(a));
                 }
             }
             NEW details {
@@ -178,6 +172,20 @@ suffix 'Суффикс' = DATA STRING[15] (ItemAttribute);
 
 fullValue 'Полное значение' (Item i, ItemAttribute a) = (CONCAT '', prefix(a), value(i, a), suffix(a)) IF value(i, a);
 suffixName(Item i) += STRING(GROUP CONCAT fullValue(i, ItemAttribute a) IF sequence(a), ' ' ORDER sequence(a), a);
+
+EXTEND FORM attributes PROPERTIES READONLY sequence(a);
+EXTEND FORM attribute PROPERTIES(a) sequence, prefix, suffix;
+
+DESIGN attribute {
+    attribute {
+        NEW itemValues {
+            caption = 'Формирование наименования';
+            MOVE PROPERTY(sequence(a));
+            MOVE PROPERTY(prefix(a));
+            MOVE PROPERTY(suffix(a));
+        }
+    }
+}
 
 // Фильтр по атрибутам на форме номенклатуры
 attributeFilter = DATA LOCAL ItemAttributeValue (ItemAttribute);
