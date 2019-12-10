@@ -43,15 +43,12 @@ newValue 'Значение' (ItemAttribute a) {
 // диалог выбора значений по атрибуту
 FORM values 'Значения'
     OBJECTS a = ItemAttribute PANEL 
-    PROPERTIES(a) READONLY name
 
     OBJECTS v = ItemAttributeValue
     PROPERTIES READONLY value(v)
     PROPERTIES newValue(a) DRAW v TOOLBAR 
     PROPERTIES(v) NEWSESSION EDIT, DELETE
     FILTERS itemAttribute(v) = a
-    
-    LIST ItemAttributeValue OBJECT v
 ;
 
 // задание доступных категорий для конкретных значений
@@ -74,6 +71,7 @@ FORM attributes 'Атрибуты'
 
 FORM attribute 'Атрибут'
     OBJECTS a = ItemAttribute PANEL
+    PROPERTIES(a) name, id
     
     TREE categories c = Category PARENT parent(c) 
     PROPERTIES name(c) READONLY, set(a, c) BACKGROUND (GROUP LAST set(a, Category cc) ORDER level(cc, c))
