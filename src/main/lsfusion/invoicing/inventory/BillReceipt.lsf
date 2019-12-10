@@ -8,8 +8,6 @@ createReceipt 'Создать поступление' = DATA BOOLEAN (Bill);
 
 location 'Место хранения' = DATA Location (Bill) NONULL;
 nameLocation 'Место хранения' (Bill b) = name(location(b));
-toLocation 'Место хранения (куда)' = DATA Location (Refund);
-nameToLocation 'Место хранения (куда)' (Refund r) = name(toLocation(r));
 
 typeReceiptFromBill 'Тип прихода на основе приобретения' = DATA ReceiptType ();
 nameTypeReceiptFromBill 'Тип прихода на основе приобретения' = name(typeReceiptFromBill());
@@ -18,7 +16,7 @@ typeShipmentFromBill 'Тип отгрузки на основе возврата
 nameTypeShipmentFromBill 'Тип отгрузки на основе возврата' = name(typeShipmentFromBill());
 
 EXTEND FORM options
-  PROPERTIES nameTypeReceiptFromBill(), nameTypeShipmentFromBill()
+    PROPERTIES nameTypeReceiptFromBill(), nameTypeShipmentFromBill()
 ;
  
 DESIGN options {
@@ -63,7 +61,6 @@ WHEN SET(ready(Bill b)) AND createReceipt(b) DO {
         scheduledDate(s) <- date(b);
         type(s) <- typeShipmentFromBill();
         location(s) <- location(b);
-        toLocation(s) <- toLocation(b);
         number(s) <- curStringValue(numerator(type(s)));
         series(s) <- series(numerator(type(s)));
         incrementValueSession(numerator(type(s)));
@@ -116,7 +113,7 @@ showShipment 'Показать отгрузку' (Bill b) {
 }
 
 EXTEND FORM bill
-    PROPERTIES(b) nameLocation, nameToLocation SHOWIF isRefund(b)
+    PROPERTIES(b) nameLocation
     PROPERTIES(b) createReceipt READONLYIF readonly(b)
     PROPERTIES(b) showReceipt SHOWIF NOT (status(b) = BillStatus.draft OR status(b) = BillStatus.canceled) AND NOT isRefund(b) AND createReceipt(b)
     PROPERTIES(b) showShipment SHOWIF NOT (status(b) = BillStatus.draft OR status(b) = BillStatus.canceled) AND isRefund(b) AND createReceipt(b)
@@ -128,7 +125,6 @@ DESIGN bill {
             caption = 'Места хранения';
             fill = 1;
             MOVE PROPERTY(nameLocation(b)) { notNull = TRUE; }
-            MOVE PROPERTY(nameToLocation(b));
         }
     }
     secondary {

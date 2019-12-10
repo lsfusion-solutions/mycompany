@@ -9,6 +9,9 @@ CLASS ItemAttribute 'Атрибут';
 id 'Код' = DATA STRING[50] (ItemAttribute) IN id CHARWIDTH 8;
 itemAttribute (STRING[50] id) = GROUP AGGR ItemAttribute i BY id(i);
 
+//обязателен для заполнения
+nonull 'Обязателен для заполнения' = DATA BOOLEAN (ItemAttribute);
+
 name 'Название' = DATA ISTRING[50] (ItemAttribute) IN id;
 
 // задание доступных категорий для атрибутов
@@ -63,7 +66,7 @@ CONSTRAINT set(ItemAttributeValue v, Category c) AND NOT valid(itemAttribute(v),
 // формы ввода атрибутов
 FORM attributes 'Атрибуты'
     OBJECTS a = ItemAttribute
-    PROPERTIES(a) READONLY id, name
+    PROPERTIES(a) READONLY id, name, nonull
     PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE 
     
     LIST ItemAttribute OBJECT a
@@ -71,7 +74,7 @@ FORM attributes 'Атрибуты'
 
 FORM attribute 'Атрибут'
     OBJECTS a = ItemAttribute PANEL
-    PROPERTIES(a) name, id
+    PROPERTIES(a) name, id, nonull
     
     TREE categories c = Category PARENT parent(c) 
     PROPERTIES name(c) READONLY, set(a, c) BACKGROUND (GROUP LAST set(a, Category cc) ORDER level(cc, c))
@@ -99,6 +102,7 @@ DESIGN attribute {
                     caption = 'Опции атрибута';
                     MOVE PROPERTY(name(a));
                     MOVE PROPERTY(id(a));
+                    MOVE PROPERTY(nonull(a));
                 }
             }
             NEW details {
@@ -132,6 +136,9 @@ NAVIGATOR {
 attribute = DATA ItemAttributeValue (Item, ItemAttribute);
 value 'Значение' (Item i, ItemAttribute a) = value(attribute(i, a));
 
+CONSTRAINT nonull(ItemAttribute a) AND NOT value(Item i, a) AND valid(a, category(i))
+    MESSAGE 'Атрибут обязателен для заполнения';
+
 CONSTRAINT value(Item i, ItemAttribute a) AND (countCategory(attribute(i, a)) AND NOT valid(attribute(i, a), category(i)))
     CHECKED BY attribute[Item, ItemAttribute]
     MESSAGE 'Категория номенклатуры должна совпадать с категорией значения';
@@ -150,6 +157,7 @@ EXTEND FORM item
     PROPERTIES name(a) READONLY, 
                value(i, a) ON CHANGE { DIALOG values OBJECTS a = a, v INPUT NULL DO { attribute(i, a) <- v; } } 
                            READONLYIF readonly(i, a) BACKGROUND RGB(223,223,223) IF readonly(i, a)
+                           BACKGROUND RGB(245, 184,184) IF NOT value(i, a) AND nonull(a) AND valid(a, category(i))
     FILTERS valid(a, category(i))
 ;
 
