@@ -18,7 +18,6 @@ calcDefaultBarCode (Item i) = GROUP LAST BarCode b ORDER DESC b WHERE item(b) = 
 defaultBarCode (Item i) = OVERRIDE dataDefaultBarCode(i), calcDefaultBarCode(i);
 default 'По умолчанию' (BarCode b) = defaultBarCode(item(b)) = b CHARWIDTH 10;
 
-
 barCode (Item i) = defaultBarCode(i);
 
 idBarCode 'Штрих код' (Item i) = id(barCode(i));
@@ -43,7 +42,7 @@ EXTEND FORM item
     PROPERTIES(i) idBarCode AFTER nameCategory(i) ON CHANGE setBarCode(i)
     
     OBJECTS b = BarCode
-    PROPERTIES(b) nameItem, id, default ON CHANGE changeDefault(b)
+    PROPERTIES(b) id, default ON CHANGE changeDefault(b)
     PROPERTIES(b) NEW, DELETE
     FILTERS item(b) = i
 ;
