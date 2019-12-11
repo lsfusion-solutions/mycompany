@@ -1,6 +1,6 @@
 MODULE BoM;
 
-REQUIRE Product, BoMType, Company, Operation, ManufacturingSettings;
+REQUIRE Product, Company, Operation, ManufacturingSettings;
 
 NAMESPACE Manufacturing;
 
@@ -97,7 +97,7 @@ WHEN LOCAL SETCHANGED (product(ByproductLine l)) DO {
 
 FORM bom 'Технологическая карта'
     OBJECTS b = Bom PANEL 
-    PROPERTIES(b) nameProduct, quantity, nameUnitMeasure, reference, nameType, nameCompany, archived
+    PROPERTIES(b) nameProduct, quantity, nameUnitMeasure, reference, nameCompany, archived
     PROPERTIES(b) sequence, nameOperation
     
     OBJECTS c = ComponentLine
@@ -119,7 +119,6 @@ DESIGN bom {
             NEW leftHeader {
                 caption = '';
                 MOVE PROPERTY(nameProduct(b)) { notNull = TRUE; }
-                MOVE PROPERTY(nameType(b));
                 MOVE PROPERTY(archived(b));
                 NEW item {
                     type = CONTAINERH;
@@ -130,7 +129,6 @@ DESIGN bom {
             NEW rightHeader {
                 caption = '';
                 MOVE PROPERTY(reference(b));
-                MOVE PROPERTY(nameType(b));
                 MOVE PROPERTY(nameCompany(b));
             }            
         }
@@ -164,7 +162,7 @@ DESIGN bom {
 
 FORM boms 'Технологические карты'
     OBJECTS b = Bom
-    PROPERTIES(b) READONLY nameProduct, quantity, nameUnitMeasure, reference, nameType, nameCompany, archived
+    PROPERTIES(b) READONLY nameProduct, quantity, nameUnitMeasure, reference, nameCompany, archived
     PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE 
     
     LIST Bom OBJECT b
