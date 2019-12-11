@@ -24,10 +24,10 @@ initReceipt 'Запланирован приход на склад' (OrderLine o
     GROUP SUM initialDemand(ReceiptLine rl) IF orderLine(rl) = ol AND status(receipt(rl)) = ReceiptStatus.ready;
 doneReceipt 'Оприходовано на склад' (OrderLine ol) = 
     GROUP SUM done(ReceiptLine rl) IF orderLine(rl) = ol AND done(receipt(rl)) AND NOT canceled(receipt(rl));
-toReceive 'Недопоступило' (OrderLine ol) = 
-    (quantity(ol) (-) initReceipt(ol) (-) doneReceipt(ol)) IF item(ol) IS Product;
+toReceive 'К поступлению' (OrderLine ol) = 
+    max(quantity(ol) (-) initReceipt(ol) (-) doneReceipt(ol), 0) IF item(ol) IS Product;
 
-toReceive 'Недоопоступило' (Order o) = GROUP SUM abs(toReceive(OrderLine ol)) IF order(ol) = o;
+toReceive 'К поступлению' (Order o) = GROUP SUM toReceive(OrderLine ol) IF order(ol) = o;
 
 CONSTRAINT (quantity(OrderLine ol) (-) doneReceipt(ol)) < 0 AND confirmed(order(ol)) 
     MESSAGE 'По товару приход превышает количество в заказе';
@@ -46,7 +46,7 @@ WHEN ([GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) AND item(l) IS Product BY o
             order(ns) <- o; 
             sourceDocument(ns) <- seriesNumber(o);    
         }
-    FOR order(OrderLine ol) = o AND toReceive(ol) INLINE NEW rl = ReceiptLine DO {            
+    FOR order(OrderLine ol) = o AND toReceive(ol) NEW rl = ReceiptLine DO {            
         receipt(rl) <- lastOpenReceipt(o);
         product(rl) <- item(ol);
         initialDemand(rl) <- toReceive(ol);
@@ -88,8 +88,5 @@ DESIGN order {
     relatedDoc  {
         MOVE BOX(rc);
         REMOVE TOOLBARSYSTEM(rc);
-        PROPERTY (scheduledDate(rc)) { caption = 'Запланирован приход'; }
-        PROPERTY (executionDate(rc)) { caption = 'Дата прихода'; }
-        PROPERTY (seriesNumber(rc)) { charWidth = 15; }
     }
 }

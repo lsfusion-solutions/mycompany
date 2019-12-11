@@ -9,6 +9,8 @@ CLASS UnbuildOrder 'Заказ на разбор';
 number 'Номер' = DATA STRING[28] (UnbuildOrder);
 series 'Серия' = DATA STRING[2] (UnbuildOrder);
 
+seriesNumber 'Номер' (UnbuildOrder o) = CONCAT '/', series(o), number(o) CHARWIDTH 10;
+
 numeratorUnbuild 'Нумератор разборов' = DATA Numerator();
 nameNumeratorUnbuild 'Нумератор разборов' = name(numeratorUnbuild());
 
@@ -41,7 +43,6 @@ WHEN SETCHANGED(UnbuildOrder o IS UnbuildOrder  AND numeratorUnbuild() AND NOT n
     series(o) <- series(numeratorUnbuild());
     incrementValueSession(numeratorUnbuild());   
 }
-seriesNumber 'Номер' (UnbuildOrder o) = CONCAT '/', series(o), number(o);
 
 product 'Номенклатура' = DATA Product (UnbuildOrder) NONULL DELETE;
 nameProduct 'Номенклатура' (UnbuildOrder o) = name(product(o));

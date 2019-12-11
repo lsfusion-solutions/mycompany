@@ -9,6 +9,8 @@ CLASS ManufacturingOrder 'Заказ на производство';
 number 'Номер' = DATA STRING[28] (ManufacturingOrder);
 series 'Серия' = DATA STRING[2] (ManufacturingOrder);
 
+seriesNumber 'Номер' (ManufacturingOrder o) = CONCAT '/', series(o), number(o) CHARWIDTH 10;
+
 numeratorOrder 'Нумератор заказов' = DATA Numerator();
 nameNumeratorOrder 'Нумератор заказов' = name(numeratorOrder());
 
@@ -41,7 +43,6 @@ WHEN SETCHANGED(ManufacturingOrder m IS ManufacturingOrder  AND numeratorOrder()
     series(m) <- series(numeratorOrder());
     incrementValueSession(numeratorOrder());   
 }
-seriesNumber 'Номер' (ManufacturingOrder o) = CONCAT '/', series(o), number(o);
 
 product 'Номенклатура' = DATA Product (ManufacturingOrder) NONULL DELETE;
 nameProduct 'Номенклатура' (ManufacturingOrder m) = name(product(m));

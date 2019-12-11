@@ -15,9 +15,9 @@ nameType 'Тип' (Shipment s) = name(type(s));
 
 WHEN LOCAL SET(Shipment s IS Shipment) AND countTypesShipment() = 1 DO type(s) <- lastTypeShipment(); 
 
-scheduledDate 'Дата отгрузки' = DATA DATETIME (Shipment) NONULL IN id;
+scheduledDate 'Планируемая дата' = DATA DATETIME (Shipment) NONULL IN id;
 scheduledDate (Shipment s) <- currentDateTime() WHEN SET(s IS Shipment);
-executionDate 'Дата проведения' = DATA DATETIME (Shipment);
+executionDate 'Дата отгрузки' = DATA DATETIME (Shipment);
 
 location 'Место хранения' = DATA Location (Shipment) NONULL INDEXED;
 nameLocation 'Место хранения (Откуда)' (Shipment s) = name(location(s));
@@ -43,7 +43,7 @@ CONSTRAINT partner(Shipment s) AND NOT isCustomer(partner(s))
 series 'Серия' = DATA STRING[2] (Shipment);
 number 'Номер' = DATA STRING[28] (Shipment) NONULL;
 
-seriesNumber 'Серия/Номер' (Shipment s) = CONCAT '/', series(s), number(s); 
+seriesNumber 'Серия/Номер' (Shipment s) = CONCAT '/', series(s), number(s) CHARWIDTH 10; 
 
 WHEN SETCHANGED(type(Shipment o)) AND NOT CHANGED(number(o)) AND NOT CHANGED(series(o)) DO {
     number(o) <- curStringValue(numerator(type(o)));
@@ -53,7 +53,7 @@ WHEN SETCHANGED(type(Shipment o)) AND NOT CHANGED(number(o)) AND NOT CHANGED(ser
 
 WHEN SETCHANGED(type(Shipment s)) AND NOT isTransfer(type(s)) DO toLocation(s) <- NULL;
 
-sourceDocument 'Исходный документ' = DATA STRING[28] (Shipment);
+sourceDocument 'Исходный документ' = DATA STRING[30] (Shipment) CHARWIDTH 10;
 
 CLASS ShipmentLine 'Строка отгрузки';
 

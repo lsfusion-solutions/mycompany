@@ -27,9 +27,9 @@ initShipment 'Запланирован отпуск со склада ' (OrderLi
 doneShipment 'Отпущено со склада' (OrderLine ol) = 
     GROUP SUM done(ShipmentLine rl) IF orderLine(rl) = ol AND status(shipment(rl)) = ShipmentStatus.done;
 toShip 'К отгрузке' (OrderLine ol) = 
-    (quantity(ol) (-) initShipment(ol) (-) doneShipment(ol)) IF item(ol) IS Product;
+    max(quantity(ol) (-) initShipment(ol) (-) doneShipment(ol), 0) IF item(ol) IS Product;
 
-toShip 'Недоотпущено' (Order o) = GROUP SUM abs(toShip(OrderLine ol)) IF order(ol) = o;
+toShip 'К отгрузке' (Order o) = GROUP SUM toShip(OrderLine ol) IF order(ol) = o;
 
 CONSTRAINT (quantity(OrderLine ol) (-) doneShipment(ol)) < 0 AND confirmed(order(ol)) 
     MESSAGE 'По товару отгрузка превышает количество в заказе';
@@ -49,11 +49,10 @@ WHEN ([GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) AND item(l) IS Product BY o
             waiting(ns) <- TRUE;    
             order(ns) <- o; 
         }
-    FOR order(OrderLine ol) = o AND toShip(ol) INLINE NEW sl = ShipmentLine DO {            
+    FOR order(OrderLine ol) = o AND toShip(ol) > 0 NEW sl = ShipmentLine DO {            
         shipment(sl) <- lastOpenShipment(o);
         product(sl) <- item(ol);
         initialDemand(sl) <- toShip(ol);
-        reserved(sl) <- toShip(ol);
         orderLine(sl) <- ol;
     }
     precheckAvailability(lastOpenShipment(o));
@@ -84,8 +83,5 @@ DESIGN order {
     relatedDoc  {
         MOVE BOX(sh);
         REMOVE TOOLBARSYSTEM(sh);
-        PROPERTY(scheduledDate(sh)) { caption = 'Запланирована отгрузка'; }
-        PROPERTY(executionDate(sh)) { caption = 'Дата отгрузки'; }
-        PROPERTY(seriesNumber(sh)) { charWidth = 15; }
     }
 }

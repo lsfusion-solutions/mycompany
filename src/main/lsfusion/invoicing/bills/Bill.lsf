@@ -67,6 +67,8 @@ notes 'Примечания' = DATA ISTRING[50] (Bill);
 series 'Серия' = DATA STRING[2] (Bill);
 number 'Номер' = DATA STRING[28] (Bill) NONULL;
 
+seriesNumber 'Серия/Номер' (Bill b) = CONCAT '/', series(b), number(b) CHARWIDTH 10;
+
 numeratorBill 'Нумератор документов приобретения' = DATA Numerator() CHARWIDTH 20;
 nameNumeratorBill 'Нумератор документов приобретения' = name(numeratorBill());
 
@@ -99,8 +101,6 @@ DESIGN options {
         MOVE PROPERTY(nameNumeratorBill());
     }
 }
-
-seriesNumber 'Серия/Номер' (Bill b) = CONCAT '/', series(b), number(b);
 
 sourceDocument 'Исходный документ' = DATA STRING[10] (Bill);
 
@@ -212,7 +212,7 @@ DESIGN bill {
                     NEW dateNumber {                
                         type = CONTAINERH;
                         MOVE PROPERTY(date(b)) { caption = 'Дата'; };
-                        MOVE PROPERTY(seriesNumber(b)) { caption = 'Номер'; charWidth = 10; };
+                        MOVE PROPERTY(seriesNumber(b)) { caption = 'Номер'; };
                     }
                 }
                 NEW partner {

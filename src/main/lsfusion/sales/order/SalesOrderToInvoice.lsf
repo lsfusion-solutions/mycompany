@@ -4,12 +4,17 @@ REQUIRE SalesOrder, Invoicing,  SalesOrderStatus, Time, SalesOrderStatusConfirm;
 
 NAMESPACE Sales;
 
-lineOrder 'ссылка на заказ' = DATA OrderLine (InvoiceLine);
-order 'ссылка на заказ' = DATA Order (Invoice);
+orderLine = DATA OrderLine (InvoiceLine);
+order = DATA Order (Invoice);
 
-inInvoice 'Выписано по накладным' (OrderLine ol) = GROUP SUM quantity(InvoiceLine bl) IF lineOrder(bl) = ol AND NOT canceled(invoice(bl));
-payedInvoice 'Оплачено' (OrderLine ol) = GROUP SUM quantity(InvoiceLine bl) IF lineOrder(bl) = ol AND done(invoice(bl)) AND NOT canceled(invoice(bl));
-deficitInvoice 'Недооформлено' (Order o) =  GROUP SUM abs(inInvoice(OrderLine ol) (-) quantity(ol)) IF order(ol) = o AND ol IS OrderLine;
+invoiced 'Оформлено по накладным' (OrderLine ol) = 
+    GROUP SUM quantity(InvoiceLine bl) IF orderLine(bl) = ol AND NOT canceled(invoice(bl));
+paid 'Оплачено' (OrderLine ol) = 
+    GROUP SUM quantity(InvoiceLine bl) IF orderLine(bl) = ol AND done(invoice(bl)) AND NOT canceled(invoice(bl));
+toInvoice 'К оформлению' (OrderLine l) = max(quantity(l) (-) invoiced(l), 0);
+
+toInvoice 'К оформлению' (Order o) = 
+    GROUP SUM toInvoice(OrderLine ol) IF order(ol) = o;
 
 createInvoice 'Оформить накладную' (Order o) {
     IF canceled() THEN RETURN;
@@ -23,17 +28,17 @@ createInvoice 'Оформить накладную' (Order o) {
             paymentTerms(ni) <- paymentterm(o);
             addressPartner(ni) <- addressCustomer(o);           
             sourceDocument(ni) <- number(o);              
-            FOR order(OrderLine ol) = o AND NOT (quantity(ol) - inInvoice(ol) <= 0) INLINE NEW il = InvoiceLine DO {
+            FOR order(OrderLine ol) = o AND toInvoice(ol) > 0 NEW il = InvoiceLine DO {
                 invoice(il) <- ni;
                 item(il) <- item(ol);
                 description(il) <- description(ol);
-                quantity(il) <- quantity(ol) (-) inInvoice(ol);
+                quantity(il) <- toInvoice(ol);
                 unitPrice(il) <- unitPrice(ol);
-                lineOrder(il) <- ol;
+                orderLine(il) <- ol;
             }                            
             executeLocalEvents();
             FOR invoice(InvoiceLine il) = ni DO {
-                in(il, Tax t) <- in(lineOrder(il), t);
+                in(il, Tax t) <- in(orderLine(il), t);
             }                                
             SHOW invoice OBJECTS i = ni DOCKED;
         }
@@ -48,28 +53,16 @@ FORM orderInvoiceShow 'Оформлено накладными'
     
     OBJECTS il = InvoiceLine
     PROPERTIES(il) invoiceDate, invoiceStatus, quantity    
-    FILTERS lineOrder(il) = ol
+    FILTERS orderLine(il) = ol
 ;
 
-DESIGN orderInvoiceShow {
-    MOVE BOX(il) FIRST { caption=''; }
-}
-
-showInvoices (OrderLine l) {
-    DIALOG orderInvoiceShow OBJECTS ol = l; 
-}
-
-showInvoice (Invoice in) {
-    SHOW invoice OBJECTS i = in;
-}
-
 EXTEND FORM order   
-    PROPERTIES(o) SHOWIF (confirmed(o) AND deficitInvoice(o)>0) createInvoice
-    PROPERTIES(l) SHOWIF confirmed(o) inInvoice ON CHANGE showInvoices(l)
-    PROPERTIES(l) SHOWIF confirmed(o) payedInvoice ON CHANGE showInvoices(l)
+    PROPERTIES(o) SHOWIF (confirmed(o) AND toInvoice(o) > 0) createInvoice
+    PROPERTIES(l) SHOWIF confirmed(o) invoiced ON CHANGE { DIALOG orderInvoiceShow OBJECTS ol = l; }
+    PROPERTIES(l) SHOWIF confirmed(o) paid ON CHANGE { DIALOG orderInvoiceShow OBJECTS ol = l; }
     
     OBJECTS in = Invoice
-    PROPERTIES(in) seriesNumber ON CHANGE showInvoice(in) 
+    PROPERTIES(in) seriesNumber ON CHANGE { SHOW invoice OBJECTS i = in; } 
     PROPERTIES(in) READONLY date, nameStatus    
     FILTERS order(in) = o   
 ;
@@ -81,7 +74,6 @@ DESIGN order {
     relatedDoc  {
         MOVE BOX(in);
         REMOVE TOOLBARBOX(in);
-        PROPERTY (seriesNumber(in)) { charWidth = 15; }
     }
 }
 

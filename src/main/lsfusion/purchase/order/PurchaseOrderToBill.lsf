@@ -4,12 +4,16 @@ REQUIRE PurchaseOrder, BillPaymentTerms, BillCanceled, PurchaseOrderStatus, Time
 
 NAMESPACE Purchase;
 
-lineOrder 'ссылка на заказ' = DATA OrderLine (BillLine);
-order 'ссылка на заказ' = DATA Order (Bill);
+orderLine = DATA OrderLine (BillLine);
+order = DATA Order (Bill);
 
-initBill 'Оформлено по накладным' (OrderLine ol) = GROUP SUM quantity(BillLine bl) IF lineOrder(bl) = ol AND NOT canceled(bill(bl));
-payedBill 'Оплачено' (OrderLine ol) = GROUP SUM quantity(BillLine bl) IF lineOrder(bl) = ol AND done(bill(bl)) AND NOT canceled(bill(bl));
-deficitBill 'Недопоступило' (Order o) =  GROUP SUM abs(initBill(OrderLine ol) (-) quantity(ol)) IF order(ol) = o AND ol IS OrderLine;
+billed 'Оформлено по накладным' (OrderLine ol) = 
+    GROUP SUM quantity(BillLine bl) IF orderLine(bl) = ol AND NOT canceled(bill(bl));
+paid 'Оплачено' (OrderLine ol) = 
+    GROUP SUM quantity(BillLine bl) IF orderLine(bl) = ol AND done(bill(bl)) AND NOT canceled(bill(bl));
+toBill 'К оформлению' (OrderLine l) = max(quantity(l) (-) billed(l), 0);
+ 
+toBill 'К оформлению' (Order o) = GROUP SUM toBill(OrderLine ol) IF order(ol) = o;
 
 createBill 'Оформить накладную' (Order o) {
     APPLY;
@@ -23,25 +27,22 @@ createBill 'Оформить накладную' (Order o) {
             vendorReference(nb) <- vendorReference(o);
             paymentTerms(nb) <- paymentterm(o);             
             sourceDocument(nb) <- number(o);              
-            FOR order(OrderLine ol) = o AND NOT (quantity(ol) - initBill(ol)<=0) INLINE NEW bl = BillLine DO {
+            FOR order(OrderLine ol) = o AND toBill(ol) > 0 NEW bl = BillLine DO {
                 bill(bl) <- nb;
                 item(bl) <- item(ol);
                 description(bl) <- description(ol);
-                quantity(bl) <- quantity(ol) (-) initBill(ol);
+                quantity(bl) <- toBill(ol);
                 unitPrice(bl) <- unitPrice(ol);
-                lineOrder(bl) <- ol;
+                orderLine(bl) <- ol;
             }                            
             executeLocalEvents();
             FOR bill(BillLine bl) = nb DO {
-                in(bl,Tax t) <- in(lineOrder(bl),t);
+                in(bl, Tax t) <- in(orderLine(bl), t);
             }                                
             SHOW bill OBJECTS b = nb DOCKED;
         }
     }
 }
-
-createBillBeforeReceived 'Оформить приходную накладную' (Order o)  { createBill(o); }
-createBillAfterReceived 'Оформить приходную накладную' (Order o)  { createBill(o); }
 
 billDate 'Дата счета' (BillLine bl) = date(bill(bl));
 billStatus 'Статус' (BillLine bl) = nameStatus(bill(bl));
@@ -51,28 +52,16 @@ FORM orderBillShow 'Выставлено счетов'
     
     OBJECTS bl = BillLine
     PROPERTIES(bl) billDate, billStatus, quantity
-    FILTERS lineOrder(bl) = ol
+    FILTERS orderLine(bl) = ol
 ;
 
-DESIGN orderBillShow {
-    MOVE BOX(bl) FIRST { caption=''; }
-}
-
-showBills (OrderLine l) {
-    DIALOG orderBillShow OBJECTS ol = l; 
-}
-
-showBill (Bill bi) {
-    SHOW bill OBJECTS b = bi;   
-}
-
 EXTEND FORM order   
-    PROPERTIES(o) SHOWIF (confirmed(o) AND deficitBill(o)>0) createBill
-    PROPERTIES(l) SHOWIF confirmed(o) initBill ON CHANGE showBills(l)
-    PROPERTIES(l) SHOWIF confirmed(o) payedBill ON CHANGE showBills(l)
+    PROPERTIES(o) SHOWIF (confirmed(o) AND toBill(o) > 0) createBill
+    PROPERTIES(l) SHOWIF confirmed(o) billed ON CHANGE { DIALOG orderBillShow OBJECTS ol = l; }
+    PROPERTIES(l) SHOWIF confirmed(o) paid ON CHANGE { DIALOG orderBillShow OBJECTS ol = l; }
 
     OBJECTS bi = Bill
-    PROPERTIES(bi) seriesNumber ON CHANGE showBill(bi) 
+    PROPERTIES(bi) seriesNumber ON CHANGE { SHOW bill OBJECTS b = bi; } 
     PROPERTIES(bi) READONLY date, nameStatus    
     FILTERS order(bi) = o       
 ;
@@ -84,7 +73,6 @@ DESIGN order {
     relatedDoc  {
         MOVE BOX(bi);
         REMOVE TOOLBARBOX(bi);
-        PROPERTY (seriesNumber(bi)) { charWidth = 15; }
     }
 }
 

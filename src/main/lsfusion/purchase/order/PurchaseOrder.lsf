@@ -14,12 +14,13 @@ WHEN LOCAL SET(Order o IS Order) DO { date(o) <- currentDateTime();}
 number 'Номер' = DATA STRING[10] (Order);
 series 'Серия' = DATA STRING[2] (Order);
 
+seriesNumber 'СерияНомер' (Order o) = CONCAT '', series(o), number(o) CHARWIDTH 10;
+
 WHEN SET(Order o IS Order) DO {
     number(o) <- curStringValue(numeratorOrder());
     series(o) <- series(numeratorOrder());
     incrementValueSession(numeratorOrder());   
 }
-seriesNumber 'СерияНомер' (Order o) = CONCAT '', series(o), number(o);
 
 location 'Место доставки' = DATA Location (Order);
 nameLocation 'Место доставки' (Order o) = name(location(o));

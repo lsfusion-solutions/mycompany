@@ -39,6 +39,8 @@ balance 'Баланс' (Account a) = inAmount(a) (-) outAmount(a);
 series 'Серия' = DATA STRING[2] (Payment);
 number 'Номер' = DATA STRING[28] (Payment) NONULL;
 
+seriesNumber 'Серия/Номер' (Payment p) = CONCAT '/', series(p), number(p) CHARWIDTH 10; 
+
 numeratorPayment 'Нумератор платежей' = DATA Numerator() CHARWIDTH 20;
 nameNumeratorPayment 'Нумератор платежей' = name(numeratorPayment());
 
@@ -71,8 +73,6 @@ DESIGN options {
         MOVE PROPERTY(nameNumeratorPayment());
     }
 }
-
-seriesNumber 'Серия/Номер' (Payment p) = CONCAT '/', series(p), number(p); 
 
 isIncoming 'Входящий' (Payment p) = toPartner(p) IS Company;
 isOutgoing 'Входящий' (Payment p) = fromPartner(p) IS Company;
