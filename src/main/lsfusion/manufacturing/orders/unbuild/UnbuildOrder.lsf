@@ -83,6 +83,8 @@ quantity 'Кол-во' = DATA NUMERIC[16,3] (UnbuildOrderLine);
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (UnbuildOrderLine);
 nameUnitMeasure 'Ед.изм.' (UnbuildOrderLine l) = name(unitMeasure(l));
 
+costRatio 'Доля стоимости' = DATA NUMERIC[16,3] (UnbuildOrderLine);
+
 WHEN LOCAL SET(item(UnbuildOrderLine l)) DO {
     unitMeasure(l) <- unitMeasure(item(l));
 } 
@@ -103,7 +105,7 @@ FORM unbuildOrder 'Заказ на разбор'
                                 manOrderReference, nameLocationTo
     
     OBJECTS l = UnbuildOrderLine
-    PROPERTIES(l) READONLY date, nameItem, nameUnitMeasure, quantity
+    PROPERTIES(l) READONLY date, nameItem, nameUnitMeasure, quantity, costRatio
     FILTERS unbuildOrder(l) = o
     
     EDIT UnbuildOrder OBJECT o

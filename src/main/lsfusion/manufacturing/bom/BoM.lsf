@@ -6,6 +6,7 @@ NAMESPACE Manufacturing;
 
 CLASS Bom 'Технологическая карта';
 
+unbuild 'Для разбора' = DATA BOOLEAN (Bom) CHARWIDTH 10;
 archived 'Неактивный' = DATA BOOLEAN (Bom) CHARWIDTH 10;
 active 'Активный' (Bom b) = NOT archived(b) CHARWIDTH 10;
 
@@ -70,6 +71,8 @@ nameItem 'Номенклатура' (ComponentLine l) = name(item(l));
 quantity 'Кол-во' = DATA NUMERIC[16,3] (ComponentLine);
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (ComponentLine);
 nameUnitMeasure 'Ед.изм.' (ComponentLine l) = name(unitMeasure(l));
+costRatio 'Доля стоимости' (ComponentLine l) = quantity(l) * cost(item(bom(l))) / 
+                ((GROUP SUM quantity(ComponentLine ll) IF bom(ll) = bom(l)) * 100);
 
 CLASS ByproductLine 'Строка производных номенклатур';
 
@@ -94,11 +97,11 @@ WHEN LOCAL SETCHANGED (item(ByproductLine l)) DO {
 
 FORM bom 'Технологическая карта'
     OBJECTS b = Bom PANEL 
-    PROPERTIES(b) nameItem, quantity, nameUnitMeasure, reference, nameCompany, archived
+    PROPERTIES(b) nameItem, quantity, nameUnitMeasure, reference, nameCompany, archived, unbuild
     PROPERTIES(b) sequence, nameOperation
     
     OBJECTS c = ComponentLine
-    PROPERTIES(c) nameItem, quantity, nameUnitMeasure, NEW, DELETE 
+    PROPERTIES(c) nameItem, quantity, nameUnitMeasure, costRatio SHOWIF unbuild(b), NEW, DELETE 
     FILTERS bom(c) = b
     
     OBJECTS l = ByproductLine
@@ -116,7 +119,11 @@ DESIGN bom {
             NEW leftHeader {
                 caption = '';
                 MOVE PROPERTY(nameItem(b)) { notNull = TRUE; }
-                MOVE PROPERTY(archived(b));
+                NEW booleans {
+                    type = CONTAINERH;
+                    MOVE PROPERTY(archived(b));
+                    MOVE PROPERTY(unbuild(b));
+                }
                 NEW item {
                     type = CONTAINERH;
                     MOVE PROPERTY(quantity(b));
