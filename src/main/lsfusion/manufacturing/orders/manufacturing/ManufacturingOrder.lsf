@@ -20,8 +20,8 @@ WHEN LOCAL SET(item(ManufacturingOrder m)) DO {
     unitMeasure(m) <- unitMeasure(item(m));
 } 
 
-bom 'Технологическая карта' = DATA Bom (ManufacturingOrder) NONULL;
-referenceBom 'Код технологической карты' (ManufacturingOrder m) = seriesNumber(bom(m)) CHARWIDTH 25;
+bom 'Спецификация' = DATA Bom (ManufacturingOrder) NONULL;
+referenceBom 'Код спецификация' (ManufacturingOrder m) = seriesNumber(bom(m)) CHARWIDTH 25;
 deadline 'Дата старта' = DATA DATETIME (ManufacturingOrder);
 manufacturingDate 'Дата производства' = DATA DATETIME (ManufacturingOrder);
 responsible 'Ответственный' = DATA Individual (ManufacturingOrder);
@@ -41,7 +41,7 @@ CONSTRAINT responsible(ManufacturingOrder m) AND company(m) AND NOT (legalEntity
     
 CONSTRAINT item(ManufacturingOrder m) AND bom(m) AND NOT item(m) = item(bom(m))
     CHECKED BY bom[ManufacturingOrder]
-    MESSAGE 'Нужно выбрать технологическую карту для заданного продукта';
+    MESSAGE 'Нужно выбрать спецификацию для заданного продукта';
     
 materialsLocation 'Место хранения материалов' = DATA Location (ManufacturingOrder) NONULL;
 nameMaterialsLocation 'Место хранения материалов' (ManufacturingOrder m) = name(materialsLocation(m));

@@ -4,7 +4,7 @@ REQUIRE BoM;
 
 NAMESPACE Manufacturing;
 
-selectedReference 'Технологическая карта' = DATA Bom (ComponentLine);
+selectedReference 'Спецификация' = DATA Bom (ComponentLine);
 
 nestedBom (ComponentLine c) = OVERRIDE selectedReference(c), GROUP LAST Bom bb IF item(c) = item(bb);
 
@@ -18,7 +18,7 @@ levelRoot 'Уровень' (Bom b, ComponentLine c, TEXT path)  = PARTITION SUM 
          
 nameProductIndent 'Номенклатура' (ComponentLine l, TEXT path) = STRING (CONCAT '', repeat('    ', wordCount(path, '/') - 1), nameItem(l));
 
-reference 'Технологическая карта' (ComponentLine l) = seriesNumber(nestedBom(l));
+reference 'Спецификация' (ComponentLine l) = seriesNumber(nestedBom(l));
 
 cost 'Себестоимость товара' (Bom b) = cost(item(b)) * quantity(b);
 
@@ -28,8 +28,8 @@ valid 'Уровень' (Bom b, ComponentLine child, ComponentLine parent, TEXT p
    RECURSION 1l IF child IS ComponentLine AND parent == child AND level(b, parent, path)
         STEP 2l IF item(parent) == item(bom($parent)) MATERIALIZED;
 
-componentsNeeded 'Кол-во компонентов' (Bom b, ComponentLine l, path) = 
-    IF NOT isFinalComponent(l) THEN NULL ELSE round0(exp(OVERRIDE (GROUP SUM ln(quantity(ComponentLine ll)) IF level(b, ll, TEXT path2) AND valid(b, l, ll, path) AND startsWith(path, path2)), 0));
+componentsNeeded 'Кол-во компонентов' (Bom b, ComponentLine l, path) =  IF NOT isFinalComponent(l) THEN NULL 
+    ELSE round0(exp(OVERRIDE (GROUP SUM ln(quantity(ComponentLine ll) / quantity(bom(ll))) IF level(b, ll, TEXT path2) AND valid(b, l, ll, path) AND startsWith(path, path2)), 0));
 
 componentsCost 'Себестоимость компонентов' (Bom b, ComponentLine l, path) = componentsNeeded(b, l, path) * cost(item(l));
 componentsCost 'Себестоимость компонентов' (Bom b) = GROUP SUM componentsCost(b, ComponentLine l, TEXT path) IF level(b, l, path);

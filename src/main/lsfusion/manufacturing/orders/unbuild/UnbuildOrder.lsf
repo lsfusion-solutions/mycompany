@@ -20,12 +20,12 @@ WHEN LOCAL SET(item(UnbuildOrder o)) DO {
     unitMeasure(o) <- unitMeasure(item(o));
 } 
 
-bom 'Технологическая карта' = DATA Bom (UnbuildOrder) NONULL;
-referenceBom 'Код технологической карты' (UnbuildOrder o) = seriesNumber(bom(o));
+bom 'Спецификация' = DATA Bom (UnbuildOrder) NONULL;
+referenceBom 'Код спецификации' (UnbuildOrder o) = seriesNumber(bom(o));
 
 CONSTRAINT bom(UnbuildOrder o) AND NOT item(o) = item(bom(o))
     CHECKED BY bom[UnbuildOrder]
-    MESSAGE 'Нужно указать технологическую карту выбранного продукта';
+    MESSAGE 'Нужно указать спецификацию выбранного продукта';
 
 locationFrom 'Место хранения (откуда)' = DATA Location (UnbuildOrder) NONULL;
 nameLocationFrom 'Место хранения (откуда)' (UnbuildOrder o) = name(locationFrom(o));

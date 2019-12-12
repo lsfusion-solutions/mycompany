@@ -4,7 +4,7 @@ REQUIRE Product, Company, Operation, ManufacturingSettings, MetaNumerator;
 
 NAMESPACE Manufacturing;
 
-CLASS Bom 'Технологическая карта';
+CLASS Bom 'Спецификация';
 
 unbuild 'Для разбора' = DATA BOOLEAN (Bom) CHARWIDTH 10;
 archived 'Неактивный' = DATA BOOLEAN (Bom) CHARWIDTH 10;
@@ -16,7 +16,7 @@ quantity 'Кол-во' = DATA NUMERIC[16,3] (Bom) NONULL;
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (Bom);
 nameUnitMeasure 'Ед.изм.' (Bom b) = name(unitMeasure(b));
 
-@seriesNumberNumerator(bom, b, 'технологических карт', 'BM');
+@seriesNumberNumerator(bom, b, 'спецификаций', 'BM');
 
 company 'Компания' = DATA Partner (Bom);
 nameCompany 'Компания' (Bom b) = name(company(b));
@@ -32,7 +32,7 @@ nameOperation 'Операция' (Bom b) = name(operation(b));
 
 CLASS ComponentLine 'Строка компонентов';
 
-bom 'Технологическая карта' = DATA Bom (ComponentLine) NONULL DELETE;
+bom 'Спецификация' = DATA Bom (ComponentLine) NONULL DELETE;
 item 'Номенклатура' = DATA Item (ComponentLine);
 nameItem 'Номенклатура' (ComponentLine l) = name(item(l));
 quantity 'Кол-во' = DATA NUMERIC[16,3] (ComponentLine);
@@ -43,7 +43,7 @@ costRatio 'Доля стоимости' (ComponentLine l) = quantity(l) * cost(i
 
 CLASS ByproductLine 'Строка производных номенклатур';
 
-bom 'Технологическая карта' = DATA Bom (ByproductLine) NONULL DELETE;
+bom 'Спецификация' = DATA Bom (ByproductLine) NONULL DELETE;
 item 'Номенклатура' = DATA Item (ByproductLine);
 nameItem 'Номенклатура' (ByproductLine l) = name(item(l));
 quantity 'Кол-во' = DATA NUMERIC[16,3] (ByproductLine);
@@ -62,7 +62,7 @@ WHEN LOCAL SETCHANGED (item(ByproductLine l)) DO {
     unitMeasure(l) <- unitMeasure(item(l));
 }
 
-FORM bom 'Технологическая карта'
+FORM bom 'Спецификация'
     OBJECTS b = Bom PANEL 
     PROPERTIES(b) nameItem, quantity, nameUnitMeasure, seriesNumber, nameCompany, archived, unbuild
     PROPERTIES(b) sequence, nameOperation
@@ -131,7 +131,7 @@ DESIGN bom {
     }
 }
 
-FORM boms 'Технологические карты'
+FORM boms 'Спецификации'
     OBJECTS b = Bom
     PROPERTIES(b) READONLY nameItem, quantity, nameUnitMeasure, seriesNumber, nameCompany, archived
     PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE 
