@@ -1,0 +1,36 @@
+MODULE CostProduct;
+
+REQUIRE Product;
+
+NAMESPACE MasterData;
+
+CLASS CostingMethod 'Методы расчета себестоимости' {
+    standardPrice 'Стандартная себестоимость',
+    avco 'Средняя себестоимость',
+    fifo 'FIFO'
+}
+
+name 'Метод расчета себестоимости' (CostingMethod o) = staticCaption(o) IF o IS CostingMethod CHARWIDTH 30;
+
+FORM costingMethods 'Методы расчета себестоимости'
+    OBJECTS c = CostingMethod
+    PROPERTIES(c) READONLY 'Методы' = name
+    
+    LIST CostingMethod OBJECT c
+;
+
+dataCostingMethod = DATA CostingMethod (Category);
+nameDataCostingMethod 'Метод расчета себестоимости' (Category c) = name(dataCostingMethod(c));
+
+costingMethod 'Методы расчета себестоимости' (Category c) = 
+        GROUP LAST dataCostingMethod(Category parent) ORDER DESC level(c, parent) MATERIALIZED;
+
+costingMethod (Product p) = OVERRIDE costingMethod(category(p AS Product)), (CostingMethod.standardPrice IF p IS Product) MATERIALIZED;
+
+EXTEND FORM category
+    PROPERTIES(c) nameDataCostingMethod
+;
+
+EXTEND FORM categories
+    PROPERTIES(c) READONLY nameDataCostingMethod
+;

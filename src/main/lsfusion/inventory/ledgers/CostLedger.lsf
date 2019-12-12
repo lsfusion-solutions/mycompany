@@ -1,6 +1,6 @@
 MODULE CostLedger;
 
-REQUIRE Location, Product, Utils;
+REQUIRE Location, Product, Utils, CostProduct;
 
 NAMESPACE Inventory;
 
@@ -16,7 +16,11 @@ nameProduct 'Товар' (CostLedger l) = name(product(l));
 CLASS InCostLedger 'Входящая проводка' : CostLedger;
 
 quantity 'Количество' = ABSTRACT NUMERIC[16,3] (InCostLedger);
-sum 'Сумма' = ABSTRACT NUMERIC[16,3] (InCostLedger);
+
+dataSum 'Сумма (первичная)' = DATA NUMERIC[16,3] (InCostLedger);
+calcSum 'Сумма (расчетная)' = ABSTRACT NUMERIC[16,3] (InCostLedger);
+sum 'Сумма' (InCostLedger l) = OVERRIDE dataSum(l), calcSum(l); 
+
 price 'Цена' (InCostLedger il) = sum(il) / quantity(il);
 
 CLASS OutCostLedger 'Исходящая проводка' : CostLedger;
@@ -29,10 +33,19 @@ price 'Цена' (OutCostLedger il) = sum(il) / quantity(il);
 signedQuantity 'Количество' (CostLedger l) = MULTI quantity[InCostLedger](l), -quantity[OutCostLedger](l) MATERIALIZED;
 signedSum 'Сумма' (CostLedger l) = MULTI sum[InCostLedger](l), -sum[OutCostLedger](l) MATERIALIZED;
 
-costQuantity 'Количество' (Location l, Product p) = GROUP SUM signedQuantity(CostLedger cl) IF location(cl) = l AND product(cl) = p MATERIALIZED;
-costSum 'Себестоимость' (Location l, Product p) = GROUP SUM signedSum(CostLedger cl) IF location(cl) = l AND product(cl) = p MATERIALIZED;
+costQuantity 'Количество' (Location l, Product p) = 
+    GROUP SUM signedQuantity(CostLedger cl) IF location(cl) = l AND product(cl) = p MATERIALIZED;
+costSum 'Себестоимость' (Location l, Product p) = 
+    GROUP SUM signedSum(CostLedger cl) IF location(cl) = l AND product(cl) = p MATERIALIZED;
 
 costPrice 'Себестоимость за единицу' (Location l, Product p) = costSum(l, p) / costQuantity(l, p); 
+
+costQuantity 'Количество' (Location l, Product p, DATETIME dt) = 
+    costQuantity(l, p) (-) (GROUP SUM signedQuantity(CostLedger cl) IF location(cl) = l AND product(cl) = p AND dateTime(cl) >= dt);
+costSum 'Себестоимость' (Location l, Product p, DATETIME dt) = 
+    costSum(l, p) (-) (GROUP SUM signedSum(CostLedger cl) IF location(cl) = l AND product(cl) = p AND dateTime(cl) >= dt);
+
+costPrice 'Себестоимость за единицу' (Location l, Product p, DATETIME dt) = costSum(l, p, dt) / costQuantity(l, p, dt); 
 
 // Связываем OutCostLedger и InCostLedger
 
@@ -42,9 +55,17 @@ notCosted 'Не расходовано' (InCostLedger il) = quantity(il) (-) cos
 
 costed 'Расходовано' (OutCostLedger ol) = GROUP SUM quantity(ol, InCostLedger il) MATERIALIZED;
 
-calcCost = DATA LOCAL NESTED BOOLEAN (OutCostLedger);
+calcCost = DATA LOCAL NESTED BOOLEAN (CostLedger);
 
 calculateCost () {
+    // расчет по стандартной цене
+    sum (OutCostLedger ol) <- NUMERIC[14,2](quantity(ol) * cost(product(ol))) 
+        WHERE calcCost(ol) AND costingMethod(product(ol)) = CostingMethod.standardPrice;
+
+    dataSum (InCostLedger il) <- NUMERIC[14,2](quantity(il) * cost(product(il))) 
+        WHERE calcCost(il) AND costingMethod(product(il)) = CostingMethod.standardPrice;
+
+    // расчет по fifo и среднему
     quantity(OutCostLedger out, InCostLedger in) <- NULL WHERE calcCost(out); // сбрасываем старый расчет
 
     LOCAL ordered = INTEGER (OutCostLedger); // сортируем по товару и дробим на несколько итераций по товарам (остальные расчеты независимы) 
@@ -63,17 +84,21 @@ calculateCost () {
                                                                   ORDER dateTime(il), il
                                                                   BY ol)
                                                        WHERE iteration(ol);
+
+        sum (OutCostLedger ol) <- NUMERIC[14,2](quantity(ol) * costPrice(location(ol), product(ol), dateTime(ol)))
+            WHERE iteration(ol) AND costingMethod(product(ol)) = CostingMethod.avco;
     }
     
-    sum (OutCostLedger ol) <- NUMERIC[14,2](GROUP SUM quantity(ol, InCostLedger il) * price(il));
-
+    sum (OutCostLedger ol) <- NUMERIC[14,2](GROUP SUM quantity(ol, InCostLedger il) * price(il)) 
+        WHERE calcCost(ol) AND costingMethod(product(ol)) = CostingMethod.fifo;
 }
 
 ON {
-    calcCost (OutCostLedger l) <- CHANGED(location(l)) OR CHANGED(product(l)) OR CHANGED(quantity(l));
-    NEWSESSION SINGLE {
-        calculateCost();
-    }
+    calcCost (CostLedger l) <- CHANGED(location(l)) OR CHANGED(product(l)) OR CHANGED(signedQuantity(l));
+    IF GROUP SUM 1 IF calcCost(CostLedger l) THEN 
+        NEWSESSION SINGLE {
+            calculateCost();
+        }
 }
 
 FORM dialogCost 'Параметры расчета себестоимости'
@@ -82,7 +107,7 @@ FORM dialogCost 'Параметры расчета себестоимости'
 ;
 recalculateCost 'Пересчитать себестоимость' () {
     DIALOG dialogCost OBJECTS d INPUT DO {
-        calcCost(OutCostLedger l) <- TRUE WHERE DATE(dateTime(l)) >= d;
+        calcCost(CostLedger l) <- TRUE WHERE DATE(dateTime(l)) >= d;
         calculateCost();
         APPLY;
     }
