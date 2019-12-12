@@ -9,8 +9,8 @@ CLASS Bom 'Технологическая карта';
 archived 'Неактивный' = DATA BOOLEAN (Bom) CHARWIDTH 10;
 active 'Активный' (Bom b) = NOT archived(b) CHARWIDTH 10;
 
-product 'Номенклатура' = DATA Product (Bom) NONULL DELETE;
-nameProduct 'Номенклатура' (Bom b) = name(product(b));
+item 'Номенклатура' = DATA Item (Bom) NONULL DELETE;
+nameItem 'Номенклатура' (Bom b) = name(item(b));
 quantity 'Кол-во' = DATA NUMERIC[16,3] (Bom) NONULL;
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (Bom);
 nameUnitMeasure 'Ед.изм.' (Bom b) = name(unitMeasure(b));
@@ -46,7 +46,7 @@ DESIGN options {
 }
 
 WHEN SETCHANGED(Bom m IS Bom  AND numeratorBom() AND NOT reference(m)) DO {
-    reference(m) <- STRING[50](CONCAT '/', nameProduct(m), series(numeratorBom()), curStringValue(numeratorBom()));
+    reference(m) <- STRING[50](CONCAT '/', nameItem(m), series(numeratorBom()), curStringValue(numeratorBom()));
     incrementValueSession(numeratorBom());   
 }
 
@@ -65,8 +65,8 @@ nameOperation 'Операция' (Bom b) = name(operation(b));
 CLASS ComponentLine 'Строка компонентов';
 
 bom 'Технологическая карта' = DATA Bom (ComponentLine) NONULL DELETE;
-product 'Номенклатура' = DATA Product (ComponentLine);
-nameProduct 'Номенклатура' (ComponentLine l) = name(product(l));
+item 'Номенклатура' = DATA Item (ComponentLine);
+nameItem 'Номенклатура' (ComponentLine l) = name(item(l));
 quantity 'Кол-во' = DATA NUMERIC[16,3] (ComponentLine);
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (ComponentLine);
 nameUnitMeasure 'Ед.изм.' (ComponentLine l) = name(unitMeasure(l));
@@ -74,35 +74,35 @@ nameUnitMeasure 'Ед.изм.' (ComponentLine l) = name(unitMeasure(l));
 CLASS ByproductLine 'Строка производных номенклатур';
 
 bom 'Технологическая карта' = DATA Bom (ByproductLine) NONULL DELETE;
-product 'Номенклатура' = DATA Product (ByproductLine);
-nameProduct 'Номенклатура' (ByproductLine l) = name(product(l));
+item 'Номенклатура' = DATA Item (ByproductLine);
+nameItem 'Номенклатура' (ByproductLine l) = name(item(l));
 quantity 'Кол-во' = DATA NUMERIC[16,3] (ByproductLine);
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (ByproductLine);
 nameUnitMeasure 'Ед.изм.' (ByproductLine l) = name(unitMeasure(l));
 
-WHEN LOCAL SETCHANGED (product(Bom b)) DO {
-    unitMeasure(b) <- unitMeasure(product(b));
+WHEN LOCAL SETCHANGED (item(Bom b)) DO {
+    unitMeasure(b) <- unitMeasure(item(b));
 } 
 
-WHEN LOCAL SETCHANGED (product(ComponentLine c)) DO {
-    unitMeasure(c) <- unitMeasure(product(c));
+WHEN LOCAL SETCHANGED (item(ComponentLine c)) DO {
+    unitMeasure(c) <- unitMeasure(item(c));
 }
 
-WHEN LOCAL SETCHANGED (product(ByproductLine l)) DO {
-    unitMeasure(l) <- unitMeasure(product(l));
+WHEN LOCAL SETCHANGED (item(ByproductLine l)) DO {
+    unitMeasure(l) <- unitMeasure(item(l));
 }
 
 FORM bom 'Технологическая карта'
     OBJECTS b = Bom PANEL 
-    PROPERTIES(b) nameProduct, quantity, nameUnitMeasure, reference, nameCompany, archived
+    PROPERTIES(b) nameItem, quantity, nameUnitMeasure, reference, nameCompany, archived
     PROPERTIES(b) sequence, nameOperation
     
     OBJECTS c = ComponentLine
-    PROPERTIES(c) nameProduct, quantity, nameUnitMeasure, NEW, DELETE 
+    PROPERTIES(c) nameItem, quantity, nameUnitMeasure, NEW, DELETE 
     FILTERS bom(c) = b
     
     OBJECTS l = ByproductLine
-    PROPERTIES(l) nameProduct, quantity, nameUnitMeasure, NEW, DELETE
+    PROPERTIES(l) nameItem, quantity, nameUnitMeasure, NEW, DELETE
     FILTERS bom(l) = b
     
     EDIT Bom OBJECT b
@@ -115,7 +115,7 @@ DESIGN bom {
             type = CONTAINERH;
             NEW leftHeader {
                 caption = '';
-                MOVE PROPERTY(nameProduct(b)) { notNull = TRUE; }
+                MOVE PROPERTY(nameItem(b)) { notNull = TRUE; }
                 MOVE PROPERTY(archived(b));
                 NEW item {
                     type = CONTAINERH;
@@ -159,7 +159,7 @@ DESIGN bom {
 
 FORM boms 'Технологические карты'
     OBJECTS b = Bom
-    PROPERTIES(b) READONLY nameProduct, quantity, nameUnitMeasure, reference, nameCompany, archived
+    PROPERTIES(b) READONLY nameItem, quantity, nameUnitMeasure, reference, nameCompany, archived
     PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE 
     
     LIST Bom OBJECT b

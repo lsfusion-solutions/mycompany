@@ -5,14 +5,14 @@ REQUIRE UnbuildOrderDone, InvLedger;
 NAMESPACE Manufacturing;
 
 CLASS UnbuildLedger : InvLedger;
-uLedger = AGGR UnbuildLedger WHERE quantity(UnbuildOrderLine line) AND 
+uLedger = AGGR UnbuildLedger WHERE quantity(UnbuildOrderLine line) AND item(line) IS Product AND
                     status(unbuildOrder(line)) = UnbuildOrderStatus.done;
 
 done(UnbuildLedger l) += done(unbuildOrder(line(l)));
 dateTime(UnbuildLedger l) += date(line(l));
 toLocation(UnbuildLedger l) += locationTo(unbuildOrder(line(l)));
 
-product(UnbuildLedger l) += product(line(l));
+product(UnbuildLedger l) += item(line(l)) AS Product;
 quantity(UnbuildLedger l) += quantity(line(l));
 description(UnbuildLedger l) += 'Разбор' IF l IS UnbuildLedger;
 
@@ -20,14 +20,14 @@ series(UnbuildLedger l) += series(unbuildOrder(line(l)));
 number(UnbuildLedger l) += number(unbuildOrder(line(l)));
 
 CLASS UnbuildOrderLedger : InvLedger;
-unbuildLedger = AGGR UnbuildOrderLedger WHERE done(UnbuildOrder line) AND 
+unbuildLedger = AGGR UnbuildOrderLedger WHERE done(UnbuildOrder line) AND item(line) IS Product AND
                     status(line) = UnbuildOrderStatus.done;
 
 done(UnbuildOrderLedger l) += done[UnbuildOrder](line(l));
 dateTime(UnbuildOrderLedger l) += currentDateTime();
 fromLocation(UnbuildOrderLedger l) += locationFrom(line(l));
 
-product(UnbuildOrderLedger l) += product(line(l));
+product(UnbuildOrderLedger l) += item(line(l)) AS Product;
 quantity(UnbuildOrderLedger l) += quantity(line(l));
 description(UnbuildOrderLedger l) += 'Разбор' IF l IS UnbuildOrderLedger;
 

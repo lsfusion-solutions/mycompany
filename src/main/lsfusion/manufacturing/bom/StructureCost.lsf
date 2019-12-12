@@ -6,7 +6,7 @@ NAMESPACE Manufacturing;
 
 selectedReference 'Технологическая карта' = DATA Bom (ComponentLine);
 
-nestedBom (ComponentLine c) = OVERRIDE selectedReference(c), GROUP LAST Bom bb IF product(c) = product(bb);
+nestedBom (ComponentLine c) = OVERRIDE selectedReference(c), GROUP LAST Bom bb IF item(c) = item(bb);
 
 index 'Индекс' = PARTITION SUM 1 ORDER ComponentLine l BY bom(l) IN id MATERIALIZED;
         
@@ -16,22 +16,22 @@ level 'Уровень' (Bom b, ComponentLine c, TEXT path) =
          
 levelRoot 'Уровень' (Bom b, ComponentLine c, TEXT path)  = PARTITION SUM 1 IF level(b, c, path) ORDER level(b, c, path);
          
-nameProductIndent 'Номенклатура' (ComponentLine l, TEXT path) = STRING (CONCAT '', repeat('    ', wordCount(path, '/') - 1), nameProduct(l));
+nameProductIndent 'Номенклатура' (ComponentLine l, TEXT path) = STRING (CONCAT '', repeat('    ', wordCount(path, '/') - 1), nameItem(l));
 
 reference 'Технологическая карта' (ComponentLine l) = reference(nestedBom(l));
 
-cost 'Себестоимость товара' (Bom b) = cost(product(b)) * quantity(b);
+cost 'Себестоимость товара' (Bom b) = cost(item(b)) * quantity(b);
 
 isFinalComponent (ComponentLine l) = IF NOT nestedBom(l) THEN TRUE;
 
 valid 'Уровень' (Bom b, ComponentLine child, ComponentLine parent, TEXT path) =
    RECURSION 1l IF child IS ComponentLine AND parent == child AND level(b, parent, path)
-        STEP 2l IF product(parent) == product(bom($parent)) MATERIALIZED;
+        STEP 2l IF item(parent) == item(bom($parent)) MATERIALIZED;
 
 componentsNeeded 'Кол-во компонентов' (Bom b, ComponentLine l, path) = 
     IF NOT isFinalComponent(l) THEN NULL ELSE round0(exp(OVERRIDE (GROUP SUM ln(quantity(ComponentLine ll)) IF level(b, ll, TEXT path2) AND valid(b, l, ll, path) AND startsWith(path, path2)), 0));
 
-componentsCost 'Себестоимость компонентов' (Bom b, ComponentLine l, path) = componentsNeeded(b, l, path) * cost(product(l));
+componentsCost 'Себестоимость компонентов' (Bom b, ComponentLine l, path) = componentsNeeded(b, l, path) * cost(item(l));
 componentsCost 'Себестоимость компонентов' (Bom b) = GROUP SUM componentsCost(b, ComponentLine l, TEXT path) IF level(b, l, path);
 
 
@@ -39,12 +39,12 @@ FORM chooseBom
     OBJECTS p = Product
     
     OBJECTS b = Bom
-    PROPERTIES(b) READONLY nameProduct, quantity, nameUnitMeasure, reference
-    FILTERS product(b) = p
+    PROPERTIES(b) READONLY nameItem, quantity, nameUnitMeasure, reference
+    FILTERS item(b) = p
 ;
 
 chooseBom (ComponentLine l) {
-    DIALOG chooseBom OBJECTS p = product(l), b INPUT DO {
+    DIALOG chooseBom OBJECTS p = item(l), b INPUT DO {
         selectedReference(l) <- b;
     }
 }

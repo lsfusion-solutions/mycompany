@@ -11,7 +11,7 @@ outCostLedger = AGGR ConsumedOutCostLedger WHERE consumed(ConsumedLine line) AND
 dateTime(ConsumedOutCostLedger l) += manufacturingDate(manufacturingOrder(line(l)));
 location(ConsumedOutCostLedger l) += costLocation(materialsLocation(manufacturingOrder(line(l))));
 
-product(ConsumedOutCostLedger l) += product(line(l));
+product(ConsumedOutCostLedger l) += item(line(l)) AS Product;
 quantity(ConsumedOutCostLedger l) += consumed(line(l));
 
 edit(ConsumedOutCostLedger l) + { edit(line(l)); }
@@ -23,11 +23,11 @@ inCostLedger = AGGR ConsumedInCostLedger WHERE done(FinishedLine line) AND done(
 dateTime(ConsumedInCostLedger l) += manufacturingDate(manufacturingOrder(line(l)));
 location(ConsumedInCostLedger l) += costLocation(productsLocation(manufacturingOrder(line(l))));
 
-product(ConsumedInCostLedger l) += product(line(l));
+product(ConsumedInCostLedger l) += item(line(l)) AS Product;
 quantity(ConsumedInCostLedger l) += done(line(l));
 
 cost (ManufacturingOrder o) = GROUP SUM sum(ConsumedOutCostLedger l) IF manufacturingOrder(line(l)) = o;
 
-sum (ConsumedInCostLedger l) += cost(manufacturingOrder(line(l))) IF product(line(l)) = product(manufacturingOrder(line(l)));
+sum (ConsumedInCostLedger l) += cost(manufacturingOrder(line(l))) IF item(line(l)) = item(manufacturingOrder(line(l)));
 
 edit(ConsumedInCostLedger l) + { edit(line(l)); }

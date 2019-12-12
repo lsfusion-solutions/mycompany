@@ -44,22 +44,22 @@ WHEN SETCHANGED(UnbuildOrder o IS UnbuildOrder  AND numeratorUnbuild() AND NOT n
     incrementValueSession(numeratorUnbuild());   
 }
 
-product 'Номенклатура' = DATA Product (UnbuildOrder) NONULL DELETE;
-nameProduct 'Номенклатура' (UnbuildOrder o) = name(product(o));
-idProduct 'Код номенклатуры' (UnbuildOrder o) = id(product(o));
+item 'Номенклатура' = DATA Item (UnbuildOrder) NONULL DELETE;
+nameItem 'Номенклатура' (UnbuildOrder o) = name(item(o));
+idItem 'Код номенклатуры' (UnbuildOrder o) = id(item(o));
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (UnbuildOrder) NONULL;
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (UnbuildOrder);
 nameUnitMeasure 'Ед.изм.' (UnbuildOrder o) = name(unitMeasure(o));
 
-WHEN LOCAL SET(product(UnbuildOrder o)) DO {
-    unitMeasure(o) <- unitMeasure(product(o));
+WHEN LOCAL SET(item(UnbuildOrder o)) DO {
+    unitMeasure(o) <- unitMeasure(item(o));
 } 
 
 bom 'Технологическая карта' = DATA Bom (UnbuildOrder) NONULL;
 referenceBom 'Код технологической карты' (UnbuildOrder o) = reference(bom(o));
 
-CONSTRAINT bom(UnbuildOrder o) AND NOT product(o) = product(bom(o))
+CONSTRAINT bom(UnbuildOrder o) AND NOT item(o) = item(bom(o))
     CHECKED BY bom[UnbuildOrder]
     MESSAGE 'Нужно указать технологическую карту выбранного продукта';
 
@@ -76,20 +76,20 @@ CLASS UnbuildOrderLine 'Строка разбора';
 unbuildOrder 'Заказ на разбор' = DATA UnbuildOrder (UnbuildOrderLine) NONULL DELETE;
 date 'Дата' = DATA DATETIME (UnbuildOrderLine);
 
-product 'Номенклатура' = DATA Product (UnbuildOrderLine);
-nameProduct 'Номенклатура' (UnbuildOrderLine l) = name(product(l));
+item 'Номенклатура' = DATA Item (UnbuildOrderLine);
+nameItem 'Номенклатура' (UnbuildOrderLine l) = name(item(l));
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (UnbuildOrderLine);
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (UnbuildOrderLine);
 nameUnitMeasure 'Ед.изм.' (UnbuildOrderLine l) = name(unitMeasure(l));
 
-WHEN LOCAL SET(product(UnbuildOrderLine l)) DO {
-    unitMeasure(l) <- unitMeasure(product(l));
+WHEN LOCAL SET(item(UnbuildOrderLine l)) DO {
+    unitMeasure(l) <- unitMeasure(item(l));
 } 
 
 FORM unbuildOrders 'Заказы на разбор'
     OBJECTS o = UnbuildOrder
-    PROPERTIES(o) READONLY seriesNumber, nameProduct, referenceBom, quantity, nameUnitMeasure, nameLocationFrom
+    PROPERTIES(o) READONLY seriesNumber, nameItem, referenceBom, quantity, nameUnitMeasure, nameLocationFrom
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
         
     LIST UnbuildOrder OBJECT o
@@ -99,11 +99,11 @@ readonly = ABSTRACT CASE BOOLEAN (UnbuildOrder);
 
 FORM unbuildOrder 'Заказ на разбор'
     OBJECTS o = UnbuildOrder PANEL
-    PROPERTIES(o) READONLYIF readonly(o) nameProduct, referenceBom, quantity, nameUnitMeasure, nameLocationFrom, 
+    PROPERTIES(o) READONLYIF readonly(o) nameItem, referenceBom, quantity, nameUnitMeasure, nameLocationFrom, 
                                 manOrderReference, nameLocationTo
     
     OBJECTS l = UnbuildOrderLine
-    PROPERTIES(l) READONLY date, nameProduct, nameUnitMeasure, quantity
+    PROPERTIES(l) READONLY date, nameItem, nameUnitMeasure, quantity
     FILTERS unbuildOrder(l) = o
     
     EDIT UnbuildOrder OBJECT o
@@ -112,7 +112,7 @@ FORM unbuildOrder 'Заказ на разбор'
 copyUnbuildOrder 'Копировать' (UnbuildOrder m) {
     NEWSESSION {
         NEW o = UnbuildOrder {
-            product(o) <- product(m);
+            item(o) <- item(m);
             quantity(o) <- quantity(m);
             unitMeasure(o) <- unitMeasure(m);
             bom(o) <- bom(m);
@@ -155,7 +155,7 @@ DESIGN unbuildOrder {
             type = CONTAINERH;
             NEW leftHeader {
                 caption = '';
-                MOVE PROPERTY(nameProduct(o)) { notNull = TRUE; }
+                MOVE PROPERTY(nameItem(o)) { notNull = TRUE; }
                 MOVE PROPERTY(referenceBom(o)) { notNull = TRUE; }
                 NEW item {
                     type = CONTAINERH;
