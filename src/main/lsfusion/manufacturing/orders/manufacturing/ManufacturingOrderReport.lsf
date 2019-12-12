@@ -5,22 +5,22 @@ REQUIRE ManufacturingOrderStatus, ItemAttribute;
 NAMESPACE Manufacturing;
 
 consumed 'Израсходовано (продукты)' (ManufacturingOrder m) = 
-    GROUP CONCAT nameProduct(ConsumedLine l) IF manufacturingOrder(l) = m, ', ';
+    GROUP CONCAT nameItem(ConsumedLine l) IF manufacturingOrder(l) = m, ', ';
 consumedQuantity 'Израсходовано (кол-во)' (ManufacturingOrder m) = 
     GROUP SUM consumed(ConsumedLine l) IF manufacturingOrder(l) = m;
 
 produced 'Произведено (продукты)' (ManufacturingOrder m) = 
-    nameProduct(m) + GROUP CONCAT nameProduct(FinishedLine l) IF manufacturingOrder(l) = m, ', ';
+    nameItem(m) + GROUP CONCAT nameItem(FinishedLine l) IF manufacturingOrder(l) = m, ', ';
 producedQuantity 'Произведено (кол-во)' (ManufacturingOrder m) = 
     quantity(m) + GROUP SUM done(FinishedLine l) IF manufacturingOrder(l) = m;
 
-attribute(ManufacturingOrder o, ItemAttribute a) = value(attribute(product(o), a));
+attribute(ManufacturingOrder o, ItemAttribute a) = value(attribute(item(o), a));
 
 FORM manufacturingOrderReport 'Отчет по заказам на производство'
     OBJECTS a = ItemAttribute
     
     OBJECTS o = ManufacturingOrder
-    PROPERTIES(o) READONLY seriesNumber, nameProduct
+    PROPERTIES(o) READONLY seriesNumber, nameItem
     PROPERTIES READONLY attribute(o, a) COLUMNS (a) HEADER name(a)
     PROPERTIES(o) READONLY quantity, nameUnitMeasure, referenceBom, deadline, nameResponsible, 
         numberSource, nameCompany, nameMaterialsLocation, nameProductsLocation, consumed, consumedQuantity, produced, 

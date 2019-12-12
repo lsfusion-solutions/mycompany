@@ -1,0 +1,71 @@
+MODULE StructureCost;
+
+REQUIRE BoM;
+
+NAMESPACE Manufacturing;
+
+selectedReference 'Технологическая карта' = DATA Bom (ComponentLine);
+
+nestedBom (ComponentLine c) = OVERRIDE selectedReference(c), GROUP LAST Bom bb IF item(c) = item(bb);
+
+index 'Индекс' = PARTITION SUM 1 ORDER ComponentLine l BY bom(l) IN id MATERIALIZED;
+        
+level 'Уровень' (Bom b, ComponentLine c, TEXT path) =
+    RECURSION 1l IF bom(c) = b AND path = lpad(TEXT(index(c)), 4, '0')
+         STEP 2l IF bom(c) = nestedBom($c) AND path = ($path + '/' + lpad(TEXT(index(c)), 4, '0'))  ; //MATERIALIZED
+         
+levelRoot 'Уровень' (Bom b, ComponentLine c, TEXT path)  = PARTITION SUM 1 IF level(b, c, path) ORDER level(b, c, path);
+         
+nameProductIndent 'Номенклатура' (ComponentLine l, TEXT path) = STRING (CONCAT '', repeat('    ', wordCount(path, '/') - 1), nameItem(l));
+
+reference 'Технологическая карта' (ComponentLine l) = reference(nestedBom(l));
+
+cost 'Себестоимость товара' (Bom b) = cost(item(b)) * quantity(b);
+
+isFinalComponent (ComponentLine l) = IF NOT nestedBom(l) THEN TRUE;
+
+valid 'Уровень' (Bom b, ComponentLine child, ComponentLine parent, TEXT path) =
+   RECURSION 1l IF child IS ComponentLine AND parent == child AND level(b, parent, path)
+        STEP 2l IF item(parent) == item(bom($parent)) MATERIALIZED;
+
+componentsNeeded 'Кол-во компонентов' (Bom b, ComponentLine l, path) = 
+    IF NOT isFinalComponent(l) THEN NULL ELSE round0(exp(OVERRIDE (GROUP SUM ln(quantity(ComponentLine ll)) IF level(b, ll, TEXT path2) AND valid(b, l, ll, path) AND startsWith(path, path2)), 0));
+
+componentsCost 'Себестоимость компонентов' (Bom b, ComponentLine l, path) = componentsNeeded(b, l, path) * cost(item(l));
+componentsCost 'Себестоимость компонентов' (Bom b) = GROUP SUM componentsCost(b, ComponentLine l, TEXT path) IF level(b, l, path);
+
+
+FORM chooseBom
+    OBJECTS p = Product
+    
+    OBJECTS b = Bom
+    PROPERTIES(b) READONLY nameItem, quantity, nameUnitMeasure, reference
+    FILTERS item(b) = p
+;
+
+chooseBom (ComponentLine l) {
+    DIALOG chooseBom OBJECTS p = item(l), b INPUT DO {
+        selectedReference(l) <- b;
+    }
+}
+         
+FORM structureAndCost 'Структура и стоимость'
+    OBJECTS b = Bom PANEL 
+    PROPERTIES(b) READONLY reference, cost, componentsCost
+       
+    OBJECTS (l = ComponentLine, path = TEXT)
+    PROPERTIES nameProductIndent(l, path), quantity(l) READONLY , reference(l) ON CHANGE chooseBom(l), 
+                componentsNeeded(b, l, path), componentsCost(b, l, path)
+    //PROPERTIES READONLY
+    PROPERTIES path = VALUE(path) SHOWIF NULL
+    FILTERS level(b, l, path)   
+    ORDER path
+;
+
+structureAndCost 'Структура и стоимость' (Bom b) {
+    SHOW structureAndCost OBJECTS b = b;
+}
+
+EXTEND FORM bom
+    PROPERTIES(b) structureAndCost DRAW b TOOLBAR 
+;
