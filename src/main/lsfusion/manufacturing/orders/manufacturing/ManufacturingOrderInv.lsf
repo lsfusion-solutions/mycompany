@@ -17,6 +17,8 @@ description(ManufacturingOrderInv l) += 'Производство' IF l IS Manuf
 series(ManufacturingOrderInv l) += series(manufacturingOrder[FinishedLine](line(l)));
 number(ManufacturingOrderInv l) += number(manufacturingOrder[FinishedLine](line(l)));
 
+edit (ManufacturingOrderInv l) + { edit(manufacturingOrder(line(l))); }
+
 CLASS ManufacturingOrderInvLedger : InvLedger;
 manInvLedger = AGGR ManufacturingOrderInvLedger WHERE consumed(ConsumedLine line) AND item(line) IS Product AND
                     status(manufacturingOrder(line)) = ManufacturingOrderStatus.done;
@@ -31,3 +33,5 @@ description(ManufacturingOrderInvLedger l) += 'Производство' IF l IS
 
 series(ManufacturingOrderInvLedger l) += series(manufacturingOrder(line(l)));
 number(ManufacturingOrderInvLedger l) += number(manufacturingOrder(line(l)));
+
+edit (ManufacturingOrderInvLedger l) + { edit(manufacturingOrder(line(l))); }

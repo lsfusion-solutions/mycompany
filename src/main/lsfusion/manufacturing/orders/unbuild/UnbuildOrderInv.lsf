@@ -19,6 +19,8 @@ description(UnbuildLedger l) += 'Разбор' IF l IS UnbuildLedger;
 series(UnbuildLedger l) += series(unbuildOrder(line(l)));
 number(UnbuildLedger l) += number(unbuildOrder(line(l)));
 
+edit (UnbuildLedger l) + { edit(unbuildOrder(line(l))); }
+
 CLASS UnbuildOrderLedger : InvLedger;
 unbuildLedger = AGGR UnbuildOrderLedger WHERE done(UnbuildOrder line) AND item(line) IS Product AND
                     status(line) = UnbuildOrderStatus.done;
@@ -33,3 +35,5 @@ description(UnbuildOrderLedger l) += 'Разбор' IF l IS UnbuildOrderLedger;
 
 series(UnbuildOrderLedger l) += series(line(l));
 number(UnbuildOrderLedger l) += number(line(l));
+
+edit (UnbuildOrderLedger l) + { edit(line(l)); }

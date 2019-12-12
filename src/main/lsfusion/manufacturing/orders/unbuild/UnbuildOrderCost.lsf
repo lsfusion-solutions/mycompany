@@ -28,6 +28,8 @@ location(UnbuildInCostLedger l) += costLocation(locationTo(unbuildOrder(line(l))
 product(UnbuildInCostLedger l) += item(line(l)) AS Product;
 quantity(UnbuildInCostLedger l) += quantity(line(l));
 
-sum (UnbuildInCostLedger l) += NUMERIC[16,3](cost(item(unbuildOrder(line(l)))) * costRatio(line(l)));
+cost (UnbuildOrder o) = GROUP SUM sum[OutCostLedger](UnbuildOutCostLedger l) IF unbuildOrder(line(l)) = o;
+
+calcSum (UnbuildInCostLedger l) += NUMERIC[16,3](cost(unbuildOrder(line(l))) * costRatio(line(l)));
 
 edit(UnbuildInCostLedger l) + { edit(line(l)); }
