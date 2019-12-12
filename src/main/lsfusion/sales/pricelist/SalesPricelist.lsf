@@ -48,8 +48,6 @@ changeTax ( PricelistLine prl) {
     } 
 } 
 
-headerNameData (PriceType priceType) = name(priceType) CHARWIDTH 30;
-
 pricelistLine (PriceType pt, Item i, DATETIME d) = 
     GROUP LAST PricelistLine prl IF item(prl) = i AND price(prl,pt) AND NOT startDate(pricelist(prl)) > d AND NOT endDate(pricelist(prl)) < d
           ORDER startDate(pricelist(prl)), pricelist(prl), prl;
@@ -86,7 +84,7 @@ FORM pricelist 'Прайс-листы'
     PROPERTIES(prl) nameItem, nameUnitMeasure READONLY, taxes ON CHANGE changeTax(prl)
     PROPERTIES(prl) NEW,DELETE 
     FILTERS pricelist(prl)=pr 
-    PROPERTIES(prl, tc) price COLUMNS (tc) HEADER headerNameData(tc)
+    PROPERTIES(prl, tc) price COLUMNS (tc) HEADER name(tc)
 
     EDIT Pricelist OBJECT pr
 ;
