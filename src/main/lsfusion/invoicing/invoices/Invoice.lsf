@@ -1,6 +1,6 @@
 MODULE Invoice;
 
-REQUIRE InvoicingSettings, TaxItem, Account, Time, MetaTax, ItemSale, PartnerSale, Company, BarCode;
+REQUIRE InvoicingSettings, TaxItem, Account, Time, MetaTax, ItemSale, PartnerSale, Company, BarCode, MetaNumerator;
 
 NAMESPACE Invoicing;
 
@@ -63,43 +63,7 @@ CONSTRAINT company(Invoice i) AND NOT company(i) IS Company
 
 notes 'Примечания' = DATA ISTRING[50] (Invoice);
 
-series 'Серия' = DATA STRING[2] (Invoice);
-number 'Номер' = DATA STRING[28] (Invoice) NONULL;
-
-numeratorInvoice 'Нумератор документов реализации' = DATA Numerator() CHARWIDTH 20;
-nameNumeratorInvoice 'Нумератор документов реализации' = name(numeratorInvoice());
-
-loadInitialData () + {
-    NEWSESSION {
-        NEW n = Numerator {
-            name(n) <- 'Документов реализации';
-            series(n) <- 'IN';
-            minValue(n) <- 1;
-            maxValue(n) <- 999999;
-            stringLength(n) <- 6;
-            numeratorInvoice() <- n;
-        }
-        APPLY;
-    }
-}
-
-WHEN SETCHANGED(Invoice i IS Invoice  AND numeratorInvoice() AND NOT number(i)) DO {
-    number(i) <- curStringValue(numeratorInvoice());
-    series(i) <- series(numeratorInvoice());
-    incrementValueSession(numeratorInvoice());   
-}
-
-EXTEND FORM options 
-  PROPERTIES nameNumeratorInvoice()
-;
-
-DESIGN options {
-    OBJECTS {
-        MOVE PROPERTY(nameNumeratorInvoice());
-    }
-}
-
-seriesNumber 'Серия/Номер' (Invoice i) = CONCAT '/', series(i), number(i) CHARWIDTH 10; 
+@seriesNumberNumerator(invoice, i, 'реализации', 'IN');
 
 sourceDocument 'Исходный документ' = DATA STRING[10] (Invoice);
 

@@ -1,48 +1,12 @@
 MODULE ManufacturingOrder;
 
-REQUIRE ManufacturingSettings, Numerator, BoM, Individual, SalesOrder;
+REQUIRE ManufacturingSettings, Numerator, BoM, Individual, SalesOrder, MetaNumerator;
 
 NAMESPACE Manufacturing;
 
 CLASS ManufacturingOrder 'Заказ на производство';
 
-number 'Номер' = DATA STRING[28] (ManufacturingOrder);
-series 'Серия' = DATA STRING[2] (ManufacturingOrder);
-
-seriesNumber 'Номер' (ManufacturingOrder o) = CONCAT '/', series(o), number(o) CHARWIDTH 10;
-
-numeratorOrder 'Нумератор заказов' = DATA Numerator();
-nameNumeratorOrder 'Нумератор заказов' = name(numeratorOrder());
-
-loadInitialData () + {
-    NEWSESSION {
-        NEW n = Numerator {
-            name(n) <- 'Производства';
-            series(n) <- 'MO';
-            minValue(n) <- 1;
-            maxValue(n) <- 999999;
-            stringLength(n) <- 6;
-            numeratorOrder() <- n;
-        }
-        APPLY;
-    }
-}
-
-EXTEND FORM options
-    PROPERTIES nameNumeratorOrder()
-;
-
-DESIGN options {
-    OBJECTS {
-        MOVE PROPERTY(nameNumeratorOrder());
-    }
-}
-
-WHEN SETCHANGED(ManufacturingOrder m IS ManufacturingOrder  AND numeratorOrder() AND NOT number(m)) DO {
-    number(m) <- curStringValue(numeratorOrder());
-    series(m) <- series(numeratorOrder());
-    incrementValueSession(numeratorOrder());   
-}
+@seriesNumberNumerator(manufacturingOrder, m, 'производства', 'MO');
 
 item 'Номенклатура' = DATA Item (ManufacturingOrder) NONULL DELETE;
 nameItem 'Номенклатура' (ManufacturingOrder m) = name(item(m));
@@ -57,7 +21,7 @@ WHEN LOCAL SET(item(ManufacturingOrder m)) DO {
 } 
 
 bom 'Технологическая карта' = DATA Bom (ManufacturingOrder) NONULL;
-referenceBom 'Код технологической карты' (ManufacturingOrder m) = reference(bom(m)) CHARWIDTH 25;
+referenceBom 'Код технологической карты' (ManufacturingOrder m) = seriesNumber(bom(m)) CHARWIDTH 25;
 deadline 'Дата старта' = DATA DATETIME (ManufacturingOrder);
 manufacturingDate 'Дата производства' = DATA DATETIME (ManufacturingOrder);
 responsible 'Ответственный' = DATA Individual (ManufacturingOrder);

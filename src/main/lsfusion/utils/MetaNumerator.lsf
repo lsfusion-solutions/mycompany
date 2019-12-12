@@ -1,0 +1,83 @@
+MODULE MetaNumerator;
+
+REQUIRE Numerator;
+
+NAMESPACE Utils;
+
+META seriesNumberNumerator (class, let, nam, serie)
+
+    series 'Серия' = DATA STRING[2] (###class);
+    number 'Номер' = DATA STRING[28] (###class) NONULL;
+    
+    seriesNumber 'Серия/Номер' (###class ##let) = CONCAT '/', series(##let), number(##let) CHARWIDTH 10; 
+    
+    numerator###class 'Нумератор '##nam = DATA Numerator() CHARWIDTH 20;
+    nameNumerator###class 'Нумератор '##nam = name(numerator###class());
+    
+    loadInitialData () + {
+        NEWSESSION {
+            NEW n = Numerator {
+                name(n) <- ##nam;
+                series(n) <- ##serie;
+                minValue(n) <- 1;
+                maxValue(n) <- 999999;
+                stringLength(n) <- 6;
+                numerator###class() <- n;
+            }
+            APPLY;
+        }
+    }
+    
+    WHEN SETCHANGED(###class ##let IS ###class  AND numerator###class() AND NOT number(##let)) DO {
+        number(##let) <- curStringValue(numerator###class());
+        series(##let) <- series(numerator###class());
+        incrementValueSession(numerator###class());   
+    }
+    
+    EXTEND FORM options 
+        PROPERTIES nameNumerator###class()
+    ;
+    
+    DESIGN options {
+        OBJECTS {
+            MOVE PROPERTY(nameNumerator###class());
+        }
+    }
+END
+
+META idNumerator (class, let, nam, serie)
+    id 'Код' = DATA STRING[50] (###class) IN id CHARWIDTH 8;
+    ##class (STRING[50] id) = GROUP AGGR ###class ##let BY id(##let);
+    
+    numerator###class 'Нумератор '##nam = DATA Numerator() CHARWIDTH 20;
+    nameNumerator###class 'Нумератор '##nam = name(numerator###class());
+    
+    loadInitialData () + {
+        NEWSESSION {
+            NEW n = Numerator {
+                name(n) <- ##nam;
+                series(n) <- ##serie;
+                minValue(n) <- 1;
+                maxValue(n) <- 999999;
+                stringLength(n) <- 6;
+                numerator###class() <- n;
+            }
+            APPLY;
+        }
+    }
+    
+    EXTEND FORM options 
+        PROPERTIES nameNumerator###class()
+    ;
+    
+    DESIGN options {
+        general {
+            MOVE PROPERTY(nameNumerator###class());
+        }
+    }
+    
+    WHEN SETCHANGED(###class ##let IS ###class  AND numerator###class() AND NOT id(##let)) DO {
+        id(##let) <- CONCAT '', series(numerator###class()), curStringValue(numerator###class());
+        incrementValueSession(numerator###class());   
+    }
+END

@@ -1,7 +1,7 @@
 MODULE SalesOrder;
 
-REQUIRE System, Time, Utils, SalesSettings, SalesOrderNumerator, Location, Partner, Item, Numerator, Incoterms, PaymentTerms, TaxItem, MetaTax, 
-        ItemMeasure, Individual, LegalEntity, Company, Doc, ItemSale, PartnerSale, PartnerPurchase;
+REQUIRE System, Time, Utils, SalesSettings, Location, Partner, Item, Numerator, Incoterms, PaymentTerms, TaxItem, MetaTax, 
+        ItemMeasure, Individual, LegalEntity, Company, Doc, ItemSale, PartnerSale, PartnerPurchase, MetaNumerator;
 
 NAMESPACE Sales;
 
@@ -11,16 +11,7 @@ readonly = ABSTRACT CASE BOOLEAN (Order);
 date 'Создан' = DATA DATETIME (Order);
 WHEN LOCAL SET(Order o IS Order) DO { date(o) <- currentDateTime(); }
 
-number 'Номер' = DATA STRING[10] (Order);
-series 'Серия' = DATA STRING[2] (Order);
-
-seriesNumber 'Номер' (Order o) = CONCAT '', series(o), number(o) CHARWIDTH 10;
-
-WHEN SET(Order o IS Order) DO {
-    number(o) <- curStringValue(numerator());
-    series(o) <- series(numerator());
-    incrementValueSession(numerator());   
-}
+@seriesNumberNumerator(order, o, 'продаж', 'SA');
 
 customer 'Заказчик' = DATA Partner (Order) NONULL;
 nameCustomer 'Заказчик' (Order o) = name(customer(o));

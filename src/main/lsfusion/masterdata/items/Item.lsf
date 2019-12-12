@@ -1,44 +1,12 @@
 MODULE Item;
 
-REQUIRE MasterDataSettings, Category, Tax, ItemMeasure;
+REQUIRE MasterDataSettings, Category, Tax, ItemMeasure, MetaNumerator;
 
 NAMESPACE MasterData;
 
 CLASS ABSTRACT Item 'Номенклатура';
-id 'Код' = DATA STRING[50] (Item) IN id CHARWIDTH 8;
-item (STRING[50] id) = GROUP AGGR Item i BY id(i);
 
-numeratorItem 'Нумератор номенклатур' = DATA Numerator() CHARWIDTH 20;
-nameNumeratorItem 'Нумератор номенклатур' = name(numeratorItem());
-
-loadInitialData () + {
-    NEWSESSION {
-        NEW n = Numerator {
-            name(n) <- 'Номенклатур';
-            series(n) <- 'IT';
-            minValue(n) <- 1;
-            maxValue(n) <- 999999;
-            stringLength(n) <- 6;
-            numeratorItem() <- n;
-        }
-        APPLY;
-    }
-}
-
-EXTEND FORM options
-    PROPERTIES nameNumeratorItem()
-;
-
-DESIGN options {
-    general {
-        MOVE PROPERTY(nameNumeratorItem());
-    }
-}
-
-WHEN SETCHANGED(Item i IS Item  AND numeratorItem() AND NOT id(i)) DO {
-    id(i) <- CONCAT '', series(numeratorItem()), curStringValue(numeratorItem());
-    incrementValueSession(numeratorItem());   
-}
+@idNumerator(item, i, 'номенклатур','IT');
 
 dataName 'Наименование' = DATA ISTRING[200] (Item) IN id CHARWIDTH 20;
 prefixName 'Префикс' = ABSTRACT STRING (Item);

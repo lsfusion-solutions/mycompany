@@ -1,6 +1,6 @@
 MODULE ItemMeasure;
 
-REQUIRE MasterDataSettings;
+REQUIRE MasterDataSettings, MetaNumerator;
 
 NAMESPACE MasterData;
 
@@ -11,40 +11,8 @@ groupMeasure (STRING[50] id) = GROUP AGGR GroupMeasure g BY id(g);
 name 'Наименование' = DATA STRING[50] (GroupMeasure) IN base;
 
 CLASS ItemMeasure 'Единицы измерения';
-id 'Код' = DATA STRING[50] (ItemMeasure) IN id CHARWIDTH 8;
-itemMeasure (STRING[50] id) = GROUP AGGR ItemMeasure i BY id(i);
 
-numeratorItemMeasure 'Нумератор единиц измерения' = DATA Numerator() CHARWIDTH 20;
-nameNumeratorItemMeasure 'Нумератор единиц измерения' = name(numeratorItemMeasure());
-
-loadInitialData () + {
-    NEWSESSION {
-        NEW n = Numerator {
-            name(n) <- 'Едениц измерения';
-            series(n) <- 'IM';
-            minValue(n) <- 1;
-            maxValue(n) <- 999999;
-            stringLength(n) <- 6;
-            numeratorItemMeasure() <- n;
-        }
-        APPLY;
-    }
-}
-
-EXTEND FORM options
-    PROPERTIES nameNumeratorItemMeasure()
-;
-
-DESIGN options {
-    general {
-        MOVE PROPERTY(nameNumeratorItemMeasure());
-    }
-}
-
-WHEN SETCHANGED(ItemMeasure i IS ItemMeasure  AND numeratorItemMeasure() AND NOT id(i)) DO {
-    id(i) <- CONCAT '', series(numeratorItemMeasure()), curStringValue(numeratorItemMeasure());
-    incrementValueSession(numeratorItemMeasure());   
-}
+@idNumerator(itemMeasure, i, 'единиц измерения', 'IM');
 
 code 'Код наименования' = DATA STRING[10] (ItemMeasure);
 name 'Наименование' = DATA STRING[50] (ItemMeasure) CHARWIDTH 8;

@@ -18,7 +18,7 @@ levelRoot 'Уровень' (Bom b, ComponentLine c, TEXT path)  = PARTITION SUM 
          
 nameProductIndent 'Номенклатура' (ComponentLine l, TEXT path) = STRING (CONCAT '', repeat('    ', wordCount(path, '/') - 1), nameItem(l));
 
-reference 'Технологическая карта' (ComponentLine l) = reference(nestedBom(l));
+reference 'Технологическая карта' (ComponentLine l) = seriesNumber(nestedBom(l));
 
 cost 'Себестоимость товара' (Bom b) = cost(item(b)) * quantity(b);
 
@@ -39,7 +39,7 @@ FORM chooseBom
     OBJECTS p = Product
     
     OBJECTS b = Bom
-    PROPERTIES(b) READONLY nameItem, quantity, nameUnitMeasure, reference
+    PROPERTIES(b) READONLY nameItem, quantity, nameUnitMeasure, seriesNumber
     FILTERS item(b) = p
 ;
 
@@ -51,7 +51,7 @@ chooseBom (ComponentLine l) {
          
 FORM structureAndCost 'Структура и стоимость'
     OBJECTS b = Bom PANEL 
-    PROPERTIES(b) READONLY reference, cost, componentsCost
+    PROPERTIES(b) READONLY seriesNumber, cost, componentsCost
        
     OBJECTS (l = ComponentLine, path = TEXT)
     PROPERTIES nameProductIndent(l, path), quantity(l) READONLY , reference(l) ON CHANGE chooseBom(l), 

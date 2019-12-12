@@ -1,7 +1,7 @@
 MODULE Bill;
 
 REQUIRE InvoicingSettings, TaxItem, Account, Time, MetaTax, ItemPurchase, PartnerPurchase, Company,
-            BarCode;
+            BarCode, MetaNumerator;
 
 NAMESPACE Invoicing;
 
@@ -64,43 +64,7 @@ vendorReference 'Код поставщика' = DATA STRING[30] (Bill);
 
 notes 'Примечания' = DATA ISTRING[50] (Bill);
 
-series 'Серия' = DATA STRING[2] (Bill);
-number 'Номер' = DATA STRING[28] (Bill) NONULL;
-
-seriesNumber 'Серия/Номер' (Bill b) = CONCAT '/', series(b), number(b) CHARWIDTH 10;
-
-numeratorBill 'Нумератор документов приобретения' = DATA Numerator() CHARWIDTH 20;
-nameNumeratorBill 'Нумератор документов приобретения' = name(numeratorBill());
-
-loadInitialData () + {
-    NEWSESSION {
-        NEW n = Numerator {
-            name(n) <- 'Документов приобретения';
-            series(n) <- 'BL';
-            minValue(n) <- 1;
-            maxValue(n) <- 999999;
-            stringLength(n) <- 6;
-            numeratorBill() <- n;
-        }
-        APPLY;
-    }
-}
-
-WHEN SETCHANGED(Bill b IS Bill  AND numeratorBill() AND NOT number(b)) DO {
-    number(b) <- curStringValue(numeratorBill());
-    series(b) <- series(numeratorBill());
-    incrementValueSession(numeratorBill());   
-}
-
-EXTEND FORM options 
-  PROPERTIES nameNumeratorBill()
-;
-
-DESIGN options {
-    OBJECTS {
-        MOVE PROPERTY(nameNumeratorBill());
-    }
-}
+@seriesNumberNumerator(bill, b, 'приобретения', 'BL');
 
 sourceDocument 'Исходный документ' = DATA STRING[10] (Bill);
 
