@@ -1,0 +1,25 @@
+MODULE PrintStructureCost;
+
+REQUIRE StructureCost;
+
+NAMESPACE Manufacturing;
+
+FORM printStructureAndCost 'Структура и стоимость'
+    OBJECTS b = Bom PANEL 
+    PROPERTIES(b) READONLY seriesNumber, cost, componentsCost
+       
+    OBJECTS (l = ComponentLine, path = TEXT)
+    PROPERTIES nameProductIndent(l, path), quantity(l) READONLY , reference(l) ON CHANGE chooseBom(l), 
+                componentsNeeded(b, l, path), componentsCost(b, l, path)
+    PROPERTIES path = VALUE(path) SHOWIF NULL
+    FILTERS level(b, l, path)   
+    ORDER path
+;
+
+print 'Печать' (Bom b) {
+    PRINT printStructureAndCost OBJECTS b = b; 
+}
+
+EXTEND FORM structureAndCost
+    PROPERTIES(b) print
+;
