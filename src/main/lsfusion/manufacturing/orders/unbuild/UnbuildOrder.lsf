@@ -8,22 +8,22 @@ CLASS UnbuildOrder 'Заказ на разбор';
 
 @defineSeriesNumber(unbuildOrder, o, 'разбора', 'UO');
 
-item 'Номенклатура' = DATA Item (UnbuildOrder) NONULL DELETE;
-nameItem 'Номенклатура' (UnbuildOrder o) = name(item(o));
-idItem 'Код номенклатуры' (UnbuildOrder o) = id(item(o));
+product 'Номенклатура' = DATA Product (UnbuildOrder) NONULL DELETE;
+nameProduct 'Номенклатура' (UnbuildOrder o) = name(product(o));
+idProduct 'Код номенклатуры' (UnbuildOrder o) = id[Item](product(o));
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (UnbuildOrder) NONULL;
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (UnbuildOrder);
 nameUnitMeasure 'Ед.изм.' (UnbuildOrder o) = name(unitMeasure(o));
 
-WHEN LOCAL SET(item(UnbuildOrder o)) DO {
-    unitMeasure(o) <- unitMeasure(item(o));
+WHEN LOCAL SET(product(UnbuildOrder o)) DO {
+    unitMeasure(o) <- unitMeasure(product(o));
 } 
 
 bom 'Спецификация' = DATA Bom (UnbuildOrder) NONULL;
 referenceBom 'Код спецификации' (UnbuildOrder o) = seriesNumber(bom(o));
 
-CONSTRAINT bom(UnbuildOrder o) AND NOT item(o) = item(bom(o))
+CONSTRAINT bom(UnbuildOrder o) AND NOT product(o) = item(bom(o))
     CHECKED BY bom[UnbuildOrder]
     MESSAGE 'Нужно указать спецификацию выбранного продукта';
 
@@ -55,7 +55,7 @@ WHEN LOCAL SET(item(UnbuildOrderLine l)) DO {
 
 FORM unbuildOrders 'Заказы на разбор'
     OBJECTS o = UnbuildOrder
-    PROPERTIES(o) READONLY seriesNumber, nameItem, referenceBom, quantity, nameUnitMeasure, nameLocationFrom
+    PROPERTIES(o) READONLY seriesNumber, nameProduct, referenceBom, quantity, nameUnitMeasure, nameLocationFrom
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
         
     LIST UnbuildOrder OBJECT o
@@ -65,7 +65,7 @@ readonly = ABSTRACT CASE BOOLEAN (UnbuildOrder);
 
 FORM unbuildOrder 'Заказ на разбор'
     OBJECTS o = UnbuildOrder PANEL
-    PROPERTIES(o) READONLYIF readonly(o) nameItem, referenceBom, quantity, nameUnitMeasure, nameLocationFrom, 
+    PROPERTIES(o) READONLYIF readonly(o) nameProduct, referenceBom, quantity, nameUnitMeasure, nameLocationFrom, 
                                 manOrderReference, nameLocationTo
     
     OBJECTS l = UnbuildOrderLine
@@ -78,7 +78,7 @@ FORM unbuildOrder 'Заказ на разбор'
 copyUnbuildOrder 'Копировать' (UnbuildOrder m) {
     NEWSESSION {
         NEW o = UnbuildOrder {
-            item(o) <- item(m);
+            product(o) <- product(m);
             quantity(o) <- quantity(m);
             unitMeasure(o) <- unitMeasure(m);
             bom(o) <- bom(m);
@@ -121,7 +121,7 @@ DESIGN unbuildOrder {
             type = CONTAINERH;
             NEW leftHeader {
                 caption = '';
-                MOVE PROPERTY(nameItem(o)) { notNull = TRUE; }
+                MOVE PROPERTY(nameProduct(o)) { notNull = TRUE; }
                 MOVE PROPERTY(referenceBom(o)) { notNull = TRUE; }
                 NEW item {
                     type = CONTAINERH;
