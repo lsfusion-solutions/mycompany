@@ -1,0 +1,36 @@
+MODULE PurchaseOrderLocked;
+
+REQUIRE PurchaseOrder, PurchaseOrderStatus, PurchaseOrderConfirmed;
+
+NAMESPACE Purchase;
+
+EXTEND CLASS OrderStatus {
+    locked 'Закрыт'
+}
+
+lockDateTime 'Закрыт' = DATA DATETIME (Order);
+locked 'Закрыт' = DATA BOOLEAN (Order);
+
+lock 'Закрыть' (Order o) {
+    APPLY; 
+    IF canceled() THEN RETURN;
+
+    NEWSESSION {
+        lockDateTime(o) <- currentDateTime();
+        locked(o) <- TRUE;
+        APPLY;
+    }
+}
+
+status(Order o) += WHEN locked(o) THEN OrderStatus.locked;
+colorStatus(Order o) += WHEN status(o) = OrderStatus.locked THEN RGB(255,255,255);
+
+EXTEND FORM order
+     PROPERTIES(o) SHOWIF (status(o) = OrderStatus.confirmed) lock;
+;
+
+DESIGN order {
+    statusActions {
+        MOVE PROPERTY(lock(o));
+    }
+}

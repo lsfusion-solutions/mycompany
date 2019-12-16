@@ -12,12 +12,12 @@ canceled 'Отменен' = DATA BOOLEAN (Receipt);
 
 cancel 'Отменить' (Receipt r) {
     APPLY; 
-       IF canceled() THEN RETURN;
+    IF canceled() THEN RETURN;
            
-       NEWSESSION {
-           canceled(r) <- TRUE;
-           APPLY;
-       }
+    NEWSESSION {
+        canceled(r) <- TRUE;
+        APPLY;
+    }
 }
 
 status(Receipt r) += WHEN canceled(r) THEN ReceiptStatus.canceled;

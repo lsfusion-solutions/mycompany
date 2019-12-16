@@ -1,6 +1,6 @@
 MODULE PurchasePrintOrder;
 
-REQUIRE  PurchaseOrder, PurchaseOrderStatus, PurchaseOrderStatusConfirm, Partner,PurchasePrintData;
+REQUIRE  PurchaseOrder, PurchaseOrderStatus, PurchaseOrderConfirmed, Partner,PurchasePrintData;
 
 NAMESPACE Purchase;
 
@@ -28,7 +28,7 @@ reprintOrder 'Печать заказ' (Order o) {
 }  
 
 EXTEND FORM order
-     PROPERTIES (o) SHOWIF (status(o)=OrderStatus.orderConfirmed)  printOrder BACKGROUND (CASE WHEN confirmed(o) THEN nextAction())
+     PROPERTIES (o) SHOWIF (status(o)=OrderStatus.confirmed)  printOrder BACKGROUND (CASE WHEN confirmed(o) THEN nextAction())
 ;
 
 DESIGN order {

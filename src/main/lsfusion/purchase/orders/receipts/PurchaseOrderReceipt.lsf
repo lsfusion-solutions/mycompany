@@ -1,6 +1,6 @@
 MODULE PurchaseOrderReceipt;
 
-REQUIRE PurchaseOrder, Inventory, PurchaseOrderStatus, PurchaseOrderStatusConfirm, PurchaseOrderStatusCancel, ReceiptReady;
+REQUIRE PurchaseOrder, Inventory, PurchaseOrderStatus, PurchaseOrderConfirmed, PurchaseOrderCanceled, ReceiptReady;
 
 NAMESPACE Purchase;
 
@@ -35,7 +35,7 @@ CONSTRAINT (quantity(OrderLine ol) (-) doneReceipt(ol)) < 0 AND confirmed(order(
 lastOpenReceipt 'Последний открытый приход' (Order o)= GROUP LAST Receipt r IF order(r) = o AND status(r) = ReceiptStatus.ready AND r IS Receipt ORDER r;
 
 WHEN ([GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) AND item(l) IS Product BY order(l)](Order o) OR SET(confirmed(o))) AND 
-      toReceive(o) > 0 AND status(o) = OrderStatus.orderConfirmed DO {
+      toReceive(o) > 0 AND status(o) = OrderStatus.confirmed DO {
     IF NOT lastOpenReceipt(o) THEN   
         NEW ns = Receipt { 
             partner(ns) <- vendor(o);

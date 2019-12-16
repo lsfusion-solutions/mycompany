@@ -1,0 +1,72 @@
+MODULE PurchaseOrderConfirmed;
+
+REQUIRE PurchaseOrder, PurchaseOrderStatus, PurchaseOrderRequestSent;
+
+NAMESPACE Purchase;
+
+EXTEND CLASS OrderStatus {
+    confirmed 'Оформлен'
+}
+
+confirmedDateTime 'Подтвержден' = DATA DATETIME (Order);
+confirmed 'Подтвержден' = DATA BOOLEAN (Order);
+
+confirm 'Подтвердить' (Order o){
+    APPLY; 
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {
+        confirmedDateTime(o) <- currentDateTime();
+        confirmed(o) <- TRUE;
+        APPLY;
+    }
+}
+
+status(Order o) += WHEN confirmed(o) THEN OrderStatus.confirmed;
+colorStatus(Order o) += WHEN status(o) = OrderStatus.confirmed THEN RGB(150,255,150);
+
+EXTEND FORM order 
+     PROPERTIES(o) SHOWIF (status(o) = OrderStatus.requestSent OR status(o) = OrderStatus.draft) confirm
+;
+
+DESIGN order {
+    statusActions {
+        MOVE PROPERTY(confirm(o))  FIRST { fontStyle = 'bold'; };
+    }
+}
+
+EXTEND FORM orders
+    PROPERTIES(o) READONLY SHOWIF showActionsTime() confirmedDateTime BEFORE seriesNumber(o);
+;
+
+EXTEND FORM items
+    OBJECTS pl = OrderLine
+    PROPERTIES(pl) READONLY nameStatus, date, seriesNumber, nameVendor, nameLocation
+    PROPERTIES(pl) READONLY nameItem, quantity, unitPrice
+    FILTERS item(pl) = i
+;
+
+DESIGN items {
+    operations {
+        NEW pOrders {
+            caption = 'Заказы на закупку';
+            MOVE BOX(pl);
+        }
+    }
+}
+
+EXTEND FORM partners
+    OBJECTS pl = Order
+    PROPERTIES(pl) READONLY nameStatus, date, seriesNumber, nameVendor, nameLocation, scheduledDate
+    PROPERTIES(pl) READONLY untaxedAmount, totalTax, totalAmount
+    FILTERS vendor(pl) = p
+;
+
+DESIGN partners {
+    operations {
+        NEW pOrders {
+            caption = 'Заказы на закупку';
+            MOVE BOX(pl);
+        }
+    }
+}
