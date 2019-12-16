@@ -50,7 +50,11 @@ changeTax ( PricelistLine prl) {
 
 pricelistLine (PriceType pt, Item i, DATETIME d) = 
     GROUP LAST PricelistLine prl IF item(prl) = i AND price(prl,pt) AND NOT startDate(pricelist(prl)) > d AND NOT endDate(pricelist(prl)) < d
-          ORDER startDate(pricelist(prl)), pricelist(prl), prl;
+          ORDER startDate(pricelist(prl)), prl;
+
+price 'Действующая цена' (PriceType pt, Item i, DATETIME d) = price(pricelistLine(pt, i, d), pt);
+
+currentPrice (PricelistLine l, PriceType t) = price(t, item(l), currentDateTime());
 
 WHEN LOCAL SET(PricelistLine prl IS PricelistLine) DO { 
     in(prl,Tax t) <- salesIn(item(prl),t);  
@@ -83,8 +87,9 @@ FORM pricelist 'Прайс-листы'
     OBJECTS prl = PricelistLine
     PROPERTIES(prl) nameItem, nameUnitMeasure READONLY, taxes ON CHANGE changeTax(prl)
     PROPERTIES(prl) NEW,DELETE 
-    FILTERS pricelist(prl)=pr 
+    FILTERS pricelist(prl) = pr 
     PROPERTIES(prl, tc) price COLUMNS (tc) HEADER name(tc)
+    PROPERTIES currentPrice(prl, tc) COLUMNS (tc) HEADER 'Действующая цена ' + name(tc)
 
     EDIT Pricelist OBJECT pr
 ;
@@ -120,7 +125,8 @@ DESIGN pricelist{
                 caption = 'Спецификация';
                 fill = 1;
                 MOVE BOX(prl) {
-                    PROPERTY(price(prl, tc)) {pattern='#,##0.00';};             
+                    PROPERTY(price(prl, tc)) {pattern='#,##0.00';};
+                    MOVE PROPERTY (currentPrice(prl, tc));          
                 };           
             }
         }

@@ -26,10 +26,13 @@ EXTEND FORM pricelist
     TREE categories c = Category PARENT parent(c)
     PROPERTIES READONLY name(c)
     ORDER name(c)
-
-    OBJECTS item=Item
+    
+    OBJECTS dt = DATETIME 
+    FILTERS dt = currentDateTime()
+    
+    OBJECTS item = Item
     PROPERTIES in(item, pr) ON CHANGE changeIn(item, pr)
-    PROPERTIES READONLY name(item) 
+    PROPERTIES READONLY name(item), price(tc, item, dt) COLUMNS (tc) HEADER 'Действующая цена ' + name(tc) DRAW item
     FILTERS level(category(item), c), canBeSold(item)  
 ;
 
