@@ -4,15 +4,7 @@ REQUIRE ReceiptDone, CostLedger, CostLocation;
 
 NAMESPACE Inventory;
 
-cost 'Себестоимость' = DATA NUMERIC[14,2] (ReceiptLine);
-
-WHEN LOCAL SETCHANGED (product(ReceiptLine l)) AND cost(product(l)) DO {
-    cost(l) <- NUMERIC[14,2](cost(product(l)) * initialDemand(l));
-}
-
-EXTEND FORM receipt
-    PROPERTIES(l) cost SHOWIF done(r)
-;
+cost 'Себестоимость' = ABSTRACT CASE NUMERIC[14,2] (ReceiptLine);
 
 CLASS ReceiptCostLedger : InCostLedger;
 costLedger = AGGR ReceiptCostLedger WHERE done(ReceiptLine line) AND done(receipt(line));
