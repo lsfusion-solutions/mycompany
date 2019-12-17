@@ -6,7 +6,7 @@ NAMESPACE Manufacturing;
 
 selectedReference 'Спецификация' = DATA Bom (ComponentLine);
 
-nestedBom (ComponentLine c) = OVERRIDE selectedReference(c), GROUP LAST Bom bb IF item(c) = item(bb);
+nestedBom (ComponentLine c) = OVERRIDE selectedReference(c), GROUP LAST Bom bb IF item(c) = item(bb) ORDER bb;
 
 index 'Индекс' = PARTITION SUM 1 ORDER ComponentLine l BY bom(l) IN id MATERIALIZED;
         
@@ -23,24 +23,24 @@ quantity 'Уровень' (Bom b, ComponentLine c, TEXT path, NUMERIC[20,11] q) 
 quantity (Bom b, ComponentLine c, TEXT path) = NUMERIC[16,3]
     (GROUP SUM quantity(b, c, path, NUMERIC[20,11] q) * q); 
          
-levelRoot 'Уровень' (Bom b, ComponentLine c, TEXT path)  = PARTITION SUM 1 IF level(b, c, path) ORDER level(b, c, path);
+levelRoot 'Уровень' (Bom b, ComponentLine c, TEXT path)  = 
+    PARTITION SUM 1 IF level(b, c, path) ORDER level(b, c, path);
          
 nameProductIndent 'Номенклатура' (ComponentLine l, TEXT path) = STRING (CONCAT '', repeat('    ', wordCount(path, '/') - 1), nameItem(l));
 
 reference 'Спецификация' (ComponentLine l) = seriesNumber(nestedBom(l));
 
-cost 'Себестоимость товара' (Bom b) = cost(item(b)) * quantity(b);
-cost 'Себестоимость товара' (ComponentLine l) = cost(item(l));
+itemsCost 'Себестоимость товаров' (Bom b, ComponentLine l, TEXT path) = 
+    NUMERIC[16,3](quantity(b, l, path) * cost(item(l)));
+cost 'Себестоимость товаров' (Bom b) = cost(item(b)) * quantity(b);
 
-isFinalComponent (ComponentLine l) = IF NOT nestedBom(l) THEN TRUE;
-
-//componentsNeeded 'Кол-во компонентов' (Bom b, ComponentLine l, TEXT path) = NUMERIC[16,3]( 
-//    round0(exp(OVERRIDE (GROUP SUM ln(quantity(ComponentLine ll) / quantity(bom(ll))) IF level(b, ll, TEXT path2) AND startsWith(path, path2)), 0)));
-
-itemsCost 'Себестоимость товаров' (Bom b, ComponentLine l, TEXT path) = NUMERIC[16,3](quantity(b, l, path) * cost(item(l)));
 componentsCost 'Себестоимость компонентов' (Bom b, ComponentLine l, TEXT path) = 
-    NUMERIC[16,3] (GROUP SUM(quantity(b, ComponentLine ll, TEXT path2) * cost(item(ll)) IF level(b, ll, path2) AND startsWith(path2, path) AND isFinalComponent(ll)));
-componentsCost 'Себестоимость компонентов' (Bom b) = NUMERIC[16,3](GROUP SUM componentsCost(b, ComponentLine l, TEXT path) IF level(b, l, path) AND isFinalComponent(l));
+    NUMERIC[16,3] (GROUP SUM quantity(b, ComponentLine ll, TEXT child) * cost(item(ll)) IF 
+                             level(b, ll, child) AND 
+                             startsWith(child, path) AND 
+                             NOT nestedBom(ll));
+componentsCost 'Себестоимость компонентов' (Bom b) = 
+    NUMERIC[16,3](GROUP SUM componentsCost(b, ComponentLine l, TEXT path) IF level(b, l, path) AND NOT nestedBom(l));
 
 
 FORM chooseBom
