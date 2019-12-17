@@ -26,7 +26,8 @@ FORM inventoryReport 'Текущие остатки'
     PROPERTIES(l,p) READONLY onHandDateTime SHOWIF selectedDateTime(), dateReceived, dateShipped
     FILTERS IF singleLocation() THEN l = lt ELSE isChild(l, lt),
             level(category(p), c),
-            IF selectedDateTime() THEN onHandDateTime(l, p) ELSE onHand(l, p)
+            IF selectedDateTime() THEN onHandDateTime(l, p) ELSE 
+                (IF singleLocation() THEN onHandRec(l, p) ELSE onHand(l, p))
                 
     OBJECTS il = InvLedger
     PROPERTIES(il) READONLY dateTime, series, number, description, namePartner, nameFromLocation, nameToLocation, 
