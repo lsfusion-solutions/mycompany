@@ -20,8 +20,8 @@ quantity 'Уровень' (Bom b, ComponentLine c, TEXT path, NUMERIC[20,11] q) 
     RECURSION NUMERIC[20,11](1.0) IF q = quantity(c) AND bom(c) = b AND path = lpad(TEXT(index(c)), 4, '0')
          STEP NUMERIC[20,11](1.0) IF q = $q * quantity(c) / quantity(bom(c)) AND bom(c) = nestedBom($c) AND path = ($path + '/' + lpad(TEXT(index(c)), 4, '0')) CYCLES NO; //MATERIALIZED
 
-quantity (Bom b, ComponentLine c, TEXT path) =
-    GROUP SUM quantity(b, c, path, NUMERIC[20,11] q) * q; 
+quantity (Bom b, ComponentLine c, TEXT path) = NUMERIC[16,3]
+    (GROUP SUM quantity(b, c, path, NUMERIC[20,11] q) * q); 
          
 levelRoot 'Уровень' (Bom b, ComponentLine c, TEXT path)  = PARTITION SUM 1 IF level(b, c, path) ORDER level(b, c, path);
          
