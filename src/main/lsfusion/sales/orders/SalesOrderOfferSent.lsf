@@ -1,18 +1,18 @@
-MODULE SalesOrderStatusSent;
+MODULE SalesOrderOfferSent;
 
 REQUIRE SalesOrderStatus;
 
 NAMESPACE Sales;
 
-EXTEND CLASS OrderStatus{
+EXTEND CLASS OrderStatus {
     offerSent 'Предложение отправлено'
 }
 
-sentRequestDateTime 'Отправленj' = DATA DATETIME (Order);
+sentRequestDateTime 'Отправлен' = DATA DATETIME (Order);
 sent 'Отправлено'  = DATA BOOLEAN (Order);
 
 status(Order o) += WHEN sent(o) THEN OrderStatus.offerSent;
-colorStatus(Order i) += WHEN status(i) == OrderStatus.offerSent THEN RGB(252,247,149);
+colorStatus(Order i) += WHEN status(i) = OrderStatus.offerSent THEN RGB(252,247,149);
 
 EXTEND FORM orders
     PROPERTIES(o) READONLY SHOWIF showActionsTime() sentRequestDateTime AFTER date(o) ;

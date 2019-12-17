@@ -1,29 +1,27 @@
-MODULE SalesPricelistToItems;
+MODULE SalesPricelistItem;
 
 REQUIRE SalesPricelist, Item;
 
 NAMESPACE Sales;
 
 EXTEND FORM item   
-
     OBJECTS prls = PricelistLine 
     PROPERTIES(prls) READONLY namePricelist, taxes ON CHANGE changeTax(prls)
     PROPERTIES(prls) DELETE
-    FILTERS item(prls)=i
+    FILTERS item(prls) = i
     
     OBJECTS tc = PriceType GRID
-    PROPERTIES (prls,tc) orderEditIn[PricelistLine,PriceType]
-    ORDER orderEditIn(prls,tc)
+    PROPERTIES (prls, tc) orderEditIn[PricelistLine,PriceType]
+    ORDER orderEditIn(prls, tc)
     FILTERS editIn(prls, tc) 
     
     PROPERTIES(prls, tc) price COLUMNS (tc) HEADER name(tc)
-    
 ;
 
 DESIGN item {
     tabs {
         sale {
-            MOVE BOX(prls) {showIf=canBeSold(i);};
+            MOVE BOX(prls) { showIf=canBeSold(i); };
             REMOVE BOX(tc);
         }
     }

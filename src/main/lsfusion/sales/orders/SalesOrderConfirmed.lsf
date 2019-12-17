@@ -1,43 +1,40 @@
-MODULE SalesOrderStatusConfirm;
+MODULE SalesOrderConfirmed;
 
-REQUIRE SalesOrderStatus, SalesOrderStatusDraft, SalesOrderStatusSent;
+REQUIRE SalesOrderStatus, SalesOrderOfferSent;
 
 NAMESPACE Sales;
 
 EXTEND CLASS OrderStatus{
-    orderConfirmed 'Заказ оформлен'
+    confirmed 'Оформлен'
 }
 
 confirmedDateTime 'Подтвержден' = DATA DATETIME (Order);
 confirmed 'Подтвержден' = DATA BOOLEAN (Order);
 
-confirmOrder 'Подтвердить заказ' (Order o){
-    confirmedDateTime(o) <- currentDateTime();
-    confirmed(o) <- TRUE;
-    MESSAGE 'Заказ подтвержден';    
+confirm 'Подтвердить заказ' (Order o){
+    APPLY; 
+    IF canceled() THEN RETURN;
+
+    NEWSESSION {
+        confirmedDateTime(o) <- currentDateTime();
+        confirmed(o) <- TRUE;
+        APPLY;
+    }
 }
 
-confirmOrderBeforeSend 'Подтвердить заказ' (Order o) { confirmOrder(o); }
-confirmOrderAfterSend 'Подтвердить заказ' (Order o) { confirmOrder(o); }
+confirmOrderBeforeSend 'Подтвердить заказ' (Order o) { confirm(o); }
+confirmOrderAfterSend 'Подтвердить заказ' (Order o) { confirm(o); }
 
 status(Order o) += WHEN confirmed(o) THEN OrderStatus.orderConfirmed;
 colorStatus(Order o) += WHEN status(o) == OrderStatus.orderConfirmed THEN RGB(150,255,150);
 
 EXTEND FORM order 
-     PROPERTIES (o) SHOWIF (status(o)=OrderStatus.draft)  confirmOrderBeforeSend
-     PROPERTIES (o) SHOWIF (status(o)=OrderStatus.offerSent)  confirmOrderAfterSend
-     PROPERTIES (o) confirmedDateTime
+     PROPERTIES (o) SHOWIF (status(o) = OrderStatus.offerSent OR status(o) = OrderStatus.draft) confirm
 ;
 
 DESIGN order {
-    statusPane {
-        statusActions {
-            MOVE PROPERTY(confirmOrderBeforeSend(o));
-            MOVE PROPERTY(confirmOrderAfterSend(o)) FIRST { fontStyle = 'bold'; };
-        }
-    }
-    title {
-        MOVE PROPERTY(confirmedDateTime(o));
+    statusActions {
+        MOVE PROPERTY(confirm(o)) FIRST { fontStyle = 'bold'; }
     }
 }
 
