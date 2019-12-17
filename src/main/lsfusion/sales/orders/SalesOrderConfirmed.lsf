@@ -10,7 +10,7 @@ EXTEND CLASS OrderStatus{
 
 confirmed 'Подтвержден' = DATA BOOLEAN (Order);
 
-confirm 'Подтвердить заказ' (Order o){
+confirm 'Подтвердить' (Order o){
     APPLY; 
     IF canceled() THEN RETURN;
 
@@ -30,37 +30,5 @@ EXTEND FORM order
 DESIGN order {
     statusActions {
         MOVE PROPERTY(confirm(o)) FIRST { fontStyle = 'bold'; }
-    }
-}
-
-EXTEND FORM items
-    OBJECTS sl = OrderLine
-    PROPERTIES(sl) READONLY nameStatus, date, seriesNumber, nameCustomer, nameLocation
-    PROPERTIES(sl) READONLY nameItem, quantity, unitPrice
-    FILTERS item(sl) = i
-;
-
-DESIGN items {
-    operations {
-        NEW sOrders {
-            caption = 'Заказы на продажу';
-            MOVE BOX(sl);
-        }
-    }
-}
-
-EXTEND FORM partners
-    OBJECTS sl = Order
-    PROPERTIES(sl) READONLY nameStatus, date, seriesNumber, commintmentDate, expectedDate, nameCustomer, nameRepresentative
-    PROPERTIES(sl) READONLY untaxedAmount, totalTax, totalAmount
-    FILTERS customer(sl) = p
-;
-
-DESIGN partners {
-    operations {
-        NEW sOrders {
-            caption = 'Заказы на продажу';
-            MOVE BOX(sl);
-        }
     }
 }

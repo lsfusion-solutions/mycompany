@@ -1,0 +1,21 @@
+MODULE SalesOrderItem;
+
+REQUIRE SalesOrderStatus;
+
+NAMESPACE Sales;
+
+EXTEND FORM items
+    OBJECTS sl = OrderLine
+    PROPERTIES(sl) READONLY nameStatus, date, seriesNumber, nameCustomer, nameLocation
+    PROPERTIES(sl) READONLY nameItem, quantity, unitPrice
+    FILTERS item(sl) = i
+;
+
+DESIGN items {
+    operations {
+        NEW sOrders {
+            caption = 'Заказы на продажу';
+            MOVE BOX(sl);
+        }
+    }
+}

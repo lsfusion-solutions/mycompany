@@ -1,0 +1,21 @@
+MODULE PurchaseOrderPartner;
+
+REQUIRE PurchaseOrderStatus;
+
+NAMESPACE Purchase;
+
+EXTEND FORM partners
+    OBJECTS pl = Order
+    PROPERTIES(pl) READONLY nameStatus, date, seriesNumber, nameVendor, nameLocation, scheduledDate
+    PROPERTIES(pl) READONLY untaxedAmount, totalTax, totalAmount
+    FILTERS vendor(pl) = p
+;
+
+DESIGN partners {
+    operations {
+        NEW pOrders {
+            caption = 'Заказы на закупку';
+            MOVE BOX(pl);
+        }
+    }
+}

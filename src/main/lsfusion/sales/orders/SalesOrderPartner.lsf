@@ -1,0 +1,21 @@
+MODULE SalesOrderPartner;
+
+REQUIRE SalesOrderStatus;
+
+NAMESPACE Sales;
+
+EXTEND FORM partners
+    OBJECTS sl = Order
+    PROPERTIES(sl) READONLY nameStatus, date, seriesNumber, commintmentDate, expectedDate, nameCustomer, nameRepresentative
+    PROPERTIES(sl) READONLY untaxedAmount, totalTax, totalAmount
+    FILTERS customer(sl) = p
+;
+
+DESIGN partners {
+    operations {
+        NEW sOrders {
+            caption = 'Заказы на продажу';
+            MOVE BOX(sl);
+        }
+    }
+}

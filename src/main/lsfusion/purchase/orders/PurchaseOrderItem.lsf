@@ -1,0 +1,21 @@
+MODULE PurchaseOrderItem;
+
+REQUIRE PurchaseOrderStatus;
+
+NAMESPACE Purchase;
+
+EXTEND FORM items
+    OBJECTS pl = OrderLine
+    PROPERTIES(pl) READONLY nameStatus, date, seriesNumber, nameVendor, nameLocation
+    PROPERTIES(pl) READONLY nameItem, quantity, unitPrice
+    FILTERS item(pl) = i
+;
+
+DESIGN items {
+    operations {
+        NEW pOrders {
+            caption = 'Заказы на закупку';
+            MOVE BOX(pl);
+        }
+    }
+}
