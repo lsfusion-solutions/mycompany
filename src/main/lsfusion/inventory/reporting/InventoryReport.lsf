@@ -22,78 +22,70 @@ FORM inventoryReport 'Текущие остатки'
     
     OBJECTS lp = (l = Location, p = Product)
     PROPERTIES READONLY 'Склад' = canonicalName(l) SHOWIF NOT singleLocation(), 'Товар' = name(p)
-    PROPERTIES(l,p) READONLY reserved, available, onHand SHOWIF NOT selectedDateTime(), onHandRec SHOWIF NOT selectedDateTime()
-    PROPERTIES(l,p) READONLY onHandDateTime SHOWIF selectedDateTime(), dateReceived, dateShipped
+    PROPERTIES(l, p) READONLY reserved, available
+    PROPERTIES(l, p) READONLY SHOWIF NOT selectedDateTime() onHand, onHandRec
+    PROPERTIES(l, p) READONLY SHOWIF selectedDateTime() onHandDateTime 
+    PROPERTIES(l, p) READONLY dateReceived, dateShipped
+    PROPERTIES(p) READONLY image PANEL
     FILTERS IF singleLocation() THEN l = lt ELSE isChild(l, lt),
             level(category(p), c),
             IF selectedDateTime() THEN onHandDateTime(l, p) ELSE 
                 (IF singleLocation() THEN onHandRec(l, p) ELSE onHand(l, p))
                 
     OBJECTS il = InvLedger
-    PROPERTIES(il) READONLY dateTime, series, number, description, namePartner, nameFromLocation, nameToLocation, 
+    PROPERTIES(il) READONLY dateTime, series, number, description, 
+                            namePartner, nameFromLocation, nameToLocation, 
                             quantity
+    PROPERTIES(il) EDIT
     FILTERS done(il),
             product(il) = p,
-            fromLocation(il) = l OR toLocation(il) = l,
+            IF singleLocation() THEN (level(fromLocation(il), l) OR level(toLocation(il), l))
+                                ELSE (fromLocation(il) = l OR toLocation(il) = l),
             dateTime(il) <= selectedDateTime() OR NOT selectedDateTime()
             
     OBJECTS a = ItemAttribute
-    OBJECTS locProd = (location = Location, product = Product)
-    PROPERTIES READONLY 'Склад' = canonicalName(location), 'Товар' = name(product), value(product, a) COLUMNS (a) HEADER name(a),
-                    level1(product), level2(product), level3(product), level4(product), 'Группа полная' = canonicalNameCategory(product)
-    PROPERTIES(location,product) reserved, available, onHandDateTime, dateReceived, dateShipped
-    FILTERS IF selectedDateTime() THEN onHandDateTime(location, product) ELSE onHand(location, product)
-    
-    OBJECTS pr = Product PANEL 
-    PROPERTIES(pr) READONLY image
-    FILTERS pr = p
+    OBJECTS rlp = (rl = Location, rp = Product)
+    PROPERTIES READONLY 'Склад' = canonicalName(rl), 'Товар' = name(rp), value(rp, a) COLUMNS (a) HEADER name(a),
+                    level1(rp), level2(rp), level3(rp), level4(rp), 'Группа полная' = canonicalNameCategory(rp)
+    PROPERTIES(rl, rp) READONLY reserved, available, onHandDateTime, dateReceived, dateShipped
+    FILTERS IF selectedDateTime() THEN onHandDateTime(rl, rp) ELSE onHand(rl, rp)
 ;
 
 DESIGN inventoryReport {
     OBJECTS {
         NEW header {
+            type = CONTAINERH;
+            MOVE PROPERTY (selectedDateTime());
+            MOVE PROPERTY (singleLocation());
+        }
+        NEW invReport {
             fill = 1;
-            NEW params {
-                type = CONTAINERH;
-                MOVE PROPERTY (selectedDateTime());
-                MOVE PROPERTY (singleLocation());
-            }
-            NEW invReport {
+            type = TABBED;
+            NEW pane {
+                caption = 'Текущие остатки';
+                type = SPLITH;
                 fill = 1;
-                type = TABBED;
-                NEW pane {
-                    caption = 'Текущие остатки';
-                    type = SPLITH;
+                NEW pane1 {
                     fill = 1;
-                    NEW pane1 {
-                        fill = 1;
-                        type = SPLITV;
-                        MOVE BOX(TREE locations){caption = 'Места хранения';};
-                        MOVE BOX(TREE categories){caption = 'Категории';};
-                    }
-                    NEW pane2 {
-                        fill = 2;
-                        type = SPLITV;
-                        MOVE BOX(lp);
-                        NEW tabs {
-                            type = TABBED;
-                            NEW ledger {
-                                caption = 'Регистр изменения остатка';
-                                MOVE BOX(il);
-                            }
-                            NEW image {
-                                caption = 'Изображение';
-                                MOVE PROPERTY(image(pr)) { caption = ''; fill = 1; } 
-                            }
+                    type = SPLITV;
+                    MOVE BOX(TREE locations) { caption = 'Места хранения'; }
+                    MOVE BOX(TREE categories) { caption = 'Категории'; }
+                }
+                NEW pane2 {
+                    fill = 2;
+                    type = SPLITV;
+                    MOVE BOX(lp);
+                    NEW tabs {
+                        type = TABBED;
+                        MOVE BOX(il) { caption = 'Регистр изменения остатка'; }
+                        NEW image { 
+                            caption = 'Изображение';
+                            MOVE PROPERTY(image(p)) { caption = ''; fill = 1; } 
                         }
-                    }               
-                }
-                NEW report {
-                    fill = 1;
-                    caption = 'Отчет';
-                    MOVE BOX (locProd);
-                }
+                    }
+                }               
             }
+            MOVE BOX (rlp) { caption = 'Отчет'; }
         }
     }
 }
