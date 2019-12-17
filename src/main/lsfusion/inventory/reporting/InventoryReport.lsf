@@ -5,11 +5,12 @@ REQUIRE InvLedger, ResLedger, ItemImage, ItemAttribute;
 NAMESPACE Inventory;
 
 selectedDateTime 'Выбрать дату' = DATA LOCAL DATETIME () PREREAD;
+singleLocation 'По одному складу' = DATA LOCAL BOOLEAN () PREREAD;
 onHandDateTime 'Остаток на дату' (Location l, Product p) = onHand(l, p, selectedDateTime());
                                 
 FORM inventoryReport 'Текущие остатки'
     OBJECTS invL = InvLedger PANEL 
-    PROPERTIES selectedDateTime()
+    PROPERTIES selectedDateTime(), singleLocation()
     
     TREE locations lt = Location PARENT parent(lt)
     PROPERTIES READONLY name(lt)
@@ -20,10 +21,10 @@ FORM inventoryReport 'Текущие остатки'
     ORDER name(c)
     
     OBJECTS lp = (l = Location, p = Product)
-    PROPERTIES READONLY 'Склад' = canonicalName(l), 'Товар' = name(p)
-    PROPERTIES(l,p) READONLY reserved, available, onHand SHOWIF NOT selectedDateTime()
+    PROPERTIES READONLY 'Склад' = canonicalName(l) SHOWIF NOT singleLocation(), 'Товар' = name(p)
+    PROPERTIES(l,p) READONLY reserved, available, onHand SHOWIF NOT selectedDateTime(), onHandRec SHOWIF NOT selectedDateTime()
     PROPERTIES(l,p) READONLY onHandDateTime SHOWIF selectedDateTime(), dateReceived, dateShipped
-    FILTERS level(l, lt),
+    FILTERS IF singleLocation() THEN l = lt ELSE isChild(l, lt),
             level(category(p), c),
             IF selectedDateTime() THEN onHandDateTime(l, p) ELSE onHand(l, p)
                 
@@ -51,7 +52,11 @@ DESIGN inventoryReport {
     OBJECTS {
         NEW header {
             fill = 1;
-            MOVE PROPERTY (selectedDateTime());
+            NEW params {
+                type = CONTAINERH;
+                MOVE PROPERTY (selectedDateTime());
+                MOVE PROPERTY (singleLocation());
+            }
             NEW invReport {
                 fill = 1;
                 type = TABBED;
