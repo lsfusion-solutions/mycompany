@@ -6,7 +6,7 @@ NAMESPACE Purchase;
 
 FORM printOrder 'Заказ поставщику'   
     OBJECTS o = Order PANEL 
-    PROPERTIES(o) scheduledDate, number, nameLocation, fullAddressLocation, nameVendor, fullAddressVendor, phoneVendor, nameCompany, fullAddressCompany, phoneCompany, confirmedDateTime
+    PROPERTIES(o) scheduledDate, number, nameLocation, fullAddressLocation, nameVendor, fullAddressVendor, phoneVendor, nameCompany, fullAddressCompany, phoneCompany
         
     OBJECTS l = OrderLine
     PROPERTIES(l) nameItem, description, scheduledDate, quantity, taxes, subtotal, unitPrice, unitMeasure
@@ -14,21 +14,19 @@ FORM printOrder 'Заказ поставщику'
 ; 
       
 printOrder 'Печать заказ' (Order o) {
-    sentRequestDateTime(o) <- currentDateTime();
     sent(o) <- TRUE; 
     PRINT printOrder OBJECTS o = o;
     MESSAGE 'Запрос напечатан';    
 }  
 
 reprintOrder 'Печать заказ' (Order o) {
-    sentRequestDateTime(o) <- currentDateTime();
     sent(o) <- TRUE;
     PRINT printOrder OBJECTS o = o;
     MESSAGE 'Запрос напечатан';    
 }  
 
 EXTEND FORM order
-     PROPERTIES (o) SHOWIF (status(o)=OrderStatus.confirmed)  printOrder BACKGROUND (CASE WHEN confirmed(o) THEN nextAction())
+     PROPERTIES (o) SHOWIF (status(o)=OrderStatus.confirmed) printOrder
 ;
 
 DESIGN order {

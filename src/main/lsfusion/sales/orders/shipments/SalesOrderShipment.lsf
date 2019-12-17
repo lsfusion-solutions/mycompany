@@ -38,7 +38,7 @@ lastOpenShipment 'Последний открытый расход' (Order o)=
     GROUP LAST Shipment s IF order(s) = o AND status(s) = ShipmentStatus.ready ORDER s;
 
 WHEN ([GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) AND item(l) IS Product BY order(l)](Order o) OR SET(confirmed(o))) AND 
-     toShip(o) > 0 AND status(o) = OrderStatus.orderConfirmed DO {
+     toShip(o) > 0 AND status(o) = OrderStatus.confirmed DO {
     IF NOT lastOpenShipment(o) THEN   
         NEW ns = Shipment { 
             partner(ns) <- customer(o);

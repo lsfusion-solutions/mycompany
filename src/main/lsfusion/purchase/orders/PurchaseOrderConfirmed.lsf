@@ -8,7 +8,6 @@ EXTEND CLASS OrderStatus {
     confirmed 'Оформлен'
 }
 
-confirmedDateTime 'Подтвержден' = DATA DATETIME (Order);
 confirmed 'Подтвержден' = DATA BOOLEAN (Order);
 
 confirm 'Подтвердить' (Order o){
@@ -16,7 +15,6 @@ confirm 'Подтвердить' (Order o){
     IF canceled() THEN RETURN;
     
     NEWSESSION {
-        confirmedDateTime(o) <- currentDateTime();
         confirmed(o) <- TRUE;
         APPLY;
     }
@@ -34,10 +32,6 @@ DESIGN order {
         MOVE PROPERTY(confirm(o))  FIRST { fontStyle = 'bold'; };
     }
 }
-
-EXTEND FORM orders
-    PROPERTIES(o) READONLY SHOWIF showActionsTime() confirmedDateTime BEFORE seriesNumber(o);
-;
 
 EXTEND FORM items
     OBJECTS pl = OrderLine

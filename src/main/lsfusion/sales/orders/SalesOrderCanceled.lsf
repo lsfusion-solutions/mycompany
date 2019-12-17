@@ -8,7 +8,6 @@ EXTEND CLASS OrderStatus {
     canceled 'Отменен'
 }
 
-canceledDateTime 'Отменен' = DATA DATETIME (Order);
 canceled 'Отменен' = DATA BOOLEAN (Order);
 
 cancel 'Отменить' (Order o){
@@ -16,7 +15,6 @@ cancel 'Отменить' (Order o){
     IF canceled() THEN RETURN;
 
     NEWSESSION {
-        canceledDateTime(o) <- currentDateTime();
         canceled(o) <- TRUE;
         APPLY;
     }    
@@ -34,7 +32,3 @@ DESIGN order {
         MOVE PROPERTY(cancel(o));
     }
 }
-
-EXTEND FORM orders
-    PROPERTIES(o) READONLY SHOWIF showActionsTime() canceledDateTime BEFORE seriesNumber(o) ;
-;

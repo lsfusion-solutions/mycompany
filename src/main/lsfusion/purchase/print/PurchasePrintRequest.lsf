@@ -6,7 +6,7 @@ NAMESPACE Purchase;
  
 FORM printRequest 'Запрос поставщику'   
     OBJECTS o = Order PANEL 
-    PROPERTIES(o) sentRequestDateTime, scheduledDate, number, nameLocation, fullAddressLocation, nameVendor, fullAddressVendor, phoneVendor, nameCompany, fullAddressCompany, phoneCompany
+    PROPERTIES(o) scheduledDate, number, nameLocation, fullAddressLocation, nameVendor, fullAddressVendor, phoneVendor, nameCompany, fullAddressCompany, phoneCompany
         
     OBJECTS l = OrderLine
     PROPERTIES(l) nameItem, description, scheduledDate, quantity
@@ -14,7 +14,6 @@ FORM printRequest 'Запрос поставщику'
 ; 
     
 printRequest 'Печать запрос' (Order o) {
-    sentRequestDateTime(o) <- currentDateTime();
     sent(o) <- TRUE;
     PRINT printRequest OBJECTS o = o;
     MESSAGE 'Запрос напечатан';    
@@ -22,7 +21,6 @@ printRequest 'Печать запрос' (Order o) {
 }  
 
 reprintRequest 'Печать запрос' (Order o) {
-    sentRequestDateTime(o) <- currentDateTime();
     sent(o) <- TRUE;
     PRINT printRequest OBJECTS o = o;   
     MESSAGE 'Запрос напечатан';    

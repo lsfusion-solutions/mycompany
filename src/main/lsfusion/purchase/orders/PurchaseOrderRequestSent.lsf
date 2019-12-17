@@ -7,12 +7,7 @@ NAMESPACE Purchase;
 EXTEND CLASS OrderStatus {
     requestSent 'Запрос отправлен'
 }
-sentRequestDateTime 'Отправлен' = DATA DATETIME (Order);
 sent 'Отправлен'  = DATA BOOLEAN (Order);
 
 status(Order o) += WHEN sent(o) THEN OrderStatus.requestSent;
 colorStatus(Order i) += WHEN status(i) = OrderStatus.requestSent THEN RGB(252,247,149);
-
-EXTEND FORM orders
-    PROPERTIES(o) READONLY SHOWIF showActionsTime() sentRequestDateTime AFTER date(o) ;
-;

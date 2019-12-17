@@ -8,7 +8,6 @@ EXTEND CLASS OrderStatus {
     locked 'Закрыт'
 }
 
-lockDateTime 'Закрыт' = DATA DATETIME (Order);
 locked 'Закрыт' = DATA BOOLEAN (Order);
 
 lock 'Закрыть' (Order o) {
@@ -16,7 +15,6 @@ lock 'Закрыть' (Order o) {
     IF canceled() THEN RETURN;
 
     NEWSESSION {
-        lockDateTime(o) <- currentDateTime();
         locked(o) <- TRUE;
         APPLY;
     }

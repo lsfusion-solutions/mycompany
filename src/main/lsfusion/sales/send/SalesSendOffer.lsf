@@ -4,8 +4,7 @@ REQUIRE SalesOrderStatus, SalesOrderOfferSent;
 
 NAMESPACE Sales;
 
-sendRequest 'Отправить предложение' (Order o){
-    sentRequestDateTime(o) <- currentDateTime();
+sendRequest 'Отправить предложение' (Order o) {
     sent(o) <- TRUE;
     MESSAGE 'Предложение отправлено';    
 }
@@ -16,7 +15,7 @@ resendRequest 'Отправить предложение' (Order o){
 
 
 EXTEND FORM order
-     PROPERTIES(o) SHOWIF (status(o)=OrderStatus.draft) sendRequest BACKGROUND nextAction()
+     PROPERTIES(o) SHOWIF (status(o)=OrderStatus.draft) sendRequest
      PROPERTIES(o) SHOWIF (status(o)=OrderStatus.offerSent) resendRequest
 ;
 
