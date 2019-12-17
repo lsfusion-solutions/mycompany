@@ -1,8 +1,58 @@
 MODULE PrintStructureCost;
 
-REQUIRE StructureCost;
+REQUIRE BomNested;
 
 NAMESPACE Manufacturing;
+
+nameProductIndent 'Номенклатура' (ComponentLine l, TEXT path) = STRING (CONCAT '', repeat('    ', wordCount(path, '/') - 1), nameItem(l));
+
+reference 'Спецификация' (ComponentLine l) = seriesNumber(nestedBom(l));
+
+itemsCost 'Себестоимость товаров' (Bom b, ComponentLine l, TEXT path) = 
+    NUMERIC[16,3](quantity(b, l, path) * cost(item(l)));
+cost 'Себестоимость товаров' (Bom b) = cost(item(b)) * quantity(b);
+
+componentsCost 'Себестоимость компонентов' (Bom b, ComponentLine l, TEXT path) = 
+    NUMERIC[16,3] (GROUP SUM quantity(b, ComponentLine ll, TEXT child) * cost(item(ll)) IF 
+                             level(b, ll, child) AND 
+                             startsWith(child, path) AND 
+                             NOT nestedBom(ll));
+componentsCost 'Себестоимость компонентов' (Bom b) = 
+    NUMERIC[16,3](GROUP SUM componentsCost(b, ComponentLine l, TEXT path) IF level(b, l, path) AND NOT nestedBom(l));
+
+FORM chooseBom
+    OBJECTS p = Product
+    
+    OBJECTS b = Bom
+    PROPERTIES(b) READONLY nameItem, quantity, nameUnitMeasure, seriesNumber
+    FILTERS item(b) = p
+;
+
+chooseBom (ComponentLine l) {
+    DIALOG chooseBom OBJECTS p = item(l), b INPUT DO {
+        selectedReference(l) <- b;
+    }
+}
+         
+FORM structureAndCost 'Структура и стоимость'
+    OBJECTS b = Bom PANEL 
+    PROPERTIES(b) READONLY seriesNumber, cost, componentsCost
+       
+    OBJECTS (l = ComponentLine, path = TEXT)
+    PROPERTIES nameProductIndent(l, path), reference(l) ON CHANGE chooseBom(l), 
+                quantity(b, l, path), itemsCost(b, l, path), componentsCost(b, l, path)
+    PROPERTIES path = VALUE(path) SHOWIF NULL
+    FILTERS level(b, l, path)   
+    ORDER path
+;
+
+structureAndCost 'Структура и стоимость' (Bom b) {
+    SHOW structureAndCost OBJECTS b = b;
+}
+
+EXTEND FORM bom
+    PROPERTIES(b) structureAndCost DRAW b TOOLBAR 
+;
 
 FORM printStructureAndCost 'Структура и стоимость'
     OBJECTS b = Bom PANEL 
