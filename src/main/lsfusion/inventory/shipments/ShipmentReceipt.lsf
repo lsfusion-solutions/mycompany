@@ -8,14 +8,13 @@ isReturn 'Возврат' = DATA BOOLEAN (Receipt);
 referenceShipment 'Ссылка на отгрузку' = DATA ShipmentLine (ReceiptLine);
 referenceNumber 'Ссылка на отгрузку' (ReceiptLine l) = seriesNumber(shipment(referenceShipment(l)));
 
-CONSTRAINT referenceShipment(ReceiptLine l) AND NOT 
-    (partner(referenceShipment(l)) = partner(l) AND product(referenceShipment(l)) = product(l))
+CONSTRAINT referenceShipment(ReceiptLine l) AND NOT (partner(referenceShipment(l)) = partner(l) AND 
+    product(referenceShipment(l)) = product(l))
     CHECKED BY referenceShipment
     MESSAGE 'Партнер и продукт отгрузки должны совпадать с партнером и товаром возврата';
     
-WHEN LOCAL (SETCHANGED(product(ReceiptLine l)) OR SETCHANGED(partner(l))) AND 
-            isReturn(receipt(l)) AND product(l) AND partner(l) DO {
-    referenceShipment(l) <- GROUP LAST ShipmentLine sl IF partner(sl) = partner(l) AND product(sl) = product(l) ORDER executionDate(shipment(sl)), sl;
+WHEN LOCAL (SETCHANGED(product(ReceiptLine l)) OR SETCHANGED(partner(l))) AND isReturn(receipt(l)) AND product(l) AND partner(l) DO {
+    referenceShipment(l) <- GROUP LAST ShipmentLine sl IF partner(sl) = partner(l) AND product(sl) = product(l) ORDER executionDate(shipment(sl));
 }
 
 WHEN LOCAL SETCHANGED(referenceShipment(ReceiptLine l)) DO {

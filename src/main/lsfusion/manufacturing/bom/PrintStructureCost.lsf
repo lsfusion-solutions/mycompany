@@ -6,12 +6,12 @@ NAMESPACE Manufacturing;
 
 FORM printStructureAndCost 'Структура и стоимость'
     OBJECTS b = Bom PANEL 
-    PROPERTIES(b) READONLY seriesNumber, cost, componentsCost
+    PROPERTIES(b) READONLY nameItem, componentsCost
        
     OBJECTS (l = ComponentLine, path = TEXT)
-    PROPERTIES nameProductIndent(l, path), quantity(l) READONLY , reference(l) ON CHANGE chooseBom(l), 
-                componentsNeeded(b, l, path), componentsCost(b, l, path)
-    PROPERTIES path = VALUE(path) SHOWIF NULL
+    PROPERTIES nameProductIndent(l, path), quantity(l) READONLY, nameUnitMeasure(l), reference(l) ON CHANGE chooseBom(l), 
+                quantity(b, l, path), componentsCost(b, l, path)
+    PROPERTIES path = VALUE(path)
     FILTERS level(b, l, path)   
     ORDER path
 ;

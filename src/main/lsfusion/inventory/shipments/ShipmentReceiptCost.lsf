@@ -1,7 +1,7 @@
 MODULE ShipmentReceiptCost;
 
-REQUIRE ReceiptCost, ShipmentReceipt;
+REQUIRE ReceiptCost, ShipmentReceipt, ShipmentCost;
 
 NAMESPACE Inventory;
 
-cost(ReceiptLine l) += WHEN referenceShipment(l) THEN NUMERIC[14,2](done(referenceShipment(l)) * cost(product(l)));
+cost(ReceiptLine l) += WHEN referenceShipment(l) THEN NUMERIC[14,2](done(l) * price(outCostLedger(referenceShipment(l))));
