@@ -23,4 +23,18 @@ quantity 'Уровень' (Bom b, ComponentLine c, TEXT path, NUMERIC[20,11] q) 
 quantity (Bom b, ComponentLine c, TEXT path) = NUMERIC[16,3]
     (GROUP SUM quantity(b, c, path, NUMERIC[20,11] q) * q); 
          
+manufactureComponents 'Производить компоненты' = DATA BOOLEAN (Bom);
 
+EXTEND FORM bom
+    PROPERTIES(b) manufactureComponents
+;
+
+DESIGN bom {
+    item {
+        MOVE PROPERTY(manufactureComponents(b));
+    }
+}
+
+finalBom (Bom b, ComponentLine c, TEXT path) =
+    RECURSION 1l IF bom(c) = b AND path = textIndex(c) 
+         STEP 2l IF bom(c) = nestedBom($c) AND path = ($path + '/' + textIndex(c)) AND manufactureComponents(bom($c));

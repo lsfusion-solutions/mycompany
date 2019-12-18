@@ -11,14 +11,26 @@ unbuild 'Разобрать' (UnbuildOrder o) {
     IF canceled() THEN RETURN;
     
     NEWSESSION {
-        FOR bom(ComponentLine cl) = bom(o) DO NEW l = UnbuildOrderLine {
+        IF manufactureComponents(bom(o)) THEN {
+            FOR finalBom(bom(o), ComponentLine cl, TEXT path) AND NOT manufactureComponents(bom(cl)) DO NEW l = UnbuildOrderLine {
                 unbuildOrder(l) <- o;
                 date(l) <- currentDateTime();
                 item(l) <- item(cl);
-                quantity(l) <- NUMERIC[16,3](quantity(o) * quantity(cl));
                 unitMeasure(l) <- unitMeasure(cl);
+                quantity(l) <- NUMERIC[16,3](quantity(bom(o), cl, path) * quantity(o));
+                costRatio(l) <- NUMERIC[16,3](costRatio(cl));
+            } 
+        }
+        ELSE
+            FOR bom(ComponentLine cl) = bom(o) DO NEW l = UnbuildOrderLine {
+                unbuildOrder(l) <- o;
+                date(l) <- currentDateTime();
+                item(l) <- item(cl);
+                unitMeasure(l) <- unitMeasure(cl);
+                quantity(l) <- NUMERIC[16,3](quantity(cl) * quantity(o));
                 costRatio(l) <- NUMERIC[16,3](costRatio(cl));
             }
+
         done(o) <- TRUE;
         APPLY;
     }

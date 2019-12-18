@@ -74,22 +74,6 @@ unitMeasure 'Ед.изм.' = DATA ItemMeasure (FinishedLine);
 nameUnitMeasure 'Ед.изм.' (FinishedLine l) = name(unitMeasure(l));
 done 'Произведено' = DATA NUMERIC[16,3] (FinishedLine);
 
-manufactureComponents 'Производить компоненты' = DATA BOOLEAN (Bom);
-
-EXTEND FORM bom
-    PROPERTIES(b) manufactureComponents
-;
-
-DESIGN bom {
-    item {
-        MOVE PROPERTY(manufactureComponents(b));
-    }
-}
-
-finalBom (Bom b, ComponentLine c, TEXT path) =
-    RECURSION 1l IF bom(c) = b AND path = textIndex(c) 
-         STEP 2l IF bom(c) = nestedBom($c) AND path = ($path + '/' + textIndex(c)) AND manufactureComponents(bom($c));
-
 WHEN LOCAL (SETCHANGED(bom(ManufacturingOrder m)) OR SETCHANGED(quantity(m))) DO {
     FOR manufacturingOrder(ConsumedLine l) = m DO DELETE l;
     
