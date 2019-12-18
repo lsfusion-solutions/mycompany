@@ -68,12 +68,33 @@ FORM categories 'Категории'
     PROPERTIES(c) READONLY name, id, nameParent, canonicalName
     PROPERTIES(c) NEWSESSION EDIT, DELETE
     PROPERTIES(c) newCategory DRAW c TOOLBAR 
-
+    
+    TREE categories cc = Category PARENT parent(cc)
+    PROPERTIES READONLY name(cc)
+    PROPERTIES(cc) NEWSESSION EDIT, DELETE
+    PROPERTIES(cc) newCategory DRAW cc TOOLBAR 
+    ORDER name(cc)
+    
    LIST Category OBJECT c
 ;
 
 NAVIGATOR {
     masterData {
         NEW categories;
+    }
+}
+
+DESIGN categories {
+    OBJECTS {
+        fill = 1;
+        type = TABBED;
+        NEW list {
+            caption = 'Список';
+            MOVE BOX(c);
+        }
+        NEW tree {
+            caption = 'Дерево';
+            MOVE BOX(TREE categories);
+        }
     }
 }

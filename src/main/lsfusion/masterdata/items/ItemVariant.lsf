@@ -51,12 +51,15 @@ addVariant 'Разновидность' (Item ii) {
     }
 }IMAGE 'add.png';
 
-EXTEND FORM items 
+EXTEND FORM item 
     OBJECTS ii = Item
     PROPERTIES(ii) name, idBarCode, id, nameCategory, nameUnitMeasure
     PROPERTIES addVariant(i) DRAW ii TOOLBAR 
     FILTERS variantOf(ii) = i
-    
+
+;
+
+EXTEND FORM items
     FILTERGROUP variants
         FILTER 'Основные' NOT variantOf(i) 'F10'
         FILTER 'Разновидности' variantOf(i) 'F9'
@@ -67,10 +70,7 @@ DESIGN item {
     header {
         MOVE PROPERTY(nameVariantOf(i)) AFTER PROPERTY(name(i));
     }
-}
-
-DESIGN items {
-    operations {
+    tabs {
         NEW variants {
             caption = 'Разновидности';
             MOVE BOX(ii);
