@@ -7,32 +7,17 @@ NAMESPACE Sales;
 CLASS PriceType 'Виды цены';
 
 name 'Наименование' = DATA ISTRING[100](PriceType) NONULL;
-default 'по умолчаню' = DATA BOOLEAN (PriceType);
 
 FORM pricelistType 'Вид цены'
     OBJECTS pt = PriceType PANEL 
-    PROPERTIES(pt) name, default
+    PROPERTIES(pt) name
+
     EDIT PriceType OBJECT pt
 ;
 
-DESIGN pricelistType {
-    OBJECTS {
-        NEW header {
-            type = CONTAINERV;        
-            caption='Виды цен';
-            fill = 1;
-            MOVE PROPERTY(name(pt));
-            NEW pane{
-                type = CONTAINERV;
-                MOVE PROPERTY(default(pt)) {caption='по умолчанию для новых покупателей';};
-            }
-        }
-    }
-}
-
 FORM pricelistTypes 'Виды цен'
     OBJECTS pt = PriceType
-    PROPERTIES(pt) READONLY name, default
+    PROPERTIES(pt) READONLY name
     PROPERTIES(pt) NEWSESSION NEW, EDIT, DELETE 
 ;   
 
@@ -44,31 +29,29 @@ FORM pricelistTypeList 'Вид цены'
 ;
 
 NAVIGATOR {
-    settings{
+    settings {
         NEW pricelistTypes;
     }
 }
 
-//добавляем для контрагента определение типа цен
-priceType 'Тип цен для покупателя' =  DATA PriceType (Partner);
-namePriceType 'Тип цен для покупателя' (Partner p) =  name(priceType(p));
-//если не указан тип цен при добавлении контрагента, ставим дефолтный
-WHEN SET (Partner p IS Partner) DO {
-    IF isCustomer(p) AND NOT priceType(p) THEN priceType(p) <- GROUP LAST (PriceType pt) IF default(pt) ORDER pt;
-} 
+defaultPriceType = DATA PriceType ();
+nameDefaultPriceType 'Тип цены по умолчанию' () = name(defaultPriceType());
+
+EXTEND FORM options PROPERTIES nameDefaultPriceType();
+
+priceType = DATA PriceType (Partner);
+namePriceType 'Тип цен' (Partner p) =  name(priceType(p));
+
+WHEN LOCAL SET (Partner p IS Partner) AND NOT priceType(p) DO 
+    priceType(p) <- defaultPriceType();
 
 EXTEND FORM partner 
     PROPERTIES(p) namePriceType 
 ;
 
 DESIGN partner {
-    tabs {
-        customer {
-            NEW pricelist {
-                showIf=isCustomer(p);
-                MOVE PROPERTY (namePriceType(p));
-            }
-        }
+    customerOptions {
+        MOVE PROPERTY (namePriceType(p));
     }
 }
 
@@ -85,6 +68,6 @@ EXTEND FORM order
 
 DESIGN order {
     attr {
-        MOVE PROPERTY(namePriceType(o)) {fill = 1;};   
+        MOVE PROPERTY(namePriceType(o)) { fill = 1; };   
     }
 }
