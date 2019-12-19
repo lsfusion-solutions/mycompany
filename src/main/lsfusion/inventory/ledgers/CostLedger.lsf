@@ -37,15 +37,17 @@ costQuantity 'Количество' (Location l, Product p) =
     GROUP SUM signedQuantity(CostLedger cl) IF location(cl) = l AND product(cl) = p MATERIALIZED;
 costSum 'Себестоимость' (Location l, Product p) = 
     GROUP SUM signedSum(CostLedger cl) IF location(cl) = l AND product(cl) = p MATERIALIZED;
-
-costPrice 'Себестоимость за единицу' (Location l, Product p) = costSum(l, p) / costQuantity(l, p); 
+costPrice 'Себестоимость за единицу' (Location l, Product p) = costSum(l, p) / costQuantity(l, p);
 
 costQuantity 'Количество' (Location l, Product p, DATETIME dt) = 
     costQuantity(l, p) (-) (GROUP SUM signedQuantity(CostLedger cl) IF location(cl) = l AND product(cl) = p AND dateTime(cl) >= dt);
 costSum 'Себестоимость' (Location l, Product p, DATETIME dt) = 
     costSum(l, p) (-) (GROUP SUM signedSum(CostLedger cl) IF location(cl) = l AND product(cl) = p AND dateTime(cl) >= dt);
-
 costPrice 'Себестоимость за единицу' (Location l, Product p, DATETIME dt) = costSum(l, p, dt) / costQuantity(l, p, dt); 
+
+costQuantity 'Количество' (Product p) = GROUP SUM costQuantity(Location l, p);
+costSum 'Себестоимость' (Product p) = GROUP SUM costSum(Location l, p);
+costPrice 'Себестоимость за единицу' (Product p) = costSum(p) / costQuantity(p);
 
 // Связываем OutCostLedger и InCostLedger
 
