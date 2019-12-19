@@ -4,7 +4,7 @@ REQUIRE Numerator;
 
 NAMESPACE Utils;
 
-META defineSeriesNumber(class, name, series)
+META defineSeriesNumber(class, caption, srs)
 
     series 'Серия' = DATA STRING[2] (###class);
     number 'Номер' = DATA STRING[28] (###class) NONULL;
@@ -12,13 +12,13 @@ META defineSeriesNumber(class, name, series)
     seriesNumber 'Серия/Номер' (###class o) = CONCAT '/', series(o), number(o) CHARWIDTH 10; 
     
     numerator###class = DATA Numerator();
-    nameNumerator###class 'Нумератор ('##name##') = name(numerator###class());
+    nameNumerator###class 'Нумератор - '##caption = name(numerator###class());
     
     loadInitialData () + {
         NEWSESSION {
             NEW n = Numerator {
-                name(n) <- ##name;
-                series(n) <- ##series;
+                name(n) <- caption;
+                series(n) <- srs;
                 minValue(n) <- 1;
                 maxValue(n) <- 999999;
                 stringLength(n) <- 6;
@@ -45,18 +45,18 @@ META defineSeriesNumber(class, name, series)
     }
 END
 
-META defineID(class, name, series)
+META defineID(class, caption, srs)
     id 'Код' = DATA STRING[50] (###class) IN id CHARWIDTH 8;
     ##class (STRING[50] id) = GROUP AGGR ###class o BY id(o);
     
     numerator###class = DATA Numerator();
-    nameNumerator###class 'Нумератор ('##name##') = name(numerator###class());
+    nameNumerator###class 'Нумератор - '##caption = name(numerator###class());
     
     loadInitialData () + {
         NEWSESSION {
             NEW n = Numerator {
-                name(n) <- ##name;
-                series(n) <- ##series;
+                name(n) <- caption;
+                series(n) <- srs;
                 minValue(n) <- 1;
                 maxValue(n) <- 999999;
                 stringLength(n) <- 6;

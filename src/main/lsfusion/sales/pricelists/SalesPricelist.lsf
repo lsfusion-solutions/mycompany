@@ -8,8 +8,6 @@ CLASS Pricelist 'Прайс-листы';
 
 @defineSeriesNumber(pricelist, 'Прайс-листы', 'ПЛ');
 
-number 'Номер' = DATA STRING[20] (Pricelist);
-
 name 'Наименование' = DATA STRING[50] (Pricelist) NONULL;
 
 startDate 'Начало действия' = DATA DATETIME (Pricelist);
@@ -70,7 +68,7 @@ WHEN LOCAL CHANGED(item(OrderLine ol)) DO {
 
 FORM pricelist 'Прайс-листы'
     OBJECTS pr = Pricelist PANEL
-    PROPERTIES(pr) name, number, startDate, endDate, taxIncluded
+    PROPERTIES(pr) name, series, number, startDate, endDate, taxIncluded
    
     OBJECTS t = PriceType
     PROPERTIES(t) READONLY name 
@@ -83,8 +81,8 @@ FORM pricelist 'Прайс-листы'
     PROPERTIES(prl) nameItem, nameUnitMeasure READONLY, taxes ON CHANGE changeTax(prl)
     PROPERTIES(prl) NEW,DELETE 
     FILTERS pricelist(prl) = pr 
-    PROPERTIES(prl, tc) price COLUMNS (tc) HEADER name(tc)
-    PROPERTIES currentPrice(prl, tc) COLUMNS (tc) HEADER 'Действующая цена ' + name(tc)
+    PROPERTIES currentPrice(prl, tc) COLUMNS 'p' (tc) HEADER name(tc) + ' (текущая)'
+    PROPERTIES(prl, tc) price COLUMNS 'p' (tc) HEADER name(tc)
 
     EDIT Pricelist OBJECT pr
 ;
@@ -103,6 +101,7 @@ DESIGN pricelist{
                     type = CONTAINERH;
                     MOVE PROPERTY(startDate(pr)) {caption = 'Период действия с ';};
                     MOVE PROPERTY(endDate(pr)) {caption = 'по ';};
+                    MOVE PROPERTY(series(pr)) {marginLeft=10;};
                     MOVE PROPERTY(number(pr)) {marginLeft=10;};
                 }                
                 MOVE PROPERTY(taxIncluded(pr)) {caption='цены с учетом налогов';}
