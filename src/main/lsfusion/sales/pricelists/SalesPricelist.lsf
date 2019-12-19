@@ -4,22 +4,20 @@ REQUIRE Item, Partner, ItemSale, PartnerSale, TaxItem, SalesSettings, SalesOrder
 
 NAMESPACE Sales; 
 
-// http://documentation.luxsoft.by/x/RwBZB
-
 CLASS Pricelist 'Прайс-листы';
+
+@defineSeriesNumber(pricelist, 'Прайс-листы', 'ПЛ');
 
 number 'Номер' = DATA STRING[20] (Pricelist);
 
 name 'Наименование' = DATA STRING[50] (Pricelist) NONULL;
 
 startDate 'Начало действия' = DATA DATETIME (Pricelist);
-
 endDate 'Окончание действия' = DATA DATETIME (Pricelist);
 
 taxIncluded 'с налогами' = DATA BOOLEAN (Pricelist);  
 
 editIn 'Изменять цены' = DATA BOOLEAN (Pricelist, PriceType);
-orderEditIn 'Порядок ввода' = DATA INTEGER (Pricelist, PriceType);
 
 priceListTypes 'Цены' (Pricelist pricelist) = GROUP
                                                CONCAT name(PriceType pricelistType) IF editIn(pricelist, pricelistType) , ', '
@@ -35,7 +33,6 @@ nameUnitMeasure 'Единицы' (PricelistLine prl) = name(unitMeasure(item(prl
 taxIncluded 'с налогами' (PricelistLine prl) = taxIncluded(pricelist(prl)) ;  
 
 editIn (PricelistLine pl, PriceType priceType) = editIn(pricelist(pl), priceType);
-orderEditIn (PricelistLine pl, PriceType priceType) = orderEditIn(pricelist(pl), priceType);
 
 price 'Цена' = DATA NUMERIC[10,2] (PricelistLine, PriceType);
 
@@ -80,8 +77,6 @@ FORM pricelist 'Прайс-листы'
     PROPERTIES(pr, t) editIn[Pricelist,PriceType] 
 
     OBJECTS tc = PriceType GRID
-    PROPERTIES (pr,tc) orderEditIn[Pricelist,PriceType]
-    ORDER orderEditIn(pr,tc)
     FILTERS editIn(pr, tc) 
    
     OBJECTS prl = PricelistLine
