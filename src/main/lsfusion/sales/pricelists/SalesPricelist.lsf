@@ -8,7 +8,7 @@ NAMESPACE Sales;
 
 CLASS Pricelist 'Прайс-листы';
 
-number 'Номер' = DATA STRING[20] (Pricelist) NONULL;
+@defineSeriesNumber(pricelist, 'Прайс-листы', 'ПЛ');
 
 note 'Примечания' = DATA STRING[50] (Pricelist);
 
@@ -34,7 +34,6 @@ nameItem 'Номенклатура' (PricelistLine prl) = name(item(prl));
 nameUnitMeasure 'Единицы' (PricelistLine prl) = name(unitMeasure(item(prl))); 
 
 editIn (PricelistLine pl, PriceType priceType) = editIn(pricelist(pl), priceType);
-orderEditIn (PricelistLine pl, PriceType priceType) = orderEditIn(pricelist(pl), priceType);
 
 price 'Цена' = DATA NUMERIC[10,2] (PricelistLine, PriceType);
 
@@ -97,8 +96,6 @@ FORM pricelist 'Прайс-листы'
                 showMarkup, isCopy READONLY 
 
     OBJECTS tc = PriceType GRID
-    PROPERTIES (pr,tc) orderEditIn[Pricelist,PriceType]
-    ORDER orderEditIn(pr,tc)
     FILTERS editIn(pr, tc) 
    
     OBJECTS prl = PricelistLine
