@@ -17,7 +17,6 @@ startDate 'Начало действия' = DATA DATETIME (Pricelist);
 endDate 'Окончание действия' = DATA DATETIME (Pricelist);
 
 editIn 'Изменять цены' = DATA BOOLEAN (Pricelist, PriceType);
-orderEditIn 'Порядок ввода' = DATA INTEGER (Pricelist, PriceType);
 
 priceListTypes 'Варианты цен' (Pricelist pricelist) = GROUP
                                                CONCAT name(PriceType pricelistType) IF editIn(pricelist, pricelistType) , ', '
@@ -102,8 +101,8 @@ FORM pricelist 'Прайс-листы'
     PROPERTIES(prl) nameItem, nameUnitMeasure READONLY, taxes ON CHANGE changeTax(prl), costPrice
     PROPERTIES(prl) NEW,DELETE 
     FILTERS pricelist(prl) = pr 
-    PROPERTIES(prl, tc) price COLUMNS (tc) HEADER 'Цена ' + name(tc) BACKGROUND RGB(198,230,247)
-    PROPERTIES currentPrice(prl, tc) COLUMNS (tc) HEADER 'Действующая цена ' + name(tc) SHOWIF showCurrentPrice(pr)
+    PROPERTIES(prl, tc) price COLUMNS (tc) HEADER name(tc) BACKGROUND RGB(198,230,247)
+    PROPERTIES currentPrice(prl, tc) COLUMNS (tc) HEADER name(tc) + ' (текущая)' SHOWIF showCurrentPrice(pr)
     PROPERTIES markup(prl, tc) COLUMNS (tc) HEADER 'Надбавка ' + name(tc) SHOWIF showMarkup(pr)
 
     EDIT Pricelist OBJECT pr
@@ -177,9 +176,6 @@ copyPricelist 'Копировать прайслист' (Pricelist pl) {
             isCopy(p) <- TRUE;
             FOR editIn(pl, PriceType t) DO {
                 editIn(p, t) <- editIn(pl, t);
-            }
-            FOR orderEditIn(pl, PriceType t) DO {
-                orderEditIn(p, t) <- orderEditIn(pl, t);
             }
             FOR pricelist(PricelistLine l)  = pl DO {
                 NEW nl = PricelistLine {
