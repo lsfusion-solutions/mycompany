@@ -70,7 +70,7 @@ chooseTypes (Pricelist pr) {
 
 changeMarkup (PricelistLine l, PriceType t) {
     INPUT val = NUMERIC[10,2] DO {
-        price(l, t) <- round2(val * costPrice(l) / 100 (-) taxes(l, t) (+) costPrice(l));
+        price(l, t) <- round2((val * costPrice(l) / 100 (+) costPrice(l)) / (1 (+) (GROUP SUM value(Tax tax) IF salesIn(item(l),tax)) / 100));
     }
 }
 
