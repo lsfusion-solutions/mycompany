@@ -47,7 +47,7 @@ showCurrentPrice 'Действующие цены' = DATA BOOLEAN (Pricelist);
 showMarkup 'Надбавки' = DATA BOOLEAN (Pricelist);
 showCost 'Себестоимость' = DATA BOOLEAN (Pricelist);
 
-costPrice 'Текущая себестоимость' (PricelistLine pl) = round2(GROUP SUM costPrice(Location l, item(pl)) / GROUP SUM 1 IF costPrice(Location ll, item(pl)));
+costPrice 'Текущая себестоимость' (PricelistLine pl) = costPrice(item(pl));
 
 taxes (PricelistLine l, PriceType pt) = (GROUP SUM value(Tax t) IF salesIn(item(l),t)) * price(l, pt) / 100;
 markup 'Надбавка' (PricelistLine l, PriceType t) = IF price(l, t) THEN round2((price(l, t) (+) taxes(l, t) (-) costPrice(l)) * 100 / costPrice(l));
@@ -98,23 +98,25 @@ DESIGN pricelist {
         NEW header {
             NEW col1 {
                 align = START;
-                type = CONTAINERV;
-                NEW rek {
-                    type = CONTAINERH;
-                    MOVE PROPERTY(startDate(pr)) { caption = 'Период действия с '; }
-                    MOVE PROPERTY(endDate(pr)) { caption = 'по '; }
-                    MOVE PROPERTY(seriesNumber(pr)) { marginLeft = 10; }
-                }
-                MOVE PROPERTY(priceListTypes(pr)); 
-                MOVE PROPERTY(note(pr));
+                type = CONTAINERH;
+                NEW left {
+                    NEW rek {
+                        type = CONTAINERH;
+                        MOVE PROPERTY(startDate(pr)) { caption = 'Период действия с '; }
+                        MOVE PROPERTY(endDate(pr)) { caption = 'по '; }
+                        MOVE PROPERTY(seriesNumber(pr)) { marginLeft = 10; }
+                    }
+                    MOVE PROPERTY(priceListTypes(pr)); 
+                    }
                 NEW show {
                     caption = 'Показывать';
                     type = CONTAINERH;
                     MOVE PROPERTY(showCurrentPrice(pr));     
                     MOVE PROPERTY(showMarkup(pr));
                     MOVE PROPERTY(showCost(pr));
-                }      
+                }     
             }
+            MOVE PROPERTY(note(pr)); 
         }
         NEW details {
             fill = 1;
