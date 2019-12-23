@@ -1,42 +1,48 @@
 MODULE SalesPricelist;
 
-REQUIRE Item, Partner, ItemSale, PartnerSale, TaxItem, SalesSettings, SalesOrder, SalesPriceType;
+REQUIRE Item, Partner, ItemSale, PartnerSale, TaxItem, SalesSettings, SalesOrder, SalesPriceType, CostLedger;
 
 NAMESPACE Sales; 
 
+// http://documentation.luxsoft.by/x/RwBZB
+
 CLASS Pricelist 'Прайс-листы';
 
-@defineSeriesNumber(pricelist, 'Прайс-листы', 'ПЛ');
+number 'Номер' = DATA STRING[20] (Pricelist) NONULL;
 
-name 'Наименование' = DATA STRING[50] (Pricelist) NONULL;
+note 'Примечания' = DATA STRING[50] (Pricelist);
 
 startDate 'Начало действия' = DATA DATETIME (Pricelist);
+
 endDate 'Окончание действия' = DATA DATETIME (Pricelist);
 
-taxIncluded 'с налогами' = DATA BOOLEAN (Pricelist);  
-
 editIn 'Изменять цены' = DATA BOOLEAN (Pricelist, PriceType);
+orderEditIn 'Порядок ввода' = DATA INTEGER (Pricelist, PriceType);
 
-priceListTypes 'Цены' (Pricelist pricelist) = GROUP
+priceListTypes 'Варианты цен' (Pricelist pricelist) = GROUP
                                                CONCAT name(PriceType pricelistType) IF editIn(pricelist, pricelistType) , ', '
                                                ORDER pricelistType CHARWIDTH 10 MATERIALIZED;
+isCopy 'Копия' = DATA BOOLEAN (Pricelist);
+
+
 CLASS PricelistLine 'Номенклатура';
 
 pricelist 'Прайс-лист' = DATA Pricelist (PricelistLine) NONULL DELETE;
-namePricelist 'Прайс-лист' (PricelistLine prl)= name(pricelist(prl));
+notePricelist 'Прайс-лист' (PricelistLine prl)= note(pricelist(prl));
 
 item 'Номенклатура' = DATA Item (PricelistLine);
 nameItem 'Номенклатура' (PricelistLine prl) = name(item(prl));
-nameUnitMeasure 'Единицы' (PricelistLine prl) = name(unitMeasure(item(prl)));
-taxIncluded 'с налогами' (PricelistLine prl) = taxIncluded(pricelist(prl)) ;  
+nameUnitMeasure 'Единицы' (PricelistLine prl) = name(unitMeasure(item(prl))); 
 
 editIn (PricelistLine pl, PriceType priceType) = editIn(pricelist(pl), priceType);
+orderEditIn (PricelistLine pl, PriceType priceType) = orderEditIn(pricelist(pl), priceType);
 
 price 'Цена' = DATA NUMERIC[10,2] (PricelistLine, PriceType);
 
 in 'Налоги' = DATA BOOLEAN (PricelistLine, Tax);
-taxes 'Налоги' (PricelistLine prl) = GROUP CONCAT name(Tax t) IF in(prl, t), ', ' ORDER t CHARWIDTH 8; 
-changeTax ( PricelistLine prl) {
+taxes 'Налоги' (PricelistLine prl) = GROUP CONCAT name(Tax t) IF in(prl, t), ', ' ORDER t CHARWIDTH 8;
+ 
+changeTax (PricelistLine prl) {
     setTax (Tax t) <- in(prl, t);
     DIALOG changeTax DO {
         in(prl, Tax t) <- setTax(t);
@@ -44,82 +50,98 @@ changeTax ( PricelistLine prl) {
 } 
 
 pricelistLine (PriceType pt, Item i, DATETIME d) = 
-    GROUP LAST PricelistLine prl IF item(prl) = i AND price(prl,pt) AND NOT startDate(pricelist(prl)) > d AND NOT endDate(pricelist(prl)) < d
+    GROUP LAST PricelistLine prl IF item(prl) = i AND price(prl, pt) AND NOT startDate(pricelist(prl)) >= d AND NOT endDate(pricelist(prl)) < d
           ORDER startDate(pricelist(prl)), prl;
 
 price 'Действующая цена' (PriceType pt, Item i, DATETIME d) = price(pricelistLine(pt, i, d), pt);
 
-currentPrice (PricelistLine l, PriceType t) = price(t, item(l), currentDateTime());
+currentPrice (PricelistLine l, PriceType t) = price(t, item(l), startDate(pricelist(l)));
 
-WHEN LOCAL SET(PricelistLine prl IS PricelistLine) DO { 
-    in(prl,Tax t) <- salesIn(item(prl),t);  
+showCurrentPrice 'Показывать действующие цены' = DATA BOOLEAN (Pricelist);
+showMarkup 'Показывать надбавку' = DATA BOOLEAN (Pricelist);
+
+costPrice 'Текущая себестоимость' (PricelistLine pl) = round2(GROUP SUM costPrice(Location l, item(pl)) / GROUP SUM 1 IF costPrice(Location ll, item(pl)));
+
+taxes (PricelistLine l, PriceType pt) = (GROUP SUM value(Tax t) IF in(l,t)) * price(l, pt) / 100;
+markup 'Надбавка' (PricelistLine l, PriceType t) = IF price(l, t) THEN round2((price(l, t) (+) taxes(l, t) (-) costPrice(l)) * 100 / costPrice(l));
+
+WHEN LOCAL SET(PricelistLine prl IS PricelistLine) AND NOT isCopy(pricelist(prl)) DO { 
+    in(prl, Tax t) <- salesIn(item(prl), t);  
 }
 
-WHEN LOCAL CHANGED(item(PricelistLine prl)) DO { 
-    in(prl,Tax t) <- salesIn(item(prl),t);
+WHEN LOCAL CHANGED(item(PricelistLine prl)) AND NOT isCopy(pricelist(prl)) DO { 
+    in(prl, Tax t) <- salesIn(item(prl), t);
 }
 
 WHEN LOCAL CHANGED(item(OrderLine ol)) DO {    
     in(ol, Tax t) <- OVERRIDE in(pricelistLine(priceType(order(ol)), item(ol),date(order(ol))), t), salesIn(item(ol),t);
-    unitPrice(ol) <- OVERRIDE NUMERIC[10,2] (price(pricelistLine(priceType(order(ol)), item(ol),date(order(ol))), priceType(customer(order(ol)))) / ( 1 + IF taxIncluded(pricelistLine(priceType(order(ol)),item(ol),date(order(ol)))) THEN (GROUP SUM value(Tax t) IF in(ol,t))/100)),
+    unitPrice(ol) <- OVERRIDE NUMERIC[10,2] (price(pricelistLine(priceType(order(ol)), item(ol), date(order(ol))), priceType(customer(order(ol)))) / ( 1 + IF taxIncluded(priceType(order(ol))) THEN (GROUP SUM value(Tax t) IF in(ol, t))/100)),
                               salesPrice(item(ol));    
 }
 
+FORM chooseTypes 'Выбор видов цен'
+    OBJECTS pr = Pricelist PANEL 
+    
+    OBJECTS t = PriceType
+    PROPERTIES(t) READONLY name 
+    PROPERTIES(pr, t) editIn[Pricelist,PriceType]
+;
+
+chooseTypes (Pricelist pr) {
+    SHOW chooseTypes OBJECTS pr = pr;
+}
 
 FORM pricelist 'Прайс-листы'
     OBJECTS pr = Pricelist PANEL
-    PROPERTIES(pr) name, series, number, startDate, endDate, taxIncluded
-   
-    OBJECTS t = PriceType
-    PROPERTIES(t) READONLY name 
-    PROPERTIES(pr, t) editIn[Pricelist,PriceType] 
+    PROPERTIES(pr) note, number, startDate, endDate, priceListTypes ON CHANGE chooseTypes(pr), showCurrentPrice,
+                showMarkup, isCopy READONLY 
 
     OBJECTS tc = PriceType GRID
+    PROPERTIES (pr,tc) orderEditIn[Pricelist,PriceType]
+    ORDER orderEditIn(pr,tc)
     FILTERS editIn(pr, tc) 
    
     OBJECTS prl = PricelistLine
-    PROPERTIES(prl) nameItem, nameUnitMeasure READONLY, taxes ON CHANGE changeTax(prl)
+    PROPERTIES(prl) nameItem, nameUnitMeasure READONLY, taxes ON CHANGE changeTax(prl), costPrice
     PROPERTIES(prl) NEW,DELETE 
     FILTERS pricelist(prl) = pr 
-    PROPERTIES currentPrice(prl, tc) COLUMNS 'p' (tc) HEADER name(tc) + ' (текущая)'
-    PROPERTIES(prl, tc) price COLUMNS 'p' (tc) HEADER name(tc)
+    PROPERTIES(prl, tc) price COLUMNS (tc) HEADER 'Цена ' + name(tc) BACKGROUND RGB(198,230,247)
+    PROPERTIES currentPrice(prl, tc) COLUMNS (tc) HEADER 'Действующая цена ' + name(tc) SHOWIF showCurrentPrice(pr)
+    PROPERTIES markup(prl, tc) COLUMNS (tc) HEADER 'Надбавка ' + name(tc) SHOWIF showMarkup(pr)
 
     EDIT Pricelist OBJECT pr
 ;
 
-DESIGN pricelist{
+DESIGN pricelist {
     OBJECTS {
-        NEW header{
-            fill = 1;
-            type = CONTAINERH;
-            NEW col1{
-                fill=6;
+        NEW header {
+            NEW col1 {
                 align = START;
                 type = CONTAINERV;
-                MOVE PROPERTY(name(pr)) {};
                 NEW rek {
                     type = CONTAINERH;
-                    MOVE PROPERTY(startDate(pr)) {caption = 'Период действия с ';};
-                    MOVE PROPERTY(endDate(pr)) {caption = 'по ';};
-                    MOVE PROPERTY(series(pr)) {marginLeft=10;};
-                    MOVE PROPERTY(number(pr)) {marginLeft=10;};
-                }                
-                MOVE PROPERTY(taxIncluded(pr)) {caption='цены с учетом налогов';}
-            }
-            NEW col3{
-                fill=1;
-                MOVE BOX(t) { caption='Варианты цен'; align = END; fill=1;  };
-                REMOVE TOOLBARSYSTEM(t);                                          
+                    MOVE PROPERTY(startDate(pr)) { caption = 'Период действия с '; }
+                    MOVE PROPERTY(endDate(pr)) { caption = 'по '; }
+                    MOVE PROPERTY(number(pr)) { marginLeft = 10; }
+                }
+                MOVE PROPERTY(priceListTypes(pr)); 
+                MOVE PROPERTY(note(pr));
+                NEW prop {
+                    type = CONTAINERH;
+                    MOVE PROPERTY(showCurrentPrice(pr));     
+                    MOVE PROPERTY(showMarkup(pr));
+                    MOVE PROPERTY(isCopy(pr)); 
+                }      
             }
         }
         NEW details {
-            fill = 3;
+            fill = 1;
             type = TABBED;
-            NEW container1{
+            NEW container1 {
                 caption = 'Спецификация';
                 fill = 1;
                 MOVE BOX(prl) {
-                    PROPERTY(price(prl, tc)) {pattern='#,##0.00';};
+                    PROPERTY(price(prl, tc)) { pattern='#,##0.00'; }
                     MOVE PROPERTY (currentPrice(prl, tc));          
                 };           
             }
@@ -131,13 +153,13 @@ DESIGN pricelist{
 
 FORM pricelistsList 'Прайс-листы'
     OBJECTS pr = Pricelist
-    PROPERTIES(pr) READONLY name, number, startDate, endDate, taxIncluded
+    PROPERTIES(pr) READONLY number, note, startDate, endDate
     LIST Pricelist OBJECT pr
 ;
 
 FORM pricelists 'Прайс-листы'
     OBJECTS pr = Pricelist
-    PROPERTIES(pr) READONLY name, number, startDate, endDate, taxIncluded
+    PROPERTIES(pr) READONLY number, note, startDate, endDate
     PROPERTIES(pr) NEW NEWSESSION ,EDIT NEWSESSION ,DELETE NEWSESSION 
 ;
 
@@ -146,4 +168,40 @@ NAVIGATOR {
         NEW pricelists AFTER orders;    
     }
 }
+
+copyPricelist 'Копировать прайслист' (Pricelist pl) {
+    NEWSESSION {
+        NEW p = Pricelist {
+            startDate(p) <- startDate(pl);
+            endDate(p) <- endDate(pl);
+            note(p) <- note(pl);
+            showCurrentPrice(p) <- showCurrentPrice(pl);
+            showMarkup(p) <- showMarkup(pl);
+            isCopy(p) <- TRUE;
+            FOR editIn(pl, PriceType t) DO {
+                editIn(p, t) <- editIn(pl, t);
+            }
+            FOR orderEditIn(pl, PriceType t) DO {
+                orderEditIn(p, t) <- orderEditIn(pl, t);
+            }
+            FOR pricelist(PricelistLine l)  = pl DO {
+                NEW nl = PricelistLine {
+                    pricelist(nl) <- p;
+                    item(nl) <- item(l);
+                    FOR price(l, PriceType t) DO {
+                        price(nl, t) <- price(l, t);
+                    }
+                    FOR in(l, Tax t) DO {
+                        in(nl, t) <- in(l, t);
+                    }
+                }
+            }
+            SHOW pricelist OBJECTS pr = p;
+        }
+    }
+}
+
+EXTEND FORM pricelist
+    PROPERTIES(pr) copyPricelist DRAW prl TOOLBAR 
+;
 
