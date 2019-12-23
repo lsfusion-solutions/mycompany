@@ -22,18 +22,6 @@ changeIn(Item item, Pricelist pricelist)  {
                 }
 }
 
-selectAll 'Подобрать все' (Pricelist pr, Category c) {
-    NEWSESSION {
-        FOR canBeSold(Item i) AND level(category(i), c) AND NOT in(i, pr) DO {
-            NEW l = PricelistLine {
-                pricelist(l) <- pr;
-                item(l) <- i;
-                APPLY;
-            }
-        }
-    }
-}
-
 EXTEND FORM pricelist
     TREE categories c = Category PARENT parent(c)
     PROPERTIES READONLY name(c)
@@ -43,8 +31,8 @@ EXTEND FORM pricelist
     FILTERS dt = currentDateTime()
     
     OBJECTS item = Item
-    PROPERTIES in(item, pr) ON CHANGE changeIn(item, pr), selectAll(pr, c) DRAW item TOOLBAR 
-    PROPERTIES READONLY name(item), price(tc, item, dt) COLUMNS (tc) HEADER 'Действующая цена ' + name(tc) DRAW item
+    PROPERTIES in(item, pr) ON CHANGE changeIn(item, pr)
+    PROPERTIES READONLY name(item), price(tc, item, dt) COLUMNS 'p' (tc) HEADER name(tc) + ' (текущая)' DRAW item
     FILTERS level(category(item), c), canBeSold(item)  
 ;
 
