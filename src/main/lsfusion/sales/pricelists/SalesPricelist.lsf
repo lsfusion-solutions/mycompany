@@ -21,7 +21,6 @@ editIn 'Изменять цены' = DATA BOOLEAN (Pricelist, PriceType);
 priceListTypes 'Варианты цен' (Pricelist pricelist) = GROUP
                                                CONCAT name(PriceType pricelistType) IF editIn(pricelist, pricelistType) , ', '
                                                ORDER pricelistType CHARWIDTH 10 MATERIALIZED;
-isCopy 'Копия' = DATA BOOLEAN (Pricelist);
 
 CLASS PricelistLine 'Номенклатура';
 
@@ -36,16 +35,6 @@ editIn (PricelistLine pl, PriceType priceType) = editIn(pricelist(pl), priceType
 
 price 'Цена' = DATA NUMERIC[10,2] (PricelistLine, PriceType);
 
-in 'Налоги' = DATA BOOLEAN (PricelistLine, Tax);
-taxes 'Налоги' (PricelistLine prl) = GROUP CONCAT name(Tax t) IF in(prl, t), ', ' ORDER t CHARWIDTH 8;
- 
-changeTax (PricelistLine prl) {
-    setTax (Tax t) <- in(prl, t);
-    DIALOG changeTax DO {
-        in(prl, Tax t) <- setTax(t);
-    } 
-} 
-
 pricelistLine (PriceType pt, Item i, DATETIME d) = 
     GROUP LAST PricelistLine prl IF item(prl) = i AND price(prl, pt) AND NOT startDate(pricelist(prl)) >= d AND NOT endDate(pricelist(prl)) < d
           ORDER startDate(pricelist(prl)), prl;
@@ -54,27 +43,17 @@ price 'Действующая цена' (PriceType pt, Item i, DATETIME d) = pri
 
 currentPrice (PricelistLine l, PriceType t) = price(t, item(l), startDate(pricelist(l)));
 
-showCurrentPrice 'Показывать действующие цены' = DATA BOOLEAN (Pricelist);
-showMarkup 'Показывать надбавку' = DATA BOOLEAN (Pricelist);
+showCurrentPrice 'Действующие цены' = DATA BOOLEAN (Pricelist);
+showMarkup 'Надбавки' = DATA BOOLEAN (Pricelist);
+showCost 'Себестоимость' = DATA BOOLEAN (Pricelist);
 
 costPrice 'Текущая себестоимость' (PricelistLine pl) = round2(GROUP SUM costPrice(Location l, item(pl)) / GROUP SUM 1 IF costPrice(Location ll, item(pl)));
 
-taxes (PricelistLine l, PriceType pt) = (GROUP SUM value(Tax t) IF in(l,t)) * price(l, pt) / 100;
+taxes (PricelistLine l, PriceType pt) = (GROUP SUM value(Tax t) IF salesIn(item(l),t)) * price(l, pt) / 100;
 markup 'Надбавка' (PricelistLine l, PriceType t) = IF price(l, t) THEN round2((price(l, t) (+) taxes(l, t) (-) costPrice(l)) * 100 / costPrice(l));
 
-WHEN LOCAL SET(PricelistLine prl IS PricelistLine) AND NOT isCopy(pricelist(prl)) DO { 
-    in(prl, Tax t) <- salesIn(item(prl), t);  
-}
-
-WHEN LOCAL CHANGED(item(PricelistLine prl)) AND NOT isCopy(pricelist(prl)) DO { 
-    in(prl, Tax t) <- salesIn(item(prl), t);
-}
-
-WHEN LOCAL CHANGED(item(OrderLine ol)) DO {    
-    in(ol, Tax t) <- OVERRIDE in(pricelistLine(priceType(order(ol)), item(ol),date(order(ol))), t), salesIn(item(ol),t);
-    unitPrice(ol) <- OVERRIDE NUMERIC[10,2] (price(pricelistLine(priceType(order(ol)), item(ol), date(order(ol))), priceType(customer(order(ol)))) / 
-                        ( 1 + IF taxIncluded(priceType(order(ol))) THEN (GROUP SUM value(Tax t) IF in(ol, t))/100)),
-                        salesPrice(item(ol));    
+changeSalesTax (PricelistLine l) {
+    changeSalesTax(item(l));
 }
 
 FORM chooseTypes 'Выбор видов цен'
@@ -89,20 +68,26 @@ chooseTypes (Pricelist pr) {
     SHOW chooseTypes OBJECTS pr = pr;
 }
 
+changeMarkup (PricelistLine l, PriceType t) {
+    INPUT val = NUMERIC[10,2] DO {
+        price(l, t) <- round2(val * costPrice(l) / 100 (-) taxes(l, t) (+) costPrice(l));
+    }
+}
+
 FORM pricelist 'Прайс-листы'
     OBJECTS pr = Pricelist PANEL
-    PROPERTIES(pr) note, number, startDate, endDate, priceListTypes ON CHANGE chooseTypes(pr), showCurrentPrice,
-                showMarkup, isCopy READONLY 
+    PROPERTIES(pr) note, seriesNumber, startDate, endDate, priceListTypes ON CHANGE chooseTypes(pr), showCurrentPrice,
+                showMarkup, showCost
 
     OBJECTS tc = PriceType GRID
     FILTERS editIn(pr, tc) 
    
     OBJECTS prl = PricelistLine
-    PROPERTIES(prl) nameItem, nameUnitMeasure READONLY, taxes ON CHANGE changeTax(prl), costPrice
+    PROPERTIES(prl) nameItem, nameUnitMeasure READONLY, costPrice SHOWIF showCost(pr)
     PROPERTIES(prl) NEW,DELETE 
     FILTERS pricelist(prl) = pr 
-    PROPERTIES markup(prl, tc) COLUMNS 'p' (tc) HEADER 'Надбавка ' + name(tc) SHOWIF showMarkup(pr)
-    PROPERTIES(prl, tc) price COLUMNS (tc) HEADER name(tc) BACKGROUND RGB(198,230,247)
+    PROPERTIES markup(prl, tc) COLUMNS 'p' (tc) HEADER 'Надбавка ' + name(tc) SHOWIF showMarkup(pr) ON CHANGE changeMarkup(prl, tc)
+    PROPERTIES(prl, tc) price COLUMNS (tc) HEADER name(tc) 
     PROPERTIES currentPrice(prl, tc) COLUMNS 'p' (tc) HEADER name(tc) + ' (текущая)' SHOWIF showCurrentPrice(pr)
 
     EDIT Pricelist OBJECT pr
@@ -118,15 +103,16 @@ DESIGN pricelist {
                     type = CONTAINERH;
                     MOVE PROPERTY(startDate(pr)) { caption = 'Период действия с '; }
                     MOVE PROPERTY(endDate(pr)) { caption = 'по '; }
-                    MOVE PROPERTY(number(pr)) { marginLeft = 10; }
+                    MOVE PROPERTY(seriesNumber(pr)) { marginLeft = 10; }
                 }
                 MOVE PROPERTY(priceListTypes(pr)); 
                 MOVE PROPERTY(note(pr));
-                NEW prop {
+                NEW show {
+                    caption = 'Показывать';
                     type = CONTAINERH;
                     MOVE PROPERTY(showCurrentPrice(pr));     
                     MOVE PROPERTY(showMarkup(pr));
-                    MOVE PROPERTY(isCopy(pr)); 
+                    MOVE PROPERTY(showCost(pr));
                 }      
             }
         }
@@ -137,7 +123,7 @@ DESIGN pricelist {
                 caption = 'Спецификация';
                 fill = 1;
                 MOVE BOX(prl) {
-                    PROPERTY(price(prl, tc)) { pattern='#,##0.00'; }
+                    PROPERTY(price(prl, tc)) { pattern='#,##0.00'; background = RGB(198,230,247); }
                     MOVE PROPERTY (currentPrice(prl, tc));          
                 };           
             }
@@ -149,13 +135,13 @@ DESIGN pricelist {
 
 FORM pricelistsList 'Прайс-листы'
     OBJECTS pr = Pricelist
-    PROPERTIES(pr) READONLY number, note, startDate, endDate
+    PROPERTIES(pr) READONLY seriesNumber, note, startDate, endDate
     LIST Pricelist OBJECT pr
 ;
 
 FORM pricelists 'Прайс-листы'
     OBJECTS pr = Pricelist
-    PROPERTIES(pr) READONLY number, note, startDate, endDate
+    PROPERTIES(pr) READONLY seriesNumber, note, startDate, endDate
     PROPERTIES(pr) NEW NEWSESSION ,EDIT NEWSESSION ,DELETE NEWSESSION 
 ;
 
@@ -173,7 +159,6 @@ copyPricelist 'Копировать прайслист' (Pricelist pl) {
             note(p) <- note(pl);
             showCurrentPrice(p) <- showCurrentPrice(pl);
             showMarkup(p) <- showMarkup(pl);
-            isCopy(p) <- TRUE;
             FOR editIn(pl, PriceType t) DO {
                 editIn(p, t) <- editIn(pl, t);
             }
@@ -183,9 +168,6 @@ copyPricelist 'Копировать прайслист' (Pricelist pl) {
                     item(nl) <- item(l);
                     FOR price(l, PriceType t) DO {
                         price(nl, t) <- price(l, t);
-                    }
-                    FOR in(l, Tax t) DO {
-                        in(nl, t) <- in(l, t);
                     }
                 }
             }
