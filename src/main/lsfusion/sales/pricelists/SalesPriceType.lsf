@@ -7,17 +7,34 @@ NAMESPACE Sales;
 CLASS PriceType 'Виды цены';
 
 name 'Наименование' = DATA ISTRING[100](PriceType) NONULL;
+default 'По умолчаню' = DATA BOOLEAN (PriceType);
+taxIncluded 'Цены с учетом налогов' = DATA BOOLEAN (PriceType);  
 
 FORM pricelistType 'Вид цены'
     OBJECTS pt = PriceType PANEL 
-    PROPERTIES(pt) name
-
+    PROPERTIES(pt) name, default, taxIncluded
     EDIT PriceType OBJECT pt
 ;
 
+DESIGN pricelistType {
+    OBJECTS {
+        NEW header {
+            type = CONTAINERV;        
+            caption='Виды цен';
+            fill = 1;
+            MOVE PROPERTY(name(pt));
+            NEW pane {
+                type = CONTAINERV;
+                MOVE PROPERTY(default(pt)) { caption='по умолчанию для новых покупателей'; }
+            }
+            MOVE PROPERTY(taxIncluded(pt));
+        }
+    }
+}
+
 FORM pricelistTypes 'Виды цен'
     OBJECTS pt = PriceType
-    PROPERTIES(pt) READONLY name
+    PROPERTIES(pt) READONLY name, default, taxIncluded
     PROPERTIES(pt) NEWSESSION NEW, EDIT, DELETE 
 ;   
 
@@ -68,6 +85,6 @@ EXTEND FORM order
 
 DESIGN order {
     attr {
-        MOVE PROPERTY(namePriceType(o)) { fill = 1; };   
+        MOVE PROPERTY(namePriceType(o)) { fill = 1; }   
     }
 }
