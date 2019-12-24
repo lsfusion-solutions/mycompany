@@ -97,3 +97,15 @@ DESIGN categories {
         }
     }
 }
+
+markup 'Надбавка, %' = DATA NUMERIC[10,2] (Category);
+parentMarkup 'Надбавка (от верхней группы), %' (Category child) =
+   GROUP LAST markup(Category parent) ORDER DESC level(child, parent) WHERE markup(parent);
+   
+EXTEND FORM category
+    PROPERTIES(c) markup, parentMarkup
+;
+
+EXTEND FORM categories
+    PROPERTIES(c) READONLY markup, parentMarkup
+;
