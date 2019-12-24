@@ -14,11 +14,12 @@ CLASS ItemMeasure 'Единицы измерения';
 
 @defineID(itemMeasure, 'Единицы измерений', 'ЕИ');
 
-code 'Код наименования' = DATA STRING[10] (ItemMeasure);
 name 'Наименование' = DATA STRING[50] (ItemMeasure) CHARWIDTH 8 NONULL;
+
 group 'Группа' = DATA GroupMeasure (ItemMeasure);
 idGroup 'Код группы' (ItemMeasure i) = id(group(i));
 groupName 'Группа' (ItemMeasure i) = name(group(i));
+
 baseMeasure 'Базовая единица' = DATA ItemMeasure (ItemMeasure);
 idBaseMeasure 'Код базовой единицы' (ItemMeasure i) = id(baseMeasure(i));
 baseMeasureName 'Базовая единица' (ItemMeasure i) = name(baseMeasure(i)); 
@@ -33,14 +34,14 @@ FORM groupMeasures 'Группы единиц измерения'
 
 FORM itemMeasure 'Единицы измерения'
     OBJECTS i = ItemMeasure PANEL 
-    PROPERTIES(i) name, id, code, groupName, baseMeasureName, coefficient, default
+    PROPERTIES(i) name, id, groupName, baseMeasureName, coefficient, default
     
     EDIT ItemMeasure OBJECT i
 ;
 
 FORM itemMeasures 'Единицы измерения'
     OBJECTS i = ItemMeasure
-    PROPERTIES(i) READONLY name, id, code, groupName, baseMeasureName, coefficient, default
+    PROPERTIES(i) READONLY name, id, groupName, baseMeasureName, coefficient, default
     PROPERTIES(i) NEWSESSION NEW, EDIT, DELETE
     
     LIST ItemMeasure OBJECT i

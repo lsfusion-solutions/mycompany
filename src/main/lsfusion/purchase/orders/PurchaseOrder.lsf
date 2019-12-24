@@ -5,187 +5,170 @@ REQUIRE System, Time, Utils, PurchaseSettings, Location, Partner, Item, Numerato
 
 NAMESPACE Purchase;
 
-CLASS Order;
+CLASS Order 'Заказ';
 readonly = ABSTRACT CASE BOOLEAN (Order);
 
-date 'Создан'  = DATA DATETIME (Order);
-WHEN LOCAL SET(Order o IS Order) DO { date(o) <- currentDateTime();}
+dateTime 'Создан'  = DATA DATETIME (Order);
+WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(dateTime(o)) DO { dateTime(o) <- currentDateTime();}
 
 @defineSeriesNumber(order, 'Заказы на закупку', 'ЗК');
-
-location 'Место доставки' = DATA Location (Order);
-nameLocation 'Место доставки' (Order o) = name(location(o));
 
 vendor 'Поставщик' = DATA Partner (Order) NONULL;
 nameVendor 'Поставщик' (Order o) = name(vendor(o));
 
-CONSTRAINT vendor(Order o) AND NOT isVendor(vendor(o)) AND NOT isCustomer(vendor(o))
-                CHECKED BY isVendor, isCustomer
-                MESSAGE 'Партнер должен быть либо поставщиком, либо покупателем';
- 
-vendorReference 'Входящий номер поставщика' = DATA STRING[30] (Order);
+CONSTRAINT vendor(Order o) AND NOT isVendor(vendor(o))
+                CHECKED BY isVendor
+                MESSAGE 'Партнер должен быть поставщиком';
 
+// Invoicing information
+paymentTerms 'Условие оплаты' = DATA PaymentTerm (Order);
+namePaymentTerms 'Условие оплаты' (Order o)= name(paymentTerms(o));
+
+// Shipping information
 scheduledDate 'Срок поставки' = DATA DATETIME (Order);   
+WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(scheduledDate(o)) DO scheduledDate(o) <- currentDateTime();     
 
-incoterm 'Условие поставки'= DATA Incoterm (Order);
+location = DATA Location (Order);
+nameLocation 'Место доставки' (Order o) = name(location(o));
+
+incoterm 'Условие поставки' = DATA Incoterm (Order);
 nameIncoterm 'Условие поставки' (Order o)= name(incoterm(o));
 
-paymentterm 'Условие оплаты' = DATA PaymentTerm (Order);
-namePaymentterm 'Условие оплаты' (Order o)= name(paymentterm(o));
-
+// Purchase information
 representative 'Наш представитель' = DATA Individual (Order);
 nameRepresentative 'Наш представитель' (Order o)= name(representative(o));
-CONSTRAINT NOT type(representative(Order o)) = PartnerType.individual AND o IS Order CHECKED MESSAGE 'Должен быть наш работник';
-CONSTRAINT NOT type(legalEntity(representative(Order o))) = PartnerType.company AND o IS Order CHECKED MESSAGE 'Должен быть наш работник';
-  
+
+CONSTRAINT representative(Order o) AND NOT type(legalEntity(representative(o))) = PartnerType.company 
+    CHECKED BY representative MESSAGE 'Должен быть наш работник';
+
+vendorReference 'Входящий номер поставщика' = DATA STRING[30] (Order);
+
+// Lines
 CLASS OrderLine 'Спецификация';
 order =  DATA Order (OrderLine) NONULL  DELETE;
-readonly = ABSTRACT CASE BOOLEAN (OrderLine);
 
 index 'Индекс' = PARTITION SUM 1 ORDER OrderLine l BY order(l) IN id MATERIALIZED;
+
 item = DATA Item (OrderLine) NONULL;
 nameItem 'Номенклатура' (OrderLine l) = name(item(l));
-
-description 'Описание' = DATA STRING[200] (OrderLine);
-quantity 'Количество' = DATA NUMERIC[16,3] (OrderLine);
-unitMeasure 'Ед.изм.' = DATA ItemMeasure (OrderLine);
-codeUnitMeasure 'Ед.изм.' (OrderLine l) = code(unitMeasure(l));
-unitPrice 'Цена' = DATA NUMERIC[10,2] (OrderLine);
-
-scheduledDate 'Срок дата' = DATA DATETIME (OrderLine);
-WHEN LOCAL SET (OrderLine ol IS OrderLine) DO {scheduledDate(ol) <- scheduledDate(order(ol));}
-
-WHEN LOCAL CHANGED (item(OrderLine ol) AND NOT description(ol)) DO { description(ol) <- nameItem(ol); } 
 
 CONSTRAINT item(OrderLine l) AND NOT canBePurchased(item(l))
             CHECKED BY item 
             MESSAGE 'Номенклатура не предназначена для закупки';
 
-@defineTaxCalc(order, o, NULL);
+description 'Описание' = DATA ISTRING (OrderLine);
+
+unitMeasure 'Ед.изм.' = DATA ItemMeasure (OrderLine);
+nameUnitMeasure 'Ед.изм.' (OrderLine l) = name(unitMeasure(l));
+
+quantity 'Количество' = DATA NUMERIC[16,3] (OrderLine);
+unitPrice 'Цена' = DATA NUMERIC[10,2] (OrderLine);
+
+@defineTaxCalc(order, o, purchase);
 
 WHEN LOCAL CHANGED (item(OrderLine ol)) DO {
-    unitMeasure(ol) <- unitMeasurePurchase(item(ol));
+    description(ol) <- nameItem(ol);
+    unitMeasure(ol) <- unitMeasure(item(ol));
     in(ol, Tax t) <- purchaseIn(item(ol),t); 
 }
 
-date 'Создан' (OrderLine l) = date(order(l));
+// Line properties
+date 'Создан' (OrderLine l) = dateTime(order(l));
 seriesNumber 'Номер' (OrderLine l) = seriesNumber(order(l));
 nameLocation 'Место доставки' (OrderLine l) = nameLocation(order(l));
-vendor 'Поставщик' (OrderLine l) = vendor(order(l));
 nameVendor 'Поставщик' (OrderLine l) = nameVendor(order(l));
 
 FORM order 'Заказ'
     OBJECTS o = Order PANEL
-    PROPERTIES(o) READONLY date, seriesNumber  
-    PROPERTIES(o) nameLocation, nameVendor, vendorReference, scheduledDate, nameIncoterm, namePaymentterm, nameRepresentative
+    PROPERTIES(o) dateTime READONLY, series, number, nameVendor,
+                  scheduledDate, nameLocation, nameIncoterm,
+                  nameRepresentative, vendorReference,
+                  namePaymentTerms
+    PROPERTIES(o) READONLY untaxedAmount, totalTax, totalAmount
                  
     OBJECTS l = OrderLine
-    PROPERTIES(l) nameItem, description, quantity, codeUnitMeasure, unitPrice, scheduledDate
-    PROPERTIES(l) NEW,DELETE
+    PROPERTIES(l) nameItem, description, quantity, nameUnitMeasure, unitPrice, subtotal, taxes ON CHANGE changeTax(l)
+    PROPERTIES(l) NEW, DELETE
+    FILTERS order(l) = o
      
-    FILTERS order(l)=o
     EDIT Order OBJECT o    
 ;      
 
-EXTEND FORM order  
-    PROPERTIES(l) taxes ON CHANGE changeTax(l);       
-
-EXTEND FORM order  
-    PROPERTIES(l) READONLYIF readonly(l) subtotal
-            
-    OBJECTS oo = Order PANEL 
-    PROPERTIES(oo) untaxedAmount, totalTax, totalAmount
-    FILTERS oo = o    
-;          
-
 DESIGN order{
     OBJECTS {
-        NEW paneUp {    
-            fill = 1;
+        NEW header {
+            alignment = STRETCH;    
             type = CONTAINERH;
-            NEW header {
-                fill = 1.5;
-                NEW title {
-                    type = CONTAINERH;        
-                    MOVE PROPERTY(date(o));
-                    MOVE PROPERTY(seriesNumber(o));
-                }    
-                NEW boxes{
-                    fill = 1; 
-                    NEW attr {
-                        fill = 1;
-                        type = CONTAINERH;
-                        MOVE PROPERTY(nameVendor(o)) { fill = 20; };                
-                        MOVE PROPERTY(vendorReference(o)) { fill = 1; };
-                    }
-                    NEW box1 {
-                        type = CONTAINERH;
-                        fill = 5;
-                        NEW receipt {
-                            fill = 1;
-                            caption = 'Поставка';
-                            MOVE PROPERTY(scheduledDate(o)) { caption='Срок поставки'; }
-                            MOVE PROPERTY(nameIncoterm(o));
-                            MOVE PROPERTY(nameLocation(o));               
-                        }
-                        NEW invoicing {
-                            caption = 'Расчеты';
-                            fill = 1;
-                            marginLeft = 30;
-                            MOVE PROPERTY(namePaymentterm(o));                         
-                        }
-                    }
-                    NEW box2 {
-                        fill = 1;
-                        NEW sales {
-                            caption = 'Продажи';
-                            MOVE PROPERTY(nameRepresentative(o));
-                        }
-                    }
+            NEW title {
+                MOVE PROPERTY(dateTime(o));
+                NEW seriesNumber { 
+                    type = CONTAINERH; 
+                    MOVE PROPERTY(series(o)); 
+                    MOVE PROPERTY(number(o));
                 }
+                MOVE PROPERTY(nameVendor(o)); 
             }
             NEW relatedDoc {
                 fill = 1;
-                marginLeft = 50;
+                type = TABBED;
             }                                            
         }
         NEW details {
             fill = 7;
             type = TABBED;
-            MOVE BOX(l);
-            PROPERTY(unitPrice(l)) { pattern='#,##0.00'; }
-            PROPERTY(subtotal(l))  { pattern='#,##0.00'; }            
+            MOVE BOX(l) {
+                PROPERTY(unitPrice(l)) { pattern='#,##0.00'; }
+                PROPERTY(subtotal(l))  { pattern='#,##0.00'; }
+            }
+            NEW otherInformation {
+                caption = 'Прочая информация';
+                type = COLUMNS;
+                columns = 2;
+                NEW shippingInformation {
+                    caption = 'Поставка';
+                    MOVE PROPERTY(scheduledDate(o));
+                    MOVE PROPERTY(nameLocation(o));
+                    MOVE PROPERTY(nameIncoterm(o));
+                }
+                NEW purchaseInformation {
+                    caption = 'Прочие';
+                    MOVE PROPERTY(nameRepresentative(o));
+                    MOVE PROPERTY(vendorReference(o));
+                }
+                NEW invoicing {
+                    caption = 'Расчеты';
+                    MOVE PROPERTY(namePaymentTerms(o));                         
+                }
+            }            
         }
-        NEW paneDown {
+        NEW footer {
             align = END;
             type = CONTAINERH; 
-            NEW paneExecution {
-                type = CONTAINERV;
-            }         
-            NEW paneSum {
-                MOVE BOX(oo) { caption='ИТОГО'; }                
-                GROUP(,oo) { type = CONTAINERV; }
-                PROPERTY(untaxedAmount(oo)) { pattern='#,##0.00'; }
-                PROPERTY(totalTax(oo)) { pattern='#,##0.00'; }
-                PROPERTY(totalAmount(oo)) { pattern='#,##0.00'; }                     
+            NEW total {
+                caption = 'Итого';
+                type = CONTAINERH;
+                MOVE PROPERTY(untaxedAmount(o)) { pattern = '#,##0.00'; }
+                MOVE PROPERTY(totalTax(o)) { pattern = '#,##0.00'; }
+                MOVE PROPERTY(totalAmount(o)) { pattern = '#,##0.00'; }                     
             }
         }
     }        
 }
 
 FORM orders 'Заказы'
-     OBJECTS o = Order
-     PROPERTIES(o) READONLY date,seriesNumber,nameLocation,nameVendor,scheduledDate
-     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
+    OBJECTS o = Order
+    PROPERTIES(o) READONLY dateTime, series, number, nameVendor,
+                           scheduledDate, nameLocation, nameIncoterm,
+                           nameRepresentative, vendorReference,
+                           namePaymentTerms,
+                           untaxedAmount, totalTax, totalAmount     
+    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
 ;
 
-EXTEND FORM orders 
-    PROPERTIES(o) READONLY untaxedAmount, totalTax, totalAmount     
-;
 DESIGN orders{
-    PROPERTY(untaxedAmount(o)) { pattern='#,##0.00'; }
-    PROPERTY(totalTax(o)) { pattern='#,##0.00'; }
-    PROPERTY(totalAmount(o)) { pattern='#,##0.00'; }
+    PROPERTY(untaxedAmount(o)) { pattern = '#,##0.00'; }
+    PROPERTY(totalTax(o)) { pattern = '#,##0.00'; }
+    PROPERTY(totalAmount(o)) { pattern = '#,##0.00'; }
 }
 
 NAVIGATOR {

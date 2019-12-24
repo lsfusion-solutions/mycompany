@@ -57,19 +57,19 @@ pricelist (Partner p, Item i, DATETIME d) =
 
 WHEN LOCAL SET(PricelistLine prl IS PricelistLine) DO { 
     in(prl,Tax t) <- purchaseIn(item(prl),t);
-    unitMeasure(prl) <- unitMeasurePurchase(item(prl));  
+    unitMeasure(prl) <- unitMeasure(item(prl));  
 }
 
 WHEN LOCAL CHANGED(item(PricelistLine prl)) DO { 
     in(prl,Tax t) <- purchaseIn(item(prl),t);
-    unitMeasure(pl) <- unitMeasurePurchase(item(pl));   
+    unitMeasure(prl) <- unitMeasure(item(prl));   
 }
 
 WHEN LOCAL CHANGED(item(OrderLine ol)) DO {
-   unitPrice(ol) <- OVERRIDE unitPrice(pricelist(vendor(order(ol)),item(ol),date(order(ol)))), cost(item(ol));
-   description(ol) <- OVERRIDE nameItemVendor(pricelist(vendor(order(ol)),item(ol),date(order(ol)))), name(item(ol)); 
-   unitMeasure(ol) <- OVERRIDE unitMeasure(pricelist(vendor(order(ol)),item(ol),date(order(ol)))), unitMeasurePurchase(item(ol));   
-   in(ol, Tax t) <- OVERRIDE in(pricelist(vendor(order(ol)),item(ol),date(order(ol))),t), purchaseIn(item(ol),t);
+   unitPrice(ol) <- OVERRIDE unitPrice(pricelist(vendor(order(ol)),item(ol),dateTime(order(ol)))), cost(item(ol));
+   description(ol) <- OVERRIDE nameItemVendor(pricelist(vendor(order(ol)),item(ol),dateTime(order(ol)))), name(item(ol)); 
+   unitMeasure(ol) <- OVERRIDE unitMeasure(pricelist(vendor(order(ol)),item(ol),dateTime(order(ol)))), unitMeasure(item(ol));   
+   in(ol, Tax t) <- OVERRIDE in(pricelist(vendor(order(ol)),item(ol),dateTime(order(ol))),t), purchaseIn(item(ol),t);
 }
 
 EXTEND FORM item 
@@ -81,7 +81,7 @@ EXTEND FORM item
 DESIGN item {
     tabs {
         purchase {
-            MOVE BOX(prlp) {showIf=canBePurchased(i);};
+            MOVE BOX(prlp);
         }
     }
 }

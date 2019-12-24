@@ -15,7 +15,6 @@ nameStatus 'Статус' (Order o) = name(status(o));
 nameStatus 'Статус' (OrderLine l) = nameStatus(order(l));
 colorStatus 'Цвет' = ABSTRACT CASE COLOR (Order);
 
-readonly (OrderLine l) += WHEN NOT status(order(l)) = OrderStatus.draft THEN TRUE;
 readonly (Order o) += WHEN NOT status(o) = OrderStatus.draft THEN TRUE;
 
 status(Order o) += WHEN o IS Order THEN OrderStatus.draft;
@@ -26,7 +25,7 @@ EXTEND FORM order
 ;
 
 EXTEND FORM orders
-    PROPERTIES(o) READONLY nameStatus BEFORE date(o) BACKGROUND colorStatus(o)  
+    PROPERTIES(o) READONLY nameStatus BEFORE dateTime(o) BACKGROUND colorStatus(o)  
 ;
 
 DESIGN order {

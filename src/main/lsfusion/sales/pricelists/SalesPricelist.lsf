@@ -89,23 +89,20 @@ changeMarkup (PricelistLine l, PriceType t) {
     }
 }
 
-readonly = ABSTRACT CASE BOOLEAN (Pricelist);
-
 FORM pricelist 'Прайс-листы'
     OBJECTS pr = Pricelist PANEL
-    PROPERTIES(pr) READONLYIF readonly(pr) note, seriesNumber, startDate, endDate, 
-                priceListTypes ON CHANGE chooseTypes(pr) 
-    PROPERTIES(pr) showCurrentPrice, showMarkup, showCost
+    PROPERTIES(pr) note, seriesNumber, startDate, endDate, priceListTypes ON CHANGE chooseTypes(pr), showCurrentPrice,
+                showMarkup, showCost
 
     OBJECTS tc = PriceType GRID
     FILTERS editIn(pr, tc) 
    
     OBJECTS prl = PricelistLine
-    PROPERTIES(prl) READONLYIF readonly(pr) nameItem, nameUnitMeasure READONLY, costPrice SHOWIF showCost(pr) READONLY
+    PROPERTIES(prl) nameItem, nameUnitMeasure READONLY, costPrice SHOWIF showCost(pr) READONLY
     PROPERTIES      markup(prl, tc) COLUMNS 'p' (tc) HEADER name(tc) + ' (надбавка)' SHOWIF showMarkup(pr) ON CHANGE changeMarkup(prl, tc)
     PROPERTIES      price(prl, tc) COLUMNS 'p' (tc) HEADER name(tc) 
     PROPERTIES      currentPrice(prl, tc) COLUMNS 'p' (tc) HEADER name(tc) + ' (текущая)' SHOWIF showCurrentPrice(pr)
-    PROPERTIES(prl) READONLYIF readonly(pr) NEW,DELETE 
+    PROPERTIES(prl) NEW,DELETE 
     FILTERS pricelist(prl) = pr 
 
     EDIT Pricelist OBJECT pr
@@ -143,8 +140,7 @@ DESIGN pricelist {
                 fill = 1;
                 MOVE BOX(prl) {
                     PROPERTY(price(prl, tc)) { pattern='#,##0.00'; background = RGB(198,230,247); }
-                    MOVE PROPERTY (currentPrice(prl, tc));  
-                    MOVE PROPERTY (markup(prl, tc)) { background = RGB(198,230,247); }         
+                    MOVE PROPERTY (currentPrice(prl, tc));          
                 };           
             }
         }
@@ -179,7 +175,6 @@ copyPricelist 'Копировать прайслист' (Pricelist pl) {
             note(p) <- note(pl);
             showCurrentPrice(p) <- showCurrentPrice(pl);
             showMarkup(p) <- showMarkup(pl);
-            showCost(p) <- showCost(pl);
             FOR editIn(pl, PriceType t) DO {
                 editIn(p, t) <- editIn(pl, t);
             }
@@ -198,7 +193,7 @@ copyPricelist 'Копировать прайслист' (Pricelist pl) {
 }
 
 EXTEND FORM pricelist
-    PROPERTIES(pr) copyPricelist
+    PROPERTIES(pr) copyPricelist DRAW prl TOOLBAR 
 ;
 
 markupPriceList 'Установить надбавки из предыдущих прайсов' = DATA LOCAL BOOLEAN ();
@@ -251,24 +246,12 @@ DESIGN changePrices {
 }
 
 EXTEND FORM pricelist
-    PROPERTIES(pr) changePrices DRAW pr SHOWIF NOT readonly(pr)
+    PROPERTIES(pr) changePrices DRAW pr
 ;
 
 DESIGN pricelist {
-    NEW statusPane FIRST {
-        caption = 'Статусы';
-        type = CONTAINERH;
-        alignment = STRETCH;                          
-        NEW statusActions {
-            type = CONTAINERH;                    
-            flex = 1; 
-            MOVE PROPERTY(changePrices(pr)); 
-            MOVE PROPERTY(copyPricelist(pr));          
-        }
-        NEW status AFTER statusActions {
-            type = CONTAINERH;
-        }
+    header {
+        MOVE PROPERTY(changePrices(pr));
     }
 }
-
 

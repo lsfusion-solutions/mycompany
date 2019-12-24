@@ -6,21 +6,16 @@ NAMESPACE MasterData;
 
 canBePurchased 'Предназначен для закупки' = DATA BOOLEAN (Item);
 
-unitMeasurePurchase 'Единицы в приходе (по умолчанию)' = DATA ItemMeasure (Item);
-nameUnitMeasurePurchase 'Единицы в приходе (по умолчанию)' (Item i) = name(unitMeasure(i));
-
 WHEN LOCAL SET(Item i IS Item) DO { 
     canBePurchased(i) <- TRUE;
-    unitMeasurePurchase(i) <- GROUP LAST ItemMeasure im IF default(im);
 }
 
 copy(Item n, Item o) + {
     canBePurchased(n) <- canBePurchased(o);
-    unitMeasurePurchase(n) <- unitMeasurePurchase(o);
 }
 
 EXTEND FORM item 
-    PROPERTIES(i) canBePurchased, nameUnitMeasurePurchase
+    PROPERTIES(i) canBePurchased
 ;
 
 DESIGN item {
@@ -31,7 +26,6 @@ DESIGN item {
         NEW purchase {
             caption = 'Закупка';
             showIf = canBePurchased(i);
-            MOVE PROPERTY(nameUnitMeasurePurchase(i));
         }
     }
 }
