@@ -19,7 +19,8 @@ FORM changeTax 'Установить налог'
 
 //налоги для продаж
 salesIn 'Вкл' = DATA BOOLEAN (Item, Tax) CHARWIDTH 5;
-salesTaxes 'Налоги реализации' (Item i) = GROUP CONCAT name(Tax t) IF salesIn(i, t), ', ' ORDER t CHARWIDTH 8;
+salesTaxes 'Налоги реализации, %' (Item i) = GROUP SUM value(Tax tax) IF salesIn(i, tax);
+nameSalesTaxes 'Налоги реализации' (Item i) = GROUP CONCAT name(Tax t) IF salesIn(i, t), ', ' ORDER t CHARWIDTH 8;
 
 WHEN LOCAL CHANGED(salesIn(Item i, Tax t)) DO {
     FOR taxGroup(t) = taxGroup(Tax tx) AND NOT t = tx DO {
@@ -52,7 +53,7 @@ changePurchaseTax (Item i) {
 } 
 
 EXTEND FORM item
-    PROPERTIES(i) salesTaxes ON CHANGE changeSalesTax(i)
+    PROPERTIES(i) nameSalesTaxes ON CHANGE changeSalesTax(i)
     PROPERTIES(i) purchaseTaxes ON CHANGE changePurchaseTax(i)
 ;
 
