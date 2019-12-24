@@ -5,11 +5,11 @@ REQUIRE System, Time, Utils, SalesSettings, Location, Partner, Item, Numerator, 
 
 NAMESPACE Sales;
 
-CLASS Order;
+CLASS Order 'Заказ';
 readonly = ABSTRACT CASE BOOLEAN (Order);
 
-date 'Создан' = DATA DATETIME (Order);
-WHEN LOCAL SET(Order o IS Order) DO { date(o) <- currentDateTime(); }
+dateTime 'Дата' = DATA DATETIME (Order);
+WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(dateTime(o)) DO dateTime(o) <- currentDateTime();
 
 @defineSeriesNumber(order, 'Заказы на продажу', 'ЗР');
 
@@ -20,61 +20,62 @@ CONSTRAINT customer(Order o) AND NOT isVendor(customer(o)) AND NOT isCustomer(cu
                 CHECKED BY isVendor, isCustomer
                 MESSAGE 'Партнер должен быть либо постащиком, либо заказчиком';
 
-addressCustomer 'Адрес получателя' = DATA STRING (Order);
-
-deliveryAddress 'Адрес доставки' = DATA STRING (Order);
-
+// Quotation
 validity 'Срок действия' = DATA DATETIME (Order);
 
-paymentterm 'Условие оплаты' = DATA PaymentTerm (Order);
-namePaymentterm 'Условие оплаты' (Order o)= name(paymentterm(o));
+// Invoicing information
+invoiceDate 'Дата счета' = DATA DATETIME (Order);
+
+paymentTerms 'Условие оплаты' = DATA PaymentTerm (Order);
+namePaymentTerms 'Условие оплаты' (Order o)= name(paymentTerms(o));
+
+addressCustomer 'Адрес получателя' (Order o) = concatAddress(customer(o), ', ');
+
+// Shipping information
+scheduledDate 'Срок поставки' = DATA DATETIME (Order);
+WHEN LOCAL SET(Order o IS Order) DO scheduledDate(o) <- currentDateTime();     
+
+deliveryAddress 'Адрес доставки' = DATA STRING (Order);
+WHEN LOCAL CHANGED(customer(Order o)) DO deliveryAddress(o) <- addressCustomer(o);
 
 location 'Место отгрузки' = DATA Location (Order);
 nameLocation 'Место отгрузки' (Order o) = name(location(o));
 
-incoterm 'Условие поставки'= DATA Incoterm (Order);
+incoterm 'Условие поставки' = DATA Incoterm (Order);
 nameIncoterm 'Условие поставки' (Order o)= name(incoterm(o));
 
-commintmentDate 'Обещанный срок поставки' = DATA DATETIME (Order);    
-
-invoiceDate 'Дата счета' = DATA DATETIME (Order);
-
+// Sales information
 representative 'Наш представитель' = DATA Individual (Order);
 nameRepresentative 'Наш представитель' (Order o)= name(representative(o));
 
+CONSTRAINT representative(Order o) AND NOT type(legalEntity(representative(o))) = PartnerType.company 
+    CHECKED BY representative MESSAGE 'Должен быть наш работник';
+
 customerReference 'Входящий номер заказчика' = DATA STRING[30] (Order);
 
-CONSTRAINT NOT type(representative(Order o))=PartnerType.individual AND o IS Order CHECKED MESSAGE 'Должен быть наш работник';
-CONSTRAINT NOT type(legalEntity(representative(Order o))) = PartnerType.company AND o IS Order CHECKED MESSAGE 'Должен быть наш работник';
-  
+// Lines
 CLASS OrderLine 'Спецификация';
-order =  DATA Order (OrderLine) NONULL  DELETE;
-readonly = ABSTRACT CASE BOOLEAN (OrderLine);
+order =  DATA Order (OrderLine) NONULL DELETE;
 
 index 'Индекс' = PARTITION SUM 1 ORDER OrderLine l BY order(l) IN id MATERIALIZED;
+
 item = DATA Item (OrderLine) NONULL;
 nameItem 'Номенклатура' (OrderLine l) = name(item(l));
-
-description 'Описание' = DATA STRING[200] (OrderLine);
-quantity 'Количество' = DATA NUMERIC[16,3] (OrderLine);
-unitMeasure 'Ед.изм.' = DATA ItemMeasure (OrderLine);
-codeUnitMeasure 'Ед.изм.' (OrderLine l) = code(unitMeasure(l));
-unitPrice 'Цена' = DATA NUMERIC[10,2] (OrderLine);
-cost 'Себестоимость' = DATA NUMERIC[10,2] (OrderLine);
-discount 'Скидка %' =  DATA NUMERIC[4,2] (OrderLine);
-
-expectedDate 'Возможна поставка после' (OrderLine ol) = date(order(ol)) ;
-
-expectedDate 'Возможна поставка после' = DATA DATETIME (Order);      
 
 CONSTRAINT item(OrderLine l) AND NOT canBeSold(item(l))
             CHECKED BY item 
             MESSAGE 'Номенклатура не предназначена для продажи';
 
-WHEN LOCAL CHANGED(customer(Order o)) DO {
-    addressCustomer(o) <- concatAddress(customer(o), ', ');
-    deliveryAddress(o) <- concatAddress(customer(o), ', ');
-}
+description 'Описание' = DATA ISTRING (OrderLine) CHARWIDTH 20;
+
+unitMeasure 'Ед. изм.' = DATA ItemMeasure (OrderLine);
+nameUnitMeasure 'Ед. изм.' (OrderLine l) = code(unitMeasure(l));
+
+quantity 'Количество' = DATA NUMERIC[16,3] (OrderLine);
+
+unitPrice 'Цена' = DATA NUMERIC[10,2] (OrderLine);
+cost 'Себестоимость' = DATA NUMERIC[10,2] (OrderLine);
+discount 'Скидка %' =  DATA NUMERIC[4,2] (OrderLine);
 
 @defineTaxCalc(order, o, TRUE);
 
@@ -85,113 +86,95 @@ WHEN LOCAL CHANGED(item(OrderLine ol)) DO {
     in(ol, Tax t) <- salesIn(item(ol), t); 
 }
 
-date 'Создан' (OrderLine l) = date(order(l));
-seriesNumber 'СерияНомер' (OrderLine l) = seriesNumber(order(l));
+// Line properties
+dateTime 'Дата' (OrderLine l) = dateTime(order(l));
+seriesNumber 'Номер' (OrderLine l) = seriesNumber(order(l));
 nameLocation 'Место доставки' (OrderLine l) = nameLocation(order(l));
-customer 'Заказчик' (OrderLine l) = customer(order(l));
 nameCustomer 'Заказчик' (OrderLine l) = nameCustomer(order(l));
 
 FORM order 'Заказ'
     OBJECTS o = Order PANEL
-    PROPERTIES(o) READONLY date, seriesNumber, expectedDate  
-    PROPERTIES(o) nameCustomer, addressCustomer, deliveryAddress, validity, namePaymentterm, nameLocation, nameIncoterm
-    PROPERTIES(o) commintmentDate, invoiceDate, nameRepresentative, customerReference
+    PROPERTIES(o) dateTime READONLY, series, number, nameCustomer,
+                  scheduledDate, deliveryAddress, nameLocation, nameIncoterm, 
+                  nameRepresentative, customerReference,
+                  validity,
+                  invoiceDate, namePaymentTerms, addressCustomer
+    PROPERTIES(o) READONLY untaxedAmount, totalTax, totalAmount
                  
     OBJECTS l = OrderLine
-    PROPERTIES(l) nameItem, description, quantity, codeUnitMeasure, unitPrice, cost, discount
-    PROPERTIES(l) DELETE
-        
-    FILTERS order(l)=o
+    PROPERTIES(l) nameItem, description, quantity, nameUnitMeasure, unitPrice, cost, discount, subtotal, taxes ON CHANGE changeTax(l)
+    PROPERTIES(l) NEW, DELETE
+    FILTERS order(l) = o
     
     EDIT Order OBJECT o    
 ;      
 
-EXTEND FORM order  
-    PROPERTIES(l) taxes ON CHANGE changeTax(l);       
-
-EXTEND FORM order  
-    PROPERTIES(l) READONLYIF readonly(l) subtotal
-            
-    OBJECTS oo = Order PANEL 
-    PROPERTIES(oo) untaxedAmount, totalTax, totalAmount
-    FILTERS oo = o    
-;          
-
 DESIGN order {
     OBJECTS {
-        NEW paneUp {    
-            fill = 1;
+        NEW header {
+            alignment = STRETCH;   
             type = CONTAINERH;
-            NEW header {            
-                fill = 1.5;                           
-                NEW title {
-                    type = CONTAINERH;        
-                    MOVE PROPERTY(date(o));
-                    MOVE PROPERTY(seriesNumber(o));
-                    MOVE PROPERTY(validity(o));
-                }    
-                NEW boxes {
-                    fill = 1; 
-                    NEW attr {
-                        fill = 1;
-                        type = CONTAINERH;
-                        MOVE PROPERTY(nameCustomer(o)) { fill = 20; }; 
-                        MOVE PROPERTY(customerReference(o)) { fill = 1; };               
-                    }
-                    NEW box1 {
-                        type = CONTAINERH;
-                        fill = 5;
-                        NEW shipment {
-                            fill = 1;
-                            caption = 'Поставка';
-                            MOVE PROPERTY(expectedDate(o));
-                            MOVE PROPERTY(commintmentDate(o));
-                            MOVE PROPERTY(deliveryAddress(o));
-                            MOVE PROPERTY(nameIncoterm(o));
-                            MOVE PROPERTY(nameLocation(o));               
-                        }
-                        NEW invoicing {
-                            caption = 'Расчеты';
-                            fill = 1;
-                            marginLeft = 30;
-                            MOVE PROPERTY(invoiceDate(o));
-                            MOVE PROPERTY(addressCustomer(o));
-                            MOVE PROPERTY(namePaymentterm(o));                         
-                        }
-                    }
-                    NEW box2 {
-                        fill = 1;
-                        NEW sales {
-                            caption = 'Продажи';
-                            MOVE PROPERTY(nameRepresentative(o));                                       
-                        }
-                    }
+            NEW title {
+                MOVE PROPERTY(dateTime(o));
+                NEW seriesNumber { 
+                    type = CONTAINERH; 
+                    MOVE PROPERTY(series(o)); 
+                    MOVE PROPERTY(number(o));
                 }
-            }
+                MOVE PROPERTY(nameCustomer(o)); 
+            }    
+            NEW params {
+                MOVE PROPERTY(validity(o));
+            }            
             NEW relatedDoc {
+                type = TABBED;
                 fill = 1;
-                marginLeft = 50;
             }                                 
         }
         NEW details {
             fill = 7;
             type = TABBED;
-            MOVE BOX (l);
-            PROPERTY(unitPrice(l)) { pattern='#,##0.00'; }
-            PROPERTY(subtotal(l))  { pattern='#,##0.00'; }            
+            MOVE BOX(l) {
+                PROPERTY(unitPrice(l)) { pattern = '#,##0.00'; }
+                PROPERTY(subtotal(l))  { pattern = '#,##0.00'; }
+            }
+            NEW otherInformation {
+                caption = 'Прочая информация';
+                type = COLUMNS;
+                columns = 2;
+                NEW shippingInformation {
+                    caption = 'Поставка';
+                    MOVE PROPERTY(scheduledDate(o));
+                    MOVE PROPERTY(deliveryAddress(o));
+                    MOVE PROPERTY(nameLocation(o));               
+                    MOVE PROPERTY(nameIncoterm(o));
+                }
+                NEW salesInformation {
+                    caption = 'Прочие';
+                    MOVE PROPERTY(nameRepresentative(o));                                       
+                    MOVE PROPERTY(customerReference(o));               
+                }
+                NEW quotation {
+                    caption = 'Запрос предложений';
+                    MOVE PROPERTY(validity(o));
+                }
+                NEW invoicing {
+                    caption = 'Расчеты';
+                    MOVE PROPERTY(invoiceDate(o));
+                    MOVE PROPERTY(namePaymentTerms(o));                         
+                    MOVE PROPERTY(addressCustomer(o));
+                }
+            }            
         }
-        NEW paneDown
-        {
+        NEW footer {
             align = END;
             type = CONTAINERH; 
-            NEW paneExecution {
-            }         
-            NEW paneSum {
-                MOVE BOX(oo) { caption='ИТОГО'; }                
-                GROUP(,oo) { type = CONTAINERV; }
-                PROPERTY(untaxedAmount(oo)) { pattern='#,##0.00'; }
-                PROPERTY(totalTax(oo)) { pattern='#,##0.00'; }
-                PROPERTY(totalAmount(oo)) { pattern='#,##0.00'; }                     
+            NEW total {
+                caption = 'Итого';
+                type = CONTAINERH;
+                MOVE PROPERTY(untaxedAmount(o)) { pattern = '#,##0.00'; }
+                MOVE PROPERTY(totalTax(o)) { pattern = '#,##0.00'; }
+                MOVE PROPERTY(totalAmount(o)) { pattern = '#,##0.00'; }                     
             }
         }
     }            
@@ -199,16 +182,18 @@ DESIGN order {
 
 FORM orders 'Заказы'
      OBJECTS o = Order
-     PROPERTIES(o) READONLY seriesNumber,date,commintmentDate,expectedDate,nameCustomer,nameRepresentative
+     PROPERTIES(o) READONLY seriesNumber, nameCustomer,
+                            scheduledDate, deliveryAddress, nameLocation, nameIncoterm, 
+                            invoiceDate, namePaymentTerms, addressCustomer,
+                            nameRepresentative, customerReference,
+                            untaxedAmount, totalAmount
+                            
      PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
 ;
 
-EXTEND FORM orders 
-    PROPERTIES(o) READONLY totalAmount     
-;
-
 DESIGN orders {
-    PROPERTY(totalAmount(o)) { pattern='#,##0.00'; }
+    PROPERTY(untaxedAmount(o)) { pattern = '#,##0.00'; }
+    PROPERTY(totalAmount(o)) { pattern = '#,##0.00'; }
 }
 
 NAVIGATOR {
@@ -216,15 +201,3 @@ NAVIGATOR {
         NEW orders FIRST;    
     }
 }
-
-addOrder 'Заказ' () {
-    NEWSESSION {
-        NEW o = Order {
-            SHOW order OBJECTS o = o;  
-        }
-    }
-}IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
-
-EXTEND FORM orders
-    PROPERTIES addOrder() DRAW o TOOLBAR
-;
