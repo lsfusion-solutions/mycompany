@@ -40,16 +40,7 @@ CONSTRAINT partner(Shipment s) AND NOT isCustomer(partner(s))
                 MESSAGE 'Партнер должен быть вендором';
 
 // Номер
-series 'Серия' = DATA STRING[2] (Shipment);
-number 'Номер' = DATA STRING[28] (Shipment) NONULL;
-
-seriesNumber 'Серия/Номер' (Shipment s) = CONCAT '/', series(s), number(s) CHARWIDTH 10; 
-
-WHEN SETCHANGED(type(Shipment o)) AND NOT CHANGED(number(o)) AND NOT CHANGED(series(o)) DO {
-    number(o) <- curStringValue(numerator(type(o)));
-    series(o) <- series(numerator(type(o)));
-    incrementValueSession(numerator(type(o)));
-}
+@setSeriesNumberType(shipment);
 
 WHEN SETCHANGED(type(Shipment s)) AND NOT isTransfer(type(s)) DO toLocation(s) <- NULL;
 

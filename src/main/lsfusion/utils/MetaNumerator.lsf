@@ -45,6 +45,19 @@ META defineSeriesNumber(class, caption, srs)
     }
 END
 
+META setSeriesNumberType(class)
+    series 'Серия' = DATA STRING[2] (###class);
+    number 'Номер' = DATA STRING[28] (###class) NONULL;
+    
+    seriesNumber 'Серия/Номер' (###class s) = CONCAT '/', series(s), number(s) CHARWIDTH 10; 
+
+    WHEN SETCHANGED(type(###class o)) AND numerator(type(o)) AND NOT number(o) DO {
+        number(o) <- curStringValue(numerator(type(o)));
+        series(o) <- series(numerator(type(o)));
+        incrementValueSession(numerator(type(o)));
+    }
+END
+
 META defineID(class, caption, srs)
     id 'Код' = DATA STRING[50] (###class) IN id CHARWIDTH 8;
     ##class (STRING[50] id) = GROUP AGGR ###class o BY id(o);

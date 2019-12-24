@@ -21,17 +21,8 @@ scheduledDate (Receipt r) <- currentDateTime() WHEN SET(r IS Receipt);
 executionDate 'Дата поступления' = DATA DATETIME (Receipt);
 
 // Номер
-series 'Серия' = DATA STRING[2] (Receipt);
-number 'Номер' = DATA STRING[28] (Receipt) NONULL;
+@setSeriesNumberType(receipt);
 receipt (STRING[28] number) = GROUP LAST Receipt r BY number(r);
-
-seriesNumber 'Серия/Номер' (Receipt r) = CONCAT '/', series(r), number(r) CHARWIDTH 10; 
-
-WHEN SETCHANGED(type(Receipt o)) AND NOT CHANGED(number(o)) AND NOT CHANGED(series(o)) DO {
-    number(o) <- curStringValue(numerator(type(o)));
-    series(o) <- series(numerator(type(o)));
-    incrementValueSession(numerator(type(o)));
-}
 
 // Места хранения
 location 'Место хранения' = DATA Location (Receipt) NONULL INDEXED;
