@@ -1,7 +1,9 @@
 MODULE PurchaseOrder;
-REQUIRE System, Time, Utils, PurchaseSettings, Location, Partner, Item, Numerator, Incoterms, PaymentTerms, TaxItem, MetaTax, 
-        ItemMeasure, Individual, LegalEntity, Company, Doc, ItemPurchase, PartnerPurchase, PartnerSale, MetaNumerator
-        ;
+
+REQUIRE Time, MetaNumerator, Individual, Company,
+        MetaTax, TaxItem,
+        PurchaseSettings, PartnerPurchase, ItemSale,
+        Incoterms, PaymentTerms;  
 
 NAMESPACE Purchase;
 
@@ -94,7 +96,7 @@ FORM order 'Заказ'
     EDIT Order OBJECT o    
 ;      
 
-DESIGN order{
+DESIGN order {
     OBJECTS {
         NEW header {
             alignment = STRETCH;    
@@ -117,8 +119,8 @@ DESIGN order{
             fill = 7;
             type = TABBED;
             MOVE BOX(l) {
-                PROPERTY(unitPrice(l)) { pattern='#,##0.00'; }
-                PROPERTY(subtotal(l))  { pattern='#,##0.00'; }
+                PROPERTY(unitPrice(l)) { pattern = '#,##0.00'; }
+                PROPERTY(subtotal(l))  { pattern = '#,##0.00'; }
             }
             NEW otherInformation {
                 caption = 'Прочая информация';
