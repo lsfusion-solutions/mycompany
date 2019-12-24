@@ -22,17 +22,10 @@ changeIn(Item item, Pricelist pricelist)  {
                 }
 }
 
-selectAll 'Подобрать все' (Pricelist pr, Category c) {
-    NEWSESSION {
-        FOR canBeSold(Item i) AND level(category(i), c) AND NOT in(i, pr) DO {
-            NEW l = PricelistLine {
-                pricelist(l) <- pr;
-                item(l) <- i;
-                APPLY;
-            }
-        }
-    }
-}
+taxes (Item i, PriceType pt, DATETIME dt) = salesTaxes(i) * price(pt, i, dt) / 100;
+markup 'Текущая надбавка' (Item i, PriceType t, DATETIME  dt) = IF price(t, i, dt) THEN 
+                IF taxIncluded(t) THEN round2((price(t, i, dt) / (costPrice(i) * (1 (+) salesTaxes(i) / 100))) * 100 - 100)
+                ELSE round2((price(t, i, dt) / costPrice(i)) * 100 - 100);
 
 EXTEND FORM pricelist
     TREE categories c = Category PARENT parent(c)
@@ -40,13 +33,12 @@ EXTEND FORM pricelist
     ORDER name(c)
     
     OBJECTS dt = DATETIME 
-    FILTERS dt = currentDateTime()
+    FILTERS dt = startDate(pr)
     
     OBJECTS item = Item
-    PROPERTIES in(item, pr) ON CHANGE changeIn(item, pr), selectAll(pr, c) DRAW item TOOLBAR 
     PROPERTIES READONLY name(item),
-                        cp = costPrice(prl) SHOWIF showCost(pr),
-                        markup = markup(prl, tc) COLUMNS 'p' (tc) HEADER name(tc) + ', %' SHOWIF showMarkup(pr),
+                        costPrice(item) SHOWIF showCost(pr),
+                        markup(item, tc, dt) COLUMNS 'p' (tc) HEADER name(tc) + ', %' SHOWIF showMarkup(pr),
                         price(tc, item, dt) COLUMNS 'p' (tc) HEADER name(tc)
     FILTERS level(category(item), c), canBeSold(item)  
 ;
@@ -61,8 +53,19 @@ DESIGN pricelist {
             MOVE BOX(item) { 
                 fill = 2;
             }
-            MOVE PROPERTY(costPrice(prl));
-            MOVE PROPERTY(markup);
+            MOVE PROPERTY(costPrice(item));
+            MOVE PROPERTY(markup(item, tc, dt));
         }       
     }
 }
+
+selectAll 'Подобрать все' (Pricelist pr, Category c) {
+    FOR [FILTER pricelist.item](Item i) AND NOT in(i, pr) DO NEW l = PricelistLine {
+        pricelist(l) <- pr;
+        item(l) <- i;
+    }
+}
+
+EXTEND FORM pricelist
+    PROPERTIES in(item, pr) ON CHANGE changeIn(item, pr) BEFORE name(item), selectAll(pr, c) DRAW item TOOLBAR 
+;

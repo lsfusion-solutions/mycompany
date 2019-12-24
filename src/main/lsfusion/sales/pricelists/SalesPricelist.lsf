@@ -1,6 +1,6 @@
 MODULE SalesPricelist;
 
-REQUIRE Item, Partner, ItemSale, PartnerSale, TaxItem, SalesSettings, SalesOrder, SalesPriceType, CostLedger;
+REQUIRE Item, Partner, ItemSale, PartnerSale, TaxItem, SalesSettings, SalesOrder, SalesPriceTypeMarkup, CostLedger;
 
 NAMESPACE Sales; 
 
@@ -47,10 +47,20 @@ showCurrentPrice 'Действующие цены' = DATA BOOLEAN (Pricelist);
 showMarkup 'Надбавки' = DATA BOOLEAN (Pricelist);
 showCost 'Себестоимость' = DATA BOOLEAN (Pricelist);
 
-costPrice 'Текущая себестоимость' (PricelistLine pl) = costPrice(item(pl));
+costPrice 'Текущая себестоимость' = DATA NUMERIC[32,16] (PricelistLine);
 
-taxes (PricelistLine l, PriceType pt) = (GROUP SUM value(Tax t) IF salesIn(item(l),t)) * price(l, pt) / 100;
-markup 'Надбавка' (PricelistLine l, PriceType t) = IF price(l, t) THEN round2((price(l, t) (+) taxes(l, t) (-) costPrice(l)) * 100 / costPrice(l));
+WHEN LOCAL SETCHANGED(item(PricelistLine l)) AND l IS PricelistLine DO {
+    costPrice(l) <- OVERRIDE costPrice(item(l)), salesPrice(item(l));
+}
+
+taxes (PricelistLine l, PriceType pt) = salesTaxes(item(l)) * price(l, pt) / 100;
+markup 'Надбавка'  = DATA NUMERIC[10,2](PricelistLine, PriceType);
+
+WHEN LOCAL SETCHANGED(costPrice(PricelistLine l)) OR SETCHANGED(price(l, PriceType t)) AND l IS PricelistLine DO {
+    IF price(l, t) THEN 
+               IF taxIncluded(t) THEN markup(l, t) <- round2((price(l, t) / (costPrice(l) * (1 (+) salesTaxes(item(l)) / 100))) * 100 - 100);
+               ELSE markup(l, t) <- round2((price(l, t) / costPrice(l)) * 100 - 100);
+}
 
 changeSalesTax (PricelistLine l) {
     changeSalesTax(item(l));
@@ -68,9 +78,14 @@ chooseTypes (Pricelist pr) {
     SHOW chooseTypes OBJECTS pr = pr;
 }
 
+recalcPrice (PricelistLine l, PriceType t, NUMERIC[10,2] markup) {
+    IF taxIncluded(t) THEN price(l, t) <- round2((markup (+) 100) / 100 * costPrice(l) * (1 (+) salesTaxes(item(l)) / 100));
+            ELSE price(l, t) <- round2((markup (+) 100) / 100 * costPrice(l));
+}
+
 changeMarkup (PricelistLine l, PriceType t) {
     INPUT val = NUMERIC[10,2] DO {
-        price(l, t) <- round2((val * costPrice(l) / 100 (+) costPrice(l)) / (1 (+) (GROUP SUM value(Tax tax) IF salesIn(item(l),tax)) / 100));
+        recalcPrice(l, t, val);
     }
 }
 
@@ -83,7 +98,7 @@ FORM pricelist 'Прайс-листы'
     FILTERS editIn(pr, tc) 
    
     OBJECTS prl = PricelistLine
-    PROPERTIES(prl) nameItem, nameUnitMeasure READONLY, costPrice SHOWIF showCost(pr)
+    PROPERTIES(prl) nameItem, nameUnitMeasure READONLY, costPrice SHOWIF showCost(pr) READONLY
     PROPERTIES      markup(prl, tc) COLUMNS 'p' (tc) HEADER name(tc) + ' (надбавка)' SHOWIF showMarkup(pr) ON CHANGE changeMarkup(prl, tc)
     PROPERTIES      price(prl, tc) COLUMNS 'p' (tc) HEADER name(tc) 
     PROPERTIES      currentPrice(prl, tc) COLUMNS 'p' (tc) HEADER name(tc) + ' (текущая)' SHOWIF showCurrentPrice(pr)
@@ -180,4 +195,63 @@ copyPricelist 'Копировать прайслист' (Pricelist pl) {
 EXTEND FORM pricelist
     PROPERTIES(pr) copyPricelist DRAW prl TOOLBAR 
 ;
+
+markupPriceList 'Установить надбавки из предыдущих прайсов' = DATA LOCAL BOOLEAN ();
+markupPriceType 'Установить надбавки из видов цен' = DATA LOCAL BOOLEAN ();
+pricePriceList 'Установить цены из предыдущих прайсов' = DATA LOCAL BOOLEAN ();
+change 'Изменить на, %' = DATA LOCAL NUMERIC[10,2] ();
+
+FORM changePrices
+    PROPERTIES() markupPriceList, markupPriceType, pricePriceList, change SHOWIF pricePriceList()
+;
+
+changePrices 'Изменить цены' (Pricelist p) {
+    DIALOG changePrices DO {
+        CASE WHEN markupPriceList() THEN {
+            FOR pricelist(PricelistLine l) = p DO {
+                FOR editIn(p, PriceType t) DO {
+                    markup(l, t) <- OVERRIDE markup(pricelistLine(t, item(l), startDate(p)), t), markup(category(item(l)));
+                }
+            }
+        }
+        CASE WHEN markupPriceType() THEN {  
+            FOR pricelist(PricelistLine l) = p DO {
+                FOR editIn(p, PriceType t) DO {
+                    markup(l, t) <- markup(t);
+                }
+            }
+        }
+        CASE WHEN pricePriceList() THEN {
+            FOR pricelist(PricelistLine l) = p DO {
+                FOR editIn(p, PriceType t) DO {
+                    price(l, t) <- price(pricelistLine(t, item(l), startDate(p)), t);
+                    IF change() THEN price(l, t) <- price(l, t) (+) NUMERIC[10,2](price(l, t) * change() / 100);
+                }
+            }
+        }
+    }
+}
+
+WHEN LOCAL SETCHANGED(markup(PricelistLine l, PriceType t)) AND l IS PricelistLine DO {
+    recalcPrice(l, t, markup(l, t));
+} 
+
+DESIGN changePrices {
+    OBJECTS {    
+        MOVE PROPERTY(markupPriceList());
+        MOVE PROPERTY(markupPriceType());
+        MOVE PROPERTY(pricePriceList());
+        MOVE PROPERTY(change());
+    }
+}
+
+EXTEND FORM pricelist
+    PROPERTIES(pr) changePrices DRAW pr
+;
+
+DESIGN pricelist {
+    header {
+        MOVE PROPERTY(changePrices(pr));
+    }
+}
 
