@@ -1,0 +1,29 @@
+MODULE SalesPriceListDone;
+
+REQUIRE SalesPriceListStatus;
+
+NAMESPACE Sales;
+
+done 'Принят' = DATA BOOLEAN (Pricelist);
+
+toDone 'Принять' (Pricelist p) {
+    NEWSESSION {  
+        done(p) <- TRUE;
+        APPLY;
+    }
+}
+
+status(Pricelist p) += WHEN done(p) THEN SalesPricelistStatus.done;
+
+EXTEND FORM pricelist
+    PROPERTIES(pr) toDone SHOWIF status(pr) = SalesPricelistStatus.draft, done READONLY 
+;
+
+DESIGN pricelist {
+    statusActions {
+        MOVE PROPERTY(toDone(pr)) { fontStyle = 'bold'; }
+    }
+    status {
+        MOVE PROPERTY(done(pr));
+    }
+}

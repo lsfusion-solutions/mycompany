@@ -1,0 +1,36 @@
+MODULE SalesPriceListStatus;
+
+REQUIRE SalesPricelist;
+
+NAMESPACE Sales;
+
+CLASS SalesPricelistStatus 'Статус прайс-листа'{
+    draft 'Черновик',
+    done 'Принят'
+}
+
+name 'Имя' (SalesPricelistStatus s) = staticCaption(s) IF s IS SalesPricelistStatus CHARWIDTH 15;
+
+status 'Статус' = ABSTRACT CASE SalesPricelistStatus (Pricelist);
+nameStatus 'Статус' (Pricelist p) = name(status(p));
+
+colorStatus 'Цвет' = ABSTRACT CASE COLOR (Pricelist);
+
+readonly (Pricelist p) += WHEN NOT status(p) = SalesPricelistStatus.draft THEN TRUE;
+
+status(Pricelist p) += WHEN p IS Pricelist THEN SalesPricelistStatus.draft;
+colorStatus(Pricelist p) += WHEN status(p) == SalesPricelistStatus.draft THEN RGB(187,242,210);
+
+EXTEND FORM pricelist
+    PROPERTIES(pr) READONLY nameStatus BACKGROUND colorStatus(pr)             
+;
+
+EXTEND FORM pricelists
+    PROPERTIES(pr) nameStatus BACKGROUND colorStatus(pr)
+;
+
+DESIGN pricelist {
+    status {
+        MOVE PROPERTY(nameStatus(pr));
+    }     
+}
