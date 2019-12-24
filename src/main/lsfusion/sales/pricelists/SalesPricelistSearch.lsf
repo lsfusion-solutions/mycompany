@@ -44,9 +44,10 @@ EXTEND FORM pricelist
     
     OBJECTS item = Item
     PROPERTIES in(item, pr) ON CHANGE changeIn(item, pr), selectAll(pr, c) DRAW item TOOLBAR 
-    PROPERTIES READONLY name(item), price(tc, item, dt) COLUMNS (tc) HEADER name(tc) + ' (текущая)' DRAW item SHOWIF showCurrentPrice(pr)
-    PROPERTIES markup = markup(prl, tc) COLUMNS 'p' (tc) HEADER 'Надбавка ' + name(tc) SHOWIF showMarkup(pr) DRAW item,
-                cp = costPrice(prl) SHOWIF showCost(pr) DRAW item
+    PROPERTIES READONLY name(item),
+                        cp = costPrice(prl) SHOWIF showCost(pr) DRAW item,
+                        markup = markup(prl, tc) COLUMNS 'p' (tc) HEADER name(tc) + ',%' SHOWIF showMarkup(pr) DRAW item,
+                        price(tc, item, dt) COLUMNS (tc) HEADER name(tc) DRAW item SHOWIF showCurrentPrice(pr)
     FILTERS level(category(item), c), canBeSold(item)  
 ;
 
@@ -60,7 +61,7 @@ DESIGN pricelist {
             MOVE BOX(item) { 
                 fill = 2;
             }
-            MOVE PROPERTY(cp);
+            MOVE PROPERTY(costPrice(prl));
             MOVE PROPERTY(markup);
         }       
     }

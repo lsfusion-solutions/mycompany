@@ -84,11 +84,11 @@ FORM pricelist 'Прайс-листы'
    
     OBJECTS prl = PricelistLine
     PROPERTIES(prl) nameItem, nameUnitMeasure READONLY, costPrice SHOWIF showCost(pr)
+    PROPERTIES      markup(prl, tc) COLUMNS 'p' (tc) HEADER name(tc) + ' (надбавка)' SHOWIF showMarkup(pr) ON CHANGE changeMarkup(prl, tc)
+    PROPERTIES      price(prl, tc) COLUMNS 'p' (tc) HEADER name(tc) 
+    PROPERTIES      currentPrice(prl, tc) COLUMNS 'p' (tc) HEADER name(tc) + ' (текущая)' SHOWIF showCurrentPrice(pr)
     PROPERTIES(prl) NEW,DELETE 
     FILTERS pricelist(prl) = pr 
-    PROPERTIES markup(prl, tc) COLUMNS 'p' (tc) HEADER 'Надбавка ' + name(tc) SHOWIF showMarkup(pr) ON CHANGE changeMarkup(prl, tc)
-    PROPERTIES(prl, tc) price COLUMNS (tc) HEADER name(tc) 
-    PROPERTIES currentPrice(prl, tc) COLUMNS 'p' (tc) HEADER name(tc) + ' (текущая)' SHOWIF showCurrentPrice(pr)
 
     EDIT Pricelist OBJECT pr
 ;
@@ -97,7 +97,6 @@ DESIGN pricelist {
     OBJECTS {
         NEW header {
             NEW col1 {
-                align = START;
                 type = CONTAINERH;
                 NEW left {
                     NEW rek {
@@ -107,16 +106,16 @@ DESIGN pricelist {
                         MOVE PROPERTY(seriesNumber(pr)) { marginLeft = 10; }
                     }
                     MOVE PROPERTY(priceListTypes(pr)); 
-                    }
+                    MOVE PROPERTY(note(pr)); 
+                }
                 NEW show {
                     caption = 'Показывать';
-                    type = CONTAINERH;
+                    type = CONTAINERV;
                     MOVE PROPERTY(showCurrentPrice(pr));     
                     MOVE PROPERTY(showMarkup(pr));
                     MOVE PROPERTY(showCost(pr));
                 }     
             }
-            MOVE PROPERTY(note(pr)); 
         }
         NEW details {
             fill = 1;
