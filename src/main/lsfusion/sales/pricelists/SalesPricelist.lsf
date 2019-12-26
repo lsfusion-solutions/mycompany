@@ -80,6 +80,9 @@ showCurrentPrice 'Действующие цены' = DATA BOOLEAN (Pricelist);
 showMarkup 'Надбавки' = DATA BOOLEAN (Pricelist);
 showCost 'Себестоимость' = DATA BOOLEAN (Pricelist);
 
+currentPriceColor (PricelistLine l, PriceType t) = IF currentPrice(l, t) < price(l, t) THEN RGB(187,242,210) 
+    ELSE IF currentPrice(l, t) > price(l, t) THEN RGB(250,150,157);
+
 FORM pricelist 'Прайс-лист'
     OBJECTS p = Pricelist PANEL
     PROPERTIES(p) series, number, startDate, endDate, note,
@@ -93,6 +96,7 @@ FORM pricelist 'Прайс-лист'
     PROPERTIES(l) index READONLY, nameItem, nameUnitMeasure READONLY, costPrice SHOWIF showCost(p) READONLY
     PROPERTIES    markup(l, t) COLUMNS 'p' (t) HEADER name(t) + ' (надбавка)' SHOWIF showMarkup(p) ON CHANGE changeMarkup(l, t)
     PROPERTIES    price(l, t) COLUMNS 'p' (t) HEADER name(t) 
+    PROPERTIES    currentPrice(l, t) COLUMNS 'p' (t) HEADER name(t) + ' (текущая)' SHOWIF showCurrentPrice(p) BACKGROUND currentPriceColor(l, t)
     PROPERTIES(l) NEW, DELETE 
     FILTERS pricelist(l) = p 
 
