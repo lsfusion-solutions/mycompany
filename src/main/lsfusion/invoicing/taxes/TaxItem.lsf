@@ -19,8 +19,8 @@ FORM changeTax 'Установить налог'
 
 //налоги для продаж
 salesIn 'Вкл' = DATA BOOLEAN (Item, Tax) CHARWIDTH 5;
-salesTaxes 'Налоги реализации, %' (Item i) = GROUP SUM value(Tax tax) IF salesIn(i, tax);
-nameSalesTaxes 'Налоги реализации' (Item i) = GROUP CONCAT name(Tax t) IF salesIn(i, t), ', ' ORDER t CHARWIDTH 8;
+salesTax 'Налоги реализации, %' (Item i) = GROUP SUM value(Tax tax) IF salesIn(i, tax);
+nameSalesTax 'Налоги реализации' (Item i) = GROUP CONCAT name(Tax t) IF salesIn(i, t), ', ' ORDER t CHARWIDTH 8;
 
 WHEN LOCAL CHANGED(salesIn(Item i, Tax t)) DO {
     FOR taxGroup(t) = taxGroup(Tax tx) AND NOT t = tx DO {
@@ -37,7 +37,8 @@ changeSalesTax (Item i) {
 
 //входящие налоги поставщиков
 purchaseIn 'Вкл' = DATA BOOLEAN (Item, Tax);
-purchaseTaxes 'Налоги поставщиков' (Item i) = GROUP CONCAT name(Tax t) IF purchaseIn(i, t), ', ' ORDER t CHARWIDTH 8;
+purchaseTax 'Налоги реализации, %' (Item i) = GROUP SUM value(Tax tax) IF purchaseIn(i, tax);
+namePurchaseTaxes 'Налоги поставщиков' (Item i) = GROUP CONCAT name(Tax t) IF purchaseIn(i, t), ', ' ORDER t CHARWIDTH 8;
 
 WHEN LOCAL CHANGED(purchaseIn(Item i, Tax t)) DO {
     FOR taxGroup(t) = taxGroup(Tax tx) AND NOT t = tx DO {
@@ -53,16 +54,16 @@ changePurchaseTax (Item i) {
 } 
 
 EXTEND FORM item
-    PROPERTIES(i) nameSalesTaxes ON CHANGE changeSalesTax(i)
-    PROPERTIES(i) purchaseTaxes ON CHANGE changePurchaseTax(i)
+    PROPERTIES(i) nameSalesTax ON CHANGE changeSalesTax(i)
+    PROPERTIES(i) namePurchaseTaxes ON CHANGE changePurchaseTax(i)
 ;
 
 DESIGN item {
     sale {
-        MOVE PROPERTY(nameSalesTaxes(i));
+        MOVE PROPERTY(nameSalesTax(i));
     }
     purchase {
-        MOVE PROPERTY(purchaseTaxes(i));                
+        MOVE PROPERTY(namePurchaseTaxes(i));                
     }
 }
 

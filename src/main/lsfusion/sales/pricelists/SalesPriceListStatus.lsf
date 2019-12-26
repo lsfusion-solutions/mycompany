@@ -4,31 +4,31 @@ REQUIRE SalesPricelist;
 
 NAMESPACE Sales;
 
-CLASS SalesPricelistStatus 'Статус прайс-листа'{
+CLASS PricelistStatus 'Статус прайс-листа'{
     draft 'Черновик',
-    done 'Принят'
+    done 'Проведен'
 }
 
-name 'Имя' (SalesPricelistStatus s) = staticCaption(s) IF s IS SalesPricelistStatus CHARWIDTH 15;
+name 'Имя' (PricelistStatus s) = staticCaption(s) IF s IS PricelistStatus CHARWIDTH 15;
 
-status 'Статус' = ABSTRACT CASE SalesPricelistStatus (Pricelist);
+status 'Статус' = ABSTRACT CASE PricelistStatus (Pricelist);
 nameStatus 'Статус' (Pricelist p) = name(status(p));
 
 colorStatus 'Цвет' = ABSTRACT CASE COLOR (Pricelist);
 
-status(Pricelist p) += WHEN p IS Pricelist THEN SalesPricelistStatus.draft;
-colorStatus(Pricelist p) += WHEN status(p) == SalesPricelistStatus.draft THEN RGB(187,242,210);
+status(Pricelist p) += WHEN p IS Pricelist THEN PricelistStatus.draft;
+colorStatus(Pricelist p) += WHEN status(p) = PricelistStatus.draft THEN RGB(187,242,210);
 
 EXTEND FORM pricelist
-    PROPERTIES(pr) READONLY nameStatus BACKGROUND colorStatus(pr)             
+    PROPERTIES(p) READONLY nameStatus BACKGROUND colorStatus(p)             
 ;
 
 EXTEND FORM pricelists
-    PROPERTIES(pr) nameStatus BACKGROUND colorStatus(pr)
+    PROPERTIES(p) nameStatus BACKGROUND colorStatus(p)
 ;
 
 DESIGN pricelist {
     status {
-        MOVE PROPERTY(nameStatus(pr));
+        MOVE PROPERTY(nameStatus(p));
     }     
 }

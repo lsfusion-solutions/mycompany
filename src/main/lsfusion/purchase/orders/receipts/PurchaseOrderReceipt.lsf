@@ -4,19 +4,12 @@ REQUIRE PurchaseOrder, Inventory, PurchaseOrderStatus, PurchaseOrderConfirmed, P
 
 NAMESPACE Purchase;
 
-typeReceiptFromPurchase 'Тип складского прихода по умолчанию' = DATA ReceiptType ();
-nameTypeReceiptFromPurchase 'Тип складского прихода по умолчанию' = name(typeReceiptFromPurchase());
+// options
+receiptType 'Тип складского прихода по умолчанию' = DATA ReceiptType ();
+nameReceiptType 'Тип складского прихода по умолчанию' = name(receiptType());
+EXTEND FORM options PROPERTIES nameReceiptType();
 
-EXTEND FORM options
-    PROPERTIES nameTypeReceiptFromPurchase()
-;
- 
-DESIGN options {
-    OBJECTS {
-        MOVE PROPERTY(nameTypeReceiptFromPurchase());
-    }
-}
-
+// relation
 orderLine = DATA OrderLine (ReceiptLine) INDEXED;
 order = DATA Order (Receipt);
 
@@ -32,16 +25,17 @@ toReceive 'К поступлению' (Order o) = GROUP SUM toReceive(OrderLine 
 CONSTRAINT (quantity(OrderLine ol) (-) doneReceipt(ol)) < 0 AND confirmed(order(ol)) 
     MESSAGE 'По товару приход превышает количество в заказе';
 
-lastOpenReceipt 'Последний открытый приход' (Order o)= GROUP LAST Receipt r IF order(r) = o AND status(r) = ReceiptStatus.ready AND r IS Receipt ORDER r;
+lastOpenReceipt 'Последний открытый приход' (Order o) =  
+    GROUP LAST Receipt r IF order(r) = o AND status(r) = ReceiptStatus.ready ORDER r;
 
 WHEN ([GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) AND item(l) IS Product BY order(l)](Order o) OR SET(confirmed(o))) AND 
-      toReceive(o) > 0 AND status(o) = OrderStatus.confirmed DO {
+      toReceive(o) > 0 AND status(o) = OrderStatus.confirmed AND receiptType() DO {
     IF NOT lastOpenReceipt(o) THEN   
         NEW ns = Receipt { 
             partner(ns) <- vendor(o);
             scheduledDate(ns) <- scheduledDate(o);
             location(ns) <- location(o);
-            type(ns) <- typeReceiptFromPurchase();
+            type(ns) <- receiptType();
             ready(ns) <- TRUE;           
             order(ns) <- o; 
             sourceDocument(ns) <- seriesNumber(o);    

@@ -4,26 +4,26 @@ REQUIRE SalesPriceListStatus;
 
 NAMESPACE Sales;
 
-done 'Принят' = DATA BOOLEAN (Pricelist);
+done 'Проведен' = DATA BOOLEAN (Pricelist);
 
-toDone 'Принять' (Pricelist p) {
+toDone 'Провести' (Pricelist p) {
     NEWSESSION {  
         done(p) <- TRUE;
         APPLY;
     }
 }
 
-status(Pricelist p) += WHEN done(p) THEN SalesPricelistStatus.done;
+status(Pricelist p) += WHEN done(p) THEN PricelistStatus.done;
 
 EXTEND FORM pricelist
-    PROPERTIES(pr) toDone SHOWIF status(pr) = SalesPricelistStatus.draft, done READONLY 
+    PROPERTIES(p) toDone SHOWIF status(p) = PricelistStatus.draft, done READONLY 
 ;
 
 DESIGN pricelist {
     statusActions {
-        MOVE PROPERTY(toDone(pr)) { fontStyle = 'bold'; }
+        MOVE PROPERTY(toDone(p)) { fontStyle = 'bold'; }
     }
     status {
-        MOVE PROPERTY(done(pr));
+        MOVE PROPERTY(done(p));
     }
 }

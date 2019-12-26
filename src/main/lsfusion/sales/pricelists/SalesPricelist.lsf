@@ -10,61 +10,17 @@ CLASS Pricelist 'Прайс-листы';
 
 @defineSeriesNumber(pricelist, 'Прайс-листы', 'ПЛ');
 
-note 'Примечания' = DATA STRING[50] (Pricelist);
-
 startDate 'Начало действия' = DATA DATETIME (Pricelist);
-
 endDate 'Окончание действия' = DATA DATETIME (Pricelist);
 
+note 'Примечания' = DATA STRING[50] (Pricelist);
+
+// price types
 editIn 'Изменять цены' = DATA BOOLEAN (Pricelist, PriceType);
 
-priceListTypes 'Варианты цен' (Pricelist pricelist) = GROUP
-                                               CONCAT name(PriceType pricelistType) IF editIn(pricelist, pricelistType) , ', '
-                                               ORDER pricelistType CHARWIDTH 10 MATERIALIZED;
-
-CLASS PricelistLine 'Номенклатура';
-
-pricelist 'Прайс-лист' = DATA Pricelist (PricelistLine) NONULL DELETE;
-notePricelist 'Прайс-лист' (PricelistLine prl)= note(pricelist(prl));
-
-item 'Номенклатура' = DATA Item (PricelistLine);
-nameItem 'Номенклатура' (PricelistLine prl) = name(item(prl));
-nameUnitMeasure 'Единицы' (PricelistLine prl) = name(unitMeasure(item(prl))); 
-
-editIn (PricelistLine pl, PriceType priceType) = editIn(pricelist(pl), priceType);
-
-price 'Цена' = DATA NUMERIC[10,2] (PricelistLine, PriceType);
-
-pricelistLine (PriceType pt, Item i, DATETIME d) = 
-    GROUP LAST PricelistLine prl IF item(prl) = i AND price(prl, pt) AND NOT startDate(pricelist(prl)) >= d AND NOT endDate(pricelist(prl)) < d
-          ORDER startDate(pricelist(prl)), prl;
-
-price 'Действующая цена' (PriceType pt, Item i, DATETIME d) = price(pricelistLine(pt, i, d), pt);
-
-currentPrice (PricelistLine l, PriceType t) = price(t, item(l), startDate(pricelist(l)));
-
-showCurrentPrice 'Действующие цены' = DATA BOOLEAN (Pricelist);
-showMarkup 'Надбавки' = DATA BOOLEAN (Pricelist);
-showCost 'Себестоимость' = DATA BOOLEAN (Pricelist);
-
-costPrice 'Текущая себестоимость' = DATA NUMERIC[32,16] (PricelistLine);
-
-WHEN LOCAL SETCHANGED(item(PricelistLine l)) AND l IS PricelistLine DO {
-    costPrice(l) <- OVERRIDE costPrice(item(l)), salesPrice(item(l));
-}
-
-taxes (PricelistLine l, PriceType pt) = salesTaxes(item(l)) * price(l, pt) / 100;
-markup 'Надбавка'  = DATA NUMERIC[10,2](PricelistLine, PriceType);
-
-WHEN LOCAL SETCHANGED(costPrice(PricelistLine l)) OR SETCHANGED(price(l, PriceType t)) AND l IS PricelistLine DO {
-    IF price(l, t) THEN 
-               IF taxIncluded(t) THEN markup(l, t) <- round2((price(l, t) / (costPrice(l) * (1 (+) salesTaxes(item(l)) / 100))) * 100 - 100);
-               ELSE markup(l, t) <- round2((price(l, t) / costPrice(l)) * 100 - 100);
-}
-
-changeSalesTax (PricelistLine l) {
-    changeSalesTax(item(l));
-}
+priceListTypes 'Варианты цен' (Pricelist pricelist) = 
+    GROUP CONCAT name(PriceType pricelistType) IF editIn(pricelist, pricelistType) , ', '
+          ORDER pricelistType CHARWIDTH 10 MATERIALIZED;
 
 FORM chooseTypes 'Выбор видов цен'
     OBJECTS pr = Pricelist PANEL 
@@ -74,179 +30,217 @@ FORM chooseTypes 'Выбор видов цен'
     PROPERTIES(pr, t) editIn[Pricelist,PriceType]
 ;
 
-chooseTypes (Pricelist pr) {
-    SHOW chooseTypes OBJECTS pr = pr;
-}
+// lines
+CLASS PricelistLine 'Номенклатура';
 
-recalcPrice (PricelistLine l, PriceType t, NUMERIC[10,2] markup) {
-    IF taxIncluded(t) THEN price(l, t) <- round2((markup (+) 100) / 100 * costPrice(l) * (1 (+) salesTaxes(item(l)) / 100));
-            ELSE price(l, t) <- round2((markup (+) 100) / 100 * costPrice(l));
-}
+pricelist 'Прайс-лист' = DATA Pricelist (PricelistLine) NONULL DELETE;
+
+item 'Номенклатура' = DATA Item (PricelistLine);
+nameItem 'Номенклатура' (PricelistLine prl) = name(item(prl));
+nameUnitMeasure 'Единица измерения' (PricelistLine prl) = name(unitMeasure(item(prl))); 
+
+costPrice 'Себестоимость' = DATA NUMERIC[32,16] (PricelistLine);
+WHEN LOCAL SETCHANGED(item(PricelistLine l)) DO costPrice(l) <- OVERRIDE costPrice(item(l)), cost(item(l));
+
+markup 'Надбавка' = DATA NUMERIC[10,2] (PricelistLine, PriceType);
+price 'Цена' = DATA NUMERIC[10,2] (PricelistLine, PriceType);
+
+// prices
+pricelistLineB (PriceType t, Item i, DATETIME d) = 
+    GROUP LAST PricelistLine prl IF item(prl) = i AND price(prl, t) AND 
+               NOT startDate(pricelist(prl)) >= d AND NOT endDate(pricelist(prl)) < d
+          ORDER startDate(pricelist(prl)), prl;
+
+priceB (PriceType t, Item i, DATETIME d) = price(pricelistLineB(t, i, d), t);
+
+pricelistLineA (PriceType t, Item i, DATETIME d) = 
+    GROUP LAST PricelistLine prl IF item(prl) = i AND price(prl, t) AND 
+               NOT startDate(pricelist(prl)) > d AND NOT endDate(pricelist(prl)) < d
+          ORDER startDate(pricelist(prl)), prl;
+
+priceA (PriceType t, Item i, DATETIME d) = price(pricelistLineA(t, i, d), t);
+
+// prices for lines
+currentPrice (PricelistLine l, PriceType t) = priceB(t, item(l), startDate(pricelist(l)));
+
+noTaxPrice (PricelistLine l, PriceType t) = 
+    price(l, t) / (OVERRIDE 100.0 / (100.0 + salesTax(item(l))) IF taxIncluded(t), 1.0);
+
+WHEN LOCAL (SETCHANGED(costPrice(PricelistLine l)) OR SETCHANGED(price(l, PriceType t))) AND NOT CHANGED(markup(l, t)) DO
+    markup(l, t) <- round2((noTaxPrice(l, t) * 100.0 / costPrice(l)) - 100.0);
+
+calcPrice(PricelistLine l, PriceType t) = 
+    NUMERIC[10,2](costPrice(l) * 
+                  (markup(l, t) + 100.0) / 100.0 * 
+                  (OVERRIDE (100.0 + salesTax(item(l))) / 100.0 IF taxIncluded(t), 1.0));
 
 changeMarkup (PricelistLine l, PriceType t) {
-    INPUT val = NUMERIC[10,2] DO {
-        recalcPrice(l, t, val);
+    INPUT val = markup(l, t) CHANGE DO {
+        price(l, t) <- calcPrice(l, t);
     }
 }
 
+// Line properties
+startDate 'Начало действия' (PricelistLine prl) = startDate(pricelist(prl));
+endDate 'Окончание действия' (PricelistLine prl) = endDate(pricelist(prl));
+note 'Прайс-лист' (PricelistLine prl)= note(pricelist(prl));
+
+editIn (PricelistLine pl, PriceType priceType) = editIn(pricelist(pl), priceType);
+
+// show columns
+showCurrentPrice 'Действующие цены' = DATA BOOLEAN (Pricelist);
+showMarkup 'Надбавки' = DATA BOOLEAN (Pricelist);
+showCost 'Себестоимость' = DATA BOOLEAN (Pricelist);
+
 FORM pricelist 'Прайс-листы'
-    OBJECTS pr = Pricelist PANEL
-    PROPERTIES(pr) note, seriesNumber, startDate, endDate, priceListTypes ON CHANGE chooseTypes(pr), showCurrentPrice,
-                showMarkup, showCost
+    OBJECTS p = Pricelist PANEL
+    PROPERTIES(p) series, number, startDate, endDate, note,
+                  priceListTypes ON CHANGE { SHOW chooseTypes OBJECTS pr = p; }, 
+                  showCost, showMarkup, showCurrentPrice
 
-    OBJECTS tc = PriceType GRID
-    FILTERS editIn(pr, tc) 
+    OBJECTS t = PriceType GRID
+    FILTERS editIn(p, t) 
    
-    OBJECTS prl = PricelistLine
-    PROPERTIES(prl) nameItem, nameUnitMeasure READONLY, costPrice SHOWIF showCost(pr) READONLY
-    PROPERTIES      markup(prl, tc) COLUMNS 'p' (tc) HEADER name(tc) + ' (надбавка)' SHOWIF showMarkup(pr) ON CHANGE changeMarkup(prl, tc)
-    PROPERTIES      price(prl, tc) COLUMNS 'p' (tc) HEADER name(tc) 
-    PROPERTIES      currentPrice(prl, tc) COLUMNS 'p' (tc) HEADER name(tc) + ' (текущая)' SHOWIF showCurrentPrice(pr)
-    PROPERTIES(prl) NEW,DELETE 
-    FILTERS pricelist(prl) = pr 
+    OBJECTS l = PricelistLine
+    PROPERTIES(l) nameItem, nameUnitMeasure READONLY, costPrice SHOWIF showCost(p) READONLY
+    PROPERTIES    markup(l, t) COLUMNS 'p' (t) HEADER name(t) + ' (надбавка)' SHOWIF showMarkup(p) ON CHANGE changeMarkup(l, t)
+    PROPERTIES    price(l, t) COLUMNS 'p' (t) HEADER name(t) 
+    PROPERTIES    currentPrice(l, t) COLUMNS 'p' (t) HEADER name(t) + ' (текущая)' SHOWIF showCurrentPrice(p)
+    PROPERTIES(l) NEW, DELETE 
+    FILTERS pricelist(l) = p 
 
-    EDIT Pricelist OBJECT pr
+    EDIT Pricelist OBJECT p
 ;
 
 DESIGN pricelist {
     OBJECTS {
         NEW header {
-            NEW col1 {
-                type = CONTAINERH;
-                NEW left {
-                    NEW rek {
-                        type = CONTAINERH;
-                        MOVE PROPERTY(startDate(pr)) { caption = 'Период действия с '; }
-                        MOVE PROPERTY(endDate(pr)) { caption = 'по '; }
-                        MOVE PROPERTY(seriesNumber(pr)) { marginLeft = 10; }
-                    }
-                    MOVE PROPERTY(priceListTypes(pr)); 
-                    MOVE PROPERTY(note(pr)); 
+            type = CONTAINERH;
+            NEW params {
+                NEW seriesNumber {
+                    type = CONTAINERH;
+                    MOVE PROPERTY(series(p));
+                    MOVE PROPERTY(number(p));
                 }
-                NEW show {
-                    caption = 'Показывать';
-                    type = CONTAINERV;
-                    MOVE PROPERTY(showCurrentPrice(pr));     
-                    MOVE PROPERTY(showMarkup(pr));
-                    MOVE PROPERTY(showCost(pr));
-                }     
+                NEW period {
+                    type = CONTAINERH;
+                    MOVE PROPERTY(startDate(p)) { caption = 'Действует с '; }
+                    MOVE PROPERTY(endDate(p)) { caption = 'по '; }
+                }
+                MOVE PROPERTY(priceListTypes(p)); 
+                MOVE PROPERTY(note(p)); 
             }
+            NEW show {
+                caption = 'Показывать';
+                MOVE PROPERTY(showCost(p));
+                MOVE PROPERTY(showMarkup(p));
+                MOVE PROPERTY(showCurrentPrice(p));     
+            }     
         }
         NEW details {
             fill = 1;
             type = TABBED;
-            NEW container1 {
-                caption = 'Спецификация';
-                fill = 1;
-                MOVE BOX(prl) {
-                    PROPERTY(price(prl, tc)) { pattern='#,##0.00'; background = RGB(198,230,247); }
-                    MOVE PROPERTY (currentPrice(prl, tc));          
-                };           
+            MOVE BOX(l) {
+                PROPERTY(markup(l, t)) { background = RGB(212,242,252); }
+                PROPERTY(price(l, t)) { 
+                    pattern = '#,##0.00'; 
+                    background = RGB(198,230,247); 
+                }
             }
         }
-        REMOVE BOX(tc);         
-        MOVE TOOLBARBOX;          
     }
 }
 
-FORM pricelistsList 'Прайс-листы'
-    OBJECTS pr = Pricelist
-    PROPERTIES(pr) READONLY seriesNumber, note, startDate, endDate
-    LIST Pricelist OBJECT pr
-;
-
 FORM pricelists 'Прайс-листы'
-    OBJECTS pr = Pricelist
-    PROPERTIES(pr) READONLY seriesNumber, note, startDate, endDate
-    PROPERTIES(pr) NEW NEWSESSION ,EDIT NEWSESSION ,DELETE NEWSESSION 
+    OBJECTS p = Pricelist
+    PROPERTIES(p) READONLY seriesNumber, note, startDate, endDate
+    PROPERTIES(p) NEWSESSION NEW, EDIT ,DELETE
+    
+    LIST Pricelist OBJECT p
 ;
 
 NAVIGATOR {
-    sales{
+    sales {
         NEW pricelists AFTER orders;    
     }
 }
 
-copyPricelist 'Копировать прайслист' (Pricelist pl) {
+// copy
+copy 'Копировать' (Pricelist pl) {
     NEWSESSION {
         NEW p = Pricelist {
             startDate(p) <- startDate(pl);
             endDate(p) <- endDate(pl);
             note(p) <- note(pl);
-            showCurrentPrice(p) <- showCurrentPrice(pl);
+            showCost(p) <- showCost(pl);
             showMarkup(p) <- showMarkup(pl);
-            FOR editIn(pl, PriceType t) DO {
-                editIn(p, t) <- editIn(pl, t);
+            showCurrentPrice(p) <- showCurrentPrice(pl);
+            editIn(p, PriceType t) <- editIn(pl, t);
+            FOR pricelist(PricelistLine l)  = pl DO NEW nl = PricelistLine {
+                pricelist(nl) <- p;
+                item(nl) <- item(l);
+                price(nl, PriceType t) <- price(l, t);
             }
-            FOR pricelist(PricelistLine l)  = pl DO {
-                NEW nl = PricelistLine {
-                    pricelist(nl) <- p;
-                    item(nl) <- item(l);
-                    FOR price(l, PriceType t) DO {
-                        price(nl, t) <- price(l, t);
-                    }
-                }
-            }
-            SHOW pricelist OBJECTS pr = p;
+            SHOW pricelist OBJECTS p = p;
         }
     }
 }
 
 EXTEND FORM pricelist
-    PROPERTIES(pr) copyPricelist DRAW prl TOOLBAR 
+    PROPERTIES(p) copy DRAW l TOOLBAR 
 ;
 
-markupPriceList 'Установить надбавки из предыдущих прайсов' = DATA LOCAL BOOLEAN ();
-markupPriceType 'Установить надбавки из видов цен' = DATA LOCAL BOOLEAN ();
-pricePriceList 'Установить цены из предыдущих прайсов' = DATA LOCAL BOOLEAN ();
+// change prices
+CLASS ChangePriceType 'Тип изменения цен' {
+    markupPriceList 'Установить надбавки из предыдущих прайсов',
+    markupPriceType 'Установить надбавки из видов цен',
+    pricePriceList 'Установить цены из предыдущих прайсов'
+}
+
+name 'Наименование' (ChangePriceType o) = staticCaption(o) IF o IS ChangePriceType CHARWIDTH 15;
+
+FORM dialogChangePriceTypes 'Тип изменения цен'
+    OBJECTS o = ChangePriceType
+    PROPERTIES(o) READONLY name
+    
+    LIST ChangePriceType OBJECT o
+;
+
+changePriceType = DATA LOCAL ChangePriceType ();
+nameChangePriceType 'Тип изменения цен' = name(changePriceType());
+
 change 'Изменить на, %' = DATA LOCAL NUMERIC[10,2] ();
 
-FORM changePrices
-    PROPERTIES() markupPriceList, markupPriceType, pricePriceList, change SHOWIF pricePriceList()
+FORM changePrices 'Изменение цен'
+    PROPERTIES() nameChangePriceType, 
+                 change SHOWIF changePriceType() = ChangePriceType.pricePriceList 
 ;
 
 changePrices 'Изменить цены' (Pricelist p) {
     DIALOG changePrices DO {
-        CASE WHEN markupPriceList() THEN {
-            FOR pricelist(PricelistLine l) = p DO {
-                FOR editIn(p, PriceType t) DO {
-                    markup(l, t) <- OVERRIDE markup(pricelistLine(t, item(l), startDate(p)), t), markup(category(item(l)));
-                }
+        CASE 
+            WHEN changePriceType() = ChangePriceType.markupPriceList THEN {
+                markup(PricelistLine l, PriceType t) <- 
+                    OVERRIDE markup(pricelistLineB(t, item(l), startDate(p)), t), markup(category(item(l)))
+                    WHERE pricelist(l) = p AND editIn(p, t); 
+                price(PricelistLine l, PriceType t) <- calcPrice(l, t)
+                    WHERE pricelist(l) = p AND editIn(p, t);
             }
-        }
-        CASE WHEN markupPriceType() THEN {  
-            FOR pricelist(PricelistLine l) = p DO {
-                FOR editIn(p, PriceType t) DO {
-                    markup(l, t) <- markup(t);
-                }
+            WHEN changePriceType() = ChangePriceType.markupPriceType THEN {
+                markup(PricelistLine l, PriceType t) <- markup(t)
+                    WHERE pricelist(l) = p AND editIn(p, t);
+                price(PricelistLine l, PriceType t) <- calcPrice(l, t)
+                    WHERE pricelist(l) = p AND editIn(p, t);
             }
-        }
-        CASE WHEN pricePriceList() THEN {
-            FOR pricelist(PricelistLine l) = p DO {
-                FOR editIn(p, PriceType t) DO {
-                    price(l, t) <- price(pricelistLine(t, item(l), startDate(p)), t);
-                    IF change() THEN price(l, t) <- price(l, t) (+) NUMERIC[10,2](price(l, t) * change() / 100);
-                }
-            }
-        }
-    }
-}
-
-WHEN LOCAL SETCHANGED(markup(PricelistLine l, PriceType t)) AND l IS PricelistLine DO {
-    recalcPrice(l, t, markup(l, t));
-} 
-
-DESIGN changePrices {
-    OBJECTS {    
-        MOVE PROPERTY(markupPriceList());
-        MOVE PROPERTY(markupPriceType());
-        MOVE PROPERTY(pricePriceList());
-        MOVE PROPERTY(change());
+            WHEN changePriceType() = ChangePriceType.pricePriceList THEN
+                price(PricelistLine l, PriceType t) <- 
+                    NUMERIC[10,2](priceB(t, item(l), startDate(p)) * (100.0 (+) change()) / 100.0)
+                    WHERE pricelist(l) = p AND editIn(p, t); 
     }
 }
 
 EXTEND FORM pricelist
-    PROPERTIES(pr) changePrices DRAW pr
+    PROPERTIES(p) changePrices DRAW p
 ;
 
 DESIGN pricelist {
@@ -257,8 +251,8 @@ DESIGN pricelist {
         NEW statusActions {
             type = CONTAINERH;                    
             flex = 1; 
-            MOVE PROPERTY(changePrices(pr)); 
-            MOVE PROPERTY(copyPricelist(pr));          
+            MOVE PROPERTY(changePrices(p)); 
+            MOVE PROPERTY(copy(p));          
         }
         NEW status AFTER statusActions {
             type = CONTAINERH;

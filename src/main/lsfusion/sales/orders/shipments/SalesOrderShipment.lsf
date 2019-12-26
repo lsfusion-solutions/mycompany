@@ -4,21 +4,12 @@ REQUIRE SalesOrder, Inventory, SalesOrderConfirmed, SalesOrderCanceled, SalesSet
 
 NAMESPACE Sales;
 
-//настройки
-typeShipmentFromSales 'Тип складского расхода по умолчанию' = DATA ShipmentType();
-nameTypeShipmentFromSales 'Тип складского расхода по умолчанию' = name(typeShipmentFromSales());
+// options
+shipmentType 'Тип складского расхода по умолчанию' = DATA ShipmentType();
+nameShipmentType 'Тип складского расхода по умолчанию' = name(shipmentType());
+EXTEND FORM options PROPERTIES nameShipmentType();
  
-EXTEND FORM options
-  PROPERTIES nameTypeShipmentFromSales()
-;
- 
-DESIGN options {
-    OBJECTS {
-        MOVE PROPERTY(nameTypeShipmentFromSales());
-    }
-}
-
-//форма заказа
+// relation
 orderLine = DATA OrderLine (ShipmentLine);
 order = DATA Order (Shipment);
 
@@ -38,13 +29,13 @@ lastOpenShipment 'Последний открытый расход' (Order o)=
     GROUP LAST Shipment s IF order(s) = o AND status(s) = ShipmentStatus.ready ORDER s;
 
 WHEN ([GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) AND item(l) IS Product BY order(l)](Order o) OR SET(confirmed(o))) AND 
-     toShip(o) > 0 AND status(o) = OrderStatus.confirmed DO {
+     toShip(o) > 0 AND status(o) = OrderStatus.confirmed AND shipmentType() DO {
     IF NOT lastOpenShipment(o) THEN   
         NEW ns = Shipment { 
             partner(ns) <- customer(o);
             scheduledDate(ns) <- scheduledDate(o);
             location(ns) <- location(o);
-            type(ns) <- typeShipmentFromSales();
+            type(ns) <- shipmentType();
             sourceDocument(ns) <- seriesNumber(o);
             waiting(ns) <- TRUE;    
             order(ns) <- o; 
