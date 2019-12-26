@@ -4,16 +4,27 @@ REQUIRE SalesPriceType;
 
 NAMESPACE Sales;
 
-markup 'Надбавка' = DATA NUMERIC[10,2] (PriceType, Item);
+markup 'Надбавка по категории, %' = DATA NUMERIC[10,2] (PriceType, Category);
+parentMarkup 'Надбавка (от верхней группы), %' (PriceType t, Category child) =
+   GROUP LAST markup(t, Category parent) ORDER DESC level(child, parent) WHERE markup(t, parent);
+   
+dataMarkup 'Надбавка по товару, %' = DATA NUMERIC[10,2] (PriceType, Item);
+markup 'Надбавка, %' (PriceType t, Item i) = OVERRIDE dataMarkup(t, i), parentMarkup(t, category(i));   
 
 EXTEND FORM pricelistType
+    TREE categories c = Category PARENT parent(c)
+    PROPERTIES name(c) READONLY, markup(pt, c)
+
     OBJECTS i = Item
-    PROPERTIES name(i) READONLY, markup(pt, i)
+    PROPERTIES name(i) READONLY, dataMarkup(pt, i), markup(pt, i)
+    FILTERS level(category(i), c)
 ;
 
 DESIGN pricelistType {
     NEW details BEFORE TOOLBARBOX {
         fill = 4;
+        type = SPLITH;
+        MOVE BOX(TREE categories);
         MOVE BOX(i);
     }
 }
