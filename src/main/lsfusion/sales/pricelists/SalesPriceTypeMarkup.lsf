@@ -13,18 +13,21 @@ markup 'Надбавка, %' (PriceType t, Item i) = OVERRIDE dataMarkup(t, i), 
 
 EXTEND FORM pricelistType
     TREE categories c = Category PARENT parent(c)
-    PROPERTIES name(c) READONLY, markup(pt, c)
+    PROPERTIES name(c) READONLY, markup(pt, c), parentMarkup(pt, c) READONLY
 
     OBJECTS i = Item
-    PROPERTIES name(i) READONLY, dataMarkup(pt, i), markup(pt, i)
+    PROPERTIES name(i) READONLY, dataMarkup(pt, i), markup(pt, i) READONLY
     FILTERS level(category(i), c)
 ;
 
 DESIGN pricelistType {
-    NEW details BEFORE TOOLBARBOX {
-        fill = 4;
-        type = SPLITH;
-        MOVE BOX(TREE categories);
-        MOVE BOX(i);
+    OBJECTS {
+        NEW markup {
+            caption = 'Надбавки';
+            fill = 1;
+            type = SPLITH;
+            MOVE BOX(TREE categories);
+            MOVE BOX(i);
+        }
     }
 }

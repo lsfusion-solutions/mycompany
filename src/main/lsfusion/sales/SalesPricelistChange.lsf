@@ -1,0 +1,72 @@
+MODULE SalesPricelistChange;
+
+REQUIRE SalesPricelistValue, SalesPriceTypeMarkup;
+
+NAMESPACE Sales;
+
+// change prices
+CLASS ChangePriceType 'Тип изменения цен' {
+    markupPriceList 'Установить надбавки из предыдущих прайсов',
+    markupPriceType 'Установить надбавки из видов цен',
+    pricePriceList 'Установить цены из предыдущих прайсов'
+}
+
+name 'Наименование' (ChangePriceType o) = staticCaption(o) IF o IS ChangePriceType CHARWIDTH 15;
+
+FORM dialogChangePriceTypes 'Тип изменения цен'
+    OBJECTS o = ChangePriceType
+    PROPERTIES(o) READONLY name
+    
+    LIST ChangePriceType OBJECT o
+;
+
+changePriceType = DATA LOCAL ChangePriceType ();
+nameChangePriceType 'Тип изменения цен' = name(changePriceType());
+
+change 'Изменить на, %' = DATA LOCAL NUMERIC[10,2] ();
+
+FORM changePrices 'Изменение цен'
+    PROPERTIES() nameChangePriceType, 
+                 change SHOWIF changePriceType() = ChangePriceType.pricePriceList 
+;
+
+changePrices 'Изменить цены' (Pricelist p) {
+    DIALOG changePrices DO {
+        CASE 
+            WHEN changePriceType() = ChangePriceType.markupPriceList THEN {
+                markup(PricelistLine l, PriceType t) <- 
+                    OVERRIDE markup(pricelistLineB(t, item(l), startDate(p)), t), markup(t, item(l))
+                    WHERE pricelist(l) = p AND editIn(p, t); 
+                price(PricelistLine l, PriceType t) <- calcPrice(l, t)
+                    WHERE pricelist(l) = p AND editIn(p, t);
+            }
+            WHEN changePriceType() = ChangePriceType.markupPriceType THEN {
+                markup(PricelistLine l, PriceType t) <- markup(t, item(l))
+                    WHERE pricelist(l) = p AND editIn(p, t);
+                price(PricelistLine l, PriceType t) <- calcPrice(l, t)
+                    WHERE pricelist(l) = p AND editIn(p, t);
+            }
+            WHEN changePriceType() = ChangePriceType.pricePriceList THEN
+                price(PricelistLine l, PriceType t) <- 
+                    NUMERIC[10,2](priceB(t, item(l), startDate(p)) * (100.0 (+) change()) / 100.0)
+                    WHERE pricelist(l) = p AND editIn(p, t); 
+    }
+}
+
+// autoset markup for line
+WHEN LOCAL CHANGED(item(PricelistLine l)) AND editIn(l, PriceType t) AND markup(t, item(l))
+           AND NOT CHANGED(markup(l, t)) AND NOT CHANGED(price(l, t)) INLINE DO {
+    markup(l, t) <- markup(t, item(l));
+    price(l, t) <- calcPrice(l, t);            
+}
+           
+
+EXTEND FORM pricelist
+    PROPERTIES(p) changePrices DRAW p
+;
+
+DESIGN pricelist {
+    statusActions {
+        MOVE PROPERTY(changePrices(p));
+    } 
+}

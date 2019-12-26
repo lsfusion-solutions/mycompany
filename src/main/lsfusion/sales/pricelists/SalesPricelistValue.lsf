@@ -1,0 +1,28 @@
+MODULE SalesPricelistValue;
+
+REQUIRE SalesPriceListDone;
+
+NAMESPACE Sales;
+
+// prices
+pricelistLineB (PriceType t, Item i, DATETIME d) = 
+    GROUP LAST PricelistLine prl IF item(prl) = i AND price(prl, t) AND done(pricelist(prl)) AND 
+               NOT startDate(pricelist(prl)) >= d AND NOT endDate(pricelist(prl)) < d
+          ORDER startDate(pricelist(prl)), prl;
+
+priceB (PriceType t, Item i, DATETIME d) = price(pricelistLineB(t, i, d), t);
+
+pricelistLineA (PriceType t, Item i, DATETIME d) = 
+    GROUP LAST PricelistLine prl IF item(prl) = i AND price(prl, t) AND done(pricelist(prl)) AND
+               NOT startDate(pricelist(prl)) > d AND NOT endDate(pricelist(prl)) < d
+          ORDER startDate(pricelist(prl)), prl;
+
+priceA (PriceType t, Item i, DATETIME d) = price(pricelistLineA(t, i, d), t);
+
+// prices for lines
+currentPrice (PricelistLine l, PriceType t) = priceB(t, item(l), startDate(pricelist(l)));
+
+EXTEND FORM pricelist
+    PROPERTIES    currentPrice(l, t) COLUMNS 'p' (t) HEADER name(t) + ' (текущая)' 
+                        SHOWIF showCurrentPrice(p) AFTER price(l, t)
+;
