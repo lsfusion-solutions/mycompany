@@ -17,11 +17,8 @@ copy(Item n, Item o) + {
     salesPrice(n) <- salesPrice(o);
 }
 
-dataMarkup 'Надбавка по товару, %' = DATA NUMERIC[10,2] (Item);
-markup 'Надбавка, %' (Item i) = OVERRIDE dataMarkup(i), parentMarkup(category(i));
-
 EXTEND FORM item 
-    PROPERTIES(i) canBeSold, salesPrice, dataMarkup
+    PROPERTIES(i) canBeSold, salesPrice
 ;
 
 DESIGN item {
@@ -33,7 +30,6 @@ DESIGN item {
             caption = 'Продажа';
             showIf = canBeSold(i);
             MOVE PROPERTY(salesPrice(i)) { pattern = '#,##0.00'; }
-            MOVE PROPERTY(dataMarkup(i)) { alignment = START; }
         }
     }
 }

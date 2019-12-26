@@ -221,13 +221,13 @@ changePrices 'Изменить цены' (Pricelist p) {
         CASE 
             WHEN changePriceType() = ChangePriceType.markupPriceList THEN {
                 markup(PricelistLine l, PriceType t) <- 
-                    OVERRIDE markup(pricelistLineB(t, item(l), startDate(p)), t), markup(category(item(l)))
+                    OVERRIDE markup(pricelistLineB(t, item(l), startDate(p)), t), markup(t, item(l))
                     WHERE pricelist(l) = p AND editIn(p, t); 
                 price(PricelistLine l, PriceType t) <- calcPrice(l, t)
                     WHERE pricelist(l) = p AND editIn(p, t);
             }
             WHEN changePriceType() = ChangePriceType.markupPriceType THEN {
-                markup(PricelistLine l, PriceType t) <- markup(t)
+                markup(PricelistLine l, PriceType t) <- markup(t, item(l))
                     WHERE pricelist(l) = p AND editIn(p, t);
                 price(PricelistLine l, PriceType t) <- calcPrice(l, t)
                     WHERE pricelist(l) = p AND editIn(p, t);

@@ -4,14 +4,16 @@ REQUIRE SalesPriceType;
 
 NAMESPACE Sales;
 
-markup 'Надбавка' = DATA NUMERIC[10,2] (PriceType);
+markup 'Надбавка' = DATA NUMERIC[10,2] (PriceType, Item);
 
 EXTEND FORM pricelistType
-    PROPERTIES(pt) markup
+    OBJECTS i = Item
+    PROPERTIES name(i) READONLY, markup(pt, i)
 ;
 
 DESIGN pricelistType {
-    header {
-        MOVE PROPERTY(markup(pt));
+    NEW details BEFORE TOOLBARBOX {
+        fill = 4;
+        MOVE BOX(i);
     }
 }
