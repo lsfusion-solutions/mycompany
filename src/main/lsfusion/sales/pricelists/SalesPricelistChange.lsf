@@ -54,8 +54,9 @@ changePrices 'Изменить цены' (Pricelist p) {
 }
 
 // autoset markup for line
-WHEN LOCAL CHANGED(item(PricelistLine l)) AND editIn(l, PriceType t) AND markup(t, item(l))
-           AND NOT CHANGED(markup(l, t)) AND NOT CHANGED(price(l, t)) INLINE DO {
+WHEN LOCAL (CHANGED(item(PricelistLine l)) OR SET(editIn(l, PriceType t))) AND 
+           editIn(l, t) AND markup(t, item(l)) AND
+           NOT CHANGED(markup(l, t)) AND NOT CHANGED(price(l, t)) INLINE DO {
     markup(l, t) <- markup(t, item(l));
     price(l, t) <- calcPrice(l, t);            
 }
