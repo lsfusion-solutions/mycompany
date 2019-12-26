@@ -22,7 +22,12 @@ priceA (PriceType t, Item i, DATETIME d) = price(pricelistLineA(t, i, d), t);
 // prices for lines
 currentPrice (PricelistLine l, PriceType t) = priceB(t, item(l), startDate(pricelist(l)));
 
+currentPriceColor (PricelistLine l, PriceType t) = 
+    IF currentPrice(l, t) < price(l, t) 
+        THEN RGB(187,242,210) 
+        ELSE IF currentPrice(l, t) > price(l, t) THEN RGB(250,150,157);
+
 EXTEND FORM pricelist
     PROPERTIES    currentPrice(l, t) COLUMNS 'p' (t) HEADER name(t) + ' (текущая)' 
-                        SHOWIF showCurrentPrice(p) AFTER price(l, t)
+                        SHOWIF showCurrentPrice(p) AFTER price(l, t) BACKGROUND currentPriceColor(l, t)
 ;

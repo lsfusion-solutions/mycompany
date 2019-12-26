@@ -22,10 +22,8 @@ changeIn(Item item, Pricelist pricelist)  {
                 }
 }
 
-taxes (Item i, PriceType pt, DATETIME dt) = salesTax(i) * priceB(pt, i, dt) / 100;
-markup 'Текущая надбавка' (Item i, PriceType t, DATETIME  dt) = IF priceB(t, i, dt) THEN 
-                IF taxIncluded(t) THEN round2((priceB(t, i, dt) / (costPrice(i) * (1 (+) salesTax(i) / 100))) * 100 - 100)
-                ELSE round2((priceB(t, i, dt) / costPrice(i)) * 100 - 100);
+markup 'Текущая надбавка' (Item i, PriceType t, DATETIME dt) = 
+    round2(priceB(t, i, dt) / (OVERRIDE 100.0 / (100.0 + salesTax(i)) IF taxIncluded(t), 1.0) * 100.0 / overCost(i)) - 100.0;
 
 EXTEND FORM pricelist
     TREE categories c = Category PARENT parent(c)
@@ -37,7 +35,7 @@ EXTEND FORM pricelist
     
     OBJECTS item = Item
     PROPERTIES READONLY name(item),
-                        costPrice(item) SHOWIF showCost(p),
+                        overCost(item) SHOWIF showCost(p),
                         markup(item, t, dt) COLUMNS 'p' (t) HEADER name(t) + ', %' SHOWIF showMarkup(p),
                         priceB(t, item, dt) COLUMNS 'p' (t) HEADER name(t)
     FILTERS level(category(item), c), canBeSold(item)  
@@ -54,7 +52,7 @@ DESIGN pricelist {
             MOVE BOX(item) { 
                 fill = 2;
             }
-            MOVE PROPERTY(costPrice(item));
+            MOVE PROPERTY(overCost(item));
             MOVE PROPERTY(markup(item, t, dt));
         }       
     }
