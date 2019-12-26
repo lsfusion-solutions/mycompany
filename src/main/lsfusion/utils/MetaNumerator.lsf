@@ -4,12 +4,22 @@ REQUIRE Numerator;
 
 NAMESPACE Utils;
 
-META defineSeriesNumber(class, caption, srs)
-
+META setSeriesNumberType(class)
     series 'Серия' = DATA STRING[2] (###class);
     number 'Номер' = DATA STRING[28] (###class) NONULL;
     
-    seriesNumber 'Номер' (###class o) = CONCAT '/', series(o), number(o) CHARWIDTH 10; 
+    seriesNumber 'Серия/Номер' (###class s) = CONCAT '/', series(s), number(s) CHARWIDTH 10; 
+
+    WHEN SETCHANGED(type(###class o)) AND numerator(type(o)) AND NOT number(o) DO {
+        number(o) <- curStringValue(numerator(type(o)));
+        series(o) <- series(numerator(type(o)));
+        incrementValueSession(numerator(type(o)));
+    }
+END
+
+META defineSeriesNumber(class, caption, srs)
+    
+    @defineSeriesNumberType(class);
     
     numerator###class = DATA Numerator();
     nameNumerator###class 'Нумератор - '##caption = name(numerator###class());
@@ -28,12 +38,6 @@ META defineSeriesNumber(class, caption, srs)
         }
     }
     
-    WHEN SETCHANGED(###class o IS ###class AND numerator###class() AND NOT number(o)) DO {
-        number(o) <- curStringValue(numerator###class());
-        series(o) <- series(numerator###class());
-        incrementValueSession(numerator###class());   
-    }
-    
     EXTEND FORM options 
         PROPERTIES nameNumerator###class()
     ;
@@ -42,19 +46,6 @@ META defineSeriesNumber(class, caption, srs)
         OBJECTS {
             MOVE PROPERTY(nameNumerator###class());
         }
-    }
-END
-
-META setSeriesNumberType(class)
-    series 'Серия' = DATA STRING[2] (###class);
-    number 'Номер' = DATA STRING[28] (###class) NONULL;
-    
-    seriesNumber 'Серия/Номер' (###class s) = CONCAT '/', series(s), number(s) CHARWIDTH 10; 
-
-    WHEN SETCHANGED(type(###class o)) AND numerator(type(o)) AND NOT number(o) DO {
-        number(o) <- curStringValue(numerator(type(o)));
-        series(o) <- series(numerator(type(o)));
-        incrementValueSession(numerator(type(o)));
     }
 END
 
