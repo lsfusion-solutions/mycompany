@@ -1,7 +1,7 @@
 MODULE PurchaseOrder;
 
 REQUIRE Time, MetaNumerator, Individual, Company,
-        MetaTax, TaxItem,
+        MetaTax, TaxItem, BarCode,
         PurchaseSettings, PartnerPurchase, ItemSale,
         Incoterms, PaymentTerms;  
 
@@ -62,6 +62,8 @@ description 'Описание' = DATA ISTRING (OrderLine);
 
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (OrderLine);
 nameUnitMeasure 'Ед.изм.' (OrderLine l) = name(unitMeasure(l));
+idBarCode 'Штрих код' (OrderLine l) = idBarCode(item(l));
+id 'Код' (OrderLine l) = id(item(l));
 
 quantity 'Количество' = DATA NUMERIC[16,3] (OrderLine);
 unitPrice 'Цена' = DATA NUMERIC[10,2] (OrderLine);
@@ -89,7 +91,7 @@ FORM order 'Заказ'
     PROPERTIES(o) READONLY untaxedAmount, totalTax, totalAmount
                  
     OBJECTS l = OrderLine
-    PROPERTIES(l) nameItem, description, quantity, nameUnitMeasure, unitPrice, subtotal, taxes ON CHANGE changeTax(l)
+    PROPERTIES(l) index, nameItem, nameUnitMeasure, idBarCode, id, description, quantity, unitPrice, subtotal, taxes ON CHANGE changeTax(l)
     PROPERTIES(l) NEW, DELETE
     FILTERS order(l) = o
      

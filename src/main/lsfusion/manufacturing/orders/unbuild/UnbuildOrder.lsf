@@ -38,6 +38,8 @@ manOrderReference 'Заказ на производство' (UnbuildOrder o) = 
 CLASS UnbuildOrderLine 'Строка разбора';
 
 unbuildOrder 'Заказ на разбор' = DATA UnbuildOrder (UnbuildOrderLine) NONULL DELETE;
+
+index 'Индекс' = PARTITION SUM 1 ORDER UnbuildOrderLine l BY unbuildOrder(l) IN id MATERIALIZED;
 date 'Дата' = DATA DATETIME (UnbuildOrderLine);
 
 item 'Номенклатура' = DATA Item (UnbuildOrderLine);
@@ -46,6 +48,8 @@ nameItem 'Номенклатура' (UnbuildOrderLine l) = name(item(l));
 quantity 'Кол-во' = DATA NUMERIC[16,3] (UnbuildOrderLine);
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (UnbuildOrderLine);
 nameUnitMeasure 'Ед.изм.' (UnbuildOrderLine l) = name(unitMeasure(l));
+idBarCode 'Штрих код' (UnbuildOrderLine l) = idBarCode(item(l));
+id 'Код' (UnbuildOrderLine l) = id(item(l));
 
 costRatio 'Доля стоимости' = DATA NUMERIC[16,3] (UnbuildOrderLine);
 
@@ -69,7 +73,7 @@ FORM unbuildOrder 'Заказ на разбор'
                                 manOrderReference, nameLocationTo
     
     OBJECTS l = UnbuildOrderLine
-    PROPERTIES(l) READONLY date, nameItem, nameUnitMeasure, quantity, costRatio
+    PROPERTIES(l) READONLY index, nameItem, nameUnitMeasure, idBarCode, id, date, quantity, costRatio
     FILTERS unbuildOrder(l) = o
     
     EDIT UnbuildOrder OBJECT o

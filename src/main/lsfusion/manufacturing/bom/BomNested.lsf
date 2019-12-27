@@ -7,8 +7,6 @@ NAMESPACE Manufacturing;
 selectedReference 'Спецификация' = DATA Bom (ComponentLine);
 
 nestedBom (ComponentLine c) = OVERRIDE selectedReference(c), GROUP LAST Bom bb IF item(c) = item(bb) ORDER bb;
-
-index 'Индекс' = PARTITION SUM 1 ORDER ComponentLine l BY bom(l) IN id MATERIALIZED;
         
 textIndex (ComponentLine c) = lpad(TEXT(index(c)), 4, '0');
 

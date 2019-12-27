@@ -1,7 +1,7 @@
 MODULE SalesOrder;
 
 REQUIRE Time, MetaNumerator, Individual, Company,
-        MetaTax, TaxItem,
+        MetaTax, TaxItem, BarCode,
         SalesSettings, PartnerSale, ItemSale,
         Incoterms, PaymentTerms;  
 
@@ -72,6 +72,8 @@ description 'Описание' = DATA ISTRING (OrderLine) CHARWIDTH 20;
 
 unitMeasure 'Ед. изм.' = DATA ItemMeasure (OrderLine);
 nameUnitMeasure 'Ед. изм.' (OrderLine l) = name(unitMeasure(l));
+idBarCode 'Штрих код' (OrderLine l) = idBarCode(item(l));
+id 'Код' (OrderLine l) = id(item(l));
 
 quantity 'Количество' = DATA NUMERIC[16,3] (OrderLine);
 
@@ -104,7 +106,7 @@ FORM order 'Заказ'
     PROPERTIES(o) READONLY untaxedAmount, totalTax, totalAmount
                  
     OBJECTS l = OrderLine
-    PROPERTIES(l) nameItem, description, quantity, nameUnitMeasure, unitPrice, cost, discount, subtotal, taxes ON CHANGE changeTax(l)
+    PROPERTIES(l) index, nameItem, nameUnitMeasure, idBarCode, id, description, quantity, unitPrice, cost, discount, subtotal, taxes ON CHANGE changeTax(l)
     PROPERTIES(l) NEW, DELETE
     FILTERS order(l) = o
     

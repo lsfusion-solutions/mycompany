@@ -74,6 +74,10 @@ invoice 'Документ' = DATA Invoice (InvoiceLine) NONULL DELETE;
 item 'Номенклатура' = DATA Item (InvoiceLine);
 idItem 'Код номенклатуры' (InvoiceLine l) = id(item(l));
 nameItem 'Номенклатура' (InvoiceLine l) = name(item(l)) IN id;
+unitMeasure 'Ед.изм.' = DATA ItemMeasure (InvoiceLine);
+nameUnitMeasure 'Ед.изм.' (InvoiceLine l) = name(unitMeasure(l));
+idBarCode 'Штрих код' (InvoiceLine l) = idBarCode(item(l));
+id 'Код' (InvoiceLine l) = id(item(l));
 description 'Описание' = DATA STRING (InvoiceLine); 
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (InvoiceLine) NONULL;
@@ -117,7 +121,8 @@ FORM invoice 'Документ реализации'
                              nameCompany, companyAccountNumber, seriesNumber, notes
         
     OBJECTS l = InvoiceLine
-    PROPERTIES(l) READONLYIF readonly(l) nameItem, description, quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
+    PROPERTIES(l) READONLYIF readonly(l) index, nameItem, nameUnitMeasure, idBarCode, id, description, quantity, 
+                        unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
     FILTERS invoice(l) = i
     
     EDIT Invoice OBJECT i;
