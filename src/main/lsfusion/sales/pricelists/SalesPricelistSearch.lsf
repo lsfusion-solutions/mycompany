@@ -33,12 +33,15 @@ EXTEND FORM pricelist
     OBJECTS dt = DATETIME 
     FILTERS dt = startDate(p)
     
-    OBJECTS item = Item
-    PROPERTIES READONLY name(item),
-                        overCost(item) SHOWIF showCost(p),
-                        markup(item, t, dt) COLUMNS 'p' (t) HEADER name(t) + ', %' SHOWIF showMarkup(p),
-                        priceB(t, item, dt) COLUMNS 'p' (t) HEADER name(t)
-    FILTERS level(category(item), c), canBeSold(item)  
+    OBJECTS i = Item
+    PROPERTIES READONLY name(i),
+                        overCost(i) SHOWIF showCost(p),
+                        markup(i, t, dt) COLUMNS 'p' (t) HEADER name(t) + ', %' SHOWIF showMarkup(p),
+                        priceB(t, i, dt) COLUMNS 'p' (t) HEADER name(t)
+    FILTERS level(category(i), c), canBeSold(i)
+    
+    FILTERGROUP noPrices
+        FILTER 'Без цены' GROUP SUM 1 IF editIn(p, PriceType tp) AND NOT priceB(tp, i, dt)     
 ;
 
 DESIGN pricelist {
@@ -49,22 +52,22 @@ DESIGN pricelist {
             type = SPLITH;
             fill = 1;
             MOVE BOX(TREE categories);
-            MOVE BOX(item) { 
+            MOVE BOX(i) { 
                 fill = 2;
             }
-            MOVE PROPERTY(overCost(item));
-            MOVE PROPERTY(markup(item, t, dt));
+            MOVE PROPERTY(overCost(i));
+            MOVE PROPERTY(markup(i, t, dt));
         }       
     }
 }
 
 selectAll 'Подобрать все' (Pricelist pr, Category c) {
-    FOR [FILTER pricelist.item](Item i) AND NOT in(i, pr) DO NEW l = PricelistLine {
+    FOR [FILTER pricelist.i](Item i) AND NOT in(i, pr) DO NEW l = PricelistLine {
         pricelist(l) <- pr;
         item(l) <- i;
     }
 }
 
 EXTEND FORM pricelist
-    PROPERTIES in(item, p) ON CHANGE changeIn(item, p) BEFORE name(item), selectAll(p, c) DRAW item TOOLBAR 
+    PROPERTIES in(i, p) ON CHANGE changeIn(i, p) BEFORE name(i), selectAll(p, c) DRAW i TOOLBAR 
 ;

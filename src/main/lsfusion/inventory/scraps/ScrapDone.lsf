@@ -18,12 +18,14 @@ statusColor (Scrap s) = IF status(s) = ScrapStatus.draft THEN RGB(187,242,210);
 
 
 
-toDone 'Провести' (Scrap s) {
+markAsDone 'Провести' (Scrap s) {
     APPLY;
     IF canceled() THEN RETURN;
     
-    done(s) <- TRUE;
-    APPLY;
+    NEWSESSION {
+        done(s) <- TRUE;
+        APPLY;
+    }
 }
 
 countLines (Scrap s) = GROUP SUM 1 IF scrap(ScrapLine l) = s AND product(l) AND quantity(l);
@@ -31,7 +33,7 @@ countLines (Scrap s) = GROUP SUM 1 IF scrap(ScrapLine l) = s AND product(l) AND 
 readonly (Scrap s) += WHEN NOT status(s) = ScrapStatus.draft THEN TRUE;
 
 EXTEND FORM scrap
-    PROPERTIES(s) toDone SHOWIF status(s) = ScrapStatus.draft AND countLines(s), nameStatus READONLY BACKGROUND statusColor(s)
+    PROPERTIES(s) markAsDone SHOWIF status(s) = ScrapStatus.draft AND countLines(s), nameStatus READONLY BACKGROUND statusColor(s)
 ;
 
 EXTEND FORM scraps
@@ -41,7 +43,7 @@ EXTEND FORM scraps
 DESIGN scrap {
     statusActions {
         actions {
-            MOVE PROPERTY(toDone(s)) FIRST;
+            MOVE PROPERTY(markAsDone(s)) FIRST;
         }
         NEW status {
             type = CONTAINERH;

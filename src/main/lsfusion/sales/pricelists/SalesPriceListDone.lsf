@@ -6,7 +6,10 @@ NAMESPACE Sales;
 
 done 'Проведен' = DATA BOOLEAN (Pricelist);
 
-toDone 'Провести' (Pricelist p) {
+markAsDone 'Провести' (Pricelist p) {
+    APPLY;
+    IF canceled() THEN RETURN;
+    
     NEWSESSION {  
         done(p) <- TRUE;
         APPLY;
@@ -16,12 +19,12 @@ toDone 'Провести' (Pricelist p) {
 status(Pricelist p) += WHEN done(p) THEN PricelistStatus.done;
 
 EXTEND FORM pricelist
-    PROPERTIES(p) toDone SHOWIF status(p) = PricelistStatus.draft, done READONLY 
+    PROPERTIES(p) markAsDone SHOWIF status(p) = PricelistStatus.draft, done READONLY 
 ;
 
 DESIGN pricelist {
     statusActions {
-        MOVE PROPERTY(toDone(p)) FIRST { fontStyle = 'bold'; }
+        MOVE PROPERTY(markAsDone(p)) FIRST { fontStyle = 'bold'; }
     }
     status {
         MOVE PROPERTY(done(p));
