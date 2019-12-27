@@ -1,6 +1,6 @@
 MODULE SalesPriceType;
 
-REQUIRE SalesSettings, PartnerSale, Partner, SalesOrder; 
+REQUIRE SalesSettings, PartnerSale, Partner; 
 
 NAMESPACE Sales;
 
@@ -53,22 +53,5 @@ EXTEND FORM partner
 DESIGN partner {
     customerOptions {
         MOVE PROPERTY (namePriceType(p));
-    }
-}
-
-//добавляем в заказ свойство типа цен от партнера
-priceType 'Тип цен' =  DATA PriceType (Order);
-namePriceType 'Тип цен' (Order o) =  name(priceType(o));
- 
-WHEN LOCAL CHANGED(customer(Order o)) DO 
-    priceType(o) <- priceType(customer(o));
-
-EXTEND FORM order 
-    PROPERTIES(o) namePriceType
-;
-
-DESIGN order {
-    params {
-        MOVE PROPERTY(namePriceType(o));   
     }
 }

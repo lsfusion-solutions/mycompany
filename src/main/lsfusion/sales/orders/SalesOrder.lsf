@@ -3,7 +3,7 @@ MODULE SalesOrder;
 REQUIRE Time, MetaNumerator, Individual, Company,
         MetaTax, TaxItem, BarCode,
         SalesSettings, PartnerSale, ItemSale,
-        Incoterms, PaymentTerms;  
+        Incoterms, PaymentTerms, SalesPricelistValue;  
 
 NAMESPACE Sales;
 
@@ -65,7 +65,7 @@ item = DATA Item (OrderLine) NONULL;
 nameItem 'Номенклатура' (OrderLine l) = name(item(l));
 
 CONSTRAINT item(OrderLine l) AND NOT canBeSold(item(l))
-            CHECKED BY item 
+            CHECKED BY item[OrderLine] 
             MESSAGE 'Номенклатура не предназначена для продажи';
 
 description 'Описание' = DATA ISTRING (OrderLine) CHARWIDTH 20;
@@ -86,8 +86,17 @@ discount 'Скидка %' =  DATA NUMERIC[4,2] (OrderLine);
 WHEN LOCAL CHANGED(item(OrderLine ol)) DO {
     description(ol) <- nameItem(ol);
     unitMeasure(ol) <- unitMeasure(item(ol));
-    unitPrice(ol) <- salesPrice(item(ol));   
     in(ol, Tax t) <- salesIn(item(ol), t); 
+}
+
+// price types
+priceType 'Тип цен' =  DATA PriceType (Order);
+namePriceType 'Тип цен' (Order o) =  name(priceType(o));
+ 
+WHEN LOCAL CHANGED(customer(Order o)) DO priceType(o) <- priceType(customer(o));
+
+WHEN LOCAL (SETCHANGED(item(OrderLine ol)) OR SETCHANGED(priceType(order(ol)))) AND NOT CHANGED(unitPrice(ol)) DO {
+    unitPrice(ol) <- OVERRIDE noTaxPriceA(priceType(order(ol)), item(ol), dateTime(order(ol))), salesPrice(item(ol)); 
 }
 
 // Line properties
@@ -98,7 +107,7 @@ nameCustomer 'Заказчик' (OrderLine l) = nameCustomer(order(l));
 
 FORM order 'Заказ'
     OBJECTS o = Order PANEL
-    PROPERTIES(o) dateTime READONLY, series, number, nameCustomer,
+    PROPERTIES(o) dateTime READONLY, series, number, nameCustomer, namePriceType,
                   scheduledDate, deliveryAddress, nameLocation, nameIncoterm, 
                   nameRepresentative, customerReference,
                   validity,
@@ -125,11 +134,9 @@ DESIGN order {
                     MOVE PROPERTY(series(o)); 
                     MOVE PROPERTY(number(o));
                 }
-                MOVE PROPERTY(nameCustomer(o)); 
+                MOVE PROPERTY(nameCustomer(o)) { notNull = TRUE; } 
+                MOVE PROPERTY(namePriceType(o)); 
             }    
-            NEW params {
-                MOVE PROPERTY(validity(o));
-            }            
             NEW relatedDoc {
                 type = TABBED;
                 fill = 1;

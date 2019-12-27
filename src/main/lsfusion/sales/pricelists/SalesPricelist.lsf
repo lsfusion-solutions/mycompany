@@ -1,6 +1,6 @@
 MODULE SalesPricelist;
 
-REQUIRE Item, Partner, ItemSale, PartnerSale, TaxItem, SalesSettings, SalesOrder, SalesPriceType, CostLedger;
+REQUIRE Item, Partner, ItemSale, PartnerSale, TaxItem, SalesSettings, SalesPriceType, CostLedger;
 
 NAMESPACE Sales; 
 
@@ -51,7 +51,7 @@ CONSTRAINT DROPPED(PriceType t IS PriceType) AND PREV(price(PricelistLine l, t))
 
 // events
 noTaxPrice (PricelistLine l, PriceType t) = 
-    price(l, t) / (OVERRIDE 100.0 / (100.0 + salesTax(item(l))) IF taxIncluded(t), 1.0);
+    price(l, t) / (OVERRIDE (100.0 + salesTax(item(l))) / 100.0 IF taxIncluded(t), 1.0);
 
 WHEN LOCAL (SETCHANGED(costPrice(PricelistLine l)) OR SETCHANGED(price(l, PriceType t))) AND NOT CHANGED(markup(l, t)) DO
     markup(l, t) <- round2((noTaxPrice(l, t) * 100.0 / costPrice(l)) - 100.0);
@@ -148,7 +148,7 @@ FORM pricelists 'Прайс-листы'
 
 NAVIGATOR {
     sales {
-        NEW pricelists AFTER orders;    
+        NEW pricelists BEFORE settings;    
     }
 }
 
