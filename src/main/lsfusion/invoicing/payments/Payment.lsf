@@ -1,6 +1,6 @@
 MODULE Payment;
 
-REQUIRE InvoicingSettings, Account, Company, Time, MetaNumerator;
+REQUIRE InvoicingSettings, BankAccount, Company, Time, MetaNumerator;
 
 NAMESPACE Invoicing;
 
@@ -10,7 +10,8 @@ date 'Дата' = DATA DATETIME (Payment) NONULL;
 date(Payment p) <- currentDateTime() WHEN SET(p IS Payment);
 
 toAccount 'Счет получателя' = DATA Account (Payment);
-toAccountNumber 'Счет получателя' (Payment p) = number(toAccount(p));
+toAccountName 'Счет получателя' (Payment p) = IF toAccount(p) IS BankAccount 
+    THEN nameAccount(toAccount(p)) ELSE number(toAccount(p));
 
 toPartner 'Получатель' = DATA Partner (Payment) NONULL;
 nameToPartner 'Получатель' (Payment p) = name(toPartner(p));
@@ -20,7 +21,8 @@ WHEN LOCAL CHANGED(toPartner(Payment p)) DO {
 }
 
 fromAccount 'Счет плательщика' = DATA Account (Payment);
-fromAccountNumber 'Счет плательщика' (Payment p) = number(fromAccount(p));
+fromAccountName 'Счет плательщика' (Payment p) = IF fromAccount(p) IS BankAccount 
+    THEN nameAccount(fromAccount(p)) ELSE number(fromAccount(p));
 
 fromPartner 'Плательщик' = DATA Partner (Payment) NONULL;
 nameFromPartner 'Плательщик' (Payment p) = name(fromPartner(p));
@@ -64,8 +66,8 @@ CONSTRAINT (fromPartner(Payment p) AND fromAccount(p)) AND NOT (holder(fromAccou
 
 FORM payment 'Платеж'
     OBJECTS p = Payment PANEL 
-    PROPERTIES(p) date,  amount, reference, fromAccountNumber, nameFromPartner, 
-                         toAccountNumber, nameToPartner, series, number, notes
+    PROPERTIES(p) date,  amount, reference, fromAccountName, nameFromPartner, 
+                         Invoicing.toAccountName[Payment], nameToPartner, series, number, notes
                
     
     EDIT Payment OBJECT p
@@ -73,7 +75,7 @@ FORM payment 'Платеж'
 
 FORM payments 'Платежи'
     OBJECTS p = Payment
-    PROPERTIES(p) READONLY date, fromAccountNumber, nameFromPartner, toAccountNumber, nameToPartner, 
+    PROPERTIES(p) READONLY date, fromAccountName, nameFromPartner, Invoicing.toAccountName[Payment], nameToPartner, 
                 amount, reference, notes
     PROPERTIES(p) NEWSESSION NEW, EDIT, DELETE 
     
@@ -108,13 +110,13 @@ DESIGN payment {
                     type = CONTAINERH;
                     caption = 'Плательщик';
                     MOVE PROPERTY(nameFromPartner(p)) { notNull = TRUE; }
-                    MOVE PROPERTY(fromAccountNumber(p));
+                    MOVE PROPERTY(fromAccountName(p));
                 }
                 NEW to { 
                     type = CONTAINERH;
                     caption = 'Получатель';
                     MOVE PROPERTY(nameToPartner(p)) { notNull = TRUE; }
-                    MOVE PROPERTY(toAccountNumber(p));
+                    MOVE PROPERTY(toAccountName(p));
                 }
             } 
             NEW additions {

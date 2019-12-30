@@ -1,6 +1,6 @@
 MODULE BankAccount;
 
-REQUIRE Account, Bank;
+REQUIRE Account, Bank, Utils;
 
 NAMESPACE Invoicing;
 
@@ -10,6 +10,8 @@ bank 'Банк' = DATA Bank (BankAccount);
 nameBank 'Банк' (BankAccount b) = name(bank(b));
 routingNumber 'Код банка' (BankAccount b) = routingNumber(bank(b));
 
+nameAccount 'Наименование' (BankAccount b) = ISTRING[35](CONCAT ' ', substr(number(b),length(number(b)) - 4, 4), nameBank(b));
+
 EXTEND CLASS AccountType {
      bank 'Банковский счет'
 }
@@ -17,7 +19,7 @@ EXTEND CLASS AccountType {
 type(Account a) += WHEN a IS BankAccount THEN AccountType.bank;
 
 EXTEND FORM account
-    PROPERTIES(a) nameBank, routingNumber READONLY 
+    PROPERTIES(a) nameBank, routingNumber READONLY, nameAccount
 ;
 
 newBankAccount 'Банковский счет' () {

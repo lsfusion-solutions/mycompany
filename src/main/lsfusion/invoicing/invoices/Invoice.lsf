@@ -1,6 +1,6 @@
 MODULE Invoice;
 
-REQUIRE InvoicingSettings, TaxItem, Account, Time, MetaTax, ItemSale, PartnerSale, Company, BarCode, MetaNumerator;
+REQUIRE InvoicingSettings, TaxItem, BankAccount, Time, MetaTax, ItemSale, PartnerSale, Company, BarCode, MetaNumerator;
 
 NAMESPACE Invoicing;
 
@@ -29,7 +29,8 @@ WHEN LOCAL CHANGED(partner(Invoice i)) DO {
     partnerAccount(i) <- defaultAccount(partner(i));
 }
 
-partnerAccountNumber 'Счет партнера' (Invoice i) = number(partnerAccount(i));
+partnerAccountName 'Счет партнера' (Invoice i) = IF partnerAccount(i) IS BankAccount 
+    THEN nameAccount(partnerAccount(i)) ELSE number(partnerAccount(i));
 
 CONSTRAINT partnerAccount(Invoice i) AND NOT partner(i) = holder(partnerAccount(i))
     CHECKED BY partnerAccount
@@ -47,7 +48,8 @@ WHEN LOCAL SET(Invoice i IS Invoice) DO {
 }
 
 companyAccount 'Счет компании' = DATA Account (Invoice);
-companyAccountNumber 'Счет компании' (Invoice i) = number(companyAccount(i));
+companyAccountName 'Счет компании' (Invoice i) = IF companyAccount(i) IS BankAccount 
+    THEN nameAccount(companyAccount(i)) ELSE number(companyAccount(i));
 
 WHEN LOCAL CHANGED(company(Invoice i)) DO {
     companyAccount(i) <- defaultAccount(company(i));
@@ -117,8 +119,8 @@ colorType (Invoice i) += WHEN type[Invoice](i) == InvoiceType.invoice THEN RGB(2
 
 FORM invoice 'Документ реализации'
     OBJECTS  i = Invoice PANEL 
-    PROPERTIES(i) READONLYIF readonly(i)  nameType BACKGROUND colorType(i), date, dueDate, namePartner, partnerAccountNumber, addressPartner, sourceDocument,
-                             nameCompany, companyAccountNumber, seriesNumber, notes
+    PROPERTIES(i) READONLYIF readonly(i)  nameType BACKGROUND colorType(i), date, dueDate, namePartner, partnerAccountName, addressPartner, sourceDocument,
+                             nameCompany, companyAccountName, seriesNumber, notes
         
     OBJECTS l = InvoiceLine
     PROPERTIES(l) READONLYIF readonly(l) index, nameItem, nameUnitMeasure, idBarCode, id, description, quantity, 
@@ -189,11 +191,13 @@ DESIGN invoice {
                         MOVE PROPERTY(seriesNumber(i)) { caption = 'Номер'; };
                     }
                 }
-                NEW partner {
-                    fill = 1;
-                    type = CONTAINERH;
-                    MOVE PROPERTY(namePartner(i)) { caption = 'Покупатель'; notNull = TRUE; }                                              
-                }
+            }
+            NEW partner {
+                fill = 1;
+                caption = 'Покупатель';
+                MOVE PROPERTY(namePartner(i)) { notNull = TRUE; } 
+                MOVE PROPERTY(partnerAccountName(i));  
+                MOVE PROPERTY(addressPartner(i));                                          
             }
             NEW additions {
                 fill = 1;
@@ -205,7 +209,7 @@ DESIGN invoice {
                 fill = 1;
                 caption = 'Оплата';
                 MOVE PROPERTY(dueDate(i)) { caption = 'Срок оплаты      '; } 
-                MOVE PROPERTY(companyAccountNumber(i)) { caption = 'р/сч для оплаты'; }
+                MOVE PROPERTY(companyAccountName(i)) { caption = 'р/сч для оплаты'; }
             }
         }
         NEW details{

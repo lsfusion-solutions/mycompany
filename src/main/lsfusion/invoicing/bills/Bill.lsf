@@ -1,6 +1,6 @@
 MODULE Bill;
 
-REQUIRE InvoicingSettings, TaxItem, Account, Time, MetaTax, ItemPurchase, PartnerPurchase, Company,
+REQUIRE InvoicingSettings, TaxItem, BankAccount, Time, MetaTax, ItemPurchase, PartnerPurchase, Company,
             BarCode, MetaNumerator;
 
 NAMESPACE Invoicing;
@@ -28,7 +28,8 @@ WHEN LOCAL CHANGED (partner(Bill b)) DO {
     partnerAccount(b) <- defaultAccount(partner(b));
 }
 
-partnerAccountNumber 'Счет партнера' (Bill b) = number(partnerAccount(b));
+partnerAccountName 'Счет партнера' (Bill b) = IF partnerAccount(b) IS BankAccount
+    THEN nameAccount(partnerAccount(b)) ELSE number(partnerAccount(b));
 
 CONSTRAINT partnerAccount(Bill b) AND NOT partner(b) = holder(partnerAccount(b))
     CHECKED BY partnerAccount
@@ -46,7 +47,8 @@ WHEN LOCAL SET(Bill b IS Bill) DO {
 }
 
 companyAccount 'Счет компании' = DATA Account (Bill);
-companyAccountNumber 'Счет компании' (Bill b) = number(companyAccount(b));
+companyAccountName 'Счет компании' (Bill b) = IF companyAccount(b) IS BankAccount 
+    THEN nameAccount(companyAccount(b)) ELSE number(companyAccount(b));
 
 WHEN LOCAL CHANGED(company(Bill b)) DO {
     companyAccount(b) <- defaultAccount(company(b));
@@ -118,8 +120,8 @@ colorType (Bill b) += WHEN type[Bill](b) == BillType.bill THEN RGB(255,255,255);
 
 FORM bill 'Документ приобретение'
     OBJECTS  b = Bill PANEL 
-    PROPERTIES(b) READONLYIF readonly(b) nameType BACKGROUND colorType(b), date, dueDate, namePartner, partnerAccountNumber, sourceDocument,
-                             nameCompany, companyAccountNumber, seriesNumber, vendorReference, notes
+    PROPERTIES(b) READONLYIF readonly(b) nameType BACKGROUND colorType(b), date, dueDate, namePartner, partnerAccountName, sourceDocument,
+                             nameCompany, companyAccountName, seriesNumber, vendorReference, notes
         
     OBJECTS l = BillLine
     PROPERTIES(l) READONLYIF readonly(l) index, nameItem, nameUnitMeasure, idBarCode, id, description, quantity, 
@@ -204,8 +206,8 @@ DESIGN bill {
                 fill = 1;
                 caption = 'Оплата';
                 MOVE PROPERTY(dueDate(b)) { caption = 'Срок оплаты      '; } 
-                MOVE PROPERTY(companyAccountNumber(b)) { caption = 'р/сч для оплаты'; }
-                MOVE PROPERTY(partnerAccountNumber(b)) { caption = 'р/сч поставщика'; }              
+                MOVE PROPERTY(companyAccountName(b)) { caption = 'р/сч для оплаты'; }
+                MOVE PROPERTY(partnerAccountName(b)) { caption = 'р/сч поставщика'; }              
             }           
         }
         NEW details{
