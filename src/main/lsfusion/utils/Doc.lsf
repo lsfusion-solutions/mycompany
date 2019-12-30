@@ -4,7 +4,7 @@ REQUIRE Authentication, Time, BarCode;
 
 NAMESPACE Utils;
 
-META defineStatus (doc, caption, let)
+META defineStatus (doc, captionn, let)
    CLASS ###doc##Status 'Статус '##caption {
        draft 'Черновик'
    }
@@ -30,9 +30,25 @@ META defineStatus (doc, caption, let)
    ;
    
    DESIGN ##doc {
-       status {
-           MOVE PROPERTY(nameStatus(##let));
-       }
+       NEW statusPane FIRST {
+           caption = 'Статусы';
+           type = CONTAINERH;
+           alignment = STRETCH;                          
+           NEW statusActions {
+               type = CONTAINERH;                    
+               flex = 1; 
+               NEW primary {
+                   type = CONTAINERH;
+               }
+               NEW  secondary {
+                   type = CONTAINERH;
+               }           
+           }
+           NEW status {
+               type = CONTAINERH;
+               MOVE PROPERTY(nameStatus(##let));
+           }
+       }    
    } 
 END
 

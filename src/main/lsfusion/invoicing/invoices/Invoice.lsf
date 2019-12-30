@@ -155,25 +155,6 @@ EXTEND FORM invoice
     
 DESIGN invoice {
     OBJECTS {
-        NEW statusPane FIRST {
-            caption = 'Статусы';
-            type = CONTAINERH;
-            alignment = STRETCH;                          
-            NEW statusActions {
-                type = CONTAINERH;                    
-                flex = 1; 
-                NEW primary {
-                    type = CONTAINERH;
-                }
-                NEW secondary {
-                    type = CONTAINERH;
-                    MOVE PROPERTY(copyInvoice(i));  
-                }            
-            }
-            NEW status {
-                type = CONTAINERH;
-            }
-        }
         NEW header{
             type = CONTAINERH;
             NEW box1 {               
@@ -266,3 +247,9 @@ nameStatus 'Статус' (InvoiceLine l) = nameStatus(invoice(l));
 readonly (InvoiceLine l) += WHEN NOT status(invoice(l)) = InvoiceStatus.draft THEN TRUE;
 
 @defineDocSearch(invoice, item, quantity, i, canBeSold);
+
+DESIGN invoice {
+    secondary {
+        MOVE PROPERTY(copyInvoice(i)); 
+    }
+}

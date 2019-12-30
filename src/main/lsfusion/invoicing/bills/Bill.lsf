@@ -153,25 +153,6 @@ EXTEND FORM bill
     
 DESIGN bill {
     OBJECTS {
-        NEW statusPane FIRST {
-            caption = 'Статусы';
-            type = CONTAINERH;
-            alignment = STRETCH;                          
-            NEW statusActions {
-                type = CONTAINERH;                    
-                flex = 1; 
-                NEW primary {
-                    type = CONTAINERH;
-                }
-                NEW secondary {
-                    type = CONTAINERH;
-                    MOVE PROPERTY(copyBill(b));  
-                }          
-            }
-            NEW status {
-                type = CONTAINERH;
-            }
-        }
         NEW header{
             type = CONTAINERH;            
             NEW box1 {
@@ -264,3 +245,9 @@ nameStatus 'Статус' (BillLine l) = nameStatus(bill(l));
 readonly (BillLine l) += WHEN NOT status(bill(l)) = BillStatus.draft THEN TRUE;
 
 @defineDocSearch(bill, item, quantity, b, canBePurchased);
+
+DESIGN bill {
+    secondary {
+        MOVE PROPERTY(copyBill(b)); 
+    }
+}
