@@ -1,46 +1,10 @@
 MODULE BillStatus;
 
-REQUIRE Bill;
+REQUIRE Bill, Doc;
 
 NAMESPACE Invoicing;
 
-CLASS BillStatus 'Статус счета' {
-    draft 'Черновик'
-}
+@defineStatus(bill, 'счета', b);
 
-name 'Имя' (BillStatus o) = staticCaption(o) IF o IS BillStatus CHARWIDTH 15;
-
-status 'Статус' = ABSTRACT CASE BillStatus (Bill);
-nameStatus 'Статус' (Bill b) = name(status(b));
 nameStatus 'Статус' (BillLine l) = nameStatus(bill(l));
-colorStatus 'Цвет' = ABSTRACT CASE COLOR (Bill);
-
-EXTEND FORM bill
-    PROPERTIES(b) nameStatus BACKGROUND colorStatus(b)
-;
-
-EXTEND FORM bills    
-    FILTERGROUP status
-        FILTER 'Черновик' status(b) = BillStatus.draft 'F10'
-;
-
-EXTEND FORM bills
-    PROPERTIES(b) nameStatus BEFORE nameType(b) BACKGROUND colorStatus(b)
-;
-
-status(Bill b) += WHEN b IS Bill THEN BillStatus.draft;
-colorStatus(Bill b) += WHEN status(b) == BillStatus.draft THEN RGB(187,242,210);
-
 readonly (BillLine l) += WHEN NOT status(bill(l)) = BillStatus.draft THEN TRUE;
-readonly (Bill b) += WHEN NOT status(b) = BillStatus.draft THEN TRUE;
-
-DESIGN bill {
-    OBJECTS {        
-        statusPane {                         
-            NEW status AFTER statusActions{
-                type = CONTAINERH;                
-                MOVE PROPERTY(nameStatus(b)); 
-            }
-        }                
-    }
-}

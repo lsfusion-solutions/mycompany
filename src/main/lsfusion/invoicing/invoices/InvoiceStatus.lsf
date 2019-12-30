@@ -1,46 +1,10 @@
 MODULE InvoiceStatus;
 
-REQUIRE Invoice;
+REQUIRE Invoice, Doc;
 
 NAMESPACE Invoicing;
 
-CLASS InvoiceStatus 'Статус счета' {
-    draft 'Черновик'
-}
+@defineStatus(invoice, 'счета', i);
 
-name 'Имя' (InvoiceStatus o) = staticCaption(o) IF o IS InvoiceStatus CHARWIDTH 15;
-
-status 'Статус' = ABSTRACT CASE InvoiceStatus (Invoice);
-nameStatus 'Статус' (Invoice i) = name(status(i));
 nameStatus 'Статус' (InvoiceLine l) = nameStatus(invoice(l));
-colorStatus 'Цвет' = ABSTRACT CASE COLOR (Invoice);
-
 readonly (InvoiceLine l) += WHEN NOT status(invoice(l)) = InvoiceStatus.draft THEN TRUE;
-readonly (Invoice i) += WHEN NOT status(i) = InvoiceStatus.draft THEN TRUE;
-
-EXTEND FORM invoice
-    PROPERTIES(i) nameStatus BACKGROUND colorStatus(i)
-;
-
-EXTEND FORM invoices    
-    FILTERGROUP status
-        FILTER 'Черновик' status(i) = InvoiceStatus.draft 'F10'
-;
-
-EXTEND FORM invoices
-    PROPERTIES(i) nameStatus BEFORE nameType(i) BACKGROUND colorStatus(i)
-;
-
-status(Invoice b) += WHEN b IS Invoice THEN InvoiceStatus.draft;
-colorStatus(Invoice b) += WHEN status(b) == InvoiceStatus.draft THEN RGB(187,242,210);
-
-DESIGN invoice {
-    OBJECTS {        
-        statusPane {
-            NEW status AFTER statusActions {
-                type = CONTAINERH;                
-                MOVE PROPERTY(nameStatus(i)); 
-            }
-        }                
-    }
-}

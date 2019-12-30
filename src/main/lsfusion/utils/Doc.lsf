@@ -4,6 +4,38 @@ REQUIRE Authentication, Time, BarCode;
 
 NAMESPACE Utils;
 
+META defineStatus (doc, caption, let)
+   CLASS ###doc##Status 'Статус '##caption {
+       draft 'Черновик'
+   }
+   
+   name 'Имя' (###doc##Status ##let) = staticCaption(##let) IF ##let IS ###doc##Status CHARWIDTH 15;
+   
+   status 'Статус' = ABSTRACT CASE ###doc##Status (###doc);
+   nameStatus 'Статус' (###doc ##let) = name(status(##let));
+   colorStatus 'Цвет' = ABSTRACT CASE COLOR (###doc);
+   
+   status(###doc ##let) += WHEN ##let IS ###doc THEN ###doc##Status.draft;
+   colorStatus(###doc ##let) += WHEN status(##let) == ###doc##Status.draft THEN RGB(187,242,210);
+   readonly (###doc ##let) += WHEN NOT status(##let) = ###doc##Status.draft THEN TRUE;
+   
+   EXTEND FORM ##doc##s
+       PROPERTIES(##let) READONLY nameStatus BACKGROUND colorStatus(##let)
+       FILTERGROUP status
+           FILTER 'Черновик' status(##let) = ###doc##Status.draft 'F10'
+   ;
+   
+   EXTEND FORM ##doc
+       PROPERTIES(##let) nameStatus BACKGROUND colorStatus(##let)
+   ;
+   
+   DESIGN ##doc {
+       status {
+           MOVE PROPERTY(nameStatus(##let));
+       }
+   } 
+END
+
 META defineDocSearch (doc, it, fun, let, check)
     quantity 'Кол-во' (###doc i, ###it p) = 
         GROUP SUM fun(###doc##Line l) BY doc(l), it(l);

@@ -1,18 +1,10 @@
 MODULE ManufacturingOrderStatus;
 
-REQUIRE ManufacturingOrder;
+REQUIRE ManufacturingOrder, Doc;
 
 NAMESPACE Manufacturing;
 
-CLASS ManufacturingOrderStatus 'Статус заказа на производство' {
-    draft 'Черновик'
-}
-
-name 'Имя' (ManufacturingOrderStatus o) = staticCaption(o) IF o IS ManufacturingOrderStatus CHARWIDTH 15;
-
-status 'Статус' = ABSTRACT CASE ManufacturingOrderStatus (ManufacturingOrder);
-nameStatus 'Статус' (ManufacturingOrder m) = name(status(m));
-colorStatus 'Цвет' = ABSTRACT CASE COLOR (ManufacturingOrder);
+@defineStatus(manufacturingOrder, 'заказа на производство', o);
 
 CLASS MaterialsAvailabilityStatus 'Доступность материалов' {
     available 'доступны',
@@ -32,21 +24,7 @@ colorMaterialsAvailabilityStatus 'Цвет' (ManufacturingOrder m) =
     IF materialsAvailabilityStatus(m) = MaterialsAvailabilityStatus.available THEN RGB(187,242,210)
     ELSE RGB(250,150,157);
 
-status(ManufacturingOrder m) += WHEN m IS ManufacturingOrder THEN ManufacturingOrderStatus.draft;
-colorStatus(ManufacturingOrder m) += WHEN status(m) == ManufacturingOrderStatus.draft THEN RGB(187,242,210);
-readonly (ManufacturingOrder m) += WHEN NOT status(m) = ManufacturingOrderStatus.draft THEN TRUE;
-
 EXTEND FORM manufacturingOrders
-    PROPERTIES(o) READONLY nameMaterialsAvailabilityStatus BACKGROUND colorMaterialsAvailabilityStatus(o), 
-                    nameStatus BACKGROUND colorStatus(o)
+    PROPERTIES(o) READONLY nameMaterialsAvailabilityStatus BACKGROUND colorMaterialsAvailabilityStatus(o)
 ;
 
-EXTEND FORM manufacturingOrder
-    PROPERTIES(o) nameStatus BACKGROUND colorStatus(o)
-;
-
-DESIGN manufacturingOrder {
-    status {
-        MOVE PROPERTY(nameStatus(o));
-    }
-}

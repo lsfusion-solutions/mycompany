@@ -1,55 +1,10 @@
 MODULE ReceiptStatus;
 
-REQUIRE Receipt;
+REQUIRE Receipt, Doc;
 
 NAMESPACE Inventory;
 
-// Статусы
+@defineStatus(receipt, 'поступления', r);
 
-CLASS ReceiptStatus 'Статус прихода' {
-    draft 'Черновик'
-}
-
-name 'Имя' (ReceiptStatus o) = staticCaption(o) IF o IS ReceiptStatus CHARWIDTH 15;
-
-FORM dialogStatuses 'Статус прихода'
-    OBJECTS o = ReceiptStatus
-    PROPERTIES(o) READONLY name
-    
-    LIST ReceiptStatus OBJECT o
-;
-
-status 'Статус' = ABSTRACT CASE ReceiptStatus (Receipt);
-nameStatus 'Статус' (Receipt r) = name(status(r));
-nameStatus 'Статус' (ReceiptLine l) = nameStatus(receipt(l));
-colorStatus 'Цвет' = ABSTRACT CASE COLOR (Receipt);
-    
+nameStatus 'Статус' (ReceiptLine l) = nameStatus(receipt(l));   
 readonly (ReceiptLine l) += WHEN NOT status(receipt(l)) = ReceiptStatus.draft THEN TRUE;
-readonly (Receipt r) += WHEN NOT status(r) = ReceiptStatus.draft THEN TRUE;
-
-EXTEND FORM receipt
-    PROPERTIES(r) nameStatus BACKGROUND colorStatus(r)
-;
-
-EXTEND FORM receipts    
-    FILTERGROUP status
-        FILTER 'Черновик' status(r) = ReceiptStatus.draft 'F9'
-;
-
-EXTEND FORM receipts
-    PROPERTIES(r) nameStatus BEFORE scheduledDate(r) BACKGROUND colorStatus(r)
-;
-
-status(Receipt r) += WHEN r IS Receipt THEN ReceiptStatus.draft;
-colorStatus(Receipt r) += WHEN status(r) == ReceiptStatus.draft THEN RGB(187,242,210);
-
-DESIGN receipt {
-    OBJECTS {        
-        statusPane {                         
-            NEW status AFTER statusActions {
-                type = CONTAINERH;                
-                MOVE PROPERTY(nameStatus(r)); 
-            }
-        }               
-    }
-}
