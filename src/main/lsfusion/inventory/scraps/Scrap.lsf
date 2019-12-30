@@ -19,10 +19,11 @@ index 'Индекс' = PARTITION SUM 1 ORDER ScrapLine l BY scrap(l) IN id MATER
 
 product 'Продукт' = DATA Product(ScrapLine);
 nameProduct 'Продукт' (ScrapLine l) = name(product(l));
+idBarCodeProduct 'Штрих код' (ScrapLine l) = idBarCode(product(l));
+idProduct 'Код' (ScrapLine l) = id(product(l));
+
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (ScrapLine);
 nameUnitMeasure 'Ед.изм.' (ScrapLine l) = name(unitMeasure(l));
-idBarCode 'Штрих код' (ScrapLine l) = idBarCode(product(l));
-id 'Код' (ScrapLine l) = id(product(l));
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (ScrapLine);
 
@@ -33,7 +34,7 @@ FORM scrap 'Списание'
     PROPERTIES(s) READONLYIF readonly(s) date, nameLocationFrom
     
     OBJECTS l = ScrapLine
-    PROPERTIES(l) READONLYIF readonly(s) index, nameProduct, nameUnitMeasure, idBarCode, id, quantity, NEW, DELETE
+    PROPERTIES(l) READONLYIF readonly(s) index, nameProduct, nameUnitMeasure, idBarCodeProduct, idProduct, quantity, NEW, DELETE
     FILTERS scrap(l) = s
     
     EDIT Scrap OBJECT s

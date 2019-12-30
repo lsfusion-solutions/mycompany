@@ -45,10 +45,11 @@ receipt 'Документ' = DATA Receipt (ReceiptLine) NONULL DELETE INDEXED;
 
 product 'Продукт' = DATA Product (ReceiptLine) NONULL INDEXED;
 nameProduct 'Продукт' (ReceiptLine l) = name(product(l)) IN id;
+idBarCodeProduct 'Штрих код' (ReceiptLine l) = idBarCode(product(l));
+idProduct 'Код' (ReceiptLine l) = id(product(l));
+
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (ReceiptLine);
 nameUnitMeasure 'Ед.изм.' (ReceiptLine l) = name(unitMeasure(l));
-idBarCode 'Штрих код' (ReceiptLine l) = idBarCode(product(l));
-id 'Код' (ReceiptLine l) = id(product(l));
 
 initialDemand 'Планируемое количество' = DATA NUMERIC[16,3] (ReceiptLine);
 
@@ -83,7 +84,7 @@ FORM receipt 'Поступление'
 
     OBJECTS l = ReceiptLine
     PROPERTIES(l) index READONLY
-    PROPERTIES(l) READONLYIF readonly(l) nameProduct, nameUnitMeasure, idBarCode, id,
+    PROPERTIES(l) READONLYIF readonly(l) nameProduct, nameUnitMeasure, idBarCodeProduct, idProduct,
             initialDemand SHOWIF NOT immediateTransfer(r) BACKGROUND IF NOT readonly(l) THEN RGB(198,230,247)
     PROPERTIES(l) READONLYIF readonly(l) NEW, DELETE        
     FILTERS receipt(l) = r

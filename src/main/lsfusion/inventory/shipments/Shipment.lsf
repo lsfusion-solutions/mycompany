@@ -52,10 +52,11 @@ shipment 'Документ' = DATA Shipment (ShipmentLine) NONULL DELETE INDEXED
 
 product 'Продукт' = DATA Product (ShipmentLine) NONULL INDEXED;
 nameProduct 'Продукт' (ShipmentLine l) = name(product(l)) IN id;
+idBarCodeProduct 'Штрих код' (ShipmentLine l) = idBarCode(product(l));
+idProduct 'Код' (ShipmentLine l) = id(product(l));
+
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (ShipmentLine);
 nameUnitMeasure 'Ед.изм.' (ShipmentLine l) = name(unitMeasure(l));
-idBarCode 'Штрих код' (ShipmentLine l) = idBarCode(product(l));
-id 'Код' (ShipmentLine l) = id(product(l));
 
 initialDemand 'Планируемое количество' = DATA NUMERIC[16,3] (ShipmentLine);
 
@@ -94,7 +95,7 @@ FORM shipment 'Отгрузка'
                   
     OBJECTS l = ShipmentLine
     PROPERTIES(l) index READONLY
-    PROPERTIES(l) READONLYIF readonly(l) nameProduct, nameUnitMeasure, idBarCode, id, 
+    PROPERTIES(l) READONLYIF readonly(l) nameProduct, nameUnitMeasure, idBarCodeProduct, idProduct, 
         initialDemand SHOWIF NOT immediateTransfer(s) BACKGROUND IF NOT readonly(l) THEN RGB(198,230,247) 
     PROPERTIES(l) READONLYIF readonly(l) NEW, DELETE
              

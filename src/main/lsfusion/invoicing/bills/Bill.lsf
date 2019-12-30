@@ -76,10 +76,11 @@ bill 'Приобретение товаров и услуг' = DATA Bill (BillLi
 
 item 'Номенклатура' = DATA Item (BillLine);
 nameItem 'Номенклатура' (BillLine l) = name(item(l)) IN id;
+idBarCodeItem 'Штрих код' (BillLine l) = idBarCode(item(l));
+idItem 'Код' (BillLine l) = id(item(l));
+
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (BillLine);
 nameUnitMeasure 'Ед.изм.' (BillLine l) = name(unitMeasure(l));
-idBarCode 'Штрих код' (BillLine l) = idBarCode(item(l));
-id 'Код' (BillLine l) = id(item(l));
 description 'Описание' = DATA STRING (BillLine); 
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (BillLine) NONULL;
@@ -124,7 +125,7 @@ FORM bill 'Документ приобретение'
                              nameCompany, companyAccountName, seriesNumber, vendorReference, notes
         
     OBJECTS l = BillLine
-    PROPERTIES(l) READONLYIF readonly(l) index, nameItem, nameUnitMeasure, idBarCode, id, description, quantity, 
+    PROPERTIES(l) READONLYIF readonly(l) index, nameItem, nameUnitMeasure, idBarCodeItem, idItem, description, quantity, 
                         unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
     FILTERS bill(l) = b
 

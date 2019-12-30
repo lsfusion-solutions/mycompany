@@ -39,11 +39,13 @@ index 'Индекс' = PARTITION SUM 1 ORDER ComponentLine l BY bom(l) IN id MAT
 
 item 'Номенклатура' = DATA Item (ComponentLine);
 nameItem 'Номенклатура' (ComponentLine l) = name(item(l));
-quantity 'Кол-во' = DATA NUMERIC[16,3] (ComponentLine);
+idBarCodeItem 'Штрих код' (ComponentLine l) = idBarCode(item(l));
+idItem 'Код' (ComponentLine l) = id(item(l));
+
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (ComponentLine);
 nameUnitMeasure 'Ед.изм.' (ComponentLine l) = name(unitMeasure(l));
-idBarCode 'Штрих код' (ComponentLine l) = idBarCode(item(l));
-id 'Код' (ComponentLine l) = id(item(l));
+
+quantity 'Кол-во' = DATA NUMERIC[16,3] (ComponentLine);
 costRatio 'Доля стоимости' (ComponentLine l) = quantity(l) * cost(item(bom(l))) / 
                 ((GROUP SUM quantity(ComponentLine ll) IF bom(ll) = bom(l)) * 100);
 
@@ -54,11 +56,13 @@ index 'Индекс' = PARTITION SUM 1 ORDER ByproductLine l BY bom(l) IN id MAT
 
 item 'Номенклатура' = DATA Item (ByproductLine);
 nameItem 'Номенклатура' (ByproductLine l) = name(item(l));
-quantity 'Кол-во' = DATA NUMERIC[16,3] (ByproductLine);
+idBarCodeItem 'Штрих код' (ByproductLine l) = idBarCode(item(l));
+idItem 'Код' (ByproductLine l) = id(item(l));
+
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (ByproductLine);
-idBarCode 'Штрих код' (ByproductLine l) = idBarCode(item(l));
-id 'Код' (ByproductLine l) = id(item(l));
 nameUnitMeasure 'Ед.изм.' (ByproductLine l) = name(unitMeasure(l));
+
+quantity 'Кол-во' = DATA NUMERIC[16,3] (ByproductLine);
 
 WHEN LOCAL SETCHANGED (item(Bom b)) DO {
     unitMeasure(b) <- unitMeasure(item(b));
@@ -78,11 +82,11 @@ FORM bom 'Спецификация'
     PROPERTIES(b) sequence, nameOperation
     
     OBJECTS c = ComponentLine
-    PROPERTIES(c) index, nameItem, nameUnitMeasure, idBarCode, id, quantity, costRatio SHOWIF unbuild(b), NEW, DELETE 
+    PROPERTIES(c) index, nameItem, nameUnitMeasure, idBarCodeItem, idItem, quantity, costRatio SHOWIF unbuild(b), NEW, DELETE 
     FILTERS bom(c) = b
     
     OBJECTS l = ByproductLine
-    PROPERTIES(l) index, nameItem, nameUnitMeasure, idBarCode, id, quantity, NEW, DELETE
+    PROPERTIES(l) index, nameItem, nameUnitMeasure, idBarCodeItem, idItem, quantity, NEW, DELETE
     FILTERS bom(l) = b
     
     EDIT Bom OBJECT b

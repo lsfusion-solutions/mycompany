@@ -44,12 +44,13 @@ date 'Дата' = DATA DATETIME (UnbuildOrderLine);
 
 item 'Номенклатура' = DATA Item (UnbuildOrderLine);
 nameItem 'Номенклатура' (UnbuildOrderLine l) = name(item(l));
+idBarCodeItem 'Штрих код' (UnbuildOrderLine l) = idBarCode(item(l));
+idItem 'Код' (UnbuildOrderLine l) = id(item(l));
 
-quantity 'Кол-во' = DATA NUMERIC[16,3] (UnbuildOrderLine);
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (UnbuildOrderLine);
 nameUnitMeasure 'Ед.изм.' (UnbuildOrderLine l) = name(unitMeasure(l));
-idBarCode 'Штрих код' (UnbuildOrderLine l) = idBarCode(item(l));
-id 'Код' (UnbuildOrderLine l) = id(item(l));
+
+quantity 'Кол-во' = DATA NUMERIC[16,3] (UnbuildOrderLine);
 
 costRatio 'Доля стоимости' = DATA NUMERIC[16,3] (UnbuildOrderLine);
 
@@ -73,7 +74,7 @@ FORM unbuildOrder 'Заказ на разбор'
                                 manOrderReference, nameLocationTo
     
     OBJECTS l = UnbuildOrderLine
-    PROPERTIES(l) READONLY index, nameItem, nameUnitMeasure, idBarCode, id, date, quantity, costRatio
+    PROPERTIES(l) READONLY index, nameItem, nameUnitMeasure, idBarCodeItem, idItem, date, quantity, costRatio
     FILTERS unbuildOrder(l) = o
     
     EDIT UnbuildOrder OBJECT o

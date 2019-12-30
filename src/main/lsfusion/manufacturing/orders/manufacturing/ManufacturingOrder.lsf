@@ -55,10 +55,12 @@ index 'Индекс' = PARTITION SUM 1 ORDER ConsumedLine l BY manufacturingOrde
 
 item 'Номенклатура' = DATA Item (ConsumedLine);
 nameItem 'Номенклатура' (ConsumedLine l) = name(item(l));
+idBarCodeItem 'Штрих код' (ConsumedLine l) = idBarCode(item(l));
+idItem 'Код' (ConsumedLine l) = id(item(l));
+
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (ConsumedLine);
 nameUnitMeasure 'Ед.изм.' (ConsumedLine l) = name(unitMeasure(l));
-idBarCode 'Штрих код' (ConsumedLine l) = idBarCode(item(l));
-id 'Код' (ConsumedLine l) = id(item(l));
+
 toConsume 'К расходу' = DATA NUMERIC[16,3] (ConsumedLine);
 reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ConsumedLine);
 consumed 'Израсходовано' = DATA NUMERIC[16,3] (ConsumedLine);
@@ -76,10 +78,12 @@ index 'Индекс' = PARTITION SUM 1 ORDER FinishedLine l BY manufacturingOrde
 
 item 'Номенклатура' = DATA Item (FinishedLine);
 nameItem 'Номенклатура' (FinishedLine l) = name(item(l));
+idBarCodeItem 'Штрих код' (FinishedLine l) = idBarCode(item(l));
+idItem 'Код' (FinishedLine l) = id(item(l));
+
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (FinishedLine);
 nameUnitMeasure 'Ед.изм.' (FinishedLine l) = name(unitMeasure(l));
-idBarCode 'Штрих код' (FinishedLine l) = idBarCode(item(l));
-id 'Код' (FinishedLine l) = id(item(l));
+
 done 'Произведено' = DATA NUMERIC[16,3] (FinishedLine);
 
 WHEN LOCAL (SETCHANGED(bom(ManufacturingOrder m)) OR SETCHANGED(quantity(m))) DO {
@@ -118,11 +122,11 @@ FORM manufacturingOrder 'Заказ на производство'
         nameResponsible, numberSource, nameCompany, nameMaterialsLocation, nameProductsLocation, manufacturingDate READONLY 
     
     OBJECTS c = ConsumedLine
-    PROPERTIES(c) READONLY index, nameItem, nameUnitMeasure, idBarCode, id, toConsume, reserved, dateReserved, consumed
+    PROPERTIES(c) READONLY index, nameItem, nameUnitMeasure, idBarCodeItem, idItem, toConsume, reserved, dateReserved, consumed
     FILTERS manufacturingOrder(c) = o
     
     OBJECTS l = FinishedLine
-    PROPERTIES(l) READONLY index, nameItem, nameUnitMeasure, idBarCode, id, done
+    PROPERTIES(l) READONLY index, nameItem, nameUnitMeasure, idBarCodeItem, idItem, done
     FILTERS manufacturingOrder(l) = o
     
     EDIT ManufacturingOrder OBJECT o

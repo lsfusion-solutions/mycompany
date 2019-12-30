@@ -23,10 +23,11 @@ index 'Индекс' = PARTITION SUM 1 ORDER AdjustmentLine l BY adjustment(l) I
 
 product 'Товар' = DATA Product (AdjustmentLine);
 nameProduct 'Товар' (AdjustmentLine l) = name(product(l));
+idBarCodeProduct 'Штрих код' (AdjustmentLine l) = idBarCode(product(l));
+idProduct 'Код' (AdjustmentLine l) = id(product(l));
+
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (AdjustmentLine);
 nameUnitMeasure 'Ед.изм.' (AdjustmentLine l) = name(unitMeasure(l));
-idBarCode 'Штрих код' (AdjustmentLine l) = idBarCode(product(l));
-id 'Код' (AdjustmentLine l) = id(product(l));
 
 location 'Место хранения' = DATA Location (AdjustmentLine);
 nameLocation 'Место хранения' (AdjustmentLine l) = canonicalName(location(l));
@@ -66,7 +67,7 @@ FORM adjustment 'Инвентаризация'
                             nameCategory SHOWIF type(a) = AdjustmentType.category 
     
     OBJECTS l = AdjustmentLine
-    PROPERTIES(l) READONLYIF NOT (type(a) = AdjustmentType.manual) index, nameProduct, nameUnitMeasure, idBarCode, id,
+    PROPERTIES(l) READONLYIF NOT (type(a) = AdjustmentType.manual) index, nameProduct, nameUnitMeasure, idBarCodeProduct, idProduct,
                                 nameLocation, theoreticalQuantity BACKGROUND background(l)
     PROPERTIES(l) realQuantity READONLYIF readonly(l) BACKGROUND background(l)
     PROPERTIES(l) NEW SHOWIF type(a) = AdjustmentType.manual, DELETE SHOWIF type(a) = AdjustmentType.manual
