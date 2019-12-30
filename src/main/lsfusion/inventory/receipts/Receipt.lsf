@@ -2,7 +2,7 @@ MODULE Receipt;
 
 REQUIRE System, Time,
         InventorySettings, Location, Partner, Product,
-        ReceiptType, ItemPurchase, PartnerPurchase, BarCode;
+        ReceiptType, ItemPurchase, PartnerPurchase, BarCode, Doc, ResLedger;
 
 NAMESPACE Inventory;
 
@@ -68,7 +68,7 @@ readonly = ABSTRACT CASE BOOLEAN (Receipt);
 readonlyHeader = ABSTRACT CASE BOOLEAN (Receipt);
 
 CONSTRAINT product(ReceiptLine l) AND NOT canBePurchased(product(l))
-            CHECKED BY product 
+            CHECKED BY product[ReceiptLine] 
             MESSAGE 'Номенклатура не предназначена для закупки';
 
 partner (ReceiptLine l) = partner(receipt(l));            
@@ -204,4 +204,19 @@ immediateReceipt 'Незапланированное поступление' () 
 
 EXTEND FORM receipts 
     PROPERTIES immediateReceipt() DRAW r TOOLBAR
+;
+
+@defineStatus(receipt, 'поступления', r);
+
+@defineDocHistory(receipt, r, product, initialDemand);
+
+nameStatus 'Статус' (ReceiptLine l) = nameStatus(receipt(l));   
+readonly (ReceiptLine l) += WHEN NOT status(receipt(l)) = ReceiptStatus.draft THEN TRUE;
+
+@defineDocSearch(receipt, product, initialDemand, r, canBePurchased);
+
+available 'Доступный остаток' (Receipt r, Product p) = prevAvailableRec(location(r), p);
+
+EXTEND FORM receipt
+    PROPERTIES(r, itm) available
 ;

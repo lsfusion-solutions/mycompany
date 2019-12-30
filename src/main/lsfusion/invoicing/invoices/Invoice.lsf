@@ -1,6 +1,6 @@
 MODULE Invoice;
 
-REQUIRE InvoicingSettings, TaxItem, BankAccount, Time, MetaTax, ItemSale, PartnerSale, Company, BarCode, MetaNumerator;
+REQUIRE InvoicingSettings, TaxItem, BankAccount, Time, MetaTax, ItemSale, PartnerSale, Company, BarCode, MetaNumerator, Doc;
 
 NAMESPACE Invoicing;
 
@@ -258,3 +258,11 @@ NAVIGATOR {
 @defineTaxForm(invoice, i);
 
 @defineBarCodeAdd(invoice, i, item);
+
+@defineStatus(invoice, 'счета', i);
+@defineDocHistory(invoice, i, item, quantity);
+
+nameStatus 'Статус' (InvoiceLine l) = nameStatus(invoice(l));
+readonly (InvoiceLine l) += WHEN NOT status(invoice(l)) = InvoiceStatus.draft THEN TRUE;
+
+@defineDocSearch(invoice, item, quantity, i, canBeSold);

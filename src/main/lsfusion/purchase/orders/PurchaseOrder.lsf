@@ -3,7 +3,7 @@ MODULE PurchaseOrder;
 REQUIRE Time, MetaNumerator, Individual, Company,
         MetaTax, TaxItem, BarCode,
         PurchaseSettings, PartnerPurchase, ItemSale,
-        Incoterms, PaymentTerms;  
+        Incoterms, PaymentTerms, Doc;  
 
 NAMESPACE Purchase;
 
@@ -192,3 +192,9 @@ NAVIGATOR {
         NEW orders;       
     }
 }
+
+@defineDocSearch(order, item, quantity, o, canBePurchased);
+@defineStatus(order, 'заказа', o);
+@defineDocHistory(order, o, item, quantity);
+
+nameStatus 'Статус' (OrderLine l) = nameStatus(order(l)); 

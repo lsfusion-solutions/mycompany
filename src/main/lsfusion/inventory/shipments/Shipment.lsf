@@ -2,7 +2,7 @@ MODULE Shipment;
 
 REQUIRE System, Time,
         InventorySettings, Location, Partner, Product,
-        ShipmentType, ItemSale, PartnerSale, BarCode;
+        ShipmentType, ItemSale, PartnerSale, BarCode, Doc, ResLedger;
 
 NAMESPACE Inventory;
 
@@ -78,7 +78,7 @@ readonly = ABSTRACT CASE BOOLEAN (Shipment);
 readonlyHeader = ABSTRACT CASE BOOLEAN (Shipment);
 
 CONSTRAINT product(ShipmentLine l) AND NOT canBeSold(product(l))
-            CHECKED BY product 
+            CHECKED BY product[ShipmentLine] 
             MESSAGE 'Наменклатура не предназначена для продажи';
             
 partner (ShipmentLine l) = partner(shipment(l));            
@@ -213,3 +213,17 @@ EXTEND FORM shipments
     PROPERTIES immediateShipment() DRAW s TOOLBAR
 ;
 
+@defineStatus(shipment, 'отгрузки', s);
+@defineDocHistory(shipment, s, product, initialDemand);
+
+nameStatus 'Статус' (ShipmentLine l) = nameStatus(shipment(l));
+
+@defineDocSearch(shipment, product, initialDemand, s, canBeSold);
+
+available 'Доступный остаток' (Shipment s, Product p) = prevAvailableRec(location(s), p); 
+
+EXTEND FORM shipment
+    PROPERTIES(s, itm) available
+    FILTERGROUP  available
+        FILTER 'Остатки' available(s, itm) 'F5' DEFAULT
+;

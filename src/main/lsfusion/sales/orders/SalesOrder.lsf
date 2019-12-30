@@ -3,7 +3,7 @@ MODULE SalesOrder;
 REQUIRE Time, MetaNumerator, Individual, Company,
         MetaTax, TaxItem, BarCode,
         SalesSettings, PartnerSale, ItemSale,
-        Incoterms, PaymentTerms, SalesPricelistValue;  
+        Incoterms, PaymentTerms, SalesPricelistValue, Doc;  
 
 NAMESPACE Sales;
 
@@ -225,3 +225,9 @@ NAVIGATOR {
         NEW orders FIRST;    
     }
 }
+
+@defineDocSearch(order, item, quantity, o, canBeSold);
+@defineStatus(order, 'заказа', o);
+@defineDocHistory(order, o, item, quantity);
+
+nameStatus 'Статус' (OrderLine l) = nameStatus(order(l)); 

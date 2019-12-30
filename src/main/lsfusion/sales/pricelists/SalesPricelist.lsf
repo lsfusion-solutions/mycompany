@@ -1,6 +1,6 @@
 MODULE SalesPricelist;
 
-REQUIRE Item, Partner, ItemSale, PartnerSale, TaxItem, SalesSettings, SalesPriceType, CostLedger;
+REQUIRE Item, Partner, ItemSale, PartnerSale, TaxItem, SalesSettings, SalesPriceType, CostLedger, Doc;
 
 NAMESPACE Sales; 
 
@@ -79,6 +79,8 @@ editIn (PricelistLine pl, PriceType priceType) = editIn(pricelist(pl), priceType
 showCurrentPrice 'Действующие цены' = DATA BOOLEAN (Pricelist);
 showMarkup 'Надбавки' = DATA BOOLEAN (Pricelist);
 showCost 'Себестоимость' = DATA BOOLEAN (Pricelist);
+
+readonly = ABSTRACT CASE BOOLEAN (Pricelist);
 
 FORM pricelist 'Прайс-лист'
     OBJECTS p = Pricelist PANEL
@@ -193,3 +195,4 @@ DESIGN pricelist {
     }
 }
 
+@defineStatus(pricelist, 'прайс-листа', p);

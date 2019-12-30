@@ -1,7 +1,7 @@
 MODULE Bill;
 
 REQUIRE InvoicingSettings, TaxItem, BankAccount, Time, MetaTax, ItemPurchase, PartnerPurchase, Company,
-            BarCode, MetaNumerator;
+            BarCode, MetaNumerator, Doc;
 
 NAMESPACE Invoicing;
 
@@ -256,3 +256,11 @@ NAVIGATOR {
 @defineTaxForm(bill, b);
 
 @defineBarCodeAdd(bill, b, item);
+
+@defineStatus(bill, 'счета', b);
+@defineDocHistory(bill, b, item, quantity);
+
+nameStatus 'Статус' (BillLine l) = nameStatus(bill(l));
+readonly (BillLine l) += WHEN NOT status(bill(l)) = BillStatus.draft THEN TRUE;
+
+@defineDocSearch(bill, item, quantity, b, canBePurchased);
