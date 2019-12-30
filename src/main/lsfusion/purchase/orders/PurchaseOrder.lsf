@@ -3,7 +3,8 @@ MODULE PurchaseOrder;
 REQUIRE Time, MetaNumerator, Individual, Company,
         MetaTax, TaxItem, BarCode,
         PurchaseSettings, PartnerPurchase, ItemSale,
-        Incoterms, PaymentTerms, Doc;  
+        Incoterms, PaymentTerms, Doc, PurchasePricelist,
+        Location;  
 
 NAMESPACE Purchase;
 
@@ -55,7 +56,7 @@ item = DATA Item (OrderLine) NONULL;
 nameItem 'Номенклатура' (OrderLine l) = name(item(l));
 
 CONSTRAINT item(OrderLine l) AND NOT canBePurchased(item(l))
-            CHECKED BY item 
+            CHECKED BY item[OrderLine] 
             MESSAGE 'Номенклатура не предназначена для закупки';
 
 description 'Описание' = DATA ISTRING (OrderLine);
@@ -71,7 +72,10 @@ unitPrice 'Цена' = DATA NUMERIC[10,2] (OrderLine);
 @defineTaxCalc(order, o, purchase);
 
 WHEN LOCAL CHANGED (item(OrderLine ol)) DO {
-    description(ol) <- nameItem(ol);
+    description(ol) <- OVERRIDE nameItemVendor(pricelistLineA(vendor(order(ol)), item(ol), dateTime(order(ol)))),
+                                nameItem(ol); 
+    unitPrice(ol) <- OVERRIDE unitPrice(pricelistLineA(vendor(order(ol)), item(ol), dateTime(order(ol)))), 
+                              cost(item(ol));
     unitMeasure(ol) <- unitMeasure(item(ol));
     in(ol, Tax t) <- purchaseIn(item(ol),t); 
 }
@@ -177,7 +181,7 @@ DESIGN orders{
 
 NAVIGATOR {
     purchase {
-        NEW orders;       
+        NEW orders FIRST;    
     }
 }
 

@@ -1,165 +1,103 @@
 MODULE PurchasePricelist;
 
-REQUIRE Item, Partner, ItemPurchase, PartnerPurchase, TaxItem, PurchaseSettings, PurchaseOrder;
+REQUIRE Item, Partner, ItemPurchase, PartnerPurchase, PurchaseSettings, BarCode;
 
-NAMESPACE Purchse; 
+NAMESPACE Purchase; 
 
 CLASS Pricelist 'Прайс-листы';
 
-vendor 'Поставщик ' = DATA Partner (Pricelist);
-
-nameVendor 'Поставщик '(Pricelist p) = name(vendor(p));
-
-number 'Номер' = DATA STRING[20] (Pricelist) NONULL;
+@defineSeriesNumber(pricelist, 'Прайс-листы', 'ПП');
 
 startDate 'Начало действия' = DATA DATETIME (Pricelist);
-
+WHEN LOCAL SET(Pricelist l IS Pricelist) AND NOT CHANGED(startDate(l)) DO startDate(l) <- currentDateTime(); 
 endDate 'Окончание действия' = DATA DATETIME (Pricelist);
 
-name 'Название' (Pricelist pr) = CONCAT ' ', number(pr), ' от' + STRING(startDate(pr)), nameVendor(pr);
+note 'Примечания' = DATA STRING[50] (Pricelist);
 
+vendor 'Поставщик ' = DATA Partner (Pricelist);
+nameVendor 'Поставщик '(Pricelist p) = name(vendor(p));
+
+// lines
 CLASS PricelistLine 'Номенклатура';
 
-pricelist 'Прайс-лист' = DATA Pricelist (PricelistLine);
+pricelist 'Прайс-лист' = DATA Pricelist (PricelistLine) NONULL DELETE;
 
-namePricelist 'Прайс-лист' (PricelistLine prl)= name(pricelist(prl));
- 
+index 'Индекс' = PARTITION SUM 1 ORDER PricelistLine l BY pricelist(l) IN id MATERIALIZED;
+
 item 'Номенклатура' = DATA Item (PricelistLine);
-
 nameItem 'Номенклатура' (PricelistLine prl) = name(item(prl));
-
-nameItemVendor 'Наименование у поставщика' = DATA STRING[200] (PricelistLine);
-
-codeItemVendor 'Код у поставщика' = DATA STRING[20] (PricelistLine);
+nameUnitMeasure 'Единица измерения' (PricelistLine prl) = name(unitMeasure(item(prl))); 
+idBarCodeItem 'Штрих-код' (PricelistLine prl) = idBarCode(item(prl)); 
+idItem 'Код' (PricelistLine prl) = id(item(prl)); 
 
 unitPrice 'Цена' = DATA NUMERIC[10,2] (PricelistLine);
 
-leadDays 'Срок поставки (дни)' = DATA INTEGER (PricelistLine);
-
-minimalQuantity 'Минимальный объем' = DATA NUMERIC[16,3] (PricelistLine);
+nameItemVendor 'Наименование у поставщика' = DATA STRING[200] (PricelistLine);
+codeItemVendor 'Код у поставщика' = DATA STRING[20] (PricelistLine);
 
 unitMeasure 'Единицы поставщика' = DATA ItemMeasure (PricelistLine);
 
-nameUnitMeasure 'Единицы поставщика' (PricelistLine prl) = name(unitMeasure(prl));
+// Line properties
+seriesNumber 'Номер' (PricelistLine prl) = seriesNumber(pricelist(prl));
+startDate 'Начало действия' (PricelistLine prl) = startDate(pricelist(prl));
+endDate 'Окончание действия' (PricelistLine prl) = endDate(pricelist(prl));
+note 'Примечание' (PricelistLine prl) = note(pricelist(prl));
 
-in 'Вкл' = DATA BOOLEAN (PricelistLine, Tax);
-taxes 'Налоги' (PricelistLine prl) = GROUP CONCAT name(Tax t) IF in(pl, t), ', ' ORDER t CHARWIDTH 8; 
-changeTax ( PricelistLine prl) {
-    setTax (Tax t) <- in(prl, t);
-    DIALOG changeTax DO {
-        in(prl, Tax t) <- setTax(t);
-    } 
-} 
-
-pricelist (Partner p, Item i, DATETIME d) =
-    GROUP LAST PricelistLine prl IF item(prl) = i AND vendor(pricelist(prl)) = p AND NOT startDate(pricelist(prl)) > d AND NOT endDate(pricelist(prl)) < d
+// value
+pricelistLineA (Partner p, Item i, DATETIME d) =
+    GROUP LAST PricelistLine prl IF item(prl) = i AND vendor(pricelist(prl)) = p AND 
+               NOT startDate(pricelist(prl)) > d AND NOT endDate(pricelist(prl)) < d
           ORDER startDate(pricelist(prl)), pricelist(prl), prl;
 
-WHEN LOCAL SET(PricelistLine prl IS PricelistLine) DO { 
-    in(prl,Tax t) <- purchaseIn(item(prl),t);
-    unitMeasure(prl) <- unitMeasure(item(prl));  
-}
-
-WHEN LOCAL CHANGED(item(PricelistLine prl)) DO { 
-    in(prl,Tax t) <- purchaseIn(item(prl),t);
-    unitMeasure(prl) <- unitMeasure(item(prl));   
-}
-
-WHEN LOCAL CHANGED(item(OrderLine ol)) DO {
-   unitPrice(ol) <- OVERRIDE unitPrice(pricelist(vendor(order(ol)),item(ol),dateTime(order(ol)))), cost(item(ol));
-   description(ol) <- OVERRIDE nameItemVendor(pricelist(vendor(order(ol)),item(ol),dateTime(order(ol)))), name(item(ol)); 
-   unitMeasure(ol) <- OVERRIDE unitMeasure(pricelist(vendor(order(ol)),item(ol),dateTime(order(ol)))), unitMeasure(item(ol));   
-   in(ol, Tax t) <- OVERRIDE in(pricelist(vendor(order(ol)),item(ol),dateTime(order(ol))),t), purchaseIn(item(ol),t);
-}
-
-EXTEND FORM item 
-    OBJECTS prlp = PricelistLine 
-    PROPERTIES(prlp) READONLY namePricelist, nameItemVendor, codeItemVendor, unitPrice, nameUnitMeasure, minimalQuantity, leadDays, taxes ON CHANGE changeTax(prlp)
-    FILTERS item(prlp)=i
-;
-
-DESIGN item {
-    tabs {
-        purchase {
-            MOVE BOX(prlp);
-        }
-    }
-}
-
-EXTEND FORM partner
-    OBJECTS prp = Pricelist 
-    PROPERTIES(prp) number, startDate, endDate, NEW,DELETE 
-    FILTERS vendor(prp)=p
+FORM pricelist 'Прайс-лист'
+    OBJECTS p = Pricelist PANEL
+    PROPERTIES(p) series, number, startDate, endDate, nameVendor, note
     
-    OBJECTS prlp = PricelistLine
-    PROPERTIES(prlp) nameItem, nameItemVendor, codeItemVendor, unitPrice, nameUnitMeasure, minimalQuantity, leadDays, taxes ON CHANGE changeTax(prlp), NEW,DELETE 
-    FILTERS pricelist(prlp)=prp
-;
-
-DESIGN partner {
-    tabs {
-        vendor {
-            NEW pricelist {
-                fill=1;
-                showIf=isVendor(p);
-                type = CONTAINERH;
-                MOVE BOX(prp) {fill=1;};
-                MOVE BOX(prlp){fill=2;};
-            }
-        }
-    }
-}
-  
-FORM pricelist 'Прайс-листы'
-    OBJECTS pr = Pricelist PANEL
-    PROPERTIES(pr) number, nameVendor, startDate, endDate
+    OBJECTS l = PricelistLine
+    PROPERTIES(l) index READONLY, nameItem, nameUnitMeasure READONLY, nameItemVendor, codeItemVendor,
+                  idBarCodeItem, idItem, unitPrice
+    PROPERTIES(l) NEW, DELETE 
+    FILTERS pricelist(l) = p
     
-    OBJECTS prl = PricelistLine
-    PROPERTIES(prl) nameItem, nameItemVendor, codeItemVendor, unitPrice, nameUnitMeasure, minimalQuantity, leadDays, taxes ON CHANGE changeTax(prl)
-    PROPERTIES(prl) NEW,DELETE 
-    FILTERS pricelist(prl)=pr
-    
-    EDIT Pricelist OBJECT pr
+    EDIT Pricelist OBJECT p
 ;
 
 DESIGN pricelist{
     OBJECTS {
-        NEW header{
-            type = CONTAINERH;
-            NEW col1{
-                type = CONTAINERV;
-                MOVE PROPERTY(number(pr));
-                MOVE PROPERTY(startDate(pr));
-                MOVE PROPERTY(endDate(pr));                
+        NEW header {
+            NEW seriesNumber {
+                type = CONTAINERH;
+                MOVE PROPERTY(series(p));
+                MOVE PROPERTY(number(p));
             }
-            NEW col2{
-                MOVE PROPERTY(nameVendor(pr));
+            NEW period {
+                type = CONTAINERH;
+                MOVE PROPERTY(startDate(p)) { caption = 'Действует с'; }
+                MOVE PROPERTY(endDate(p)) { caption = 'по '; }                
             }
+            MOVE PROPERTY(nameVendor(p));
+            MOVE PROPERTY(note(p));
         }
         NEW details {
             fill = 1;
             type = TABBED;
-            MOVE BOX(prl) {
-                PROPERTY(unitPrice(prl)) { pattern='#,##0.00'; }                          
-            };
+            MOVE BOX(l) {
+                PROPERTY(unitPrice(l)) { pattern = '#,##0.00'; }                          
+            }
         }
     }
 }
 
-FORM pricelistsList 'Прайс-листы'
-    OBJECTS pr = Pricelist
-    PROPERTIES(pr) READONLY number, nameVendor, startDate, endDate
-    LIST Pricelist OBJECT pr
-;
-
 FORM pricelists 'Прайс-листы'
-    OBJECTS pr = Pricelist
-    PROPERTIES(pr) READONLY number, nameVendor, startDate, endDate
-    PROPERTIES(pr) NEW NEWSESSION ,EDIT NEWSESSION ,DELETE NEWSESSION 
+    OBJECTS p = Pricelist
+    PROPERTIES(p) READONLY seriesNumber, startDate, endDate, nameVendor, note
+    PROPERTIES(p) NEWSESSION NEW, EDIT, DELETE 
+
+    LIST Pricelist OBJECT p
 ;  
 
 NAVIGATOR {
-    purchase{
-        NEW pricelists AFTER orders;       
+    purchase {
+        NEW pricelists BEFORE settings;       
     }
 }
