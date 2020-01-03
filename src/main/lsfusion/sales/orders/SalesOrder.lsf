@@ -219,3 +219,9 @@ NAVIGATOR {
 @defineDocHistory(order, o, item, quantity);
 
 nameStatus 'Статус' (OrderLine l) = nameStatus(order(l)); 
+
+EXTEND FORM order
+    FILTERGROUP  pricelist
+        FILTER 'В прайс-листе' GROUP SUM 1 IF itm = item(PricelistLine line) AND 
+            startDate(pricelist(line)) <= currentDateTime() AND endDate(pricelist(line)) >= currentDateTime();
+;
