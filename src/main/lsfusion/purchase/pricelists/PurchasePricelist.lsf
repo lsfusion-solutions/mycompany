@@ -101,3 +101,29 @@ NAVIGATOR {
         NEW pricelists BEFORE settings;       
     }
 }
+
+copy 'Копировать' (Pricelist pl) {
+    NEWSESSION {
+        NEW p = Pricelist {
+            startDate(p) <- startDate(pl);
+            endDate(p) <- endDate(pl);
+            note(p) <- note(pl);
+            vendor(p) <- vendor(pl);
+            FOR pricelist(PricelistLine l)  = pl DO NEW nl = PricelistLine {
+                pricelist(nl) <- p;
+                item(nl) <- item(l);
+                unitPrice(nl) <- unitPrice(l);
+                nameItemVendor(nl) <- nameItemVendor(l);
+                codeItemVendor(nl) <- codeItemVendor(l);
+                unitMeasure(nl) <- unitMeasure(l);
+                
+            }
+            SHOW pricelist OBJECTS p = p;
+        }
+    }
+}
+
+EXTEND FORM pricelist
+    PROPERTIES copy(p) DRAW l TOOLBAR 
+;
+
