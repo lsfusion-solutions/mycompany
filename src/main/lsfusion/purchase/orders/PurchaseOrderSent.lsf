@@ -1,0 +1,33 @@
+MODULE PurchaseOrderSent;
+
+REQUIRE PurchaseOrder;
+
+NAMESPACE Purchase;
+
+EXTEND CLASS OrderStatus {
+    sent 'Отправлен'
+}
+sent 'Отправлен'  = DATA BOOLEAN (Order);
+
+status(Order o) += WHEN sent(o) THEN OrderStatus.sent;
+colorStatus(Order i) += WHEN status(i) = OrderStatus.sent THEN RGB(252,247,149);
+
+send 'Отправить' (Order o) {
+    APPLY;
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {
+        sent(o) <- TRUE;
+        APPLY;
+    }
+}
+
+EXTEND FORM order
+     PROPERTIES(o) SHOWIF (status(o) = OrderStatus.draft) send
+;
+
+DESIGN order {
+    statusActions {
+        MOVE PROPERTY(send(o)) FIRST { fontStyle = 'bold'; };
+    }
+}

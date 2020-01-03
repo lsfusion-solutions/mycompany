@@ -1,0 +1,36 @@
+MODULE PurchaseOrderPrint;
+
+REQUIRE PurchaseOrder, PurchaseOrderConfirmed, Partner;
+
+NAMESPACE Purchase;
+
+phoneVendor 'Телефон поставщика' (Order o) = phone(vendor(o));
+fullAddressVendor 'Адрес поставщика' (Order o) = concatAddress(vendor(o),'\n'); 
+fullAddressLocation 'Адрес места доставки' (Order o ) = concatAddress(location(o),'\n');
+fullAddressCompany 'Адрес компании' (Order o) = concatAddress(owner(location(o)),', ');
+nameCompany 'Компания' (Order o) = name(owner(location(o)));
+phoneCompany 'Телефон компании' (Order o) = phone(owner(location(o)));
+
+FORM printOrder 'Заказ поставщику'   
+    OBJECTS o = Order PANEL 
+    PROPERTIES(o) scheduledDate, number, nameLocation, fullAddressLocation, nameVendor, fullAddressVendor, phoneVendor, nameCompany, fullAddressCompany, phoneCompany
+        
+    OBJECTS l = OrderLine
+    PROPERTIES(l) nameItem, description, quantity, taxes, subtotal, unitPrice, unitMeasure
+    FILTERS order(l) = o
+; 
+      
+print 'Печать' (Order o) {
+    PRINT printOrder OBJECTS o = o;
+}  
+
+EXTEND FORM order
+     PROPERTIES (o) print
+;
+
+DESIGN order {
+    secondary {
+        MOVE PROPERTY(print(o));             
+    }
+}
+

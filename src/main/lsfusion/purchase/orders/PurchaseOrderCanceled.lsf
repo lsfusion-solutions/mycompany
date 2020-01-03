@@ -1,11 +1,11 @@
 MODULE PurchaseOrderCanceled;
 
-REQUIRE PurchaseOrder;
+REQUIRE PurchaseOrderLocked;
 
 NAMESPACE Purchase;
 
 EXTEND CLASS OrderStatus {
-    canceled 'Заказ отменен'
+    canceled 'Отменен'
 }
 
 canceled 'Отменен' = DATA BOOLEAN (Order);
@@ -24,11 +24,11 @@ status(Order o) += WHEN canceled(o) THEN OrderStatus.canceled;
 colorStatus(Order o) += WHEN status(o) = OrderStatus.canceled THEN RGB(252,247,149);
 
 EXTEND FORM order
-     PROPERTIES(o) cancel
+     PROPERTIES(o) SHOWIF (NOT status(o) = OrderStatus.draft AND NOT status(o) = OrderStatus.canceled) cancel
 ;
 
 DESIGN order {
-    statusActions {
+    secondary {
         MOVE PROPERTY(cancel(o));
     }
 }

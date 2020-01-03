@@ -1,14 +1,16 @@
 MODULE PurchaseOrderConfirmed;
 
-REQUIRE PurchaseOrder, PurchaseOrder, PurchaseOrderRequestSent;
+REQUIRE PurchaseOrderSent;
 
 NAMESPACE Purchase;
 
 EXTEND CLASS OrderStatus {
     confirmed 'Оформлен'
 }
-
 confirmed 'Подтвержден' = DATA BOOLEAN (Order);
+
+status(Order o) += WHEN confirmed(o) THEN OrderStatus.confirmed;
+colorStatus(Order o) += WHEN status(o) = OrderStatus.confirmed THEN RGB(150,255,150);
 
 confirm 'Подтвердить' (Order o){
     APPLY; 
@@ -20,15 +22,16 @@ confirm 'Подтвердить' (Order o){
     }
 }
 
-status(Order o) += WHEN confirmed(o) THEN OrderStatus.confirmed;
-colorStatus(Order o) += WHEN status(o) = OrderStatus.confirmed THEN RGB(150,255,150);
-
 EXTEND FORM order 
-     PROPERTIES(o) SHOWIF (status(o) = OrderStatus.requestSent OR status(o) = OrderStatus.draft) confirm
+     PROPERTIES(o) SHOWIF (status(o) = OrderStatus.draft) confirmDraft = confirm
+     PROPERTIES(o) SHOWIF (status(o) = OrderStatus.sent) confirmSent = confirm
 ;
 
 DESIGN order {
-    statusActions {
-        MOVE PROPERTY(confirm(o))  FIRST { fontStyle = 'bold'; };
+    primary {
+        MOVE PROPERTY(confirmSent) { fontStyle = 'bold'; };
+    }
+    secondary {
+        MOVE PROPERTY(confirmDraft);
     }
 }
