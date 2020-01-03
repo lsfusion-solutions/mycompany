@@ -11,7 +11,7 @@ amountLeft 'Остаток' (Refund r) = totalAmount(r) (-) billed(r);
 EXTEND CLASS Refund : BillOutstandingCredit;
 amount(Refund c) += totalAmount(c);
 amountLeft(Refund c) += amountLeft(c);
-partner (Refund c) += partner[Bill](c);
+partner (Refund c) += vendor[Bill](c);
 date(Refund c) += date[Bill](c);
 number(Refund c) += number[Bill](c);
 
@@ -26,7 +26,7 @@ type (Bill b) +=  WHEN isRefund(b) THEN BillType.refund;
 colorType (Refund r) += WHEN type[Bill](r) = BillType.refund THEN RGB(250,67,71);
 
 canBeMatched(Refund r, Bill b) = 
-            partner[BillOutstandingCredit](r) = partner(b) 
+            partner[BillOutstandingCredit](r) = vendor(b) 
             AND amountLeft(r) > 0 
             AND NOT r = b 
             AND status(b) = BillStatus.ready 
@@ -41,8 +41,8 @@ refund 'Создать возврат' (Bill b) {
     NEWSESSION { 
         NEW ni = Refund {
             date[Bill](ni) <- currentDateTime();
-            partner[Bill](ni) <- partner(b);
-            partnerAccount(ni) <- partnerAccount(b);
+            vendor[Bill](ni) <- vendor(b);
+            vendorAccount(ni) <- vendorAccount(b);
             company(ni) <- company(b);
             companyAccount(ni) <- companyAccount(b);
             notes(ni) <- notes(b);
@@ -92,17 +92,12 @@ DESIGN bill {
         }                
     }
     
-    pane {
-        NEW outstandingCreditPane BEFORE total{
-            type = TABBED;
-            fill = 1;
-            MOVE outstandingCredit;
-            NEW creditInvoices {
-                caption = 'Документы';
-                showIf = b IS Refund;
-                MOVE BOX(bi);
-                MOVE BOX(bil);
-            }
+    details {
+        NEW creditInvoices {
+            caption = 'Документы';
+            showIf = b IS Refund;
+            MOVE BOX(bi);
+            MOVE BOX(bil);
         }
     }
 }

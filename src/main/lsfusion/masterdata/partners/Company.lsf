@@ -10,12 +10,18 @@ EXTEND CLASS PartnerType {
     company 'Компания'
 }
 
+dataDefaultCompany 'Компания по умолчанию' = DATA Company ();
+
+countCompanies 'Кол-во компаний' () = GROUP SUM 1 IF c IS Company;
+firstCompany () = GROUP LAST Company c ORDER c WHERE c IS Company; 
+
+defaultCompany = OVERRIDE dataDefaultCompany(), (firstCompany() IF countCompanies() = 1);
+
 type (Partner p) += WHEN p IS Company THEN PartnerType.company;
 
 newCompany 'Компания' () {
     NEWSESSION {
         NEW c = Company {
-            
             SHOW partner OBJECTS p = c;  
         }
     }

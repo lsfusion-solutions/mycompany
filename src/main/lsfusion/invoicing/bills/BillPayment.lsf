@@ -20,13 +20,13 @@ registerPayment 'Оформить платеж' (Bill b){
             date(p) <- currentDateTime();
             amount(p) <- totalAmount(b) (-) paid(b);
             IF isRefund(b) THEN {
-                fromPartner(p) <- partner(b);
-                fromAccount(p) <- partnerAccount(b);
+                fromPartner(p) <- vendor(b);
+                fromAccount(p) <- vendorAccount(b);
                 toPartner(p) <- company(b);
                 toAccount(p) <- companyAccount(b);
             } ELSE {
-                toPartner(p) <- partner(b);
-                toAccount(p) <- partnerAccount(b);
+                toPartner(p) <- vendor(b);
+                toAccount(p) <- vendorAccount(b);
                 fromPartner(p) <- company(b);
                 fromAccount(p) <- companyAccount(b);
             }               
@@ -44,8 +44,8 @@ registerPayment 'Оформить платеж' (Bill b){
 }
 
 canBeMatched(Payment p, Bill b) = 
-    ((isIncoming(p) AND isRefund(b) AND fromPartner(p) = partner(b) AND status(b) = BillStatus.ready AND amountLeft(p) > 0) OR
-     (isOutgoing(p) AND NOT isRefund(b) AND toPartner(p) = partner(b) AND status(b) = BillStatus.ready AND amountLeft(p) > 0)); 
+    ((isIncoming(p) AND isRefund(b) AND fromPartner(p) = vendor(b) AND status(b) = BillStatus.ready AND amountLeft(p) > 0) OR
+     (isOutgoing(p) AND NOT isRefund(b) AND toPartner(p) = vendor(b) AND status(b) = BillStatus.ready AND amountLeft(p) > 0)); 
 canBeMatched(Payment p, Bill b) += canBeMatched(p, b);
 
 EXTEND FORM bill
@@ -62,12 +62,12 @@ DESIGN bill {
 
 EXTEND FORM payment
     OBJECTS b = Bill
-    PROPERTIES(b) READONLY nameStatus, date, dueDate, namePartner, notes, untaxedAmount, totalTax, totalAmount
+    PROPERTIES(b) READONLY nameStatus, date, dueDate, nameVendor, notes, untaxedAmount, totalTax, totalAmount
     PROPERTIES READONLY paid(p, b)                  
     FILTERS paid(p, b)
     
     OBJECTS bb = Bill
-    PROPERTIES(bb) READONLY nameStatus, date, dueDate, namePartner, notes, untaxedAmount, totalTax, totalAmount, paid
+    PROPERTIES(bb) READONLY nameStatus, date, dueDate, nameVendor, notes, untaxedAmount, totalTax, totalAmount, paid
     PROPERTIES addBillPayment(p, bb) DRAW bb TOOLBAR
     FILTERS canBeMatched(p, bb)
 ;

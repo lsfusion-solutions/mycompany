@@ -34,7 +34,7 @@ bill 'Ссылка на приобретение' = DATA Bill (Shipment);
 
 WHEN SET(ready(Bill b)) AND createReceipt(b) DO {
     IF NOT isRefund(b) THEN NEW ns = Receipt { 
-        partner(ns) <- partner(b);
+        partner(ns) <- vendor(b);
         scheduledDate(ns) <- date(b);
         type(ns) <- typeReceiptFromBill();
         location(ns) <- location(b);
@@ -57,7 +57,7 @@ WHEN SET(ready(Bill b)) AND createReceipt(b) DO {
         done(ns) <- TRUE;
         executionDate(ns) <- currentDateTime(); 
     } ELSE NEW s = Shipment {
-        partner(s) <- partner(b);
+        partner(s) <- vendor(b);
         scheduledDate(s) <- date(b);
         type(s) <- typeShipmentFromBill();
         location(s) <- location(b);
@@ -120,18 +120,12 @@ EXTEND FORM bill
 ;
 
 DESIGN bill {
-    header {
-        NEW locations {
-            caption = 'Места хранения';
-            fill = 1;
+    otherInformation {
+        NEW receipt {
+            caption = 'Поступление';
+            MOVE PROPERTY(createReceipt(b));
             MOVE PROPERTY(nameLocation(b)) { notNull = TRUE; }
+            MOVE PROPERTY(showReceipt(b));
         }
-    }
-    secondary {
-        MOVE PROPERTY(showReceipt(b));
-        MOVE PROPERTY(showReceipt(b));
-    }
-    additions {
-        MOVE PROPERTY(createReceipt(b));
     }
 }
