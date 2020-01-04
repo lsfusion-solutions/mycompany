@@ -24,12 +24,11 @@ status(Adjustment a) += WHEN canceled(a) THEN AdjustmentStatus.canceled;
 colorStatus(Adjustment a) += WHEN status(a) == AdjustmentStatus.canceled THEN RGB(181,195,247);
 
 EXTEND FORM adjustment
-    PROPERTIES(a) cancel SHOWIF NOT (status(a) = AdjustmentStatus.done OR status(a) = AdjustmentStatus.canceled), 
-                            canceled SHOWIF status(a) = AdjustmentStatus.canceled READONLY 
+    PROPERTIES(a) cancel SHOWIF NOT (status(a) = AdjustmentStatus.done OR status(a) = AdjustmentStatus.canceled), canceled 
 ;
 
 DESIGN adjustment {
-    statusActions {
+    secondaryActions {
         MOVE PROPERTY(cancel(a));            
     }
     status {

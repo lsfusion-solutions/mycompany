@@ -76,7 +76,7 @@ readonlyHeader (Shipment s) += WHEN status(s) = ShipmentStatus.done THEN TRUE;
 EXTEND FORM shipment
     PROPERTIES(s) validate SHOWIF status(s) = ShipmentStatus.ready OR (immediateTransfer(s) AND NOT done(s) AND countLines(s)), 
                         done READONLY 
-    PROPERTIES(s) executionDate READONLY AFTER scheduledDate(s) SHOWIF done(s)
+    PROPERTIES(s) executionDate READONLY SHOWIF done(s)
     PROPERTIES(l) done READONLYIF NOT (status(s) = ShipmentStatus.ready OR (immediateTransfer(s) AND status(s) = ShipmentStatus.draft)) 
                                         BACKGROUND IF status(s) = ShipmentStatus.ready THEN RGB(198,230,247)
     PROPERTIES(s) fillDone DRAW l TOOLBAR SHOWIF status(s) = ShipmentStatus.ready
@@ -92,10 +92,8 @@ EXTEND FORM shipments
 status(Shipment s) += WHEN done(s) THEN ShipmentStatus.done;
 
 DESIGN shipment {                               
-    statusActions {
-        primary {                  
-            MOVE PROPERTY(validate(s)) FIRST { fontStyle = 'bold'; }
-        }
+    primaryActions {                  
+        MOVE PROPERTY(validate(s)) FIRST { fontStyle = 'bold'; }
     }
     status {
         MOVE PROPERTY(done(s));                              

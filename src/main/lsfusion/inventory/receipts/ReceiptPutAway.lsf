@@ -41,17 +41,15 @@ markAsPutAway 'Разместить' (Receipt r) {
 status(Receipt r) += WHEN putAway(r) THEN ReceiptStatus.putAway;
 
 EXTEND FORM receipt
-    PROPERTIES(r) markAsPutAway SHOWIF putAway(type(r)) AND status(r) = ReceiptStatus.done, putAway READONLY
+    PROPERTIES(r) markAsPutAway SHOWIF putAway(type(r)) AND status(r) = ReceiptStatus.done, putAway
 ;
 
 DESIGN receipt {
-    statusActions {
-        primary {
-            MOVE PROPERTY (markAsPutAway(r)) { fontStyle = 'bold'; }
-        }
+    primaryActions {
+        MOVE PROPERTY(markAsPutAway(r)) { fontStyle = 'bold'; }
     }
     status {
-        MOVE PROPERTY (putAway(r));
+        MOVE PROPERTY(putAway(r));
     }
 }
 

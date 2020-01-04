@@ -23,7 +23,7 @@ markAsToDo 'К оплате' (Invoice i) {
 countLines (Invoice i) = GROUP SUM 1 IF invoice(InvoiceLine l) = i;
 
 EXTEND FORM invoice
-    PROPERTIES(i) markAsToDo SHOWIF status(i) = InvoiceStatus.draft AND countLines(i), ready READONLY
+    PROPERTIES(i) markAsToDo SHOWIF status(i) = InvoiceStatus.draft AND countLines(i), ready
 ;
 
 EXTEND FORM invoices    
@@ -35,11 +35,9 @@ status(Invoice i) += WHEN ready(i) THEN InvoiceStatus.ready;
 colorStatus(Invoice i) += WHEN status(i) == InvoiceStatus.ready THEN RGB(252,247,149);
 
 DESIGN invoice {
-    statusActions {
-        primary {
-            MOVE PROPERTY(markAsToDo(i)) { fontStyle = 'bold'; }
-        }                
-    }
+    primaryActions {
+        MOVE PROPERTY(markAsToDo(i)) { fontStyle = 'bold'; }
+    }                
     status {
         MOVE PROPERTY(ready(i));                               
     }    

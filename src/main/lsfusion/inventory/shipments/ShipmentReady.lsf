@@ -48,9 +48,10 @@ countLinesDemand (Shipment s) = GROUP SUM 1 IF shipment(ShipmentLine sl) = s AND
 countLines (Shipment s) = GROUP SUM 1 IF shipment(ShipmentLine l) = s;
 
 EXTEND FORM shipment
-    PROPERTIES(s) checkAvailability SHOWIF (status(s) = ShipmentStatus.waiting 
-            OR (status(s) = ShipmentStatus.ready AND countLinesDemand(s))) AND NOT immediateTransfer(s) AND countLines(s), 
-                  unreserve SHOWIF status(s) = ShipmentStatus.ready, ready READONLY 
+    PROPERTIES(s) checkAvailability SHOWIF 
+                        (status(s) = ShipmentStatus.waiting OR (status(s) = ShipmentStatus.ready AND countLinesDemand(s))) 
+                         AND NOT immediateTransfer(s) AND countLines(s), 
+                  unreserve SHOWIF status(s) = ShipmentStatus.ready, ready 
        
     PROPERTIES(l) READONLY available, reserved SHOWIF NOT immediateTransfer(s)
     
@@ -67,12 +68,10 @@ colorStatus(Shipment s) += WHEN status(s) == ShipmentStatus.ready THEN RGB(252,2
 readonly (ShipmentLine l) += WHEN ready(shipment(l)) THEN TRUE;
 
 DESIGN shipment {
-    statusActions {
-        primary {
-            MOVE PROPERTY(checkAvailability(s)) { fontStyle = 'bold'; }
-            MOVE PROPERTY(unreserve(s)) { fontStyle = 'bold'; }
-        }              
-    }
+    primaryActions {
+        MOVE PROPERTY(checkAvailability(s)) { fontStyle = 'bold'; }
+        MOVE PROPERTY(unreserve(s));
+    }              
     status {
         MOVE PROPERTY(ready(s));                               
     }    

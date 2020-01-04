@@ -26,8 +26,7 @@ colorStatus(Receipt r) += WHEN status(r) == ReceiptStatus.canceled THEN RGB(181,
 readonlyHeader (Receipt r) += WHEN status(r) = ReceiptStatus.canceled THEN TRUE;
 
 EXTEND FORM receipt
-    PROPERTIES(r) cancel SHOWIF NOT (status(r) = ReceiptStatus.done OR status(r) = ReceiptStatus.canceled OR status(r) = ReceiptStatus.putAway), 
-                            canceled SHOWIF status(r) = ReceiptStatus.canceled READONLY 
+    PROPERTIES(r) cancel SHOWIF NOT (status(r) = ReceiptStatus.done OR status(r) = ReceiptStatus.canceled OR status(r) = ReceiptStatus.putAway), canceled 
 ;
 
 EXTEND FORM receipts    
@@ -36,11 +35,9 @@ EXTEND FORM receipts
 ;
 
 DESIGN receipt {
-    statusActions {
-        secondary {
-            MOVE PROPERTY(cancel(r));
-        }             
-    }
+    secondaryActions {
+        MOVE PROPERTY(cancel(r));
+    }             
     status {
         MOVE PROPERTY(canceled(r));                               
     }    

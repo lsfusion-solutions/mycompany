@@ -26,8 +26,7 @@ colorStatus(Shipment s) += WHEN status(s) == ShipmentStatus.canceled THEN RGB(18
 readonlyHeader (Shipment s) += WHEN status(s) = ShipmentStatus.canceled THEN TRUE;
 
 EXTEND FORM shipment
-    PROPERTIES(s) cancel SHOWIF NOT (status(s) = ShipmentStatus.draft OR status(s) = ShipmentStatus.canceled), 
-                  canceled READONLY 
+    PROPERTIES(s) cancel SHOWIF NOT (status(s) = ShipmentStatus.draft OR status(s) = ShipmentStatus.canceled), canceled 
 ;
 
 EXTEND FORM shipments    
@@ -36,11 +35,9 @@ EXTEND FORM shipments
 ;
 
 DESIGN shipment {
-    statusActions {
-        secondary {
-            MOVE PROPERTY(cancel(s));
-        }             
-    }
+    secondaryActions {
+        MOVE PROPERTY(cancel(s));
+    }             
     status {
         MOVE PROPERTY(canceled(s));                               
     }    

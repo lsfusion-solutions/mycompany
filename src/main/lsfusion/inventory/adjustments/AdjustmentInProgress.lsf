@@ -27,7 +27,7 @@ readonly (AdjustmentLine l) += WHEN NOT status(adjustment(l)) = AdjustmentStatus
 showSearch (Adjustment a) += WHEN status(a) = AdjustmentStatus.inProgress AND type(a) = AdjustmentType.manual THEN TRUE;
 
 EXTEND FORM adjustment
-    PROPERTIES(a) markAsToDo SHOWIF status(a) = AdjustmentStatus.draft, inProgress READONLY
+    PROPERTIES(a) markAsToDo SHOWIF status(a) = AdjustmentStatus.draft, inProgress
     
     FILTERGROUP adjustment
         FILTER 'Расхождения' NOT theoreticalQuantity(l) = realQuantity(l) 'F10'
@@ -36,7 +36,7 @@ EXTEND FORM adjustment
 ;
 
 DESIGN adjustment {
-    statusActions {
+    primaryActions {
         MOVE PROPERTY(markAsToDo(a)) { fontStyle = 'bold'; }               
     }
     status {

@@ -24,8 +24,7 @@ status(Bill b) += WHEN canceled(b) THEN BillStatus.canceled;
 colorStatus(Bill b) += WHEN status(b) == BillStatus.canceled THEN RGB(181,195,247);
 
 EXTEND FORM bill
-    PROPERTIES(b) cancel SHOWIF NOT (status(b) = BillStatus.draft OR status(b) = BillStatus.canceled), 
-                  canceled SHOWIF status(b) = BillStatus.canceled READONLY 
+    PROPERTIES(b) cancel SHOWIF NOT (status(b) = BillStatus.draft OR status(b) = BillStatus.canceled), canceled
 ;
 
 EXTEND FORM bills    
@@ -34,11 +33,9 @@ EXTEND FORM bills
 ;
 
 DESIGN bill {
-    statusActions {
-        secondary {
-            MOVE PROPERTY(cancel(b));
-        }             
-    }
+    secondaryActions {
+        MOVE PROPERTY(cancel(b));
+    }             
     status {
         MOVE PROPERTY(canceled(b));                               
     }    

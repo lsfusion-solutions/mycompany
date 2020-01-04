@@ -22,7 +22,7 @@ markAsToDo 'К оплате' (Bill b) {
 countLines (Bill b) = GROUP SUM 1 IF bill(BillLine l) = b;
 
 EXTEND FORM bill
-    PROPERTIES(b) markAsToDo SHOWIF status(b) = BillStatus.draft AND countLines(b), ready READONLY
+    PROPERTIES(b) markAsToDo SHOWIF status(b) = BillStatus.draft AND countLines(b), ready
 ;
 
 EXTEND FORM bills    
@@ -34,11 +34,9 @@ status(Bill b) += WHEN ready(b) THEN BillStatus.ready;
 colorStatus(Bill b) += WHEN status(b) == BillStatus.ready THEN RGB(252,247,149);
 
 DESIGN bill {
-    statusActions {
-        primary {
-            MOVE PROPERTY(markAsToDo(b)) { fontStyle = 'bold'; }
-        }                
-    }
+    primaryActions {
+        MOVE PROPERTY(markAsToDo(b)) { fontStyle = 'bold'; }
+    }                
     status {
         MOVE PROPERTY(ready(b));                               
     }    
