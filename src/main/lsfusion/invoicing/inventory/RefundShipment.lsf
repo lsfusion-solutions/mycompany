@@ -1,0 +1,78 @@
+MODULE RefundShipment;
+
+REQUIRE BillReceipt, Shipment;
+
+NAMESPACE Invoicing;
+
+typeShipmentFromBill 'Тип отгрузки на основе приходной накладной (возврат)' = DATA ShipmentType ();
+nameTypeShipmentFromBill 'Тип отгрузки на основе приходной накладной (возврат)' = name(typeShipmentFromBill());
+EXTEND FORM options PROPERTIES nameTypeShipmentFromBill();
+
+// shipment
+refund = DATA Refund (Shipment);
+countShipments 'Кол-во отгрузок' (Refund r) = GROUP SUM 1 IF refund(Shipment s) = r;
+
+refundLine = DATA BillLine (ShipmentLine);
+
+shipmentCreated = DATA Shipment ();
+newShipment (Refund r) {
+    NEW s = Shipment {
+        refund(s) <- r;
+         
+        partner(s) <- vendor(r);
+        type(s) <- typeShipmentFromBill();
+        location(s) <- location(r);
+        sourceDocument(s) <- seriesNumber(r);
+        
+        immediateTransfer(s) <- TRUE;   
+        done(s) <- TRUE;           
+            
+        FOR bill(BillLine l) = r INLINE NEW sl = ShipmentLine DO {            
+            shipment(sl) <- s;
+            product(sl) <- item(l);
+            done(sl) <- quantity(l);
+            refundLine(sl) <- l;
+        }
+        
+        shipmentCreated() <- s;
+    } 
+}
+
+createShipment 'Создать отгрузку' (Refund r) {
+    APPLY;
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {
+        newShipment(r);
+        SHOW shipment OBJECTS s = shipmentCreated();
+    }
+} 
+
+EXTEND FORM bill
+    PROPERTIES(b) createShipment SHOWIF ready(b) AND isRefund(b) AND typeShipmentFromBill() AND NOT countShipments(b) 
+
+    OBJECTS s = Shipment
+    PROPERTIES(s) SHOWIF isRefund(b) READONLY seriesNumber, scheduledDate, executionDate, nameStatus
+    PROPERTIES(s) SHOWIF isRefund(b) EDIT GRID   
+    FILTERS refund(s) = b
+;
+
+DESIGN bill {
+    primary {
+        MOVE PROPERTY(createShipment(b)) { fontStyle = 'bold'; }
+    }
+
+    relatedDoc  {
+        MOVE BOX(s);
+        REMOVE TOOLBARSYSTEM(s);
+    }
+}
+
+// auto create
+autoCreateShipmentFromBill 'Автоматически создавать отгрузку на основе приходной накладной (возврат)' = DATA BOOLEAN ();
+EXTEND FORM options PROPERTIES autoCreateShipmentFromBill() SHOWIF typeShipmentFromBill();
+
+WHEN SET(ready(Refund r)) AND typeShipmentFromBill() AND isRefund(r) DO newShipment(r);
+WHEN SET(canceled(refund(Shipment s))) AND typeShipmentFromBill() DO canceled(s) <- TRUE; 
+WHEN CHANGED(quantity(refundLine(ShipmentLine l))) DO done(l) <- quantity(refundLine(l));
+WHEN CHANGED(item(refundLine(ShipmentLine l))) AND item(refundLine(l)) IS Product DO product(l) <- item(refundLine(l));

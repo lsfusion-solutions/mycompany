@@ -9,7 +9,7 @@ CLASS Bill 'Приходная накладная';
 
 // type
 CLASS BillType 'Тип документа' {
-    bill 'Приобретение'
+    bill 'Поступление'
 }
 name 'Имя' (BillType b) = staticCaption(b) IF b IS BillType CHARWIDTH 20;
 
@@ -121,6 +121,7 @@ FORM bill 'Приходная накладная'
 DESIGN bill {
     OBJECTS {
         NEW header {
+            alignment = STRETCH;    
             type = CONTAINERH;
             NEW headerLeft {
                 MOVE PROPERTY(nameType(b));
@@ -135,6 +136,10 @@ DESIGN bill {
                 MOVE PROPERTY(nameVendor(b))  { notNull = TRUE; }
                 MOVE PROPERTY(nameCompany(b)) { notNull = TRUE; }           
                 MOVE PROPERTY(sourceDocument(b));           
+            }
+            NEW relatedDoc {
+                fill = 1;
+                type = TABBED;
             }
         }
         NEW details {

@@ -6,6 +6,10 @@ NAMESPACE Inventory;
 
 done 'Отгружен' = DATA BOOLEAN (Shipment);
 
+executionDate 'Дата отгрузки' = DATA DATETIME (Shipment);
+WHEN SET(done(Shipment s)) AND NOT CHANGED(executionDate(s)) DO executionDate(s) <- currentDateTime(); 
+executionDate 'Дата отгрузки' (ShipmentLine l) = executionDate(shipment(l));
+
 done 'Отгружено' = DATA NUMERIC[16,3] (ShipmentLine);
 
 CONSTRAINT done(ShipmentLine l) < 0 OR done(l) > initialDemand(l) 
@@ -59,7 +63,6 @@ validate 'Отгружен' (Shipment s) {
         }
         
         done(s) <- TRUE;
-        executionDate(s) <- currentDateTime();
         APPLY;
     }
 }
@@ -79,7 +82,9 @@ EXTEND FORM shipment
     PROPERTIES(s) fillDone DRAW l TOOLBAR SHOWIF status(s) = ShipmentStatus.ready
 ;
 
-EXTEND FORM shipments 
+EXTEND FORM shipments
+    PROPERTIES(s) READONLY executionDate AFTER scheduledDate(s)
+ 
     EXTEND FILTERGROUP status
         FILTER 'Отгружен' status(s) = ShipmentStatus.done 'F7'
 ;

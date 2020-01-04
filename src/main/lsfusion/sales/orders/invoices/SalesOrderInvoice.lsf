@@ -61,13 +61,13 @@ EXTEND FORM order
     PROPERTIES(l) SHOWIF confirmed(o) paid ON CHANGE { DIALOG orderInvoiceShow OBJECTS ol = l; }
     
     OBJECTS in = Invoice
-    PROPERTIES(in) seriesNumber ON CHANGE { SHOW invoice OBJECTS i = in; } 
-    PROPERTIES(in) READONLY date, nameStatus    
+    PROPERTIES(in) READONLY seriesNumber, date, nameStatus    
+    PROPERTIES(in) EDIT GRID   
     FILTERS order(in) = o   
 ;
  
 DESIGN order {
-    statusActions {
+    primary {
         MOVE PROPERTY(createInvoice(o)) FIRST { fontStyle = 'bold'; };
     }
     relatedDoc  {

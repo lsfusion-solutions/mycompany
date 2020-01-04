@@ -7,6 +7,10 @@ NAMESPACE Inventory;
 // Принят
 done 'Принят' = DATA BOOLEAN (Receipt);
 
+executionDate 'Дата поступления' = DATA DATETIME (Receipt);
+WHEN SET(done(Receipt r)) AND NOT CHANGED(executionDate(r)) DO executionDate(r) <- currentDateTime(); 
+executionDate 'Дата поступления' (ReceiptLine l) = executionDate(receipt(l));
+
 done 'Принятое количество' = DATA NUMERIC[16,3] (ReceiptLine);
 
 CONSTRAINT done(ReceiptLine l) < 0 OR done(l) > initialDemand(l) 
@@ -47,7 +51,6 @@ validate 'Принят' (Receipt r) {
         } ELSE ready(r) <- TRUE;
         
         done(r) <- TRUE;
-        executionDate(r) <- currentDateTime();
         APPLY;
     }
 }
@@ -60,7 +63,7 @@ readonlyHeader (Receipt r) += WHEN status(r) = ReceiptStatus.done THEN TRUE;
 
 EXTEND FORM receipt
     PROPERTIES(r) validate SHOWIF status(r) = ReceiptStatus.ready OR (immediateTransfer(r) AND NOT done(r) AND countLines(r)), done READONLY
-    PROPERTIES (r)  executionDate READONLY AFTER scheduledDate(r) SHOWIF done(r)
+    PROPERTIES(r) executionDate READONLY AFTER scheduledDate(r) SHOWIF done(r)
     
     PROPERTIES(l) done READONLYIF NOT (status(r) = ReceiptStatus.ready OR (immediateTransfer(r) AND status(r) = ReceiptStatus.draft)) BACKGROUND 
                        IF status(r) = ReceiptStatus.ready THEN RGB(198,230,247)
@@ -70,6 +73,8 @@ DESIGN receipt {
 }
 
 EXTEND FORM receipts 
+    PROPERTIES(r) READONLY executionDate AFTER scheduledDate(r)
+
     EXTEND FILTERGROUP status
         FILTER 'Принят' status(r) = ReceiptStatus.done 'F7'
 ;

@@ -18,7 +18,6 @@ WHEN LOCAL SET(Receipt r IS Receipt) AND countTypes() = 1 DO type(r) <- lastType
 
 scheduledDate 'Планируемая дата' = DATA DATETIME (Receipt) NONULL IN id;
 scheduledDate (Receipt r) <- currentDateTime() WHEN SET(r IS Receipt);
-executionDate 'Дата поступления' = DATA DATETIME (Receipt);
 
 // Номер
 @defineSeriesNumberType(receipt);
@@ -75,7 +74,6 @@ CONSTRAINT product(ReceiptLine l) AND NOT canBePurchased(product(l))
 partner (ReceiptLine l) = partner(receipt(l));            
 namePartner 'Партнер' (ReceiptLine l) = namePartner(receipt(l));
 nameLocation 'Место хранения' (ReceiptLine l) = nameLocation(receipt(l));
-executionDate 'Дата проведения' (ReceiptLine l) = executionDate(receipt(l));
            
 FORM receipt 'Поступление'
     OBJECTS r = Receipt PANEL
@@ -94,7 +92,7 @@ FORM receipt 'Поступление'
 
 FORM receipts 'Поступления'
     OBJECTS r = Receipt
-    PROPERTIES(r) READONLY scheduledDate, executionDate, series, number, nameType, nameLocation, namePartner, notes
+    PROPERTIES(r) READONLY scheduledDate, series, number, nameType, nameLocation, namePartner, notes
     PROPERTIES(r) NEWSESSION NEW, EDIT
     PROPERTIES(r) NEWSESSION READONLYIF readonly(r) DELETE
 ;

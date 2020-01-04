@@ -17,7 +17,6 @@ WHEN LOCAL SET(Shipment s IS Shipment) AND countTypesShipment() = 1 DO type(s) <
 
 scheduledDate 'Планируемая дата' = DATA DATETIME (Shipment) NONULL IN id;
 scheduledDate (Shipment s) <- currentDateTime() WHEN SET(s IS Shipment);
-executionDate 'Дата отгрузки' = DATA DATETIME (Shipment);
 
 location 'Место хранения' = DATA Location (Shipment) NONULL INDEXED;
 nameLocation 'Место хранения (Откуда)' (Shipment s) = name(location(s));
@@ -85,7 +84,6 @@ CONSTRAINT product(ShipmentLine l) AND NOT canBeSold(product(l))
 partner (ShipmentLine l) = partner(shipment(l));            
 namePartner 'Партнер' (ShipmentLine l) = namePartner(shipment(l));
 nameLocation 'Место хранения' (ShipmentLine l) = nameLocation(shipment(l));
-executionDate 'Дата проведения' (ShipmentLine l) = executionDate(shipment(l));
 
 FORM shipment 'Отгрузка'
     OBJECTS s = Shipment PANEL 
@@ -104,7 +102,7 @@ FORM shipment 'Отгрузка'
 
 FORM shipments 'Отгрузки'
     OBJECTS s = Shipment
-    PROPERTIES(s) READONLY  scheduledDate, executionDate, series, number, nameType, nameLocation,
+    PROPERTIES(s) READONLY scheduledDate, series, number, nameType, nameLocation,
                   nameToLocation, namePartner, notes
     PROPERTIES(s) NEWSESSION READONLYIF readonly(s) DELETE
     PROPERTIES(s) NEWSESSION NEW, EDIT

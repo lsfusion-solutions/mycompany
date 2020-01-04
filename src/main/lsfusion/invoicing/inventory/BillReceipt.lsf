@@ -4,128 +4,88 @@ REQUIRE BillCanceled, Refund, ReceiptCanceled, ShipmentCanceled;
 
 NAMESPACE Invoicing;
 
-createReceipt 'Создать поступление' = DATA BOOLEAN (Bill);
+typeReceiptFromBill = DATA ReceiptType ();
+nameTypeReceiptFromBill 'Тип поступления на основе приходной накладной' = name(typeReceiptFromBill());
 
+EXTEND FORM options PROPERTIES nameTypeReceiptFromBill();
+
+// location
 location 'Место хранения' = DATA Location (Bill);
 nameLocation 'Место хранения' (Bill b) = name(location(b));
 
-typeReceiptFromBill 'Тип прихода на основе приобретения' = DATA ReceiptType ();
-nameTypeReceiptFromBill 'Тип прихода на основе приобретения' = name(typeReceiptFromBill());
-
-typeShipmentFromBill 'Тип отгрузки на основе возврата' = DATA ShipmentType ();
-nameTypeShipmentFromBill 'Тип отгрузки на основе возврата' = name(typeShipmentFromBill());
-
-EXTEND FORM options
-    PROPERTIES nameTypeReceiptFromBill(), nameTypeShipmentFromBill()
+EXTEND FORM bill 
+    PROPERTIES(b) nameLocation SHOWIF typeReceiptFromBill()
 ;
- 
-DESIGN options {
-    OBJECTS {
-        MOVE PROPERTY(nameTypeReceiptFromBill());
-        MOVE PROPERTY(nameTypeShipmentFromBill());
+DESIGN bill {
+    headerLeft {
+        MOVE PROPERTY(nameLocation(b));
     }
 }
 
-billLine 'Ссылка на приобретение' = DATA BillLine (ReceiptLine);
-bill 'Ссылка на приобретение' = DATA Bill (Receipt);
+// receipt
+bill = DATA Bill (Receipt);
+countReceipts 'Кол-во поступлений' (Bill b) = GROUP SUM 1 IF bill(Receipt r) = b;
 
-billLine 'Ссылка на приобретение' = DATA BillLine (ShipmentLine);
-bill 'Ссылка на приобретение' = DATA Bill (Shipment);
+billLine = DATA BillLine (ReceiptLine);
 
-WHEN SET(ready(Bill b)) AND createReceipt(b) DO {
-    IF NOT isRefund(b) THEN NEW ns = Receipt { 
-        partner(ns) <- vendor(b);
-        scheduledDate(ns) <- date(b);
-        type(ns) <- typeReceiptFromBill();
-        location(ns) <- location(b);
-        number(ns) <- curStringValue(numerator(type(ns)));
-        series(ns) <- series(numerator(type(ns)));
-        incrementValueSession(numerator(type(ns)));
-        ready(ns) <- TRUE;           
-        bill(ns) <- b; 
-        sourceDocument(ns) <- seriesNumber(b); 
-        immediateTransfer(ns) <- TRUE;    
+receiptCreated = DATA LOCAL Receipt();
+newReceipt (Bill b) {
+    NEW r = Receipt { 
+        bill(r) <- b; 
+
+        partner(r) <- vendor(b);
+        type(r) <- typeReceiptFromBill();
+        location(r) <- location(b);
+        sourceDocument(r) <- seriesNumber(b);
+
+        immediateTransfer(r) <- TRUE;
+        done(r) <- TRUE;    
     
-        FOR bill(BillLine l) = b INLINE NEW rl = ReceiptLine DO {            
-            receipt(rl) <- ns;
+        FOR bill(BillLine l) = b AND item(l) IS Product INLINE NEW rl = ReceiptLine DO {            
+            receipt(rl) <- r;
             product(rl) <- item(l);
             done(rl) <- quantity(l);
             billLine(rl) <- l;
         }
         
-        ready(ns) <- TRUE;
-        done(ns) <- TRUE;
-        executionDate(ns) <- currentDateTime(); 
-    } ELSE NEW s = Shipment {
-        partner(s) <- vendor(b);
-        scheduledDate(s) <- date(b);
-        type(s) <- typeShipmentFromBill();
-        location(s) <- location(b);
-        number(s) <- curStringValue(numerator(type(s)));
-        series(s) <- series(numerator(type(s)));
-        incrementValueSession(numerator(type(s)));
-        waiting(s) <- TRUE;           
-        bill(s) <- b; 
-        sourceDocument(s) <- seriesNumber(b);
-        immediateTransfer(s) <- TRUE;   
-            
-        FOR bill(BillLine l) = b INLINE NEW sl = ShipmentLine DO {            
-            shipment(sl) <- s;
-            product(sl) <- item(l);
-            done(sl) <- quantity(l);
-            billLine(sl) <- l;
-        }
-
-        waiting(s) <- TRUE;
-        ready(s) <- TRUE;
-        done(s) <- TRUE;
-        executionDate(s) <- currentDateTime(); 
-    } 
-}
-
-WHEN SET(canceled(Bill b)) DO {
-    FOR bill(Receipt r) = b DO {
-        canceled(r) <- TRUE;
-    }
-    FOR bill(Shipment s) = b DO {
-        canceled(s) <- TRUE;
+        receiptCreated() <- r;
     }
 }
 
-WHEN CHANGED(quantity(billLine(ShipmentLine l))) DO {
-    done(l) <- quantity(billLine(l));
-}
-
-WHEN CHANGED(quantity(billLine(ReceiptLine l))) DO {
-    done(l) <- quantity(billLine(l));
-}
-
-showReceipt 'Показать поступление' (Bill b) {
-    FOR bill(Receipt r) = b DO {
-        SHOW receipt OBJECTS r = r;
+createReceipt 'Создать поступление' (Bill b) {
+    APPLY;
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {
+        newReceipt(b);
+        SHOW receipt OBJECTS r = receiptCreated();
     }
-}
-
-showShipment 'Показать отгрузку' (Bill b) {
-    FOR bill(Shipment s) = b DO {
-        SHOW shipment OBJECTS s = s;
-    }
-}
+} 
 
 EXTEND FORM bill
-    PROPERTIES(b) nameLocation
-    PROPERTIES(b) createReceipt READONLYIF readonly(b)
-    PROPERTIES(b) showReceipt SHOWIF NOT (status(b) = BillStatus.draft OR status(b) = BillStatus.canceled) AND NOT isRefund(b) AND createReceipt(b)
-    PROPERTIES(b) showShipment SHOWIF NOT (status(b) = BillStatus.draft OR status(b) = BillStatus.canceled) AND isRefund(b) AND createReceipt(b)
+    PROPERTIES(b) createReceipt SHOWIF ready(b) AND NOT isRefund(b) AND typeReceiptFromBill() AND NOT countReceipts(b) 
+
+    OBJECTS r = Receipt
+    PROPERTIES(r) SHOWIF NOT isRefund(b) READONLY seriesNumber, scheduledDate, executionDate, nameStatus
+    PROPERTIES(r) SHOWIF NOT isRefund(b) EDIT GRID   
+    FILTERS bill(r) = b
 ;
 
 DESIGN bill {
-    otherInformation {
-        NEW receipt {
-            caption = 'Поступление';
-            MOVE PROPERTY(createReceipt(b));
-            MOVE PROPERTY(nameLocation(b)) { notNull = TRUE; }
-            MOVE PROPERTY(showReceipt(b));
-        }
+    primary {
+        MOVE PROPERTY(createReceipt(b)) { fontStyle = 'bold'; }
+    }
+    relatedDoc  {
+        MOVE BOX(r);
+        REMOVE TOOLBARSYSTEM(r);
     }
 }
+
+// auto create
+autoCreateReceiptFromBill 'Автоматически создавать поступление на основе приходной накладной' = DATA BOOLEAN ();
+EXTEND FORM options PROPERTIES autoCreateReceiptFromBill() SHOWIF typeReceiptFromBill();
+
+WHEN SET(ready(Bill b)) AND autoCreateReceiptFromBill() AND NOT isRefund(b) DO newReceipt(b);
+WHEN SET(canceled(bill(Receipt r))) AND autoCreateReceiptFromBill() DO canceled(r) <- TRUE; 
+WHEN CHANGED(quantity(billLine(ReceiptLine l)))  AND autoCreateReceiptFromBill() DO done(l) <- quantity(billLine(l));
+WHEN CHANGED(item(billLine(ReceiptLine l))) AND autoCreateReceiptFromBill() AND item(billLine(l)) IS Product DO product(l) <- item(billLine(l));

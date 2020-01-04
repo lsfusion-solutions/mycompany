@@ -66,17 +66,15 @@ EXTEND FORM bill
 ;
 
 DESIGN bill {
-    statusActions {
-        secondary {
-            MOVE PROPERTY(refund(b));
-        }               
-    }   
+    secondary {
+        MOVE PROPERTY(refund(b));
+    }               
 }
 
 EXTEND FORM bill
     OBJECTS bi = Bill
     PROPERTIES(bi) READONLY date, number, nameType
-    PROPERTIES READONLY paid(b, bi)
+    PROPERTIES paid(b, bi)
     FILTERS paid(b, bi), NOT b = bi
     
     OBJECTS bil = Bill
@@ -86,12 +84,6 @@ EXTEND FORM bill
 ;
 
 DESIGN bill {
-    statusActions {
-        primary {
-            MOVE PROPERTY(refund(b)) { fontStyle = 'bold'; }
-        }                
-    }
-    
     details {
         NEW creditInvoices {
             caption = 'Документы';
