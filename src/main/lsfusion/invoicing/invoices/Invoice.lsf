@@ -4,230 +4,207 @@ REQUIRE InvoicingSettings, TaxItem, BankAccount, Time, MetaTax, ItemSale, Partne
 
 NAMESPACE Invoicing;
 
-CLASS Invoice 'Реализация товаров и услуг';
+CLASS Invoice 'Расходная накладная';
 
-date 'Дата накладной' = DATA DATETIME (Invoice) NONULL IN id;
-
-WHEN LOCAL SET(Invoice i IS Invoice) DO {
-    date(i) <- currentDateTime();
+// type
+CLASS InvoiceType 'Тип документа' {
+    invoice 'Реализация'
 }
+name 'Имя' (InvoiceType b) = staticCaption(b) IF b IS InvoiceType CHARWIDTH 20;
 
-dueDate 'Дата к оплате' = DATA DATETIME (Invoice);
+type 'Тип' = ABSTRACT CASE InvoiceType (Invoice);
+type (Invoice b) += WHEN b IS Invoice THEN InvoiceType.invoice;
+nameType 'Тип' (Invoice b) = name(type(b));
 
-partner 'Партнер' = DATA Partner (Invoice) NONULL;
-namePartner 'Партнер' (Invoice b) = name(partner(b));
+colorType 'Цвет' = ABSTRACT CASE COLOR (Invoice);
 
-partnerAccount 'Счет партнера'  = DATA Account (Invoice);
+// date
+date 'Дата' = DATA DATETIME (Invoice) NONULL IN id;
+WHEN LOCAL SET (Invoice b IS Invoice) DO date(b) <- currentDateTime();
 
-addressPartner 'Адрес партнера' = DATA STRING (Invoice); 
+@defineSeriesNumber(invoice, 'Расходная накладная', 'РН');
 
-CONSTRAINT partner(Invoice i) AND NOT isCustomer(partner(i)) 
-                CHECKED BY partner
-                MESSAGE 'Партнер должен быть покупателем';
+// customer
+customer 'Покупатель' = DATA Partner (Invoice) NONULL;
+nameCustomer 'Контрагент' (Invoice b) = name(customer(b));
+CONSTRAINT customer(Invoice b) AND NOT isCustomer(customer(b)) 
+                CHECKED BY customer
+                MESSAGE 'Контрагент должен быть покупателем';
 
-WHEN LOCAL CHANGED(partner(Invoice i)) DO {
-    partnerAccount(i) <- defaultAccount(partner(i));
-}
+// company
+company 'Компания' = DATA Company (Invoice) NONULL;
+nameCompany 'Компания' (Invoice b) = name(company(b));
+WHEN LOCAL SET(Invoice b IS Invoice) AND NOT CHANGED(company(b)) DO company(b) <- defaultCompany(); 
 
-partnerAccountName 'Счет партнера' (Invoice i) = IF partnerAccount(i) IS BankAccount 
-    THEN nameAccount(partnerAccount(i)) ELSE number(partnerAccount(i));
+// payment
+dueDate 'Оплатить до' = DATA DATETIME (Invoice);
 
-CONSTRAINT partnerAccount(Invoice i) AND NOT partner(i) = holder(partnerAccount(i))
-    CHECKED BY partnerAccount
-    MESSAGE 'Счет должен принадлежать выбранному партнеру';
-    
-company 'Компания' = DATA Partner (Invoice) NONULL;
-nameCompany 'Компания' (Invoice i) = name(company(i));
+// partner account
+customerAccount 'Счет поставщика' = DATA Account (Invoice);
+nameCustomerAccount 'Счет поставщика' (Invoice b) = IF customerAccount(b) IS BankAccount
+    THEN nameAccount(customerAccount(b)) ELSE number(customerAccount(b));
+WHEN LOCAL CHANGED (customer(Invoice b)) DO customerAccount(b) <- defaultAccount(customer(b));
 
-WHEN LOCAL SET(Invoice i IS Invoice) DO {
-    IF ((GROUP SUM 1 IF Partner p IS Company) = 1) THEN {
-        FOR Partner p IS Company DO {
-            company(i) <- p;
-        }
-    }
-}
+CONSTRAINT customerAccount(Invoice b) AND NOT customer(b) = holder(customerAccount(b))
+    CHECKED BY customerAccount
+    MESSAGE 'Счет должен принадлежать выбранному контрагенту';
 
+// company account
 companyAccount 'Счет компании' = DATA Account (Invoice);
-companyAccountName 'Счет компании' (Invoice i) = IF companyAccount(i) IS BankAccount 
-    THEN nameAccount(companyAccount(i)) ELSE number(companyAccount(i));
+nameCompanyAccount 'Счет компании' (Invoice b) = IF companyAccount(b) IS BankAccount 
+    THEN nameAccount(companyAccount(b)) ELSE number(companyAccount(b));
+WHEN LOCAL CHANGED(company(Invoice b)) DO companyAccount(b) <- defaultAccount(company(b));
 
-WHEN LOCAL CHANGED(company(Invoice i)) DO {
-    companyAccount(i) <- defaultAccount(company(i));
-}
-
-CONSTRAINT companyAccount(Invoice i) AND NOT company(i) = holder(companyAccount(i))
+CONSTRAINT companyAccount(Invoice b) AND NOT company(b) = holder(companyAccount(b))
     CHECKED BY companyAccount
     MESSAGE 'Счет должен принадлежать выбранной компании';
-    
-CONSTRAINT company(Invoice i) AND NOT company(i) IS Company
-    CHECKED BY company
-    MESSAGE 'Счет должен принадлежать компании';
 
+customerReference 'Код поставщика' = DATA STRING[30] (Invoice);
+sourceDocument 'Исходный документ' = DATA STRING[30] (Invoice);
 notes 'Примечания' = DATA ISTRING[50] (Invoice);
 
-@defineSeriesNumber(invoice, 'Реализация товаров и услуг', 'РТ');
+// lines
+CLASS InvoiceLine 'Строки документа';
 
-sourceDocument 'Исходный документ' = DATA STRING[10] (Invoice);
+invoice 'Расходная накладная' = DATA Invoice (InvoiceLine) NONULL DELETE;
 
-CLASS InvoiceLine 'Строка документа';
+index 'Индекс' = PARTITION SUM 1 ORDER InvoiceLine l BY invoice(l) IN id MATERIALIZED;
 
-invoice 'Документ' = DATA Invoice (InvoiceLine) NONULL DELETE;
-
-item 'Номенклатура' = DATA Item (InvoiceLine);
+item 'Номенклатура' = DATA Item (InvoiceLine) NONULL;
 nameItem 'Номенклатура' (InvoiceLine l) = name(item(l)) IN id;
 idBarCodeItem 'Штрих код' (InvoiceLine l) = idBarCode(item(l));
 idItem 'Код' (InvoiceLine l) = id(item(l));
 
+CONSTRAINT item(InvoiceLine l) AND NOT canBeSold(item(l))
+            CHECKED BY item 
+            MESSAGE 'Наменклатура не предназначена для продажи';
+
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (InvoiceLine);
 nameUnitMeasure 'Ед.изм.' (InvoiceLine l) = name(unitMeasure(l));
+
 description 'Описание' = DATA STRING (InvoiceLine); 
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (InvoiceLine) NONULL;
 unitPrice 'Цена за штуку' = DATA NUMERIC[10,2] (InvoiceLine) NONULL;
 
-WHEN LOCAL SETCHANGED(item(InvoiceLine l)) AND salesPrice(item(l)) DO {
-    unitPrice(l) <- salesPrice(item(l));
-}
+WHEN LOCAL SETCHANGED(item(InvoiceLine l)) AND NOT CHANGED(unitPrice(l)) DO unitPrice(l) <- cost(item(l));
 
-index 'Индекс' = PARTITION SUM 1 ORDER InvoiceLine l BY invoice(l) IN id MATERIALIZED;
-
-readonly = ABSTRACT CASE BOOLEAN (InvoiceLine);
-readonly = ABSTRACT CASE BOOLEAN (Invoice);
-
-CONSTRAINT item(InvoiceLine l) AND NOT canBeSold(item(l))
-            CHECKED BY item 
-            MESSAGE 'Номенклатура не предназначена для продажи';
-
-date 'Дата документа' (InvoiceLine l) = date(invoice(l));
-partner 'Партнер' (InvoiceLine l) = partner(invoice(l));
-namePartner 'Партнер' (InvoiceLine l) = namePartner(invoice(l));
-nameCompany 'Компания' (InvoiceLine l) = nameCompany(invoice(l));
-
+// taxes
 @defineTaxCalc(invoice, i, sales);
 
-CLASS InvoiceType 'Тип документа' {
-    invoice 'Реализация'
-}
+// readonly
+readonly = ABSTRACT CASE BOOLEAN (Invoice);
+readonly = ABSTRACT CASE BOOLEAN (InvoiceLine);
 
-name 'Имя' (InvoiceType i) = staticCaption(i) IF i IS InvoiceType CHARWIDTH 20;
-type 'Тип' = ABSTRACT CASE InvoiceType (Invoice);
-type (Invoice i) += WHEN TRUE AND i IS Invoice THEN InvoiceType.invoice;
-nameType 'Тип' (Invoice i) = name(type(i));
+// Line properties
+date 'Дата накладной' (InvoiceLine l) = date(invoice(l));
+partner 'Партнер' (InvoiceLine l) = customer(invoice(l));
+nameCustomer 'Партнер' (InvoiceLine l) = nameCustomer(invoice(l));
+nameCompany 'Компания' (InvoiceLine l) = nameCompany(invoice(l));
 
-colorType 'Цвет' = ABSTRACT CASE COLOR (Invoice);
-colorType (Invoice i) += WHEN type[Invoice](i) == InvoiceType.invoice THEN RGB(255,255,255);
-
-FORM invoice 'Документ реализации'
+FORM invoice 'Расходная накладная'
     OBJECTS  i = Invoice PANEL 
-    PROPERTIES(i) READONLYIF readonly(i)  nameType BACKGROUND colorType(i), date, dueDate, namePartner, partnerAccountName, addressPartner, sourceDocument,
-                             nameCompany, companyAccountName, seriesNumber, notes
+    PROPERTIES(i) READONLYIF readonly(i) 
+                             nameType BACKGROUND colorType(i), date, series, number, nameCustomer, nameCompany, sourceDocument,
+                             dueDate, nameCustomerAccount, nameCompanyAccount,
+                             customerReference, notes
         
     OBJECTS l = InvoiceLine
     PROPERTIES(l) READONLYIF readonly(l) index, nameItem, description, nameUnitMeasure, idBarCodeItem, idItem, quantity, 
                         unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
     FILTERS invoice(l) = i
-    
-    EDIT Invoice OBJECT i;
+
+    EDIT Invoice OBJECT i
 ;
 
+DESIGN invoice {
+    OBJECTS {
+        NEW header {
+            type = CONTAINERH;
+            NEW headerLeft {
+                MOVE PROPERTY(nameType(i));
+                MOVE PROPERTY(date(i));
+                NEW seriesNumber { 
+                    type = CONTAINERH; 
+                    MOVE PROPERTY(series(i)); 
+                    MOVE PROPERTY(number(i));
+                }
+            }
+            NEW headerRight {
+                MOVE PROPERTY(nameCustomer(i))  { notNull = TRUE; }
+                MOVE PROPERTY(nameCompany(i)) { notNull = TRUE; }           
+                MOVE PROPERTY(sourceDocument(i));           
+            }
+        }
+        NEW details {
+            fill = 5;
+            type = TABBED;
+            NEW lines {
+                caption = 'Строки';
+                MOVE BOX(l) { 
+                    fill = 3;
+                    PROPERTY(nameItem(l)) { notNull = TRUE; } 
+                }
+                NEW linesFooter {                     
+                    type = CONTAINERH;
+                    fill = 1;
+                }
+            }
+            NEW otherInformation {
+                caption = 'Прочая информация';
+                type = COLUMNS;
+                columns = 2;
+                NEW payment {
+                    caption = 'Оплата';
+                    MOVE PROPERTY(dueDate(i)); 
+                    MOVE PROPERTY(nameCompanyAccount(i));
+                    MOVE PROPERTY(nameCustomerAccount(i));              
+                }           
+                NEW invoiceInformat {
+                    caption = 'Прочие';
+                    MOVE PROPERTY(customerReference(i)); 
+                    MOVE PROPERTY(notes(i));
+                }
+            }
+        }
+    }
+}
+
+// copy
 copyInvoice 'Копировать' (Invoice i)  { 
     NEWSESSION {
         NEW ni = Invoice {
-            partner(ni) <- partner(i);
+            customer(ni) <- customer(i);
             notes(ni) <- notes(i);
             FOR invoice(InvoiceLine l) = i INLINE NEW nl = InvoiceLine DO {
                 invoice(nl) <- ni;
                 item(nl) <- item(l);
                 quantity(nl) <- quantity(l);
                 unitPrice(nl) <- unitPrice(l);
-                FOR in(l, Tax t) DO {
-                    in(nl,t) <- in(l,t);
-                }
             }
             SHOW invoice OBJECTS i = ni DOCKED;
         }
     }
 }
-
-EXTEND FORM invoice
-    PROPERTIES(i) copyInvoice
-;
-    
-DESIGN invoice {
-    OBJECTS {
-        NEW header{
-            type = CONTAINERH;
-            NEW box1 {               
-                fill = 3;
-                NEW company {
-                    fill = 1;
-                    MOVE PROPERTY(nameCompany(i)) { notNull = TRUE; caption = 'Компания отправитель'; }           
-                }
-                NEW title {            
-                    fill = 1;
-                    MOVE PROPERTY(nameType(i)) { caption = 'Тип документа'; };             
-                    NEW dateNumber {                
-                        type = CONTAINERH;
-                        MOVE PROPERTY(date(i)) { caption = 'Дата'; };
-                        MOVE PROPERTY(seriesNumber(i)) { caption = 'Номер'; };
-                    }
-                }
-            }
-            NEW partner {
-                fill = 1;
-                caption = 'Покупатель';
-                MOVE PROPERTY(namePartner(i)) { notNull = TRUE; } 
-                MOVE PROPERTY(partnerAccountName(i));  
-                MOVE PROPERTY(addressPartner(i));                                          
-            }
-            NEW additions {
-                fill = 1;
-                caption = 'Дополнительно';
-                MOVE PROPERTY(sourceDocument(i)) { caption = 'Создан из'; }
-                MOVE PROPERTY(notes(i));
-            }
-            NEW payment {
-                fill = 1;
-                caption = 'Оплата';
-                MOVE PROPERTY(dueDate(i)) { caption = 'Срок оплаты      '; } 
-                MOVE PROPERTY(companyAccountName(i)) { caption = 'р/сч для оплаты'; }
-            }
-        }
-        NEW details{
-            fill = 5;
-            type = TABBED;
-            NEW box {
-                caption = 'Содержание документа';
-                type = SPLITV;
-                fill = 1;
-                MOVE BOX(l) { fill = 2; }
-                NEW linesFooter {
-                    type = CONTAINERH;
-                    fill = 1;
-                }
-            }
-        }
-    }
-}
-
-addInvoice 'Документ' () {
+EXTEND FORM invoice PROPERTIES(i) copyInvoice;
+ 
+addInvoice 'Накладная' () {
     NEWSESSION {
-        NEW i = Invoice {
-            SHOW invoice OBJECTS i = i;  
+        NEW b = Invoice {
+            SHOW invoice OBJECTS i = b;  
         }
     }
 }IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
 
-FORM invoices 'Реализация товаров и услуг'
+FORM invoices 'Расходные накладные'
     OBJECTS i = Invoice
-    PROPERTIES(i) READONLY nameType BACKGROUND colorType(i), date, dueDate, namePartner, notes    
+    PROPERTIES(i) READONLY nameType BACKGROUND colorType(i), date, dueDate, nameCustomer, notes         
     PROPERTIES(i) NEWSESSION EDIT
     PROPERTIES(i) NEWSESSION READONLYIF readonly(i) DELETE
     PROPERTIES addInvoice() DRAW i TOOLBAR
            
     LIST Invoice OBJECT i;
-;
-    
+
 NAVIGATOR {
     invoicing {
         operations {
@@ -235,9 +212,8 @@ NAVIGATOR {
         }
     }
 }
-    
-@defineTaxForm(invoice, i);
 
+@defineTaxForm(invoice, i);
 @defineBarCodeAdd(invoice, i, item);
 
 @defineStatus(invoice, 'счета', i);

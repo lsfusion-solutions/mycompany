@@ -12,7 +12,7 @@ amountLeft[InvoiceOutstandingCredit](Payment p) += amountLeft(p);
 CONSTRAINT amountLeft(Payment p) < 0 MESSAGE 'Остаток не может быть меньше 0';
 
 WHEN SETCHANGED(reference(Payment p)) DO {
-    FOR isISubstring(reference(p),seriesNumber(Invoice i)) AND partner(p) = partner(i) DO {
+    FOR isISubstring(reference(p),seriesNumber(Invoice i)) AND partner(p) = customer(i) DO {
         addPayment(p, i);
     } ELSE {
         FOR isISubstring(reference(p),seriesNumber(Bill b)) AND partner(p) = vendor(b) DO {

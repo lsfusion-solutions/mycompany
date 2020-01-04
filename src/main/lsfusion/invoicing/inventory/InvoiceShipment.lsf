@@ -34,7 +34,7 @@ invoice = DATA Invoice (Shipment);
 
 WHEN SET(ready(Invoice b)) AND createShipment(b) DO {
     IF isCreditNote(b) THEN NEW ns = Receipt { 
-        partner(ns) <- partner(b);
+        partner(ns) <- customer(b);
         scheduledDate(ns) <- date(b);
         type(ns) <- typeReceiptFromInvoice();
         location(ns) <- location(b);
@@ -57,7 +57,7 @@ WHEN SET(ready(Invoice b)) AND createShipment(b) DO {
         done(ns) <- TRUE;
         executionDate(ns) <- currentDateTime();  
     } ELSE NEW s = Shipment {
-        partner(s) <- partner(b);
+        partner(s) <- customer(b);
         scheduledDate(s) <- date(b);
         type(s) <- typeShipmentFromInvoice();
         location(s) <- location(b); 
@@ -120,18 +120,14 @@ EXTEND FORM invoice
 ;
 
 DESIGN invoice {
-    header {
-        NEW locations {
-            caption = 'Места хранения';
-            fill = 1;
-            MOVE PROPERTY(nameLocation(i)) { notNull = TRUE; }
+    otherInformation {
+        NEW shipment {
+            caption = 'Отгрузка';
+            MOVE PROPERTY(createShipment(i)); 
+            MOVE PROPERTY(nameLocation(i)); 
+            MOVE PROPERTY(showReceipt(i));
+            MOVE PROPERTY(showShipment(i));
         }
     }
-    secondary {
-        MOVE PROPERTY(showReceipt(i));
-        MOVE PROPERTY(showShipment(i));
-    }
-    additions {
-        MOVE PROPERTY(createShipment(i));
-    }
+          
 }

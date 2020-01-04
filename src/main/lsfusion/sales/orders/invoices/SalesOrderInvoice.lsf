@@ -21,12 +21,11 @@ createInvoice 'Оформить накладную' (Order o) {
                
     NEWSESSION {
         NEW ni = Invoice {
-            partner(ni) <- customer(o);
+            customer(ni) <- customer(o);
             date(ni) <- invoiceDate(o);
             order(ni) <- o;
-            notes(ni) <- customerReference(o); 
-            paymentTerms(ni) <- paymentTerms(o);
-            addressPartner(ni) <- addressCustomer(o);           
+            customerReference(ni) <- customerReference(o); 
+            paymentTerms(ni) <- paymentTerms(o);          
             sourceDocument(ni) <- number(o);              
             FOR order(OrderLine ol) = o AND toInvoice(ol) > 0 NEW il = InvoiceLine DO {
                 invoice(il) <- ni;

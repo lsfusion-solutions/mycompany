@@ -33,7 +33,7 @@ DESIGN invoice {
 
 EXTEND FORM item
     OBJECTS il = InvoiceLine
-    PROPERTIES(il) READONLY nameStatus, date, namePartner, nameCompany
+    PROPERTIES(il) READONLY nameStatus, date, nameCustomer, nameCompany
     PROPERTIES(il) READONLY nameItem, quantity, unitPrice
     FILTERS item(il) = i
 ;
@@ -51,13 +51,13 @@ EXTEND FORM partner
     OBJECTS i = Invoice
     PROPERTIES(i) READONLY nameStatus, nameType, date, dueDate, namePartner, notes
     PROPERTIES(i) READONLY untaxedAmount, totalTax, totalAmount, paid
-    FILTERS partner(i) = p
+    FILTERS customer(i) = p
 ;
 
 DESIGN partner {
     tabs {
         NEW invoices {
-            caption = 'Реализация товаров и услуг';
+            caption = 'Расходная накладная';
             MOVE BOX(i);
         }
     }

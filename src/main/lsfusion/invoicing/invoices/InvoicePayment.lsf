@@ -24,13 +24,13 @@ registerPayment 'Оформить платеж' (Invoice i){
             date(p) <- currentDateTime();
             amount(p) <- totalAmount(i) (-) paid(i);
             IF isCreditNote(i) THEN {
-                toPartner(p) <- partner(i);
-                toAccount(p) <- partnerAccount(i);
+                toPartner(p) <- customer(i);
+                toAccount(p) <- customerAccount(i);
                 fromPartner(p) <- company(i);
                 fromAccount(p) <- companyAccount(i);
             } ELSE {
-                fromPartner(p) <- partner(i);
-                fromAccount(p) <- partnerAccount(i);
+                fromPartner(p) <- customer(i);
+                fromAccount(p) <- customerAccount(i);
                 toPartner(p) <- company(i);
                 toAccount(p) <- companyAccount(i);
             }
@@ -48,8 +48,8 @@ registerPayment 'Оформить платеж' (Invoice i){
 }
 
 canBeMatched(Payment p, Invoice i) = 
-    ((isIncoming(p) AND NOT isCreditNote(i) AND fromPartner(p) = partner(i) AND status(i) = InvoiceStatus.ready AND amountLeft(p) > 0) OR
-     (isOutgoing(p) AND isCreditNote(i) AND toPartner(p) = partner(i) AND status(i) = InvoiceStatus.ready AND amountLeft(p) > 0)); 
+    ((isIncoming(p) AND NOT isCreditNote(i) AND fromPartner(p) = customer(i) AND status(i) = InvoiceStatus.ready AND amountLeft(p) > 0) OR
+     (isOutgoing(p) AND isCreditNote(i) AND toPartner(p) = customer(i) AND status(i) = InvoiceStatus.ready AND amountLeft(p) > 0)); 
 canBeMatched(Payment p, Invoice i) += canBeMatched(p, i);
 
 EXTEND FORM invoice
@@ -66,12 +66,12 @@ DESIGN invoice {
 
 EXTEND FORM payment
     OBJECTS i = Invoice
-    PROPERTIES(i) READONLY nameStatus, date, dueDate, namePartner, notes, untaxedAmount, totalTax, totalAmount
+    PROPERTIES(i) READONLY nameStatus, date, dueDate, nameCustomer, notes, untaxedAmount, totalTax, totalAmount
     PROPERTIES READONLY paid(p, i)                  
     FILTERS paid(p, i)
     
     OBJECTS ii = Invoice
-    PROPERTIES(ii) READONLY nameStatus, date, dueDate, namePartner, notes, untaxedAmount, totalTax, totalAmount, paid
+    PROPERTIES(ii) READONLY nameStatus, date, dueDate, nameCustomer, notes, untaxedAmount, totalTax, totalAmount, paid
     PROPERTIES addPayment(p, ii) DRAW ii TOOLBAR
     FILTERS canBeMatched(p, ii)
 ;

@@ -11,7 +11,7 @@ amountLeft 'Остаток' (CreditNote c) = totalAmount(c) (-) invoiced(c);
 EXTEND CLASS CreditNote : InvoiceOutstandingCredit;
 amount(CreditNote c) += totalAmount(c);
 amountLeft(CreditNote c) += amountLeft(c);
-partner (CreditNote c) += partner[Invoice](c);
+partner (CreditNote c) += customer[Invoice](c);
 date(CreditNote c) += date[Invoice](c);
 number(CreditNote c) += number[Invoice](c);
 
@@ -26,7 +26,7 @@ type (Invoice i) += WHEN isCreditNote(i) THEN InvoiceType.creditNote;
 colorType (CreditNote c) += WHEN type[Invoice](c) = InvoiceType.creditNote THEN RGB(250,67,71);
 
 canBeMatched(CreditNote c, Invoice i) = 
-            partner[InvoiceOutstandingCredit](c) = partner(i) 
+            partner[InvoiceOutstandingCredit](c) = customer(i) 
             AND amountLeft(c) > 0 
             AND NOT c = i 
             AND status(i) = InvoiceStatus.ready 
@@ -40,8 +40,8 @@ creditNote 'Создать акт расхождения' (Invoice i) {
     NEWSESSION { 
         NEW ni = CreditNote {
             date[Invoice](ni) <- currentDateTime();
-            partner[Invoice](ni) <- partner(i);
-            partnerAccount(ni) <- partnerAccount(i);
+            customer[Invoice](ni) <- customer(i);
+            customerAccount(ni) <- customerAccount(i);
             company(ni) <- company(i);
             companyAccount(ni) <- companyAccount(i);
             notes(ni) <- notes(i);
@@ -82,17 +82,15 @@ DESIGN invoice {
             MOVE PROPERTY(creditNote(i));
         }               
     }
-    linesFooter {
-        NEW outstandingCreditPane BEFORE total{
-            type = TABBED;
-            fill = 1;
-            MOVE outstandingCredit;
-            NEW creditInvoices {
-                caption = 'Документы';
-                showIf = i IS CreditNote;
-                MOVE BOX(in);
-                MOVE BOX(inv);
-            }
+    details {
+        type = TABBED;
+        fill = 1;
+        MOVE outstandingCredit;
+        NEW creditInvoices {
+            caption = 'Документы';
+            showIf = i IS CreditNote;
+            MOVE BOX(in);
+            MOVE BOX(inv);
         }
     }
 }
