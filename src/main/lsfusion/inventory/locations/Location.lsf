@@ -14,43 +14,43 @@ idParent 'Код родителя' (Location l) = id(parent(l));
 nameParent 'Родительское место хранения' (Location l) = name(parent(l));
 owner 'Владелец' = DATA Partner (Location); 
 ownerName 'Владелец' (Location l)= name(owner(l)); 
-@addressesCalc(location,l);
+
+address 'Адрес' = DATA ISTRING[50] (Location);
+city 'Город' = DATA ISTRING[30] (Location);
+state 'Область' = DATA ISTRING[30] (Location);
+zip'Почтовый индекс' = DATA ISTRING[10] (Location);
 
 level 'Уровень' (Location child, Location parent) =
    RECURSION 1l IF child IS Location AND parent == child
         STEP 2l IF parent == parent($parent) MATERIALIZED;
 isChild (Location child, Location parent) = TRUE IF level(child, parent);
 
-hierarchyAddress (Location l) =  GROUP LAST address(Location parent) ORDER DESC level(l,parent);
-hierarchyCity (Location l) =  GROUP LAST city(Location parent) ORDER DESC level(l,parent);
-hierarchyState  (Location l) =  GROUP LAST state(Location parent) ORDER DESC level(l,parent);
-hierarchyZip  (Location l) =  GROUP LAST zip(Location parent) ORDER DESC level(l,parent);
+hierarchyAddress (Location l) = GROUP LAST address(Location parent) ORDER DESC level(l,parent);
+hierarchyCity (Location l) = GROUP LAST city(Location parent) ORDER DESC level(l,parent);
+hierarchyState  (Location l) = GROUP LAST state(Location parent) ORDER DESC level(l,parent);
+hierarchyZip  (Location l) = GROUP LAST zip(Location parent) ORDER DESC level(l,parent);
+
+csvAddress (Location l) = CONCAT ', ', hierarchyAddress(l), hierarchyCity(l), hierarchyState(l), hierarchyZip(l);
+linesAddress (Location l) = CONCAT '\n', hierarchyAddress(l), hierarchyCity(l), hierarchyState(l), hierarchyZip(l);
   
-concatAddress (Location l, STRING sep) = (OVERRIDE hierarchyAddress(l)+sep,'') + 
-            (OVERRIDE hierarchyCity(l)+sep,'') + (OVERRIDE hierarchyState(l)+sep,'') + (OVERRIDE hierarchyZip(l),'');
-  
-fullAddress 'Адрес' (Location l) = concatAddress(l,', ');    
-        
 canonicalName 'Каноническое имя' (Location l) =
    GROUP CONCAT name(Location parent), ' / ' ORDER DESC level(l, parent) CHARWIDTH 50 IN id;
    
 FORM location 'Место хранения'
     OBJECTS l = Location PANEL
-    PROPERTIES(l) name, id, nameParent, ownerName 
+    PROPERTIES(l) name, id, nameParent, ownerName,
+                  address, city, state, zip
      
     EDIT Location OBJECT l  
 ;
 
 FORM locations 'Места хранения'
     OBJECTS l = Location
-    PROPERTIES(l) READONLY name, id, nameParent, canonicalName, ownerName
+    PROPERTIES(l) READONLY name, id, nameParent, canonicalName, ownerName, csvAddress
     PROPERTIES(l) NEWSESSION NEW, EDIT, DELETE
     
     LIST Location OBJECT l
 ;
-
-@addressesForm(location,l);
-
 
 newLocation 'Место хранения' (Location ll) {
     NEWSESSION {

@@ -6,12 +6,11 @@ NAMESPACE Invoicing;
 
 CLASS BankAccount 'Банковский счет' : Account;
 
-bank 'Банк' = DATA Bank (BankAccount);
+bank 'Банк' = DATA Bank (BankAccount) NONULL;
 nameBank 'Банк' (BankAccount b) = name(bank(b));
-routingNumber 'Код банка' (BankAccount b) = routingNumber(bank(b));
+code 'Код банка' (BankAccount b) = code(bank(b));
 
-nameAccount 'Наименование' (BankAccount b) = 
-    ISTRING[35](CONCAT ' ', substr(number(b),length(number(b)) - 4, 4), nameBank(b));
+name (BankAccount a) += (CONCAT ' ', 'Б/с', number(a), 'в ' + nameBank(a)) IF a IS BankAccount; 
 
 EXTEND CLASS AccountType {
      bank 'Банковский счет'
@@ -20,8 +19,18 @@ EXTEND CLASS AccountType {
 type(Account a) += WHEN a IS BankAccount THEN AccountType.bank;
 
 EXTEND FORM account
-    PROPERTIES(a) nameBank, routingNumber READONLY, nameAccount
+    PROPERTIES(a) nameBank, code READONLY
 ;
+
+DESIGN account {
+    OBJECTS {
+        NEW bank AFTER params {
+            type = CONTAINERH;
+            MOVE PROPERTY(nameBank(a)) { notNull = TRUE; }
+            MOVE PROPERTY(code(a));
+        }
+    }
+}
 
 newBankAccount 'Банковский счет' () {
     NEWSESSION {

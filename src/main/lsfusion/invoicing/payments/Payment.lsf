@@ -10,8 +10,7 @@ date 'Дата' = DATA DATETIME (Payment) NONULL;
 date(Payment p) <- currentDateTime() WHEN SET(p IS Payment);
 
 toAccount 'Счет получателя' = DATA Account (Payment);
-toAccountName 'Счет получателя' (Payment p) = IF toAccount(p) IS BankAccount 
-    THEN nameAccount(toAccount(p)) ELSE number(toAccount(p));
+toAccountName 'Счет получателя' (Payment p) = name(toAccount(p));
 
 toPartner 'Получатель' = DATA Partner (Payment) NONULL;
 nameToPartner 'Получатель' (Payment p) = name(toPartner(p));
@@ -21,8 +20,7 @@ WHEN LOCAL CHANGED(toPartner(Payment p)) DO {
 }
 
 fromAccount 'Счет плательщика' = DATA Account (Payment);
-fromAccountName 'Счет плательщика' (Payment p) = IF fromAccount(p) IS BankAccount 
-    THEN nameAccount(fromAccount(p)) ELSE number(fromAccount(p));
+fromAccountName 'Счет плательщика' (Payment p) = name(fromAccount(p));
 
 fromPartner 'Плательщик' = DATA Partner (Payment) NONULL;
 nameFromPartner 'Плательщик' (Payment p) = name(fromPartner(p));

@@ -43,8 +43,7 @@ dueDate 'Оплатить до' = DATA DATETIME (Bill);
 
 // partner account
 vendorAccount 'Счет поставщика' = DATA Account (Bill);
-nameVendorAccount 'Счет поставщика' (Bill b) = IF vendorAccount(b) IS BankAccount
-    THEN nameAccount(vendorAccount(b)) ELSE number(vendorAccount(b));
+nameVendorAccount 'Счет поставщика' (Bill b) = name(vendorAccount(b));
 WHEN LOCAL CHANGED (vendor(Bill b)) DO vendorAccount(b) <- defaultAccount(vendor(b));
 
 CONSTRAINT vendorAccount(Bill b) AND NOT vendor(b) = holder(vendorAccount(b))
@@ -53,8 +52,7 @@ CONSTRAINT vendorAccount(Bill b) AND NOT vendor(b) = holder(vendorAccount(b))
 
 // company account
 companyAccount 'Счет компании' = DATA Account (Bill);
-nameCompanyAccount 'Счет компании' (Bill b) = IF companyAccount(b) IS BankAccount 
-    THEN nameAccount(companyAccount(b)) ELSE number(companyAccount(b));
+nameCompanyAccount 'Счет компании' (Bill b) = name(companyAccount(b));
 WHEN LOCAL CHANGED(company(Bill b)) DO companyAccount(b) <- defaultAccount(company(b));
 
 CONSTRAINT companyAccount(Bill b) AND NOT company(b) = holder(companyAccount(b))

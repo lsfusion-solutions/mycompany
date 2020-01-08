@@ -2,7 +2,7 @@ MODULE Account;
 
 REQUIRE InvoicingSettings, Partner;
 
-NAMESPACE Invoicing  ;
+NAMESPACE Invoicing;
 
 CLASS ABSTRACT Account 'Счет';
 
@@ -17,7 +17,9 @@ calcDefaultAccount (Partner p) = GROUP LAST Account a ORDER DESC a WHERE holder(
 defaultAccount (Partner p) = OVERRIDE dataDefaultAccount(p), calcDefaultAccount(p);
 default 'По умолчанию' (Account a) = defaultAccount(holder(a)) = a CHARWIDTH 10;
 
-notes 'Примечания' = DATA ISTRING[50] (Account);
+notes 'Примечания' = DATA ISTRING (Account);
+
+name 'Наименование' = ABSTRACT ISTRING[100] (Account) CHARWIDTH 20;
 
 CLASS AccountType 'Тип счета';
 
@@ -35,14 +37,32 @@ changeDefault (Account a) {
 
 FORM account 'Счет'
     OBJECTS a = Account PANEL 
-    PROPERTIES(a) number, nameAccountHolder, notes, nameType, default ON CHANGE changeDefault(a)
+    PROPERTIES(a) nameType, number, default ON CHANGE changeDefault(a), 
+                  nameAccountHolder, notes
     
     EDIT Account OBJECT a
 ;
 
+DESIGN account {
+    OBJECTS {
+        NEW params {
+            type = CONTAINERH;
+            MOVE PROPERTY(nameType(a));
+            MOVE PROPERTY(number(a));
+            MOVE PROPERTY(default(a));
+        }
+        NEW holder {
+            MOVE PROPERTY(nameAccountHolder(a)) { notNull = TRUE; }
+        }
+        NEW otherInformation {
+            MOVE PROPERTY(notes(a));
+        }
+    }
+}
+
 FORM accounts 'Счета'
     OBJECTS a = Account
-    PROPERTIES(a) READONLY  number, nameAccountHolder, notes, nameType, default
+    PROPERTIES(a) READONLY nameType, number, nameAccountHolder, notes, default
     PROPERTIES(a) NEWSESSION EDIT, DELETE
     
     LIST Account OBJECT a
@@ -68,7 +88,7 @@ newAccount 'Счет' (Partner p) {
 
 EXTEND FORM partner
     OBJECTS a = Account
-    PROPERTIES(a) READONLY number, nameType, notes, default
+    PROPERTIES(a) READONLY nameType, number, notes, default
     PROPERTIES(a) NESTEDSESSION EDIT, DELETE 
 //    PROPERTIES newAccount(p) DRAW a TOOLBAR
         

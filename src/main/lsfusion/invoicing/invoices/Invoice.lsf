@@ -42,9 +42,8 @@ WHEN LOCAL SET(Invoice b IS Invoice) AND NOT CHANGED(company(b)) DO company(b) <
 dueDate 'Оплатить до' = DATA DATETIME (Invoice);
 
 // partner account
-customerAccount 'Счет поставщика' = DATA Account (Invoice);
-nameCustomerAccount 'Счет поставщика' (Invoice b) = IF customerAccount(b) IS BankAccount
-    THEN nameAccount(customerAccount(b)) ELSE number(customerAccount(b));
+customerAccount 'Счет покупателя' = DATA Account (Invoice);
+nameCustomerAccount 'Счет покупателя' (Invoice b) = name(customerAccount(b));
 WHEN LOCAL CHANGED (customer(Invoice b)) DO customerAccount(b) <- defaultAccount(customer(b));
 
 CONSTRAINT customerAccount(Invoice b) AND NOT customer(b) = holder(customerAccount(b))
@@ -53,8 +52,7 @@ CONSTRAINT customerAccount(Invoice b) AND NOT customer(b) = holder(customerAccou
 
 // company account
 companyAccount 'Счет компании' = DATA Account (Invoice);
-nameCompanyAccount 'Счет компании' (Invoice b) = IF companyAccount(b) IS BankAccount 
-    THEN nameAccount(companyAccount(b)) ELSE number(companyAccount(b));
+nameCompanyAccount 'Счет компании' (Invoice b) = name(companyAccount(b));
 WHEN LOCAL CHANGED(company(Invoice b)) DO companyAccount(b) <- defaultAccount(company(b));
 
 CONSTRAINT companyAccount(Invoice b) AND NOT company(b) = holder(companyAccount(b))

@@ -6,40 +6,25 @@ NAMESPACE MasterData;
 
 CLASS ABSTRACT Partner 'Контрагент';
 
-META addressesCalc (subject,let)
-    address 'Адрес' = DATA ISTRING[50] (###subject);
-    city 'Город' = DATA ISTRING[30] (###subject);
-    state 'Область' = DATA ISTRING[30] (###subject);
-    zip'Почтовый индекс' = DATA ISTRING[10] (###subject);
-END
-
-META addressesForm (subject,let)
-    EXTEND FORM ##subject 
-       PROPERTIES(##let) address, city, state, zip
-    ;   
-    EXTEND FORM ##subject##s 
-       PROPERTIES(##let) fullAddress
-    ;   
-END
-
 @defineID(partner, 'Контрагенты', 'КН');
 
-name 'Наименование' = ABSTRACT ISTRING[92] (Partner) IN id NONULL;
+name 'Наименование' = ABSTRACT ISTRING[92] (Partner) IN id CHARWIDTH 15 NONULL;
+
+address 'Адрес' = DATA ISTRING[50] (Partner);
+city 'Город' = DATA ISTRING[30] (Partner);
+state 'Область' = DATA ISTRING[30] (Partner);
+zip 'Почтовый индекс' = DATA ISTRING[10] (Partner);
+
+csvAddress (Partner p) = CONCAT ', ', address(p), city(p), state(p), zip(p);
+linesAddress (Partner p) = CONCAT '\n ', address(p), city(p), state(p), zip(p);
 
 phone 'Телефон' = DATA ISTRING[30] (Partner);
 email 'Электронная почта' = DATA ISTRING[30] (Partner);
 
-@addressesCalc(partner,p);
+archived 'Неактивный' = DATA BOOLEAN (Partner);
+active 'Активный' (Partner p) = NOT archived(p);
 
-concatAddress (Partner p, STRING sep) = (OVERRIDE address(p)+sep,'') + (OVERRIDE city(p)+sep,'') + (OVERRIDE state(p)+sep,'') + (OVERRIDE zip(p),'');
-
-fullAddress 'Адрес' (Partner p) = concatAddress(p,', '); 
-
-archived 'Неактивный' = DATA BOOLEAN (Partner) CHARWIDTH 10;
-active 'Активный' (Partner p) = NOT archived(p) CHARWIDTH 10;
-
-showName = ABSTRACT CASE BOOLEAN (Partner);
-
+// type
 CLASS PartnerType 'Тип партнера';
 
 name 'Имя' (PartnerType o) = staticCaption(o) IF o IS PartnerType CHARWIDTH 15;
@@ -49,14 +34,52 @@ nameType 'Тип партнера' (Partner p) = name(type(p));
 
 FORM partner 'Контрагент'
     OBJECTS p = Partner PANEL 
-    PROPERTIES(p) name SHOWIF showName(p), id, nameType, phone, email, archived
+    PROPERTIES(p) id, nameType, 
+                  address, city, state, zip,
+                  phone, email,
+                  archived
     
     EDIT Partner OBJECT p
 ;
 
+DESIGN partner {
+    OBJECTS {
+        NEW header {
+            NEW headerTop {
+                type = CONTAINERH;
+                alignment = STRETCH;
+                MOVE PROPERTY(id(p)); 
+                MOVE PROPERTY(nameType(p));
+            }
+            NEW headerDetails { alignment = STRETCH; }
+            NEW headerPane {
+                type = CONTAINERH;
+                alignment = STRETCH;
+                NEW headerColumn1 {
+                    MOVE PROPERTY(address(p));
+                    MOVE PROPERTY(city(p));
+                    MOVE PROPERTY(state(p));
+                    MOVE PROPERTY(zip(p));
+                }
+                NEW headerColumn2 {
+                    MOVE PROPERTY(phone(p));
+                    MOVE PROPERTY(email(p));
+                }
+                NEW headerColumn3 {
+                    MOVE PROPERTY(archived(p));                   
+                }
+            }    
+        }
+        NEW tabs {
+            type = TABBED;
+            fill = 1;
+        }
+    }
+}
+
 FORM partners 'Контрагенты'
     OBJECTS p = Partner
-    PROPERTIES(p) READONLY name, id, nameType, phone, email 
+    PROPERTIES(p) READONLY name, id, nameType, csvAddress, phone, email 
     PROPERTIES(p) NEWSESSION EDIT, DELETE 
     FILTERGROUP active
         FILTER 'Активный' active(p) 'F10' DEFAULT
@@ -86,47 +109,8 @@ FORM dialogPartners 'Выбор контрагента'
     LIST Partner OBJECT p
 ;
 
-@addressesForm(partner,p);
-
 NAVIGATOR {
     masterData {
         NEW partners;
-    }
-}
-
-DESIGN partner {
-    OBJECTS {
-        NEW header {
-            type = CONTAINERV;
-            MOVE PROPERTY(id(p)); 
-            MOVE PROPERTY(nameType(p));
-            MOVE PROPERTY(name(p));         
-            NEW pane {
-                marginTop=10;
-                marginBottom=10;
-                type = CONTAINERH;
-                alignment = STRETCH;
-                NEW box1 {
-                    MOVE PROPERTY(address(p));
-                    MOVE PROPERTY(city(p));
-                    MOVE PROPERTY(state(p));
-                    MOVE PROPERTY(zip(p));
-                }
-                NEW box2 {
-                    marginLeft=20;
-                    MOVE PROPERTY(phone(p));
-                    MOVE PROPERTY(email(p));
-                }
-                NEW box3 {
-                    marginLeft=20;
-                    type = CONTAINERV;
-                    MOVE PROPERTY(archived(p));                   
-                }
-            }    
-        }
-        NEW tabs {
-            type = TABBED;
-            fill = 1;
-        }
     }
 }
