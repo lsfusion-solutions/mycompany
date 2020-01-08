@@ -28,9 +28,7 @@ countShipments 'Кол-во отгрузок' (Invoice b) = GROUP SUM 1 IF invoi
 
 invoiceLine = DATA InvoiceLine (ShipmentLine);
 
-shipmentCreated2 = DATA LOCAL Shipment ();
-
-//shipment
+invoiceShipmentCreated = DATA LOCAL Shipment ();
 newShipment (Invoice b) {
     NEW r = Shipment { 
         invoice(r) <- b; 
@@ -50,17 +48,17 @@ newShipment (Invoice b) {
             invoiceLine(rl) <- l;
         }
         
-        shipmentCreated2() <- r;
+        invoiceShipmentCreated() <- r;
     }
 }
 
-createShipment'Создать отгрузку' (Invoice b) {
+createShipment 'Создать отгрузку' (Invoice b) {
     APPLY;
     IF canceled() THEN RETURN;
     
     NEWSESSION {
         newShipment(b);
-        SHOW shipment OBJECTS s = shipmentCreated2();
+        SHOW shipment OBJECTS s = invoiceShipmentCreated();
     }
 }
 

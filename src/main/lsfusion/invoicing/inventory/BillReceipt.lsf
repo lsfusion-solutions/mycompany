@@ -28,7 +28,7 @@ countReceipts 'Кол-во поступлений' (Bill b) = GROUP SUM 1 IF bil
 
 billLine = DATA BillLine (ReceiptLine);
 
-receiptCreated = DATA LOCAL Receipt();
+billReceiptCreated = DATA LOCAL Receipt ();
 newReceipt (Bill b) {
     NEW r = Receipt { 
         bill(r) <- b; 
@@ -48,7 +48,7 @@ newReceipt (Bill b) {
             billLine(rl) <- l;
         }
         
-        receiptCreated() <- r;
+        billReceiptCreated() <- r;
     }
 }
 
@@ -58,7 +58,7 @@ createReceipt 'Создать поступление' (Bill b) {
     
     NEWSESSION {
         newReceipt(b);
-        SHOW receipt OBJECTS r = receiptCreated();
+        SHOW receipt OBJECTS r = billReceiptCreated();
     }
 } 
 

@@ -14,7 +14,7 @@ countReceipts 'Кол-во поступлений' (CreditNote r) = GROUP SUM 1 
 
 creditNoteLine = DATA InvoiceLine (ReceiptLine);
 
-receiptCreated2 = DATA Receipt ();
+creditNoteReceiptCreated = DATA Receipt ();
 newReceipt (CreditNote r) {
     NEW s = Receipt {
         creditNote(s) <- r;
@@ -34,7 +34,7 @@ newReceipt (CreditNote r) {
             creditNoteLine(sl) <- l;
         }
         
-        receiptCreated2() <- s;
+        creditNoteReceiptCreated() <- s;
     } 
 }
 
@@ -44,7 +44,7 @@ createReceipt 'Создать поступление' (CreditNote r) {
     
     NEWSESSION {
         newReceipt(r);
-        SHOW receipt OBJECTS r = receiptCreated2();
+        SHOW receipt OBJECTS r = creditNoteReceiptCreated();
     }
 }
 

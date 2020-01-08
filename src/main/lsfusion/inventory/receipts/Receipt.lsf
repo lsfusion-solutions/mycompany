@@ -28,13 +28,13 @@ location 'Место хранения' = DATA Location (Receipt) NONULL INDEXED;
 nameLocation 'Место хранения' (Receipt r) = name(location(r));
 WHEN LOCAL CHANGED(type(Receipt r)) AND defaultLocation(type(r)) DO location(r) <- defaultLocation(type(r));
 
-partner 'Партнер' = DATA Partner (Receipt) INDEXED;
-namePartner 'Партнер' (Receipt r) = name(partner(r));
+partner = DATA Partner (Receipt) INDEXED;
+namePartner 'Контрагент' (Receipt r) = name(partner(r));
 notes 'Примечания' = DATA ISTRING[50] (Receipt);
 
 CONSTRAINT partner(Receipt r) AND NOT isVendor(partner(r)) 
                 CHECKED BY partner[Receipt]
-                MESSAGE 'Партнер должен быть вендором';
+                MESSAGE 'Контрагент должен быть вендором';
                 
 sourceDocument 'Исходный документ' = DATA STRING[28] (Receipt);
 
@@ -72,7 +72,7 @@ CONSTRAINT product(ReceiptLine l) AND NOT canBePurchased(product(l))
             MESSAGE 'Номенклатура не предназначена для закупки';
 
 partner (ReceiptLine l) = partner(receipt(l));            
-namePartner 'Партнер' (ReceiptLine l) = namePartner(receipt(l));
+namePartner 'Контрагент' (ReceiptLine l) = namePartner(receipt(l));
 nameLocation 'Место хранения' (ReceiptLine l) = nameLocation(receipt(l));
            
 FORM receipt 'Поступление'

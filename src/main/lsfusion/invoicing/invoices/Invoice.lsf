@@ -28,7 +28,7 @@ WHEN LOCAL SET (Invoice b IS Invoice) DO date(b) <- currentDateTime();
 
 // customer
 customer 'Покупатель' = DATA Partner (Invoice) NONULL;
-nameCustomer 'Контрагент' (Invoice b) = name(customer(b));
+nameCustomer 'Покупатель' (Invoice b) = name(customer(b));
 CONSTRAINT customer(Invoice b) AND NOT isCustomer(customer(b)) 
                 CHECKED BY customer
                 MESSAGE 'Контрагент должен быть покупателем';
@@ -98,8 +98,7 @@ readonly = ABSTRACT CASE BOOLEAN (InvoiceLine);
 
 // Line properties
 date 'Дата накладной' (InvoiceLine l) = date(invoice(l));
-partner (InvoiceLine l) = customer(invoice(l));
-nameCustomer 'Партнер' (InvoiceLine l) = nameCustomer(invoice(l));
+nameCustomer 'Покупатель' (InvoiceLine l) = nameCustomer(invoice(l));
 nameCompany 'Компания' (InvoiceLine l) = nameCompany(invoice(l));
 
 FORM invoice 'Расходная накладная'

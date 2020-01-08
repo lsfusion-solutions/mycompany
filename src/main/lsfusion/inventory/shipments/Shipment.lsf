@@ -30,13 +30,13 @@ WHEN LOCAL CHANGED(type(Shipment s)) DO {
 
 CONSTRAINT isTransfer(type(Shipment s)) AND NOT toLocation(s) MESSAGE 'Нужно указать место хранения (Куда) при трансфере';
 
-partner 'Партнер' = DATA Partner (Shipment) INDEXED;
-namePartner 'Партнер' (Shipment s) = name(partner(s));
+partner = DATA Partner (Shipment) INDEXED;
+namePartner 'Контрагент' (Shipment s) = name(partner(s));
 notes 'Примечания' = DATA ISTRING[50] (Shipment);
 
 CONSTRAINT partner(Shipment s) AND NOT isCustomer(partner(s)) 
                 CHECKED BY partner[Shipment]
-                MESSAGE 'Партнер должен быть вендором';
+                MESSAGE 'Контрагент должен быть поставщиком';
 
 // Номер
 @defineSeriesNumberType(shipment);
@@ -82,7 +82,7 @@ CONSTRAINT product(ShipmentLine l) AND NOT canBeSold(product(l))
             MESSAGE 'Наменклатура не предназначена для продажи';
             
 partner (ShipmentLine l) = partner(shipment(l));            
-namePartner 'Партнер' (ShipmentLine l) = namePartner(shipment(l));
+namePartner 'Контрагент' (ShipmentLine l) = namePartner(shipment(l));
 nameLocation 'Место хранения' (ShipmentLine l) = nameLocation(shipment(l));
 
 FORM shipment 'Отгрузка'

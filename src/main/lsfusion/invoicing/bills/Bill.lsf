@@ -28,7 +28,7 @@ WHEN LOCAL SET (Bill b IS Bill) DO date(b) <- currentDateTime();
 
 // vendor
 vendor 'Поставщик' = DATA Partner (Bill) NONULL;
-nameVendor 'Контрагент' (Bill b) = name(vendor(b));
+nameVendor 'Поставщик' (Bill b) = name(vendor(b));
 CONSTRAINT vendor(Bill b) AND NOT isVendor(vendor(b)) 
                 CHECKED BY vendor
                 MESSAGE 'Контрагент должен быть поставщиком';
@@ -98,8 +98,7 @@ readonly = ABSTRACT CASE BOOLEAN (BillLine);
 
 // Line properties
 date 'Дата накладной' (BillLine l) = date(bill(l));
-partner (BillLine l) = vendor(bill(l));
-namePartner 'Партнер' (BillLine l) = nameVendor(bill(l));
+nameVendor 'Поставщик' (BillLine l) = nameVendor(bill(l));
 nameCompany 'Компания' (BillLine l) = nameCompany(bill(l));
 
 FORM bill 'Приходная накладная'

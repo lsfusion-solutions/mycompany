@@ -14,7 +14,7 @@ countShipments 'Кол-во отгрузок' (Refund r) = GROUP SUM 1 IF refund
 
 refundLine = DATA BillLine (ShipmentLine);
 
-shipmentCreated = DATA Shipment ();
+refundShipmentCreated = DATA LOCAL Shipment ();
 newShipment (Refund r) {
     NEW s = Shipment {
         refund(s) <- r;
@@ -34,7 +34,7 @@ newShipment (Refund r) {
             refundLine(sl) <- l;
         }
         
-        shipmentCreated() <- s;
+        refundShipmentCreated() <- s;
     } 
 }
 
@@ -44,7 +44,7 @@ createShipment 'Создать отгрузку' (Refund r) {
     
     NEWSESSION {
         newShipment(r);
-        SHOW shipment OBJECTS s = shipmentCreated();
+        SHOW shipment OBJECTS s = refundShipmentCreated();
     }
 } 
 
