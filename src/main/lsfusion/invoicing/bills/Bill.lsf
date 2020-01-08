@@ -1,7 +1,7 @@
 MODULE Bill;
 
 REQUIRE InvoicingSettings, TaxItem, BankAccount, Time, MetaTax, ItemPurchase, PartnerPurchase, Company,
-            BarCode, MetaNumerator, Doc;
+        BarCode, MetaNumerator, Doc;
 
 NAMESPACE Invoicing;
 
@@ -24,6 +24,7 @@ date 'Дата' = DATA DATETIME (Bill) NONULL IN id;
 WHEN LOCAL SET (Bill b IS Bill) DO date(b) <- currentDateTime();
 
 @defineSeriesNumber(bill, 'Приходная накладная', 'ПН');
+
 
 // vendor
 vendor 'Поставщик' = DATA Partner (Bill) NONULL;
@@ -99,7 +100,7 @@ readonly = ABSTRACT CASE BOOLEAN (BillLine);
 
 // Line properties
 date 'Дата накладной' (BillLine l) = date(bill(l));
-partner 'Партнер' (BillLine l) = vendor(bill(l));
+partner (BillLine l) = vendor(bill(l));
 namePartner 'Партнер' (BillLine l) = nameVendor(bill(l));
 nameCompany 'Компания' (BillLine l) = nameCompany(bill(l));
 
@@ -212,10 +213,8 @@ FORM bills 'Приходные накладные'
     LIST Bill OBJECT b;
 
 NAVIGATOR {
-    invoicing {
-        operations {
-            NEW bills FIRST;
-        }
+    operations {
+        NEW bills FIRST;
     }
 }
 

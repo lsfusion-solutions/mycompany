@@ -1,6 +1,7 @@
 MODULE Invoice;
 
-REQUIRE InvoicingSettings, TaxItem, BankAccount, Time, MetaTax, ItemSale, PartnerSale, Company, BarCode, MetaNumerator, Doc;
+REQUIRE InvoicingSettings, TaxItem, BankAccount, Time, MetaTax, ItemSale, PartnerSale, Company, 
+        BarCode, MetaNumerator, Doc;
 
 NAMESPACE Invoicing;
 
@@ -23,6 +24,7 @@ date 'Дата' = DATA DATETIME (Invoice) NONULL IN id;
 WHEN LOCAL SET (Invoice b IS Invoice) DO date(b) <- currentDateTime();
 
 @defineSeriesNumber(invoice, 'Расходная накладная', 'РН');
+
 
 // customer
 customer 'Покупатель' = DATA Partner (Invoice) NONULL;
@@ -59,7 +61,7 @@ CONSTRAINT companyAccount(Invoice b) AND NOT company(b) = holder(companyAccount(
     CHECKED BY companyAccount
     MESSAGE 'Счет должен принадлежать выбранной компании';
 
-customerReference 'Код поставщика' = DATA STRING[30] (Invoice);
+customerReference 'Код покупателя' = DATA STRING[30] (Invoice);
 sourceDocument 'Исходный документ' = DATA STRING[30] (Invoice);
 notes 'Примечания' = DATA ISTRING[50] (Invoice);
 
@@ -87,7 +89,7 @@ description 'Описание' = DATA STRING (InvoiceLine);
 quantity 'Кол-во' = DATA NUMERIC[16,3] (InvoiceLine) NONULL;
 unitPrice 'Цена за штуку' = DATA NUMERIC[10,2] (InvoiceLine) NONULL;
 
-WHEN LOCAL SETCHANGED(item(InvoiceLine l)) AND NOT CHANGED(unitPrice(l)) DO unitPrice(l) <- cost(item(l));
+WHEN LOCAL SETCHANGED(item(InvoiceLine l)) AND NOT CHANGED(unitPrice(l)) DO unitPrice(l) <- salesPrice(item(l));
 
 // taxes
 @defineTaxCalc(invoice, i, sales);
@@ -98,7 +100,7 @@ readonly = ABSTRACT CASE BOOLEAN (InvoiceLine);
 
 // Line properties
 date 'Дата накладной' (InvoiceLine l) = date(invoice(l));
-partner 'Партнер' (InvoiceLine l) = customer(invoice(l));
+partner (InvoiceLine l) = customer(invoice(l));
 nameCustomer 'Партнер' (InvoiceLine l) = nameCustomer(invoice(l));
 nameCompany 'Компания' (InvoiceLine l) = nameCompany(invoice(l));
 
@@ -194,7 +196,7 @@ addInvoice 'Накладная' () {
             SHOW invoice OBJECTS i = b;  
         }
     }
-}IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+} IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
 
 FORM invoices 'Расходные накладные'
     OBJECTS i = Invoice
@@ -206,10 +208,8 @@ FORM invoices 'Расходные накладные'
     LIST Invoice OBJECT i;
 
 NAVIGATOR {
-    invoicing {
-        operations {
-            NEW invoices FIRST;
-        }
+    operations {
+        NEW invoices FIRST;
     }
 }
 
