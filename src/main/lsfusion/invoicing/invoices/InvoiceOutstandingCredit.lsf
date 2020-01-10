@@ -17,7 +17,7 @@ CLASS InvoiceOutstandingCreditType 'Тип закрытия задолженно
 name 'Имя' (InvoiceOutstandingCreditType t) = staticCaption(t) IF t IS InvoiceOutstandingCreditType CHARWIDTH 10;
 
 type = ABSTRACT InvoiceOutstandingCreditType (InvoiceOutstandingCredit);
-nameType (InvoiceOutstandingCredit c) = name(type(c));
+nameType 'Тип' (InvoiceOutstandingCredit c) = name(type(c));
 
 // sum
 amount 'Сумма' = ABSTRACT NUMERIC[14,2] (InvoiceOutstandingCredit);
@@ -39,25 +39,27 @@ EXTEND FORM invoice
     PROPERTIES(ii) paid
 ;
 
-addPayment 'Привязать' (InvoiceOutstandingCredit p, Invoice i) {
+toPay (InvoiceOutstandingCredit p, Invoice i) = min(Invoicing.amountLeft[InvoiceOutstandingCredit](p), toPay(i));
+
+setPaid 'Привязать' (InvoiceOutstandingCredit p, Invoice i) {
     APPLY; 
     IF canceled() THEN RETURN;
     
     NEWSESSION {
-        paid(p, i) <- min(Invoicing.amountLeft[InvoiceOutstandingCredit](p), toPay(i));
+        paid(p, i) <- toPay(p, i);
         APPLY;
     }
-}
+} CHANGEMOUSE 'DBLCLK';
 
 EXTEND FORM invoice
     OBJECTS p = InvoiceOutstandingCredit
     PROPERTIES(p) READONLY date, number, nameType
-    PROPERTIES READONLY paid(p, i)
+    PROPERTIES paid(p, i)
     FILTERS paid(p, i)
     
     OBJECTS pp = InvoiceOutstandingCredit
     PROPERTIES(pp) READONLY date, number, nameType, Invoicing.amountLeft[InvoiceOutstandingCredit]
-    PROPERTIES addPayment(pp, i) DRAW pp TOOLBAR
+    PROPERTIES setPaid(pp, i) DRAW pp TOOLBAR
     FILTERS canBeMatched(pp, i)   
 ;
 
@@ -65,8 +67,8 @@ DESIGN invoice {
     details {
         NEW outstandingCredit {
             caption = 'Разнесение оплат';     
-            MOVE BOX(p);            
-            MOVE BOX(pp);            
+            MOVE BOX(p) { caption = 'Разнесенные'; }            
+            MOVE BOX(pp) { caption = 'Доступные'; }          
         }
     }
 }

@@ -81,7 +81,7 @@ EXTEND FORM invoice
     
     OBJECTS inv = Invoice
     PROPERTIES(inv) READONLY date, number, nameType, toPay
-    PROPERTIES addPayment(i, inv) DRAW inv TOOLBAR
+    PROPERTIES setPaid(i, inv) DRAW inv TOOLBAR
     FILTERS canBeMatched[CreditNote, Invoice](i, inv)
 ;
 
@@ -90,8 +90,8 @@ DESIGN invoice {
         NEW creditInvoices {
             caption = 'Накладные';
             showIf = i IS CreditNote;
-            MOVE BOX(in);
-            MOVE BOX(inv);
+            MOVE BOX(in) { caption = 'Разнесенные'; }
+            MOVE BOX(inv) { caption = 'Доступные'; }
         }
     }
 }

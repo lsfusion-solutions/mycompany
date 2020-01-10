@@ -55,20 +55,20 @@ canBeMatched(Payment p, Invoice i) += canBeMatched(p, i);
 EXTEND FORM payment
     OBJECTS i = Invoice
     PROPERTIES(i) READONLY nameStatus, date, dueDate, nameCustomer, notes, untaxedAmount, totalTax, totalAmount
-    PROPERTIES READONLY paid(p, i)                  
+    PROPERTIES paid(p, i)                  
     FILTERS paid(p, i)
     
     OBJECTS ii = Invoice
     PROPERTIES(ii) READONLY nameStatus, date, dueDate, nameCustomer, notes, untaxedAmount, totalTax, totalAmount, paid
-    PROPERTIES addPayment(p, ii) DRAW ii TOOLBAR
+    PROPERTIES setPaid(p, ii) DRAW ii TOOLBAR
     FILTERS canBeMatched(p, ii)
 ;
 
 DESIGN payment {
     details {
         invoices {
-            MOVE BOX(i);
-            MOVE BOX(ii);
+            MOVE BOX(i) { caption = 'Разнесенные'; }
+            MOVE BOX(ii) { caption = 'Доступные'; }
         }
     }
 }
@@ -85,3 +85,9 @@ EXTEND CLASS InvoiceOutstandingCreditType {
 type(Payment p) += InvoiceOutstandingCreditType.payment IF p IS Payment;
 
 amount(Payment p) += amount(p);
+
+// auto set paid
+WHEN (SETCHANGED(reference(Payment p)) OR SETCHANGED(partner(p))) AND 
+     isISubstring(reference(p), seriesNumber(Invoice i)) AND 
+     canBeMatched(p, i) DO
+    paid(p, i) <- toPay(p, i); 

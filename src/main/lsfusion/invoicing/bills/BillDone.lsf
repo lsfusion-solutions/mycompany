@@ -10,9 +10,8 @@ EXTEND CLASS BillStatus {
     done 'Оплачено'
 }
 
-WHEN SET(totalAmount(Bill b) = paid(b)) DO {
-    done(b) <- TRUE;
-}
+WHEN SET(totalAmount(Bill b) = paid(b)) DO done(b) <- TRUE;
+WHEN DROPPED(totalAmount(Bill b) = paid(b)) DO done(b) <- NULL;
 
 EXTEND FORM bill
     PROPERTIES(b) done READONLY 

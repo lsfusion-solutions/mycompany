@@ -9,17 +9,7 @@ amountLeft 'Остаток' (Payment p) = amount(p) (-) ((invoiced(p) (+) billed
 amountLeft[BillOutstandingCredit](Payment p) += amountLeft(p);
 amountLeft[InvoiceOutstandingCredit](Payment p) += amountLeft(p);
 
-CONSTRAINT amountLeft(Payment p) < 0 MESSAGE 'Остаток не может быть меньше 0';
-
-WHEN SETCHANGED(reference(Payment p)) DO {
-    FOR isISubstring(reference(p),seriesNumber(Invoice i)) AND customer(p) = customer(i) DO {
-        addPayment(p, i);
-    } ELSE {
-        FOR isISubstring(reference(p),seriesNumber(Bill b)) AND customer(p) = vendor(b) DO {
-            addBillPayment(p, b);
-        }
-    }
-}
+CONSTRAINT amountLeft(Payment p) < 0 MESSAGE 'По платежу разнесено по накладным больше, чем сумма платежа';
 
 EXTEND FORM payments
     PROPERTIES(p) amountLeft READONLY AFTER amount(p)

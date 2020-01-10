@@ -55,20 +55,20 @@ canBeMatched(Payment p, Bill b) += canBeMatched(p, b);
 EXTEND FORM payment
     OBJECTS b = Bill
     PROPERTIES(b) READONLY nameStatus, date, dueDate, nameVendor, notes, untaxedAmount, totalTax, totalAmount
-    PROPERTIES READONLY paid(p, b)                  
+    PROPERTIES paid(p, b)                  
     FILTERS paid(p, b)
     
     OBJECTS bb = Bill
     PROPERTIES(bb) READONLY nameStatus, date, dueDate, nameVendor, notes, untaxedAmount, totalTax, totalAmount, paid
-    PROPERTIES addBillPayment(p, bb) DRAW bb TOOLBAR
+    PROPERTIES setPaid(p, bb) DRAW bb TOOLBAR
     FILTERS canBeMatched(p, bb)
 ;
 
 DESIGN payment {
     details {
         bills {
-            MOVE BOX(b);
-            MOVE BOX(bb);
+            MOVE BOX(b) { caption = 'Разнесенные'; }
+            MOVE BOX(bb) { caption = 'Доступные'; }
         }
     }
 }
@@ -85,3 +85,9 @@ EXTEND CLASS BillOutstandingCreditType {
 type(Payment p) += BillOutstandingCreditType.payment IF p IS Payment;
 
 amount(Payment p) += amount(p);
+
+// auto set paid
+WHEN (SETCHANGED(reference(Payment p)) OR SETCHANGED(partner(p))) AND 
+     isISubstring(reference(p), seriesNumber(Bill b)) AND 
+     canBeMatched(p, b) DO
+    paid(p, b) <- toPay(p, b); 
