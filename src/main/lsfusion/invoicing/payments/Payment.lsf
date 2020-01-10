@@ -9,60 +9,53 @@ CLASS Payment 'Платеж';
 date 'Дата' = DATA DATETIME (Payment) NONULL;
 date(Payment p) <- currentDateTime() WHEN SET(p IS Payment);
 
-toAccount 'Счет получателя' = DATA Account (Payment);
-toAccountName 'Счет получателя' (Payment p) = name(toAccount(p));
+@defineSeriesNumber(payment, 'Платежи', 'ПЛ');
 
+// partners
 toPartner 'Получатель' = DATA Partner (Payment) NONULL;
 nameToPartner 'Получатель' (Payment p) = name(toPartner(p));
-
-WHEN LOCAL CHANGED(toPartner(Payment p)) DO {
-    toAccount(p) <- defaultAccount(toPartner(p));
-}
-
-fromAccount 'Счет плательщика' = DATA Account (Payment);
-fromAccountName 'Счет плательщика' (Payment p) = name(fromAccount(p));
 
 fromPartner 'Плательщик' = DATA Partner (Payment) NONULL;
 nameFromPartner 'Плательщик' (Payment p) = name(fromPartner(p));
 
-WHEN LOCAL CHANGED(fromPartner(Payment p)) DO {
-    fromAccount(p) <- defaultAccount(fromPartner(p));
-}
-
-partner (Payment p) = IF toPartner(p) IS Company THEN fromPartner(p) ELSE toPartner(p);
-
-amount 'Сумма' = DATA NUMERIC[14,2] (Payment) NONULL;
-
-inAmount 'Доход' (Account a) = GROUP SUM amount(Payment p) IF toAccount(p) = a;
-outAmount 'Расход' (Account a) = GROUP SUM amount(Payment p) IF fromAccount(p) = a;
-
-balance 'Баланс' (Account a) = inAmount(a) (-) outAmount(a);
-
-@defineSeriesNumber(payment, 'Платежи', 'ПЛ');
-
 isIncoming 'Входящий' (Payment p) = toPartner(p) IS Company;
 isOutgoing 'Исходящий' (Payment p) = fromPartner(p) IS Company;
 
-notes 'Примечания' = DATA ISTRING[50] (Payment);
-reference 'Ссылка' = DATA ISTRING[50] (Payment);
+partner (Payment p) = IF toPartner(p) IS Company THEN fromPartner(p) ELSE toPartner(p);
+WHEN LOCAL SETCHANGED(toPartner(Payment p)) AND NOT toPartner(p) IS Company AND NOT fromPartner(p) DO fromPartner(p) <- defaultCompany(); 
+WHEN LOCAL SETCHANGED(fromPartner(Payment p)) AND NOT fromPartner(p) IS Company AND NOT toPartner(p) DO toPartner(p) <- defaultCompany(); 
 
-CONSTRAINT toAccount(Payment p) AND fromAccount(p) AND 
-                NOT (holder(toAccount(p)) IS Company OR holder(fromAccount(p)) IS Company)
-                CHECKED BY toAccount, fromAccount
-                MESSAGE 'Один из счетов должен принадлежать компании';
-                
 CONSTRAINT toPartner(Payment p) AND fromPartner(p) AND 
                 NOT (toPartner(p) IS Company OR fromPartner(p) IS Company)
                 CHECKED BY toPartner, fromPartner
                 MESSAGE 'Один из держателей счетов должен быть компанией';
-    
-CONSTRAINT (toPartner(Payment p) AND toAccount(p)) AND NOT (holder(toAccount(p)) = toPartner(p))
+
+// accounts
+// to
+toAccount = DATA Account (Payment);
+toAccountName 'Счет получателя' (Payment p) = name(toAccount(p));
+
+WHEN LOCAL CHANGED(toPartner(Payment p)) DO toAccount(p) <- defaultAccount(toPartner(p));
+
+CONSTRAINT toAccount(Payment p) AND NOT holder(toAccount(p)) = toPartner(p)
                 CHECKED BY  toAccount
-                MESSAGE  'Счет и держатель счета не совпадают';
-                
-CONSTRAINT (fromPartner(Payment p) AND fromAccount(p)) AND NOT (holder(fromAccount(p)) = fromPartner(p))
-                CHECKED BY fromAccount
-                MESSAGE  'Счет и держатель счета не совпадают';
+                MESSAGE 'Владелец счета получатель не совпадает с получателем в платеже';
+
+// from
+fromAccount = DATA Account (Payment);
+fromAccountName 'Счет плательщика' (Payment p) = name(fromAccount(p));
+
+WHEN LOCAL CHANGED(fromPartner(Payment p)) DO fromAccount(p) <- defaultAccount(fromPartner(p));
+
+CONSTRAINT fromAccount(Payment p) AND NOT holder(fromAccount(p)) = fromPartner(p)
+           CHECKED BY fromAccount
+           MESSAGE 'Владелец счета плательщика не совпадает с плательщиком в платеже';
+
+// amount
+amount 'Сумма' = DATA NUMERIC[14,2] (Payment) NONULL;
+
+notes 'Примечания' = DATA ISTRING[50] (Payment);
+reference 'Ссылка' = DATA ISTRING[50] (Payment);
 
 FORM payment 'Платеж'
     OBJECTS p = Payment PANEL 
@@ -129,16 +122,12 @@ DESIGN payment {
         NEW details {
             type = TABBED;
             fill = 1;
-            NEW invoices {
-                type = SPLITV;
-                fill = 1;
-                caption = 'Расходная накладная';
-            }
-            NEW bills {
-                type = SPLITV;
-                fill = 1;
-                caption = 'Приходная накладная';
-            }
         }
     }
 }
+
+// balance
+inAmount 'Доход' (Account a) = GROUP SUM amount(Payment p) IF toAccount(p) = a;
+outAmount 'Расход' (Account a) = GROUP SUM amount(Payment p) IF fromAccount(p) = a;
+
+balance 'Баланс' (Account a) = inAmount(a) (-) outAmount(a);

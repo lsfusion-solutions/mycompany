@@ -54,19 +54,21 @@ canBeMatched(Payment p, Invoice i) += canBeMatched(p, i);
 
 EXTEND FORM payment
     OBJECTS i = Invoice
-    PROPERTIES(i) READONLY nameStatus, date, dueDate, nameCustomer, notes, untaxedAmount, totalTax, totalAmount
+    PROPERTIES(i) READONLY nameType, date, dueDate, nameCustomer, notes, untaxedAmount, totalTax, totalAmount, nameStatus
     PROPERTIES paid(p, i)                  
     FILTERS paid(p, i)
     
     OBJECTS ii = Invoice
-    PROPERTIES(ii) READONLY nameStatus, date, dueDate, nameCustomer, notes, untaxedAmount, totalTax, totalAmount, paid
+    PROPERTIES(ii) READONLY nameType, date, dueDate, nameCustomer, notes, untaxedAmount, totalTax, totalAmount, nameStatus, paid
     PROPERTIES setPaid(p, ii) DRAW ii TOOLBAR
     FILTERS canBeMatched(p, ii)
 ;
 
 DESIGN payment {
     details {
-        invoices {
+        NEW invoices {
+            type = SPLITV;
+            caption = 'Расходная накладная';
             MOVE BOX(i) { caption = 'Разнесенные'; }
             MOVE BOX(ii) { caption = 'Доступные'; }
         }

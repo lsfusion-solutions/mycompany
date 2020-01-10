@@ -54,19 +54,21 @@ canBeMatched(Payment p, Bill b) += canBeMatched(p, b);
 
 EXTEND FORM payment
     OBJECTS b = Bill
-    PROPERTIES(b) READONLY nameStatus, date, dueDate, nameVendor, notes, untaxedAmount, totalTax, totalAmount
+    PROPERTIES(b) READONLY nameType, date, dueDate, nameVendor, notes, untaxedAmount, totalTax, totalAmount, nameStatus
     PROPERTIES paid(p, b)                  
     FILTERS paid(p, b)
     
     OBJECTS bb = Bill
-    PROPERTIES(bb) READONLY nameStatus, date, dueDate, nameVendor, notes, untaxedAmount, totalTax, totalAmount, paid
+    PROPERTIES(bb) READONLY nameType, date, dueDate, nameVendor, notes, untaxedAmount, totalTax, totalAmount, nameStatus, paid
     PROPERTIES setPaid(p, bb) DRAW bb TOOLBAR
     FILTERS canBeMatched(p, bb)
 ;
 
 DESIGN payment {
     details {
-        bills {
+        NEW bills {
+            type = SPLITV;
+            caption = 'Приходная накладная';
             MOVE BOX(b) { caption = 'Разнесенные'; }
             MOVE BOX(bb) { caption = 'Доступные'; }
         }
