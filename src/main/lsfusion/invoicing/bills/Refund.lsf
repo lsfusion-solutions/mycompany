@@ -6,35 +6,17 @@ NAMESPACE Invoicing;
 
 CLASS Refund 'Акт возврата' : Bill;
 isRefund 'Акт возврата' (Bill b) = b IS Refund;
-amountLeft 'Остаток' (Refund r) = totalAmount(r) (-) billed(r);
 
-EXTEND CLASS Refund : BillOutstandingCredit;
-amount(Refund c) += totalAmount(c);
-amountLeft(Refund c) += amountLeft(c);
-partner (Refund c) += vendor[Bill](c);
-date(Refund c) += date[Bill](c);
-number(Refund c) += number[Bill](c);
-
+// type
 EXTEND CLASS BillType  {
     refund 'Возврат'
 }
 
 type (Bill b) +=  WHEN isRefund(b) THEN BillType.refund;
-
-//type(Refund c) += ISTRING[30] (nameType[Bill](c));
-
 colorType (Refund r) += WHEN type[Bill](r) = BillType.refund THEN RGB(250,67,71);
 
-canBeMatched(Refund r, Bill b) = 
-            partner[BillOutstandingCredit](r) = vendor(b) 
-            AND amountLeft(r) > 0 
-            AND NOT r = b 
-            AND status(b) = BillStatus.ready 
-            AND NOT isRefund(b);
-canBeMatched(Refund r, Bill b) += canBeMatched(r, b);
-
-
-refund 'Создать возврат' (Bill b) {
+// add
+addRefund 'Создать возврат' (Bill b) {
     APPLY; 
     IF canceled() THEN RETURN;
     
@@ -62,14 +44,35 @@ refund 'Создать возврат' (Bill b) {
 }
 
 EXTEND FORM bill
-    PROPERTIES(b) refund SHOWIF status(b) = BillStatus.ready AND NOT isRefund(b)
+    PROPERTIES(b) addRefund SHOWIF ready(b) AND NOT isRefund(b)
 ;
 
 DESIGN bill {
     secondaryActions {
-        MOVE PROPERTY(refund(b));
+        MOVE PROPERTY(addRefund(b));
     }               
 }
+
+addRefund 'Возврат' () {
+    NEWSESSION {
+        NEW r = Refund {
+            SHOW bill OBJECTS b = r;  
+        }
+    }
+} IMAGE 'add.png';
+
+EXTEND FORM bills
+    PROPERTIES addRefund() DRAW b TOOLBAR
+;
+
+// match
+canBeMatched(Refund r, Bill b) = 
+            vendor[BillOutstandingCredit](r) = vendor(b) 
+            AND amountLeft(r) > 0 
+            AND NOT r = b 
+            AND status(b) = BillStatus.ready 
+            AND NOT isRefund(b);
+canBeMatched(Refund r, Bill b) += canBeMatched(r, b);
 
 EXTEND FORM bill
     OBJECTS bi = Bill
@@ -86,7 +89,7 @@ EXTEND FORM bill
 DESIGN bill {
     details {
         NEW creditInvoices {
-            caption = 'Документы';
+            caption = 'Накладные';
             showIf = b IS Refund;
             MOVE BOX(bi);
             MOVE BOX(bil);
@@ -94,14 +97,18 @@ DESIGN bill {
     }
 }
 
-addRefund 'Возврат' () {
-    NEWSESSION {
-        NEW r = Refund {
-            SHOW bill OBJECTS b = r;  
-        }
-    }
-} IMAGE 'add.png';
+// outstanding credit
+amountLeft 'Остаток' (Refund r) = totalAmount(r) (-) billed(r);
 
-EXTEND FORM bills
-    PROPERTIES addRefund() DRAW b TOOLBAR
-;
+EXTEND CLASS Refund : BillOutstandingCredit;
+date(Refund c) += date[Bill](c);
+number(Refund c) += number[Bill](c);
+vendor (Refund c) += vendor[Bill](c);
+
+EXTEND CLASS BillOutstandingCreditType {
+    creditNote 'Возврат'
+}
+type[BillOutstandingCredit](Refund r) += BillOutstandingCreditType.creditNote IF r IS Refund;
+
+amount(Refund c) += totalAmount(c);
+amountLeft(Refund c) += amountLeft(c);

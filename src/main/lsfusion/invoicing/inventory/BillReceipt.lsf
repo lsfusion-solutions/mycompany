@@ -87,5 +87,5 @@ EXTEND FORM options PROPERTIES autoCreateReceiptFromBill() SHOWIF typeReceiptFro
 
 WHEN SET(ready(Bill b)) AND autoCreateReceiptFromBill() AND NOT isRefund(b) DO newReceipt(b);
 WHEN SET(canceled(bill(Receipt r))) AND autoCreateReceiptFromBill() DO canceled(r) <- TRUE; 
-WHEN CHANGED(quantity(billLine(ReceiptLine l)))  AND autoCreateReceiptFromBill() DO done(l) <- quantity(billLine(l));
+WHEN CHANGED(quantity(billLine(ReceiptLine l))) AND autoCreateReceiptFromBill() DO done(l) <- quantity(billLine(l));
 WHEN CHANGED(item(billLine(ReceiptLine l))) AND autoCreateReceiptFromBill() AND item(billLine(l)) IS Product DO product(l) <- item(billLine(l));

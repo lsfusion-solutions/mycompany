@@ -4,8 +4,8 @@ REQUIRE InvoiceShipment;
 
 NAMESPACE Invoicing;
 
-typeReceiptFromInvoice 'Тип прихода на основе расходной накладной' = DATA ReceiptType ();
-nameTypeReceiptFromInvoice 'Тип прихода на основе  расходной накладной' = name(typeReceiptFromInvoice());
+typeReceiptFromInvoice = DATA ReceiptType ();
+nameTypeReceiptFromInvoice 'Тип прихода на основе расходной накладной (возврат)' = name(typeReceiptFromInvoice());
 EXTEND FORM options PROPERTIES nameTypeReceiptFromInvoice();
 
 // receipt
@@ -19,7 +19,7 @@ newReceipt (CreditNote r) {
     NEW s = Receipt {
         creditNote(s) <- r;
          
-        partner(s) <- customer(r);
+        partner(s) <- customer[Invoice](r);
         type(s) <- typeReceiptFromInvoice();
         location(s) <- location(r);
         sourceDocument(s) <- seriesNumber(r);
@@ -68,10 +68,10 @@ DESIGN invoice {
 }
 
 // auto create
-autoCreateReceiptFromInvoice 'Автоматически создавать отгрузку на основе расходной накладной (расхождение)' = DATA BOOLEAN ();
+autoCreateReceiptFromInvoice 'Автоматически создавать отгрузку на основе расходной накладной (возврат)' = DATA BOOLEAN ();
 EXTEND FORM options PROPERTIES autoCreateReceiptFromInvoice() SHOWIF typeReceiptFromInvoice();
 
-WHEN SET(ready(CreditNote r)) AND typeReceiptFromInvoice() AND isCreditNote(r) DO newReceipt(r);
-WHEN SET(canceled(creditNote(Receipt s))) AND typeReceiptFromInvoice() DO canceled(s) <- TRUE; 
-WHEN CHANGED(quantity(creditNoteLine(ReceiptLine l))) DO done(l) <- quantity(creditNoteLine(l));
-WHEN CHANGED(item(creditNoteLine(ReceiptLine l))) AND item(creditNoteLine(l)) IS Product DO product(l) <- item(creditNoteLine(l));
+WHEN SET(ready(CreditNote r)) AND autoCreateReceiptFromInvoice() AND isCreditNote(r) DO newReceipt(r);
+WHEN SET(canceled(creditNote(Receipt s))) AND autoCreateReceiptFromInvoice() DO canceled(s) <- TRUE; 
+WHEN CHANGED(quantity(creditNoteLine(ReceiptLine l))) AND autoCreateReceiptFromInvoice() DO done(l) <- quantity(creditNoteLine(l));
+WHEN CHANGED(item(creditNoteLine(ReceiptLine l))) AND autoCreateReceiptFromInvoice() AND item(creditNoteLine(l)) IS Product DO product(l) <- item(creditNoteLine(l));

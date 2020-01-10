@@ -5,7 +5,7 @@ REQUIRE InvoiceCanceled, CreditNote, ReceiptCanceled, ShipmentCanceled;
 NAMESPACE Invoicing;
 
 typeShipmentFromInvoice = DATA ShipmentType ();
-nameTypeShipmentFromInvoice 'Тип отгрузки на основе реализации' = name(typeShipmentFromInvoice());
+nameTypeShipmentFromInvoice 'Тип отгрузки на основе расходной накладной' = name(typeShipmentFromInvoice());
 
 EXTEND FORM options PROPERTIES nameTypeShipmentFromInvoice();
 
@@ -87,5 +87,5 @@ EXTEND FORM options PROPERTIES autoCreateShipmentFromInvoice() SHOWIF typeShipme
 
 WHEN SET(ready(Invoice b)) AND autoCreateShipmentFromInvoice() AND NOT isCreditNote(b) DO newShipment(b);
 WHEN SET(canceled(invoice(Shipment r))) AND autoCreateShipmentFromInvoice() DO canceled(r) <- TRUE; 
-WHEN CHANGED(quantity(invoiceLine(ShipmentLine l)))  AND autoCreateShipmentFromInvoice() DO done(l) <- quantity(invoiceLine(l));
+WHEN CHANGED(quantity(invoiceLine(ShipmentLine l))) AND autoCreateShipmentFromInvoice() DO done(l) <- quantity(invoiceLine(l));
 WHEN CHANGED(item(invoiceLine(ShipmentLine l))) AND autoCreateShipmentFromInvoice() AND item(invoiceLine(l)) IS Product DO product(l) <- item(invoiceLine(l));

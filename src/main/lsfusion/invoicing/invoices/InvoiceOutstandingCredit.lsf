@@ -6,18 +6,24 @@ NAMESPACE Invoicing;
 
 CLASS ABSTRACT InvoiceOutstandingCredit 'Закрытие задолженности';
 
+number 'Номер' = ABSTRACT STRING[28] (InvoiceOutstandingCredit);
 date 'Дата' = ABSTRACT DATETIME (InvoiceOutstandingCredit);
+
+customer = ABSTRACT Partner (InvoiceOutstandingCredit);
+nameCustomer 'Покупатель' (InvoiceOutstandingCredit c) = name(customer(c));
+
+// type
+CLASS InvoiceOutstandingCreditType 'Тип закрытия задолженности';
+name 'Имя' (InvoiceOutstandingCreditType t) = staticCaption(t) IF t IS InvoiceOutstandingCreditType CHARWIDTH 10;
+
+type = ABSTRACT InvoiceOutstandingCreditType (InvoiceOutstandingCredit);
+nameType (InvoiceOutstandingCredit c) = name(type(c));
+
+// sum
 amount 'Сумма' = ABSTRACT NUMERIC[14,2] (InvoiceOutstandingCredit);
 amountLeft 'Остаток' = ABSTRACT NUMERIC[14,2] (InvoiceOutstandingCredit);
 
-partner = ABSTRACT Partner (InvoiceOutstandingCredit);
-namePartner 'Контрагент' (InvoiceOutstandingCredit c) = name(partner(c));
-
 canBeMatched = ABSTRACT BOOLEAN (InvoiceOutstandingCredit, Invoice);
-
-type 'Тип' = ABSTRACT ISTRING[30] (InvoiceOutstandingCredit);
-
-number 'Номер' = ABSTRACT STRING[28] (InvoiceOutstandingCredit);
 
 paid 'Оплачено' = DATA NUMERIC[14,2] (InvoiceOutstandingCredit, Invoice);
 paid 'Оплачено' (Invoice i) = (GROUP SUM paid(InvoiceOutstandingCredit c, i)) (+) (GROUP SUM paid(i, Invoice ii));
@@ -45,12 +51,12 @@ addPayment 'Привязать' (InvoiceOutstandingCredit p, Invoice i) {
 
 EXTEND FORM invoice
     OBJECTS p = InvoiceOutstandingCredit
-    PROPERTIES(p) READONLY date, number, type
+    PROPERTIES(p) READONLY date, number, nameType
     PROPERTIES READONLY paid(p, i)
     FILTERS paid(p, i)
     
     OBJECTS pp = InvoiceOutstandingCredit
-    PROPERTIES(pp) READONLY date, number, type, Invoicing.amountLeft[InvoiceOutstandingCredit]
+    PROPERTIES(pp) READONLY date, number, nameType, Invoicing.amountLeft[InvoiceOutstandingCredit]
     PROPERTIES addPayment(pp, i) DRAW pp TOOLBAR
     FILTERS canBeMatched(pp, i)   
 ;
@@ -58,7 +64,7 @@ EXTEND FORM invoice
 DESIGN invoice {
     details {
         NEW outstandingCredit {
-            caption = 'Платежи';     
+            caption = 'Разнесение оплат';     
             MOVE BOX(p);            
             MOVE BOX(pp);            
         }

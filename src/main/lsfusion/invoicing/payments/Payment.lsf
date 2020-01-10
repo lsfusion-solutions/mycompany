@@ -29,6 +29,8 @@ WHEN LOCAL CHANGED(fromPartner(Payment p)) DO {
     fromAccount(p) <- defaultAccount(fromPartner(p));
 }
 
+partner (Payment p) = IF toPartner(p) IS Company THEN fromPartner(p) ELSE toPartner(p);
+
 amount 'Сумма' = DATA NUMERIC[14,2] (Payment) NONULL;
 
 inAmount 'Доход' (Account a) = GROUP SUM amount(Payment p) IF toAccount(p) = a;

@@ -6,18 +6,24 @@ NAMESPACE Invoicing;
 
 CLASS ABSTRACT BillOutstandingCredit 'Закрытие задолженности';
 
+number 'Номер' = ABSTRACT STRING[28] (BillOutstandingCredit);
 date 'Дата' = ABSTRACT DATETIME (BillOutstandingCredit);
+
+vendor = ABSTRACT Partner (BillOutstandingCredit);
+nameVendor 'Поставщик' (BillOutstandingCredit c) = name(vendor(c));
+
+// type
+CLASS BillOutstandingCreditType 'Тип закрытия задолженности';
+name 'Имя' (BillOutstandingCreditType t) = staticCaption(t) IF t IS BillOutstandingCreditType CHARWIDTH 10;
+
+type = ABSTRACT BillOutstandingCreditType (BillOutstandingCredit);
+nameType (BillOutstandingCredit c) = name(type(c));
+
+// sum
 amount = ABSTRACT NUMERIC[14,2] (BillOutstandingCredit);
 amountLeft 'Остаток' = ABSTRACT NUMERIC[14,2] (BillOutstandingCredit);
 
-partner = ABSTRACT Partner (BillOutstandingCredit);
-namePartner 'Контрагент' (BillOutstandingCredit c) = name(partner(c));
-
 canBeMatched = ABSTRACT BOOLEAN (BillOutstandingCredit, Bill);
-
-type 'Тип' = ABSTRACT ISTRING[30] (BillOutstandingCredit);
-
-number 'Номер' = ABSTRACT STRING[28] (BillOutstandingCredit);
 
 paid 'Оплачено' = DATA NUMERIC[14,2] (BillOutstandingCredit, Bill);
 paid 'Оплачено' (Bill b) = (GROUP SUM paid(BillOutstandingCredit c, b)) (+) (GROUP SUM paid(b, Bill bb));
@@ -45,12 +51,12 @@ addBillPayment 'Привязать' (BillOutstandingCredit p, Bill b) {
 
 EXTEND FORM bill
     OBJECTS p = BillOutstandingCredit
-    PROPERTIES(p) READONLY date, number, type
+    PROPERTIES(p) READONLY date, number, nameType
     PROPERTIES READONLY paid(p, b)
     FILTERS paid(p, b)
     
     OBJECTS pp = BillOutstandingCredit
-    PROPERTIES(pp) READONLY date, number, type, Invoicing.amountLeft[BillOutstandingCredit]
+    PROPERTIES(pp) READONLY date, number, nameType, Invoicing.amountLeft[BillOutstandingCredit]
     PROPERTIES addBillPayment(pp, b) DRAW pp TOOLBAR
     FILTERS canBeMatched(pp, b)   
 ;
@@ -58,7 +64,7 @@ EXTEND FORM bill
 DESIGN bill {
     details {
         NEW outstandingCredit {
-            caption = 'Платежи';
+            caption = 'Разнесение оплат';
             MOVE BOX(p);           
             MOVE BOX(pp);
         }

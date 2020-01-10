@@ -4,7 +4,7 @@ REQUIRE BillReceipt, Shipment;
 
 NAMESPACE Invoicing;
 
-typeShipmentFromBill 'Тип отгрузки на основе приходной накладной (возврат)' = DATA ShipmentType ();
+typeShipmentFromBill = DATA ShipmentType ();
 nameTypeShipmentFromBill 'Тип отгрузки на основе приходной накладной (возврат)' = name(typeShipmentFromBill());
 EXTEND FORM options PROPERTIES nameTypeShipmentFromBill();
 
@@ -19,7 +19,7 @@ newShipment (Refund r) {
     NEW s = Shipment {
         refund(s) <- r;
          
-        partner(s) <- vendor(r);
+        partner(s) <- vendor[Bill](r);
         type(s) <- typeShipmentFromBill();
         location(s) <- location(r);
         sourceDocument(s) <- seriesNumber(r);
@@ -72,7 +72,7 @@ DESIGN bill {
 autoCreateShipmentFromBill 'Автоматически создавать отгрузку на основе приходной накладной (возврат)' = DATA BOOLEAN ();
 EXTEND FORM options PROPERTIES autoCreateShipmentFromBill() SHOWIF typeShipmentFromBill();
 
-WHEN SET(ready(Refund r)) AND typeShipmentFromBill() AND isRefund(r) DO newShipment(r);
-WHEN SET(canceled(refund(Shipment s))) AND typeShipmentFromBill() DO canceled(s) <- TRUE; 
-WHEN CHANGED(quantity(refundLine(ShipmentLine l))) DO done(l) <- quantity(refundLine(l));
-WHEN CHANGED(item(refundLine(ShipmentLine l))) AND item(refundLine(l)) IS Product DO product(l) <- item(refundLine(l));
+WHEN SET(ready(Refund r)) AND autoCreateShipmentFromBill() AND isRefund(r) DO newShipment(r);
+WHEN SET(canceled(refund(Shipment s))) AND autoCreateShipmentFromBill() DO canceled(s) <- TRUE; 
+WHEN CHANGED(quantity(refundLine(ShipmentLine l))) AND autoCreateShipmentFromBill() DO done(l) <- quantity(refundLine(l));
+WHEN CHANGED(item(refundLine(ShipmentLine l))) AND autoCreateShipmentFromBill() AND item(refundLine(l)) IS Product DO product(l) <- item(refundLine(l));
