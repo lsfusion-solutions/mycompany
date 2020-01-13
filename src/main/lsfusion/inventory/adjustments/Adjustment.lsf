@@ -14,7 +14,7 @@ nameLocation 'Место хранения' (Adjustment a) = name(location(a));
 company 'Компания' (Adjustment a) = owner(location(a));
 nameCompany 'Компания' (Adjustment a) = name(company(a));
 
-notes 'Примечания' = DATA ISTRING[50] (Adjustment);
+note 'Примечание' = DATA ISTRING[50] (Adjustment);
 
 CLASS AdjustmentLine 'Строка инвентаризации';
 
@@ -63,7 +63,7 @@ background (AdjustmentLine l) = CASE WHEN theoreticalQuantity(l) < realQuantity(
 
 FORM adjustment 'Инвентаризация'
     OBJECTS a = Adjustment PANEL 
-    PROPERTIES(a) READONLY dateTime, nameCompany, nameLocation, nameType, notes, 
+    PROPERTIES(a) READONLY dateTime, nameCompany, nameLocation, nameType, note, 
                             nameCategory SHOWIF type(a) = AdjustmentType.category 
     
     OBJECTS l = AdjustmentLine
@@ -119,7 +119,7 @@ newAdjustment 'Инвентаризация' () {
 
 FORM adjustments 'Инвентаризации'
     OBJECTS a = Adjustment
-    PROPERTIES(a) READONLY dateTime, nameLocation, notes
+    PROPERTIES(a) READONLY dateTime, nameLocation, note
     PROPERTIES(a) NEWSESSION EDIT, DELETE 
     PROPERTIES newAdjustment() DRAW a TOOLBAR 
     

@@ -32,7 +32,7 @@ CONSTRAINT isTransfer(type(Shipment s)) AND NOT toLocation(s) MESSAGE 'Нужн�
 
 partner = DATA Partner (Shipment) INDEXED;
 namePartner 'Контрагент' (Shipment s) = name(partner(s));
-notes 'Примечания' = DATA ISTRING[50] (Shipment);
+note 'Примечание' = DATA ISTRING[50] (Shipment);
 
 CONSTRAINT partner(Shipment s) AND NOT isCustomer(partner(s)) 
                 CHECKED BY partner[Shipment]
@@ -87,9 +87,9 @@ nameLocation 'Место хранения' (ShipmentLine l) = nameLocation(shipm
 
 FORM shipment 'Отгрузка'
     OBJECTS s = Shipment PANEL 
-    PROPERTIES(s) READONLYIF readonly(s) series, number, nameType, nameLocation, notes, sourceDocument
+    PROPERTIES(s) READONLYIF readonly(s) series, number, nameType, nameLocation, note, sourceDocument
     PROPERTIES(s) READONLYIF readonlyHeader(s) scheduledDate BEFORE series(s), 
-        nameToLocation SHOWIF isTransfer(type(s)) BEFORE notes(s), namePartner SHOWIF NOT isTransfer(type(s)) BEFORE notes(s)
+        nameToLocation SHOWIF isTransfer(type(s)) BEFORE note(s), namePartner SHOWIF NOT isTransfer(type(s)) BEFORE note(s)
                   
     OBJECTS l = ShipmentLine
     PROPERTIES(l) index READONLY
@@ -103,7 +103,7 @@ FORM shipment 'Отгрузка'
 FORM shipments 'Отгрузки'
     OBJECTS s = Shipment
     PROPERTIES(s) READONLY scheduledDate, series, number, nameType, nameLocation,
-                  nameToLocation, namePartner, notes
+                  nameToLocation, namePartner, note
     PROPERTIES(s) NEWSESSION READONLYIF readonly(s) DELETE
     PROPERTIES(s) NEWSESSION NEW, EDIT
 ;
@@ -114,7 +114,7 @@ copyShipment 'Копировать' (Shipment s)  {
             type(ns) <- type(s);
             location(ns) <- location(s);
             toLocation(ns) <- toLocation(s);
-            notes(ns) <- notes(s);
+            note(ns) <- note(s);
             immediateTransfer(ns) <- immediateTransfer(s);
             FOR shipment(ShipmentLine l) = s INLINE NEW nl = ShipmentLine DO {
                 shipment(nl) <- ns;
@@ -154,7 +154,7 @@ DESIGN shipment {
                     type = CONTAINERH;
                     alignment = STRETCH; 
                     MOVE PROPERTY(sourceDocument(s));
-                    MOVE PROPERTY(notes(s));
+                    MOVE PROPERTY(note(s));
                 }
             }
             NEW details {

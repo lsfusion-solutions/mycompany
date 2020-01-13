@@ -30,7 +30,7 @@ WHEN LOCAL CHANGED(type(Receipt r)) AND defaultLocation(type(r)) DO location(r) 
 
 partner = DATA Partner (Receipt) INDEXED;
 namePartner 'Контрагент' (Receipt r) = name(partner(r));
-notes 'Примечания' = DATA ISTRING[50] (Receipt);
+note 'Примечание' = DATA ISTRING[50] (Receipt);
 
 CONSTRAINT partner(Receipt r) AND NOT isVendor(partner(r)) 
                 CHECKED BY partner[Receipt]
@@ -77,8 +77,8 @@ nameLocation 'Место хранения' (ReceiptLine l) = nameLocation(receip
            
 FORM receipt 'Поступление'
     OBJECTS r = Receipt PANEL
-    PROPERTIES(r) READONLYIF readonly(r) series, number, nameType, nameLocation, notes, sourceDocument
-    PROPERTIES(r) READONLYIF readonlyHeader(r) scheduledDate BEFORE series(r), namePartner BEFORE notes(r)
+    PROPERTIES(r) READONLYIF readonly(r) series, number, nameType, nameLocation, note, sourceDocument
+    PROPERTIES(r) READONLYIF readonlyHeader(r) scheduledDate BEFORE series(r), namePartner BEFORE note(r)
 
     OBJECTS l = ReceiptLine
     PROPERTIES(l) index READONLY
@@ -92,7 +92,7 @@ FORM receipt 'Поступление'
 
 FORM receipts 'Поступления'
     OBJECTS r = Receipt
-    PROPERTIES(r) READONLY scheduledDate, series, number, nameType, nameLocation, namePartner, notes
+    PROPERTIES(r) READONLY scheduledDate, series, number, nameType, nameLocation, namePartner, note
     PROPERTIES(r) NEWSESSION NEW, EDIT
     PROPERTIES(r) NEWSESSION READONLYIF readonly(r) DELETE
 ;
@@ -103,7 +103,7 @@ copyReceipt 'Копировать' (Receipt r) {
             type(nr) <- type(r);
             location(nr) <- location(r);
             partner(nr) <- partner(r);
-            notes(nr) <- notes(r);
+            note(nr) <- note(r);
             immediateTransfer(nr) <- immediateTransfer(r);
             FOR receipt(ReceiptLine l) = r INLINE NEW nl = ReceiptLine DO {
                 receipt(nl) <- nr;
@@ -142,7 +142,7 @@ DESIGN receipt {
                     type = CONTAINERH;
                     alignment = STRETCH; 
                     MOVE PROPERTY(sourceDocument(r));
-                    MOVE PROPERTY(notes(r));
+                    MOVE PROPERTY(note(r));
                 }
             }
             NEW details {

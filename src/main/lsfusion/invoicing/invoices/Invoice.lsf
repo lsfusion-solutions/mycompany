@@ -49,7 +49,7 @@ CONSTRAINT companyAccount(Invoice b) AND NOT company(b) = holder(companyAccount(
 
 customerReference 'Код покупателя' = DATA STRING[30] (Invoice);
 sourceDocument 'Основание' = DATA STRING[30] (Invoice);
-notes 'Примечания' = DATA ISTRING[50] (Invoice);
+note 'Примечание' = DATA ISTRING[50] (Invoice);
 
 // lines
 CLASS InvoiceLine 'Строки документа';
@@ -94,7 +94,7 @@ FORM invoice 'Расходная накладная'
     PROPERTIES(i) READONLYIF readonly(i) 
                              date, series, number, nameCustomer, nameCompany, sourceDocument,
                              dueDate, nameCustomerAccount, nameCompanyAccount,
-                             customerReference, notes
+                             customerReference, note
         
     OBJECTS l = InvoiceLine
     PROPERTIES(l) READONLYIF readonly(l) index, nameItem, description, nameUnitMeasure, idBarCodeItem, idItem, quantity, 
@@ -154,7 +154,7 @@ DESIGN invoice {
                 NEW invoiceInformat {
                     caption = 'Прочие';
                     MOVE PROPERTY(customerReference(i)); 
-                    MOVE PROPERTY(notes(i));
+                    MOVE PROPERTY(note(i));
                 }
             }
         }
@@ -166,7 +166,7 @@ copyInvoice 'Копировать' (Invoice i)  {
     NEWSESSION {
         NEW ni = Invoice {
             customer(ni) <- customer(i);
-            notes(ni) <- notes(i);
+            note(ni) <- note(i);
             FOR invoice(InvoiceLine l) = i INLINE NEW nl = InvoiceLine DO {
                 invoice(nl) <- ni;
                 item(nl) <- item(l);
@@ -189,7 +189,7 @@ addInvoice 'Накладная' () {
 
 FORM invoices 'Расходные накладные'
     OBJECTS i = Invoice
-    PROPERTIES(i) READONLY date, dueDate, nameCustomer, notes         
+    PROPERTIES(i) READONLY date, dueDate, nameCustomer, note         
     PROPERTIES(i) NEWSESSION EDIT
     PROPERTIES(i) NEWSESSION READONLYIF readonly(i) DELETE
     PROPERTIES addInvoice() DRAW i TOOLBAR

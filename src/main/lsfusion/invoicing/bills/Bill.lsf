@@ -49,7 +49,7 @@ CONSTRAINT companyAccount(Bill b) AND NOT company(b) = holder(companyAccount(b))
 
 vendorReference 'Код поставщика' = DATA STRING[30] (Bill);
 sourceDocument 'Основание' = DATA STRING[30] (Bill);
-notes 'Примечания' = DATA ISTRING[50] (Bill);
+note 'Примечание' = DATA ISTRING[50] (Bill);
 
 // lines
 CLASS BillLine 'Строки документа';
@@ -94,7 +94,7 @@ FORM bill 'Приходная накладная'
     PROPERTIES(b) READONLYIF readonly(b) 
                              date, series, number, nameVendor, nameCompany, sourceDocument,
                              dueDate, nameVendorAccount, nameCompanyAccount,
-                             vendorReference, notes
+                             vendorReference, note
         
     OBJECTS l = BillLine
     PROPERTIES(l) READONLYIF readonly(l) index, nameItem, description, nameUnitMeasure, idBarCodeItem, idItem, quantity, 
@@ -154,7 +154,7 @@ DESIGN bill {
                 NEW billInformat {
                     caption = 'Прочие';
                     MOVE PROPERTY(vendorReference(b)); 
-                    MOVE PROPERTY(notes(b));
+                    MOVE PROPERTY(note(b));
                 }
             }
         }
@@ -166,7 +166,7 @@ copyBill 'Копировать' (Bill b)  {
     NEWSESSION {
         NEW nb = Bill {
             vendor(nb) <- vendor(b);
-            notes(nb) <- notes(b);
+            note(nb) <- note(b);
             FOR bill(BillLine l) = b INLINE NEW nl = BillLine DO {
                 bill(nl) <- nb;
                 item(nl) <- item(l);
@@ -189,7 +189,7 @@ addBill 'Накладная' () {
 
 FORM bills 'Приходные накладные'
     OBJECTS b = Bill
-    PROPERTIES(b) READONLY date, dueDate, nameVendor, notes         
+    PROPERTIES(b) READONLY date, dueDate, nameVendor, note         
     PROPERTIES(b) NEWSESSION EDIT
     PROPERTIES(b) NEWSESSION READONLYIF readonly(b) DELETE
     PROPERTIES addBill() DRAW b TOOLBAR

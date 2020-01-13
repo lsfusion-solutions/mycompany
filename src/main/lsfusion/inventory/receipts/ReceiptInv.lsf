@@ -8,7 +8,7 @@ ledgerDone = ABSTRACT NUMERIC[16,3] (ReceiptLine);
 toDo (ReceiptLine l) = done(l) (-) ledgerDone(l);
 
 CLASS ReceiptInvLedger : InvLedger;
-invLedger = AGGR ReceiptInvLedger WHERE toDo(ReceiptLine line) > 0 AND NOT status(receipt(line)) = ReceiptStatus.draft; 
+invLedger = AGGR ReceiptInvLedger WHERE toDo(ReceiptLine line) > 0; 
 
 done(ReceiptInvLedger l) += done(receipt(line(l)));
 dateTime(ReceiptInvLedger l) += executionDate(receipt(line(l)));

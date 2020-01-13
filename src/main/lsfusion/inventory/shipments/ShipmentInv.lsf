@@ -1,6 +1,6 @@
 MODULE ShipmentInv;
 
-REQUIRE ShipmentDone, InvLedger;
+REQUIRE ShipmentCanceled, InvLedger;
 
 NAMESPACE Inventory;
 
@@ -8,7 +8,7 @@ ledgerDone = ABSTRACT NUMERIC[16,3] (ShipmentLine);
 toDo (ShipmentLine l) = done(l) (-) ledgerDone(l);
 
 CLASS ShipmentInvLedger : InvLedger;
-invLedger = AGGR ShipmentInvLedger WHERE toDo(ShipmentLine line) > 0 AND NOT status(shipment(line)) = ShipmentStatus.draft; 
+invLedger = AGGR ShipmentInvLedger WHERE toDo(ShipmentLine line) > 0; 
 
 done(ShipmentInvLedger l) += done(shipment(line(l)));
 dateTime(ShipmentInvLedger l) += executionDate(shipment(line(l)));
