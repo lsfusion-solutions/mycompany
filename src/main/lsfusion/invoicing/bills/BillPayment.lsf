@@ -1,35 +1,29 @@
 MODULE BillPayment;
 
-REQUIRE Refund, Payment;
+REQUIRE BillDone, BillDebt, OutgoingPaymentDebt;
 
 NAMESPACE Invoicing;
 
-registerPayment 'Оформить платеж' (Bill b){
+registerPayment 'Зарегистрировать платеж' (Bill b) {
     APPLY; 
     IF canceled() THEN RETURN;
     
     NEWSESSION {
-        NEW p = Payment {
-            date(p) <- currentDateTime();
-            amount(p) <- totalAmount(b) (-) paid(b);
-            IF isRefund(b) THEN {
-                fromPartner(p) <- vendor(b);
-                fromAccount(p) <- vendorAccount(b);
-                toPartner(p) <- company(b);
-                toAccount(p) <- companyAccount(b);
-            } ELSE {
-                toPartner(p) <- vendor(b);
-                toAccount(p) <- vendorAccount(b);
-                fromPartner(p) <- company(b);
-                fromAccount(p) <- companyAccount(b);
-            }               
-            DIALOG payment OBJECTS p = p DO {
-               IF (totalAmount(b) > amount(p) (+) paid(b)) THEN {
+        NEW p = OutgoingPayment {
+            partner(p) <- vendor(b);
+            partnerAccount(p) <- vendorAccount(b);
+            
+            company(p) <- company(b);
+            companyAccount(p) <- companyAccount(b);
+            
+            amount(p) <- left(b);
+            DIALOG outgoingPayment OBJECTS p = p DOCKED DO {
+               paid(b, p) <- left(b, p);
+               IF (left(b) > 0) THEN {
                    ASK 'Оплачена не вся сумма. Закрыть документ?' DO {
                        done(b) <- TRUE;
                    }
                }
-               paid(p, b) <- amount(p);
                APPLY; 
             }
        } 
@@ -45,51 +39,3 @@ DESIGN bill {
         MOVE PROPERTY(registerPayment(b)) { fontStyle = 'bold'; }
     }
 }
-
-// match
-canBeMatched(Payment p, Bill b) = 
-    ((isIncoming(p) AND isRefund(b) AND fromPartner(p) = vendor(b) AND status(b) = BillStatus.ready AND amountLeft(p) > 0) OR
-     (isOutgoing(p) AND NOT isRefund(b) AND toPartner(p) = vendor(b) AND status(b) = BillStatus.ready AND amountLeft(p) > 0)); 
-canBeMatched(Payment p, Bill b) += canBeMatched(p, b);
-
-EXTEND FORM payment
-    OBJECTS b = Bill
-    PROPERTIES(b) READONLY nameType, date, dueDate, nameVendor, notes, untaxedAmount, totalTax, totalAmount, nameStatus
-    PROPERTIES paid(p, b)                  
-    FILTERS paid(p, b)
-    
-    OBJECTS bb = Bill
-    PROPERTIES(bb) READONLY nameType, date, dueDate, nameVendor, notes, untaxedAmount, totalTax, totalAmount, nameStatus, paid
-    PROPERTIES setPaid(p, bb) DRAW bb TOOLBAR
-    FILTERS canBeMatched(p, bb)
-;
-
-DESIGN payment {
-    details {
-        NEW bills {
-            type = SPLITV;
-            caption = 'Приходная накладная';
-            MOVE BOX(b) { caption = 'Разнесенные'; }
-            MOVE BOX(bb) { caption = 'Доступные'; }
-        }
-    }
-}
-
-// outstanding credit
-EXTEND CLASS Payment : BillOutstandingCredit;
-number(Payment p) += number(p);
-date(Payment p) += date(p);
-vendor(Payment p) += partner(p);
-
-EXTEND CLASS BillOutstandingCreditType {
-    payment 'Платеж'
-}
-type(Payment p) += BillOutstandingCreditType.payment IF p IS Payment;
-
-amount(Payment p) += amount(p);
-
-// auto set paid
-WHEN (SETCHANGED(reference(Payment p)) OR SETCHANGED(partner(p))) AND 
-     isISubstring(reference(p), seriesNumber(Bill b)) AND 
-     canBeMatched(p, b) DO
-    paid(p, b) <- toPay(p, b); 

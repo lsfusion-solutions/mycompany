@@ -7,18 +7,6 @@ NAMESPACE Invoicing;
 
 CLASS Invoice 'Расходная накладная';
 
-// type
-CLASS InvoiceType 'Тип документа' {
-    invoice 'Реализация'
-}
-name 'Имя' (InvoiceType b) = staticCaption(b) IF b IS InvoiceType CHARWIDTH 20;
-
-type 'Тип' = ABSTRACT CASE InvoiceType (Invoice);
-type (Invoice b) += WHEN b IS Invoice THEN InvoiceType.invoice;
-nameType 'Тип' (Invoice b) = name(type(b));
-
-colorType 'Цвет' = ABSTRACT CASE COLOR (Invoice);
-
 // date
 date 'Дата' = DATA DATETIME (Invoice) NONULL IN id;
 WHEN LOCAL SET (Invoice b IS Invoice) DO date(b) <- currentDateTime();
@@ -104,7 +92,7 @@ nameCompany 'Компания' (InvoiceLine l) = nameCompany(invoice(l));
 FORM invoice 'Расходная накладная'
     OBJECTS  i = Invoice PANEL 
     PROPERTIES(i) READONLYIF readonly(i) 
-                             nameType BACKGROUND colorType(i), date, series, number, nameCustomer, nameCompany, sourceDocument,
+                             date, series, number, nameCustomer, nameCompany, sourceDocument,
                              dueDate, nameCustomerAccount, nameCompanyAccount,
                              customerReference, notes
         
@@ -122,7 +110,6 @@ DESIGN invoice {
             type = CONTAINERH;
             alignment = STRETCH;
             NEW headerLeft {
-                MOVE PROPERTY(nameType(i));
                 MOVE PROPERTY(date(i));
                 NEW seriesNumber { 
                     type = CONTAINERH; 
@@ -202,7 +189,7 @@ addInvoice 'Накладная' () {
 
 FORM invoices 'Расходные накладные'
     OBJECTS i = Invoice
-    PROPERTIES(i) READONLY nameType BACKGROUND colorType(i), date, dueDate, nameCustomer, notes         
+    PROPERTIES(i) READONLY date, dueDate, nameCustomer, notes         
     PROPERTIES(i) NEWSESSION EDIT
     PROPERTIES(i) NEWSESSION READONLYIF readonly(i) DELETE
     PROPERTIES addInvoice() DRAW i TOOLBAR

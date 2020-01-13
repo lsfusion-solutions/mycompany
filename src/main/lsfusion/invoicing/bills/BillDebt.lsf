@@ -1,0 +1,54 @@
+MODULE BillDebt;
+
+REQUIRE Bill, Debt;
+
+NAMESPACE Invoicing;
+
+// extend
+EXTEND CLASS Bill : IncomingDebt;
+number (Bill b) += seriesNumber(b);
+date (Bill b) += date(b);
+
+partner (Bill b) += vendor(b);
+company (Bill b) += company(b);
+
+amount (Bill b) += totalAmount(b);
+
+// pay
+pay 'Разнести' (Bill b, OutgoingDebt d) {
+    APPLY; 
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {
+        paid(b, d) <- left(b, d);
+        APPLY;
+    }
+} CHANGEMOUSE 'DBLCLK';
+
+EXTEND FORM bill
+    PROPERTIES(bb) paid
+    
+    OBJECTS d = OutgoingDebt
+    PROPERTIES(d) READONLY date, number, type
+    PROPERTIES paid(b, d)
+    FILTERS paid(b, d)
+    
+    OBJECTS dd = OutgoingDebt
+    PROPERTIES(dd) READONLY date, number, type, left
+    PROPERTIES pay(b, dd) TOOLBAR
+    FILTERS canBePaid(b, dd)   
+;
+
+DESIGN bill {
+    details {
+        NEW debts {
+            caption = 'Разнесение оплат';
+            MOVE BOX(d) { caption = 'Разнесенные'; }            
+            MOVE BOX(dd) { caption = 'Доступные'; }          
+        }
+    }
+}
+
+EXTEND FORM bills   
+    PROPERTIES(b) READONLY paid  
+;

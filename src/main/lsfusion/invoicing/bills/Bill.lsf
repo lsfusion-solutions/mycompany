@@ -7,18 +7,6 @@ NAMESPACE Invoicing;
 
 CLASS Bill 'Приходная накладная';
 
-// type
-CLASS BillType 'Тип документа' {
-    bill 'Поступление'
-}
-name 'Имя' (BillType b) = staticCaption(b) IF b IS BillType CHARWIDTH 20;
-
-type 'Тип' = ABSTRACT CASE BillType (Bill);
-type (Bill b) += WHEN b IS Bill THEN BillType.bill;
-nameType 'Тип' (Bill b) = name(type(b));
-
-colorType 'Цвет' = ABSTRACT CASE COLOR (Bill);
-
 // date
 date 'Дата' = DATA DATETIME (Bill) NONULL IN id;
 WHEN LOCAL SET (Bill b IS Bill) DO date(b) <- currentDateTime();
@@ -104,7 +92,7 @@ nameCompany 'Компания' (BillLine l) = nameCompany(bill(l));
 FORM bill 'Приходная накладная'
     OBJECTS  b = Bill PANEL 
     PROPERTIES(b) READONLYIF readonly(b) 
-                             nameType BACKGROUND colorType(b), date, series, number, nameVendor, nameCompany, sourceDocument,
+                             date, series, number, nameVendor, nameCompany, sourceDocument,
                              dueDate, nameVendorAccount, nameCompanyAccount,
                              vendorReference, notes
         
@@ -122,7 +110,6 @@ DESIGN bill {
             alignment = STRETCH;    
             type = CONTAINERH;
             NEW headerLeft {
-                MOVE PROPERTY(nameType(b));
                 MOVE PROPERTY(date(b));
                 NEW seriesNumber { 
                     type = CONTAINERH; 
@@ -202,7 +189,7 @@ addBill 'Накладная' () {
 
 FORM bills 'Приходные накладные'
     OBJECTS b = Bill
-    PROPERTIES(b) READONLY nameType BACKGROUND colorType(b), date, dueDate, nameVendor, notes         
+    PROPERTIES(b) READONLY date, dueDate, nameVendor, notes         
     PROPERTIES(b) NEWSESSION EDIT
     PROPERTIES(b) NEWSESSION READONLYIF readonly(b) DELETE
     PROPERTIES addBill() DRAW b TOOLBAR

@@ -1,0 +1,42 @@
+MODULE Debt;
+
+REQUIRE Partner, Company;
+
+NAMESPACE Invoicing;
+
+CLASS ABSTRACT Debt 'Задолженность';
+number 'Номер' = ABSTRACT STRING[31] (Debt);
+date 'Дата' = ABSTRACT DATETIME (Debt);
+
+partner = ABSTRACT Partner (Debt);
+namePartner 'Контрагент' (Debt d) = name(partner(d));
+
+company = ABSTRACT Company (Debt);
+nameCompany 'Компания' (Debt d) = name(partner(d));
+
+amount = ABSTRACT NUMERIC[14,2] (Debt);
+
+type 'Тип' (Debt d) = objectClassName(d) IF d IS Debt CHARWIDTH 15;
+
+// incoming
+CLASS ABSTRACT IncomingDebt 'Входящая задолженность' : Debt;
+
+// outgoing
+CLASS ABSTRACT OutgoingDebt 'Исходящая задолженность' : Debt;
+
+paid 'Оплачено' = DATA NUMERIC[14,2] (IncomingDebt, OutgoingDebt);
+
+canBeMatched (IncomingDebt id, OutgoingDebt od) =
+    partner(id) = partner(od) AND company(id) = company(od);
+
+paid 'Оплачено' (IncomingDebt id) = GROUP SUM paid(id, OutgoingDebt od);
+paid 'Оплачено' (OutgoingDebt od) = GROUP SUM paid(IncomingDebt id, od);  
+
+left 'Осталось' (IncomingDebt id) = amount(id) (-) paid(id);
+left 'Осталось' (OutgoingDebt od) = amount(od) (-) paid(od);
+left 'Осталось' (IncomingDebt id, OutgoingDebt od) = min(left(id), left(od));
+
+canBePaid (IncomingDebt id, OutgoingDebt od) = canBeMatched(id, od) AND left(id, od) > 0;
+
+CONSTRAINT left(IncomingDebt id) < 0 MESSAGE 'По входящей задолженности разнесено больше, чем сумма задолженности';
+CONSTRAINT left(OutgoingDebt id) < 0 MESSAGE 'По исходящей задолженности разнесено больше, чем сумма задолженности';

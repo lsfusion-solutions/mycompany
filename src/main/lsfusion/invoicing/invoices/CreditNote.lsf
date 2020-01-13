@@ -1,19 +1,13 @@
 MODULE CreditNote;
 
-REQUIRE InvoiceDone, InvoiceOutstandingCredit;
+REQUIRE InvoiceDone, Bill;
 
 NAMESPACE Invoicing;
 
-CLASS CreditNote 'Акт расхождения' : Invoice;
-isCreditNote 'Акт расхождения' (Invoice i) = i IS CreditNote;
+creditNote = DATA Invoice (Bill);
+creditNoteLine = DATA InvoiceLine (BillLine);
 
-// type
-EXTEND CLASS InvoiceType {
-    creditNote 'Возврат'
-}
-
-type (Invoice i) += WHEN isCreditNote(i) THEN InvoiceType.creditNote;
-colorType (CreditNote c) += WHEN c IS CreditNote THEN RGB(250,67,71);
+isCreditNote 'Возврат' (Bill b) = TRUE IF creditNote(b);
 
 // add
 addCreditNote 'Создать возврат' (Invoice i) {
@@ -21,35 +15,40 @@ addCreditNote 'Создать возврат' (Invoice i) {
     IF canceled() THEN RETURN;
     
     NEWSESSION { 
-        NEW ni = CreditNote {
-            date[Invoice](ni) <- currentDateTime();
+        NEW b = Bill {
+            creditNote(b) <- i;
             
-            customer[Invoice](ni) <- customer(i);
-            customerAccount(ni) <- customerAccount(i);
+            date(b) <- currentDateTime();
             
-            company(ni) <- company(i);
-            companyAccount(ni) <- companyAccount(i);
+            vendor(b) <- customer(i);
+            vendorAccount(b) <- customerAccount(i);
             
-            sourceDocument(ni) <- seriesNumber(i);
-            notes(ni) <- notes(i);
+            company(b) <- company(i);
+            companyAccount(b) <- companyAccount(i);
             
-            FOR invoice(InvoiceLine l) = i INLINE NEW nl = InvoiceLine DO {
-                invoice(nl) <- ni;
-                item(nl) <- item(l);
-                quantity(nl) <- quantity(l);
-                unitPrice(nl) <- unitPrice(l);
+            sourceDocument(i) <- seriesNumber(b);
+            notes(i) <- notes(b);
+            
+            FOR invoice(InvoiceLine l) = i INLINE NEW bl = BillLine DO {
+                creditNoteLine(bl) <- l; 
+                bill(bl) <- b;
+
+                item(bl) <- item(l);
+
+                quantity(bl) <- quantity(l);
+                unitPrice(bl) <- unitPrice(l);
                 FOR in(l, Tax t) DO {
-                    in(nl,t) <- in(l,t);
+                    in(bl, t) <- in(l,t);
                 }
             }
-            SHOW invoice OBJECTS i = ni DOCKED;
+            SHOW bill OBJECTS b = b DOCKED;
         }
         
     }
 }
 
 EXTEND FORM invoice
-    PROPERTIES(i) addCreditNote SHOWIF ready(i) AND NOT isCreditNote(i)
+    PROPERTIES(i) addCreditNote SHOWIF ready(i)
 ;
 
 DESIGN invoice {
@@ -58,61 +57,6 @@ DESIGN invoice {
     }               
 }
 
-addCreditNote 'Расхождение' () {
-    NEWSESSION {
-        NEW c = CreditNote {
-            SHOW invoice OBJECTS i = c;  
-        }
-    }
-} IMAGE 'add.png';
-
-EXTEND FORM invoices
-    PROPERTIES addCreditNote() DRAW i TOOLBAR
+EXTEND FORM bills
+    PROPERTIES READONLY isCreditNote(b)
 ;
-
-// match
-canBeMatched(CreditNote c, Invoice i) = 
-            customer[InvoiceOutstandingCredit](c) = customer(i) 
-            AND amountLeft(c) > 0 
-            AND status(i) = InvoiceStatus.ready 
-            AND NOT isCreditNote(i);
-canBeMatched(CreditNote c, Invoice i) += canBeMatched(c, i);
-
-EXTEND FORM invoice
-    OBJECTS in = Invoice
-    PROPERTIES(in) READONLY date, number, nameType
-    PROPERTIES paid(i, in)
-    FILTERS paid(i, in), NOT i = in
-    
-    OBJECTS inv = Invoice
-    PROPERTIES(inv) READONLY date, number, nameType, toPay
-    PROPERTIES setPaid(i, inv) DRAW inv TOOLBAR
-    FILTERS canBeMatched[CreditNote, Invoice](i, inv)
-;
-
-DESIGN invoice {
-    details {
-        NEW creditInvoices {
-            caption = 'Накладные';
-            showIf = i IS CreditNote;
-            MOVE BOX(in) { caption = 'Разнесенные'; }
-            MOVE BOX(inv) { caption = 'Доступные'; }
-        }
-    }
-}
-
-// outstanding credit
-amountLeft 'Остаток' (CreditNote c) = totalAmount(c) (-) invoiced(c);
-
-EXTEND CLASS CreditNote : InvoiceOutstandingCredit;
-date(CreditNote c) += date[Invoice](c);
-number(CreditNote c) += number[Invoice](c);
-customer (CreditNote c) += customer[Invoice](c);
-
-EXTEND CLASS InvoiceOutstandingCreditType {
-    creditNote 'Возврат'
-}
-type[InvoiceOutstandingCredit](CreditNote c) += InvoiceOutstandingCreditType.creditNote IF c IS CreditNote;
-
-amount(CreditNote c) += totalAmount(c);
-amountLeft(CreditNote c) += amountLeft(c);

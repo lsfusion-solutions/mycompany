@@ -63,11 +63,11 @@ createShipment 'Создать отгрузку' (Invoice b) {
 }
 
 EXTEND FORM invoice
-    PROPERTIES(i) createShipment SHOWIF ready(i) AND NOT isCreditNote(i) AND typeShipmentFromInvoice() AND NOT countShipments(i) 
+    PROPERTIES(i) createShipment SHOWIF ready(i) AND typeShipmentFromInvoice() AND NOT countShipments(i) 
 
     OBJECTS s = Shipment
-    PROPERTIES(s) SHOWIF NOT isCreditNote(i) READONLY seriesNumber, scheduledDate, executionDate, nameStatus
-    PROPERTIES(s) SHOWIF NOT isCreditNote(i) EDIT GRID   
+    PROPERTIES(s) READONLY seriesNumber, scheduledDate, executionDate, nameStatus
+    PROPERTIES(s) EDIT GRID   
     FILTERS invoice(s) = i
 ;
 
@@ -85,7 +85,7 @@ DESIGN invoice {
 autoCreateShipmentFromInvoice 'Автоматически создавать отгрузку на основе расходной накладной' = DATA BOOLEAN ();
 EXTEND FORM options PROPERTIES autoCreateShipmentFromInvoice() SHOWIF typeShipmentFromInvoice();
 
-WHEN SET(ready(Invoice b)) AND autoCreateShipmentFromInvoice() AND NOT isCreditNote(b) DO newShipment(b);
+WHEN SET(ready(Invoice b)) AND autoCreateShipmentFromInvoice() DO newShipment(b);
 WHEN SET(canceled(invoice(Shipment r))) AND autoCreateShipmentFromInvoice() DO canceled(r) <- TRUE; 
 WHEN CHANGED(quantity(invoiceLine(ShipmentLine l))) AND autoCreateShipmentFromInvoice() DO done(l) <- quantity(invoiceLine(l));
 WHEN CHANGED(item(invoiceLine(ShipmentLine l))) AND autoCreateShipmentFromInvoice() AND item(invoiceLine(l)) IS Product DO product(l) <- item(invoiceLine(l));

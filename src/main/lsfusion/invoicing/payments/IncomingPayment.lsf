@@ -1,0 +1,115 @@
+MODULE IncomingPayment;
+
+REQUIRE Time, MetaNumerator,
+        Partner, Company, Account;
+
+NAMESPACE Invoicing;
+
+CLASS IncomingPayment 'Входящий платеж';
+
+date 'Дата' = DATA DATETIME (IncomingPayment) NONULL;
+date(IncomingPayment p) <- currentDateTime() WHEN SET(p IS IncomingPayment);
+
+@defineSeriesNumber(incomingPayment, 'Входящие платежи', 'ВП');
+
+// partners
+partner 'Контрагент' = DATA Partner (IncomingPayment) NONULL;
+namePartner 'Контрагент' (IncomingPayment p) = name(partner(p));
+
+company 'Компания' = DATA Company (IncomingPayment) NONULL;
+nameCompany 'Компания' (IncomingPayment p) = name(company(p));
+
+// accounts
+// partner
+partnerAccount = DATA Account (IncomingPayment);
+namePartnerAccount 'Счет контрагента' (IncomingPayment p) = name(partnerAccount(p));
+
+WHEN LOCAL CHANGED(partner(IncomingPayment p)) AND NOT CHANGED(partnerAccount(p)) DO partnerAccount(p) <- defaultAccount(partner(p));
+
+CONSTRAINT partnerAccount(IncomingPayment p) AND NOT holder(partnerAccount(p)) = partner(p)
+                CHECKED BY partnerAccount
+                MESSAGE 'Владелец счета контрагента не совпадает с контрагентом во входящем платеже';
+
+// company
+companyAccount = DATA Account (IncomingPayment);
+nameCompanyAccount 'Счет контрагента' (IncomingPayment p) = name(companyAccount(p));
+
+WHEN LOCAL CHANGED(company(IncomingPayment p)) AND NOT CHANGED(companyAccount(p)) DO companyAccount(p) <- defaultAccount(company(p));
+
+CONSTRAINT companyAccount(IncomingPayment p) AND NOT holder(companyAccount(p)) = company(p)
+                CHECKED BY companyAccount
+                MESSAGE 'Владелец счета компании не совпадает с компанией во входящем платеже';
+
+amount 'Сумма' = DATA NUMERIC[14,2] (IncomingPayment) NONULL;
+
+notes 'Примечания' = DATA ISTRING[50] (IncomingPayment);
+reference 'Ссылка' = DATA ISTRING[50] (IncomingPayment);
+
+// forms
+FORM incomingPayment 'Входящий платеж'
+    OBJECTS p = IncomingPayment PANEL 
+    PROPERTIES(p) date, series, number,
+                  namePartner, namePartnerAccount, 
+                  nameCompany, nameCompanyAccount,
+                  amount, 
+                  notes, reference
+               
+    
+    EDIT IncomingPayment OBJECT p
+;
+
+DESIGN incomingPayment {
+    OBJECTS {
+        NEW header {
+            NEW params {
+                caption = 'Параметры';
+                type = CONTAINERH;
+                MOVE PROPERTY(date(p)); 
+                MOVE PROPERTY(series(p));
+                MOVE PROPERTY(number(p));
+            }
+            NEW partner {
+                type = CONTAINERH;
+                caption = 'Контрагент';
+                MOVE PROPERTY(namePartner(p)) { notNull = TRUE; }
+                MOVE PROPERTY(namePartnerAccount(p));
+            }
+            NEW company { 
+                type = CONTAINERH;
+                caption = 'Компания';
+                MOVE PROPERTY(nameCompany(p)) { notNull = TRUE; }
+                MOVE PROPERTY(nameCompanyAccount(p));
+            }
+            NEW otherInformation {
+                caption = 'Прочая информация';
+                MOVE PROPERTY(amount(p)); 
+                MOVE PROPERTY(notes(p)); 
+                MOVE PROPERTY(reference(p));    
+            }
+        }
+        NEW details {
+            type = TABBED;
+            fill = 1;
+        }
+    }
+}
+
+FORM incomingPayments 'Входящие платежи'
+    OBJECTS p = IncomingPayment
+    PROPERTIES(p) READONLY date, series, number,
+                           namePartner, namePartnerAccount, 
+                           nameCompany, nameCompanyAccount,
+                           amount, 
+                           notes, reference
+    PROPERTIES(p) NEWSESSION NEW, EDIT, DELETE 
+    
+    LIST IncomingPayment OBJECT p
+;
+
+NAVIGATOR {
+    invoicing {
+        operations {
+            NEW incomingPayments;
+        }
+    }
+}

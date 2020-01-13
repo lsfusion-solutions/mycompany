@@ -1,43 +1,37 @@
 MODULE InvoicePayment;
 
-REQUIRE CreditNote, Payment;
+REQUIRE InvoiceDone, InvoiceDebt, IncomingPaymentDebt;
 
 NAMESPACE Invoicing;
 
-registerPayment 'Оформить платеж' (Invoice i) {
+registerPayment 'Зарегистрировать платеж' (Invoice i) {
     APPLY; 
     IF canceled() THEN RETURN;
     
     NEWSESSION {
-        NEW p = Payment {
-            date(p) <- currentDateTime();
-            amount(p) <- totalAmount(i) (-) paid(i);
-            IF isCreditNote(i) THEN {
-                toPartner(p) <- customer(i);
-                toAccount(p) <- customerAccount(i);
-                fromPartner(p) <- company(i);
-                fromAccount(p) <- companyAccount(i);
-            } ELSE {
-                fromPartner(p) <- customer(i);
-                fromAccount(p) <- customerAccount(i);
-                toPartner(p) <- company(i);
-                toAccount(p) <- companyAccount(i);
+        NEW p = IncomingPayment {
+            partner(p) <- customer(i);
+            partnerAccount(p) <- customerAccount(i);
+            
+            company(p) <- company(i);
+            companyAccount(p) <- companyAccount(i);
+            
+            amount(p) <- left(i);
+            DIALOG incomingPayment OBJECTS p = p DOCKED DO {
+                paid(p, i) <- left(p, i);
+               IF (totalAmount(i) > amount(p) (+) paid(i)) THEN {
+                   ASK 'Оплачена не вся сумма. Закрыть документ?' DO {
+                       done(i) <- TRUE;
+                   }
+               }
+               APPLY; 
             }
-            DIALOG payment OBJECTS p = p DO {
-                IF (totalAmount(i) > amount(p) (+) paid(i)) THEN {
-                    ASK 'Оплачена не вся сумма. Закрыть документ?' DO {
-                        done(i) <- TRUE;
-                    } 
-                }
-                paid(p, i) <- amount(p);
-                APPLY; 
-            }
-        } 
-    }
+       } 
+   }
 }
 
 EXTEND FORM invoice
-    PROPERTIES(i) registerPayment SHOWIF status(i) = InvoiceStatus.ready
+    PROPERTIES(i) registerPayment SHOWIF status(i) = InvoiceStatus.ready 
 ;
 
 DESIGN invoice {
@@ -45,51 +39,3 @@ DESIGN invoice {
         MOVE PROPERTY(registerPayment(i)) { fontStyle = 'bold'; }
     }
 }
-
-// match
-canBeMatched(Payment p, Invoice i) = 
-    ((isIncoming(p) AND NOT isCreditNote(i) AND fromPartner(p) = customer(i) AND status(i) = InvoiceStatus.ready AND amountLeft(p) > 0) OR
-     (isOutgoing(p) AND isCreditNote(i) AND toPartner(p) = customer(i) AND status(i) = InvoiceStatus.ready AND amountLeft(p) > 0)); 
-canBeMatched(Payment p, Invoice i) += canBeMatched(p, i);
-
-EXTEND FORM payment
-    OBJECTS i = Invoice
-    PROPERTIES(i) READONLY nameType, date, dueDate, nameCustomer, notes, untaxedAmount, totalTax, totalAmount, nameStatus
-    PROPERTIES paid(p, i)                  
-    FILTERS paid(p, i)
-    
-    OBJECTS ii = Invoice
-    PROPERTIES(ii) READONLY nameType, date, dueDate, nameCustomer, notes, untaxedAmount, totalTax, totalAmount, nameStatus, paid
-    PROPERTIES setPaid(p, ii) DRAW ii TOOLBAR
-    FILTERS canBeMatched(p, ii)
-;
-
-DESIGN payment {
-    details {
-        NEW invoices {
-            type = SPLITV;
-            caption = 'Расходная накладная';
-            MOVE BOX(i) { caption = 'Разнесенные'; }
-            MOVE BOX(ii) { caption = 'Доступные'; }
-        }
-    }
-}
-
-// outstanding credit
-EXTEND CLASS Payment : InvoiceOutstandingCredit;
-date(Payment p) += date(p);
-number(Payment p) += number(p);
-customer(Payment p) += partner(p);
-
-EXTEND CLASS InvoiceOutstandingCreditType {
-    payment 'Платеж'
-}
-type(Payment p) += InvoiceOutstandingCreditType.payment IF p IS Payment;
-
-amount(Payment p) += amount(p);
-
-// auto set paid
-WHEN (SETCHANGED(reference(Payment p)) OR SETCHANGED(partner(p))) AND 
-     isISubstring(reference(p), seriesNumber(Invoice i)) AND 
-     canBeMatched(p, i) DO
-    paid(p, i) <- toPay(p, i); 

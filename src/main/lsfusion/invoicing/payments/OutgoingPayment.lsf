@@ -1,0 +1,115 @@
+MODULE OutgoingPayment;
+
+REQUIRE Time, MetaNumerator,
+        Partner, Company, Account;
+
+NAMESPACE Invoicing;
+
+CLASS OutgoingPayment 'Исходящий платеж';
+
+date 'Дата' = DATA DATETIME (OutgoingPayment) NONULL;
+date(OutgoingPayment p) <- currentDateTime() WHEN SET(p IS OutgoingPayment);
+
+@defineSeriesNumber(outgoingPayment, 'Исходящие платежи', 'ВП');
+
+// partners
+partner 'Контрагент' = DATA Partner (OutgoingPayment) NONULL;
+namePartner 'Контрагент' (OutgoingPayment p) = name(partner(p));
+
+company 'Компания' = DATA Company (OutgoingPayment) NONULL;
+nameCompany 'Компания' (OutgoingPayment p) = name(company(p));
+
+// accounts
+// partner
+partnerAccount = DATA Account (OutgoingPayment);
+namePartnerAccount 'Счет контрагента' (OutgoingPayment p) = name(partnerAccount(p));
+
+WHEN LOCAL CHANGED(partner(OutgoingPayment p)) AND NOT CHANGED(partnerAccount(p)) DO partnerAccount(p) <- defaultAccount(partner(p));
+
+CONSTRAINT partnerAccount(OutgoingPayment p) AND NOT holder(partnerAccount(p)) = partner(p)
+                CHECKED BY partnerAccount
+                MESSAGE 'Владелец счета контрагента не совпадает с контрагентом в исходящем платеже';
+
+// company
+companyAccount = DATA Account (OutgoingPayment);
+nameCompanyAccount 'Счет контрагента' (OutgoingPayment p) = name(companyAccount(p));
+
+WHEN LOCAL CHANGED(company(OutgoingPayment p)) AND NOT CHANGED(companyAccount(p)) DO companyAccount(p) <- defaultAccount(company(p));
+
+CONSTRAINT companyAccount(OutgoingPayment p) AND NOT holder(companyAccount(p)) = company(p)
+                CHECKED BY companyAccount
+                MESSAGE 'Владелец счета компании не совпадает с компанией в исходящем платеже';
+
+amount 'Сумма' = DATA NUMERIC[14,2] (OutgoingPayment) NONULL;
+
+notes 'Примечания' = DATA ISTRING[50] (OutgoingPayment);
+reference 'Ссылка' = DATA ISTRING[50] (OutgoingPayment);
+
+// forms
+FORM outgoingPayment 'Исходящий платеж'
+    OBJECTS p = OutgoingPayment PANEL 
+    PROPERTIES(p) date, series, number,
+                  namePartner, namePartnerAccount, 
+                  nameCompany, nameCompanyAccount,
+                  amount, 
+                  notes, reference
+               
+    
+    EDIT OutgoingPayment OBJECT p
+;
+
+DESIGN outgoingPayment {
+    OBJECTS {
+        NEW header {
+            NEW params {
+                caption = 'Параметры';
+                type = CONTAINERH;
+                MOVE PROPERTY(date(p)); 
+                MOVE PROPERTY(series(p));
+                MOVE PROPERTY(number(p));
+            }
+            NEW partner {
+                type = CONTAINERH;
+                caption = 'Контрагент';
+                MOVE PROPERTY(namePartner(p)) { notNull = TRUE; }
+                MOVE PROPERTY(namePartnerAccount(p));
+            }
+            NEW company { 
+                type = CONTAINERH;
+                caption = 'Компания';
+                MOVE PROPERTY(nameCompany(p)) { notNull = TRUE; }
+                MOVE PROPERTY(nameCompanyAccount(p));
+            }
+            NEW otherInformation {
+                caption = 'Прочая информация';
+                MOVE PROPERTY(amount(p)); 
+                MOVE PROPERTY(notes(p)); 
+                MOVE PROPERTY(reference(p));    
+            }
+        }
+        NEW details {
+            type = TABBED;
+            fill = 1;
+        }
+    }
+}
+
+FORM outgoingPayments 'Исходящие платежи'
+    OBJECTS p = OutgoingPayment
+    PROPERTIES(p) READONLY date, series, number,
+                           namePartner, namePartnerAccount, 
+                           nameCompany, nameCompanyAccount,
+                           amount, 
+                           notes, reference
+    PROPERTIES(p) NEWSESSION NEW, EDIT, DELETE 
+    
+    LIST OutgoingPayment OBJECT p
+;
+
+NAVIGATOR {
+    invoicing {
+        operations {
+            NEW outgoingPayments;
+        }
+    }
+}

@@ -1,0 +1,54 @@
+MODULE IncomingPaymentDebt;
+
+REQUIRE IncomingPayment, Debt;
+
+NAMESPACE Invoicing;
+
+// extend
+EXTEND CLASS IncomingPayment : IncomingDebt;
+number (IncomingPayment p) += seriesNumber(p);
+date (IncomingPayment p) += date(p);
+
+partner (IncomingPayment p) += partner(p);
+company (IncomingPayment p) += company(p);
+
+amount (IncomingPayment p) += amount(p);
+
+// pay
+pay 'Разнести' (IncomingPayment p, OutgoingDebt d) {
+    APPLY; 
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {
+        paid(p, d) <- left(p, d);
+        APPLY;
+    }
+} CHANGEMOUSE 'DBLCLK';
+
+EXTEND FORM incomingPayment
+    OBJECTS d = OutgoingDebt
+    PROPERTIES(d) READONLY date, number, type
+    PROPERTIES paid(p, d)
+    FILTERS paid(p, d)
+    
+    OBJECTS dd = OutgoingDebt
+    PROPERTIES(dd) READONLY date, number, type, left
+    PROPERTIES pay(p, dd) TOOLBAR
+    FILTERS canBePaid(p, dd)   
+;
+
+DESIGN incomingPayment {
+    details {
+        NEW debts {
+            caption = 'Разнесение оплат';
+            MOVE BOX(d) { caption = 'Разнесенные'; }            
+            MOVE BOX(dd) { caption = 'Доступные'; }          
+        }
+    }
+}
+
+// auto set paid
+WHEN (SETCHANGED(reference(IncomingPayment p)) OR SETCHANGED(partner(p))) AND 
+     isISubstring(reference(p), number(OutgoingDebt d)) AND 
+     canBePaid(p, d) DO
+    paid(p, d) <- left(p, d); 
