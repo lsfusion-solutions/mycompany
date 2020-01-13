@@ -26,7 +26,7 @@ pay 'Разнести' (IncomingDebt d, Invoice i) {
 } CHANGEMOUSE 'DBLCLK';
 
 EXTEND FORM invoice
-    PROPERTIES(ii) READONLY paid  
+    PROPERTIES(i) READONLY paid  
 
     OBJECTS d = IncomingDebt
     PROPERTIES(d) READONLY date, number, type
@@ -40,6 +40,9 @@ EXTEND FORM invoice
 ;
 
 DESIGN invoice {
+    total {
+        MOVE PROPERTY(paid(i));
+    }
     details {
         NEW debts {
             caption = 'Разнесение оплат';

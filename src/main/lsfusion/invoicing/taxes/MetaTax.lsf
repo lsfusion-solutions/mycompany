@@ -53,9 +53,7 @@ META defineTaxForm(doc, let)
         PROPERTIES READONLY name(t), taxAmount(t, let), taxAmount(t, l)
         FILTERS countLine(let, t)
                 
-        OBJECTS let##let = ###doc PANEL 
-        PROPERTIES(let##let) untaxedAmount, totalTax, totalAmount
-        FILTERS let##let = let    
+        PROPERTIES(let) untaxedAmount, totalTax, totalAmount
     ;
         
     DESIGN doc {
@@ -68,9 +66,11 @@ META defineTaxForm(doc, let)
                 }
                 REMOVE TOOLBARBOX(t);
             }
-            NEW total {                
-                MOVE BOX(let##let) { caption = 'Итого по документу'; captionFont = 'bold'; }
-                GROUP(,let##let) { type = CONTAINERV; }      
+            NEW total {
+                caption = 'Итого по документу';
+                MOVE PROPERTY(untaxedAmount(let));                
+                MOVE PROPERTY(totalTax(let));                
+                MOVE PROPERTY(totalAmount(let));                
             }
         }
     }
