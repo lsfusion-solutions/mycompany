@@ -23,11 +23,16 @@ addCreditNote 'Создать возврат' (Invoice i) {
     NEWSESSION { 
         NEW ni = CreditNote {
             date[Invoice](ni) <- currentDateTime();
+            
             customer[Invoice](ni) <- customer(i);
             customerAccount(ni) <- customerAccount(i);
+            
             company(ni) <- company(i);
             companyAccount(ni) <- companyAccount(i);
+            
+            sourceDocument(ni) <- seriesNumber(i);
             notes(ni) <- notes(i);
+            
             FOR invoice(InvoiceLine l) = i INLINE NEW nl = InvoiceLine DO {
                 invoice(nl) <- ni;
                 item(nl) <- item(l);

@@ -19,16 +19,16 @@ defaultCompany = OVERRIDE dataDefaultCompany(), (firstCompany() IF countCompanie
 
 type (Partner p) += WHEN p IS Company THEN PartnerType.company;
 
-newCompany 'Компания' () {
-    NEWSESSION {
-        NEW c = Company {
-            SHOW partner OBJECTS p = c;  
-        }
-    }
-} IMAGE 'add.png';
-
-EXTEND FORM partners
-    PROPERTIES newCompany() DRAW p TOOLBAR
+FORM companies 'Компании'
+    OBJECTS c = Company
+    PROPERTIES(c) READONLY name, id
+    PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE
     
-    LIST Company OBJECT p
+    LIST Company OBJECT c
 ;
+
+NAVIGATOR {
+    masterData {
+        NEW companies;
+    }
+}

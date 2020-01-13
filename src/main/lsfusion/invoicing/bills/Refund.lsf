@@ -23,11 +23,16 @@ addRefund 'Создать возврат' (Bill b) {
     NEWSESSION { 
         NEW ni = Refund {
             date[Bill](ni) <- currentDateTime();
+            
             vendor[Bill](ni) <- vendor(b);
             vendorAccount(ni) <- vendorAccount(b);
+            
             company(ni) <- company(b);
             companyAccount(ni) <- companyAccount(b);
+            
+            sourceDocument(ni) <- seriesNumber(b);
             notes(ni) <- notes(b);
+            
             FOR bill(BillLine l) = b INLINE NEW nl = BillLine DO {
                 bill(nl) <- ni;
                 item(nl) <- item(l);
