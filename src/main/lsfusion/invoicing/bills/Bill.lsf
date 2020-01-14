@@ -65,10 +65,10 @@ idItem 'Код' (BillLine l) = id(item(l));
 
 CONSTRAINT item(BillLine l) AND NOT canBePurchased(item(l))
             CHECKED BY item 
-            MESSAGE 'Наменклатура не предназначена для закупки';
+            MESSAGE 'Номенклатура не предназначена для закупки';
 
-unitMeasure 'Ед.изм.' = DATA ItemMeasure (BillLine);
-nameUnitMeasure 'Ед.изм.' (BillLine l) = name(unitMeasure(l));
+unitMeasure = DATA ItemMeasure (BillLine);
+nameUnitMeasure 'Ед. изм.' (BillLine l) = name(unitMeasure(l));
 
 description 'Описание' = DATA STRING (BillLine); 
 
@@ -92,7 +92,8 @@ nameCompany 'Компания' (BillLine l) = nameCompany(bill(l));
 FORM bill 'Приходная накладная'
     OBJECTS  b = Bill PANEL 
     PROPERTIES(b) READONLYIF readonly(b) 
-                             date, series, number, nameVendor, nameCompany, sourceDocument,
+                             date, series, number, 
+                             nameVendor, nameCompany, sourceDocument,
                              dueDate, nameVendorAccount, nameCompanyAccount,
                              vendorReference, note
         
@@ -161,38 +162,10 @@ DESIGN bill {
     }
 }
 
-// copy
-copyBill 'Копировать' (Bill b)  { 
-    NEWSESSION {
-        NEW nb = Bill {
-            vendor(nb) <- vendor(b);
-            note(nb) <- note(b);
-            FOR bill(BillLine l) = b INLINE NEW nl = BillLine DO {
-                bill(nl) <- nb;
-                item(nl) <- item(l);
-                quantity(nl) <- quantity(l);
-                unitPrice(nl) <- unitPrice(l);
-            }
-            SHOW bill OBJECTS b = nb DOCKED;
-        }
-    }
-}
-EXTEND FORM bill PROPERTIES(b) copyBill;
- 
-addBill 'Накладная' () {
-    NEWSESSION {
-        NEW b = Bill {
-            SHOW bill OBJECTS b = b;  
-        }
-    }
-}IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
-
 FORM bills 'Приходные накладные'
     OBJECTS b = Bill
     PROPERTIES(b) READONLY date, dueDate, nameVendor, note         
-    PROPERTIES(b) NEWSESSION EDIT
-    PROPERTIES(b) NEWSESSION READONLYIF readonly(b) DELETE
-    PROPERTIES addBill() DRAW b TOOLBAR
+    PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE READONLYIF readonly(b)
            
     LIST Bill OBJECT b;
 
@@ -213,8 +186,26 @@ readonly (BillLine l) += WHEN NOT status(bill(l)) = BillStatus.draft THEN TRUE;
 
 @defineDocSearch(bill, item, quantity, b, canBePurchased);
 
+// copy
+copy 'Копировать' (Bill b)  { 
+    NEWSESSION {
+        NEW nb = Bill {
+            vendor(nb) <- vendor(b);
+            note(nb) <- note(b);
+            FOR bill(BillLine l) = b INLINE NEW nl = BillLine DO {
+                bill(nl) <- nb;
+                item(nl) <- item(l);
+                quantity(nl) <- quantity(l);
+                unitPrice(nl) <- unitPrice(l);
+            }
+            SHOW bill OBJECTS b = nb DOCKED;
+        }
+    }
+}
+EXTEND FORM bill PROPERTIES(b) copy;
+
 DESIGN bill {
     secondaryActions {
-        MOVE PROPERTY(copyBill(b)); 
+        MOVE PROPERTY(copy(b)); 
     }
 }

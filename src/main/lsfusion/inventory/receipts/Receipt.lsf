@@ -10,42 +10,49 @@ CLASS Receipt 'Поступление';
 
 immediateTransfer 'Незапланированное поступление' = DATA BOOLEAN (Receipt);
 
-// Операция
+// type
 type 'Тип' = DATA ReceiptType (Receipt) NONULL;
 nameType 'Тип' (Receipt r) = name(type(r));
 
-WHEN LOCAL SET(Receipt r IS Receipt) AND countTypes() = 1 DO type(r) <- lastType(); 
+WHEN LOCAL SET(Receipt r IS Receipt) AND NOT CHANGED(type(r)) DO type(r) <- defaultReceiptType(); 
 
 scheduledDate 'Планируемая дата' = DATA DATETIME (Receipt) NONULL IN id;
 scheduledDate (Receipt r) <- currentDateTime() WHEN SET(r IS Receipt);
 
-// Номер
 @defineSeriesNumberType(receipt);
 receipt (STRING[28] number) = GROUP LAST Receipt r BY number(r);
 
-// Места хранения
+// location
 location 'Место хранения' = DATA Location (Receipt) NONULL INDEXED;
 nameLocation 'Место хранения' (Receipt r) = name(location(r));
 WHEN LOCAL CHANGED(type(Receipt r)) AND defaultLocation(type(r)) DO location(r) <- defaultLocation(type(r));
 
+// partner
 partner = DATA Partner (Receipt) INDEXED;
 namePartner 'Контрагент' (Receipt r) = name(partner(r));
-note 'Примечание' = DATA ISTRING[50] (Receipt);
 
 CONSTRAINT partner(Receipt r) AND NOT isVendor(partner(r)) 
                 CHECKED BY partner[Receipt]
                 MESSAGE 'Контрагент должен быть вендором';
-                
-sourceDocument 'Основание' = DATA STRING[28] (Receipt);
 
+sourceDocument 'Основание' = DATA STRING[28] (Receipt);
+note 'Примечание' = DATA ISTRING[50] (Receipt);
+
+// lines
 CLASS ReceiptLine 'Строка поступления';
 
 receipt 'Документ' = DATA Receipt (ReceiptLine) NONULL DELETE INDEXED;
+
+index 'Индекс' = PARTITION SUM 1 ORDER ReceiptLine l BY receipt(l) IN id MATERIALIZED;
 
 product 'Продукт' = DATA Product (ReceiptLine) NONULL INDEXED;
 nameProduct 'Продукт' (ReceiptLine l) = name(product(l)) IN id;
 idBarCodeProduct 'Штрих код' (ReceiptLine l) = idBarCode(product(l));
 idProduct 'Код' (ReceiptLine l) = id(product(l));
+
+CONSTRAINT product(ReceiptLine l) AND NOT canBePurchased(product(l))
+            CHECKED BY product[ReceiptLine]
+            MESSAGE 'Товар не предназначен для закупки';
 
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (ReceiptLine);
 nameUnitMeasure 'Ед.изм.' (ReceiptLine l) = name(unitMeasure(l));
@@ -58,27 +65,24 @@ CONSTRAINT initialDemand(ReceiptLine l) < 0 OR initialDemand(l) > maxQuantity(ty
 CONSTRAINT ReceiptLine l IS ReceiptLine AND NOT(initialDemand(l)) AND NOT immediateTransfer(receipt(l))     
             MESSAGE 'Необходимо заполнить планируемое кол-во';
 
-// при редактировании строки открываем редактирование документа
-edit (ReceiptLine l) + { edit(receipt(l)); } 
-
-index 'Индекс' = PARTITION SUM 1 ORDER ReceiptLine l BY receipt(l) IN id MATERIALIZED;
-
-readonly = ABSTRACT CASE BOOLEAN (ReceiptLine); 
+// readonly
 readonly = ABSTRACT CASE BOOLEAN (Receipt);
-readonlyHeader = ABSTRACT CASE BOOLEAN (Receipt);
+readonly = ABSTRACT CASE BOOLEAN (ReceiptLine); 
 
-CONSTRAINT product(ReceiptLine l) AND NOT canBePurchased(product(l))
-            CHECKED BY product[ReceiptLine] 
-            MESSAGE 'Номенклатура не предназначена для закупки';
-
+// Line properties
 partner (ReceiptLine l) = partner(receipt(l));            
 namePartner 'Контрагент' (ReceiptLine l) = namePartner(receipt(l));
 nameLocation 'Место хранения' (ReceiptLine l) = nameLocation(receipt(l));
+
+// edit form
+edit (ReceiptLine l) + { edit(receipt(l)); } 
            
 FORM receipt 'Поступление'
     OBJECTS r = Receipt PANEL
-    PROPERTIES(r) READONLYIF readonly(r) series, number, nameType, nameLocation, note, sourceDocument
-    PROPERTIES(r) READONLYIF readonlyHeader(r) scheduledDate BEFORE series(r), namePartner BEFORE note(r)
+    PROPERTIES(r) READONLYIF readonly(r) 
+                        nameType, scheduledDate, series, number, 
+                        namePartner, nameLocation, sourceDocument,
+                        note
 
     OBJECTS l = ReceiptLine
     PROPERTIES(l) index READONLY
@@ -90,14 +94,94 @@ FORM receipt 'Поступление'
     EDIT Receipt OBJECT r
 ;
 
+DESIGN receipt {
+    OBJECTS {       
+        NEW header {
+            NEW headerCenter {
+                alignment = STRETCH;
+                type = CONTAINERH;
+                NEW headerLeft {
+                    MOVE PROPERTY(nameType(r)) { notNull = TRUE; }
+                    MOVE PROPERTY(scheduledDate(r));
+                    NEW seriesNumber { 
+                        type = CONTAINERH; 
+                        MOVE PROPERTY(series(r)); 
+                        MOVE PROPERTY(number(r));
+                    }
+                }
+                NEW headerRight {
+                    MOVE PROPERTY(namePartner(r))  { notNull = TRUE; }
+                    MOVE PROPERTY(nameLocation(r)) { notNull = TRUE; }           
+                    MOVE PROPERTY(sourceDocument(r));
+                }
+            }
+            NEW headerBottom {
+                alignment = STRETCH;
+                MOVE PROPERTY(note(r));           
+            }
+        }
+        NEW details {
+            fill = 5;
+            type = TABBED;
+            NEW lines {
+                caption = 'Строки';
+                MOVE BOX(l) {
+                    PROPERTY(nameProduct(l)) { notNull = TRUE; }
+                    PROPERTY(initialDemand(l)) { notNull = TRUE; }
+                }
+            }                  
+        }
+    }
+}
+
+@defineBarCodeAdd(receipt, r, product);
+
 FORM receipts 'Поступления'
     OBJECTS r = Receipt
     PROPERTIES(r) READONLY scheduledDate, series, number, nameType, nameLocation, namePartner, note
-    PROPERTIES(r) NEWSESSION NEW, EDIT
-    PROPERTIES(r) NEWSESSION READONLYIF readonly(r) DELETE
+    PROPERTIES(r) NEWSESSION NEW, EDIT, DELETE READONLYIF readonly(r)
 ;
 
-copyReceipt 'Копировать' (Receipt r) { 
+NAVIGATOR {
+    operations {
+        NEW receipts;
+    }
+}
+
+// immediate receipt
+immediateReceipt 'Незапланированное поступление' () {
+    NEWSESSION {
+        NEW r = Receipt {
+            immediateTransfer(r) <- TRUE;
+            SHOW receipt OBJECTS r = r DOCKED;
+        }
+    }
+}IMAGE 'add.png';
+
+EXTEND FORM receipts 
+    PROPERTIES immediateReceipt() DRAW r TOOLBAR
+;
+
+// status
+@defineStatus(receipt, 'поступления', r);
+
+nameStatus 'Статус' (ReceiptLine l) = nameStatus(receipt(l));   
+readonly (ReceiptLine l) += WHEN NOT status(receipt(l)) = ReceiptStatus.draft THEN TRUE;
+
+// history
+@defineDocHistory(receipt, r, product, initialDemand);
+
+// search
+@defineDocSearch(receipt, product, initialDemand, r, canBePurchased);
+
+available 'Доступный остаток' (Receipt r, Product p) = prevAvailableRec(location(r), p);
+
+EXTEND FORM receipt
+    PROPERTIES(r, itm) available
+;
+
+// copy
+copy 'Копировать' (Receipt r) { 
     NEWSESSION {
         NEW nr = Receipt {
             type(nr) <- type(r);
@@ -116,93 +200,11 @@ copyReceipt 'Копировать' (Receipt r) {
 }
 
 EXTEND FORM receipt
-    PROPERTIES(r) copyReceipt 
-;
-
-DESIGN receipt {
-    OBJECTS {       
-        NEW pane {
-            fill = 1;                         
-            NEW pane1 {
-                type = CONTAINERV;
-                NEW box1 {
-                    type = CONTAINERH; 
-                    alignment = STRETCH;                          
-                    MOVE PROPERTY(scheduledDate(r));
-                    MOVE PROPERTY(series(r));
-                    MOVE PROPERTY(number(r));
-                }
-                NEW box2 {
-                    type = CONTAINERH;
-                    MOVE PROPERTY(nameType(r)) { notNull = TRUE; }
-                    MOVE PROPERTY(nameLocation(r)) { notNull = TRUE; }
-                    MOVE PROPERTY(namePartner(r));
-                }
-                NEW box3 {
-                    type = CONTAINERH;
-                    alignment = STRETCH; 
-                    MOVE PROPERTY(sourceDocument(r));
-                    MOVE PROPERTY(note(r));
-                }
-            }
-            NEW details {
-                fill = 1;
-                type = TABBED;
-                NEW lines {
-                    caption = 'Строки';
-                    type = SPLITH;
-                    NEW reclines {
-                        fill = 2;
-                        MOVE BOX(l) {
-                            caption = 'Строки';
-                            PROPERTY(nameProduct(l)) { notNull = TRUE; }
-                            PROPERTY(initialDemand(l));
-                        }
-                    }    
-                }                  
-            }
-        }          
-    }
-}
-
-NAVIGATOR {
-    operations {
-        NEW receipts;
-    }
-}
-
-@defineBarCodeAdd(receipt, r, product);
-
-immediateReceipt 'Незапланированное поступление' () {
-    NEWSESSION {
-        NEW r = Receipt {
-            immediateTransfer(r) <- TRUE;
-            SHOW receipt OBJECTS r = r DOCKED;
-        }
-    }
-}IMAGE 'add.png';
-
-EXTEND FORM receipts 
-    PROPERTIES immediateReceipt() DRAW r TOOLBAR
-;
-
-@defineStatus(receipt, 'поступления', r);
-
-@defineDocHistory(receipt, r, product, initialDemand);
-
-nameStatus 'Статус' (ReceiptLine l) = nameStatus(receipt(l));   
-readonly (ReceiptLine l) += WHEN NOT status(receipt(l)) = ReceiptStatus.draft THEN TRUE;
-
-@defineDocSearch(receipt, product, initialDemand, r, canBePurchased);
-
-available 'Доступный остаток' (Receipt r, Product p) = prevAvailableRec(location(r), p);
-
-EXTEND FORM receipt
-    PROPERTIES(r, itm) available
+    PROPERTIES(r) copy 
 ;
 
 DESIGN receipt {
     secondaryActions {
-        MOVE PROPERTY(copyReceipt(r));
+        MOVE PROPERTY(copy(r));
     }
 }

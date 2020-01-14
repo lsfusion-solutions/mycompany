@@ -65,10 +65,10 @@ idItem 'Код' (InvoiceLine l) = id(item(l));
 
 CONSTRAINT item(InvoiceLine l) AND NOT canBeSold(item(l))
             CHECKED BY item 
-            MESSAGE 'Наменклатура не предназначена для продажи';
+            MESSAGE 'Номенклатура не предназначена для продажи';
 
-unitMeasure 'Ед.изм.' = DATA ItemMeasure (InvoiceLine);
-nameUnitMeasure 'Ед.изм.' (InvoiceLine l) = name(unitMeasure(l));
+unitMeasure = DATA ItemMeasure (InvoiceLine);
+nameUnitMeasure 'Ед. изм.' (InvoiceLine l) = name(unitMeasure(l));
 
 description 'Описание' = DATA STRING (InvoiceLine); 
 
@@ -161,38 +161,10 @@ DESIGN invoice {
     }
 }
 
-// copy
-copyInvoice 'Копировать' (Invoice i)  { 
-    NEWSESSION {
-        NEW ni = Invoice {
-            customer(ni) <- customer(i);
-            note(ni) <- note(i);
-            FOR invoice(InvoiceLine l) = i INLINE NEW nl = InvoiceLine DO {
-                invoice(nl) <- ni;
-                item(nl) <- item(l);
-                quantity(nl) <- quantity(l);
-                unitPrice(nl) <- unitPrice(l);
-            }
-            SHOW invoice OBJECTS i = ni DOCKED;
-        }
-    }
-}
-EXTEND FORM invoice PROPERTIES(i) copyInvoice;
- 
-addInvoice 'Накладная' () {
-    NEWSESSION {
-        NEW b = Invoice {
-            SHOW invoice OBJECTS i = b;  
-        }
-    }
-} IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
-
 FORM invoices 'Расходные накладные'
     OBJECTS i = Invoice
     PROPERTIES(i) READONLY date, dueDate, nameCustomer, note         
-    PROPERTIES(i) NEWSESSION EDIT
-    PROPERTIES(i) NEWSESSION READONLYIF readonly(i) DELETE
-    PROPERTIES addInvoice() DRAW i TOOLBAR
+    PROPERTIES(i) NEWSESSION NEW, EDIT, DELETE READONLYIF readonly(i)
            
     LIST Invoice OBJECT i;
 
@@ -213,8 +185,26 @@ readonly (InvoiceLine l) += WHEN NOT status(invoice(l)) = InvoiceStatus.draft TH
 
 @defineDocSearch(invoice, item, quantity, i, canBeSold);
 
+// copy
+copy 'Копировать' (Invoice i)  { 
+    NEWSESSION {
+        NEW ni = Invoice {
+            customer(ni) <- customer(i);
+            note(ni) <- note(i);
+            FOR invoice(InvoiceLine l) = i INLINE NEW nl = InvoiceLine DO {
+                invoice(nl) <- ni;
+                item(nl) <- item(l);
+                quantity(nl) <- quantity(l);
+                unitPrice(nl) <- unitPrice(l);
+            }
+            SHOW invoice OBJECTS i = ni DOCKED;
+        }
+    }
+}
+EXTEND FORM invoice PROPERTIES(i) copy;
+
 DESIGN invoice {
     secondaryActions {
-        MOVE PROPERTY(copyInvoice(i)); 
+        MOVE PROPERTY(copy(i)); 
     }
 }
