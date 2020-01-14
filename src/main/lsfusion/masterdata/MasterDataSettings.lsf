@@ -1,0 +1,30 @@
+MODULE MasterDataSettings;
+
+REQUIRE Numerator;
+
+NAMESPACE MasterData;
+
+loadInitialData 'Начальные настройки' ABSTRACT LIST();
+defaultData () = IF NOT GROUP SUM 1 IF Numerator n IS Numerator THEN TRUE ELSE NULL;
+
+FORM options 'Настройки'
+    PROPERTIES loadInitialData() SHOWIF defaultData() TOOLBAR
+;
+
+DESIGN options {
+    OBJECTS {
+        type = TABBED;
+        NEW general {
+            caption = 'Общие';
+        } 
+        NEW import {
+            caption = 'Импорт/экспорт';
+        } 
+    }
+}
+
+NAVIGATOR {
+    masterData {
+        NEW options;        
+    }
+}

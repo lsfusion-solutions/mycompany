@@ -1,30 +1,10 @@
-MODULE MasterDataSettings;
+MODULE MasterDataP;
 
-REQUIRE Numerator;
+REQUIRE MetaNumerator,
+        Individual, LegalEntity, Company,
+        Category, ServiceP, Product, BarCode,
+        ItemImage, ItemAttribute, ItemVariant, ItemMeasure,
+        CategoryImport, ProductImport, ItemMeasureImport, BarCodeImport,
+        ServiceImport, IndividualImport, LegalEntityImport;
 
 NAMESPACE MasterData;
-
-loadInitialData 'Начальные настройки' ABSTRACT LIST();
-defaultData () = IF NOT GROUP SUM 1 IF Numerator n IS Numerator THEN TRUE ELSE NULL;
-
-FORM options 'Настройки'
-    PROPERTIES loadInitialData() SHOWIF defaultData() TOOLBAR
-;
-
-DESIGN options {
-    OBJECTS {
-        type = TABBED;
-        NEW general {
-            caption = 'Общие';
-        } 
-        NEW import {
-            caption = 'Импорт/экспорт';
-        } 
-    }
-}
-
-NAVIGATOR {
-    masterData {
-        NEW options;        
-    }
-}
