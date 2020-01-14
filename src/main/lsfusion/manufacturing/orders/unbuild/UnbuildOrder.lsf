@@ -21,7 +21,7 @@ WHEN LOCAL SET(product(UnbuildOrder o)) DO {
 } 
 
 bom 'Спецификация' = DATA Bom (UnbuildOrder) NONULL;
-referenceBom 'Код спецификации' (UnbuildOrder o) = seriesNumber(bom(o));
+referenceBom 'Код спецификации' (UnbuildOrder o) = number(bom(o));
 
 CONSTRAINT bom(UnbuildOrder o) AND NOT product(o) = item(bom(o))
     CHECKED BY bom[UnbuildOrder]
@@ -33,7 +33,7 @@ locationTo 'Место хранения (куда)' = DATA Location (UnbuildOrde
 nameLocationTo 'Место хранения (куда)' (UnbuildOrder o) = name(locationTo(o));
 
 manufacturingOrder 'Заказ на производство' = DATA ManufacturingOrder (UnbuildOrder);
-manOrderReference 'Заказ на производство' (UnbuildOrder o) = seriesNumber(manufacturingOrder(o));
+manOrderReference 'Заказ на производство' (UnbuildOrder o) = number(manufacturingOrder(o));
 
 CLASS UnbuildOrderLine 'Строка разбора';
 
@@ -60,7 +60,7 @@ WHEN LOCAL SET(item(UnbuildOrderLine l)) DO {
 
 FORM unbuildOrders 'Заказы на разбор'
     OBJECTS o = UnbuildOrder
-    PROPERTIES(o) READONLY seriesNumber, nameProduct, referenceBom, quantity, nameUnitMeasure, nameLocationFrom
+    PROPERTIES(o) READONLY number, nameProduct, referenceBom, quantity, nameUnitMeasure, nameLocationFrom
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
         
     LIST UnbuildOrder OBJECT o

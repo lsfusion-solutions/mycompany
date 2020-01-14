@@ -101,13 +101,13 @@ WHEN LOCAL (SETCHANGED(item(OrderLine ol)) OR SETCHANGED(priceType(order(ol)))) 
 
 // Line properties
 dateTime 'Дата' (OrderLine l) = dateTime(order(l));
-seriesNumber 'Номер' (OrderLine l) = seriesNumber(order(l));
+number 'Номер' (OrderLine l) = number(order(l));
 nameLocation 'Место доставки' (OrderLine l) = nameLocation(order(l));
 nameCustomer 'Заказчик' (OrderLine l) = nameCustomer(order(l));
 
 FORM order 'Заказ'
     OBJECTS o = Order PANEL
-    PROPERTIES(o) dateTime READONLY, series, number, nameCustomer, namePriceType,
+    PROPERTIES(o) dateTime, number, nameCustomer, namePriceType,
                   scheduledDate, deliveryAddress, nameLocation, nameIncoterm, 
                   nameRepresentative, customerReference,
                   validity,
@@ -129,11 +129,7 @@ DESIGN order {
             type = CONTAINERH;
             NEW title {
                 MOVE PROPERTY(dateTime(o));
-                NEW seriesNumber { 
-                    type = CONTAINERH; 
-                    MOVE PROPERTY(series(o)); 
-                    MOVE PROPERTY(number(o));
-                }
+                MOVE PROPERTY(number(o));
                 MOVE PROPERTY(nameCustomer(o)) { notNull = TRUE; } 
                 MOVE PROPERTY(namePriceType(o)); 
             }    
@@ -193,7 +189,7 @@ DESIGN order {
 
 FORM orders 'Заказы'
      OBJECTS o = Order
-     PROPERTIES(o) READONLY seriesNumber, nameCustomer,
+     PROPERTIES(o) READONLY number, nameCustomer,
                             scheduledDate, deliveryAddress, nameLocation, nameIncoterm, 
                             invoiceDate, namePaymentTerms, addressCustomer,
                             nameRepresentative, customerReference,

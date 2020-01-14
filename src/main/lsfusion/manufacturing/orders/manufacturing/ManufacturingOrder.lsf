@@ -21,13 +21,13 @@ WHEN LOCAL SET(item(ManufacturingOrder m)) DO {
 } 
 
 bom 'Спецификация' = DATA Bom (ManufacturingOrder) NONULL;
-referenceBom 'Код спецификация' (ManufacturingOrder m) = seriesNumber(bom(m)) CHARWIDTH 25;
+referenceBom 'Код спецификация' (ManufacturingOrder m) = number(bom(m)) CHARWIDTH 25;
 deadline 'Дата старта' = DATA DATETIME (ManufacturingOrder);
 manufacturingDate 'Дата производства' = DATA DATETIME (ManufacturingOrder);
 responsible 'Ответственный' = DATA Individual (ManufacturingOrder);
 nameResponsible 'Ответственный' (ManufacturingOrder m) = name(responsible(m));
 source = DATA Order (ManufacturingOrder);
-numberSource 'Основание' (ManufacturingOrder m) = seriesNumber(source(m));
+numberSource 'Основание' (ManufacturingOrder m) = number(source(m));
 company 'Компания' = DATA Partner (ManufacturingOrder);
 nameCompany 'Компания' (ManufacturingOrder m) = name(company(m));
 
@@ -108,7 +108,7 @@ WHEN LOCAL (SETCHANGED(bom(ManufacturingOrder m)) OR SETCHANGED(quantity(m))) DO
 
 FORM manufacturingOrders 'Заказы на производство'
     OBJECTS o = ManufacturingOrder
-    PROPERTIES(o) READONLY seriesNumber, deadline, manufacturingDate, nameItem, numberSource, quantity, nameUnitMeasure
+    PROPERTIES(o) READONLY number, deadline, manufacturingDate, nameItem, numberSource, quantity, nameUnitMeasure
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
     
     LIST ManufacturingOrder OBJECT o

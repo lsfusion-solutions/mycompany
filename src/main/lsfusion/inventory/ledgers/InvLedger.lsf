@@ -8,6 +8,7 @@ CLASS ABSTRACT InvLedger 'Регистр изменения остатка';
 
 active 'Активный' = ABSTRACT BOOLEAN (InvLedger);
 dateTime 'Время' = ABSTRACT DATETIME (InvLedger) MATERIALIZED;
+number 'Номер' = ABSTRACT STRING[31] (InvLedger);
 
 fromLocation 'Место хранения (откуда)' = ABSTRACT Location (InvLedger) MATERIALIZED;
 nameFromLocation 'Место хранения (откуда)' (InvLedger l) = name(fromLocation(l));
@@ -17,11 +18,6 @@ nameToLocation 'Место хранения (куда)' (InvLedger l) = name(toL
 
 product 'Товар' = ABSTRACT Product (InvLedger) MATERIALIZED;
 nameProduct 'Товар' (InvLedger l) = name(product(l));
-
-series 'Серия' = ABSTRACT STRING[2] (InvLedger);
-number 'Номер' = ABSTRACT STRING[28] (InvLedger);
-
-seriesNumber 'Серия/Номер' (InvLedger l) = CONCAT '/', series(l), number(l) CHARWIDTH 10;
 
 INDEX product(InvLedger l);
 INDEX fromLocation(InvLedger l), product(l);

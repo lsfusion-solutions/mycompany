@@ -38,7 +38,7 @@ WHEN ([GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) AND item(l) IS Product BY o
             type(ns) <- receiptType();
             ready(ns) <- TRUE;           
             order(ns) <- o; 
-            sourceDocument(ns) <- seriesNumber(o);    
+            sourceDocument(ns) <- number(o);    
         }
     FOR order(OrderLine ol) = o AND toReceive(ol) NEW rl = ReceiptLine DO {            
         receipt(rl) <- lastOpenReceipt(o);
@@ -73,7 +73,7 @@ EXTEND FORM order
     PROPERTIES(l) SHOWIF confirmed(o) doneReceipt ON CHANGE { DIALOG orderReceiptShow OBJECTS ol = l; }
         
     OBJECTS rc = Receipt
-    PROPERTIES(rc) READONLY seriesNumber, scheduledDate, executionDate, nameStatus
+    PROPERTIES(rc) READONLY number, scheduledDate, executionDate, nameStatus
     PROPERTIES(rc) EDIT GRID   
     FILTERS order(rc) = o
 ;

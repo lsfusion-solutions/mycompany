@@ -18,7 +18,7 @@ bomExport 'Экспорт спецификаций' () {
         }
         LOCAL f = EXCELFILE ();
         
-        EXPORT XLSX HEADER FROM 'Серия' = series(Bom b), 'Номер' = number(b), 'Номенклатура' = id(item(b)), 
+        EXPORT XLSX HEADER FROM 'Номер' = number(Bom b), 'Номенклатура' = id(item(b)), 
             'Кол-во' = quantity(b), 'Единица измерения' = id(unitMeasure(b)), 'Компания' = id(company(b)), 
             'Последовательность' = sequence(b) TO f;        
         open(f());
@@ -38,7 +38,7 @@ componentLineExport 'Экспорт строк спецификаций' () {
     
         LOCAL f = EXCELFILE ();
         
-        EXPORT XLSX HEADER FROM 'Код спецификации' = seriesNumber(bom(ComponentLine l)), 'Номенклатура' = id(item(l)), 
+        EXPORT XLSX HEADER FROM 'Номер спецификации' = number(bom(ComponentLine l)), 'Номенклатура' = id(item(l)), 
             'Кол-во' = quantity(l), 'Единица измерения' = id(unitMeasure(l)) TO f;
         open(f());
     }
@@ -57,14 +57,13 @@ byProductLineExport 'Экспорт производных номенклату�
     
         LOCAL f = EXCELFILE ();
         
-        EXPORT XLSX HEADER FROM 'Код спецификации' = seriesNumber(bom(ByproductLine l)), 'Номенклатура' = id(item(l)), 
+        EXPORT XLSX HEADER FROM 'Номер спецификации' = number(bom(ByproductLine l)), 'Номенклатура' = id(item(l)), 
                 'Кол-во' = quantity(l), 'Единица измерения' = id(unitMeasure(l)) TO f;
         open(f());
     }
 }
 
 bomImport 'Импорт спецификаций' () {
-    LOCAL series = STRING[2] (INTEGER);
     LOCAL number = STRING[28] (INTEGER);
     LOCAL idItem = STRING[50] (INTEGER);
     LOCAL quantity = NUMERIC[16,3] (INTEGER);
@@ -74,7 +73,7 @@ bomImport 'Импорт спецификаций' () {
     
     INPUT f = EXCELFILE DO {
         NEWSESSION {
-            IMPORT XLS HEADER FROM f TO series, number, idItem, quantity, idUnitMeasure, idCompany, sequence;
+            IMPORT XLS HEADER FROM f TO number, idItem, quantity, idUnitMeasure, idCompany, sequence;
             
             FOR [GROUP SUM 1 BY idItem(INTEGER i)](num) AND NOT item[STRING](num) DO {
                 MESSAGE 'Отсутствует товар в базе данных с кодом ' + num + '. Импорт отменен';
@@ -82,7 +81,6 @@ bomImport 'Импорт спецификаций' () {
             }
             
             FOR imported(INTEGER i) DO NEW b = Bom {
-                series(b) <- series(i);
                 number(b) <- number(i);
                 item(b) <- item(idItem(i));
                 quantity(b) <- quantity(i);
@@ -113,7 +111,7 @@ componentLineImport 'Импорт строк спецификаций' () {
             } 
             
             FOR imported(INTEGER i) DO NEW l = ComponentLine {
-                bom(l) <- GROUP LAST Bom b IF seriesNumber(b) = id(i);
+                bom(l) <- GROUP LAST Bom b IF number(b) = id(i);
                 item(l) <- item(idItem(i));
                 quantity(l) <- quantity(i);
                 unitMeasure(l) <- itemMeasure(idUnitMeasure(i));  
@@ -141,7 +139,7 @@ byProductLineImport 'Импорт производных номенклатур'
             }
             
             FOR imported(INTEGER i) DO NEW l = ByproductLine {
-                bom(l) <- GROUP LAST Bom b IF seriesNumber(b) = id(i);
+                bom(l) <- GROUP LAST Bom b IF number(b) = id(i);
                 item(l) <- item(idItem(i));
                 quantity(l) <- quantity(i);
                 unitMeasure(l) <- itemMeasure(idUnitMeasure(i));  

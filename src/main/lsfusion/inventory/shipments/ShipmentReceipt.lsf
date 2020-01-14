@@ -6,7 +6,7 @@ NAMESPACE Inventory;
 
 isReturn 'Возврат' = DATA BOOLEAN (Receipt);
 referenceShipment 'Ссылка на отгрузку' = DATA ShipmentLine (ReceiptLine);
-referenceNumber 'Ссылка на отгрузку' (ReceiptLine l) = seriesNumber(shipment(referenceShipment(l)));
+referenceNumber 'Ссылка на отгрузку' (ReceiptLine l) = number(shipment(referenceShipment(l)));
 
 CONSTRAINT referenceShipment(ReceiptLine l) AND NOT (partner(referenceShipment(l)) = partner(l) AND 
     product(referenceShipment(l)) = product(l))
@@ -49,7 +49,7 @@ DESIGN shipment {
     }             
 }
 
-shipmentNumber 'Отгрузка' (ShipmentLine l) = seriesNumber(shipment(l));
+shipmentNumber 'Отгрузка' (ShipmentLine l) = number(shipment(l));
 
 FORM listShipmentLines
     OBJECTS p = Product, pa = Partner PANEL 

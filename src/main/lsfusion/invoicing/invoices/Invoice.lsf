@@ -48,7 +48,7 @@ CONSTRAINT companyAccount(Invoice b) AND NOT company(b) = holder(companyAccount(
     MESSAGE 'Счет должен принадлежать выбранной компании';
 
 customerReference 'Код покупателя' = DATA STRING[30] (Invoice);
-sourceDocument 'Основание' = DATA STRING[30] (Invoice);
+sourceDocument 'Основание' = DATA STRING[31] (Invoice);
 note 'Примечание' = DATA ISTRING[50] (Invoice);
 
 // lines
@@ -92,7 +92,7 @@ nameCompany 'Компания' (InvoiceLine l) = nameCompany(invoice(l));
 FORM invoice 'Расходная накладная'
     OBJECTS  i = Invoice PANEL 
     PROPERTIES(i) READONLYIF readonly(i) 
-                             date, series, number, nameCustomer, nameCompany, sourceDocument,
+                             date, number, nameCustomer, nameCompany, sourceDocument,
                              dueDate, nameCustomerAccount, nameCompanyAccount,
                              customerReference, note
         
@@ -111,11 +111,7 @@ DESIGN invoice {
             alignment = STRETCH;
             NEW headerLeft {
                 MOVE PROPERTY(date(i));
-                NEW seriesNumber { 
-                    type = CONTAINERH; 
-                    MOVE PROPERTY(series(i)); 
-                    MOVE PROPERTY(number(i));
-                }
+                MOVE PROPERTY(number(i));
             }
             NEW headerRight {
                 MOVE PROPERTY(nameCustomer(i))  { notNull = TRUE; }

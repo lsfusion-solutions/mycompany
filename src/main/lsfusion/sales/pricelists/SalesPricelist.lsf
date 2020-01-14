@@ -68,7 +68,7 @@ changeMarkup (PricelistLine l, PriceType t) {
 }
 
 // Line properties
-seriesNumber 'Номер' (PricelistLine prl) = seriesNumber(pricelist(prl));
+number 'Номер' (PricelistLine prl) = number(pricelist(prl));
 startDate 'Начало действия' (PricelistLine prl) = startDate(pricelist(prl));
 endDate 'Окончание действия' (PricelistLine prl) = endDate(pricelist(prl));
 note 'Примечание' (PricelistLine prl) = note(pricelist(prl));
@@ -84,7 +84,7 @@ readonly = ABSTRACT CASE BOOLEAN (Pricelist);
 
 FORM pricelist 'Прайс-лист'
     OBJECTS p = Pricelist PANEL
-    PROPERTIES(p) series, number, startDate, endDate, note,
+    PROPERTIES(p) number, startDate, endDate, note,
                   priceListTypes ON CHANGE { SHOW chooseTypes OBJECTS pr = p; }, 
                   showCost, showMarkup, showCurrentPrice
 
@@ -106,11 +106,7 @@ DESIGN pricelist {
         NEW header {
             type = CONTAINERH;
             NEW params {
-                NEW seriesNumber {
-                    type = CONTAINERH;
-                    MOVE PROPERTY(series(p));
-                    MOVE PROPERTY(number(p));
-                }
+                MOVE PROPERTY(number(p));
                 NEW period {
                     type = CONTAINERH;
                     MOVE PROPERTY(startDate(p)) { caption = 'Действует с '; }
@@ -142,7 +138,7 @@ DESIGN pricelist {
 
 FORM pricelists 'Прайс-листы'
     OBJECTS p = Pricelist
-    PROPERTIES(p) READONLY seriesNumber, startDate, endDate, note, priceListTypes
+    PROPERTIES(p) READONLY number, startDate, endDate, note, priceListTypes
     PROPERTIES(p) NEWSESSION NEW, EDIT ,DELETE
     
     LIST Pricelist OBJECT p

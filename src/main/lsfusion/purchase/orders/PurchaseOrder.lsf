@@ -82,13 +82,13 @@ WHEN LOCAL CHANGED (item(OrderLine ol)) DO {
 
 // Line properties
 date 'Создан' (OrderLine l) = dateTime(order(l));
-seriesNumber 'Номер' (OrderLine l) = seriesNumber(order(l));
+number 'Номер' (OrderLine l) = number(order(l));
 nameLocation 'Место доставки' (OrderLine l) = nameLocation(order(l));
 nameVendor 'Поставщик' (OrderLine l) = nameVendor(order(l));
 
 FORM order 'Заказ'
     OBJECTS o = Order PANEL
-    PROPERTIES(o) dateTime READONLY, series, number, nameVendor,
+    PROPERTIES(o) dateTime, number, nameVendor,
                   scheduledDate, nameLocation, nameIncoterm,
                   nameRepresentative, vendorReference,
                   namePaymentTerms
@@ -109,11 +109,7 @@ DESIGN order {
             type = CONTAINERH;
             NEW title {
                 MOVE PROPERTY(dateTime(o));
-                NEW seriesNumber { 
-                    type = CONTAINERH; 
-                    MOVE PROPERTY(series(o)); 
-                    MOVE PROPERTY(number(o));
-                }
+                MOVE PROPERTY(number(o));
                 MOVE PROPERTY(nameVendor(o)) { notNull = TRUE; } 
             }
             NEW relatedDoc {
@@ -165,7 +161,7 @@ DESIGN order {
 
 FORM orders 'Заказы'
     OBJECTS o = Order
-    PROPERTIES(o) READONLY dateTime, series, number, nameVendor,
+    PROPERTIES(o) READONLY dateTime, number, nameVendor,
                            scheduledDate, nameLocation, nameIncoterm,
                            nameRepresentative, vendorReference,
                            namePaymentTerms,

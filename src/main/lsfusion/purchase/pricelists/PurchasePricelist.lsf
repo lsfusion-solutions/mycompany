@@ -38,7 +38,7 @@ codeItemVendor 'Код у поставщика' = DATA STRING[20] (PricelistLine
 unitMeasure 'Единицы поставщика' = DATA ItemMeasure (PricelistLine);
 
 // Line properties
-seriesNumber 'Номер' (PricelistLine prl) = seriesNumber(pricelist(prl));
+number 'Номер' (PricelistLine prl) = number(pricelist(prl));
 startDate 'Начало действия' (PricelistLine prl) = startDate(pricelist(prl));
 endDate 'Окончание действия' (PricelistLine prl) = endDate(pricelist(prl));
 note 'Примечание' (PricelistLine prl) = note(pricelist(prl));
@@ -51,7 +51,7 @@ pricelistLineA (Partner p, Item i, DATETIME d) =
 
 FORM pricelist 'Прайс-лист'
     OBJECTS p = Pricelist PANEL
-    PROPERTIES(p) series, number, startDate, endDate, nameVendor, note
+    PROPERTIES(p) number, startDate, endDate, nameVendor, note
     
     OBJECTS l = PricelistLine
     PROPERTIES(l) index READONLY, nameItem, nameUnitMeasure READONLY, nameItemVendor, codeItemVendor,
@@ -62,14 +62,10 @@ FORM pricelist 'Прайс-лист'
     EDIT Pricelist OBJECT p
 ;
 
-DESIGN pricelist{
+DESIGN pricelist {
     OBJECTS {
         NEW header {
-            NEW seriesNumber {
-                type = CONTAINERH;
-                MOVE PROPERTY(series(p));
-                MOVE PROPERTY(number(p));
-            }
+            MOVE PROPERTY(number(p));
             NEW period {
                 type = CONTAINERH;
                 MOVE PROPERTY(startDate(p)) { caption = 'Действует с'; }
@@ -90,7 +86,7 @@ DESIGN pricelist{
 
 FORM pricelists 'Прайс-листы'
     OBJECTS p = Pricelist
-    PROPERTIES(p) READONLY seriesNumber, startDate, endDate, nameVendor, note
+    PROPERTIES(p) READONLY number, startDate, endDate, nameVendor, note
     PROPERTIES(p) NEWSESSION NEW, EDIT, DELETE 
 
     LIST Pricelist OBJECT p

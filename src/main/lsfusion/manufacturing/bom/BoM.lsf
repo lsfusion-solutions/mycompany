@@ -18,7 +18,7 @@ nameUnitMeasure 'Ед.изм.' (Bom b) = name(unitMeasure(b));
 
 @defineSeriesNumber(bom, 'Спецификации', 'СП');
 
-bom (STRING[50] id) = GROUP AGGR Bom b BY seriesNumber(b);
+bom (STRING[50] id) = GROUP AGGR Bom b BY number(b);
 
 company 'Компания' = DATA Partner (Bom);
 nameCompany 'Компания' (Bom b) = name(company(b));
@@ -78,7 +78,7 @@ WHEN LOCAL SETCHANGED (item(ByproductLine l)) DO {
 
 FORM bom 'Спецификация'
     OBJECTS b = Bom PANEL 
-    PROPERTIES(b) nameItem, quantity, nameUnitMeasure, series, number, nameCompany, archived, unbuild
+    PROPERTIES(b) nameItem, quantity, nameUnitMeasure, number, nameCompany, archived, unbuild
     PROPERTIES(b) sequence, nameOperation
     
     OBJECTS c = ComponentLine
@@ -113,7 +113,6 @@ DESIGN bom {
             }
             NEW rightHeader {
                 caption = '';
-                MOVE PROPERTY(series(b));
                 MOVE PROPERTY(number(b));
                 MOVE PROPERTY(nameCompany(b));
             }            
@@ -148,7 +147,7 @@ DESIGN bom {
 
 FORM boms 'Спецификации'
     OBJECTS b = Bom
-    PROPERTIES(b) READONLY nameItem, quantity, nameUnitMeasure, seriesNumber, nameCompany, archived
+    PROPERTIES(b) READONLY nameItem, quantity, nameUnitMeasure, number, nameCompany, archived
     PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE 
     
     LIST Bom OBJECT b

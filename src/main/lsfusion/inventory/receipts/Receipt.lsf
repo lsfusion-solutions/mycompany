@@ -20,7 +20,7 @@ scheduledDate 'Планируемая дата' = DATA DATETIME (Receipt) NONULL
 scheduledDate (Receipt r) <- currentDateTime() WHEN SET(r IS Receipt);
 
 @defineSeriesNumberType(receipt);
-receipt (STRING[28] number) = GROUP LAST Receipt r BY number(r);
+receipt (STRING[31] number) = GROUP LAST Receipt r BY number(r);
 
 // location
 location 'Место хранения' = DATA Location (Receipt) NONULL INDEXED;
@@ -35,7 +35,7 @@ CONSTRAINT partner(Receipt r) AND NOT isVendor(partner(r))
                 CHECKED BY partner[Receipt]
                 MESSAGE 'Контрагент должен быть вендором';
 
-sourceDocument 'Основание' = DATA STRING[28] (Receipt);
+sourceDocument 'Основание' = DATA STRING[31] (Receipt);
 note 'Примечание' = DATA ISTRING[50] (Receipt);
 
 // lines
@@ -80,7 +80,7 @@ edit (ReceiptLine l) + { edit(receipt(l)); }
 FORM receipt 'Поступление'
     OBJECTS r = Receipt PANEL
     PROPERTIES(r) READONLYIF readonly(r) 
-                        nameType, scheduledDate, series, number, 
+                        nameType, scheduledDate, number, 
                         namePartner, nameLocation, sourceDocument,
                         note
 
@@ -103,11 +103,7 @@ DESIGN receipt {
                 NEW headerLeft {
                     MOVE PROPERTY(nameType(r)) { notNull = TRUE; }
                     MOVE PROPERTY(scheduledDate(r));
-                    NEW seriesNumber { 
-                        type = CONTAINERH; 
-                        MOVE PROPERTY(series(r)); 
-                        MOVE PROPERTY(number(r));
-                    }
+                    MOVE PROPERTY(number(r));
                 }
                 NEW headerRight {
                     MOVE PROPERTY(namePartner(r))  { notNull = TRUE; }
@@ -138,7 +134,7 @@ DESIGN receipt {
 
 FORM receipts 'Поступления'
     OBJECTS r = Receipt
-    PROPERTIES(r) READONLY scheduledDate, series, number, nameType, nameLocation, namePartner, note
+    PROPERTIES(r) READONLY scheduledDate, number, nameType, nameLocation, namePartner, note
     PROPERTIES(r) NEWSESSION NEW, EDIT, DELETE READONLYIF readonly(r)
 ;
 

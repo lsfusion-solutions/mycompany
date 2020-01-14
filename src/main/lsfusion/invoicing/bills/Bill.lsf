@@ -48,7 +48,7 @@ CONSTRAINT companyAccount(Bill b) AND NOT company(b) = holder(companyAccount(b))
     MESSAGE 'Счет должен принадлежать выбранной компании';
 
 vendorReference 'Код поставщика' = DATA STRING[30] (Bill);
-sourceDocument 'Основание' = DATA STRING[30] (Bill);
+sourceDocument 'Основание' = DATA STRING[31] (Bill);
 note 'Примечание' = DATA ISTRING[50] (Bill);
 
 // lines
@@ -92,7 +92,7 @@ nameCompany 'Компания' (BillLine l) = nameCompany(bill(l));
 FORM bill 'Приходная накладная'
     OBJECTS  b = Bill PANEL 
     PROPERTIES(b) READONLYIF readonly(b) 
-                             date, series, number, 
+                             date, number, 
                              nameVendor, nameCompany, sourceDocument,
                              dueDate, nameVendorAccount, nameCompanyAccount,
                              vendorReference, note
@@ -112,11 +112,7 @@ DESIGN bill {
             type = CONTAINERH;
             NEW headerLeft {
                 MOVE PROPERTY(date(b));
-                NEW seriesNumber { 
-                    type = CONTAINERH; 
-                    MOVE PROPERTY(series(b)); 
-                    MOVE PROPERTY(number(b));
-                }
+                MOVE PROPERTY(number(b));
             }
             NEW headerRight {
                 MOVE PROPERTY(nameVendor(b))  { notNull = TRUE; }

@@ -6,7 +6,7 @@ NAMESPACE Manufacturing;
 
 nameProductIndent 'Номенклатура' (ComponentLine l, TEXT path) = STRING (CONCAT '', repeat('    ', wordCount(path, '/') - 1), nameItem(l));
 
-reference 'Спецификация' (ComponentLine l) = seriesNumber(nestedBom(l));
+reference 'Спецификация' (ComponentLine l) = number(nestedBom(l));
 
 itemsCost 'Себестоимость товаров' (Bom b, ComponentLine l, TEXT path) = 
     NUMERIC[16,3](quantity(b, l, path) * cost(item(l)));
@@ -24,7 +24,7 @@ FORM chooseBom
     OBJECTS p = Product
     
     OBJECTS b = Bom
-    PROPERTIES(b) READONLY nameItem, quantity, nameUnitMeasure, seriesNumber
+    PROPERTIES(b) READONLY nameItem, quantity, nameUnitMeasure, number
     FILTERS item(b) = p
 ;
 
@@ -36,7 +36,7 @@ chooseBom (ComponentLine l) {
          
 FORM structureAndCost 'Структура и стоимость'
     OBJECTS b = Bom PANEL 
-    PROPERTIES(b) READONLY seriesNumber, cost, componentsCost
+    PROPERTIES(b) READONLY number, cost, componentsCost
        
     OBJECTS (l = ComponentLine, path = TEXT)
     PROPERTIES nameProductIndent(l, path), reference(l) ON CHANGE chooseBom(l), 

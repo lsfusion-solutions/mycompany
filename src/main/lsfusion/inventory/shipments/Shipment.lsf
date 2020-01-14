@@ -43,7 +43,7 @@ CONSTRAINT partner(Shipment s) AND NOT isCustomer(partner(s))
 
 WHEN SETCHANGED(type(Shipment s)) AND NOT isTransfer(type(s)) DO toLocation(s) <- NULL;
 
-sourceDocument 'Основание' = DATA STRING[30] (Shipment) CHARWIDTH 10;
+sourceDocument 'Основание' = DATA STRING[31] (Shipment) CHARWIDTH 10;
 
 CLASS ShipmentLine 'Строка отгрузки';
 
@@ -87,8 +87,8 @@ nameLocation 'Место хранения' (ShipmentLine l) = nameLocation(shipm
 
 FORM shipment 'Отгрузка'
     OBJECTS s = Shipment PANEL 
-    PROPERTIES(s) READONLYIF readonly(s) series, number, nameType, nameLocation, note, sourceDocument
-    PROPERTIES(s) READONLYIF readonlyHeader(s) scheduledDate BEFORE series(s), 
+    PROPERTIES(s) READONLYIF readonly(s) number, nameType, nameLocation, note, sourceDocument
+    PROPERTIES(s) READONLYIF readonlyHeader(s) scheduledDate BEFORE number(s), 
         nameToLocation SHOWIF isTransfer(type(s)) BEFORE note(s), namePartner SHOWIF NOT isTransfer(type(s)) BEFORE note(s)
                   
     OBJECTS l = ShipmentLine
@@ -102,7 +102,7 @@ FORM shipment 'Отгрузка'
 
 FORM shipments 'Отгрузки'
     OBJECTS s = Shipment
-    PROPERTIES(s) READONLY scheduledDate, series, number, nameType, nameLocation,
+    PROPERTIES(s) READONLY scheduledDate, number, nameType, nameLocation,
                   nameToLocation, namePartner, note
     PROPERTIES(s) NEWSESSION READONLYIF readonly(s) DELETE
     PROPERTIES(s) NEWSESSION NEW, EDIT
@@ -140,7 +140,6 @@ DESIGN shipment {
                     type = CONTAINERH; 
                     alignment = STRETCH;                                        
                     MOVE PROPERTY(scheduledDate(s));
-                    MOVE PROPERTY(series(s));
                     MOVE PROPERTY(number(s));
                 }
                 NEW box2 {
