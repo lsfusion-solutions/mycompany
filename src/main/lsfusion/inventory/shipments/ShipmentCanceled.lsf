@@ -24,8 +24,6 @@ cancel 'Отменить' (Shipment s) {
 status(Shipment s) += WHEN canceled(s) THEN ShipmentStatus.canceled;
 colorStatus(Shipment s) += WHEN status(s) == ShipmentStatus.canceled THEN RGB(181,195,247);
 
-readonlyHeader (Shipment s) += WHEN status(s) = ShipmentStatus.canceled THEN TRUE;
-
 EXTEND FORM shipment
     PROPERTIES(s) cancel SHOWIF NOT (status(s) = ShipmentStatus.draft OR status(s) = ShipmentStatus.canceled), canceled 
 ;

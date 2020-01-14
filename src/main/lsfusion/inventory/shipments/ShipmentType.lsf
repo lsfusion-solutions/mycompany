@@ -45,21 +45,25 @@ loadInitialData () + {
     }
 }
 
-defaultLocationTo 'Место хранения по умолчанию (куда)' = DATA Location(ShipmentType);
-nameDefaultLocationTo 'Место хранения по умолчанию (куда)' (ShipmentType o) = name(defaultLocationTo(o));
-defaultLocationFrom 'Место хранения по умолчанию (откуда)' = DATA Location(ShipmentType);
-nameDefaultLocationFrom 'Место хранения по умолчанию (откуда)' (ShipmentType o) = name(defaultLocationFrom(o));
+defaultLocation = DATA Location (ShipmentType);
+nameDefaultLocationFrom 'Место хранения по умолчанию (откуда)' (ShipmentType o) = name(defaultLocation(o));
+
+defaultToLocation = DATA Location (ShipmentType);
+nameDefaultToLocation 'Место хранения по умолчанию (куда)' (ShipmentType o) = name(defaultToLocation(o));
+
+CONSTRAINT defaultToLocation(ShipmentType s) = defaultLocation(s)
+           MESSAGE 'Места хранения откуда и куда не могут совпадать';
+
 maxQuantity 'Максимальное кол-во товара' = DATA NUMERIC[16,3] (ShipmentType);
 
-countTypesShipment 'Кол-во типов' () = GROUP SUM 1 IF r IS ShipmentType; 
-lastTypeShipment 'Последний тип' = GROUP LAST r AS ShipmentType ORDER r;
+countShipmentTypes 'Кол-во типов' () = GROUP SUM 1 IF r IS ShipmentType; 
+firstShipmentType = GROUP LAST ShipmentType r ORDER DESC r WHERE r IS ShipmentType;
 
-CONSTRAINT defaultLocationTo(ShipmentType s) == defaultLocationFrom(s)
-                MESSAGE 'Места хранения откуда и куда не могут совпадать';
+defaultShipmentType = firstShipmentType() IF countShipmentTypes() = 1;
 
 FORM shipmentType 'Тип отгрузки'
     OBJECTS o = ShipmentType PANEL 
-    PROPERTIES(o) name, isTransfer, nameNumerator, nameDefaultLocationTo SHOWIF isTransfer(o), 
+    PROPERTIES(o) name, isTransfer, nameNumerator, nameDefaultToLocation SHOWIF isTransfer(o), 
                 nameDefaultLocationFrom, maxQuantity, picking
      
     EDIT ShipmentType OBJECT o;
@@ -67,7 +71,7 @@ FORM shipmentType 'Тип отгрузки'
 
 FORM shipmentTypes 'Типы отгрузки'
     OBJECTS o = ShipmentType
-    PROPERTIES(o) READONLY name, isTransfer, nameNumerator, nameDefaultLocationTo, 
+    PROPERTIES(o) READONLY name, isTransfer, nameNumerator, nameDefaultToLocation, 
                 nameDefaultLocationFrom, maxQuantity, picking
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
     LIST ShipmentType OBJECT o;

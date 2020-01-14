@@ -33,12 +33,12 @@ newShipment (Invoice b) {
     NEW r = Shipment { 
         invoice(r) <- b; 
 
-        partner(r) <- customer(b);
+        customer(r) <- customer(b);
         type(r) <- typeShipmentFromInvoice();
         location(r) <- location(b);
         sourceDocument(r) <- number(b);
 
-        immediateTransfer(r) <- TRUE;
+        immediate(r) <- TRUE;
         done(r) <- TRUE;    
     
         FOR invoice(InvoiceLine l) = b AND item(l) IS Product INLINE NEW rl = ShipmentLine DO {            

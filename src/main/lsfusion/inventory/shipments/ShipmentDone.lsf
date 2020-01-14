@@ -28,7 +28,7 @@ validate 'Отгружен' (Shipment s) {
     IF canceled() THEN RETURN; // если сработало ограничение, то выходим
     
     NEWSESSION {
-        IF NOT immediateTransfer(s) THEN {
+        IF NOT immediate(s) THEN {
             extraValidate(s);
             
             IF NOT (GROUP SUM done(ShipmentLine l) IF shipment(l) = s) THEN
@@ -40,7 +40,7 @@ validate 'Отгружен' (Shipment s) {
                 ASK 'Отгружено не все количество. Создать дополнительную отгрузку?' DO {
                     NEW rn = Shipment {
                         type(rn) <- type(s);
-                        partner(rn) <- partner(s);
+                        customer(rn) <- customer(s);
                         location(rn) <- location(s);
                         toLocation(rn) <- toLocation(s);
                         scheduledDate(rn) <- scheduledDate(s);
@@ -71,13 +71,11 @@ EXTEND CLASS ShipmentStatus {
     done 'Отгружен'
 }
 
-readonlyHeader (Shipment s) += WHEN status(s) = ShipmentStatus.done THEN TRUE;
-
 EXTEND FORM shipment
-    PROPERTIES(s) validate SHOWIF status(s) = ShipmentStatus.ready OR (immediateTransfer(s) AND NOT done(s) AND countLines(s)), 
+    PROPERTIES(s) validate SHOWIF status(s) = ShipmentStatus.ready OR (immediate(s) AND NOT done(s) AND countLines(s)), 
                         done READONLY 
     PROPERTIES(s) executionDate READONLY SHOWIF done(s)
-    PROPERTIES(l) done READONLYIF NOT (status(s) = ShipmentStatus.ready OR (immediateTransfer(s) AND status(s) = ShipmentStatus.draft)) 
+    PROPERTIES(l) done READONLYIF NOT (status(s) = ShipmentStatus.ready OR (immediate(s) AND status(s) = ShipmentStatus.draft)) 
                                         BACKGROUND IF status(s) = ShipmentStatus.ready THEN RGB(198,230,247)
     PROPERTIES(s) fillDone DRAW l TOOLBAR SHOWIF status(s) = ShipmentStatus.ready
 ;
@@ -98,15 +96,15 @@ DESIGN shipment {
     status {
         MOVE PROPERTY(done(s));                              
     } 
-    box1 {
+    headerLeft {
         MOVE PROPERTY(executionDate(s));
     }                  
 }
 
 EXTEND FORM partner
     OBJECTS s = Shipment
-    PROPERTIES(s) READONLY nameStatus, scheduledDate, executionDate, number, nameType, nameLocation, namePartner, note
-    FILTERS partner(s) = p
+    PROPERTIES(s) READONLY nameStatus, scheduledDate, executionDate, number, nameType, nameLocation, nameCustomer, note
+    FILTERS customer(s) = p
 ;
 
 DESIGN partner {

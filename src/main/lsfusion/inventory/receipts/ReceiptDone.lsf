@@ -16,20 +16,20 @@ done 'Принятое количество' = DATA NUMERIC[16,3] (ReceiptLine);
 CONSTRAINT done(ReceiptLine l) < 0 OR done(l) > initialDemand(l) 
     MESSAGE 'Принятое количество должно быть от 0 до исходного';
 
-CONSTRAINT immediateTransfer(Receipt r) AND (NOT done(ReceiptLine l) AND receipt(l) = r) MESSAGE 'Необходимо указать принятые кол-ва';
+CONSTRAINT immediate(Receipt r) AND (NOT done(ReceiptLine l) AND receipt(l) = r) MESSAGE 'Необходимо указать принятые кол-ва';
 
 validate 'Принят' (Receipt r) {        
     APPLY; // сохраняем изменения
     IF canceled() THEN RETURN; // если сработало ограничение, то выходим
         
     NEWSESSION {
-        IF NOT immediateTransfer(r) THEN {
+        IF NOT immediate(r) THEN {
             IF GROUP SUM done(ReceiptLine l) IF receipt(l) = r THEN {
                 IF GROUP SUM 1 IF receipt(ReceiptLine l) = r AND NOT done(l) = initialDemand(l) THEN {
                     ASK 'Принято не все количество. Создать дополнительную приемку ?' DO {
                         NEW rn = Receipt {
                             type(rn) <- type(r);
-                            partner(rn) <- partner(r);
+                            vendor(rn) <- vendor(r);
                             location(rn) <- location(r);
                             scheduledDate(rn) <- scheduledDate(r);
                             note(rn) <- note(r);
@@ -60,10 +60,10 @@ EXTEND CLASS ReceiptStatus {
 }
 
 EXTEND FORM receipt
-    PROPERTIES(r) validate SHOWIF status(r) = ReceiptStatus.ready OR (immediateTransfer(r) AND NOT done(r) AND countLines(r)), done
+    PROPERTIES(r) validate SHOWIF status(r) = ReceiptStatus.ready OR (immediate(r) AND NOT done(r) AND countLines(r)), done
     PROPERTIES(r) executionDate READONLY SHOWIF done(r)
     
-    PROPERTIES(l) done READONLYIF NOT (status(r) = ReceiptStatus.ready OR (immediateTransfer(r) AND status(r) = ReceiptStatus.draft)) BACKGROUND 
+    PROPERTIES(l) done READONLYIF NOT (status(r) = ReceiptStatus.ready OR (immediate(r) AND status(r) = ReceiptStatus.draft)) BACKGROUND 
                        IF status(r) = ReceiptStatus.ready THEN RGB(198,230,247)
 ;
 DESIGN receipt {
@@ -96,8 +96,8 @@ DESIGN receipt {
 
 EXTEND FORM partner
     OBJECTS r = Receipt
-    PROPERTIES(r) READONLY nameStatus, scheduledDate, executionDate, number, nameType, nameLocation, namePartner, note
-    FILTERS partner(r) = p
+    PROPERTIES(r) READONLY nameStatus, scheduledDate, executionDate, number, nameType, nameLocation, nameVendor, note
+    FILTERS vendor(r) = p
 ;
 
 DESIGN partner {

@@ -50,12 +50,10 @@ countLines (Shipment s) = GROUP SUM 1 IF shipment(ShipmentLine l) = s;
 EXTEND FORM shipment
     PROPERTIES(s) checkAvailability SHOWIF 
                         (status(s) = ShipmentStatus.waiting OR (status(s) = ShipmentStatus.ready AND countLinesDemand(s))) 
-                         AND NOT immediateTransfer(s) AND countLines(s), 
+                         AND NOT immediate(s) AND countLines(s), 
                   unreserve SHOWIF status(s) = ShipmentStatus.ready, ready 
        
-    PROPERTIES(l) READONLY available, reserved SHOWIF NOT immediateTransfer(s)
-    
-    FILTERS shipment(l) = s
+    PROPERTIES(l) READONLY available, reserved SHOWIF NOT immediate(s)
 ;
 
 EXTEND FORM shipments    

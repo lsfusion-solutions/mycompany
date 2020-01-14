@@ -8,7 +8,7 @@ NAMESPACE Inventory;
 
 CLASS Receipt 'Поступление';
 
-immediateTransfer 'Незапланированное поступление' = DATA BOOLEAN (Receipt);
+immediate 'Незапланированное' = DATA BOOLEAN (Receipt);
 
 // type
 type 'Тип' = DATA ReceiptType (Receipt) NONULL;
@@ -25,15 +25,15 @@ receipt (STRING[31] number) = GROUP LAST Receipt r BY number(r);
 // location
 location 'Место хранения' = DATA Location (Receipt) NONULL INDEXED;
 nameLocation 'Место хранения' (Receipt r) = name(location(r));
-WHEN LOCAL CHANGED(type(Receipt r)) AND defaultLocation(type(r)) DO location(r) <- defaultLocation(type(r));
+WHEN LOCAL SETCHANGED(type(Receipt r)) AND defaultLocation(type(r)) AND NOT CHANGED(location(r)) DO location(r) <- defaultLocation(type(r));
 
 // partner
-partner = DATA Partner (Receipt) INDEXED;
-namePartner 'Контрагент' (Receipt r) = name(partner(r));
+vendor = DATA Partner (Receipt) INDEXED;
+nameVendor 'Поставщик' (Receipt r) = name(vendor(r));
 
-CONSTRAINT partner(Receipt r) AND NOT isVendor(partner(r)) 
-                CHECKED BY partner[Receipt]
-                MESSAGE 'Контрагент должен быть вендором';
+CONSTRAINT vendor(Receipt r) AND NOT isVendor(vendor(r)) 
+                CHECKED BY vendor[Receipt]
+                MESSAGE 'Контрагент должен быть поставщиком';
 
 sourceDocument 'Основание' = DATA STRING[31] (Receipt);
 note 'Примечание' = DATA ISTRING[50] (Receipt);
@@ -45,8 +45,8 @@ receipt 'Документ' = DATA Receipt (ReceiptLine) NONULL DELETE INDEXED;
 
 index 'Индекс' = PARTITION SUM 1 ORDER ReceiptLine l BY receipt(l) IN id MATERIALIZED;
 
-product 'Продукт' = DATA Product (ReceiptLine) NONULL INDEXED;
-nameProduct 'Продукт' (ReceiptLine l) = name(product(l)) IN id;
+product 'Товар' = DATA Product (ReceiptLine) NONULL INDEXED;
+nameProduct 'Товар' (ReceiptLine l) = name(product(l)) IN id;
 idBarCodeProduct 'Штрих код' (ReceiptLine l) = idBarCode(product(l));
 idProduct 'Код' (ReceiptLine l) = id(product(l));
 
@@ -59,19 +59,19 @@ nameUnitMeasure 'Ед.изм.' (ReceiptLine l) = name(unitMeasure(l));
 
 initialDemand 'Планируемое количество' = DATA NUMERIC[16,3] (ReceiptLine);
 
-CONSTRAINT initialDemand(ReceiptLine l) < 0 OR initialDemand(l) > maxQuantity(type(receipt(l))) 
-    AND maxQuantity(type(receipt(l))) MESSAGE 'Планируемое количество должно быть от 0 до максимально разрешенного';
+CONSTRAINT initialDemand(ReceiptLine l) < 0 OR initialDemand(l) > maxQuantity(type(receipt(l))) AND maxQuantity(type(receipt(l))) 
+    MESSAGE 'Планируемое количество должно быть от 0 до максимально разрешенного';
     
-CONSTRAINT ReceiptLine l IS ReceiptLine AND NOT(initialDemand(l)) AND NOT immediateTransfer(receipt(l))     
-            MESSAGE 'Необходимо заполнить планируемое кол-во';
+CONSTRAINT ReceiptLine l IS ReceiptLine AND NOT(initialDemand(l)) AND NOT immediate(receipt(l))     
+    MESSAGE 'Необходимо заполнить планируемое кол-во';
 
 // readonly
 readonly = ABSTRACT CASE BOOLEAN (Receipt);
 readonly = ABSTRACT CASE BOOLEAN (ReceiptLine); 
 
 // Line properties
-partner (ReceiptLine l) = partner(receipt(l));            
-namePartner 'Контрагент' (ReceiptLine l) = namePartner(receipt(l));
+vendor (ReceiptLine l) = vendor(receipt(l));
+nameVendor 'Поставщик' (ReceiptLine l) = nameVendor(receipt(l));
 nameLocation 'Место хранения' (ReceiptLine l) = nameLocation(receipt(l));
 
 // edit form
@@ -81,13 +81,13 @@ FORM receipt 'Поступление'
     OBJECTS r = Receipt PANEL
     PROPERTIES(r) READONLYIF readonly(r) 
                         nameType, scheduledDate, number, 
-                        namePartner, nameLocation, sourceDocument,
+                        nameVendor, nameLocation, sourceDocument,
                         note
 
     OBJECTS l = ReceiptLine
-    PROPERTIES(l) index READONLY
+    PROPERTIES(l) READONLY               index
     PROPERTIES(l) READONLYIF readonly(l) nameProduct, nameUnitMeasure, idBarCodeProduct, idProduct,
-            initialDemand SHOWIF NOT immediateTransfer(r) BACKGROUND IF NOT readonly(l) THEN RGB(198,230,247)
+                                         initialDemand SHOWIF NOT immediate(r) BACKGROUND IF NOT readonly(l) THEN RGB(198,230,247)
     PROPERTIES(l) READONLYIF readonly(l) NEW, DELETE        
     FILTERS receipt(l) = r
    
@@ -106,7 +106,7 @@ DESIGN receipt {
                     MOVE PROPERTY(number(r));
                 }
                 NEW headerRight {
-                    MOVE PROPERTY(namePartner(r))  { notNull = TRUE; }
+                    MOVE PROPERTY(nameVendor(r))  { notNull = TRUE; }
                     MOVE PROPERTY(nameLocation(r)) { notNull = TRUE; }           
                     MOVE PROPERTY(sourceDocument(r));
                 }
@@ -135,7 +135,7 @@ DESIGN receipt {
 FORM receipts 'Поступления'
     OBJECTS r = Receipt
     PROPERTIES(r) READONLY nameType, scheduledDate, number, 
-                           namePartner, nameLocation, sourceDocument,
+                           nameVendor, nameLocation, sourceDocument,
                            note
     PROPERTIES(r) NEWSESSION NEW, EDIT, DELETE READONLYIF readonly(r)
 ;
@@ -146,15 +146,15 @@ NAVIGATOR {
     }
 }
 
-// immediate receipt
+// immediate
 immediateReceipt 'Незапланированное поступление' () {
     NEWSESSION {
         NEW r = Receipt {
-            immediateTransfer(r) <- TRUE;
+            immediate(r) <- TRUE;
             SHOW receipt OBJECTS r = r DOCKED;
         }
     }
-}IMAGE 'add.png';
+} IMAGE 'add.png';
 
 EXTEND FORM receipts 
     PROPERTIES immediateReceipt() DRAW r TOOLBAR
@@ -162,9 +162,6 @@ EXTEND FORM receipts
 
 // status
 @defineStatus(receipt, 'поступления', r);
-
-nameStatus 'Статус' (ReceiptLine l) = nameStatus(receipt(l));   
-readonly (ReceiptLine l) += WHEN NOT status(receipt(l)) = ReceiptStatus.draft THEN TRUE;
 
 // history
 @defineDocHistory(receipt, r, product, initialDemand);
@@ -184,9 +181,9 @@ copy 'Копировать' (Receipt r) {
         NEW nr = Receipt {
             type(nr) <- type(r);
             location(nr) <- location(r);
-            partner(nr) <- partner(r);
+            vendor(nr) <- vendor(r);
             note(nr) <- note(r);
-            immediateTransfer(nr) <- immediateTransfer(r);
+            immediate(nr) <- immediate(r);
             FOR receipt(ReceiptLine l) = r INLINE NEW nl = ReceiptLine DO {
                 receipt(nl) <- nr;
                 product(nl) <- product(l);

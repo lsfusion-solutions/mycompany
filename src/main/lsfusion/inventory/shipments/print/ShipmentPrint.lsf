@@ -6,14 +6,14 @@ NAMESPACE Inventory;
 
 locationAddress 'Адрес' (Shipment s)  = linesAddress(location(s));
 toLocationAddress 'Адрес' (Shipment s)  = linesAddress(toLocation(s));
-partnerAddress 'Адрес' (Shipment s) = linesAddress(partner(s)); 
-partnerPhone 'Телефон' (Shipment s) = phone(partner(s));
+partnerAddress 'Адрес' (Shipment s) = linesAddress(customer(s)); 
+partnerPhone 'Телефон' (Shipment s) = phone(customer(s));
 
 note 'Примечание' = ABSTRACT TEXT (ShipmentLine);
 
 FORM printShipment 'Задание на отгрузку'
     OBJECTS s = Shipment PANEL 
-    PROPERTIES(s) nameLocation, nameToLocation SHOWIF NOT isTransfer(type(s)), namePartner SHOWIF isTransfer(type(s)), 
+    PROPERTIES(s) nameLocation, nameToLocation SHOWIF NOT isTransfer(type(s)), nameCustomer SHOWIF isTransfer(type(s)), 
                     'Дата' = scheduledDate, number, locationAddress, 
                     toLocationAddress SHOWIF NOT isTransfer(type(s)), partnerAddress SHOWIF isTransfer(type(s)), 
                     partnerPhone SHOWIF isTransfer(type(s))
