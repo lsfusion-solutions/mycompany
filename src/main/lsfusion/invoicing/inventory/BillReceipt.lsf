@@ -1,6 +1,7 @@
 MODULE BillReceipt;
 
-REQUIRE BillCanceled, Refund, ReceiptCanceled, ShipmentCanceled;
+REQUIRE BillCanceled, BillReady, ReceiptCanceled,
+        CreditNote, ShipmentReceipt;
 
 NAMESPACE Invoicing;
 
@@ -31,7 +32,8 @@ billLine = DATA BillLine (ReceiptLine);
 billReceiptCreated = DATA LOCAL Receipt ();
 newReceipt (Bill b) {
     NEW r = Receipt { 
-        bill(r) <- b; 
+        bill(r) <- b;
+        isReturn(r) <- isCreditNote(b);
 
         partner(r) <- vendor(b);
         type(r) <- typeReceiptFromBill();
