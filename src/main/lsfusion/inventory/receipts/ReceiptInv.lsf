@@ -1,6 +1,6 @@
 MODULE ReceiptInv;
 
-REQUIRE ReceiptDone, InvLedger;
+REQUIRE ReceiptCanceled, InvLedger;
 
 NAMESPACE Inventory;
 
@@ -10,7 +10,7 @@ toDo (ReceiptLine l) = done(l) (-) ledgerDone(l);
 CLASS ReceiptInvLedger : InvLedger;
 invLedger = AGGR ReceiptInvLedger WHERE toDo(ReceiptLine line) > 0; 
 
-done(ReceiptInvLedger l) += done(receipt(line(l)));
+active(ReceiptInvLedger l) += active(receipt(line(l)));
 dateTime(ReceiptInvLedger l) += executionDate(receipt(line(l)));
 toLocation(ReceiptInvLedger l) += location(receipt(line(l)));
 

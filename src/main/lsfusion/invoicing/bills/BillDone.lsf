@@ -1,6 +1,6 @@
 MODULE BillDone;
 
-REQUIRE BillReady, BillDebt, Time;
+REQUIRE BillReady, Time;
 
 NAMESPACE Invoicing;
 
@@ -9,9 +9,6 @@ done 'Оплачено' = DATA BOOLEAN (Bill);
 EXTEND CLASS BillStatus {
     done 'Оплачено'
 }
-
-WHEN SET(totalAmount(Bill b) = paid(b)) DO done(b) <- TRUE;
-WHEN DROPPED(totalAmount(Bill b) = paid(b)) DO done(b) <- NULL;
 
 EXTEND FORM bill
     PROPERTIES(b) done 
@@ -47,17 +44,17 @@ DESIGN item {
 }
 
 EXTEND FORM partner
-    OBJECTS bl = Bill
-    PROPERTIES(bl) READONLY nameStatus, date, dueDate, nameVendor, note
-    PROPERTIES(bl) READONLY untaxedAmount, totalTax, totalAmount, paid
-    FILTERS vendor(bl) = p
+    OBJECTS b = Bill
+    PROPERTIES(b) READONLY nameStatus, date, dueDate, nameVendor, note
+    PROPERTIES(b) READONLY untaxedAmount, totalTax, totalAmount
+    FILTERS vendor(b) = p
 ;
 
 DESIGN partner {
     tabs {
         NEW bills {
             caption = 'Приходная накладная';
-            MOVE BOX(bl);
+            MOVE BOX(b);
         }
     }
 }

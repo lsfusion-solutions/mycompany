@@ -40,6 +40,16 @@ FORM scrap 'Списание'
     EDIT Scrap OBJECT s
 ;
 
+DESIGN scrap {
+    OBJECTS {
+        NEW details {
+            fill = 1;
+            MOVE BOX(s);
+            MOVE BOX(l);
+        }
+    }
+}
+
 FORM scraps 'Списания'
     OBJECTS s = Scrap 
     PROPERTIES(s)  READONLY date, nameLocationFrom
@@ -53,6 +63,8 @@ NAVIGATOR {
         NEW scraps;
     }
 }
+
+@defineStatus(scrap, 'списания', s);
 
 copyScrap 'Копировать' (Scrap s) {
     NEWSESSION {
@@ -74,19 +86,15 @@ EXTEND FORM scrap
 ;
 
 DESIGN scrap {
-    OBJECTS {
-        NEW details {
-            fill = 1;
-            MOVE BOX(s);
-            MOVE BOX(l);
-        }
+    secondaryActions {
+        MOVE PROPERTY(copyScrap(s));
     }
 }
 
-
+// invledger
 EXTEND CLASS ScrapLine : InvLedger;
 
-done(ScrapLine l) += done(scrap(l));
+active(ScrapLine l) += done(scrap(l));
 dateTime(ScrapLine l) += date(scrap(l));
 fromLocation(ScrapLine l) += locationFrom(scrap(l));
 
@@ -95,11 +103,3 @@ quantity(ScrapLine l) += quantity(l);
 description(ScrapLine l) += 'Списание' IF l IS ScrapLine;
 
 edit (ScrapLine l) + { edit(scrap(l)); } 
-
-@defineStatus(scrap, 'списания', s);
-
-DESIGN scrap {
-    secondaryActions {
-        MOVE PROPERTY(copyScrap(s));
-    }
-}

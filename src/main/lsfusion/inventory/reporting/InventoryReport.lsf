@@ -36,8 +36,9 @@ FORM inventoryReport 'Текущие остатки'
                             namePartner, nameFromLocation, nameToLocation, 
                             quantity
     PROPERTIES(il) EDIT
-    FILTERS done(il),
-            product(il) = p,
+    FILTERGROUP active
+        FILTER 'Активный' active(il) DEFAULT
+    FILTERS product(il) = p,
             IF singleLocation() THEN (level(fromLocation(il), l) OR level(toLocation(il), l))
                                 ELSE (fromLocation(il) = l OR toLocation(il) = l),
             dateTime(il) <= selectedDateTime() OR NOT selectedDateTime()

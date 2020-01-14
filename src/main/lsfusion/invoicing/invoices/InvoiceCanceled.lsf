@@ -1,6 +1,6 @@
 MODULE InvoiceCanceled;
 
-REQUIRE InvoiceDone;
+REQUIRE Invoice;
 
 NAMESPACE Invoicing;
     
@@ -24,7 +24,7 @@ status(Invoice i) += WHEN canceled(i) THEN InvoiceStatus.canceled;
 colorStatus(Invoice i) += WHEN status(i) == InvoiceStatus.canceled THEN RGB(181,195,247);
 
 EXTEND FORM invoice
-    PROPERTIES(i) cancel SHOWIF NOT (status(i) = InvoiceStatus.done OR status(i) = InvoiceStatus.canceled), canceled 
+    PROPERTIES(i) cancel SHOWIF NOT (status(i) = InvoiceStatus.draft OR status(i) = InvoiceStatus.canceled), canceled 
 ;
 
 EXTEND FORM invoices    

@@ -1,11 +1,12 @@
 MODULE InvoiceDebt;
 
-REQUIRE Invoice, Debt;
+REQUIRE InvoiceDone, InvoiceCanceled, Debt;
 
 NAMESPACE Invoicing;
 
 // extend
 EXTEND CLASS Invoice : OutgoingDebt;
+active (Invoice i) += ready(i) AND NOT canceled(i);
 number (Invoice i) += seriesNumber(i);
 date (Invoice i) += date(i);
 
@@ -55,3 +56,11 @@ DESIGN invoice {
 EXTEND FORM invoices   
     PROPERTIES(i) READONLY paid  
 ;
+
+EXTEND FORM partner
+    PROPERTIES(i) READONLY paid
+;
+
+// auto set done
+WHEN SET(totalAmount(Invoice i) = paid(i)) DO done(i) <- TRUE;
+WHEN DROPPED(totalAmount(Invoice i) = paid(i)) DO done(i) <- NULL;

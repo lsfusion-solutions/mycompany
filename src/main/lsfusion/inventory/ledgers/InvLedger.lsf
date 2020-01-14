@@ -6,7 +6,7 @@ NAMESPACE Inventory;
 
 CLASS ABSTRACT InvLedger 'Регистр изменения остатка';
 
-done 'Проведен' = ABSTRACT BOOLEAN (InvLedger);
+active 'Активный' = ABSTRACT BOOLEAN (InvLedger);
 dateTime 'Время' = ABSTRACT DATETIME (InvLedger) MATERIALIZED;
 
 fromLocation 'Место хранения (откуда)' = ABSTRACT Location (InvLedger) MATERIALIZED;
@@ -35,16 +35,16 @@ namePartner 'Контрагент' (InvLedger l) = name(partner(l));
 description 'Описание' = ABSTRACT ISTRING[100] (InvLedger);
   
 inQuantity 'Кол-во поступившее' (Location ll, Product p) = GROUP SUM quantity(InvLedger l) 
-                                                    IF done(l) AND toLocation(l) = ll AND product(l) = p MATERIALIZED;
+                                                    IF active(l) AND toLocation(l) = ll AND product(l) = p MATERIALIZED;
                                                     
 inQuantity 'Кол-во поступившее'(Location ll, Product p, DATETIME dt) = inQuantity(ll, p) (-)
-    GROUP SUM quantity(InvLedger l)  IF done(l) AND toLocation(l) = ll AND product(l) = p AND dateTime(l) > dt;
+    GROUP SUM quantity(InvLedger l)  IF active(l) AND toLocation(l) = ll AND product(l) = p AND dateTime(l) > dt;
                                    
 outQuantity 'Кол-во отправленное' (Location ll, Product p) = GROUP SUM quantity(InvLedger l) 
-                                                    IF done(l) AND fromLocation(l) = ll AND product(l) = p MATERIALIZED;
+                                                    IF active(l) AND fromLocation(l) = ll AND product(l) = p MATERIALIZED;
 
 outQuantity 'Кол-во отправленное' (Location ll, Product p, DATETIME dt) = outQuantity(ll, p) (-)
-    GROUP SUM quantity(InvLedger l) IF done(l) AND  fromLocation(l) = ll AND product(l) = p AND dateTime(l) > dt;
+    GROUP SUM quantity(InvLedger l) IF active(l) AND  fromLocation(l) = ll AND product(l) = p AND dateTime(l) > dt;
 
 onHand 'Текущий остаток' (Location ll, Product p) = inQuantity(ll, p) (-) outQuantity(ll, p) MATERIALIZED;
 
@@ -81,6 +81,8 @@ dateShipped 'Дата последней отгрузки' (Location l, Product 
 EXTEND FORM item
     OBJECTS inv = InvLedger
     PROPERTIES(inv) READONLY dateTime, nameProduct, quantity, nameFromLocation, nameToLocation, description
+    FILTERGROUP active
+        FILTER 'Активный' active(inv) DEFAULT
     FILTERS product(inv) = i
 ;
 

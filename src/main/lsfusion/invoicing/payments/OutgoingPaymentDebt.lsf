@@ -6,6 +6,7 @@ NAMESPACE Invoicing;
 
 // extend
 EXTEND CLASS OutgoingPayment : OutgoingDebt;
+active (OutgoingPayment p) += p IS OutgoingPayment;
 number (OutgoingPayment p) += seriesNumber(p);
 date (OutgoingPayment p) += date(p);
 
@@ -48,7 +49,7 @@ DESIGN outgoingPayment {
 }
 
 // auto set paid
-WHEN (SETCHANGED(reference(OutgoingPayment p)) OR SETCHANGED(partner(p))) AND 
+WHEN (SETCHANGED(reference(OutgoingPayment p)) OR SETCHANGED(partner(p)) OR SET(active(p))) AND 
      isISubstring(reference(p), number(IncomingDebt d)) AND 
      canBePaid(d, p) DO
     paid(d, p) <- left(d, p); 

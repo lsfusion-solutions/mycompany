@@ -1,12 +1,12 @@
 MODULE ManufacturingOrderCost;
 
-REQUIRE ManufacturingOrderDone, CostLedger, CostLocation;
+REQUIRE ManufacturingOrderCanceled, CostLedger, CostLocation;
 
 NAMESPACE Manufacturing;
 
 // расходная проводка
 CLASS ConsumedOutCostLedger : OutCostLedger;
-outCostLedger = AGGR ConsumedOutCostLedger WHERE consumed(ConsumedLine line) AND done(manufacturingOrder(line)) AND item(line) IS Product;
+outCostLedger = AGGR ConsumedOutCostLedger WHERE consumed(ConsumedLine line) AND active(manufacturingOrder(line)) AND item(line) IS Product;
 
 dateTime(ConsumedOutCostLedger l) += manufacturingDate(manufacturingOrder(line(l)));
 location(ConsumedOutCostLedger l) += costLocation(materialsLocation(manufacturingOrder(line(l))));
@@ -18,7 +18,7 @@ edit(ConsumedOutCostLedger l) + { edit(line(l)); }
 
 // приходная проводка
 CLASS ConsumedInCostLedger : InCostLedger;
-inCostLedger = AGGR ConsumedInCostLedger WHERE done(FinishedLine line) AND done(manufacturingOrder(line)) AND item(line) IS Product;
+inCostLedger = AGGR ConsumedInCostLedger WHERE done(FinishedLine line) AND active(manufacturingOrder(line)) AND item(line) IS Product;
 
 dateTime(ConsumedInCostLedger l) += manufacturingDate(manufacturingOrder(line(l)));
 location(ConsumedInCostLedger l) += costLocation(productsLocation(manufacturingOrder(line(l))));

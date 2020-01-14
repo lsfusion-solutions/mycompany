@@ -1,11 +1,12 @@
 MODULE BillDebt;
 
-REQUIRE Bill, Debt;
+REQUIRE BillDone, BillCanceled, Debt;
 
 NAMESPACE Invoicing;
 
 // extend
 EXTEND CLASS Bill : IncomingDebt;
+active (Bill b) += ready(b) AND NOT canceled(b);
 number (Bill b) += seriesNumber(b);
 date (Bill b) += date(b);
 
@@ -55,3 +56,11 @@ DESIGN bill {
 EXTEND FORM bills   
     PROPERTIES(b) READONLY paid  
 ;
+
+EXTEND FORM partner
+    PROPERTIES(b) READONLY paid
+;
+
+// auto set done
+WHEN SET(totalAmount(Bill b) = paid(b)) DO done(b) <- TRUE;
+WHEN DROPPED(totalAmount(Bill b) = paid(b)) DO done(b) <- NULL;

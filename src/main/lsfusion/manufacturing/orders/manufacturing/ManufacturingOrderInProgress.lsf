@@ -5,7 +5,7 @@ REQUIRE ManufacturingOrderStatus, ResLedger;
 NAMESPACE Manufacturing;
 
 EXTEND CLASS ManufacturingOrderStatus {
-    inprogress 'В процессе'
+    inProgress 'В процессе'
 }
 
 inprogress 'В процессе' = DATA BOOLEAN (ManufacturingOrder);
@@ -38,8 +38,8 @@ unreserve 'Снять резервирование' (ManufacturingOrder m) {
     }
 }
 
-status(ManufacturingOrder m) += WHEN inprogress(m) THEN ManufacturingOrderStatus.inprogress;
-colorStatus(ManufacturingOrder m) += WHEN status(m) == ManufacturingOrderStatus.inprogress THEN RGB(252,247,149);
+status(ManufacturingOrder m) += WHEN inprogress(m) THEN ManufacturingOrderStatus.inProgress;
+colorStatus(ManufacturingOrder m) += WHEN status(m) == ManufacturingOrderStatus.inProgress THEN RGB(252,247,149);
 
 showUnreserve (ManufacturingOrder m) = IF GROUP SUM 1 IF reserved(ConsumedLine l) AND 
     manufacturingOrder(l) = m AND status(m) = ManufacturingOrderStatus.draft THEN TRUE;

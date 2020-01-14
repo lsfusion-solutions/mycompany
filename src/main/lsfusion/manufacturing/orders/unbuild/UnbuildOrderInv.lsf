@@ -5,10 +5,9 @@ REQUIRE UnbuildOrderDone, InvLedger;
 NAMESPACE Manufacturing;
 
 CLASS UnbuildLedger : InvLedger;
-uLedger = AGGR UnbuildLedger WHERE quantity(UnbuildOrderLine line) AND item(line) IS Product AND
-                    status(unbuildOrder(line)) = UnbuildOrderStatus.done;
+uLedger = AGGR UnbuildLedger WHERE quantity(UnbuildOrderLine line) AND item(line) IS Product;
 
-done(UnbuildLedger l) += done(unbuildOrder(line(l)));
+active(UnbuildLedger l) += done(unbuildOrder(line(l)));
 dateTime(UnbuildLedger l) += date(line(l));
 toLocation(UnbuildLedger l) += locationTo(unbuildOrder(line(l)));
 
@@ -22,10 +21,9 @@ number(UnbuildLedger l) += number(unbuildOrder(line(l)));
 edit (UnbuildLedger l) + { edit(unbuildOrder(line(l))); }
 
 CLASS UnbuildOrderLedger : InvLedger;
-unbuildLedger = AGGR UnbuildOrderLedger WHERE done(UnbuildOrder line) AND product(line) IS Product AND
-                    status(line) = UnbuildOrderStatus.done;
+unbuildLedger = AGGR UnbuildOrderLedger WHERE done(UnbuildOrder line) AND product(line) IS Product;
 
-done(UnbuildOrderLedger l) += done[UnbuildOrder](line(l));
+active(UnbuildOrderLedger l) += done[UnbuildOrder](line(l));
 dateTime(UnbuildOrderLedger l) += currentDateTime();
 fromLocation(UnbuildOrderLedger l) += locationFrom(line(l));
 

@@ -97,10 +97,9 @@ number(ShipmentPickingRes r) += number(shipment(l(r)));
 
 CLASS ShipmentPickingInv : InvLedger;
 
-invLedger = AGGR ShipmentPickingInv WHERE done(ShipmentLine l, Location loc)
-                                     AND status(shipment(l)) = ShipmentStatus.done;
+invLedger = AGGR ShipmentPickingInv WHERE done(ShipmentLine l, Location loc);
 
-done(ShipmentPickingInv p) += done(shipment(l(p)));
+active(ShipmentPickingInv p) += active(shipment(l(p)));
 dateTime(ShipmentPickingInv p) += executionDate(shipment(l(p)));
 fromLocation(ShipmentPickingInv p) += loc(p);
 toLocation(ShipmentPickingInv p) += toLocation(shipment(l(p)));
