@@ -6,15 +6,19 @@ NAMESPACE Inventory;
 
 CLASS Scrap 'Списание';
 
-done 'Проведен' = DATA BOOLEAN (Scrap) CHARWIDTH 10;
 date 'Дата' = DATA DATETIME (Scrap) NONULL;
+WHEN LOCAL SET(Scrap s IS Scrap) AND NOT CHANGED(date(s)) DO date(s) <- currentDateTime();
 
-locationFrom 'Место хранения' = DATA Location (Scrap);
+@defineNumber(scrap, 'Списания', 'СП');
+
+locationFrom 'Место хранения' = DATA Location (Scrap) NONULL;
 nameLocationFrom 'Место хранения' (Scrap s) = name(locationFrom(s));
 
+// lines
 CLASS ScrapLine 'Строка списания';
 
 scrap 'Списание' = DATA Scrap (ScrapLine) NONULL DELETE;
+
 index 'Индекс' = PARTITION SUM 1 ORDER ScrapLine l BY scrap(l) IN id MATERIALIZED;
 
 product 'Продукт' = DATA Product(ScrapLine);
@@ -31,7 +35,7 @@ readonly = ABSTRACT CASE BOOLEAN (Scrap);
 
 FORM scrap 'Списание'
     OBJECTS s = Scrap PANEL 
-    PROPERTIES(s) READONLYIF readonly(s) date, nameLocationFrom
+    PROPERTIES(s) READONLYIF readonly(s) date, number, nameLocationFrom
     
     OBJECTS l = ScrapLine
     PROPERTIES(l) READONLYIF readonly(s) index, nameProduct, nameUnitMeasure, idBarCodeProduct, idProduct, quantity, NEW, DELETE
@@ -44,15 +48,18 @@ DESIGN scrap {
     OBJECTS {
         NEW details {
             fill = 1;
-            MOVE BOX(s);
-            MOVE BOX(l);
+            type = TABBED;
+            NEW lines {
+                caption = 'Строки';
+                MOVE BOX(l);
+            }
         }
     }
 }
 
 FORM scraps 'Списания'
     OBJECTS s = Scrap 
-    PROPERTIES(s)  READONLY date, nameLocationFrom
+    PROPERTIES(s)  READONLY date, number, nameLocationFrom
     PROPERTIES (s) NEWSESSION NEW, EDIT, DELETE READONLYIF readonly(s)
     
     LIST Scrap OBJECT s
@@ -64,9 +71,17 @@ NAVIGATOR {
     }
 }
 
+// status
 @defineStatus(scrap, 'списания', s);
 
-copyScrap 'Копировать' (Scrap s) {
+// history
+@defineDocHistory(scrap, s, product, quantity);
+
+// search
+@defineDocSearch(scrap, product, quantity, s);
+
+// copy
+copy 'Копировать' (Scrap s) {
     NEWSESSION {
         NEW ns = Scrap {
             date(ns) <- date(s);
@@ -82,24 +97,11 @@ copyScrap 'Копировать' (Scrap s) {
 }
 
 EXTEND FORM scrap
-    PROPERTIES(s) copyScrap
+    PROPERTIES(s) copy
 ;
 
 DESIGN scrap {
     secondaryActions {
-        MOVE PROPERTY(copyScrap(s));
+        MOVE PROPERTY(copy(s));
     }
 }
-
-// invledger
-EXTEND CLASS ScrapLine : InvLedger;
-
-active(ScrapLine l) += done(scrap(l));
-dateTime(ScrapLine l) += date(scrap(l));
-fromLocation(ScrapLine l) += locationFrom(scrap(l));
-
-product(ScrapLine l) += product(l);
-quantity(ScrapLine l) += quantity(l);
-description(ScrapLine l) += 'Списание' IF l IS ScrapLine;
-
-edit (ScrapLine l) + { edit(scrap(l)); } 

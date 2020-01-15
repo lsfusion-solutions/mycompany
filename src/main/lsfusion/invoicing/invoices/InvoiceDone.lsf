@@ -4,11 +4,12 @@ REQUIRE InvoiceReady, Time;
 
 NAMESPACE Invoicing;
 
-done 'Оплачено' = DATA BOOLEAN (Invoice);
-
 EXTEND CLASS InvoiceStatus {
     done 'Оплачено'
 }
+done 'Оплачено' = DATA BOOLEAN (Invoice);
+
+status(Invoice b) += WHEN done(b) THEN InvoiceStatus.done;
 
 EXTEND FORM invoice
     PROPERTIES(i) done 
@@ -18,8 +19,6 @@ EXTEND FORM invoices
     EXTEND FILTERGROUP status
         FILTER 'Оплачено' status(i) = InvoiceStatus.done 'F7'
 ;
-
-status(Invoice b) += WHEN done(b) THEN InvoiceStatus.done;
 
 DESIGN invoice {                               
     status {
@@ -37,7 +36,7 @@ EXTEND FORM item
 DESIGN item {
     tabs {
         NEW invoices {
-            caption = 'Реализация покупателям';
+            caption = 'Расходные накладные';
             MOVE BOX(il);
         }
     }

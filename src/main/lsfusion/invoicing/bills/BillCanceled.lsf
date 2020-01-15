@@ -7,8 +7,10 @@ NAMESPACE Invoicing;
 EXTEND CLASS BillStatus {
     canceled 'Отменен'
 }
-
 canceled 'Отменен' = DATA BOOLEAN (Bill);
+
+status(Bill b) += WHEN canceled(b) THEN BillStatus.canceled;
+colorStatus(Bill b) += WHEN status(b) = BillStatus.canceled THEN RGB(181,195,247);
 
 cancel 'Отменить' (Bill b) {
     APPLY; 
@@ -19,9 +21,6 @@ cancel 'Отменить' (Bill b) {
            APPLY;
        }
 }
-
-status(Bill b) += WHEN canceled(b) THEN BillStatus.canceled;
-colorStatus(Bill b) += WHEN status(b) == BillStatus.canceled THEN RGB(181,195,247);
 
 EXTEND FORM bill
     PROPERTIES(b) cancel SHOWIF NOT (status(b) = BillStatus.draft OR status(b) = BillStatus.canceled), canceled

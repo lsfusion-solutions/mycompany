@@ -7,8 +7,10 @@ NAMESPACE Invoicing;
 EXTEND CLASS BillStatus {
     ready 'К оплате'
 }
-
 ready 'К оплате' = DATA BOOLEAN (Bill);
+
+status(Bill b) += WHEN ready(b) THEN BillStatus.ready;
+colorStatus(Bill b) += WHEN status(b) = BillStatus.ready THEN RGB(252,247,149);
 
 markAsToDo 'К оплате' (Bill b) {
     APPLY; 
@@ -19,19 +21,15 @@ markAsToDo 'К оплате' (Bill b) {
             APPLY;
         }
 }
-countLines (Bill b) = GROUP SUM 1 IF bill(BillLine l) = b;
 
 EXTEND FORM bill
-    PROPERTIES(b) markAsToDo SHOWIF status(b) = BillStatus.draft AND countLines(b), ready
+    PROPERTIES(b) markAsToDo SHOWIF status(b) = BillStatus.draft, ready
 ;
 
 EXTEND FORM bills    
     EXTEND FILTERGROUP status
         FILTER 'К отгрузке' status(b) = BillStatus.ready 'F8'    
 ;
-
-status(Bill b) += WHEN ready(b) THEN BillStatus.ready;
-colorStatus(Bill b) += WHEN status(b) == BillStatus.ready THEN RGB(252,247,149);
 
 DESIGN bill {
     primaryActions {

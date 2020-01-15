@@ -7,9 +7,11 @@ NAMESPACE Inventory;
 EXTEND CLASS ShipmentStatus {
     canceled 'Отменен'
 }
-
 canceled 'Отменен' = DATA BOOLEAN (Shipment);
 active 'Активен' (Shipment s) = done(s) AND NOT canceled(s);
+
+status(Shipment s) += WHEN canceled(s) THEN ShipmentStatus.canceled;
+colorStatus(Shipment s) += WHEN status(s) = ShipmentStatus.canceled THEN RGB(181,195,247);
 
 cancel 'Отменить' (Shipment s) {
     APPLY; 
@@ -20,9 +22,6 @@ cancel 'Отменить' (Shipment s) {
         APPLY;
     }
 }
-
-status(Shipment s) += WHEN canceled(s) THEN ShipmentStatus.canceled;
-colorStatus(Shipment s) += WHEN status(s) == ShipmentStatus.canceled THEN RGB(181,195,247);
 
 EXTEND FORM shipment
     PROPERTIES(s) cancel SHOWIF NOT (status(s) = ShipmentStatus.draft OR status(s) = ShipmentStatus.canceled), canceled 

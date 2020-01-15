@@ -7,8 +7,10 @@ NAMESPACE Sales;
 EXTEND CLASS OrderStatus{
     confirmed 'Оформлен'
 }
-
 confirmed 'Подтвержден' = DATA BOOLEAN (Order);
+
+status(Order o) += WHEN confirmed(o) THEN OrderStatus.confirmed;
+colorStatus(Order o) += WHEN status(o) = OrderStatus.confirmed THEN RGB(150,255,150);
 
 confirm 'Подтвердить' (Order o){
     APPLY; 
@@ -19,9 +21,6 @@ confirm 'Подтвердить' (Order o){
         APPLY;
     }
 }
-
-status(Order o) += WHEN confirmed(o) THEN OrderStatus.confirmed;
-colorStatus(Order o) += WHEN status(o) = OrderStatus.confirmed THEN RGB(150,255,150);
 
 EXTEND FORM order 
      PROPERTIES (o) SHOWIF (status(o) = OrderStatus.offerSent OR status(o) = OrderStatus.draft) confirm

@@ -1,0 +1,42 @@
+MODULE ScrapCanceled;
+
+REQUIRE ScrapDone;
+
+NAMESPACE Inventory;
+    
+EXTEND CLASS ScrapStatus {
+    canceled 'Отменен'
+}
+canceled 'Отменен' = DATA BOOLEAN (Scrap);
+active 'Активен' (Scrap s) = done(s) AND NOT canceled(s);
+
+status(Scrap s) += WHEN canceled(s) THEN ScrapStatus.canceled;
+colorStatus(Scrap s) += WHEN status(s) = ScrapStatus.canceled THEN RGB(181,195,247);
+
+cancel 'Отменить' (Scrap s) {
+    APPLY; 
+    IF canceled() THEN RETURN;
+           
+    NEWSESSION {
+        canceled(s) <- TRUE;
+        APPLY;
+    }
+}
+
+EXTEND FORM scrap
+    PROPERTIES(s) cancel SHOWIF NOT (status(s) = ScrapStatus.draft OR status(s) = ScrapStatus.canceled), canceled 
+;
+
+DESIGN scrap {
+    secondaryActions {
+        MOVE PROPERTY(cancel(s));
+    }             
+    status {
+        MOVE PROPERTY(canceled(s));                               
+    }    
+}
+
+EXTEND FORM scraps    
+    EXTEND FILTERGROUP status
+        FILTER 'Отменен' status(s) = ScrapStatus.canceled 'F5'    
+;

@@ -7,6 +7,9 @@ NAMESPACE Inventory;
 EXTEND CLASS ScrapStatus {
     done 'Проведен'
 }
+done 'Проведен' = DATA BOOLEAN (Scrap);
+
+status(Scrap s) += WHEN done(s) THEN ScrapStatus.done;
 
 markAsDone 'Провести' (Scrap s) {
     APPLY;
@@ -18,10 +21,8 @@ markAsDone 'Провести' (Scrap s) {
     }
 }
 
-countLines (Scrap s) = GROUP SUM 1 IF scrap(ScrapLine l) = s AND product(l) AND quantity(l);
-
 EXTEND FORM scrap
-    PROPERTIES(s) markAsDone SHOWIF status(s) = ScrapStatus.draft AND countLines(s)
+    PROPERTIES(s) markAsDone SHOWIF status(s) = ScrapStatus.draft
 ;
 
 DESIGN scrap {

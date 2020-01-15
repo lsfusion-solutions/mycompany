@@ -7,8 +7,10 @@ NAMESPACE Purchase;
 EXTEND CLASS OrderStatus {
     canceled 'Отменен'
 }
-
 canceled 'Отменен' = DATA BOOLEAN (Order);
+
+status(Order o) += WHEN canceled(o) THEN OrderStatus.canceled;
+colorStatus(Order o) += WHEN status(o) = OrderStatus.canceled THEN RGB(252,247,149);
 
 cancel 'Отменить' (Order o) {
     APPLY; 
@@ -19,9 +21,6 @@ cancel 'Отменить' (Order o) {
         APPLY;
     }    
 }
-
-status(Order o) += WHEN canceled(o) THEN OrderStatus.canceled;
-colorStatus(Order o) += WHEN status(o) = OrderStatus.canceled THEN RGB(252,247,149);
 
 EXTEND FORM order
      PROPERTIES(o) SHOWIF (NOT status(o) = OrderStatus.draft AND NOT status(o) = OrderStatus.canceled) cancel

@@ -7,8 +7,9 @@ NAMESPACE Sales;
 EXTEND CLASS PricelistStatus {
     done 'Проведен'
 }
-
 done 'Проведен' = DATA BOOLEAN (Pricelist);
+
+status(Pricelist p) += WHEN done(p) THEN PricelistStatus.done;
 
 markAsDone 'Провести' (Pricelist p) {
     APPLY;
@@ -19,8 +20,6 @@ markAsDone 'Провести' (Pricelist p) {
         APPLY;
     }
 }
-
-status(Pricelist p) += WHEN done(p) THEN PricelistStatus.done;
 
 EXTEND FORM pricelist
     PROPERTIES(p) markAsDone SHOWIF status(p) = PricelistStatus.draft, done READONLY 

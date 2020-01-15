@@ -4,11 +4,12 @@ REQUIRE ShipmentReady;
 
 NAMESPACE Inventory;
 
-done 'Отгружен' = DATA BOOLEAN (Shipment);
-
 EXTEND CLASS ShipmentStatus {
     done 'Отгружен'
 }
+done 'Отгружен' = DATA BOOLEAN (Shipment);
+
+status(Shipment s) += WHEN done(s) THEN ShipmentStatus.done;
 
 executionDate 'Дата отгрузки' = DATA DATETIME (Shipment);
 WHEN SET(done(Shipment s)) AND NOT CHANGED(executionDate(s)) DO executionDate(s) <- currentDateTime(); 
@@ -103,5 +104,3 @@ EXTEND FORM shipments
     EXTEND FILTERGROUP status
         FILTER 'Отгружен' status(s) = ShipmentStatus.done 'F7'
 ;
-
-status(Shipment s) += WHEN done(s) THEN ShipmentStatus.done;

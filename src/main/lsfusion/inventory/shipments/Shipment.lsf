@@ -17,9 +17,9 @@ nameType 'Тип' (Shipment s) = name(type(s));
 WHEN LOCAL SET(Shipment s IS Shipment) AND NOT CHANGED(type(s)) DO type(s) <- defaultShipmentType(); 
 
 scheduledDate 'Планируемая дата' = DATA DATETIME (Shipment) NONULL IN id;
-scheduledDate (Shipment s) <- currentDateTime() WHEN SET(s IS Shipment);
+WHEN LOCAL SET(Shipment s IS Shipment) AND NOT CHANGED(scheduledDate(s)) DO scheduledDate(s) <- currentDateTime();
 
-@defineSeriesNumberType(shipment);
+@defineNumberType(shipment);
 
 // locations
 location 'Место хранения (откуда)' = DATA Location (Shipment) NONULL INDEXED;

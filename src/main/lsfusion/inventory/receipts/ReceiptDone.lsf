@@ -7,8 +7,9 @@ NAMESPACE Inventory;
 EXTEND CLASS ReceiptStatus {
     done 'Принят'
 }
-
 done 'Принят' = DATA BOOLEAN (Receipt);
+
+status (Receipt r) += WHEN done(r) THEN ReceiptStatus.done;
 
 executionDate 'Дата поступления' = DATA DATETIME (Receipt);
 WHEN SET(done(Receipt r)) AND NOT CHANGED(executionDate(r)) DO executionDate(r) <- currentDateTime(); 
@@ -88,5 +89,3 @@ EXTEND FORM receipts
     EXTEND FILTERGROUP status
         FILTER 'Принят' status(r) = ReceiptStatus.done 'F7'
 ;
-
-status (Receipt r) += WHEN done(r) THEN ReceiptStatus.done;

@@ -4,18 +4,20 @@ REQUIRE Utils, ShipmentWaiting, ResLedger;
 
 NAMESPACE Inventory;
 
-ready 'К отгрузке' = DATA BOOLEAN (Shipment);
-
 EXTEND CLASS ShipmentStatus {
     ready 'К отгрузке'
 }
+ready 'К отгрузке' = DATA BOOLEAN (Shipment);
 
+status (Shipment s) += WHEN ready(s) THEN ShipmentStatus.ready;
+colorStatus (Shipment s) += WHEN status(s) == ShipmentStatus.ready THEN RGB(252,247,149);
+
+// reserved
 reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ShipmentLine);
 
 available 'Доступный остаток' (ShipmentLine l) = prevAvailableRec(location(shipment(l)), product(l)) (+) PREV(reserved(l)); 
 
 extraCheckAvailability ABSTRACT (Shipment);
-
 precheckAvailability (Shipment s) {
     reserved(ShipmentLine l) <- reserved(l) (+) min(initialDemand(l), available(l)) WHERE shipment(l) = s;
     extraCheckAvailability(s);
@@ -68,8 +70,3 @@ EXTEND FORM shipments
     EXTEND FILTERGROUP status
         FILTER 'К отгрузке' status(s) = ShipmentStatus.ready 'F8'    
 ;
-
-status (Shipment s) += WHEN ready(s) THEN ShipmentStatus.ready;
-colorStatus (Shipment s) += WHEN status(s) == ShipmentStatus.ready THEN RGB(252,247,149);
-
-readonly (ShipmentLine l) += WHEN ready(shipment(l)) THEN TRUE;

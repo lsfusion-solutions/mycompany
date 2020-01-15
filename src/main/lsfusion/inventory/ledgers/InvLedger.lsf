@@ -24,12 +24,13 @@ INDEX fromLocation(InvLedger l), product(l);
 INDEX toLocation(InvLedger l), product(l);
 
 quantity 'Кол-во' = ABSTRACT NUMERIC[16,3] (InvLedger) MATERIALIZED;
-quantityStr 'Кол-во' = ABSTRACT STRING (InvLedger) MATERIALIZED;
 
 partner = ABSTRACT Partner (InvLedger) MATERIALIZED;
 namePartner 'Контрагент' (InvLedger l) = name(partner(l));
+
 description 'Описание' = ABSTRACT ISTRING[100] (InvLedger);
-  
+
+// result  
 inQuantity 'Кол-во поступившее' (Location ll, Product p) = GROUP SUM quantity(InvLedger l) 
                                                     IF active(l) AND toLocation(l) = ll AND product(l) = p MATERIALIZED;
                                                     
@@ -50,6 +51,15 @@ onHand 'Текущий остаток' (Location ll, Product p, DATETIME dt) =
 onHandRec 'Текущий остаток (с учетом вложенности)' (Location l, Product p) = 
     GROUP SUM onHand(Location child, p) IF level(child, l) MATERIALIZED;
 
+// dates
+dateReceived 'Дата последнего прихода' (Location l, Product p) = 
+    GROUP LAST dateTime(InvLedger il) ORDER dateTime(il) WHERE toLocation(il) = l AND product(il) = p;
+prevDateReceived (Location l, Product p) = PREV(dateReceived(l, p));
+    
+dateShipped 'Дата последней отгрузки' (Location l, Product p) = 
+    GROUP LAST dateTime(InvLedger il) ORDER dateTime(il) WHERE fromLocation(il) = l AND product(il) = p;
+
+// constraint
 positiveOnHand 'Только положительное кол-во товаров' = DATA BOOLEAN (Location) CHARWIDTH 15;
             
 recPositiveOnHand 'Только положительное кол-во товаров' (Location child) = 
@@ -67,13 +77,7 @@ EXTEND FORM locations
     PROPERTIES(l) READONLY recPositiveOnHand
 ;
 
-dateReceived 'Дата последнего прихода' (Location l, Product p) = 
-    GROUP LAST dateTime(InvLedger il) ORDER dateTime(il) WHERE toLocation(il) = l AND product(il) = p;
-prevDateReceived (Location l, Product p) = PREV(dateReceived(l, p));
-    
-dateShipped 'Дата последней отгрузки' (Location l, Product p) = 
-    GROUP LAST dateTime(InvLedger il) ORDER dateTime(il) WHERE fromLocation(il) = l AND product(il) = p;
-    
+// extend item form    
 EXTEND FORM item
     OBJECTS inv = InvLedger
     PROPERTIES(inv) READONLY dateTime, nameProduct, quantity, nameFromLocation, nameToLocation, description

@@ -4,11 +4,13 @@ REQUIRE Shipment, InvLedger;
 
 NAMESPACE Inventory;
 
-waiting 'В ожидании' = DATA BOOLEAN (Shipment);
-
 EXTEND CLASS ShipmentStatus {
     waiting 'В ожидании'
 }
+waiting 'В ожидании' = DATA BOOLEAN (Shipment);
+
+status (Shipment s) += WHEN waiting(s) THEN ShipmentStatus.waiting;
+colorStatus (Shipment s) += WHEN status(s) = ShipmentStatus.waiting THEN RGB(250,150,157);
 
 markAsToDo 'В работу' (Shipment s) {
     APPLY; 
@@ -37,6 +39,3 @@ EXTEND FORM shipments
     EXTEND FILTERGROUP status
         FILTER 'В ожидании' status(s) = ShipmentStatus.waiting 'F9'    
 ;
-
-status (Shipment s) += WHEN waiting(s) THEN ShipmentStatus.waiting;
-colorStatus (Shipment s) += WHEN status(s) = ShipmentStatus.waiting THEN RGB(250,150,157);

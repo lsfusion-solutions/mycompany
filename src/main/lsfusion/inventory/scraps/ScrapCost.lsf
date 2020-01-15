@@ -1,11 +1,11 @@
 MODULE ScrapCost;
 
-REQUIRE CostLedger, Scrap, CostLocation;
+REQUIRE ScrapCanceled, CostLedger, CostLocation;
 
 NAMESPACE Inventory;
 
 CLASS ScrapCostLedger : OutCostLedger;
-scrapLedger = AGGR ScrapCostLedger WHERE quantity(ScrapLine line) AND done(scrap(line));
+scrapLedger = AGGR ScrapCostLedger WHERE quantity(ScrapLine line) AND active(scrap(line));
 
 dateTime(ScrapCostLedger l) += date(scrap(line(l)));
 location(ScrapCostLedger l) += costLocation(locationFrom(scrap(line(l))));

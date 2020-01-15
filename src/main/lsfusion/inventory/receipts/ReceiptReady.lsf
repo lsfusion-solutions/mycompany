@@ -7,8 +7,10 @@ NAMESPACE Inventory;
 EXTEND CLASS ReceiptStatus {
     ready 'К приемке'
 }
-
 ready 'К приемке' = DATA BOOLEAN (Receipt);
+
+status (Receipt r) += WHEN ready(r) THEN ReceiptStatus.ready;
+colorStatus (Receipt r) += WHEN status(r) == ReceiptStatus.ready THEN RGB(252,247,149);
 
 markAsToDo 'В работу' (Receipt r) {
     APPLY; 
@@ -37,6 +39,3 @@ EXTEND FORM receipts
     EXTEND FILTERGROUP status
         FILTER 'К приемке' status(r) = ReceiptStatus.ready 'F8'    
 ;
-
-status (Receipt r) += WHEN ready(r) THEN ReceiptStatus.ready;
-colorStatus (Receipt r) += WHEN status(r) == ReceiptStatus.ready THEN RGB(252,247,149);

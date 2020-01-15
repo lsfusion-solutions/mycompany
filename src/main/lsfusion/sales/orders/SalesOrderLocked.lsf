@@ -7,8 +7,10 @@ NAMESPACE Sales;
 EXTEND CLASS OrderStatus {
     locked 'Закрыт'
 }
-
 locked 'Закрыт' = DATA BOOLEAN (Order);
+
+status(Order o) += WHEN locked(o) THEN OrderStatus.locked;
+colorStatus(Order o) += WHEN status(o) = OrderStatus.locked THEN RGB(255,255,255);
 
 lock 'Закрыть' (Order o){
     APPLY; 
@@ -19,9 +21,6 @@ lock 'Закрыть' (Order o){
         APPLY;
     }
 }
-
-status(Order o) += WHEN locked(o) THEN OrderStatus.locked;
-colorStatus(Order o) += WHEN status(o) = OrderStatus.locked THEN RGB(255,255,255);
 
 EXTEND FORM order
      PROPERTIES(o) SHOWIF (status(o) = OrderStatus.confirmed) lock;

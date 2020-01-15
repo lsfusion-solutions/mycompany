@@ -52,7 +52,7 @@ META defineStatus (doc, title, let)
    } 
 END
 
-META defineDocSearch (doc, it, fun, let, check)
+META defineDocSearch (doc, it, fun, let)
     quantity 'Кол-во' (###doc i, ###it p) = 
         GROUP SUM fun(###doc##Line l) BY doc(l), it(l);
     last###doc##Line 'Последняя строка' (###doc i, ###it p) = 
@@ -84,7 +84,7 @@ META defineDocSearch (doc, it, fun, let, check)
         OBJECTS itm = ###it
         PROPERTIES(itm) READONLY name, nameUnitMeasure, idBarCode, id
         PROPERTIES(let, itm) quantity ON CHANGE changeQuantity(let, itm)
-        FILTERS level(category(itm), c), ##check(itm)
+        FILTERS level(category(itm), c)
         FILTERGROUP active
             FILTER 'Активный' active(itm) 'F10' DEFAULT  
     ;
@@ -103,6 +103,14 @@ META defineDocSearch (doc, it, fun, let, check)
             }
         }
     }
+END
+
+META defineDocSearch (doc, it, fun, let, check)
+    @defineDocSearch(doc, it, fun, let);
+    
+    EXTEND FORM doc
+        FILTERS ##check(itm)
+    ;
 END
 
 META defineDocHistory(doc, let, class, fun)

@@ -4,28 +4,27 @@ REQUIRE BillReady, Time;
 
 NAMESPACE Invoicing;
 
-done 'Оплачено' = DATA BOOLEAN (Bill);
-
 EXTEND CLASS BillStatus {
     done 'Оплачено'
 }
+done 'Оплачено' = DATA BOOLEAN (Bill);
+
+status(Bill b) += WHEN done(b) THEN BillStatus.done;
 
 EXTEND FORM bill
     PROPERTIES(b) done 
 ;
-
-EXTEND FORM bills 
-    EXTEND FILTERGROUP status
-        FILTER 'Оплачено' status(b) = BillStatus.done 'F7'
-;
-
-status(Bill b) += WHEN done(b) THEN BillStatus.done;
 
 DESIGN bill {                               
     status {
         MOVE PROPERTY(done(b));                              
     }                 
 }
+
+EXTEND FORM bills 
+    EXTEND FILTERGROUP status
+        FILTER 'Оплачено' status(b) = BillStatus.done 'F7'
+;
 
 EXTEND FORM item
     OBJECTS bl = BillLine

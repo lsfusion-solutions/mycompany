@@ -7,8 +7,10 @@ NAMESPACE Invoicing;
 EXTEND CLASS InvoiceStatus {
     canceled 'Отменен'
 }
-
 canceled 'Отменен' = DATA BOOLEAN (Invoice);
+
+status(Invoice i) += WHEN canceled(i) THEN InvoiceStatus.canceled;
+colorStatus(Invoice i) += WHEN status(i) = InvoiceStatus.canceled THEN RGB(181,195,247);
 
 cancel 'Отменить' (Invoice i) {
     APPLY; 
@@ -19,9 +21,6 @@ cancel 'Отменить' (Invoice i) {
            APPLY;
        }
 }
-
-status(Invoice i) += WHEN canceled(i) THEN InvoiceStatus.canceled;
-colorStatus(Invoice i) += WHEN status(i) == InvoiceStatus.canceled THEN RGB(181,195,247);
 
 EXTEND FORM invoice
     PROPERTIES(i) cancel SHOWIF NOT (status(i) = InvoiceStatus.draft OR status(i) = InvoiceStatus.canceled), canceled 

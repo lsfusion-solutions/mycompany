@@ -4,18 +4,12 @@ REQUIRE UnbuildOrderInv;
 
 NAMESPACE Manufacturing;
 
-quantityStr 'Кол-во' (UnbuildLedger l) = CONCAT '', '+', quantity(l);
-quantityStr 'Кол-во' (UnbuildOrderLedger l) = CONCAT '', '-', quantity(l);
-
-quantityStr (UnbuildLedger l) += quantityStr(l);
-quantityStr (UnbuildOrderLedger l) += quantityStr(l);
-
 nameUnbuildLocation 'Место хранения' (InvLedger l) = CASE WHEN l IS UnbuildLedger THEN nameToLocation(l)
                                                              WHEN l IS UnbuildOrderLedger THEN nameFromLocation(l);
 
 EXTEND FORM unbuildOrder
     OBJECTS il = InvLedger
-    PROPERTIES(il) READONLY SHOWIF done(o) dateTime, quantityStr, nameProduct, nameUnbuildLocation
+    PROPERTIES(il) READONLY SHOWIF done(o) dateTime, quantity, nameProduct, nameUnbuildLocation
     FILTERS number(il) = number(o)
 ;
 

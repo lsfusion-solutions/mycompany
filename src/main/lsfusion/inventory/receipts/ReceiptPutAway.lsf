@@ -12,8 +12,9 @@ EXTEND FORM receiptType PROPERTIES(o) putAway;
 EXTEND CLASS ReceiptStatus {
     putAway 'Размещен'
 }
-
 putAway 'Размещен' = DATA BOOLEAN (Receipt);
+
+status(Receipt r) += WHEN putAway(r) THEN ReceiptStatus.putAway;
 
 markAsPutAway 'Размещен' (Receipt r) {
     APPLY; 
@@ -24,8 +25,6 @@ markAsPutAway 'Размещен' (Receipt r) {
         APPLY;
     }
 }
-
-status(Receipt r) += WHEN putAway(r) THEN ReceiptStatus.putAway;
 
 EXTEND FORM receipt
     PROPERTIES(r) markAsPutAway SHOWIF putAway(type(r)) AND status(r) = ReceiptStatus.done, putAway
