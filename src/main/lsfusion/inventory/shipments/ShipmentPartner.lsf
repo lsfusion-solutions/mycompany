@@ -1,0 +1,21 @@
+MODULE ShipmentPartner;
+
+REQUIRE ShipmentDone;
+
+NAMESPACE Inventory;
+
+EXTEND FORM partner
+    OBJECTS s = Shipment
+    PROPERTIES(s) READONLY nameStatus, scheduledDate, executionDate, number, nameType, nameLocation, note
+    PROPERTIES(s) EDIT
+    FILTERS customer(s) = p
+;
+
+DESIGN partner {
+    tabs {
+        NEW shipments {
+            caption = 'Отгрузки';
+            MOVE BOX(s);
+        }
+    }
+}

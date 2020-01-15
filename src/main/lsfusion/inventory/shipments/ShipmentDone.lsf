@@ -101,18 +101,3 @@ EXTEND FORM shipments
 ;
 
 status(Shipment s) += WHEN done(s) THEN ShipmentStatus.done;
-
-EXTEND FORM partner
-    OBJECTS s = Shipment
-    PROPERTIES(s) READONLY nameStatus, scheduledDate, executionDate, number, nameType, nameLocation, nameCustomer, note
-    FILTERS customer(s) = p
-;
-
-DESIGN partner {
-    tabs {
-        NEW shipments {
-            caption = 'Отгрузки';
-            MOVE BOX(s);
-        }
-    }
-}

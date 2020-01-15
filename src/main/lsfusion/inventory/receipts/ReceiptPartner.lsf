@@ -1,0 +1,21 @@
+MODULE ReceiptPartner;
+
+REQUIRE ReceiptDone;
+
+NAMESPACE Inventory;
+
+EXTEND FORM partner
+    OBJECTS r = Receipt
+    PROPERTIES(r) READONLY nameStatus, scheduledDate, executionDate, number, nameType, nameLocation, note
+    PROPERTIES(r) EDIT
+    FILTERS vendor(r) = p
+;
+
+DESIGN partner {
+    tabs {
+        NEW receipts {
+            caption = 'Поступления';
+            MOVE BOX(r);
+        }
+    }
+}

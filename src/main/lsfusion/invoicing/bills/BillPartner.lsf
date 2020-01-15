@@ -1,0 +1,21 @@
+MODULE BillPartner;
+
+REQUIRE BillDebt;
+
+NAMESPACE Invoicing;
+
+EXTEND FORM partner
+    OBJECTS b = Bill
+    PROPERTIES(b) READONLY nameStatus, date, dueDate, note, untaxedAmount, totalTax, totalAmount, paid
+    PROPERTIES(b) EDIT
+    FILTERS vendor(b) = p
+;
+
+DESIGN partner {
+    tabs {
+        NEW bills {
+            caption = 'Приходные накладные';
+            MOVE BOX(b);
+        }
+    }
+}
