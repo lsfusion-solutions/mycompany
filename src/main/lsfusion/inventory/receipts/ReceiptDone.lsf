@@ -4,8 +4,11 @@ REQUIRE ReceiptReady;
 
 NAMESPACE Inventory;
 
-// Принят
 done 'Принят' = DATA BOOLEAN (Receipt);
+
+EXTEND CLASS ReceiptStatus {
+    done 'Принят'
+}
 
 executionDate 'Дата поступления' = DATA DATETIME (Receipt);
 WHEN SET(done(Receipt r)) AND NOT CHANGED(executionDate(r)) DO executionDate(r) <- currentDateTime(); 
@@ -15,8 +18,6 @@ done 'Принятое количество' = DATA NUMERIC[16,3] (ReceiptLine);
 
 CONSTRAINT done(ReceiptLine l) < 0 OR done(l) > initialDemand(l) 
     MESSAGE 'Принятое количество должно быть от 0 до исходного';
-
-CONSTRAINT immediate(Receipt r) AND (NOT done(ReceiptLine l) AND receipt(l) = r) MESSAGE 'Необходимо указать принятые кол-ва';
 
 validate 'Принят' (Receipt r) {        
     APPLY; // сохраняем изменения
@@ -48,26 +49,33 @@ validate 'Принят' (Receipt r) {
                     done(ReceiptLine l) <- initialDemand(l) WHERE receipt(l) = r;
                 } ELSE RETURN;
             }
-        } ELSE ready(r) <- TRUE;
+        }
         
         done(r) <- TRUE;
         APPLY;
     }
 }
 
-EXTEND CLASS ReceiptStatus {
-    done 'Принят'
-}
+toValidate (Receipt r) = status(r) = ReceiptStatus.ready OR (immediate(r) AND status(r) = ReceiptStatus.draft);
 
 EXTEND FORM receipt
-    PROPERTIES(r) validate SHOWIF status(r) = ReceiptStatus.ready OR (immediate(r) AND NOT done(r) AND countLines(r)), done
-    PROPERTIES(r) executionDate READONLY SHOWIF done(r)
+    PROPERTIES(r) validate SHOWIF toValidate(r), 
+                  done
+    PROPERTIES(r) executionDate SHOWIF done(r)
     
-    PROPERTIES(l) done READONLYIF NOT (status(r) = ReceiptStatus.ready OR (immediate(r) AND status(r) = ReceiptStatus.draft)) BACKGROUND 
-                       IF status(r) = ReceiptStatus.ready THEN RGB(198,230,247)
+    PROPERTIES(l) done BACKGROUND RGB(198,230,247) IF toValidate(r)
 ;
+
 DESIGN receipt {
-    PROPERTY(validate(r)) { background = RGB(219,160,232);}//#DBA0E8
+    primaryActions {
+        MOVE PROPERTY(validate(r)) { fontStyle = 'bold'; }
+    }
+    status {
+        MOVE PROPERTY(done(r));                              
+    } 
+    headerLeft {
+        MOVE PROPERTY(executionDate(r));
+    }                  
 }
 
 EXTEND FORM receipts 
@@ -77,22 +85,8 @@ EXTEND FORM receipts
         FILTER 'Принят' status(r) = ReceiptStatus.done 'F7'
 ;
 
-status(Receipt r) += WHEN done(r) THEN ReceiptStatus.done;
-colorStatus(Receipt r) += WHEN status(r) == ReceiptStatus.done THEN RGB(255,255,255);
-
-
-
-DESIGN receipt {                               
-    primaryActions {
-        MOVE PROPERTY(validate(r)) { fontStyle = 'bold'; }
-    }                 
-    status {
-        MOVE PROPERTY(done(r));                              
-    } 
-    headerLeft {
-        MOVE PROPERTY(executionDate(r));
-    }                  
-}
+status (Receipt r) += WHEN done(r) THEN ReceiptStatus.done;
+colorStatus (Receipt r) += WHEN status(r) = ReceiptStatus.done THEN RGB(255,255,255);
 
 EXTEND FORM partner
     OBJECTS r = Receipt

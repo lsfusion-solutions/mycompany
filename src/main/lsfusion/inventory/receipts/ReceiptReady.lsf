@@ -4,8 +4,11 @@ REQUIRE Receipt, ResLedger;
 
 NAMESPACE Inventory;
 
-// К приемке
 ready 'К приемке' = DATA BOOLEAN (Receipt);
+
+EXTEND CLASS ReceiptStatus {
+    ready 'К приемке'
+}
 
 markAsToDo 'В работу' (Receipt r) {
     APPLY; 
@@ -17,23 +20,9 @@ markAsToDo 'В работу' (Receipt r) {
     }
 }
 
-countLines (Receipt r) = GROUP SUM 1 IF receipt(ReceiptLine l) = r;
-
-EXTEND CLASS ReceiptStatus {
-    ready 'К приемке'
-}
-
 EXTEND FORM receipt
-    PROPERTIES(r) markAsToDo SHOWIF status(r) = ReceiptStatus.draft AND countLines(r) AND NOT immediate(r), ready READONLY 
+    PROPERTIES(r) markAsToDo SHOWIF status(r) = ReceiptStatus.draft AND NOT immediate(r), ready 
 ;
-
-EXTEND FORM receipts    
-    EXTEND FILTERGROUP status
-        FILTER 'К приемке' status(r) = ReceiptStatus.ready 'F8'    
-;
-
-status(Receipt r) += WHEN ready(r) THEN ReceiptStatus.ready;
-colorStatus(Receipt r) += WHEN status(r) == ReceiptStatus.ready THEN RGB(252,247,149);
 
 DESIGN receipt {
     primaryActions {
@@ -43,3 +32,11 @@ DESIGN receipt {
         MOVE PROPERTY(ready(r));                               
     }
 }
+
+EXTEND FORM receipts    
+    EXTEND FILTERGROUP status
+        FILTER 'К приемке' status(r) = ReceiptStatus.ready 'F8'    
+;
+
+status (Receipt r) += WHEN ready(r) THEN ReceiptStatus.ready;
+colorStatus (Receipt r) += WHEN status(r) == ReceiptStatus.ready THEN RGB(252,247,149);
