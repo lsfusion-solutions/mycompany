@@ -1,0 +1,21 @@
+MODULE BillItem;
+
+REQUIRE Bill;
+
+NAMESPACE Invoicing;
+
+EXTEND FORM item
+    OBJECTS bl = BillLine
+    PROPERTIES(bl) READONLY nameStatus, date, nameVendor, nameCompany, quantity, unitPrice
+    PROPERTIES(bl) EDIT
+    FILTERS item(bl) = i
+;
+
+DESIGN item {
+    operations {
+        NEW bills {
+            caption = 'Приходные накладные';
+            MOVE BOX(bl);
+        }
+    }
+}

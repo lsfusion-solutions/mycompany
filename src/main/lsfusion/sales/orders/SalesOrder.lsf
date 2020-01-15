@@ -210,14 +210,17 @@ NAVIGATOR {
     }
 }
 
-@defineDocSearch(order, item, quantity, o, canBeSold);
+// status
 @defineStatus(order, 'заказа', o);
-@defineDocHistory(order, o, item, quantity);
-
 nameStatus 'Статус' (OrderLine l) = nameStatus(order(l)); 
 
+// history
+@defineDocHistory(order, o, item, quantity);
+
+// search
+@defineDocSearch(order, item, quantity, o, canBeSold);
+
 EXTEND FORM order
-    FILTERGROUP  pricelist
-        FILTER 'В прайс-листе' GROUP SUM 1 IF itm = item(PricelistLine line) AND 
-            startDate(pricelist(line)) <= currentDateTime() AND endDate(pricelist(line)) >= currentDateTime();
+    FILTERGROUP pricelist
+        FILTER 'В прайс-листе' priceA(priceType(o), itm, dateTime(o))
 ;
