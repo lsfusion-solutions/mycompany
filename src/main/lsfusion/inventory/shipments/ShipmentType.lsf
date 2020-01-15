@@ -5,48 +5,16 @@ REQUIRE InventorySettings, Numerator, Location;
 NAMESPACE Inventory;
 
 CLASS ShipmentType 'Тип отгрузки';
-
 name 'Название' = DATA ISTRING[50] (ShipmentType) NONULL;
-isTransfer 'Трансфер?' = DATA BOOLEAN (ShipmentType) CHARWIDTH 10;
-picking 'Отбор' = DATA BOOLEAN (ShipmentType);
+
+isTransfer 'Трансфер' = DATA BOOLEAN (ShipmentType) CHARWIDTH 10;
 
 numerator 'Нумератор' = DATA Numerator (ShipmentType);
 nameNumerator 'Нумератор' (ShipmentType o) = name(numerator(o));
 
-loadInitialData () + {
-    NEWSESSION {
-        NEW s = ShipmentType {
-            name(s) <- 'Стандартная отгрузка';
-
-            NEW n = Numerator {
-                name(n) <- 'Отгрузок';
-                series(n) <- 'SH';
-                minValue(n) <- 1;
-                maxValue(n) <- 999999;
-                stringLength(n) <- 6;
-                numerator(s) <- n;
-            }
-        }
-        
-        NEW s = ShipmentType {
-            name(s) <- 'Стандартный трансфер';
-            isTransfer(s) <- TRUE;
-
-            NEW n = Numerator {
-                name(n) <- 'Трансферов';
-                series(n) <- 'SТ';
-                minValue(n) <- 1;
-                maxValue(n) <- 999999;
-                stringLength(n) <- 6;
-                numerator(s) <- n;
-            }
-        }
-        APPLY;
-    }
-}
-
+// locations
 defaultLocation = DATA Location (ShipmentType);
-nameDefaultLocationFrom 'Место хранения по умолчанию (откуда)' (ShipmentType o) = name(defaultLocation(o));
+nameDefaultLocation 'Место хранения по умолчанию (откуда)' (ShipmentType o) = name(defaultLocation(o));
 
 defaultToLocation = DATA Location (ShipmentType);
 nameDefaultToLocation 'Место хранения по умолчанию (куда)' (ShipmentType o) = name(defaultToLocation(o));
@@ -56,29 +24,66 @@ CONSTRAINT defaultToLocation(ShipmentType s) = defaultLocation(s)
 
 maxQuantity 'Максимальное кол-во товара' = DATA NUMERIC[16,3] (ShipmentType);
 
-countShipmentTypes 'Кол-во типов' () = GROUP SUM 1 IF r IS ShipmentType; 
-firstShipmentType = GROUP LAST ShipmentType r ORDER DESC r WHERE r IS ShipmentType;
-
-defaultShipmentType = firstShipmentType() IF countShipmentTypes() = 1;
-
 FORM shipmentType 'Тип отгрузки'
     OBJECTS o = ShipmentType PANEL 
-    PROPERTIES(o) name, isTransfer, nameNumerator, nameDefaultToLocation SHOWIF isTransfer(o), 
-                nameDefaultLocationFrom, maxQuantity, picking
+    PROPERTIES(o) name, isTransfer, nameNumerator, 
+                  nameDefaultLocation, nameDefaultToLocation SHOWIF isTransfer(o), 
+                  maxQuantity
      
     EDIT ShipmentType OBJECT o;
 ;
 
 FORM shipmentTypes 'Типы отгрузки'
     OBJECTS o = ShipmentType
-    PROPERTIES(o) READONLY name, isTransfer, nameNumerator, nameDefaultToLocation, 
-                nameDefaultLocationFrom, maxQuantity, picking
+    PROPERTIES(o) READONLY name, isTransfer, nameNumerator, 
+                           nameDefaultLocation, nameDefaultToLocation, 
+                           maxQuantity
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+    
     LIST ShipmentType OBJECT o;
 ;
 
 NAVIGATOR {
     settings {
         NEW shipmentTypes;
+    }
+}
+
+// default type
+countShipmentTypes 'Кол-во типов' () = GROUP SUM 1 IF r IS ShipmentType; 
+firstShipmentType = GROUP LAST ShipmentType r ORDER DESC r WHERE r IS ShipmentType;
+
+defaultShipmentType = firstShipmentType() IF countShipmentTypes() = 1;
+
+// initial data
+loadInitialData () + {
+    NEWSESSION {
+        NEW s = ShipmentType {
+            name(s) <- 'Отгрузка покупателю';
+
+            NEW n = Numerator {
+                name(n) <- 'Отгрузка покупателю';
+                series(n) <- 'ОП';
+                minValue(n) <- 1;
+                maxValue(n) <- 999999;
+                stringLength(n) <- 6;
+                numerator(s) <- n;
+            }
+        }
+        
+        NEW s = ShipmentType {
+            name(s) <- 'Перемещение';
+            isTransfer(s) <- TRUE;
+
+            NEW n = Numerator {
+                name(n) <- 'Перемещение';
+                series(n) <- 'ПР';
+                minValue(n) <- 1;
+                maxValue(n) <- 999999;
+                stringLength(n) <- 6;
+                numerator(s) <- n;
+            }
+        }
+        APPLY;
     }
 }

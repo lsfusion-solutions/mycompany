@@ -70,6 +70,10 @@ validate 'Отгружен' (Shipment s) {
     }
 }
 
+EXTEND FORM shipmentLines
+    PROPERTIES(l) READONLY executionDate AFTER scheduledDate(l), done
+;
+
 toValidate (Shipment s) = status(s) = ShipmentStatus.ready OR (immediate(s) AND status(s) = ShipmentStatus.draft);
 
 EXTEND FORM shipment

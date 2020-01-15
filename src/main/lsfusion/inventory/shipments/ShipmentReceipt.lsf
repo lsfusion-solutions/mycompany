@@ -1,26 +1,33 @@
 MODULE ShipmentReceipt;
 
-REQUIRE ShipmentDone, ReceiptDone;
+REQUIRE ShipmentCanceled, ReceiptDone;
 
 NAMESPACE Inventory;
 
 isReturn 'Возврат' = DATA BOOLEAN (Receipt);
-referenceShipment 'Ссылка на отгрузку' = DATA ShipmentLine (ReceiptLine);
-referenceNumber 'Ссылка на отгрузку' (ReceiptLine l) = number(shipment(referenceShipment(l)));
 
-CONSTRAINT referenceShipment(ReceiptLine l) AND NOT (customer(referenceShipment(l)) = vendor(l) AND 
-    product(referenceShipment(l)) = product(l))
-    CHECKED BY referenceShipment
+shipmentLine = DATA ShipmentLine (ReceiptLine);
+numberShipmentLine 'Отгрузка' (ReceiptLine l) = number(shipment(shipmentLine(l)));
+
+CONSTRAINT shipmentLine(ReceiptLine l) AND NOT 
+                (customer(shipmentLine(l)) = vendor(l) AND 
+                 product(shipmentLine(l)) = product(l))
+    CHECKED BY shipmentLine
     MESSAGE 'Контрагент и товар отгрузки должны совпадать с контрагентом и товаром возврата';
     
-WHEN LOCAL (SETCHANGED(product(ReceiptLine l)) OR SETCHANGED(vendor(l))) AND isReturn(receipt(l)) AND product(l) AND vendor(l) DO {
-    referenceShipment(l) <- GROUP LAST ShipmentLine sl IF customer(sl) = vendor(l) AND product(sl) = product(l) ORDER executionDate(shipment(sl));
+EXTEND FORM receipt
+    PROPERTIES(r) isReturn
+    
+    PROPERTIES(l) numberShipmentLine SHOWIF isReturn(r)
+;
+
+DESIGN receipt {
+    headerRight {
+        MOVE PROPERTY(isReturn(r));
+    }
 }
 
-WHEN LOCAL SETCHANGED(referenceShipment(ReceiptLine l)) DO {
-    initialDemand(l) <- done(referenceShipment(l));
-}
-
+// Shipment
 return 'Возврат' (Shipment s) {    
     NEWSESSION {
         NEW nr = Receipt {
@@ -29,7 +36,7 @@ return 'Возврат' (Shipment s) {
             location(nr) <- location(s);
             vendor(nr) <- customer(s);
                 FOR shipment(ShipmentLine l) = s INLINE NEW nl = ReceiptLine DO {
-                    referenceShipment(nl) <- l;
+                    shipmentLine(nl) <- l;
                     receipt(nl) <- nr;
                     product(nl) <- product(l);
                     initialDemand(nl) <- done(l);
@@ -40,7 +47,7 @@ return 'Возврат' (Shipment s) {
 }
 
 EXTEND FORM shipment
-    PROPERTIES(s) return SHOWIF status(s) = ShipmentStatus.done AND NOT isTransfer(type(s))
+    PROPERTIES(s) return SHOWIF active(s) AND NOT isTransfer(type(s))
 ;
 
 DESIGN shipment {
@@ -49,29 +56,11 @@ DESIGN shipment {
     }             
 }
 
-shipmentNumber 'Отгрузка' (ShipmentLine l) = number(shipment(l));
-
-FORM listShipmentLines
-    OBJECTS p = Product, pa = Partner PANEL 
-    
-    OBJECTS l = ShipmentLine
-    PROPERTIES(l) READONLY shipmentNumber, index, nameProduct, done, executionDate
-    FILTERS product(l) = p, customer(l) = pa
-;
-
-showList (ReceiptLine line) {
-    DIALOG listShipmentLines OBJECTS p = product(line), pa = vendor(line), l INPUT DO {
-        referenceShipment(line) <- l;
-    }
-}
-
-EXTEND FORM receipt
-    PROPERTIES(r) isReturn
-    PROPERTIES(l) referenceNumber SHOWIF isReturn(r) READONLYIF readonly(l) ON CHANGE showList(l)
-;
-
-DESIGN receipt {
-    headerRight {
-        MOVE PROPERTY(isReturn(r));
-    }
+// auto set
+WHEN LOCAL (SETCHANGED(product(ReceiptLine l)) OR SETCHANGED(vendor(l))) AND isReturn(receipt(l)) AND product(l) AND vendor(l) DO {
+    shipmentLine(l) <- GROUP LAST ShipmentLine sl IF 
+                                    customer(sl) = vendor(l) AND 
+                                    product(sl) = product(l) AND 
+                                    active(shipment(sl)) 
+                             ORDER executionDate(shipment(sl)), sl;
 }

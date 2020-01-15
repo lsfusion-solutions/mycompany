@@ -78,9 +78,18 @@ readonly = ABSTRACT CASE BOOLEAN (Shipment);
 readonly = ABSTRACT CASE BOOLEAN (ShipmentLine);
 
 // line properties
+scheduledDate 'Планируемая дата' (ShipmentLine l) = scheduledDate(shipment(l));
+number 'Номер' (ShipmentLine l) = number(shipment(l));
 customer (ShipmentLine l) = customer(shipment(l));
 nameCustomer 'Покупатель' (ShipmentLine l) = nameCustomer(shipment(l));
 nameLocation 'Место хранения' (ShipmentLine l) = nameLocation(shipment(l));
+
+FORM shipmentLines 'Строки отгрузки'
+    OBJECTS l = ShipmentLine
+    PROPERTIES(l) READONLY scheduledDate, number, index, nameProduct
+
+    LIST ShipmentLine OBJECT l
+;
 
 // edit form
 edit (ShipmentLine l) + { edit(shipment(l)); } 

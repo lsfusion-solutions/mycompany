@@ -13,12 +13,12 @@ active 'Активен' (Shipment s) = done(s) AND NOT canceled(s);
 
 cancel 'Отменить' (Shipment s) {
     APPLY; 
-       IF canceled() THEN RETURN;
+    IF canceled() THEN RETURN;
            
-       NEWSESSION {
-           canceled(s) <- TRUE;
-           APPLY;
-       }
+    NEWSESSION {
+        canceled(s) <- TRUE;
+        APPLY;
+    }
 }
 
 status(Shipment s) += WHEN canceled(s) THEN ShipmentStatus.canceled;
@@ -26,11 +26,6 @@ colorStatus(Shipment s) += WHEN status(s) == ShipmentStatus.canceled THEN RGB(18
 
 EXTEND FORM shipment
     PROPERTIES(s) cancel SHOWIF NOT (status(s) = ShipmentStatus.draft OR status(s) = ShipmentStatus.canceled), canceled 
-;
-
-EXTEND FORM shipments    
-    EXTEND FILTERGROUP status
-        FILTER 'Отменен' status(s) = ShipmentStatus.canceled 'F5'    
 ;
 
 DESIGN shipment {
@@ -41,3 +36,8 @@ DESIGN shipment {
         MOVE PROPERTY(canceled(s));                               
     }    
 }
+
+EXTEND FORM shipments    
+    EXTEND FILTERGROUP status
+        FILTER 'Отменен' status(s) = ShipmentStatus.canceled 'F5'    
+;

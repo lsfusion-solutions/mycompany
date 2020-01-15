@@ -4,23 +4,30 @@ REQUIRE ShipmentPrint, ShipmentRes, ShipmentInv;
 
 NAMESPACE Inventory;
 
-CLASS ShipmentPicking 'Отбор';
+// type
+picking 'Отбор' = DATA BOOLEAN (ShipmentType);
+EXTEND FORM shipmentType PROPERTIES(o) picking;
 
+// reserved
 reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ShipmentLine, Location);
 reservedRec 'Зарезервировано (с учетом вложенных)' (ShipmentLine l) = GROUP SUM reserved(l, Location loc) IF level(loc, location(shipment(l)));
 ledgerReserved (ShipmentLine l) += reservedRec(l);
-CONSTRAINT reserved(ShipmentLine l, Location loc) < 0 MESSAGE 'Зарезервированое кол-во не может быть меньше 0';
 
+CONSTRAINT reserved(ShipmentLine l, Location loc) < 0 MESSAGE 'Зарезервированое кол-во не может быть меньше 0';
 CONSTRAINT reserved(ShipmentLine l) (-) reservedRec(l) < 0 MESSAGE 'Нельзя зарезервировать товара по местам хранения больше чем в строке';
 
+// done
 done 'Отгружено' = DATA NUMERIC[16,3] (ShipmentLine, Location);
 doneRec 'Отгружено (с учетом вложенных)' (ShipmentLine l) = GROUP SUM done(l, Location loc) IF level(loc, location(shipment(l)));
 ledgerDone (ShipmentLine l) += doneRec(l);
-CONSTRAINT done(ShipmentLine l, Location loc) < 0 MESSAGE 'Отгруженное кол-во не может быть меньше 0';
 
+CONSTRAINT done(ShipmentLine l, Location loc) < 0 MESSAGE 'Отгруженное кол-во не может быть меньше 0';
 CONSTRAINT done(ShipmentLine l) (-) doneRec(l) < 0 MESSAGE 'Нельзя отгрузить товара по местам хранения больше чем в строке';
 
-available 'Доступно' (ShipmentLine l, Location loc) = prevAvailable(loc, product(l)) (+) PREV(reserved(l, loc));
+locations (ShipmentLine l) = GROUP CONCAT name(Location loc) + ' : ' + DOUBLE(done(l, loc)), ', ';
+note(ShipmentLine l) += locations(l);
+
+// events
 dateReceived 'Дата последнего прихода' (ShipmentLine l, Location loc) = prevDateReceived(loc, product(l));
 
 WHEN LOCAL CHANGED(done(ShipmentLine l)) AND picking(type(shipment(l))) DO 
@@ -29,7 +36,8 @@ WHEN LOCAL CHANGED(done(ShipmentLine l)) AND picking(type(shipment(l))) DO
                                        ORDER dateReceived(l, loc), loc
                                        BY l;
 
-extraCheckAvailability (Shipment s) +{
+available 'Доступно' (ShipmentLine l, Location loc) = prevAvailable(loc, product(l)) (+) PREV(reserved(l, loc));
+extraCheckAvailability (Shipment s) + {
     IF picking(type(s)) THEN {
         reserved(ShipmentLine l, Location loc) <- 
                 (PARTITION UNGROUP reserved
@@ -40,28 +48,26 @@ extraCheckAvailability (Shipment s) +{
     }
 }
 
-extraUnreserve (Shipment s) +{
+extraUnreserve (Shipment s) + {
     IF picking(type(s)) THEN {
         reserved(ShipmentLine l, Location ll) <- NULL WHERE shipment(l) = s;
     }
 }
 
-extraValidate (Shipment s) +{
+extraValidate (Shipment s) + {
     IF picking(type(s)) THEN {
         done(ShipmentLine l, Location loc) <- reserved(l, loc) WHERE shipment(l) = s AND NOT (GROUP SUM done(l, Location ll));
     }
 }
 
-locations (ShipmentLine l) = GROUP CONCAT name(Location loc) + ' : ' + DOUBLE(done(l, loc)), ', ';
-note(ShipmentLine l) += locations(l);
-
 EXTEND FORM shipment
     OBJECTS loc = Location
     PROPERTIES READONLY name(loc)
     PROPERTIES READONLY dateReceived(l, loc), available(l, loc), reserved(l, loc)
-    PROPERTIES done(l, loc) READONLYIF NOT status(shipment(l)) = ShipmentStatus.ready
+    PROPERTIES          done(l, loc)
 
-    FILTERS level(loc, location(shipment(l))), available(l, loc)
+    FILTERS level(loc, location(shipment(l))), 
+            available(l, loc) OR reserved(l, loc) OR done(l, loc)
 ;
 
 DESIGN shipment {
@@ -73,42 +79,40 @@ DESIGN shipment {
     }
 }
 
-// Проводим по резервам
-
+// resledger
 CLASS ShipmentPickingRes : ResLedger;
 
-pickingLedger = AGGR ShipmentPickingRes WHERE reserved(ShipmentLine l, Location loc)
-                    AND (status(shipment(l)) = ShipmentStatus.waiting OR status(shipment(l)) = ShipmentStatus.ready);
+pickingLedger = AGGR ShipmentPickingRes WHERE reserved(ShipmentLine l, Location loc) AND status(shipment(l)) = ShipmentStatus.ready;
 
 dateTime(ShipmentPickingRes r) += executionDate(shipment(l(r)));
+number(ShipmentPickingRes r) += number(shipment(l(r)));
 
+partner(ShipmentPickingRes r) += customer(shipment(l(r)));
 location(ShipmentPickingRes r) += loc(r);
 
 product(ShipmentPickingRes r) += product(l(r));
 reserved(ShipmentPickingRes r) += reserved(l(r),loc(r));
 
 description(ShipmentPickingRes r) += 'Отгрузка' IF r IS ShipmentPickingRes;
-partner(ShipmentPickingRes r) += customer(shipment(l(r)));
 
-number(ShipmentPickingRes r) += number(shipment(l(r)));
-
-// Проводим по остаткам
-
+// invledger
 CLASS ShipmentPickingInv : InvLedger;
 
 invLedger = AGGR ShipmentPickingInv WHERE done(ShipmentLine l, Location loc);
 
 active(ShipmentPickingInv p) += active(shipment(l(p)));
+
 dateTime(ShipmentPickingInv p) += executionDate(shipment(l(p)));
+number(ShipmentPickingInv p) += number(shipment(l(p)));
+
 fromLocation(ShipmentPickingInv p) += loc(p);
 toLocation(ShipmentPickingInv p) += toLocation(shipment(l(p)));
+
+partner(ShipmentPickingInv p) += customer(shipment(l(p)));
 
 product(ShipmentPickingInv p) += product(l(p));
 quantity(ShipmentPickingInv p) += done(l(p), loc(p));
 
 description(ShipmentPickingInv p) += 'Отгрузка' IF p IS ShipmentPickingInv;
-partner(ShipmentPickingInv p) += customer(shipment(l(p)));
-
-number(ShipmentPickingInv p) += number(shipment(l(p)));
 
 edit (ShipmentPickingInv l) + { edit(shipment(l(l))); } 
