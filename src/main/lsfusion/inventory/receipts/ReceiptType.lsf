@@ -5,51 +5,26 @@ REQUIRE Numerator, Location;
 NAMESPACE Inventory;
 
 CLASS ReceiptType 'Тип поступления';
-
 name 'Название' = DATA ISTRING[50] (ReceiptType) NONULL;
-putAway 'Размещение' = DATA BOOLEAN (ReceiptType);
 
-numerator 'Нумератор' = DATA Numerator (ReceiptType);
+numerator = DATA Numerator (ReceiptType);
 nameNumerator 'Нумератор' (ReceiptType o) = name(numerator(o));
 
-loadInitialData () + {
-    NEWSESSION {
-        NEW r = ReceiptType {
-            name(r) <- 'Поступление от поставщика';
-            putAway(r) <- TRUE;
-
-            NEW n = Numerator {
-                name(n) <- 'Поступлений';
-                series(n) <- 'RC';
-                minValue(n) <- 1;
-                maxValue(n) <- 999999;
-                stringLength(n) <- 6;
-                numerator(r) <- n;
-            }
-        }
-        APPLY;
-    }
-}
-
-defaultLocation 'Место хранения по умолчанию' = DATA Location (ReceiptType);
+defaultLocation = DATA Location (ReceiptType);
 nameDefaultLocation 'Место хранения по умолчанию' (ReceiptType o) = name(defaultLocation(o));
+
 maxQuantity 'Максимальное кол-во товара' = DATA NUMERIC[16,3] (ReceiptType);
-
-countReceiptTypes 'Кол-во типов' () = GROUP SUM 1 IF r IS ReceiptType; 
-firstReceiptType = GROUP LAST ReceiptType r ORDER DESC r WHERE r IS ReceiptType;
-
-defaultReceiptType = firstReceiptType() IF countReceiptTypes() = 1;
 
 FORM receiptType 'Тип поступления'
     OBJECTS o = ReceiptType PANEL 
-    PROPERTIES(o) name, nameNumerator, nameDefaultLocation, maxQuantity, putAway
+    PROPERTIES(o) name, nameNumerator, nameDefaultLocation, maxQuantity
      
     EDIT ReceiptType OBJECT o;
 ;
 
 FORM receiptTypes 'Типы поступления'
     OBJECTS o = ReceiptType
-    PROPERTIES(o) READONLY name, nameNumerator, nameDefaultLocation, maxQuantity, putAway
+    PROPERTIES(o) READONLY name, nameNumerator, nameDefaultLocation, maxQuantity
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
     LIST ReceiptType OBJECT o;
 ;
@@ -57,5 +32,30 @@ FORM receiptTypes 'Типы поступления'
 NAVIGATOR {
     settings {
         NEW receiptTypes;
+    }
+}
+
+// default type
+countReceiptTypes 'Кол-во типов' () = GROUP SUM 1 IF r IS ReceiptType; 
+firstReceiptType = GROUP LAST ReceiptType r ORDER DESC r WHERE r IS ReceiptType;
+
+defaultReceiptType = firstReceiptType() IF countReceiptTypes() = 1;
+
+// initial data
+loadInitialData () + {
+    NEWSESSION {
+        NEW r = ReceiptType {
+            name(r) <- 'Поступление от поставщика';
+
+            NEW n = Numerator {
+                name(n) <- 'Поступления от поставщика';
+                series(n) <- 'ПП';
+                minValue(n) <- 1;
+                maxValue(n) <- 999999;
+                stringLength(n) <- 6;
+                numerator(r) <- n;
+            }
+        }
+        APPLY;
     }
 }

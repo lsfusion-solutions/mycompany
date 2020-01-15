@@ -4,31 +4,18 @@ REQUIRE ReceiptDone, ReceiptInv, Input;
 
 NAMESPACE Inventory;
 
-CLASS ReceiptPutAway 'Размещение';
+// type
+putAway 'Размещение' = DATA BOOLEAN (ReceiptType);
+EXTEND FORM receiptType PROPERTIES(o) putAway;
 
-receiptLine 'Строка поступления' = DATA ReceiptLine (ReceiptPutAway) NONULL DELETE;
-
-location 'Место хранения' = DATA Location (ReceiptPutAway);
-nameLocation 'Место хранения' (ReceiptPutAway p) = name(location(p));
-
-CONSTRAINT location(ReceiptPutAway p) AND NOT level(location(p), location(receipt(receiptLine(p)))) 
-                    CHECKED BY location[ReceiptPutAway]
-                    MESSAGE 'Место хранения должно быть дочерним от места хранения из документа потупления';
-
-quantity 'Кол-во' = DATA NUMERIC[16,3] (ReceiptPutAway); 
-
-put 'Размещено' (ReceiptLine l) = GROUP SUM quantity(ReceiptPutAway p) IF receiptLine(p) = l;
-ledgerDone(ReceiptLine l) += put(l);
-
-CONSTRAINT put(ReceiptLine l) > done(l) MESSAGE 'Размещенное количество не может быть больше принятого';
-
+// status
 EXTEND CLASS ReceiptStatus {
     putAway 'Размещен'
 }
 
 putAway 'Размещен' = DATA BOOLEAN (Receipt);
 
-markAsPutAway 'Разместить' (Receipt r) {
+markAsPutAway 'Размещен' (Receipt r) {
     APPLY; 
     IF canceled() THEN RETURN;
     
@@ -52,6 +39,25 @@ DESIGN receipt {
         MOVE PROPERTY(putAway(r));
     }
 }
+
+// put away process
+CLASS ReceiptPutAway 'Размещение';
+
+receiptLine 'Строка поступления' = DATA ReceiptLine (ReceiptPutAway) NONULL DELETE;
+
+location 'Место хранения' = DATA Location (ReceiptPutAway);
+nameLocation 'Место хранения' (ReceiptPutAway p) = name(location(p));
+
+CONSTRAINT location(ReceiptPutAway p) AND NOT level(location(p), location(receipt(receiptLine(p)))) 
+           CHECKED BY location[ReceiptPutAway]
+           MESSAGE 'Место хранения должно быть дочерним от места хранения из документа потупления';
+
+quantity 'Кол-во' = DATA NUMERIC[16,3] (ReceiptPutAway); 
+
+put 'Размещено' (ReceiptLine l) = GROUP SUM quantity(ReceiptPutAway p) IF receiptLine(p) = l;
+ledgerDone(ReceiptLine l) += put(l);
+
+CONSTRAINT put(ReceiptLine l) > done(l) MESSAGE 'Размещенное количество не может быть больше принятого';
 
 EXTEND FORM receipt  
     OBJECTS p = ReceiptPutAway
@@ -104,6 +110,7 @@ DESIGN receipt {
     }
 }
 
+// invledger
 CLASS ReceiptPutAwayLedger : InvLedger;
 putAwayLedger = AGGR ReceiptPutAwayLedger WHERE quantity(ReceiptPutAway line);
 
