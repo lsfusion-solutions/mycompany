@@ -4,11 +4,11 @@ REQUIRE Utils, ShipmentWaiting, ResLedger;
 
 NAMESPACE Inventory;
 
+ready 'К отгрузке' = DATA BOOLEAN (Shipment);
+
 EXTEND CLASS ShipmentStatus {
     ready 'К отгрузке'
 }
-
-ready 'К отгрузке' = DATA BOOLEAN (Shipment);
 
 reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ShipmentLine);
 
@@ -44,33 +44,32 @@ unreserve 'Снять резервирование' (Shipment s) {
     }
 }
 
-countLinesDemand (Shipment s) = GROUP SUM 1 IF shipment(ShipmentLine sl) = s AND NOT initialDemand(sl) = reserved(sl);
-countLines (Shipment s) = GROUP SUM 1 IF shipment(ShipmentLine l) = s;
-
 EXTEND FORM shipment
-    PROPERTIES(s) checkAvailability SHOWIF 
-                        (status(s) = ShipmentStatus.waiting OR (status(s) = ShipmentStatus.ready AND countLinesDemand(s))) 
-                         AND NOT immediate(s) AND countLines(s), 
-                  unreserve SHOWIF status(s) = ShipmentStatus.ready, ready 
+    PROPERTIES(s) checkAvailability SHOWIF (status(s) = ShipmentStatus.waiting OR status(s) = ShipmentStatus.ready) AND NOT immediate(s), 
+                  unreserve SHOWIF status(s) = ShipmentStatus.ready, 
+                  ready 
        
     PROPERTIES(l) READONLY available, reserved SHOWIF NOT immediate(s)
 ;
 
-EXTEND FORM shipments    
-    EXTEND FILTERGROUP status
-        FILTER 'К отгрузке' status(s) = ShipmentStatus.ready 'F8'    
-;
-
-status(Shipment s) += WHEN ready(s) THEN ShipmentStatus.ready;
-colorStatus(Shipment s) += WHEN status(s) == ShipmentStatus.ready THEN RGB(252,247,149);
-readonly (ShipmentLine l) += WHEN ready(shipment(l)) THEN TRUE;
-
 DESIGN shipment {
     primaryActions {
         MOVE PROPERTY(checkAvailability(s)) { fontStyle = 'bold'; }
+    }
+    secondaryActions {
         MOVE PROPERTY(unreserve(s));
     }              
     status {
         MOVE PROPERTY(ready(s));                               
     }    
 }
+
+EXTEND FORM shipments    
+    EXTEND FILTERGROUP status
+        FILTER 'К отгрузке' status(s) = ShipmentStatus.ready 'F8'    
+;
+
+status (Shipment s) += WHEN ready(s) THEN ShipmentStatus.ready;
+colorStatus (Shipment s) += WHEN status(s) == ShipmentStatus.ready THEN RGB(252,247,149);
+
+readonly (ShipmentLine l) += WHEN ready(shipment(l)) THEN TRUE;

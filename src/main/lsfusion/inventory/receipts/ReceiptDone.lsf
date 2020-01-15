@@ -30,10 +30,14 @@ validate 'Принят' (Receipt r) {
                     ASK 'Принято не все количество. Создать дополнительную приемку ?' DO {
                         NEW rn = Receipt {
                             type(rn) <- type(r);
+
+                            scheduledDate(rn) <- scheduledDate(r);
+
                             vendor(rn) <- vendor(r);
                             location(rn) <- location(r);
-                            scheduledDate(rn) <- scheduledDate(r);
+
                             note(rn) <- note(r);
+
                             FOR receipt(ReceiptLine l) = r AND (q = initialDemand(l) (-) done(l)) DO NEW ln = ReceiptLine {
                                 receipt(ln) <- rn;
                                 product(ln) <- product(l);
@@ -60,8 +64,8 @@ toValidate (Receipt r) = status(r) = ReceiptStatus.ready OR (immediate(r) AND st
 
 EXTEND FORM receipt
     PROPERTIES(r) validate SHOWIF toValidate(r), 
-                  done
-    PROPERTIES(r) executionDate SHOWIF done(r)
+                  done,
+                  executionDate SHOWIF done(r)
     
     PROPERTIES(l) done BACKGROUND RGB(198,230,247) IF toValidate(r)
 ;
@@ -86,7 +90,6 @@ EXTEND FORM receipts
 ;
 
 status (Receipt r) += WHEN done(r) THEN ReceiptStatus.done;
-colorStatus (Receipt r) += WHEN status(r) = ReceiptStatus.done THEN RGB(255,255,255);
 
 EXTEND FORM partner
     OBJECTS r = Receipt

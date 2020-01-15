@@ -6,6 +6,10 @@ NAMESPACE Inventory;
 
 done 'Отгружен' = DATA BOOLEAN (Shipment);
 
+EXTEND CLASS ShipmentStatus {
+    done 'Отгружен'
+}
+
 executionDate 'Дата отгрузки' = DATA DATETIME (Shipment);
 WHEN SET(done(Shipment s)) AND NOT CHANGED(executionDate(s)) DO executionDate(s) <- currentDateTime(); 
 executionDate 'Дата отгрузки' (ShipmentLine l) = executionDate(shipment(l));
@@ -15,10 +19,7 @@ done 'Отгружено' = DATA NUMERIC[16,3] (ShipmentLine);
 CONSTRAINT done(ShipmentLine l) < 0 OR done(l) > initialDemand(l) 
     MESSAGE 'Отгруженое количество должно быть от 0 до исходного';
 
-CONSTRAINT done(ShipmentLine l) > available(l) AND NOT done(shipment(l)) AND 
-            positiveOnHand(location(shipment(l))) MESSAGE 'Отгруженые кол-ва не могут быть больше доступных';
-
-fillDone 'Заполнить Отгружено' (Shipment s) {
+setDone 'Заполнить Отгружено' (Shipment s) {
     done(ShipmentLine l) <- reserved(l) WHERE shipment(l) = s;    
 }
 
@@ -33,33 +34,35 @@ validate 'Отгружен' (Shipment s) {
             
             IF NOT (GROUP SUM done(ShipmentLine l) IF shipment(l) = s) THEN
                 ASK 'Не заполены отгруженые количества. Проставить ожидаемыми?' DO {
-                    fillDone(s);
+                    setDone(s);
                 } ELSE RETURN;
             
             IF GROUP SUM 1 IF shipment(ShipmentLine l) = s AND NOT initialDemand(l) = done(l) THEN {
                 ASK 'Отгружено не все количество. Создать дополнительную отгрузку?' DO {
                     NEW rn = Shipment {
                         type(rn) <- type(s);
+
+                        scheduledDate(rn) <- scheduledDate(s);
+
                         customer(rn) <- customer(s);
+                        
                         location(rn) <- location(s);
                         toLocation(rn) <- toLocation(s);
-                        scheduledDate(rn) <- scheduledDate(s);
-                        number(rn) <- number(s);
+                        
                         note(rn) <- note(s);
+                        
                         FOR shipment(ShipmentLine l) = s AND (q = initialDemand(l) (-) done(l)) DO NEW ln = ShipmentLine {
                             shipment(ln) <- rn;
                             product(ln) <- product(l);
                             initialDemand(ln) <- q;
                         }
                     }
+                    
                     initialDemand(ShipmentLine l) <- done(l) WHERE shipment(l) = s;
+                    
                     DELETE ShipmentLine l WHERE shipment(l) = s AND NOT done(l);
                 }
             }
-            
-        } ELSE {
-            waiting(s) <- TRUE;
-            ready(s) <- TRUE;
         }
         
         done(s) <- TRUE;
@@ -67,27 +70,16 @@ validate 'Отгружен' (Shipment s) {
     }
 }
 
-EXTEND CLASS ShipmentStatus {
-    done 'Отгружен'
-}
+toValidate (Shipment s) = status(s) = ShipmentStatus.ready OR (immediate(s) AND status(s) = ShipmentStatus.draft);
 
 EXTEND FORM shipment
-    PROPERTIES(s) validate SHOWIF status(s) = ShipmentStatus.ready OR (immediate(s) AND NOT done(s) AND countLines(s)), 
-                        done READONLY 
-    PROPERTIES(s) executionDate READONLY SHOWIF done(s)
-    PROPERTIES(l) done READONLYIF NOT (status(s) = ShipmentStatus.ready OR (immediate(s) AND status(s) = ShipmentStatus.draft)) 
-                                        BACKGROUND IF status(s) = ShipmentStatus.ready THEN RGB(198,230,247)
-    PROPERTIES(s) fillDone DRAW l TOOLBAR SHOWIF status(s) = ShipmentStatus.ready
+    PROPERTIES(s) validate SHOWIF toValidate(s), 
+                  done,
+                  setDone DRAW l TOOLBAR SHOWIF status(s) = ShipmentStatus.ready,
+                  executionDate READONLY SHOWIF done(s)
+    
+    PROPERTIES(l) done BACKGROUND RGB(198,230,247) IF toValidate(s)
 ;
-
-EXTEND FORM shipments
-    PROPERTIES(s) READONLY executionDate AFTER scheduledDate(s)
- 
-    EXTEND FILTERGROUP status
-        FILTER 'Отгружен' status(s) = ShipmentStatus.done 'F7'
-;
-
-status(Shipment s) += WHEN done(s) THEN ShipmentStatus.done;
 
 DESIGN shipment {                               
     primaryActions {                  
@@ -100,6 +92,15 @@ DESIGN shipment {
         MOVE PROPERTY(executionDate(s));
     }                  
 }
+
+EXTEND FORM shipments
+    PROPERTIES(s) READONLY executionDate AFTER scheduledDate(s)
+ 
+    EXTEND FILTERGROUP status
+        FILTER 'Отгружен' status(s) = ShipmentStatus.done 'F7'
+;
+
+status(Shipment s) += WHEN done(s) THEN ShipmentStatus.done;
 
 EXTEND FORM partner
     OBJECTS s = Shipment

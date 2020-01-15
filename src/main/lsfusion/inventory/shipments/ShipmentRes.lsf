@@ -11,6 +11,7 @@ CLASS ShipmentResLedger : ResLedger;
 resLedger = AGGR ShipmentResLedger WHERE toReserve(ShipmentLine line) > 0 AND status(shipment(line)) = ShipmentStatus.ready;
 
 dateTime(ShipmentResLedger r) += executionDate(shipment(line(r)));
+number(ShipmentResLedger r) += number(shipment(line(r)));
 
 location(ShipmentResLedger r) += location(shipment(line(r)));
 
@@ -19,5 +20,3 @@ reserved(ShipmentResLedger r) += toReserve(line(r));
 
 description(ShipmentResLedger r) += 'Отгрузка' IF line(r) IS ShipmentLine;
 partner(ShipmentResLedger r) += customer(shipment(line(r)));
-
-number(ShipmentResLedger r) += number(shipment(line(r)));
