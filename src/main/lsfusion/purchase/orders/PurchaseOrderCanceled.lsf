@@ -1,6 +1,6 @@
 MODULE PurchaseOrderCanceled;
 
-REQUIRE PurchaseOrderLocked;
+REQUIRE PurchaseOrder;
 
 NAMESPACE Purchase;
 
@@ -23,11 +23,14 @@ cancel 'Отменить' (Order o) {
 }
 
 EXTEND FORM order
-     PROPERTIES(o) SHOWIF (NOT status(o) = OrderStatus.draft AND NOT status(o) = OrderStatus.canceled) cancel
+     PROPERTIES(o) cancel SHOWIF (NOT status(o) = OrderStatus.draft AND NOT status(o) = OrderStatus.canceled), canceled
 ;
 
 DESIGN order {
     secondaryActions {
         MOVE PROPERTY(cancel(o));
+    }
+    status {
+        MOVE PROPERTY(canceled(o));    
     }
 }

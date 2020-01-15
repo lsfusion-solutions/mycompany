@@ -23,11 +23,14 @@ lock 'Закрыть' (Order o){
 }
 
 EXTEND FORM order
-     PROPERTIES(o) SHOWIF (status(o) = OrderStatus.confirmed) lock;
+     PROPERTIES(o) lock SHOWIF (status(o) = OrderStatus.confirmed), locked;
 ;
 
 DESIGN order {
     secondaryActions {
         MOVE PROPERTY(lock(o));
+    }
+    status {
+        MOVE PROPERTY(locked(o));
     }
 }

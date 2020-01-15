@@ -23,8 +23,9 @@ confirm 'Подтвердить' (Order o){
 }
 
 EXTEND FORM order 
-     PROPERTIES(o) SHOWIF (status(o) = OrderStatus.draft) confirmDraft = confirm
-     PROPERTIES(o) SHOWIF (status(o) = OrderStatus.sent) confirmSent = confirm
+     PROPERTIES(o) confirmDraft = confirm SHOWIF (status(o) = OrderStatus.draft),
+                   confirmSent = confirm SHOWIF (status(o) = OrderStatus.sent),
+                   confirmed
 ;
 
 DESIGN order {
@@ -33,5 +34,8 @@ DESIGN order {
     }
     secondaryActions {
         MOVE PROPERTY(confirmDraft);
+    }
+    status {
+        MOVE PROPERTY(confirmed(o));
     }
 }
