@@ -86,25 +86,25 @@ nameUnitMeasure 'Ед.изм.' (FinishedLine l) = name(unitMeasure(l));
 
 done 'Произведено' = DATA NUMERIC[16,3] (FinishedLine);
 
-WHEN LOCAL (SETCHANGED(bom(ManufacturingOrder m)) OR SETCHANGED(quantity(m))) DO {
-    FOR manufacturingOrder(ConsumedLine l) = m DO DELETE l;
-    
-    IF manufactureComponents(bom(m)) THEN {
-        FOR finalBom(bom(m), ComponentLine cl, TEXT path) AND NOT manufactureComponents(bom(cl)) DO NEW l = ConsumedLine {
-            manufacturingOrder(l) <- m;
-            item(l) <- item(cl);
-            unitMeasure(l) <- unitMeasure(cl);
-            toConsume(l) <- NUMERIC[16,3](quantity(bom(m), cl, path) * quantity(m));
-        } 
-    }
-    ELSE
-        FOR bom(ComponentLine cl) = bom(m) DO NEW l = ConsumedLine {
-            manufacturingOrder(l) <- m;
-            item(l) <- item(cl);
-            unitMeasure(l) <- unitMeasure(cl);
-            toConsume(l) <- NUMERIC[16,3](quantity(cl) * quantity(m));
-        }
-}
+//WHEN LOCAL (SETCHANGED(bom(ManufacturingOrder m)) OR SETCHANGED(quantity(m))) DO {
+//    FOR manufacturingOrder(ConsumedLine l) = m DO DELETE l;
+//
+//    IF intermediate(bom(m)) THEN {
+//        FOR finalBom(bom(m), ComponentLine cl, TEXT path) AND NOT intermediate(bom(cl)) DO NEW l = ConsumedLine {
+//            manufacturingOrder(l) <- m;
+//            item(l) <- item(cl);
+//            unitMeasure(l) <- unitMeasure(cl);
+//            toConsume(l) <- NUMERIC[16,3](quantity(bom(m), cl, path) * quantity(m));
+//        } 
+//    }
+//    ELSE
+//        FOR bom(ComponentLine cl) = bom(m) DO NEW l = ConsumedLine {
+//            manufacturingOrder(l) <- m;
+//            item(l) <- item(cl);
+//            unitMeasure(l) <- unitMeasure(cl);
+//            toConsume(l) <- NUMERIC[16,3](quantity(cl) * quantity(m));
+//        }
+//}
 
 FORM manufacturingOrders 'Заказы на производство'
     OBJECTS o = ManufacturingOrder

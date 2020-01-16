@@ -1,13 +1,19 @@
 MODULE BomNested;
 
-REQUIRE BoM;
+REQUIRE Bom;
 
 NAMESPACE Manufacturing;
 
-selectedReference 'Спецификация' = DATA Bom (ComponentLine);
+// nested
+dataNestedBom 'Спецификация' = DATA Bom (ComponentLine);
+CONSTRAINT dataNestedBom(ComponentLine l) AND NOT item(l) = item(dataNestedBom(l))
+    CHECKED BY dataNestedBom
+    MESSAGE 'Номенклатура спецификации компонента должна равняться номенклатуре компонента';
 
-nestedBom (ComponentLine c) = OVERRIDE selectedReference(c), GROUP LAST Bom bb IF item(c) = item(bb) ORDER bb;
-        
+nestedBom (ComponentLine c) = OVERRIDE dataNestedBom(c), defaultBom(item(c));
+descriptionNestedBom 'Спецификация' (ComponentLine c) = description(nestedBom(c));
+
+// quantity        
 textIndex (ComponentLine c) = lpad(TEXT(index(c)), 4, '0');
 
 level 'Уровень' (Bom b, ComponentLine c, TEXT path) =
@@ -18,21 +24,24 @@ quantity 'Уровень' (Bom b, ComponentLine c, TEXT path, NUMERIC[20,11] q) 
     RECURSION NUMERIC[20,11](1.0) IF q = quantity(c) AND bom(c) = b AND path = lpad(TEXT(index(c)), 4, '0')
          STEP NUMERIC[20,11](1.0) IF q = $q * quantity(c) / quantity(bom(c)) AND bom(c) = nestedBom($c) AND path = ($path + '/' + lpad(TEXT(index(c)), 4, '0')) CYCLES NO; //MATERIALIZED
 
-quantity (Bom b, ComponentLine c, TEXT path) = NUMERIC[16,3]
-    (GROUP SUM quantity(b, c, path, NUMERIC[20,11] q) * q); 
-         
-manufactureComponents 'Производить компоненты' = DATA BOOLEAN (Bom);
+quantity 'Кол-во' (Bom b, ComponentLine c, TEXT path) = 
+    GROUP SUM quantity(b, c, path, NUMERIC[20,11] q) * q; 
+
+// intermediate         
+intermediate 'Промежуточная' = DATA BOOLEAN (Bom);
 
 EXTEND FORM bom
-    PROPERTIES(b) manufactureComponents
+    PROPERTIES(b) intermediate
+    
+    PROPERTIES(c) descriptionNestedBom BACKGROUND dataNestedBom(c)
 ;
 
 DESIGN bom {
-    item {
-        MOVE PROPERTY(manufactureComponents(b));
+    headerRight {
+        MOVE PROPERTY(intermediate(b));
     }
 }
 
-finalBom (Bom b, ComponentLine c, TEXT path) =
+intermediateBom (Bom b, ComponentLine c, TEXT path) =
     RECURSION 1l IF bom(c) = b AND path = textIndex(c) 
-         STEP 2l IF bom(c) = nestedBom($c) AND path = ($path + '/' + textIndex(c)) AND manufactureComponents(bom($c));
+         STEP 2l IF bom(c) = nestedBom($c) AND path = ($path + '/' + textIndex(c)) AND intermediate(nestedBom($c));

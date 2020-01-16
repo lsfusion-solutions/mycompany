@@ -1,6 +1,6 @@
 MODULE BomImport;
 
-REQUIRE BoM;
+REQUIRE Bom;
 
 NAMESPACE Manufacturing;
 
@@ -11,16 +11,12 @@ bomExport 'Экспорт спецификаций' () {
                 item(b) <- GROUP LAST Item i IF i IS Item;
                 quantity(b) <- 1;
                 unitMeasure(b) <- GROUP LAST ItemMeasure m IF m IS ItemMeasure;
-                company(b) <- GROUP LAST Company c IF c IS Company;
-                sequence(b) <- 1;
-                operation(b) <- GROUP LAST Operation o IF o IS Operation;  
             }
         }
         LOCAL f = EXCELFILE ();
         
         EXPORT XLSX HEADER FROM 'Номер' = number(Bom b), 'Номенклатура' = id(item(b)), 
-            'Кол-во' = quantity(b), 'Единица измерения' = id(unitMeasure(b)), 'Компания' = id(company(b)), 
-            'Последовательность' = sequence(b) TO f;        
+            'Кол-во' = quantity(b), 'Единица измерения' = id(unitMeasure(b)) TO f;        
         open(f());
     }
 }
@@ -68,12 +64,11 @@ bomImport 'Импорт спецификаций' () {
     LOCAL idItem = STRING[50] (INTEGER);
     LOCAL quantity = NUMERIC[16,3] (INTEGER);
     LOCAL idUnitMeasure = STRING[50] (INTEGER);
-    LOCAL idCompany = STRING[50] (INTEGER);
     LOCAL sequence = INTEGER (INTEGER);
     
     INPUT f = EXCELFILE DO {
         NEWSESSION {
-            IMPORT XLS HEADER FROM f TO number, idItem, quantity, idUnitMeasure, idCompany, sequence;
+            IMPORT XLS HEADER FROM f TO number, idItem, quantity, idUnitMeasure, sequence;
             
             FOR [GROUP SUM 1 BY idItem(INTEGER i)](num) AND NOT item[STRING](num) DO {
                 MESSAGE 'Отсутствует товар в базе данных с кодом ' + num + '. Импорт отменен';
@@ -85,8 +80,6 @@ bomImport 'Импорт спецификаций' () {
                 item(b) <- item(idItem(i));
                 quantity(b) <- quantity(i);
                 unitMeasure(b) <- itemMeasure(idUnitMeasure(i));
-                company(b) <- partner(idCompany(i));
-                sequence(b) <- sequence(i);
             }
             
             APPLY;

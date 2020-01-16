@@ -1,6 +1,6 @@
 MODULE UnbuildOrderDone;
 
-REQUIRE UnbuildOrder;
+REQUIRE UnbuildOrder, UnbuildBom;
 
 NAMESPACE Manufacturing;
 
@@ -15,8 +15,8 @@ unbuild 'Разобрать' (UnbuildOrder o) {
     IF canceled() THEN RETURN;
     
     NEWSESSION {
-        IF manufactureComponents(bom(o)) THEN {
-            FOR finalBom(bom(o), ComponentLine cl, TEXT path) AND NOT manufactureComponents(bom(cl)) DO NEW l = UnbuildOrderLine {
+        IF intermediate(bom(o)) THEN {
+            FOR intermediateBom(bom(o), ComponentLine cl, TEXT path) AND NOT intermediate(bom(cl)) DO NEW l = UnbuildOrderLine {
                 unbuildOrder(l) <- o;
                 dateTime(l) <- currentDateTime();
                 item(l) <- item(cl);

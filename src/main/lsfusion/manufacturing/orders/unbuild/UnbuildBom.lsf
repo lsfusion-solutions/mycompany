@@ -1,0 +1,23 @@
+MODULE UnbuildBom;
+
+REQUIRE Bom;
+
+NAMESPACE Manufacturing;
+
+unbuild 'Для разбора' = DATA BOOLEAN (Bom);
+
+costRatio 'Доля стоимости' (ComponentLine l) = 
+    quantity(l) * cost(item(bom(l))) / 
+    ((GROUP SUM quantity(ComponentLine ll) IF bom(ll) = bom(l)) * 100);
+
+EXTEND FORM bom
+    PROPERTIES(b) unbuild
+    
+    PROPERTIES(c) costRatio SHOWIF unbuild(b)
+;
+
+DESIGN bom {
+    headerRight {
+        MOVE PROPERTY(unbuild(b));
+    }
+}

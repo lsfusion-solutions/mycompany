@@ -1,0 +1,157 @@
+MODULE Bom;
+
+REQUIRE Product, Company, ManufacturingSettings, MetaNumerator, BarCode;
+
+NAMESPACE Manufacturing;
+
+CLASS Bom 'Спецификация';
+
+@defineNumber(bom, 'Спецификации', 'СП');
+bom (STRING[50] id) = GROUP AGGR Bom b BY number(b);
+
+name 'Название' = DATA ISTRING[50] (Bom);
+description 'Описание' (Bom b) = CONCAT ' ', name(b), number(b) IN id;
+
+archived 'Неактивная' = DATA BOOLEAN (Bom);
+active 'Активная' (Bom b) = NOT archived(b);
+
+item 'Номенклатура' = DATA Item (Bom) NONULL DELETE;
+nameItem 'Номенклатура' (Bom b) = name(item(b));
+
+quantity 'Кол-во' = DATA NUMERIC[16,3] (Bom) NONULL;
+
+unitMeasure = DATA ItemMeasure (Bom);
+nameUnitMeasure 'Ед. изм.' (Bom b) = name(unitMeasure(b));
+
+// default
+defaultBom = DATA Bom (Item);
+CONSTRAINT defaultBom(Item i) AND NOT item(defaultBom(i)) = i
+    MESSAGE 'Номенклатура спецификации по умолчанию должна совпадать с номенклатурой';
+WHEN DROPPED(item(defaultBom(Item i)) = i) DO defaultBom(i) <- NULL;
+
+CONSTRAINT defaultBom(Item i) AND archived(defaultBom(i))
+    MESSAGE 'Спецификация по умолчанию должна быть активной';
+
+default 'По умолчанию' (Bom b) = defaultBom(item(b)) = b;
+changeDefault (Bom b) {
+    INPUT l = BOOLEAN DO
+        defaultBom(Item i) <- b IF l WHERE i = item(b);
+}
+
+// lines
+CLASS ComponentLine 'Строка компонентов';
+
+bom 'Спецификация' = DATA Bom (ComponentLine) NONULL DELETE;
+
+index 'Индекс' = PARTITION SUM 1 ORDER ComponentLine l BY bom(l) IN id MATERIALIZED;
+
+item 'Номенклатура' = DATA Item (ComponentLine);
+nameItem 'Номенклатура' (ComponentLine l) = name(item(l));
+idBarCodeItem 'Штрих код' (ComponentLine l) = idBarCode(item(l));
+idItem 'Код' (ComponentLine l) = id(item(l));
+
+unitMeasure 'Ед.изм.' = DATA ItemMeasure (ComponentLine);
+nameUnitMeasure 'Ед.изм.' (ComponentLine l) = name(unitMeasure(l));
+WHEN LOCAL SETCHANGED (item(Bom b)) DO unitMeasure(b) <- unitMeasure(item(b));
+
+quantity 'Кол-во' = DATA NUMERIC[16,3] (ComponentLine);
+
+// byproduct
+CLASS ByproductLine 'Строка производных номенклатур';
+
+bom 'Спецификация' = DATA Bom (ByproductLine) NONULL DELETE;
+
+index 'Индекс' = PARTITION SUM 1 ORDER ByproductLine l BY bom(l) IN id MATERIALIZED;
+
+item 'Номенклатура' = DATA Item (ByproductLine);
+nameItem 'Номенклатура' (ByproductLine l) = name(item(l));
+idBarCodeItem 'Штрих код' (ByproductLine l) = idBarCode(item(l));
+idItem 'Код' (ByproductLine l) = id(item(l));
+
+unitMeasure 'Ед.изм.' = DATA ItemMeasure (ByproductLine);
+nameUnitMeasure 'Ед.изм.' (ByproductLine l) = name(unitMeasure(l));
+
+quantity 'Кол-во' = DATA NUMERIC[16,3] (ByproductLine);
+
+WHEN LOCAL SETCHANGED (item(ComponentLine c)) DO {
+    unitMeasure(c) <- unitMeasure(item(c));
+}
+
+WHEN LOCAL SETCHANGED (item(ByproductLine l)) DO {
+    unitMeasure(l) <- unitMeasure(item(l));
+}
+
+FORM bom 'Спецификация'
+    OBJECTS b = Bom PANEL 
+    PROPERTIES(b) number, nameItem, quantity, nameUnitMeasure, name, 
+                  default ON CHANGE changeDefault(b), archived
+    
+    OBJECTS c = ComponentLine
+    PROPERTIES(c) index, nameItem, nameUnitMeasure, idBarCodeItem, idItem, quantity, NEW, DELETE 
+    FILTERS bom(c) = b
+    
+    OBJECTS l = ByproductLine
+    PROPERTIES(l) index, nameItem, nameUnitMeasure, idBarCodeItem, idItem, quantity, NEW, DELETE
+    FILTERS bom(l) = b
+    
+    EDIT Bom OBJECT b
+;
+
+DESIGN bom {
+    OBJECTS {
+        NEW actions {
+            caption = 'Действия';
+            type = CONTAINERH;
+            alignment = STRETCH;
+        }
+        NEW header {
+            NEW headerCenter {
+                alignment = STRETCH;
+                type = CONTAINERH;
+                NEW headerLeft {
+                    MOVE PROPERTY(number(b))  { notNull = TRUE; }
+                    MOVE PROPERTY(nameItem(b)) { notNull = TRUE; }
+                    NEW quantity {
+                        type = CONTAINERH;
+                        MOVE PROPERTY(quantity(b));
+                        MOVE PROPERTY(nameUnitMeasure(b));
+                    }
+                    MOVE PROPERTY(name(b));
+                }
+                NEW headerRight {
+                    MOVE PROPERTY(default(b));           
+                    MOVE PROPERTY(archived(b));           
+                }
+            }
+        }
+        NEW details {
+            fill = 1;
+            type = TABBED;
+            NEW components {
+                caption = 'Компоненты';
+                MOVE BOX(c);
+            }
+            NEW byproducts {
+                caption = 'Отходы';
+                MOVE BOX(l);
+            }
+        }
+    }
+}
+
+FORM boms 'Спецификации'
+    OBJECTS b = Bom
+    PROPERTIES(b) READONLY number, nameItem, quantity, nameUnitMeasure, name, archived
+    PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE
+    
+    FILTERGROUP active
+        FILTER 'Активные' active(b) DEFAULT
+    
+    LIST Bom OBJECT b
+;
+
+NAVIGATOR {
+    operations {
+        NEW boms;
+    }
+}
