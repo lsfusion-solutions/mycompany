@@ -1,14 +1,12 @@
 MODULE AdjustmentSearch;
 
-REQUIRE Adjustment, BarCode;
+REQUIRE AdjustmentInProgress, BarCode;
 
 NAMESPACE Inventory;
 
 realQuantity 'Фактическое кол-во' (Adjustment, Product, Location) = 
     GROUP SUM realQuantity(AdjustmentLine l) BY adjustment(l), product(l), location(l);
     
-showSearch = ABSTRACT CASE BOOLEAN (Adjustment);
-
 addAdjustmentLine(Adjustment a, Product p, Location loc) {
     INPUT q = NUMERIC[16,3] DO {
         IF q THEN {
@@ -40,9 +38,9 @@ EXTEND FORM adjustment
 ;
 
 DESIGN adjustment {
-    body {
+    details {
         NEW search {
-            showIf = showSearch(a);
+            showIf = status(a) = AdjustmentStatus.inProgress AND type(a) = AdjustmentType.manual;
             fill = 1;
             type = SPLITH;
             caption = 'Подбор';

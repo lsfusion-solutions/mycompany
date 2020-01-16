@@ -1,0 +1,17 @@
+MODULE AdjustmentInv;
+
+REQUIRE AdjustmentCanceled;
+
+NAMESPACE Inventory;
+
+EXTEND CLASS InvAdjustment : InvLedger;
+active(InvAdjustment a) += active(adjustment(a));
+dateTime(InvAdjustment a) += dateTime(adjustment(a));
+number(InvAdjustment a) += number(adjustment(a));
+
+fromLocation(InvAdjustment a) += location(a);
+
+product(InvAdjustment a) += product(a);
+quantity(InvAdjustment a) += quantity(a);
+
+description(InvAdjustment a) += 'Инвентаризация' IF a IS InvAdjustment;

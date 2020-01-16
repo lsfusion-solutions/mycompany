@@ -7,24 +7,24 @@ NAMESPACE Inventory;
 EXTEND CLASS AdjustmentStatus {
     canceled 'Отменен'
 }
-
 canceled 'Отменен' = DATA BOOLEAN (Adjustment);
+active 'Активен' (Adjustment a) = done(a) AND NOT canceled(a);
+
+status(Adjustment a) += WHEN canceled(a) THEN AdjustmentStatus.canceled;
+colorStatus(Adjustment a) += WHEN status(a) = AdjustmentStatus.canceled THEN RGB(181,195,247);
 
 cancel 'Отменить' (Adjustment a) {
     APPLY; 
-       IF canceled() THEN RETURN;
+    IF canceled() THEN RETURN;
            
-       NEWSESSION {
-           canceled(a) <- TRUE;
-           APPLY;
-       }
+    NEWSESSION {
+        canceled(a) <- TRUE;
+        APPLY;
+    }
 }
 
-status(Adjustment a) += WHEN canceled(a) THEN AdjustmentStatus.canceled;
-colorStatus(Adjustment a) += WHEN status(a) == AdjustmentStatus.canceled THEN RGB(181,195,247);
-
 EXTEND FORM adjustment
-    PROPERTIES(a) cancel SHOWIF NOT (status(a) = AdjustmentStatus.done OR status(a) = AdjustmentStatus.canceled), canceled 
+    PROPERTIES(a) cancel SHOWIF NOT (status(a) = AdjustmentStatus.draft OR status(a) = AdjustmentStatus.canceled), canceled 
 ;
 
 DESIGN adjustment {

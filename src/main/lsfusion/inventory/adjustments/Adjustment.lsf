@@ -7,18 +7,41 @@ NAMESPACE Inventory;
 CLASS Adjustment 'Инвентаризация';
 
 dateTime 'Дата' = DATA DATETIME (Adjustment);
+WHEN LOCAL SET(Adjustment a IS Adjustment) AND NOT CHANGED(dateTime(a)) DO dateTime(a) <- currentDateTime();
+
+@defineNumber(adjustment, 'Инвентаризации', 'ИН');
 
 location 'Место хранения' = DATA Location (Adjustment) NONULL;
 nameLocation 'Место хранения' (Adjustment a) = name(location(a));
 
-company 'Компания' (Adjustment a) = owner(location(a));
-nameCompany 'Компания' (Adjustment a) = name(company(a));
+// type
+CLASS AdjustmentType 'Тип инвентаризации' {
+    all 'Все',
+    category 'По категории',
+    manual 'Вручную'
+}
+name 'Имя' (AdjustmentType o) = staticCaption(o) IF o IS AdjustmentType CHARWIDTH 15;
+
+FORM type 'Тип инвентаризации'
+    OBJECTS t = AdjustmentType PANEL
+    PROPERTIES(t) 'Тип инвентаризации' = name
+    
+    EDIT AdjustmentType OBJECT t  
+;
+
+type 'Тип' =  DATA AdjustmentType (Adjustment) NONULL;
+nameType 'Тип инвентаризации' (Adjustment a) = name(type(a));
+
+category 'Категория' = DATA Category (Adjustment);
+nameCategory 'Категория' (Adjustment a) = name(category(a));
 
 note 'Примечание' = DATA ISTRING[50] (Adjustment);
 
+// lines
 CLASS AdjustmentLine 'Строка инвентаризации';
 
 adjustment = DATA Adjustment (AdjustmentLine) NONULL DELETE;
+
 index 'Индекс' = PARTITION SUM 1 ORDER AdjustmentLine l BY adjustment(l) IN id MATERIALIZED;
 
 product 'Товар' = DATA Product (AdjustmentLine);
@@ -35,58 +58,73 @@ nameLocation 'Место хранения' (AdjustmentLine l) = canonicalName(lo
 theoreticalQuantity 'Теоретическое кол-во' = DATA NUMERIC[16,3] (AdjustmentLine);
 realQuantity 'Фактическое кол-во' = DATA NUMERIC[16,3] (AdjustmentLine);
 
-CLASS AdjustmentType 'Тип инвентаризации' {
-    all 'Все',
-    category 'По категории',
-    manual 'Вручную'
-}
-
-WHEN LOCAL (SETCHANGED (location(AdjustmentLine l)) OR SETCHANGED(product(l))) AND q = onHand(location(l), product(l)) DO {
+WHEN LOCAL (SETCHANGED (location(AdjustmentLine l)) OR SETCHANGED(product(l))) AND q = onHand(location(l), product(l)) 
+           AND NOT CHANGED(theoreticalQuantity(l)) DO 
     theoreticalQuantity(l) <- q;
-    realQuantity(l) <- q;
-}
 
-name 'Имя' (AdjustmentType o) = staticCaption(o) IF o IS AdjustmentType CHARWIDTH 15;
-
-type 'Тип'  =  DATA AdjustmentType (Adjustment) NONULL;
-nameType 'Тип инвентаризации' (Adjustment a) = name(type(a));
-
-category 'Категория' = DATA Category (Adjustment);
-nameCategory 'Категория' (Adjustment a) = name(category(a));
-
-readonly = ABSTRACT CASE BOOLEAN (Adjustment);
-readonly = ABSTRACT CASE BOOLEAN (AdjustmentLine);
+WHEN LOCAL CHANGED(theoreticalQuantity(AdjustmentLine l)) AND NOT CHANGED(realQuantity(l)) DO 
+    realQuantity(l) <- theoreticalQuantity(l);
 
 background (AdjustmentLine l) = CASE WHEN theoreticalQuantity(l) < realQuantity(l) THEN RGB(152,251,152)
                                               WHEN theoreticalQuantity(l) > realQuantity(l) THEN RGB(252,184,205);
 
+// readonly
+readonly = ABSTRACT CASE BOOLEAN (Adjustment);
+readonly = ABSTRACT CASE BOOLEAN (AdjustmentLine);
 
 FORM adjustment 'Инвентаризация'
     OBJECTS a = Adjustment PANEL 
-    PROPERTIES(a) READONLY dateTime, nameCompany, nameLocation, nameType, note, 
-                            nameCategory SHOWIF type(a) = AdjustmentType.category 
+    PROPERTIES(a) dateTime, number, nameLocation, nameType,
+                  nameCategory SHOWIF type(a) = AdjustmentType.category,
+                  note 
     
     OBJECTS l = AdjustmentLine
-    PROPERTIES(l) READONLYIF NOT (type(a) = AdjustmentType.manual) index, nameProduct, nameUnitMeasure, idBarCodeProduct, idProduct,
-                                nameLocation, theoreticalQuantity BACKGROUND background(l)
-    PROPERTIES(l) realQuantity READONLYIF readonly(l) BACKGROUND background(l)
-    PROPERTIES(l) NEW SHOWIF type(a) = AdjustmentType.manual, DELETE SHOWIF type(a) = AdjustmentType.manual
+    PROPERTIES(l) index READONLY, 
+                  nameProduct, nameUnitMeasure, idBarCodeProduct, idProduct,
+                  nameLocation, 
+                  theoreticalQuantity, realQuantity READONLYIF readonly(l) BACKGROUND background(l)
+    PROPERTIES(l) NEW, DELETE
     FILTERS adjustment(l) = a
     
     EDIT Adjustment OBJECT a
 ;
 
-FORM type 'Тип инвентаризации'
-    OBJECTS t = AdjustmentType PANEL
-    PROPERTIES(t) 'Тип инвентаризации' = name
-    
-    EDIT AdjustmentType OBJECT t  
-;
+DESIGN adjustment {
+    OBJECTS {
+        NEW header {
+            NEW headerCenter {
+                alignment = STRETCH;
+                type = CONTAINERH;
+                NEW headerLeft {
+                    MOVE PROPERTY(dateTime(a));
+                    MOVE PROPERTY(number(a));
+                }
+                NEW headerRight {
+                    MOVE PROPERTY(nameLocation(a))  { notNull = TRUE; }
+                    MOVE PROPERTY(nameType(a)) { notNull = TRUE; }           
+                    MOVE PROPERTY(nameCategory(a)) { notNull = TRUE; }           
+                }
+            }
+            NEW headerBottom {
+                alignment = STRETCH;
+                MOVE PROPERTY(note(a));           
+            }
+        }
+        NEW details {
+            fill = 1;
+            type = TABBED;
+            NEW lines {
+                caption = 'Строки';
+                MOVE BOX(l);
+            }
+        }
+    }
+}
 
 FORM adjustmentType 'Создать инвентаризацию'
     OBJECTS a = Adjustment PANEL 
-    PROPERTIES(a) nameLocation, nameType
-    PROPERTIES(a) nameCategory SHOWIF type(a) = AdjustmentType.category    
+    PROPERTIES(a) nameLocation, nameType,
+                  nameCategory SHOWIF type(a) = AdjustmentType.category    
 ;
 
 DESIGN adjustmentType {
@@ -102,8 +140,7 @@ DESIGN adjustmentType {
 newAdjustment 'Инвентаризация' () {
     NEWSESSION {
         NEW na = Adjustment {
-            DIALOG adjustmentType OBJECTS a = na DO { 
-                dateTime(na) <- currentDateTime();
+            DIALOG adjustmentType OBJECTS a = na NOMANAGESESSION DO { 
                 FOR (level(Location loc, location(na)) AND onHand(loc, Product p)) AND 
                     (level(category(p), category(na)) OR NOT type(na) = AdjustmentType.category) AND 
                     NOT type(na) = AdjustmentType.manual DO NEW l = AdjustmentLine {
@@ -115,13 +152,13 @@ newAdjustment 'Инвентаризация' () {
             }
         }
     }
-}IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+} IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
 
 FORM adjustments 'Инвентаризации'
     OBJECTS a = Adjustment
-    PROPERTIES(a) READONLY dateTime, nameLocation, note
-    PROPERTIES(a) NEWSESSION EDIT, DELETE 
+    PROPERTIES(a) READONLY dateTime, number, nameType, nameLocation, nameCategory, note
     PROPERTIES newAdjustment() DRAW a TOOLBAR 
+    PROPERTIES(a) NEWSESSION EDIT, DELETE 
     
     LIST Adjustment OBJECT a
 ;
@@ -132,21 +169,8 @@ NAVIGATOR {
     }
 }
 
-DESIGN adjustment {
-    OBJECTS {
-        NEW header {
-            MOVE BOX(a);
-            PROPERTY(nameCompany(a)) { notNull = TRUE; }
-        }
-        NEW body {
-            fill = 1;
-            type = TABBED;
-            NEW tab1 {
-                caption = 'Список'; 
-                MOVE BOX(l);
-            }
-        }
-    }
-}
-
+// status
 @defineStatus(adjustment, 'инвентаризации', a);
+
+// history
+@defineDocHistory(adjustment, a, product, realQuantity);
