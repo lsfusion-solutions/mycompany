@@ -16,8 +16,8 @@ nameType 'Тип' (Receipt r) = name(type(r));
 
 WHEN LOCAL SET(Receipt r IS Receipt) AND NOT CHANGED(type(r)) DO type(r) <- defaultReceiptType(); 
 
-scheduledDate 'Планируемая дата' = DATA DATETIME (Receipt) NONULL IN id;
-WHEN LOCAL SET(Receipt r IS Receipt) AND NOT CHANGED(scheduledDate(r)) DO scheduledDate(r) <- currentDateTime();
+scheduledDateTime 'Планируемая дата' = DATA DATETIME (Receipt) NONULL IN id;
+WHEN LOCAL SET(Receipt r IS Receipt) AND NOT CHANGED(scheduledDateTime(r)) DO scheduledDateTime(r) <- currentDateTime();
 
 @defineNumberType(receipt);
 receipt (STRING[31] number) = GROUP LAST Receipt r BY number(r);
@@ -67,6 +67,7 @@ readonly = ABSTRACT CASE BOOLEAN (Receipt);
 readonly = ABSTRACT CASE BOOLEAN (ReceiptLine); 
 
 // Line properties
+scheduledDateTime 'Планируемая дата' (ReceiptLine l) = scheduledDateTime(receipt(l));
 vendor (ReceiptLine l) = vendor(receipt(l));
 nameVendor 'Поставщик' (ReceiptLine l) = nameVendor(receipt(l));
 nameLocation 'Место хранения' (ReceiptLine l) = nameLocation(receipt(l));
@@ -76,7 +77,7 @@ edit (ReceiptLine l) + { edit(receipt(l)); }
 FORM receipt 'Поступление'
     OBJECTS r = Receipt PANEL
     PROPERTIES(r) READONLYIF readonly(r) 
-                        nameType, scheduledDate, number, 
+                        nameType, scheduledDateTime, number, 
                         nameVendor, nameLocation, sourceDocument,
                         note
 
@@ -98,7 +99,7 @@ DESIGN receipt {
                 type = CONTAINERH;
                 NEW headerLeft {
                     MOVE PROPERTY(nameType(r)) { notNull = TRUE; }
-                    MOVE PROPERTY(scheduledDate(r));
+                    MOVE PROPERTY(scheduledDateTime(r));
                     MOVE PROPERTY(number(r));
                 }
                 NEW headerRight {
@@ -130,7 +131,7 @@ DESIGN receipt {
 
 FORM receipts 'Поступления'
     OBJECTS r = Receipt
-    PROPERTIES(r) READONLY nameType, scheduledDate, number, 
+    PROPERTIES(r) READONLY nameType, scheduledDateTime, number, 
                            nameVendor, nameLocation, sourceDocument,
                            note
     PROPERTIES(r) NEWSESSION NEW, EDIT, DELETE READONLYIF readonly(r)
@@ -158,6 +159,7 @@ EXTEND FORM receipts
 
 // status
 @defineStatus(receipt, 'поступления', r);
+nameStatus 'Статус' (ReceiptLine l) = nameStatus(receipt(l));
 
 // history
 @defineDocHistory(receipt, r, product, initialDemand);

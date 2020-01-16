@@ -4,12 +4,13 @@ REQUIRE ManufacturingOrderDone;
 
 NAMESPACE Manufacturing;
 
-printingDate 'Дата печати' (ManufacturingOrder m) = currentDateTime();
 from 'Откуда' (ConsumedLine l) = nameMaterialsLocation(manufacturingOrder(l));
 
 FORM printManufacturingOrder
+    PROPERTIES() currentDateTime
+
     OBJECTS m = ManufacturingOrder PANEL 
-    PROPERTIES(m) number, nameResponsible, deadline, nameItem, quantity, printingDate
+    PROPERTIES(m) number, nameResponsible, deadline, nameItem, quantity
     
     OBJECTS l = ConsumedLine
     PROPERTIES(l) nameItem, toConsume, from

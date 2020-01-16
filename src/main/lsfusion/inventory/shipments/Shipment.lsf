@@ -16,8 +16,8 @@ nameType 'Тип' (Shipment s) = name(type(s));
 
 WHEN LOCAL SET(Shipment s IS Shipment) AND NOT CHANGED(type(s)) DO type(s) <- defaultShipmentType(); 
 
-scheduledDate 'Планируемая дата' = DATA DATETIME (Shipment) NONULL IN id;
-WHEN LOCAL SET(Shipment s IS Shipment) AND NOT CHANGED(scheduledDate(s)) DO scheduledDate(s) <- currentDateTime();
+scheduledDateTime 'Планируемая дата' = DATA DATETIME (Shipment) NONULL IN id;
+WHEN LOCAL SET(Shipment s IS Shipment) AND NOT CHANGED(scheduledDateTime(s)) DO scheduledDateTime(s) <- currentDateTime();
 
 @defineNumberType(shipment);
 
@@ -78,7 +78,7 @@ readonly = ABSTRACT CASE BOOLEAN (Shipment);
 readonly = ABSTRACT CASE BOOLEAN (ShipmentLine);
 
 // line properties
-scheduledDate 'Планируемая дата' (ShipmentLine l) = scheduledDate(shipment(l));
+scheduledDateTime 'Планируемая дата' (ShipmentLine l) = scheduledDateTime(shipment(l));
 number 'Номер' (ShipmentLine l) = number(shipment(l));
 customer (ShipmentLine l) = customer(shipment(l));
 nameCustomer 'Покупатель' (ShipmentLine l) = nameCustomer(shipment(l));
@@ -86,7 +86,7 @@ nameLocation 'Место хранения' (ShipmentLine l) = nameLocation(shipm
 
 FORM shipmentLines 'Строки отгрузки'
     OBJECTS l = ShipmentLine
-    PROPERTIES(l) READONLY scheduledDate, number, index, nameProduct
+    PROPERTIES(l) READONLY scheduledDateTime, number, index, nameProduct
 
     LIST ShipmentLine OBJECT l
 ;
@@ -96,7 +96,7 @@ edit (ShipmentLine l) + { edit(shipment(l)); }
 FORM shipment 'Отгрузка'
     OBJECTS s = Shipment PANEL 
     PROPERTIES(s) READONLYIF readonly(s) 
-                        nameType, scheduledDate, number, 
+                        nameType, scheduledDateTime, number, 
                         nameCustomer SHOWIF NOT isTransfer(type(s)), nameLocation, nameToLocation SHOWIF isTransfer(type(s)), sourceDocument,
                         note
                   
@@ -118,7 +118,7 @@ DESIGN shipment {
                 type = CONTAINERH;
                 NEW headerLeft {
                     MOVE PROPERTY(nameType(s)) { notNull = TRUE; }
-                    MOVE PROPERTY(scheduledDate(s));
+                    MOVE PROPERTY(scheduledDateTime(s));
                     MOVE PROPERTY(number(s));
                 }
                 NEW headerRight {
@@ -151,7 +151,7 @@ DESIGN shipment {
 
 FORM shipments 'Отгрузки'
     OBJECTS s = Shipment
-    PROPERTIES(s) READONLY nameType, scheduledDate, number, 
+    PROPERTIES(s) READONLY nameType, scheduledDateTime, number, 
                            nameCustomer, nameLocation, nameToLocation, sourceDocument,
                            note
     PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE READONLYIF readonly(s)
@@ -178,6 +178,7 @@ EXTEND FORM shipments
 
 // status
 @defineStatus(shipment, 'отгрузки', s);
+nameStatus 'Статус' (ShipmentLine l) = nameStatus(shipment(l));
 
 // history
 @defineDocHistory(shipment, s, product, initialDemand);

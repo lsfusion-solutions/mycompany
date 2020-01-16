@@ -22,7 +22,7 @@ createInvoice 'Оформить накладную' (Order o) {
     NEWSESSION {
         NEW ni = Invoice {
             customer(ni) <- customer(o);
-            date(ni) <- invoiceDate(o);
+            dateTime(ni) <- invoiceDateTime(o);
             order(ni) <- o;
             customerReference(ni) <- customerReference(o); 
             paymentTerms(ni) <- paymentTerms(o);          
@@ -44,14 +44,11 @@ createInvoice 'Оформить накладную' (Order o) {
     }
 }
 
-invoiceDate 'Дата счета' (InvoiceLine bl) = date(invoice(bl));
-invoiceStatus 'Статус' (InvoiceLine bl) = nameStatus(invoice(bl));
-
 FORM orderInvoiceShow 'Оформлено накладными'
     OBJECTS ol = OrderLine
     
     OBJECTS il = InvoiceLine
-    PROPERTIES(il) invoiceDate, invoiceStatus, quantity    
+    PROPERTIES(il) READONLY dateTime, nameStatus, quantity    
     FILTERS orderLine(il) = ol
 ;
 
@@ -61,7 +58,7 @@ EXTEND FORM order
     PROPERTIES(l) SHOWIF confirmed(o) paid ON CHANGE { DIALOG orderInvoiceShow OBJECTS ol = l; }
     
     OBJECTS in = Invoice
-    PROPERTIES(in) READONLY number, date, nameStatus    
+    PROPERTIES(in) READONLY number, dateTime, nameStatus    
     PROPERTIES(in) EDIT GRID   
     FILTERS order(in) = o   
 ;

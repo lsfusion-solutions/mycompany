@@ -11,9 +11,9 @@ done 'Принят' = DATA BOOLEAN (Receipt);
 
 status (Receipt r) += WHEN done(r) THEN ReceiptStatus.done;
 
-executionDate 'Дата поступления' = DATA DATETIME (Receipt);
-WHEN SET(done(Receipt r)) AND NOT CHANGED(executionDate(r)) DO executionDate(r) <- currentDateTime(); 
-executionDate 'Дата поступления' (ReceiptLine l) = executionDate(receipt(l));
+executionDateTime 'Дата поступления' = DATA DATETIME (Receipt);
+WHEN SET(done(Receipt r)) AND NOT CHANGED(executionDateTime(r)) DO executionDateTime(r) <- currentDateTime(); 
+executionDateTime 'Дата поступления' (ReceiptLine l) = executionDateTime(receipt(l));
 
 done 'Принятое количество' = DATA NUMERIC[16,3] (ReceiptLine);
 
@@ -32,7 +32,7 @@ validate 'Принят' (Receipt r) {
                         NEW rn = Receipt {
                             type(rn) <- type(r);
 
-                            scheduledDate(rn) <- scheduledDate(r);
+                            scheduledDateTime(rn) <- scheduledDateTime(r);
 
                             vendor(rn) <- vendor(r);
                             location(rn) <- location(r);
@@ -66,7 +66,7 @@ toValidate (Receipt r) = status(r) = ReceiptStatus.ready OR (immediate(r) AND st
 EXTEND FORM receipt
     PROPERTIES(r) validate SHOWIF toValidate(r), 
                   done,
-                  executionDate SHOWIF done(r)
+                  executionDateTime SHOWIF done(r)
     
     PROPERTIES(l) done BACKGROUND RGB(198,230,247) IF toValidate(r)
 ;
@@ -79,12 +79,12 @@ DESIGN receipt {
         MOVE PROPERTY(done(r));                              
     } 
     headerLeft {
-        MOVE PROPERTY(executionDate(r));
+        MOVE PROPERTY(executionDateTime(r));
     }                  
 }
 
 EXTEND FORM receipts 
-    PROPERTIES(r) READONLY executionDate AFTER scheduledDate(r)
+    PROPERTIES(r) READONLY executionDateTime AFTER scheduledDateTime(r)
 
     EXTEND FILTERGROUP status
         FILTER 'Принят' status(r) = ReceiptStatus.done 'F7'

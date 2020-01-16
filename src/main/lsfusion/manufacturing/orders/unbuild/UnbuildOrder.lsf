@@ -40,7 +40,7 @@ CLASS UnbuildOrderLine 'Строка разбора';
 unbuildOrder 'Заказ на разбор' = DATA UnbuildOrder (UnbuildOrderLine) NONULL DELETE;
 
 index 'Индекс' = PARTITION SUM 1 ORDER UnbuildOrderLine l BY unbuildOrder(l) IN id MATERIALIZED;
-date 'Дата' = DATA DATETIME (UnbuildOrderLine);
+dateTime 'Дата' = DATA DATETIME (UnbuildOrderLine);
 
 item 'Номенклатура' = DATA Item (UnbuildOrderLine);
 nameItem 'Номенклатура' (UnbuildOrderLine l) = name(item(l));
@@ -74,7 +74,7 @@ FORM unbuildOrder 'Заказ на разбор'
                                 manOrderReference, nameLocationTo
     
     OBJECTS l = UnbuildOrderLine
-    PROPERTIES(l) READONLY index, nameItem, nameUnitMeasure, idBarCodeItem, idItem, date, quantity, costRatio
+    PROPERTIES(l) READONLY index, nameItem, nameUnitMeasure, idBarCodeItem, idItem, dateTime, quantity, costRatio
     FILTERS unbuildOrder(l) = o
     
     EDIT UnbuildOrder OBJECT o

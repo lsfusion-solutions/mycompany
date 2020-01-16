@@ -32,7 +32,7 @@ return 'Возврат' (Shipment s) {
     NEWSESSION {
         NEW nr = Receipt {
             isReturn(nr) <- TRUE;
-            scheduledDate(nr) <- currentDateTime();
+            scheduledDateTime(nr) <- currentDateTime();
             location(nr) <- location(s);
             vendor(nr) <- customer(s);
                 FOR shipment(ShipmentLine l) = s INLINE NEW nl = ReceiptLine DO {
@@ -62,5 +62,5 @@ WHEN LOCAL (SETCHANGED(product(ReceiptLine l)) OR SETCHANGED(vendor(l))) AND isR
                                     customer(sl) = vendor(l) AND 
                                     product(sl) = product(l) AND 
                                     active(shipment(sl)) 
-                             ORDER executionDate(shipment(sl)), sl;
+                             ORDER executionDateTime(shipment(sl)), sl;
 }

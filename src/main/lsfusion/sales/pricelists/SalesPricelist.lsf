@@ -8,9 +8,9 @@ CLASS Pricelist 'Прайс-листы';
 
 @defineNumber(pricelist, 'Прайс-листы', 'ПЛ');
 
-startDate 'Начало действия' = DATA DATETIME (Pricelist) NONULL;
-WHEN LOCAL SET(Pricelist l IS Pricelist) AND NOT CHANGED(startDate(l)) DO startDate(l) <- currentDateTime(); 
-endDate 'Окончание действия' = DATA DATETIME (Pricelist);
+startDateTime 'Начало действия' = DATA DATETIME (Pricelist) NONULL;
+WHEN LOCAL SET(Pricelist l IS Pricelist) AND NOT CHANGED(startDateTime(l)) DO startDateTime(l) <- currentDateTime(); 
+endDateTime 'Окончание действия' = DATA DATETIME (Pricelist);
 
 note 'Примечание' = DATA STRING[50] (Pricelist);
 
@@ -69,8 +69,8 @@ changeMarkup (PricelistLine l, PriceType t) {
 
 // Line properties
 number 'Номер' (PricelistLine prl) = number(pricelist(prl));
-startDate 'Начало действия' (PricelistLine prl) = startDate(pricelist(prl));
-endDate 'Окончание действия' (PricelistLine prl) = endDate(pricelist(prl));
+startDateTime 'Начало действия' (PricelistLine prl) = startDateTime(pricelist(prl));
+endDateTime 'Окончание действия' (PricelistLine prl) = endDateTime(pricelist(prl));
 note 'Примечание' (PricelistLine prl) = note(pricelist(prl));
 
 editIn (PricelistLine pl, PriceType priceType) = editIn(pricelist(pl), priceType);
@@ -84,7 +84,7 @@ readonly = ABSTRACT CASE BOOLEAN (Pricelist);
 
 FORM pricelist 'Прайс-лист'
     OBJECTS p = Pricelist PANEL
-    PROPERTIES(p) number, startDate, endDate, note,
+    PROPERTIES(p) number, startDateTime, endDateTime, note,
                   priceListTypes ON CHANGE { SHOW chooseTypes OBJECTS pr = p; }, 
                   showCost, showMarkup, showCurrentPrice
 
@@ -109,8 +109,8 @@ DESIGN pricelist {
                 MOVE PROPERTY(number(p));
                 NEW period {
                     type = CONTAINERH;
-                    MOVE PROPERTY(startDate(p)) { caption = 'Действует с '; }
-                    MOVE PROPERTY(endDate(p)) { caption = 'по '; }
+                    MOVE PROPERTY(startDateTime(p)) { caption = 'Действует с '; }
+                    MOVE PROPERTY(endDateTime(p)) { caption = 'по '; }
                 }
                 MOVE PROPERTY(priceListTypes(p)); 
                 MOVE PROPERTY(note(p)); 
@@ -138,7 +138,7 @@ DESIGN pricelist {
 
 FORM pricelists 'Прайс-листы'
     OBJECTS p = Pricelist
-    PROPERTIES(p) READONLY number, startDate, endDate, note, priceListTypes
+    PROPERTIES(p) READONLY number, startDateTime, endDateTime, note, priceListTypes
     PROPERTIES(p) NEWSESSION NEW, EDIT ,DELETE
     
     LIST Pricelist OBJECT p
@@ -154,8 +154,8 @@ NAVIGATOR {
 copy 'Копировать' (Pricelist pl) {
     NEWSESSION {
         NEW p = Pricelist {
-            startDate(p) <- startDate(pl);
-            endDate(p) <- endDate(pl);
+            startDateTime(p) <- startDateTime(pl);
+            endDateTime(p) <- endDateTime(pl);
             note(p) <- note(pl);
             showCost(p) <- showCost(pl);
             showMarkup(p) <- showMarkup(pl);

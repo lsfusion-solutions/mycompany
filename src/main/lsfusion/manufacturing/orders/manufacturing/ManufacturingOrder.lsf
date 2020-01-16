@@ -23,7 +23,7 @@ WHEN LOCAL SET(item(ManufacturingOrder m)) DO {
 bom 'Спецификация' = DATA Bom (ManufacturingOrder) NONULL;
 referenceBom 'Код спецификация' (ManufacturingOrder m) = number(bom(m)) CHARWIDTH 25;
 deadline 'Дата старта' = DATA DATETIME (ManufacturingOrder);
-manufacturingDate 'Дата производства' = DATA DATETIME (ManufacturingOrder);
+manufacturingDateTime 'Дата производства' = DATA DATETIME (ManufacturingOrder);
 responsible 'Ответственный' = DATA Individual (ManufacturingOrder);
 nameResponsible 'Ответственный' (ManufacturingOrder m) = name(responsible(m));
 source = DATA Order (ManufacturingOrder);
@@ -108,7 +108,7 @@ WHEN LOCAL (SETCHANGED(bom(ManufacturingOrder m)) OR SETCHANGED(quantity(m))) DO
 
 FORM manufacturingOrders 'Заказы на производство'
     OBJECTS o = ManufacturingOrder
-    PROPERTIES(o) READONLY number, deadline, manufacturingDate, nameItem, numberSource, quantity, nameUnitMeasure
+    PROPERTIES(o) READONLY number, deadline, manufacturingDateTime, nameItem, numberSource, quantity, nameUnitMeasure
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
     
     LIST ManufacturingOrder OBJECT o
@@ -119,7 +119,7 @@ readonly = ABSTRACT CASE BOOLEAN (ManufacturingOrder);
 FORM manufacturingOrder 'Заказ на производство'
     OBJECTS o = ManufacturingOrder PANEL 
     PROPERTIES(o) READONLYIF  readonly(o) nameItem, quantity, nameUnitMeasure, referenceBom, deadline, 
-        nameResponsible, numberSource, nameCompany, nameMaterialsLocation, nameProductsLocation, manufacturingDate READONLY 
+        nameResponsible, numberSource, nameCompany, nameMaterialsLocation, nameProductsLocation, manufacturingDateTime READONLY 
     
     OBJECTS c = ConsumedLine
     PROPERTIES(c) READONLY index, nameItem, nameUnitMeasure, idBarCodeItem, idItem, toConsume, reserved, dateReserved, consumed
@@ -168,7 +168,7 @@ DESIGN manufacturingOrder {
                     MOVE PROPERTY(nameUnitMeasure(o));
                 }
                 MOVE PROPERTY(referenceBom(o)) { notNull = TRUE; }
-                MOVE PROPERTY(manufacturingDate(o));
+                MOVE PROPERTY(manufacturingDateTime(o));
             }
             NEW rightHeader {
                 caption = '';

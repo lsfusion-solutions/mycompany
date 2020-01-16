@@ -8,7 +8,7 @@ NAMESPACE Invoicing;
 EXTEND CLASS Invoice : OutgoingDebt;
 active (Invoice i) += ready(i) AND NOT canceled(i);
 number (Invoice i) += number(i);
-date (Invoice i) += date(i);
+dateTime (Invoice i) += dateTime(i);
 
 partner (Invoice i) += customer(i);
 company (Invoice i) += company(i);
@@ -30,12 +30,12 @@ EXTEND FORM invoice
     PROPERTIES(i) READONLY paid  
 
     OBJECTS d = IncomingDebt
-    PROPERTIES(d) READONLY date, number, type
+    PROPERTIES(d) READONLY dateTime, number, type
     PROPERTIES paid(d, i)
     FILTERS paid(d, i)
     
     OBJECTS dd = IncomingDebt
-    PROPERTIES(dd) READONLY date, number, type, left
+    PROPERTIES(dd) READONLY dateTime, number, type, left
     PROPERTIES pay(dd, i) TOOLBAR
     FILTERS canBePaid(dd, i)   
 ;

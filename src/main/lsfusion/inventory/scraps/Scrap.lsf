@@ -6,8 +6,8 @@ NAMESPACE Inventory;
 
 CLASS Scrap 'Списание';
 
-date 'Дата' = DATA DATETIME (Scrap) NONULL;
-WHEN LOCAL SET(Scrap s IS Scrap) AND NOT CHANGED(date(s)) DO date(s) <- currentDateTime();
+dateTime 'Дата' = DATA DATETIME (Scrap) NONULL;
+WHEN LOCAL SET(Scrap s IS Scrap) AND NOT CHANGED(dateTime(s)) DO dateTime(s) <- currentDateTime();
 
 @defineNumber(scrap, 'Списания', 'СП');
 
@@ -35,7 +35,7 @@ readonly = ABSTRACT CASE BOOLEAN (Scrap);
 
 FORM scrap 'Списание'
     OBJECTS s = Scrap PANEL 
-    PROPERTIES(s) READONLYIF readonly(s) date, number, nameLocationFrom
+    PROPERTIES(s) READONLYIF readonly(s) dateTime, number, nameLocationFrom
     
     OBJECTS l = ScrapLine
     PROPERTIES(l) READONLYIF readonly(s) index, nameProduct, nameUnitMeasure, idBarCodeProduct, idProduct, quantity, NEW, DELETE
@@ -59,7 +59,7 @@ DESIGN scrap {
 
 FORM scraps 'Списания'
     OBJECTS s = Scrap 
-    PROPERTIES(s)  READONLY date, number, nameLocationFrom
+    PROPERTIES(s)  READONLY dateTime, number, nameLocationFrom
     PROPERTIES (s) NEWSESSION NEW, EDIT, DELETE READONLYIF readonly(s)
     
     LIST Scrap OBJECT s
@@ -84,7 +84,7 @@ NAVIGATOR {
 copy 'Копировать' (Scrap s) {
     NEWSESSION {
         NEW ns = Scrap {
-            date(ns) <- date(s);
+            dateTime(ns) <- dateTime(s);
             locationFrom(ns) <- locationFrom(s);
             FOR scrap(ScrapLine l) = s INLINE NEW nl = ScrapLine DO {
                 scrap(nl) <- ns;

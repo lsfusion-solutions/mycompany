@@ -26,7 +26,7 @@ CONSTRAINT customer(Order o) AND NOT isCustomer(customer(o))
 validity 'Срок действия' = DATA DATETIME (Order);
 
 // Invoicing information
-invoiceDate 'Дата счета' = DATA DATETIME (Order);
+invoiceDateTime 'Дата счета' = DATA DATETIME (Order);
 
 paymentTerms 'Условие оплаты' = DATA PaymentTerm (Order);
 namePaymentTerms 'Условие оплаты' (Order o)= name(paymentTerms(o));
@@ -34,8 +34,8 @@ namePaymentTerms 'Условие оплаты' (Order o)= name(paymentTerms(o));
 addressCustomer 'Адрес получателя' (Order o) = csvAddress(customer(o));
 
 // Shipping information
-scheduledDate 'Срок поставки' = DATA DATETIME (Order);
-WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(scheduledDate(o)) DO scheduledDate(o) <- currentDateTime();     
+scheduledDateTime 'Срок поставки' = DATA DATETIME (Order);
+WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(scheduledDateTime(o)) DO scheduledDateTime(o) <- currentDateTime();     
 
 deliveryAddress 'Адрес доставки' = DATA STRING (Order);
 WHEN LOCAL CHANGED(customer(Order o)) DO deliveryAddress(o) <- addressCustomer(o);
@@ -108,10 +108,10 @@ nameCustomer 'Заказчик' (OrderLine l) = nameCustomer(order(l));
 FORM order 'Заказ'
     OBJECTS o = Order PANEL
     PROPERTIES(o) dateTime, number, nameCustomer, namePriceType,
-                  scheduledDate, deliveryAddress, nameLocation, nameIncoterm, 
+                  scheduledDateTime, deliveryAddress, nameLocation, nameIncoterm, 
                   nameRepresentative, customerReference,
                   validity,
-                  invoiceDate, namePaymentTerms, addressCustomer
+                  invoiceDateTime, namePaymentTerms, addressCustomer
     PROPERTIES(o) READONLY untaxedAmount, totalTax, totalAmount
                  
     OBJECTS l = OrderLine
@@ -155,13 +155,13 @@ DESIGN order {
                 }
                 NEW invoicing {
                     caption = 'Расчеты';
-                    MOVE PROPERTY(invoiceDate(o));
+                    MOVE PROPERTY(invoiceDateTime(o));
                     MOVE PROPERTY(namePaymentTerms(o));                         
                     MOVE PROPERTY(addressCustomer(o));
                 }
                 NEW shippingInformation {
                     caption = 'Поставка';
-                    MOVE PROPERTY(scheduledDate(o));
+                    MOVE PROPERTY(scheduledDateTime(o));
                     MOVE PROPERTY(deliveryAddress(o));
                     MOVE PROPERTY(nameLocation(o));               
                     MOVE PROPERTY(nameIncoterm(o));
@@ -190,8 +190,8 @@ DESIGN order {
 FORM orders 'Заказы'
      OBJECTS o = Order
      PROPERTIES(o) READONLY number, nameCustomer,
-                            scheduledDate, deliveryAddress, nameLocation, nameIncoterm, 
-                            invoiceDate, namePaymentTerms, addressCustomer,
+                            scheduledDateTime, deliveryAddress, nameLocation, nameIncoterm, 
+                            invoiceDateTime, namePaymentTerms, addressCustomer,
                             nameRepresentative, customerReference,
                             untaxedAmount, totalTax, totalAmount
                             

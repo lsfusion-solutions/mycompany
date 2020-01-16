@@ -119,7 +119,7 @@ META defineDocHistory(doc, let, class, fun)
     
     ##doc = DATA ###doc (###doc##History);
 
-    date 'Дата' = DATA DATETIME (###doc##History);
+    dateTime 'Дата' = DATA DATETIME (###doc##History);
     user 'Пользователь' = DATA User (###doc##History) CHARWIDTH 15;
     nameUser 'Пользователь' (###doc##History l) = name(user(l));
     type 'Тип' = DATA ISTRING[100] (###doc##History);
@@ -128,7 +128,7 @@ META defineDocHistory(doc, let, class, fun)
     WHEN SETCHANGED(status(###doc let)) DO {     
         NEW l = ###doc##History {
             ##doc(l) <- let;
-            date(l) <- currentDateTime();
+            dateTime(l) <- currentDateTime();
             user(l) <- currentUser();
             type(l) <- 'Изменен статус';
             description (l) <- 'Изменен статус на ' + staticCaption(status(let));
@@ -139,7 +139,7 @@ META defineDocHistory(doc, let, class, fun)
 
     EXTEND FORM doc
         OBJECTS doc##l = ###doc##History
-        PROPERTIES(doc##l) READONLY date, nameUser, type, description, pdescription = description PANEL
+        PROPERTIES(doc##l) READONLY dateTime, nameUser, type, description, pdescription = description PANEL
         FILTERS ##doc(doc##l) = let
     ;
     
@@ -162,7 +162,7 @@ META defineDocHistory(doc, let, class, fun)
                         AND NOT status(##let) = ###doc##Status.draft DO {     
         NEW h = ###doc##History {
             ##doc(h) <- ##let;
-            date(h) <- currentDateTime();
+            dateTime(h) <- currentDateTime();
             user(h) <- currentUser();
             type(h) <- 'Добавлена строка';
             description (h) <- 'Добавлена строка с индексом ' + index(l);
@@ -173,7 +173,7 @@ META defineDocHistory(doc, let, class, fun)
                         AND NOT status(##let) = ###doc##Status.draft DO {     
         NEW h = ###doc##History {
             ##doc(h) <- ##let;
-            date(h) <- currentDateTime();
+            dateTime(h) <- currentDateTime();
             user(h) <- currentUser();
             type(h) <- 'Удалена строка';
             description (h) <- 'Удалена строка с индексом ' + PREV(index(l));
@@ -184,7 +184,7 @@ META defineDocHistory(doc, let, class, fun)
                         AND NOT status(##let) = ###doc##Status.draft DO {     
         NEW h = ###doc##History {
             ##doc(h) <- ##let;
-            date(h) <- currentDateTime();
+            dateTime(h) <- currentDateTime();
             user(h) <- currentUser();
             type(h) <- 'Изменено исходное кол-во';
             description (h) <- 'Изменено исходное кол-во продукта ' + name###class(l) + ' на ' + ##fun(l);
@@ -195,7 +195,7 @@ META defineDocHistory(doc, let, class, fun)
                         AND NOT status(##let) = ###doc##Status.draft DO {     
         NEW h = ###doc##History {
             ##doc(h) <- ##let;
-            date(h) <- currentDateTime();
+            dateTime(h) <- currentDateTime();
             user(h) <- currentUser();
             type(h) <- 'Изменен продукт';
             description (h) <- 'Изменен продукт в строке ' + index(l) + ' на ' + name###class(l);

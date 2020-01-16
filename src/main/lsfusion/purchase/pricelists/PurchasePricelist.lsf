@@ -8,9 +8,9 @@ CLASS Pricelist 'Прайс-листы';
 
 @defineNumber(pricelist, 'Прайс-листы', 'ПП');
 
-startDate 'Начало действия' = DATA DATETIME (Pricelist);
-WHEN LOCAL SET(Pricelist l IS Pricelist) AND NOT CHANGED(startDate(l)) DO startDate(l) <- currentDateTime(); 
-endDate 'Окончание действия' = DATA DATETIME (Pricelist);
+startDateTime 'Начало действия' = DATA DATETIME (Pricelist);
+WHEN LOCAL SET(Pricelist l IS Pricelist) AND NOT CHANGED(startDateTime(l)) DO startDateTime(l) <- currentDateTime(); 
+endDateTime 'Окончание действия' = DATA DATETIME (Pricelist);
 
 note 'Примечание' = DATA STRING[50] (Pricelist);
 
@@ -39,19 +39,19 @@ unitMeasure 'Единицы поставщика' = DATA ItemMeasure (PricelistL
 
 // Line properties
 number 'Номер' (PricelistLine prl) = number(pricelist(prl));
-startDate 'Начало действия' (PricelistLine prl) = startDate(pricelist(prl));
-endDate 'Окончание действия' (PricelistLine prl) = endDate(pricelist(prl));
+startDateTime 'Начало действия' (PricelistLine prl) = startDateTime(pricelist(prl));
+endDateTime 'Окончание действия' (PricelistLine prl) = endDateTime(pricelist(prl));
 note 'Примечание' (PricelistLine prl) = note(pricelist(prl));
 
 // value
 pricelistLineA (Partner p, Item i, DATETIME d) =
     GROUP LAST PricelistLine prl IF item(prl) = i AND vendor(pricelist(prl)) = p AND 
-               NOT startDate(pricelist(prl)) > d AND NOT endDate(pricelist(prl)) < d
-          ORDER startDate(pricelist(prl)), pricelist(prl), prl;
+               NOT startDateTime(pricelist(prl)) > d AND NOT endDateTime(pricelist(prl)) < d
+          ORDER startDateTime(pricelist(prl)), pricelist(prl), prl;
 
 FORM pricelist 'Прайс-лист'
     OBJECTS p = Pricelist PANEL
-    PROPERTIES(p) number, startDate, endDate, nameVendor, note
+    PROPERTIES(p) number, startDateTime, endDateTime, nameVendor, note
     
     OBJECTS l = PricelistLine
     PROPERTIES(l) index READONLY, nameItem, nameUnitMeasure READONLY, nameItemVendor, codeItemVendor,
@@ -68,8 +68,8 @@ DESIGN pricelist {
             MOVE PROPERTY(number(p));
             NEW period {
                 type = CONTAINERH;
-                MOVE PROPERTY(startDate(p)) { caption = 'Действует с'; }
-                MOVE PROPERTY(endDate(p)) { caption = 'по '; }                
+                MOVE PROPERTY(startDateTime(p)) { caption = 'Действует с'; }
+                MOVE PROPERTY(endDateTime(p)) { caption = 'по '; }                
             }
             MOVE PROPERTY(nameVendor(p));
             MOVE PROPERTY(note(p));
@@ -86,7 +86,7 @@ DESIGN pricelist {
 
 FORM pricelists 'Прайс-листы'
     OBJECTS p = Pricelist
-    PROPERTIES(p) READONLY number, startDate, endDate, nameVendor, note
+    PROPERTIES(p) READONLY number, startDateTime, endDateTime, nameVendor, note
     PROPERTIES(p) NEWSESSION NEW, EDIT, DELETE 
 
     LIST Pricelist OBJECT p
@@ -101,8 +101,8 @@ NAVIGATOR {
 copy 'Копировать' (Pricelist pl) {
     NEWSESSION {
         NEW p = Pricelist {
-            startDate(p) <- startDate(pl);
-            endDate(p) <- endDate(pl);
+            startDateTime(p) <- startDateTime(pl);
+            endDateTime(p) <- endDateTime(pl);
             note(p) <- note(pl);
             vendor(p) <- vendor(pl);
             FOR pricelist(PricelistLine l)  = pl DO NEW nl = PricelistLine {

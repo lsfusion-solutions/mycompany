@@ -22,7 +22,7 @@ createBill 'Оформить накладную' (Order o) {
     NEWSESSION {
         NEW nb = Bill {
             vendor(nb) <- vendor(o);
-            date(nb) <- scheduledDate(o);
+            dateTime(nb) <- scheduledDateTime(o);
             order(nb) <- o;
             vendorReference(nb) <- vendorReference(o);
             paymentTerms(nb) <- paymentTerms(o);             
@@ -44,14 +44,11 @@ createBill 'Оформить накладную' (Order o) {
     }
 }
 
-billDate 'Дата счета' (BillLine bl) = date(bill(bl));
-billStatus 'Статус' (BillLine bl) = nameStatus(bill(bl));
-
 FORM orderBillShow 'Выставлено счетов'
     OBJECTS ol = OrderLine
     
     OBJECTS bl = BillLine
-    PROPERTIES(bl) billDate, billStatus, quantity
+    PROPERTIES(bl) READONLY dateTime, nameStatus, quantity
     FILTERS orderLine(bl) = ol
 ;
 
@@ -61,7 +58,7 @@ EXTEND FORM order
     PROPERTIES(l) SHOWIF confirmed(o) paid ON CHANGE { DIALOG orderBillShow OBJECTS ol = l; }
 
     OBJECTS bi = Bill
-    PROPERTIES(bi) READONLY number, date, nameStatus    
+    PROPERTIES(bi) READONLY number, dateTime, nameStatus    
     PROPERTIES(bi) EDIT GRID   
     FILTERS order(bi) = o       
 ;

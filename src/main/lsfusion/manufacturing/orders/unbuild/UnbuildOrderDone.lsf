@@ -18,7 +18,7 @@ unbuild 'Разобрать' (UnbuildOrder o) {
         IF manufactureComponents(bom(o)) THEN {
             FOR finalBom(bom(o), ComponentLine cl, TEXT path) AND NOT manufactureComponents(bom(cl)) DO NEW l = UnbuildOrderLine {
                 unbuildOrder(l) <- o;
-                date(l) <- currentDateTime();
+                dateTime(l) <- currentDateTime();
                 item(l) <- item(cl);
                 unitMeasure(l) <- unitMeasure(cl);
                 quantity(l) <- NUMERIC[16,3](quantity(bom(o), cl, path) * quantity(o));
@@ -28,7 +28,7 @@ unbuild 'Разобрать' (UnbuildOrder o) {
         ELSE
             FOR bom(ComponentLine cl) = bom(o) DO NEW l = UnbuildOrderLine {
                 unbuildOrder(l) <- o;
-                date(l) <- currentDateTime();
+                dateTime(l) <- currentDateTime();
                 item(l) <- item(cl);
                 unitMeasure(l) <- unitMeasure(cl);
                 quantity(l) <- NUMERIC[16,3](quantity(cl) * quantity(o));

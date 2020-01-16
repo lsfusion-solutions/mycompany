@@ -7,9 +7,9 @@ NAMESPACE Invoicing;
 
 CLASS Bill 'Приходная накладная';
 
-// date
-date 'Дата' = DATA DATETIME (Bill) NONULL IN id;
-WHEN LOCAL SET (Bill b IS Bill) DO date(b) <- currentDateTime();
+// dateTime
+dateTime 'Дата' = DATA DATETIME (Bill) NONULL IN id;
+WHEN LOCAL SET (Bill b IS Bill) DO dateTime(b) <- currentDateTime();
 
 @defineNumber(bill, 'Приходная накладная', 'ПН');
 
@@ -27,7 +27,7 @@ nameCompany 'Компания' (Bill b) = name(company(b));
 WHEN LOCAL SET(Bill b IS Bill) AND NOT CHANGED(company(b)) DO company(b) <- defaultCompany(); 
 
 // payment
-dueDate 'Оплатить до' = DATA DATETIME (Bill);
+dueDateTime 'Оплатить до' = DATA DATETIME (Bill);
 
 // partner account
 vendorAccount 'Счет поставщика' = DATA Account (Bill);
@@ -85,7 +85,7 @@ readonly = ABSTRACT CASE BOOLEAN (Bill);
 readonly = ABSTRACT CASE BOOLEAN (BillLine);
 
 // Line properties
-date 'Дата накладной' (BillLine l) = date(bill(l));
+dateTime 'Дата накладной' (BillLine l) = dateTime(bill(l));
 nameVendor 'Поставщик' (BillLine l) = nameVendor(bill(l));
 nameCompany 'Компания' (BillLine l) = nameCompany(bill(l));
 
@@ -94,9 +94,9 @@ edit (BillLine l) + { edit(bill(l)); }
 FORM bill 'Приходная накладная'
     OBJECTS  b = Bill PANEL 
     PROPERTIES(b) READONLYIF readonly(b) 
-                             date, number, 
+                             dateTime, number, 
                              nameVendor, nameCompany, sourceDocument,
-                             dueDate, nameVendorAccount, nameCompanyAccount,
+                             dueDateTime, nameVendorAccount, nameCompanyAccount,
                              vendorReference, note
         
     OBJECTS l = BillLine
@@ -113,7 +113,7 @@ DESIGN bill {
             alignment = STRETCH;    
             type = CONTAINERH;
             NEW headerLeft {
-                MOVE PROPERTY(date(b));
+                MOVE PROPERTY(dateTime(b));
                 MOVE PROPERTY(number(b));
             }
             NEW headerRight {
@@ -146,7 +146,7 @@ DESIGN bill {
                 columns = 2;
                 NEW payment {
                     caption = 'Оплата';
-                    MOVE PROPERTY(dueDate(b)); 
+                    MOVE PROPERTY(dueDateTime(b)); 
                     MOVE PROPERTY(nameCompanyAccount(b));
                     MOVE PROPERTY(nameVendorAccount(b));              
                 }           
@@ -162,9 +162,9 @@ DESIGN bill {
 
 FORM bills 'Приходные накладные'
     OBJECTS b = Bill
-    PROPERTIES(b) READONLY date, number, 
+    PROPERTIES(b) READONLY dateTime, number, 
                            nameVendor, nameCompany, sourceDocument,
-                           dueDate, nameVendorAccount, nameCompanyAccount,
+                           dueDateTime, nameVendorAccount, nameCompanyAccount,
                            vendorReference, note
     PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE READONLYIF readonly(b)
            

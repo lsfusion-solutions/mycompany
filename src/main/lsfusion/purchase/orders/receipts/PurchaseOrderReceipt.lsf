@@ -33,7 +33,7 @@ WHEN ([GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) AND item(l) IS Product BY o
     IF NOT lastOpenReceipt(o) THEN   
         NEW ns = Receipt { 
             vendor(ns) <- vendor(o);
-            scheduledDate(ns) <- scheduledDate(o);
+            scheduledDateTime(ns) <- scheduledDateTime(o);
             location(ns) <- location(o);
             type(ns) <- receiptType();
             ready(ns) <- TRUE;           
@@ -48,14 +48,11 @@ WHEN ([GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) AND item(l) IS Product BY o
     }
 }
 
-scheduledDateReceipt 'Дата прихода' (ReceiptLine rl) = scheduledDate(receipt(rl));
-nameStatusReceipt 'Статус' (ReceiptLine rl) = nameStatus(receipt(rl));
-
 FORM orderReceiptShow 'Оприходовано на склад'
     OBJECTS ol = OrderLine
     
     OBJECTS rl = ReceiptLine
-    PROPERTIES(rl) READONLY scheduledDateReceipt, nameStatusReceipt, initialDemand, done
+    PROPERTIES(rl) READONLY scheduledDateTime, nameStatus, initialDemand, done
     FILTERS orderLine(rl) = ol
 ;
 
@@ -73,7 +70,7 @@ EXTEND FORM order
     PROPERTIES(l) SHOWIF confirmed(o) doneReceipt ON CHANGE { DIALOG orderReceiptShow OBJECTS ol = l; }
         
     OBJECTS rc = Receipt
-    PROPERTIES(rc) READONLY number, scheduledDate, executionDate, nameStatus
+    PROPERTIES(rc) READONLY number, scheduledDateTime, executionDateTime, nameStatus
     PROPERTIES(rc) EDIT GRID   
     FILTERS order(rc) = o
 ;

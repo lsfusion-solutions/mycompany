@@ -35,7 +35,7 @@ changePrices 'Изменить цены' (Pricelist p) {
         CASE 
             WHEN changePriceType() = ChangePriceType.markupPriceList THEN {
                 markup(PricelistLine l, PriceType t) <- 
-                    OVERRIDE markup(pricelistLineB(t, item(l), startDate(p)), t), markup(t, item(l))
+                    OVERRIDE markup(pricelistLineB(t, item(l), startDateTime(p)), t), markup(t, item(l))
                     WHERE pricelist(l) = p AND editIn(p, t); 
                 price(PricelistLine l, PriceType t) <- calcPrice(l, t)
                     WHERE pricelist(l) = p AND editIn(p, t);
@@ -48,7 +48,7 @@ changePrices 'Изменить цены' (Pricelist p) {
             }
             WHEN changePriceType() = ChangePriceType.pricePriceList THEN
                 price(PricelistLine l, PriceType t) <- 
-                    NUMERIC[10,2](priceB(t, item(l), startDate(p)) * (100.0 (+) change()) / 100.0)
+                    NUMERIC[10,2](priceB(t, item(l), startDateTime(p)) * (100.0 (+) change()) / 100.0)
                     WHERE pricelist(l) = p AND editIn(p, t); 
     }
 }

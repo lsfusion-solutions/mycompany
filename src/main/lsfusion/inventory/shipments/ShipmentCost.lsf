@@ -9,7 +9,7 @@ CLASS ShipmentOutCostLedger : OutCostLedger;
 outCostLedger = AGGR ShipmentOutCostLedger WHERE done(ShipmentLine line) AND active(shipment(line))
                                              AND NOT costLocation(location(shipment(line))) = costLocation(toLocation(shipment(line)));
 
-dateTime(ShipmentOutCostLedger l) += executionDate(shipment(line(l)));
+dateTime(ShipmentOutCostLedger l) += executionDateTime(shipment(line(l)));
 location(ShipmentOutCostLedger l) += costLocation(location(shipment(line(l))));
 
 product(ShipmentOutCostLedger l) += product(line(l));
@@ -23,7 +23,7 @@ inCostLedger = AGGR ShipmentInCostLedger WHERE done(ShipmentLine line) AND activ
                             AND toLocation(shipment(line))
                             AND NOT costLocation(location(shipment(line))) = costLocation(toLocation(shipment(line))); 
 
-dateTime(ShipmentInCostLedger l) += executionDate(shipment(line(l)));
+dateTime(ShipmentInCostLedger l) += executionDateTime(shipment(line(l)));
 number(ShipmentInCostLedger l) += number(shipment(line(l)));
 
 location(ShipmentInCostLedger l) += costLocation(toLocation(shipment(line(l))));

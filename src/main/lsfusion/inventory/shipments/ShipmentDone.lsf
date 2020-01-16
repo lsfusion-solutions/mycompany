@@ -11,9 +11,9 @@ done 'Отгружен' = DATA BOOLEAN (Shipment);
 
 status(Shipment s) += WHEN done(s) THEN ShipmentStatus.done;
 
-executionDate 'Дата отгрузки' = DATA DATETIME (Shipment);
-WHEN SET(done(Shipment s)) AND NOT CHANGED(executionDate(s)) DO executionDate(s) <- currentDateTime(); 
-executionDate 'Дата отгрузки' (ShipmentLine l) = executionDate(shipment(l));
+executionDateTime 'Дата отгрузки' = DATA DATETIME (Shipment);
+WHEN SET(done(Shipment s)) AND NOT CHANGED(executionDateTime(s)) DO executionDateTime(s) <- currentDateTime(); 
+executionDateTime 'Дата отгрузки' (ShipmentLine l) = executionDateTime(shipment(l));
 
 done 'Отгружено' = DATA NUMERIC[16,3] (ShipmentLine);
 
@@ -43,7 +43,7 @@ validate 'Отгружен' (Shipment s) {
                     NEW rn = Shipment {
                         type(rn) <- type(s);
 
-                        scheduledDate(rn) <- scheduledDate(s);
+                        scheduledDateTime(rn) <- scheduledDateTime(s);
 
                         customer(rn) <- customer(s);
                         
@@ -72,7 +72,7 @@ validate 'Отгружен' (Shipment s) {
 }
 
 EXTEND FORM shipmentLines
-    PROPERTIES(l) READONLY executionDate AFTER scheduledDate(l), done
+    PROPERTIES(l) READONLY executionDateTime AFTER scheduledDateTime(l), done
 ;
 
 toValidate (Shipment s) = status(s) = ShipmentStatus.ready OR (immediate(s) AND status(s) = ShipmentStatus.draft);
@@ -81,7 +81,7 @@ EXTEND FORM shipment
     PROPERTIES(s) validate SHOWIF toValidate(s), 
                   done,
                   setDone DRAW l TOOLBAR SHOWIF status(s) = ShipmentStatus.ready,
-                  executionDate READONLY SHOWIF done(s)
+                  executionDateTime READONLY SHOWIF done(s)
     
     PROPERTIES(l) done BACKGROUND RGB(198,230,247) IF toValidate(s)
 ;
@@ -94,12 +94,12 @@ DESIGN shipment {
         MOVE PROPERTY(done(s));                              
     } 
     headerLeft {
-        MOVE PROPERTY(executionDate(s));
+        MOVE PROPERTY(executionDateTime(s));
     }                  
 }
 
 EXTEND FORM shipments
-    PROPERTIES(s) READONLY executionDate AFTER scheduledDate(s)
+    PROPERTIES(s) READONLY executionDateTime AFTER scheduledDateTime(s)
  
     EXTEND FILTERGROUP status
         FILTER 'Отгружен' status(s) = ShipmentStatus.done 'F7'

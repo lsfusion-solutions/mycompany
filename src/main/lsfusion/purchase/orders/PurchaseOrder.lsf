@@ -28,8 +28,8 @@ paymentTerms 'Условие оплаты' = DATA PaymentTerm (Order);
 namePaymentTerms 'Условие оплаты' (Order o)= name(paymentTerms(o));
 
 // Shipping information
-scheduledDate 'Срок поставки' = DATA DATETIME (Order);   
-WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(scheduledDate(o)) DO scheduledDate(o) <- currentDateTime();     
+scheduledDateTime 'Срок поставки' = DATA DATETIME (Order);   
+WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(scheduledDateTime(o)) DO scheduledDateTime(o) <- currentDateTime();     
 
 location = DATA Location (Order);
 nameLocation 'Место доставки' (Order o) = name(location(o));
@@ -81,7 +81,7 @@ WHEN LOCAL CHANGED (item(OrderLine ol)) DO {
 }
 
 // Line properties
-date 'Создан' (OrderLine l) = dateTime(order(l));
+dateTime 'Создан' (OrderLine l) = dateTime(order(l));
 number 'Номер' (OrderLine l) = number(order(l));
 nameLocation 'Место доставки' (OrderLine l) = nameLocation(order(l));
 nameVendor 'Поставщик' (OrderLine l) = nameVendor(order(l));
@@ -91,7 +91,7 @@ edit (OrderLine l) + { edit(order(l)); }
 FORM order 'Заказ'
     OBJECTS o = Order PANEL
     PROPERTIES(o) dateTime, number, nameVendor,
-                  scheduledDate, nameLocation, nameIncoterm,
+                  scheduledDateTime, nameLocation, nameIncoterm,
                   nameRepresentative, vendorReference,
                   namePaymentTerms
     PROPERTIES(o) READONLY untaxedAmount, totalTax, totalAmount
@@ -132,7 +132,7 @@ DESIGN order {
                 columns = 2;
                 NEW shippingInformation {
                     caption = 'Поставка';
-                    MOVE PROPERTY(scheduledDate(o));
+                    MOVE PROPERTY(scheduledDateTime(o));
                     MOVE PROPERTY(nameLocation(o));
                     MOVE PROPERTY(nameIncoterm(o));
                 }
@@ -164,7 +164,7 @@ DESIGN order {
 FORM orders 'Заказы'
     OBJECTS o = Order
     PROPERTIES(o) READONLY dateTime, number, nameVendor,
-                           scheduledDate, nameLocation, nameIncoterm,
+                           scheduledDateTime, nameLocation, nameIncoterm,
                            nameRepresentative, vendorReference,
                            namePaymentTerms,
                            untaxedAmount, totalTax, totalAmount     
@@ -192,5 +192,5 @@ nameStatus 'Статус' (OrderLine l) = nameStatus(order(l));
 EXTEND FORM order
     FILTERGROUP  pricelist
         FILTER 'В прайс-листе' GROUP SUM 1 IF itm = item(PricelistLine line) AND 
-            startDate(pricelist(line)) <= currentDateTime() AND endDate(pricelist(line)) >= currentDateTime();
+            startDateTime(pricelist(line)) <= currentDateTime() AND endDateTime(pricelist(line)) >= currentDateTime();
 ;

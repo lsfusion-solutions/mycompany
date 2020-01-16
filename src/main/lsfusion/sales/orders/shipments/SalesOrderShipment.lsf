@@ -33,7 +33,7 @@ WHEN ([GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) AND item(l) IS Product BY o
     IF NOT lastOpenShipment(o) THEN   
         NEW ns = Shipment { 
             customer(ns) <- customer(o);
-            scheduledDate(ns) <- scheduledDate(o);
+            scheduledDateTime(ns) <- scheduledDateTime(o);
             location(ns) <- location(o);
             type(ns) <- shipmentType();
             sourceDocument(ns) <- number(o);
@@ -49,14 +49,11 @@ WHEN ([GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) AND item(l) IS Product BY o
     precheckAvailability(lastOpenShipment(o));
 }
 
-scheduledDateShipment 'Дата расхода' (ShipmentLine rl) = scheduledDate(shipment(rl));
-nameStatusShipment 'Статус' (ShipmentLine rl) = nameStatus(shipment(rl));
-
 FORM orderShipmentShow 'Расход со склада'
     OBJECTS ol = OrderLine
     
     OBJECTS sl = ShipmentLine
-    PROPERTIES(sl) READONLY scheduledDateShipment, nameStatusShipment, initialDemand, done   
+    PROPERTIES(sl) READONLY scheduledDateTime, nameStatus, initialDemand, done   
     FILTERS orderLine(sl) = ol
 ;
 
@@ -65,7 +62,7 @@ EXTEND FORM order
     PROPERTIES(l) SHOWIF confirmed(o) doneShipment ON CHANGE { DIALOG orderShipmentShow OBJECTS ol = l; }
     
     OBJECTS sh = Shipment
-    PROPERTIES(sh) READONLY number, scheduledDate, executionDate, nameStatus   
+    PROPERTIES(sh) READONLY number, scheduledDateTime, executionDateTime, nameStatus   
     PROPERTIES(sh) EDIT GRID   
     FILTERS order(sh) = o
 ;

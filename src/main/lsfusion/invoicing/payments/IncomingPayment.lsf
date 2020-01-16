@@ -7,8 +7,8 @@ NAMESPACE Invoicing;
 
 CLASS IncomingPayment 'Входящий платеж';
 
-date 'Дата' = DATA DATETIME (IncomingPayment) NONULL;
-date(IncomingPayment p) <- currentDateTime() WHEN SET(p IS IncomingPayment);
+dateTime 'Дата' = DATA DATETIME (IncomingPayment) NONULL;
+dateTime(IncomingPayment p) <- currentDateTime() WHEN SET(p IS IncomingPayment);
 
 @defineNumber(incomingPayment, 'Входящие платежи', 'ВП');
 
@@ -48,7 +48,7 @@ reference 'Ссылка' = DATA ISTRING[50] (IncomingPayment);
 // forms
 FORM incomingPayment 'Входящий платеж'
     OBJECTS p = IncomingPayment PANEL 
-    PROPERTIES(p) date, number,
+    PROPERTIES(p) dateTime, number,
                   namePartner, namePartnerAccount, 
                   nameCompany, nameCompanyAccount,
                   amount, 
@@ -64,7 +64,7 @@ DESIGN incomingPayment {
             NEW params {
                 caption = 'Параметры';
                 type = CONTAINERH;
-                MOVE PROPERTY(date(p)); 
+                MOVE PROPERTY(dateTime(p)); 
                 MOVE PROPERTY(number(p));
             }
             NEW partner {
@@ -95,7 +95,7 @@ DESIGN incomingPayment {
 
 FORM incomingPayments 'Входящие платежи'
     OBJECTS p = IncomingPayment
-    PROPERTIES(p) READONLY date, number,
+    PROPERTIES(p) READONLY dateTime, number,
                            namePartner, namePartnerAccount, 
                            nameCompany, nameCompanyAccount,
                            amount, 

@@ -9,7 +9,7 @@ CLASS UnbuildOutCostLedger : OutCostLedger;
 outCostLedger = AGGR UnbuildOutCostLedger WHERE quantity(UnbuildOrder order) 
                                                 AND done(order) AND product(order) IS Product;
 
-dateTime(UnbuildOutCostLedger l) += GROUP LAST date(UnbuildOrderLine ol) IF unbuildOrder(ol) = order(l);
+dateTime(UnbuildOutCostLedger l) += GROUP LAST dateTime(UnbuildOrderLine ol) IF unbuildOrder(ol) = order(l);
 location(UnbuildOutCostLedger l) += costLocation(locationFrom(order(l)));
 
 product(UnbuildOutCostLedger l) += product(order(l)) AS Product;
@@ -22,7 +22,7 @@ CLASS UnbuildInCostLedger : InCostLedger;
 inCostLedger = AGGR UnbuildInCostLedger WHERE quantity(UnbuildOrderLine line) 
                                                 AND done(unbuildOrder(line)) AND item(line) IS Product;
 
-dateTime(UnbuildInCostLedger l) += date(line(l));
+dateTime(UnbuildInCostLedger l) += dateTime(line(l));
 number(UnbuildInCostLedger l) += number(unbuildOrder(line(l)));
 
 location(UnbuildInCostLedger l) += costLocation(locationTo(unbuildOrder(line(l))));
