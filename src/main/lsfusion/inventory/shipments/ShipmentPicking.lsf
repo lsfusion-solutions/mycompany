@@ -93,10 +93,8 @@ location(ShipmentPickingRes r) += loc(r);
 product(ShipmentPickingRes r) += product(l(r));
 reserved(ShipmentPickingRes r) += reserved(l(r),loc(r));
 
-description(ShipmentPickingRes r) += 'Отгрузка' IF r IS ShipmentPickingRes;
-
 // invledger
-CLASS ShipmentPickingInv : InvLedger;
+CLASS ShipmentPickingInv 'Отгрузка' : InvLedger;
 
 invLedger = AGGR ShipmentPickingInv WHERE done(ShipmentLine l, Location loc);
 
@@ -112,7 +110,5 @@ partner(ShipmentPickingInv p) += customer(shipment(l(p)));
 
 product(ShipmentPickingInv p) += product(l(p));
 quantity(ShipmentPickingInv p) += done(l(p), loc(p));
-
-description(ShipmentPickingInv p) += 'Отгрузка' IF p IS ShipmentPickingInv;
 
 edit (ShipmentPickingInv l) + { edit(shipment(l(l))); } 

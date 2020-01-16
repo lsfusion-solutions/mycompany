@@ -10,12 +10,10 @@ manLedger = AGGR ManufacturingOrderResLedger WHERE reserved(ConsumedLine line) A
 
 dateTime(ManufacturingOrderResLedger r) += dateReserved(line(r));
 
+partner(ManufacturingOrderResLedger r) += company(manufacturingOrder(line(r)));
 location(ManufacturingOrderResLedger r) += materialsLocation(manufacturingOrder(line(r)));
 
 product(ManufacturingOrderResLedger r) += (item(line(r))) AS Product;
 reserved(ManufacturingOrderResLedger r) += reserved(line(r));
-
-description(ManufacturingOrderResLedger r) += 'Производство' IF line(r) IS ConsumedLine;
-partner(ManufacturingOrderResLedger r) += company(manufacturingOrder(line(r)));
 
 number(ManufacturingOrderResLedger r) += number(manufacturingOrder(line(r)));

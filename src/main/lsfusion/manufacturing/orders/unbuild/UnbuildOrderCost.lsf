@@ -5,7 +5,7 @@ REQUIRE UnbuildOrderDone, CostLedger, CostLocation;
 NAMESPACE Manufacturing;
 
 // расходная проводка
-CLASS UnbuildOutCostLedger : OutCostLedger;
+CLASS UnbuildOutCostLedger 'Разбор' : OutCostLedger;
 outCostLedger = AGGR UnbuildOutCostLedger WHERE quantity(UnbuildOrder order) 
                                                 AND done(order) AND product(order) IS Product;
 
@@ -18,7 +18,7 @@ quantity(UnbuildOutCostLedger l) += quantity(order(l));
 edit(UnbuildOutCostLedger l) + { edit(order(l)); }
 
 // приходная проводка
-CLASS UnbuildInCostLedger : InCostLedger;
+CLASS UnbuildInCostLedger 'Разбор' : InCostLedger;
 inCostLedger = AGGR UnbuildInCostLedger WHERE quantity(UnbuildOrderLine line) 
                                                 AND done(unbuildOrder(line)) AND item(line) IS Product;
 

@@ -2,7 +2,7 @@ MODULE ManufacturingOrderInv;
 
 REQUIRE ManufacturingOrderCanceled, InvLedger;
 
-CLASS ManufacturingOrderInv : InvLedger;
+CLASS ManufacturingOrderInv 'Производство' : InvLedger;
 manILedger = AGGR ManufacturingOrderInv WHERE done(FinishedLine line) AND item(line) IS Product;
 
 active(ManufacturingOrderInv l) += active(manufacturingOrder(line(l)));
@@ -11,13 +11,12 @@ toLocation(ManufacturingOrderInv l) += productsLocation(manufacturingOrder(line(
 
 product(ManufacturingOrderInv l) += item(line(l)) AS Product;
 quantity(ManufacturingOrderInv l) += done[FinishedLine](line(l));
-description(ManufacturingOrderInv l) += 'Производство' IF l IS ManufacturingOrderInv;
 
 number(ManufacturingOrderInv l) += number(manufacturingOrder[FinishedLine](line(l)));
 
 edit (ManufacturingOrderInv l) + { edit(manufacturingOrder(line(l))); }
 
-CLASS ManufacturingOrderInvLedger : InvLedger;
+CLASS ManufacturingOrderInvLedger 'Списание сырья' : InvLedger;
 manInvLedger = AGGR ManufacturingOrderInvLedger WHERE consumed(ConsumedLine line) AND item(line) IS Product;
 
 active(ManufacturingOrderInvLedger l) += active(manufacturingOrder(line(l)));
@@ -26,7 +25,6 @@ fromLocation(ManufacturingOrderInvLedger l) += materialsLocation(manufacturingOr
 
 product(ManufacturingOrderInvLedger l) += item(line(l)) AS Product;
 quantity(ManufacturingOrderInvLedger l) += consumed(line(l));
-description(ManufacturingOrderInvLedger l) += 'Производство' IF l IS ManufacturingOrderInvLedger;
 
 number(ManufacturingOrderInvLedger l) += number(manufacturingOrder(line(l)));
 

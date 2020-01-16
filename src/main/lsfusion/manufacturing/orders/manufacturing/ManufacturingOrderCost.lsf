@@ -5,7 +5,7 @@ REQUIRE ManufacturingOrderCanceled, CostLedger, CostLocation;
 NAMESPACE Manufacturing;
 
 // расходная проводка
-CLASS ConsumedOutCostLedger : OutCostLedger;
+CLASS ConsumedOutCostLedger 'Списание сырья' : OutCostLedger;
 outCostLedger = AGGR ConsumedOutCostLedger WHERE consumed(ConsumedLine line) AND active(manufacturingOrder(line)) AND item(line) IS Product;
 
 dateTime(ConsumedOutCostLedger l) += manufacturingDateTime(manufacturingOrder(line(l)));
@@ -19,7 +19,7 @@ quantity(ConsumedOutCostLedger l) += consumed(line(l));
 edit(ConsumedOutCostLedger l) + { edit(line(l)); }
 
 // приходная проводка
-CLASS ConsumedInCostLedger : InCostLedger;
+CLASS ConsumedInCostLedger 'Производство' : InCostLedger;
 inCostLedger = AGGR ConsumedInCostLedger WHERE done(FinishedLine line) AND active(manufacturingOrder(line)) AND item(line) IS Product;
 
 dateTime(ConsumedInCostLedger l) += manufacturingDateTime(manufacturingOrder(line(l)));

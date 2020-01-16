@@ -7,7 +7,7 @@ NAMESPACE Inventory;
 ledgerDone = ABSTRACT NUMERIC[16,3] (ReceiptLine);
 toDo (ReceiptLine l) = done(l) (-) ledgerDone(l);
 
-CLASS ReceiptInvLedger : InvLedger;
+CLASS ReceiptInvLedger 'Поступление' : InvLedger;
 invLedger = AGGR ReceiptInvLedger WHERE toDo(ReceiptLine line) > 0; 
 
 active(ReceiptInvLedger l) += active(receipt(line(l)));
@@ -19,7 +19,5 @@ toLocation(ReceiptInvLedger l) += location(receipt(line(l)));
 
 product(ReceiptInvLedger l) += product(line(l));
 quantity(ReceiptInvLedger l) += toDo(line(l));
-
-description(ReceiptInvLedger l) += 'Поступление' IF l IS ReceiptInvLedger;
 
 edit (ReceiptInvLedger l) + { edit(receipt(line(l))); } 

@@ -4,7 +4,8 @@ REQUIRE InvLedger;
 
 NAMESPACE Inventory;
 
-CLASS ResLedger;
+CLASS ResLedger 'Регистр резервирования';
+type 'Тип' (ResLedger l) = objectClassName(l) IF l IS ResLedger CHARWIDTH 15;
 
 dateTime 'Время' = ABSTRACT DATETIME (ResLedger) MATERIALIZED;
 number 'Номер' = ABSTRACT STRING[31] (ResLedger);
@@ -22,7 +23,6 @@ reserved 'Зарезервированое кол-во' = ABSTRACT NUMERIC[16,3]
 
 partner 'Контрагент' = ABSTRACT Partner (ResLedger) MATERIALIZED;
 namePartner 'Контрагент' (ResLedger l) = name(partner(l));
-description 'Описание' = ABSTRACT ISTRING[100] (ResLedger);
 
 reserved 'Зарезервировано' (Location l, Product p) = 
     GROUP SUM reserved(ResLedger sl) IF location(sl) = l 
@@ -42,7 +42,7 @@ CONSTRAINT SET(available (Location ll, Product p) < 0) AND recPositiveOnHand(ll)
             
 EXTEND FORM item
     OBJECTS res = ResLedger
-    PROPERTIES(res) READONLY dateTime, nameProduct, reserved, nameLocation, description
+    PROPERTIES(res) READONLY type, dateTime, nameProduct, reserved, nameLocation
     FILTERS product(res) = i
 ;
 

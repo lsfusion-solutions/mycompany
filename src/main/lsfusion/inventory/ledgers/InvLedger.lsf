@@ -5,6 +5,7 @@ REQUIRE InventorySettings, Category, Product, Location, Partner, Time;
 NAMESPACE Inventory;
 
 CLASS ABSTRACT InvLedger 'Регистр изменения остатка';
+type 'Тип' (InvLedger l) = objectClassName(l) IF l IS InvLedger CHARWIDTH 15;
 
 active 'Активный' = ABSTRACT BOOLEAN (InvLedger);
 dateTime 'Время' = ABSTRACT DATETIME (InvLedger) MATERIALIZED;
@@ -27,8 +28,6 @@ quantity 'Кол-во' = ABSTRACT NUMERIC[16,3] (InvLedger) MATERIALIZED;
 
 partner = ABSTRACT Partner (InvLedger) MATERIALIZED;
 namePartner 'Контрагент' (InvLedger l) = name(partner(l));
-
-description 'Описание' = ABSTRACT ISTRING[100] (InvLedger);
 
 // result  
 inQuantity 'Кол-во поступившее' (Location ll, Product p) = GROUP SUM quantity(InvLedger l) 
@@ -80,7 +79,7 @@ EXTEND FORM locations
 // extend item form    
 EXTEND FORM item
     OBJECTS inv = InvLedger
-    PROPERTIES(inv) READONLY dateTime, nameProduct, quantity, nameFromLocation, nameToLocation, description
+    PROPERTIES(inv) READONLY type, dateTime, nameProduct, quantity, nameFromLocation, nameToLocation
     FILTERGROUP active
         FILTER 'Активный' active(inv) DEFAULT
     FILTERS product(inv) = i
