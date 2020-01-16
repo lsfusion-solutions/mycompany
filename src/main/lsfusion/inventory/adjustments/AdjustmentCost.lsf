@@ -1,0 +1,18 @@
+MODULE AdjustmentCost;
+
+REQUIRE AdjustmentCanceled, CostLedger, CostLocation;
+
+NAMESPACE Inventory;
+
+CLASS AdjustmentCostLedger : OutCostLedger;
+adjustmentLedger = AGGR AdjustmentCostLedger WHERE quantity(InvAdjustment line) AND active(adjustment(line));
+
+dateTime(AdjustmentCostLedger l) += dateTime(adjustment(line(l)));
+number(AdjustmentCostLedger l) += number(adjustment(line(l)));
+
+location(AdjustmentCostLedger l) += costLocation(location(adjustment(line(l))));
+
+product(AdjustmentCostLedger l) += product(line(l));
+quantity(AdjustmentCostLedger l) += quantity(line(l));
+
+edit(AdjustmentCostLedger l) + { edit(line(l)); }

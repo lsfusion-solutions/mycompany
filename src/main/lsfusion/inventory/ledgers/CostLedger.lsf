@@ -27,6 +27,8 @@ price 'Цена' (InCostLedger il) = sum(il) / quantity(il);
 CLASS OutCostLedger 'Исходящая проводка' : CostLedger;
 
 quantity 'Количество' = ABSTRACT NUMERIC[16,3] (OutCostLedger);
+negQuantity (OutCostLedger l) = -quantity(l); 
+
 sum 'Сумма' = DATA NUMERIC[16,3] (OutCostLedger);
 price 'Цена' (OutCostLedger il) = sum(il) / quantity(il);
 
@@ -87,7 +89,15 @@ calculateCost () {
                                                                                      AND dateTime(il) <= dateTime(ol) 
                                                                   ORDER dateTime(il), il
                                                                   BY ol)
-                                                       WHERE iteration(ol);
+                                                       WHERE iteration(ol) AND quantity(ol) >= 0;
+                                                       
+        quantity(OutCostLedger ol, InCostLedger il) <- -(PARTITION UNGROUP negQuantity
+                                                                   LIMIT costed(il) IF location(ol) = location(il) 
+                                                                                     AND product(ol) = product(il) 
+                                                                                     AND dateTime(il) <= dateTime(ol) 
+                                                                   ORDER DESC dateTime(il), il
+                                                                   BY ol)
+                                                       WHERE iteration(ol) AND quantity(ol) < 0;
 
         sum (OutCostLedger ol) <- NUMERIC[14,2](quantity(ol) * costPrice(location(ol), product(ol), dateTime(ol)))
             WHERE iteration(ol) AND costingMethod(product(ol)) = CostingMethod.avco;
