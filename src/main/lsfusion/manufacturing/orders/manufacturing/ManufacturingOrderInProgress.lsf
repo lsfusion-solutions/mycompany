@@ -1,60 +1,67 @@
 MODULE ManufacturingOrderInProgress;
 
-REQUIRE ManufacturingOrderStatus, ResLedger;
+REQUIRE ManufacturingOrderReady, Input;
 
 NAMESPACE Manufacturing;
 
 EXTEND CLASS ManufacturingOrderStatus {
     inProgress 'В процессе'
 }
+inProgress 'В процессе' = DATA BOOLEAN (ManufacturingOrder);
 
-inprogress 'В процессе' = DATA BOOLEAN (ManufacturingOrder);
+status(ManufacturingOrder m) += WHEN inProgress(m) THEN ManufacturingOrderStatus.inProgress;
+colorStatus(ManufacturingOrder m) += WHEN status(m) = ManufacturingOrderStatus.inProgress THEN RGB(252,247,149);
 
-available (ConsumedLine l) = available(materialsLocation(manufacturingOrder(l)), item(l)); 
+produced 'Произведено' = DATA NUMERIC[16,3] (FinishedLine);
+produced 'Произведено' (ManufacturingOrder o) = GROUP SUM produced(FinishedLine l) IF manufacturingOrder(l) = o AND item(l) = item(o) MATERIALIZED;
 
-checkAvailability 'Зарезервировать' (ManufacturingOrder m) {
-    APPLY; 
+consumed 'Израсходовано' = DATA NUMERIC[16,3] (ConsumedLine);
+
+// produce
+setProduced (ManufacturingOrder o, NUMERIC[16,3] q) {
+    produced(FinishedLine l) <- NUMERIC[16,3](toProduce(l) * q / toProduce(o)); 
+    consumed(ConsumedLine l) <- NUMERIC[16,3](toConsume(l) * q / toProduce(o)); 
+}
+
+changeProduced (ManufacturingOrder o) {
+    INPUT q = NUMERIC[16,3] DO
+        setProduced(o, q);
+}
+
+produce 'Произвести' (ManufacturingOrder m) {
+    APPLY;
     IF canceled() THEN RETURN;
-    
-    NEWSESSION { 
-        FOR manufacturingOrder(ConsumedLine l) = m DO {     
-            reserved(l) <- reserved(l) (+) min(toConsume(l), available(l));
-            dateReserved(l) <- currentDateTime();
-        }
-
-        IF ((GROUP SUM 1 IF (reserved(ConsumedLine l) = toConsume(l) AND manufacturingOrder(l) = m)) = countConsumedLines(m)) 
-            THEN {
-            inprogress(m) <- TRUE;
-        }
-        APPLY;
-    }
-}
-
-unreserve 'Снять резервирование' (ManufacturingOrder m) {
+        
     NEWSESSION {
-        reserved(ConsumedLine l) <- NULL WHERE manufacturingOrder(l) = m;
-        inprogress(m) <- NULL;
-        APPLY;
+        DIALOG dialogQuantity OBJECTS q = toProduce(m) INPUT DO {
+            setProduced(m, q);
+            inProgress(m) <- TRUE;
+            APPLY;
+        }
     }
 }
-
-status(ManufacturingOrder m) += WHEN inprogress(m) THEN ManufacturingOrderStatus.inProgress;
-colorStatus(ManufacturingOrder m) += WHEN status(m) == ManufacturingOrderStatus.inProgress THEN RGB(252,247,149);
-
-showUnreserve (ManufacturingOrder m) = IF GROUP SUM 1 IF reserved(ConsumedLine l) AND 
-    manufacturingOrder(l) = m AND status(m) = ManufacturingOrderStatus.draft THEN TRUE;
 
 EXTEND FORM manufacturingOrder
-    PROPERTIES(o) checkAvailability SHOWIF status(o) = ManufacturingOrderStatus.draft, unreserve SHOWIF showUnreserve(o)
-    PROPERTIES(o) READONLY inprogress
+    PROPERTIES(o) produce SHOWIF (status(o) = ManufacturingOrderStatus.ready OR status(o) = ManufacturingOrderStatus.inProgress), 
+                  inProgress 
+                  
+    PROPERTIES SHOWIF inProgress(o) produced(o) ON CHANGE changeProduced(o),
+                                    produced(l),
+                                    consumed(c) 
 ;
 
 DESIGN manufacturingOrder {
     primaryActions {
-        MOVE PROPERTY(checkAvailability(o)) { fontStyle = 'bold'; }
-        MOVE PROPERTY(unreserve(o)) { fontStyle = 'bold'; }
+        MOVE PROPERTY(produce(o)) { fontStyle = 'bold'; }
     }
     status {
-        MOVE PROPERTY(inprogress(o));
+        MOVE PROPERTY(inProgress(o));
+    }
+    quantity {
+        MOVE PROPERTY(produced(o));
     }
 }
+
+EXTEND FORM manufacturingOrders
+    PROPERTIES(o) produced AFTER toProduce(o)
+;

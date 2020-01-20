@@ -58,23 +58,23 @@ META defineDocSearch (doc, it, fun, let)
     last###doc##Line 'Последняя строка' (###doc i, ###it p) = 
         GROUP LAST ###doc##Line l ORDER l BY doc(l), it(l);
         
-        changeQuantity 'Изменить кол-во' (###doc i, ###it p) {
-            INPUT q = NUMERIC[14,3] DO {
-                IF last###doc##Line(i, p) THEN {
-                    IF q THEN
-                        fun(###doc##Line l) <- q IF l = last###doc##Line(i, p)
-                            WHERE doc(l) = i AND it(l) = p;
-                    ELSE
-                        DELETE ###doc##Line l WHERE doc(l) = i AND it(l) == p;
-                } ELSE
-                    IF q THEN
-                        NEW l = ###doc##Line{
-                            doc(l) <- i;
-                            it(l) <- p;
-                            fun(l) <- q;
-                        }
-            }
+    changeQuantity 'Изменить кол-во' (###doc i, ###it p) {
+        INPUT q = NUMERIC[14,3] DO {
+            IF last###doc##Line(i, p) THEN {
+                IF q THEN
+                    fun(###doc##Line l) <- q IF l = last###doc##Line(i, p)
+                        WHERE doc(l) = i AND it(l) = p;
+                ELSE
+                    DELETE ###doc##Line l WHERE doc(l) = i AND it(l) == p;
+            } ELSE
+                IF q THEN
+                    NEW l = ###doc##Line{
+                        doc(l) <- i;
+                        it(l) <- p;
+                        fun(l) <- q;
+                    }
         }
+    }
     
     EXTEND FORM doc
         TREE categories c = Category PARENT parent(c)

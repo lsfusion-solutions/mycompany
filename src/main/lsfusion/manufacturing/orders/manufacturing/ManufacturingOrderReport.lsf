@@ -1,6 +1,6 @@
 MODULE ManufacturingOrderReport;
 
-REQUIRE ManufacturingOrderStatus, ItemAttribute;
+REQUIRE ManufacturingOrderDone, ItemAttribute;
 
 NAMESPACE Manufacturing;
 
@@ -8,11 +8,6 @@ consumed 'Израсходовано (продукты)' (ManufacturingOrder m) 
     GROUP CONCAT nameItem(ConsumedLine l) IF manufacturingOrder(l) = m, ', ';
 consumedQuantity 'Израсходовано (кол-во)' (ManufacturingOrder m) = 
     GROUP SUM consumed(ConsumedLine l) IF manufacturingOrder(l) = m;
-
-produced 'Произведено (продукты)' (ManufacturingOrder m) = 
-    nameItem(m) + GROUP CONCAT nameItem(FinishedLine l) IF manufacturingOrder(l) = m, ', ';
-producedQuantity 'Произведено (кол-во)' (ManufacturingOrder m) = 
-    quantity(m) + GROUP SUM done(FinishedLine l) IF manufacturingOrder(l) = m;
 
 attribute(ManufacturingOrder o, ItemAttribute a) = value(attribute(item(o), a));
 
@@ -22,9 +17,8 @@ FORM manufacturingOrderReport 'Отчет по заказам на произв�
     OBJECTS o = ManufacturingOrder
     PROPERTIES(o) READONLY number, nameItem
     PROPERTIES READONLY attribute(o, a) COLUMNS (a) HEADER name(a)
-    PROPERTIES(o) READONLY quantity, nameUnitMeasure, referenceBom, deadline, nameResponsible, 
-        numberSource, nameCompany, nameMaterialsLocation, nameProductsLocation, consumed, consumedQuantity, produced, 
-        producedQuantity    
+    PROPERTIES(o) READONLY toProduce, produced, nameUnitMeasure, descriptionBom, scheduledDateTime,
+                           nameCompany, nameMaterialsLocation, nameProductsLocation, consumed, consumedQuantity 
 ;
 
 NAVIGATOR {

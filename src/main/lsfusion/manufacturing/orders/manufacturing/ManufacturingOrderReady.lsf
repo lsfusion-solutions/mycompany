@@ -1,0 +1,65 @@
+MODULE ManufacturingOrderReady;
+
+REQUIRE ManufacturingOrderWaiting, ResLedger;
+
+NAMESPACE Manufacturing;
+
+EXTEND CLASS ManufacturingOrderStatus {
+    ready 'К производству'
+}
+ready 'К производству' = DATA BOOLEAN (ManufacturingOrder);
+
+status (ManufacturingOrder s) += WHEN ready(s) THEN ManufacturingOrderStatus.ready;
+colorStatus (ManufacturingOrder s) += WHEN status(s) = ManufacturingOrderStatus.ready THEN RGB(252,247,149);
+
+// reserved
+reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ConsumedLine);
+countReservedLines (ManufacturingOrder m) = GROUP SUM 1 IF reserved(ConsumedLine l) AND manufacturingOrder(l) = m;
+
+linesReserved (ManufacturingOrder m) = GROUP SUM 1 IF reserved(ConsumedLine l) = toConsume(l) AND manufacturingOrder(l) = m;
+reserved (ManufacturingOrder m) = linesReserved(m) = countReservedLines(m);
+
+available 'Доступный остаток' (ConsumedLine l) = 
+    prevAvailable(materialsLocation(manufacturingOrder(l)), item(l) AS Product) (+) PREV(reserved(l)); 
+
+checkAvailability 'Зарезервировать' (ManufacturingOrder m) {
+    APPLY; 
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION { 
+        reserved(ConsumedLine l) <- max(min(toConsume(l), available(l)), 0) WHERE manufacturingOrder(l) = m; 
+
+        ready(m) <- TRUE;
+        APPLY;
+    }
+}
+
+unreserve 'Снять резервирование' (ManufacturingOrder m) {
+    NEWSESSION {
+        reserved(ConsumedLine l) <- NULL WHERE manufacturingOrder(l) = m;
+        ready(m) <- NULL;
+        APPLY;
+    }
+}
+
+
+EXTEND FORM manufacturingOrder
+    PROPERTIES(o) checkAvailability SHOWIF (status(o) = ManufacturingOrderStatus.waiting OR status(o) = ManufacturingOrderStatus.ready)
+                                           AND NOT reserved(o), 
+                  unreserve SHOWIF (status(o) = ManufacturingOrderStatus.waiting OR status(o) = ManufacturingOrderStatus.ready) AND countReservedLines(o),
+                  ready
+    
+    PROPERTIES(c) READONLY available, reserved
+;
+
+DESIGN manufacturingOrder {
+    primaryActions {
+        MOVE PROPERTY(checkAvailability(o)) { fontStyle = 'bold'; }
+    }
+    secondaryActions {
+        MOVE PROPERTY(unreserve(o));
+    }
+    status {
+        MOVE PROPERTY(ready(o));
+    }
+}

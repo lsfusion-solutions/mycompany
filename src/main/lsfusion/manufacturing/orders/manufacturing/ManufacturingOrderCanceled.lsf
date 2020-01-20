@@ -17,7 +17,7 @@ cancel 'Отменить' (ManufacturingOrder m) {
            
        NEWSESSION {
            canceled(m) <- TRUE;
-           inprogress(m) <- NULL;
+           inProgress(m) <- NULL;
            APPLY;
        }
 }
@@ -26,7 +26,7 @@ status(ManufacturingOrder m) += WHEN canceled(m) THEN ManufacturingOrderStatus.c
 colorStatus(ManufacturingOrder m) += WHEN status(m) == ManufacturingOrderStatus.canceled THEN RGB(181,195,247);
 
 EXTEND FORM manufacturingOrder
-    PROPERTIES(o) cancel SHOWIF NOT (status(o) = ManufacturingOrderStatus.done OR status(o) = ManufacturingOrderStatus.canceled), 
+    PROPERTIES(o) cancel SHOWIF NOT (status(o) = ManufacturingOrderStatus.draft OR status(o) = ManufacturingOrderStatus.canceled), 
                             canceled SHOWIF status(o) = ManufacturingOrderStatus.canceled READONLY 
 ;
 

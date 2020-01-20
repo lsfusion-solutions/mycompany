@@ -8,7 +8,7 @@ ledgerReserved = ABSTRACT NUMERIC[16,3] (ShipmentLine);
 toReserve (ShipmentLine l) = reserved(l) (-) ledgerReserved(l);
 
 CLASS ShipmentResLedger : ResLedger;
-resLedger = AGGR ShipmentResLedger WHERE toReserve(ShipmentLine line) > 0 AND status(shipment(line)) = ShipmentStatus.ready;
+resLedger = AGGR ShipmentResLedger WHERE toReserve(ShipmentLine line) > 0 AND (status(shipment(line)) = ShipmentStatus.waiting OR status(shipment(line)) = ShipmentStatus.ready);
 
 dateTime(ShipmentResLedger r) += executionDateTime(shipment(line(r)));
 number(ShipmentResLedger r) += number(shipment(line(r)));

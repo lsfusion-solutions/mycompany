@@ -1,56 +1,46 @@
 MODULE ManufacturingOrder;
 
-REQUIRE ManufacturingSettings, Numerator, BomNested, Individual, SalesOrder, MetaNumerator;
+REQUIRE ManufacturingSettings, Numerator, BomNested, Individual, SalesOrder, MetaNumerator, Input;
 
 NAMESPACE Manufacturing;
 
-CLASS ManufacturingOrder 'Заказ на производство';
+CLASS ManufacturingOrder 'Производственный заказ';
 
-@defineNumber(manufacturingOrder, 'Заказы на производство', 'ЗП');
+scheduledDateTime 'Дата начала' = DATA DATETIME (ManufacturingOrder);
+WHEN LOCAL SET(ManufacturingOrder o IS ManufacturingOrder) AND NOT CHANGED(scheduledDateTime(o)) DO scheduledDateTime(o) <- currentDateTime();
 
-item 'Номенклатура' = DATA Item (ManufacturingOrder) NONULL DELETE;
+@defineNumber(manufacturingOrder, 'Производственные заказы', 'ПЗ');
+
+item 'Номенклатура' = DATA Item (ManufacturingOrder) NONULL;
 nameItem 'Номенклатура' (ManufacturingOrder m) = name(item(m));
-idItem 'Код номенклатуры' (ManufacturingOrder m) = id(item(m));
 
-quantity 'Кол-во' = DATA NUMERIC[16,3] (ManufacturingOrder) NONULL;
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (ManufacturingOrder);
 nameUnitMeasure 'Ед.изм.' (ManufacturingOrder m) = name(unitMeasure(m));
+WHEN LOCAL SET(item(ManufacturingOrder m)) DO unitMeasure(m) <- unitMeasure(item(m)); 
 
-WHEN LOCAL SET(item(ManufacturingOrder m)) DO {
-    unitMeasure(m) <- unitMeasure(item(m));
-} 
-
+// bom
 bom 'Спецификация' = DATA Bom (ManufacturingOrder) NONULL;
-referenceBom 'Код спецификация' (ManufacturingOrder m) = number(bom(m)) CHARWIDTH 25;
-deadline 'Дата старта' = DATA DATETIME (ManufacturingOrder);
-manufacturingDateTime 'Дата производства' = DATA DATETIME (ManufacturingOrder);
-responsible 'Ответственный' = DATA Individual (ManufacturingOrder);
-nameResponsible 'Ответственный' (ManufacturingOrder m) = name(responsible(m));
-source = DATA Order (ManufacturingOrder);
-numberSource 'Основание' (ManufacturingOrder m) = number(source(m));
-company 'Компания' = DATA Partner (ManufacturingOrder);
-nameCompany 'Компания' (ManufacturingOrder m) = name(company(m));
-
-CONSTRAINT company(ManufacturingOrder m) AND NOT company(m) IS Company
-    CHECKED BY company[ManufacturingOrder]
-    MESSAGE 'Нужно выбрать компанию';
- 
-CONSTRAINT responsible(ManufacturingOrder m) AND company(m) AND NOT (legalEntity(responsible(m)) = company(m) AND responsible(m) IS Individual)
-    CHECKED BY responsible
-    MESSAGE 'Нужно выбрать сотрудника указанной компании';
-    
-CONSTRAINT item(ManufacturingOrder m) AND bom(m) AND NOT item(m) = item(bom(m))
+descriptionBom 'Спецификация' (ManufacturingOrder m) = description(bom(m));
+CONSTRAINT bom(ManufacturingOrder m) AND NOT item(m) = item(bom(m))
     CHECKED BY bom[ManufacturingOrder]
-    MESSAGE 'Нужно выбрать спецификацию для заданного продукта';
-    
-materialsLocation 'Место хранения материалов' = DATA Location (ManufacturingOrder) NONULL;
-nameMaterialsLocation 'Место хранения материалов' (ManufacturingOrder m) = name(materialsLocation(m));
-productsLocation 'Место хранения произведенных товаров' = DATA Location (ManufacturingOrder) NONULL;
-nameProductsLocation 'Место хранения произведенных товаров' (ManufacturingOrder m) = name(productsLocation(m));
+    MESSAGE 'Номенклатура спецификации производственного заказа должна равняться номенклатуре производственного заказа';
 
-CLASS ConsumedLine 'Расходные материалы';
+WHEN LOCAL CHANGED(item(ManufacturingOrder o)) AND NOT CHANGED(bom(o)) AND defaultBom(item(o)) DO
+    bom(o) <- defaultBom(item(o));
 
-manufacturingOrder 'Заказ на производство' = DATA ManufacturingOrder (ConsumedLine) NONULL DELETE;
+company = DATA Company (ManufacturingOrder);
+nameCompany 'Компания' (ManufacturingOrder m) = name(company(m));
+WHEN LOCAL SET(ManufacturingOrder o IS ManufacturingOrder) AND NOT CHANGED(company(o)) DO company(o) <- defaultCompany(); 
+
+materialsLocation 'Списать из' = DATA Location (ManufacturingOrder) NONULL;
+nameMaterialsLocation 'Списать из' (ManufacturingOrder m) = name(materialsLocation(m));
+
+// consumed
+CLASS ConsumedLine 'Материалы';
+
+manufacturingOrder = DATA ManufacturingOrder (ConsumedLine) NONULL DELETE;
+
+countConsumedLines (ManufacturingOrder m) = GROUP SUM 1 IF manufacturingOrder(ConsumedLine l) = m;
 index 'Индекс' = PARTITION SUM 1 ORDER ConsumedLine l BY manufacturingOrder(l) IN id MATERIALIZED;
 
 item 'Номенклатура' = DATA Item (ConsumedLine);
@@ -60,20 +50,16 @@ idItem 'Код' (ConsumedLine l) = id(item(l));
 
 unitMeasure 'Ед.изм.' = DATA ItemMeasure (ConsumedLine);
 nameUnitMeasure 'Ед.изм.' (ConsumedLine l) = name(unitMeasure(l));
+WHEN LOCAL SET(item(ConsumedLine l)) DO unitMeasure(l) <- unitMeasure(item(l));
 
-toConsume 'К расходу' = DATA NUMERIC[16,3] (ConsumedLine);
-reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ConsumedLine);
-consumed 'Израсходовано' = DATA NUMERIC[16,3] (ConsumedLine);
+toConsume 'Израсходовать' = DATA NUMERIC[16,3] (ConsumedLine);
 
-dateReserved 'Дата резервирования' = DATA DATETIME (ConsumedLine);
+// finished
+CLASS FinishedLine 'Продукция';
 
-WHEN LOCAL SET(item(ConsumedLine l)) DO {
-    unitMeasure(l) <- unitMeasure(item(l));
-} 
+manufacturingOrder = DATA ManufacturingOrder (FinishedLine) NONULL DELETE;
 
-CLASS FinishedLine 'Готовые продукты';
-
-manufacturingOrder 'Заказ на производство' = DATA ManufacturingOrder (FinishedLine) NONULL DELETE;
+countFinishedLines (ManufacturingOrder m) = GROUP SUM 1 IF manufacturingOrder(ConsumedLine l) = m;
 index 'Индекс' = PARTITION SUM 1 ORDER FinishedLine l BY manufacturingOrder(l) IN id MATERIALIZED;
 
 item 'Номенклатура' = DATA Item (FinishedLine);
@@ -81,77 +67,35 @@ nameItem 'Номенклатура' (FinishedLine l) = name(item(l));
 idBarCodeItem 'Штрих код' (FinishedLine l) = idBarCode(item(l));
 idItem 'Код' (FinishedLine l) = id(item(l));
 
-unitMeasure 'Ед.изм.' = DATA ItemMeasure (FinishedLine);
-nameUnitMeasure 'Ед.изм.' (FinishedLine l) = name(unitMeasure(l));
+unitMeasure 'Ед. изм.' = DATA ItemMeasure (FinishedLine);
+nameUnitMeasure 'Ед. изм.' (FinishedLine l) = name(unitMeasure(l));
 
-done 'Произведено' = DATA NUMERIC[16,3] (FinishedLine);
+toProduce 'Произвести' = DATA NUMERIC[16,3] (FinishedLine);
 
-//WHEN LOCAL (SETCHANGED(bom(ManufacturingOrder m)) OR SETCHANGED(quantity(m))) DO {
-//    FOR manufacturingOrder(ConsumedLine l) = m DO DELETE l;
-//
-//    IF intermediate(bom(m)) THEN {
-//        FOR finalBom(bom(m), ComponentLine cl, TEXT path) AND NOT intermediate(bom(cl)) DO NEW l = ConsumedLine {
-//            manufacturingOrder(l) <- m;
-//            item(l) <- item(cl);
-//            unitMeasure(l) <- unitMeasure(cl);
-//            toConsume(l) <- NUMERIC[16,3](quantity(bom(m), cl, path) * quantity(m));
-//        } 
-//    }
-//    ELSE
-//        FOR bom(ComponentLine cl) = bom(m) DO NEW l = ConsumedLine {
-//            manufacturingOrder(l) <- m;
-//            item(l) <- item(cl);
-//            unitMeasure(l) <- unitMeasure(cl);
-//            toConsume(l) <- NUMERIC[16,3](quantity(cl) * quantity(m));
-//        }
-//}
+toProduce 'Произвести' (ManufacturingOrder o) = GROUP SUM toProduce(FinishedLine l) IF manufacturingOrder(l) = o AND item(l) = item(o) MATERIALIZED;
+ratioQuantity (ManufacturingOrder o) = toProduce(o) / quantity(bom(o)); 
 
-FORM manufacturingOrders 'Заказы на производство'
-    OBJECTS o = ManufacturingOrder
-    PROPERTIES(o) READONLY number, deadline, manufacturingDateTime, nameItem, numberSource, quantity, nameUnitMeasure
-    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
-    
-    LIST ManufacturingOrder OBJECT o
-;
+// line properties
+scheduledDateTime 'Дата начала' (ConsumedLine l) = scheduledDateTime(manufacturingOrder(l));
 
 readonly = ABSTRACT CASE BOOLEAN (ManufacturingOrder);
 
-FORM manufacturingOrder 'Заказ на производство'
+FORM manufacturingOrder 'Производственный заказ'
     OBJECTS o = ManufacturingOrder PANEL 
-    PROPERTIES(o) READONLYIF  readonly(o) nameItem, quantity, nameUnitMeasure, referenceBom, deadline, 
-        nameResponsible, numberSource, nameCompany, nameMaterialsLocation, nameProductsLocation, manufacturingDateTime READONLY 
+    PROPERTIES(o) READONLYIF readonly(o) scheduledDateTime, number, 
+                                         nameCompany, 
+                                         nameItem, toProduce READONLY, nameUnitMeasure, descriptionBom, 
+                                         nameMaterialsLocation 
     
     OBJECTS c = ConsumedLine
-    PROPERTIES(c) READONLY index, nameItem, nameUnitMeasure, idBarCodeItem, idItem, toConsume, reserved, dateReserved, consumed
+    PROPERTIES(c) index READONLY, nameItem, nameUnitMeasure, idBarCodeItem, idItem, toConsume, NEW, DELETE
     FILTERS manufacturingOrder(c) = o
-    
+
     OBJECTS l = FinishedLine
-    PROPERTIES(l) READONLY index, nameItem, nameUnitMeasure, idBarCodeItem, idItem, done
+    PROPERTIES(l) index READONLY, nameItem, nameUnitMeasure, idBarCodeItem, idItem, toProduce, NEW, DELETE
     FILTERS manufacturingOrder(l) = o
     
     EDIT ManufacturingOrder OBJECT o
-;
-
-copyManufacturingOrder 'Копировать' (ManufacturingOrder m) {
-    NEWSESSION {
-        NEW o = ManufacturingOrder {
-            item(o) <- item(m);
-            quantity(o) <- quantity(m);
-            unitMeasure(o) <- unitMeasure(m);
-            bom(o) <- bom(m);
-            responsible(o) <- responsible(m);
-            source(o) <- source(m);
-            company(o) <- company(m);
-            materialsLocation(o) <- materialsLocation(m);
-            productsLocation(o) <- productsLocation(m);
-            
-            SHOW manufacturingOrder OBJECTS o = o DOCKED;
-        }
-    }
-}
-
-EXTEND FORM manufacturingOrder
-    PROPERTIES(o) copyManufacturingOrder
 ;
 
 DESIGN manufacturingOrder {
@@ -159,46 +103,145 @@ DESIGN manufacturingOrder {
         NEW header {
             alignment = STRETCH;
             type = CONTAINERH;
-            NEW leftHeader {
-                caption = '';
+            NEW headerLeft {
+                MOVE PROPERTY(scheduledDateTime(o));
+                MOVE PROPERTY(number(o)) { notNull = TRUE; }
+                MOVE PROPERTY(nameCompany(o));
+            }
+            NEW headerRight {
                 MOVE PROPERTY(nameItem(o)) { notNull = TRUE; }
-                NEW item {
+                NEW quantity {
                     type = CONTAINERH;
-                    MOVE PROPERTY(quantity(o)) { notNull = TRUE; }
+                    MOVE PROPERTY(toProduce(o));
                     MOVE PROPERTY(nameUnitMeasure(o));
                 }
-                MOVE PROPERTY(referenceBom(o)) { notNull = TRUE; }
-                MOVE PROPERTY(manufacturingDateTime(o));
-            }
-            NEW rightHeader {
-                caption = '';
-                MOVE PROPERTY(deadline(o));  
-                MOVE PROPERTY(nameResponsible(o));
-                MOVE PROPERTY(numberSource(o));
-                MOVE PROPERTY(nameCompany(o));        
+                MOVE PROPERTY(descriptionBom(o)) { notNull = TRUE; };
             }
         }
         NEW details {
             fill = 1;
             type = TABBED;
             NEW consumed {
-                fill = 1;
-                caption = 'Расходные материалы';
+                caption = 'Материалы';
                 MOVE PROPERTY(nameMaterialsLocation(o)) { notNull = TRUE; }
                 MOVE BOX(c);
             }
             NEW finished {
-                fill = 1;
-                caption = 'Готовые продукты';
-                MOVE PROPERTY(nameProductsLocation(o)) { notNull = TRUE; }
+                caption = 'Продукция';
+                NEW finishedHeader { 
+                    type = CONTAINERH;
+                    alignment = STRETCH; 
+                } 
                 MOVE BOX(l);
             }
         }   
     }
 }
 
+FORM manufacturingOrders 'Производственные заказы'
+    OBJECTS o = ManufacturingOrder
+    PROPERTIES(o) READONLY scheduledDateTime, number, 
+                           nameCompany, 
+                           nameItem, toProduce, nameUnitMeasure, descriptionBom, 
+                           nameMaterialsLocation
+    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
+    
+    LIST ManufacturingOrder OBJECT o
+;
+
 NAVIGATOR {
     operations {
         NEW manufacturingOrders;
+    }
+}
+
+// status
+@defineStatus(manufacturingOrder, 'производственного заказа', o);
+
+// copy
+extraCopy ABSTRACT (ManufacturingOrder, ManufacturingOrder);
+copy 'Копировать' (ManufacturingOrder m) {
+    NEWSESSION {
+        NEW o = ManufacturingOrder {
+            item(o) <- item(m);
+            unitMeasure(o) <- unitMeasure(m);
+            bom(o) <- bom(m);
+            company(o) <- company(m);
+            materialsLocation(o) <- materialsLocation(m);
+            
+            FOR manufacturingOrder(ConsumedLine ml) = m NEW ol = ConsumedLine DO {
+                manufacturingOrder(ol) <- o;
+                item(ol) <- item(ml);
+                unitMeasure(ol) <- unitMeasure(ml);
+                toConsume(ol) <- toConsume(ml);
+            }
+
+            FOR manufacturingOrder(FinishedLine ml) = m NEW ol = FinishedLine DO {
+                manufacturingOrder(ol) <- o;
+                item(ol) <- item(ml);
+                unitMeasure(ol) <- unitMeasure(ml);
+                toProduce(ol) <- toProduce(ml);
+            }
+            
+            extraCopy(o, m);
+            
+            SHOW manufacturingOrder OBJECTS o = o DOCKED;
+        }
+    }
+}
+
+EXTEND FORM manufacturingOrder
+    PROPERTIES(o) copy
+;
+
+DESIGN manufacturingOrder {
+    secondaryActions {
+        MOVE PROPERTY(copy(o)); 
+    }
+}
+
+// fill
+
+fillLines 'Заполнить по спецификации' (ManufacturingOrder o) {
+    APPLY;
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {
+        DIALOG dialogQuantity OBJECTS q = toProduce(o) INPUT DO {
+            DELETE ConsumedLine l WHERE manufacturingOrder(l) = o; 
+        
+            FOR intermediateBom(bom(o), ComponentLine cl, TEXT path) AND NOT intermediate(nestedBom(cl)) DO NEW l = ConsumedLine {
+                manufacturingOrder(l) <- o;
+                item(l) <- item(cl);
+                unitMeasure(l) <- unitMeasure(cl);
+                toConsume(l) <- NUMERIC[16,3](quantity(bom(o), cl, path) * toProduce(o));
+            }
+            
+            DELETE FinishedLine l WHERE manufacturingOrder(l) = o;
+            NEW l = FinishedLine {
+                manufacturingOrder(l) <- o;
+                item(l) <- item(o);
+                unitMeasure(l) <- unitMeasure(o);
+                toProduce(l) <- q;
+            }
+            
+            FOR bom(ByproductLine bl) = bom(o) DO NEW l = FinishedLine {
+                manufacturingOrder(l) <- o;
+                item(l) <- product(bl);
+                unitMeasure(l) <- unitMeasure(bl);
+                toProduce(l) <- NUMERIC[16,3](quantity(bl) * ratioQuantity(o));
+            }
+            APPLY;
+        }
+    }
+}
+
+EXTEND FORM manufacturingOrder
+    PROPERTIES(o) fillLines SHOWIF status(o) = ManufacturingOrderStatus.draft
+;
+
+DESIGN manufacturingOrder {
+    primaryActions {
+        MOVE PROPERTY(fillLines(o)) { fontStyle = 'bold'; }
     }
 }

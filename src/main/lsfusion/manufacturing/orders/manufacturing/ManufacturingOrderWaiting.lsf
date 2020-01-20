@@ -1,0 +1,41 @@
+MODULE ManufacturingOrderWaiting;
+
+REQUIRE ManufacturingOrder;
+
+NAMESPACE Manufacturing;
+
+EXTEND CLASS ManufacturingOrderStatus {
+    waiting 'В ожидании'
+}
+waiting 'В ожидании' = DATA BOOLEAN (ManufacturingOrder);
+
+status (ManufacturingOrder s) += WHEN waiting(s) THEN ManufacturingOrderStatus.waiting;
+colorStatus (ManufacturingOrder s) += WHEN status(s) = ManufacturingOrderStatus.waiting THEN RGB(250,150,157);
+
+markAsToDo 'В работу' (ManufacturingOrder s) {
+    APPLY; 
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {
+        waiting(s) <- TRUE;
+        APPLY;
+    }
+}
+
+EXTEND FORM manufacturingOrder
+    PROPERTIES(o) markAsToDo SHOWIF status(o) = ManufacturingOrderStatus.draft, waiting 
+;
+
+DESIGN manufacturingOrder {
+    primaryActions {
+        MOVE PROPERTY(markAsToDo(o)) { fontStyle = 'bold'; }
+    }                
+    status {
+        MOVE PROPERTY(waiting(o));                               
+    }
+}
+
+EXTEND FORM manufacturingOrders    
+    EXTEND FILTERGROUP status
+        FILTER 'В ожидании' status(o) = ManufacturingOrderStatus.waiting 'F9'    
+;

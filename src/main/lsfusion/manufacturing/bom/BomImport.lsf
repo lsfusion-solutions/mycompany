@@ -45,7 +45,7 @@ byProductLineExport 'Экспорт производных номенклату�
         IF NOT (GROUP SUM 1 IF ByproductLine l AND l IS ByproductLine) THEN {
             NEW l = ByproductLine {
                 bom(l) <- GROUP LAST Bom b IF b IS Bom;
-                item(l) <- GROUP LAST Item i IF i IS Item AND NOT i = item(bom(l));
+                product(l) <- GROUP LAST Item i IF i IS Item AND NOT i = item(bom(l));
                 quantity(l) <- 1;
                 unitMeasure(l) <- GROUP LAST ItemMeasure m IF m IS ItemMeasure;
             }
@@ -53,7 +53,7 @@ byProductLineExport 'Экспорт производных номенклату�
     
         LOCAL f = EXCELFILE ();
         
-        EXPORT XLSX HEADER FROM 'Номер спецификации' = number(bom(ByproductLine l)), 'Номенклатура' = id(item(l)), 
+        EXPORT XLSX HEADER FROM 'Номер спецификации' = number(bom(ByproductLine l)), 'Номенклатура' = id(product(l)), 
                 'Кол-во' = quantity(l), 'Единица измерения' = id(unitMeasure(l)) TO f;
         open(f());
     }
@@ -133,7 +133,7 @@ byProductLineImport 'Импорт производных номенклатур'
             
             FOR imported(INTEGER i) DO NEW l = ByproductLine {
                 bom(l) <- GROUP LAST Bom b IF number(b) = id(i);
-                item(l) <- item(idItem(i));
+                product(l) <- item(idItem(i));
                 quantity(l) <- quantity(i);
                 unitMeasure(l) <- itemMeasure(idUnitMeasure(i));  
             }

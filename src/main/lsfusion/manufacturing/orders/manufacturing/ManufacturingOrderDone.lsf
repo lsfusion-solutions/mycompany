@@ -10,30 +10,22 @@ EXTEND CLASS ManufacturingOrderStatus {
 
 done 'Завершен' = DATA BOOLEAN (ManufacturingOrder);
 
-produce 'Произвести' (ManufacturingOrder m) {
+executionDateTime 'Дата производства' = DATA DATETIME (ManufacturingOrder);
+WHEN SET(done(ManufacturingOrder o)) AND NOT CHANGED(executionDateTime(o)) DO executionDateTime(o) <- currentDateTime(); 
+
+productsLocation 'Получатель' = DATA Location (ManufacturingOrder);
+nameProductsLocation 'Получатель' (ManufacturingOrder m) = name(productsLocation(m));
+
+markAsDone 'Завершить' (ManufacturingOrder m) {
     APPLY;
     IF canceled() THEN RETURN;
         
     NEWSESSION {
-        FOR manufacturingOrder(ConsumedLine l) = m DO {
-            consumed(l) <- reserved(l);
-        }
+        IF NOT produced(m) THEN
+            setProduced(m, toProduce(m));
         
-        FOR bom(ByproductLine bl) = bom(m) DO NEW l = FinishedLine {
-            manufacturingOrder(l) <- m;
-            item(l) <- item(bl);
-            unitMeasure(l) <- unitMeasure(bl);
-            done(l) <- NUMERIC[16,3](quantity(bl) * quantity(m));
-        }
-        
-        NEW l = FinishedLine {
-             manufacturingOrder(l) <- m;
-             item(l) <- item(m);
-             unitMeasure(l) <- unitMeasure(m);
-             done(l) <- quantity(m);
-        } 
+        inProgress(m) <- TRUE;
         done(m) <- TRUE;
-        manufacturingDateTime(m) <- currentDateTime();
         APPLY;
     }
 }
@@ -41,14 +33,43 @@ produce 'Произвести' (ManufacturingOrder m) {
 status(ManufacturingOrder m) += WHEN done(m) THEN ManufacturingOrderStatus.done;
 
 EXTEND FORM manufacturingOrder
-    PROPERTIES(o) produce SHOWIF status(o) = ManufacturingOrderStatus.inProgress, done READONLY 
+    PROPERTIES(o) markAsDonePrimary = markAsDone SHOWIF status(o) = ManufacturingOrderStatus.inProgress,
+                  markAsDoneSecondary = markAsDone SHOWIF (status(o) = ManufacturingOrderStatus.draft OR 
+                                                           status(o) = ManufacturingOrderStatus.waiting OR 
+                                                           status(o) = ManufacturingOrderStatus.ready), 
+                  done, 
+                  executionDateTime READONLY SHOWIF done(o),
+                  
+                  nameProductsLocation
 ;
 
 DESIGN manufacturingOrder {
     primaryActions {
-        MOVE PROPERTY(produce(o)) { fontStyle = 'bold'; }
+        MOVE PROPERTY(markAsDonePrimary) { fontStyle = 'bold'; }
+    }
+    secondaryActions {
+        MOVE PROPERTY(markAsDoneSecondary);
     }
     status {
         MOVE PROPERTY(done(o));
     }
+    headerLeft {
+        MOVE PROPERTY(executionDateTime(o));
+    }
+    finishedHeader {
+        MOVE PROPERTY(nameProductsLocation(o)) { notNull = TRUE; }
+    }
 }
+
+EXTEND FORM manufacturingOrders
+    PROPERTIES(o) READONLY executionDateTime AFTER scheduledDateTime(o) 
+;
+
+extraCopy (ManufacturingOrder o, ManufacturingOrder m) + {
+    productsLocation(o) <- productsLocation(m);
+}
+
+// constraint
+CONSTRAINT done(ManufacturingOrder o) AND NOT productsLocation(o)
+    MESSAGE 'Не выбрано место хранения в завершенном производственном заказе'; 
+

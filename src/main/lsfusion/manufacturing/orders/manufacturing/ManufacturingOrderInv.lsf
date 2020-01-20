@@ -3,14 +3,14 @@ MODULE ManufacturingOrderInv;
 REQUIRE ManufacturingOrderCanceled, InvLedger;
 
 CLASS ManufacturingOrderInv 'Производство' : InvLedger;
-manILedger = AGGR ManufacturingOrderInv WHERE done(FinishedLine line) AND item(line) IS Product;
+manILedger = AGGR ManufacturingOrderInv WHERE produced(FinishedLine line) AND item(line) IS Product;
 
 active(ManufacturingOrderInv l) += active(manufacturingOrder(line(l)));
-dateTime(ManufacturingOrderInv l) += manufacturingDateTime(manufacturingOrder(line(l)));
+dateTime(ManufacturingOrderInv l) += executionDateTime(manufacturingOrder(line(l)));
 toLocation(ManufacturingOrderInv l) += productsLocation(manufacturingOrder(line(l)));
 
 product(ManufacturingOrderInv l) += item(line(l)) AS Product;
-quantity(ManufacturingOrderInv l) += done[FinishedLine](line(l));
+quantity(ManufacturingOrderInv l) += produced[FinishedLine](line(l));
 
 number(ManufacturingOrderInv l) += number(manufacturingOrder[FinishedLine](line(l)));
 
@@ -20,7 +20,7 @@ CLASS ManufacturingOrderInvLedger 'Списание сырья' : InvLedger;
 manInvLedger = AGGR ManufacturingOrderInvLedger WHERE consumed(ConsumedLine line) AND item(line) IS Product;
 
 active(ManufacturingOrderInvLedger l) += active(manufacturingOrder(line(l)));
-dateTime(ManufacturingOrderInvLedger l) += manufacturingDateTime(manufacturingOrder(line(l)));
+dateTime(ManufacturingOrderInvLedger l) += executionDateTime(manufacturingOrder(line(l)));
 fromLocation(ManufacturingOrderInvLedger l) += materialsLocation(manufacturingOrder(line(l)));
 
 product(ManufacturingOrderInvLedger l) += item(line(l)) AS Product;
