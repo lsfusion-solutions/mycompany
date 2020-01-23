@@ -1,6 +1,6 @@
 MODULE SalesOrderShipment;
 
-REQUIRE SalesOrder, Inventory, SalesOrderConfirmed, SalesOrderCanceled, SalesSettings;
+REQUIRE SalesOrder, Inventory, SalesOrderConfirmed, SalesOrderCanceled, SalesSettings, InvoiceShipment, SalesOrderInvoice;
 
 NAMESPACE Sales;
 
@@ -48,6 +48,8 @@ WHEN ([GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) AND item(l) IS Product BY o
     }
     precheckAvailability(lastOpenShipment(o));
 }
+
+WHEN SETCHANGED(invoice(Shipment s)) AND NOT order(s) DO order(s) <- order(invoice(s));
 
 FORM orderShipmentShow 'Расход со склада'
     OBJECTS ol = OrderLine

@@ -1,6 +1,6 @@
 MODULE PurchaseOrderReceipt;
 
-REQUIRE PurchaseOrder, Inventory, PurchaseOrderConfirmed, PurchaseOrderCanceled, ReceiptReady;
+REQUIRE PurchaseOrder, Inventory, PurchaseOrderConfirmed, PurchaseOrderCanceled, ReceiptReady, BillReceipt, PurchaseOrderBill;
 
 NAMESPACE Purchase;
 
@@ -26,7 +26,7 @@ CONSTRAINT (quantity(OrderLine ol) (-) doneReceipt(ol)) < 0 AND confirmed(order(
     MESSAGE 'По товару приход превышает количество в заказе';
 
 lastOpenReceipt 'Последний открытый приход' (Order o) =  
-    GROUP LAST Receipt r IF order(r) = o AND status(r) = ReceiptStatus.ready ORDER r;
+    GROUP LAST Receipt r IF order(r) == o AND status(r) = ReceiptStatus.ready  ORDER r;
 
 WHEN ([GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) AND item(l) IS Product BY order(l)](Order o) OR SET(confirmed(o))) AND 
       toReceive(o) > 0 AND status(o) = OrderStatus.confirmed AND receiptType() DO {
@@ -47,6 +47,8 @@ WHEN ([GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) AND item(l) IS Product BY o
         orderLine(rl) <- ol;
     }
 }
+
+WHEN SETCHANGED(bill(Receipt r)) AND NOT order(r) DO order(r) <- order(bill(r));
 
 FORM orderReceiptShow 'Оприходовано на склад'
     OBJECTS ol = OrderLine
