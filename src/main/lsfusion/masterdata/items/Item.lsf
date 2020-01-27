@@ -5,6 +5,7 @@ REQUIRE MasterDataSettings, Category, Tax, ItemMeasure, MetaNumerator;
 NAMESPACE MasterData;
 
 CLASS ABSTRACT Item 'Номенклатура';
+type 'Тип' (Item i) = objectClassName(i) IF i IS Item;
 
 @defineID(item, 'Номенклатуры', 'НМ');
 
@@ -93,7 +94,7 @@ FORM items 'Номенклатура'
     ORDER name(c)
 
     OBJECTS i = Item
-    PROPERTIES(i) READONLYIF isReadonly() name, id, nameCategory, nameUnitMeasure
+    PROPERTIES(i) READONLYIF isReadonly() name, id, nameCategory, nameUnitMeasure, type READONLY
     PROPERTIES(i) SHOWIF isReadonly() NEWSESSION EDIT, DELETE 
     FILTERS level(category(i), c)
     FILTERGROUP active

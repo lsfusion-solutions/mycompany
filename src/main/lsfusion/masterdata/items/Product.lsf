@@ -7,20 +7,12 @@ NAMESPACE MasterData;
 CLASS Product 'Товар' : Item;
 weight 'Вес единицы, кг' = DATA NUMERIC[11,3] (Product);
 volume 'Объем единицы, м3 ' = DATA NUMERIC[11,3] (Product);
-customerLeadTime 'Плановое время поставки, дней' = DATA INTEGER (Product);
-descriptionForShipment 'Доп. информация для отгрузки' = DATA STRING (Product);   
-descriptionForReceipt 'Доп. информация для прихода' = DATA STRING (Product);   
-descriptionForTransfer 'Доп. информация для внутреннего перемещения' = DATA STRING (Product);   
 
 copyProduct 'Копировать' (Product p) {
     NEWSESSION {
         NEW np = Product {
             weight(np) <- weight(p);
             volume(np) <- volume(p);
-            customerLeadTime(np) <- customerLeadTime(p);
-            descriptionForShipment(np) <- descriptionForShipment(p);
-            descriptionForReceipt(np) <- descriptionForReceipt(p);
-            descriptionForTransfer(np) <- descriptionForTransfer(p);
             copy(np, p);
             SHOW item OBJECTS i = np;
         }
@@ -28,21 +20,17 @@ copyProduct 'Копировать' (Product p) {
 }
 
 EXTEND FORM item
-    PROPERTIES(i) weight, volume, customerLeadTime, descriptionForShipment, descriptionForReceipt, descriptionForTransfer
+    PROPERTIES(i) weight, volume
 ;
 
-DESIGN item{
+DESIGN item {
     tabs {
         NEW product {
             caption = 'Склад';
             NEW box1 {
                 MOVE PROPERTY(weight(i)) { charWidth = 5; };
                 MOVE PROPERTY(volume(i)) { charWidth = 5; };
-                MOVE PROPERTY(customerLeadTime(i)) { charWidth = 5; };
             }  
-            MOVE PROPERTY(descriptionForShipment(i));  
-            MOVE PROPERTY(descriptionForReceipt(i));  
-            MOVE PROPERTY(descriptionForTransfer(i));  
         }
     }
 }
@@ -58,6 +46,37 @@ newProduct 'Товар' (Category c) {
 
 EXTEND FORM items
     PROPERTIES newProduct(c) DRAW i TOOLBAR, copyProduct(i) DRAW i TOOLBAR 
-    
-    LIST Product OBJECT i
 ;
+
+// dialog product
+FORM products 'Товары'
+    TREE categories c = Category PARENT parent(c)
+    PROPERTIES READONLY name(c)
+    ORDER name(c)
+
+    OBJECTS p = Product
+    PROPERTIES(p) READONLY name, id, nameCategory, nameUnitMeasure
+    PROPERTIES(p) NEWSESSION NEW, EDIT, DELETE 
+    FILTERS level(category(p), c)
+    FILTERGROUP active
+        FILTER 'Активный' active(p) 'F8' DEFAULT 
+        FILTER 'Неактивный' archived(p) 'F7'
+        
+    LIST Product OBJECT p
+;
+
+DESIGN products {
+    OBJECTS {
+        NEW pane {
+            type = SPLITH;
+            fill = 1;
+            NEW categories {
+                fill = 1;
+                MOVE BOX(TREE categories);
+            }
+            MOVE BOX(p) { 
+                GRID(p) { defaultComponent = TRUE; }
+            }
+        }
+    }
+}
