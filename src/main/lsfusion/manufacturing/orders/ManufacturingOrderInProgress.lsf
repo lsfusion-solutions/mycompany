@@ -12,29 +12,32 @@ inProgress 'В процессе' = DATA BOOLEAN (ManufacturingOrder);
 status(ManufacturingOrder m) += WHEN inProgress(m) THEN ManufacturingOrderStatus.inProgress;
 colorStatus(ManufacturingOrder m) += WHEN status(m) = ManufacturingOrderStatus.inProgress THEN RGB(252,247,149);
 
+consumed 'Израсходовано' = DATA NUMERIC[16,3] (ConsumedLine);
+consumed 'Израсходовано' (ManufacturingOrder o) = GROUP SUM consumed(ConsumedLine l) IF manufacturingOrder(l) = o AND item(l) = item(o) MATERIALIZED;
+
 produced 'Произведено' = DATA NUMERIC[16,3] (FinishedLine);
 produced 'Произведено' (ManufacturingOrder o) = GROUP SUM produced(FinishedLine l) IF manufacturingOrder(l) = o AND item(l) = item(o) MATERIALIZED;
 
-consumed 'Израсходовано' = DATA NUMERIC[16,3] (ConsumedLine);
+// manufacture
+manufactured 'Произведено' (ManufacturingOrder o) = IF unbuild(o) THEN consumed(o) ELSE produced(o);
 
-// produce
-setProduced (ManufacturingOrder o, NUMERIC[16,3] q) {
-    produced(FinishedLine l) <- NUMERIC[16,3](toProduce(l) * q / toProduce(o)); 
-    consumed(ConsumedLine l) <- NUMERIC[16,3](toConsume(l) * q / toProduce(o)); 
+setManufactured (ManufacturingOrder o, NUMERIC[16,3] q) {
+    produced(FinishedLine l) <- NUMERIC[16,3](toProduce(l) * q / toManufacture(o)); 
+    consumed(ConsumedLine l) <- NUMERIC[16,3](toConsume(l) * q / toManufacture(o)); 
 }
 
-changeProduced (ManufacturingOrder o) {
+changeManufactured (ManufacturingOrder o) {
     INPUT q = NUMERIC[16,3] DO
-        setProduced(o, q);
+        setManufactured(o, q);
 }
 
-produce 'Произвести' (ManufacturingOrder m) {
+manufacture 'Произвести' (ManufacturingOrder m) {
     APPLY;
     IF canceled() THEN RETURN;
         
     NEWSESSION {
-        DIALOG dialogQuantity OBJECTS q = toProduce(m) INPUT DO {
-            setProduced(m, q);
+        DIALOG dialogQuantity OBJECTS q = toManufacture(m) INPUT DO {
+            setManufactured(m, q);
             inProgress(m) <- TRUE;
             APPLY;
         }
@@ -42,26 +45,26 @@ produce 'Произвести' (ManufacturingOrder m) {
 }
 
 EXTEND FORM manufacturingOrder
-    PROPERTIES(o) produce SHOWIF (status(o) = ManufacturingOrderStatus.ready OR status(o) = ManufacturingOrderStatus.inProgress), 
+    PROPERTIES(o) manufacture SHOWIF (status(o) = ManufacturingOrderStatus.ready OR status(o) = ManufacturingOrderStatus.inProgress), 
                   inProgress 
                   
-    PROPERTIES SHOWIF inProgress(o) produced(o) ON CHANGE changeProduced(o),
+    PROPERTIES SHOWIF inProgress(o) manufactured(o) ON CHANGE changeManufactured(o),
                                     produced(l),
                                     consumed(c) 
 ;
 
 DESIGN manufacturingOrder {
     primaryActions {
-        MOVE PROPERTY(produce(o)) { fontStyle = 'bold'; }
+        MOVE PROPERTY(manufacture(o)) { fontStyle = 'bold'; }
     }
     status {
         MOVE PROPERTY(inProgress(o));
     }
     quantity {
-        MOVE PROPERTY(produced(o));
+        MOVE PROPERTY(manufactured(o));
     }
 }
 
 EXTEND FORM manufacturingOrders
-    PROPERTIES(o) produced AFTER toProduce(o)
+    PROPERTIES(o) produced AFTER toManufacture(o)
 ;

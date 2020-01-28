@@ -13,14 +13,15 @@ CONSTRAINT dataNestedBom(ComponentLine l) AND NOT item(l) = item(dataNestedBom(l
 nestedBom (ComponentLine c) = OVERRIDE dataNestedBom(c), defaultBom(item(c));
 descriptionNestedBom 'Спецификация' (ComponentLine c) = description(nestedBom(c));
 
-// quantity        
+// nested        
 textIndex (ComponentLine c) = lpad(TEXT(index(c)), 4, '0');
 
 level 'Уровень' (Bom b, ComponentLine c, TEXT path) =
     RECURSION 1l IF bom(c) = b AND path = textIndex(c)
          STEP 2l IF bom(c) = nestedBom($c) AND path = ($path + '/' + textIndex(c)); //MATERIALIZED
 
-quantity 'Уровень' (Bom b, ComponentLine c, TEXT path, NUMERIC[20,11] q) =
+// quantity        
+quantity (Bom b, ComponentLine c, TEXT path, NUMERIC[20,11] q) =
     RECURSION NUMERIC[20,11](1.0) IF q = quantity(c) AND bom(c) = b AND path = lpad(TEXT(index(c)), 4, '0')
          STEP NUMERIC[20,11](1.0) IF q = $q * quantity(c) / quantity(bom(c)) AND bom(c) = nestedBom($c) AND path = ($path + '/' + lpad(TEXT(index(c)), 4, '0')) CYCLES NO; //MATERIALIZED
 

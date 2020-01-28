@@ -1,0 +1,25 @@
+MODULE ManufacturingOrderReport;
+
+REQUIRE ManufacturingOrderDone, ItemAttribute;
+
+NAMESPACE Manufacturing;
+
+attribute(ManufacturingOrder o, ItemAttribute a) = value(attribute(item(o), a));
+
+FORM manufacturingOrderReport 'Отчет по заказам'
+    OBJECTS a = ItemAttribute
+    
+    OBJECTS o = ManufacturingOrder
+    PROPERTIES(o) READONLY scheduledDateTime, number, nameItem
+    PROPERTIES READONLY attribute(o, a) COLUMNS (a) HEADER name(a)
+    PROPERTIES(o) READONLY toManufacture, manufactured, nameUnitMeasure, descriptionBom,
+                           nameCompany, nameMaterialsLocation, nameProductsLocation 
+;
+
+NAVIGATOR {
+    manufacturing {
+        reports {
+            NEW manufacturingOrderReport;        
+        }
+    }
+}

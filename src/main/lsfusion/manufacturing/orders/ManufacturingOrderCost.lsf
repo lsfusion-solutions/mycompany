@@ -32,6 +32,6 @@ quantity(ConsumedInCostLedger l) += produced(line(l));
 
 cost (ManufacturingOrder o) = GROUP SUM sum(ConsumedOutCostLedger l) IF manufacturingOrder(line(l)) = o;
 
-calcSum (ConsumedInCostLedger l) += cost(manufacturingOrder(line(l))) IF item(line(l)) = item(manufacturingOrder(line(l)));
+calcSum (ConsumedInCostLedger l) += NUMERIC[16,3](cost(manufacturingOrder(line(l))) * normalizedCostRatio(line(l)));
 
 edit(ConsumedInCostLedger l) + { edit(line(l)); }
