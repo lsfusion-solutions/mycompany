@@ -4,7 +4,7 @@ REQUIRE BarCode;
 
 NAMESPACE MasterData;
 
-barcodeExport 'Экспорт штрих кодов' () {
+barcodeExport 'Экспорт штрихкодов' () {
     NEWSESSION {
         IF NOT (GROUP SUM 1 IF BarCode b AND b IS BarCode) THEN {
             NEW b = BarCode {
@@ -14,12 +14,12 @@ barcodeExport 'Экспорт штрих кодов' () {
         }
     
         LOCAL f = EXCELFILE ();
-        EXPORT XLSX HEADER FROM 'Код номенклатуры' = idItem(BarCode b), 'Штрих код' = id(b) TO f;        
+        EXPORT XLSX HEADER FROM 'Код номенклатуры' = idItem(BarCode b), 'Штрихкод' = id(b) TO f;        
         open(f());
     }
 }
 
-barcodeImport 'Импорт штрих кодов' () {
+barcodeImport 'Импорт штрихкодов' () {
     LOCAL id = STRING[20] (INTEGER);
     LOCAL idItem = ISTRING[50] (INTEGER);
 
@@ -51,7 +51,7 @@ DESIGN MasterData.options {
     import {
         NEW barcode {
             type = CONTAINERH;
-            caption = 'Штрих коды';
+            caption = 'Штрихкоды';
             MOVE PROPERTY(barcodeImport());
             MOVE PROPERTY(barcodeExport());
         }
