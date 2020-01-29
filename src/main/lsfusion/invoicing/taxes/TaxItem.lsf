@@ -4,69 +4,10 @@ REQUIRE Tax, Item, ItemSale, ItemPurchase;
 
 NAMESPACE Invoicing;
 
-setTax 'Вкл' = DATA LOCAL BOOLEAN (Tax);
+@defineTax(sales, Item, 'реализации', item, i, sale);
+@defineTax(purchase, Item, 'закупки', item, i, purchase);
 
-WHEN LOCAL CHANGED(setTax(Tax t)) DO {
-    FOR taxGroup(t) = taxGroup(Tax tx) AND NOT t = tx DO {
-        setTax(tx) <- NULL;
-    }
-}
-
-FORM changeTax 'Установить налог'
-    OBJECTS t = Tax
-    PROPERTIES(t) setTax, name READONLY
-;
-
-//налоги для продаж
-salesIn 'Вкл' = DATA BOOLEAN (Item, Tax) CHARWIDTH 5;
-salesTax 'Налоги реализации, %' (Item i) = GROUP SUM value(Tax tax) IF salesIn(i, tax);
-nameSalesTax 'Налоги реализации' (Item i) = GROUP CONCAT name(Tax t) IF salesIn(i, t), ', ' ORDER t CHARWIDTH 8;
-
-WHEN LOCAL CHANGED(salesIn(Item i, Tax t)) DO {
-    FOR taxGroup(t) = taxGroup(Tax tx) AND NOT t = tx DO {
-        salesIn(i, tx) <- NULL;
-    }
-}
-
-changeSalesTax (Item i) {
-    setTax (Tax t) <- salesIn(i, t);  
-    DIALOG changeTax DO {
-        salesIn(i, Tax t) <- setTax(t);
-    } 
-}
-
-//входящие налоги поставщиков
-purchaseIn 'Вкл' = DATA BOOLEAN (Item, Tax);
-purchaseTax 'Налоги реализации, %' (Item i) = GROUP SUM value(Tax tax) IF purchaseIn(i, tax);
-namePurchaseTaxes 'Налоги поставщиков' (Item i) = GROUP CONCAT name(Tax t) IF purchaseIn(i, t), ', ' ORDER t CHARWIDTH 8;
-
-WHEN LOCAL CHANGED(purchaseIn(Item i, Tax t)) DO {
-    FOR taxGroup(t) = taxGroup(Tax tx) AND NOT t = tx DO {
-        purchaseIn(i, tx) <- NULL;
-    }
-}
- 
-changePurchaseTax (Item i) {
-    setTax (Tax t) <- purchaseIn(i, t);
-    DIALOG changeTax DO {
-        purchaseIn(i, Tax t) <- setTax(t);
-    } 
-} 
-
-EXTEND FORM item
-    PROPERTIES(i) nameSalesTax ON CHANGE changeSalesTax(i)
-    PROPERTIES(i) namePurchaseTaxes ON CHANGE changePurchaseTax(i)
-;
-
-DESIGN item {
-    sale {
-        MOVE PROPERTY(nameSalesTax(i));
-    }
-    purchase {
-        MOVE PROPERTY(namePurchaseTaxes(i));                
-    }
-}
-
+// copy
 copy(Item n, Item o) + {
     FOR salesIn(o, Tax t) DO {
         salesIn(n, t) <- TRUE;
@@ -75,3 +16,15 @@ copy(Item n, Item o) + {
         purchaseIn(n, t) <- TRUE;
     }
 }
+
+// default
+@defineTax(dataSales, Category, 'реализации', category, c, default);
+@defineTax(dataPurchase, Category, 'закупки', category, c, default);
+
+defaultSalesIn (Category c, Tax t) = GROUP LAST dataSalesIn(Category parent, t) ORDER DESC level(c, parent);
+countSalesTaxes (Category c) = GROUP SUM 1 IF defaultSalesIn(c, Tax t);
+WHEN LOCAL SETCHANGED(category(Item i)) AND countSalesTaxes(category(i)) DO salesIn(i, Tax t) <- defaultSalesIn(category(i), t);
+
+defaultPurchaseIn (Category c, Tax t) = GROUP LAST dataPurchaseIn(Category parent, t) ORDER DESC level(c, parent);
+countPurchaseTaxes (Category c) = GROUP SUM 1 IF defaultPurchaseIn(c, Tax t);
+WHEN LOCAL SETCHANGED(category(Item i)) AND countPurchaseTaxes(category(i)) DO purchaseIn(i, Tax t) <- defaultPurchaseIn(category(i), t);

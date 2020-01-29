@@ -20,9 +20,18 @@ idCategory 'Код категории' (Item i) = id(category(i));
 nameCategory 'Категория' (Item i) = name(category(i));
 canonicalNameCategory 'Категория (полная)' (Item i) = canonicalName(category(i));
 
+// uom
 uom 'Единица измерения' = DATA Uom (Item);
 idUom 'Код единицы измерения' (Item i) = id(uom(i));
 nameUom 'Единица измерения' (Item i) = name(uom(i));
+
+dataDefaultUom = DATA Uom (Category);
+nameDataDefaultUom 'Единица измерения' (Category c) = name(dataDefaultUom(c));
+EXTEND FORM category PROPERTIES nameDataDefaultUom(c);
+DESIGN category { default { MOVE PROPERTY(nameDataDefaultUom(c)); } }
+
+defaultUom (Category c) = GROUP LAST dataDefaultUom(Category parent) ORDER DESC level(c, parent);
+WHEN LOCAL SETCHANGED(category(Item i)) AND NOT CHANGED(uom(i)) DO uom(i) <- defaultUom(category(i));
 
 cost 'Плановая себестоимость' = DATA NUMERIC[10,2] (Item) CHARWIDTH 15 NOFLEX;
 

@@ -10,9 +10,10 @@ CLASS Category 'Категория';
 
 name 'Наименование' = DATA ISTRING[50] (Category) IN id NONULL;
 
-parent 'Родитель' = DATA Category (Category) INDEXED;
+// hierarchy
+parent = DATA Category (Category) INDEXED;
 idParent 'Код родителя' (Category c) = id(parent(c));
-nameParent 'Родительская группа' (Category c) = name(parent(c));
+nameParent 'Родитель' (Category c) = name(parent(c));
 
 CONSTRAINT DROPPED(Category c IS Category) AND PREV(parent(Category child) = c)
         MESSAGE 'Запрещено удалять категории, на которые ссылаются другие категории';
@@ -20,6 +21,10 @@ CONSTRAINT DROPPED(Category c IS Category) AND PREV(parent(Category child) = c)
 level 'Уровень' (Category child, Category parent) =
    RECURSION 1l IF child IS Category AND parent == child
         STEP 2l IF parent == parent($parent) MATERIALIZED;
+
+canonicalName 'Каноническое имя' (Category c) =
+   GROUP CONCAT name(Category parent), ' / ' ORDER DESC level(c, parent) CHARWIDTH 50 IN id;
+canonicalNameParent 'Родитель' (Category c) = canonicalName(parent(c));
 
 levelRoot '{hierarchy.level}' (Category child, Category parent) = PARTITION SUM 1 IF level(child, parent)
                                                                   ORDER DESC level(child, parent)
@@ -44,15 +49,34 @@ nameCategory5 'Группа 5' (Category child) = name(category5(child));
 category6 (Category child) = categoryRoot(child, 6) MATERIALIZED;
 nameCategory6 'Группа 6' (Category child) = name(category6(child));    
         
-canonicalName 'Каноническое имя' (Category c) =
-   GROUP CONCAT name(Category parent), ' / ' ORDER DESC level(c, parent) CHARWIDTH 50 IN id;
-   
 FORM category 'Категория'
    OBJECTS c = Category PANEL
-   PROPERTIES(c) name, id, nameParent
+   PROPERTIES(c) name, id, canonicalNameParent
   
    EDIT Category OBJECT c
 ;
+
+DESIGN category {
+    OBJECTS {
+        NEW pane {
+            NEW id {
+                type = CONTAINERH;
+                MOVE PROPERTY(name(c));
+                MOVE PROPERTY(id(c));
+            }
+            MOVE PROPERTY(canonicalNameParent(c));
+            NEW params {
+                type = COLUMNS;
+                columns = 2;
+            }
+            NEW default {
+                caption = 'Значения по умолчанию';
+                type = COLUMNS;
+                columns = 2;
+            }
+        }
+    }
+}
 
 newCategory 'Категория' (Category cc) {
     NEWSESSION {
@@ -65,7 +89,7 @@ newCategory 'Категория' (Category cc) {
 
 FORM categories 'Категории'
     OBJECTS c = Category
-    PROPERTIES(c) READONLY name, id, nameParent, canonicalName
+    PROPERTIES(c) READONLY name, id, canonicalNameParent
     PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE
     
     TREE categories cc = Category PARENT parent(cc)
@@ -76,12 +100,6 @@ FORM categories 'Категории'
     
    LIST Category OBJECT c
 ;
-
-NAVIGATOR {
-    masterData {
-        NEW categories;
-    }
-}
 
 DESIGN categories {
     OBJECTS {
@@ -95,5 +113,11 @@ DESIGN categories {
             caption = 'Дерево';
             MOVE BOX(TREE categories);
         }
+    }
+}
+
+NAVIGATOR {
+    masterData {
+        NEW categories;
     }
 }
