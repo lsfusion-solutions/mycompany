@@ -15,7 +15,7 @@ locationExport 'Экспорт мест хранения' () {
     
         LOCAL f = EXCELFILE ();
         EXPORT XLSX HEADER FROM 'Код' = id(Location l), 'Название' = name(l), 'Код родителя' = idParent(l), 
-                                'Имя владельца' = ownerName(l) TO f;   
+                                'Имя владельца' = nameCompany(l) TO f;   
         open(f());
     }
 }
@@ -33,7 +33,7 @@ locationImport 'Импорт мест хранения' () {
             FOR imported(INTEGER i) DO NEW l = Location {
                 id(l) <- id(i);
                 name(l) <- name(i);
-                owner(l) <- partner(owner(i));
+                company(l) <- partner(owner(i));
             }
             APPLY;
             

@@ -1,6 +1,6 @@
 MODULE Location;
 
-REQUIRE InventorySettings, Partner, MetaNumerator;
+REQUIRE InventorySettings, Company, MetaNumerator;
 
 NAMESPACE Inventory;
 
@@ -9,21 +9,31 @@ CLASS Location 'Место хранения';
 @defineID(location, 'Места хранения', 'МХ');
 
 name 'Название' = DATA ISTRING[30] (Location) IN id NONULL;
+
+// hierarchy
 parent 'Родитель' = DATA Location (Location);
 idParent 'Код родителя' (Location l) = id(parent(l));
-nameParent 'Родительское место хранения' (Location l) = name(parent(l));
-owner 'Владелец' = DATA Partner (Location); 
-ownerName 'Владелец' (Location l)= name(owner(l)); 
-
-address 'Адрес' = DATA ISTRING[50] (Location);
-city 'Город' = DATA ISTRING[30] (Location);
-state 'Область' = DATA ISTRING[30] (Location);
-zip'Почтовый индекс' = DATA ISTRING[10] (Location);
+nameParent 'Родитель' (Location l) = name(parent(l));
 
 level 'Уровень' (Location child, Location parent) =
    RECURSION 1l IF child IS Location AND parent == child
         STEP 2l IF parent == parent($parent) MATERIALIZED;
+
 isChild (Location child, Location parent) = TRUE IF level(child, parent);
+
+canonicalName 'Каноническое имя' (Location l) =
+   GROUP CONCAT name(Location parent), ' / ' ORDER DESC level(l, parent) CHARWIDTH 50 IN id;
+canonicalNameParent 'Родитель' (Location l) = canonicalName(parent(l));
+
+// company
+company 'Владелец' = DATA Company (Location); 
+nameCompany 'Владелец' (Location l) = name(company(l)); 
+
+// address
+address 'Адрес' = DATA ISTRING[50] (Location);
+city 'Город' = DATA ISTRING[30] (Location);
+state 'Область' = DATA ISTRING[30] (Location);
+zip 'Почтовый индекс' = DATA ISTRING[10] (Location);
 
 hierarchyAddress (Location l) = GROUP LAST address(Location parent) ORDER DESC level(l,parent);
 hierarchyCity (Location l) = GROUP LAST city(Location parent) ORDER DESC level(l,parent);
@@ -33,34 +43,50 @@ hierarchyZip  (Location l) = GROUP LAST zip(Location parent) ORDER DESC level(l,
 csvAddress 'Адрес' (Location l) = CONCAT ', ', hierarchyAddress(l), hierarchyCity(l), hierarchyState(l), hierarchyZip(l);
 linesAddress 'Адрес' (Location l) = CONCAT '\n', hierarchyAddress(l), hierarchyCity(l), hierarchyState(l), hierarchyZip(l);
   
-canonicalName 'Каноническое имя' (Location l) =
-   GROUP CONCAT name(Location parent), ' / ' ORDER DESC level(l, parent) CHARWIDTH 50 IN id;
-   
 FORM location 'Место хранения'
     OBJECTS l = Location PANEL
-    PROPERTIES(l) name, id, nameParent, ownerName,
+    PROPERTIES(l) name, id, 
+                  canonicalNameParent, nameCompany,
                   address, city, state, zip
      
     EDIT Location OBJECT l  
 ;
 
+DESIGN location {
+    OBJECTS {
+        NEW pane {
+            NEW id {
+                type = CONTAINERH;
+                MOVE PROPERTY(name(l));
+                MOVE PROPERTY(id(l));
+            }
+            MOVE PROPERTY(canonicalNameParent(l));
+            MOVE PROPERTY(nameCompany(l));
+            NEW address {
+                type = COLUMNS;
+                columns = 2;
+                MOVE PROPERTY(address(l));
+                MOVE PROPERTY(city(l));
+                MOVE PROPERTY(state(l));
+                MOVE PROPERTY(zip(l));
+            }
+            NEW params {
+                type = COLUMNS;
+                columns = 2;
+            }
+        }
+    }
+}
+
 FORM locations 'Места хранения'
     OBJECTS l = Location
-    PROPERTIES(l) READONLY name, id, nameParent, canonicalName, ownerName, csvAddress
+    PROPERTIES(l) READONLY name, id, 
+                           canonicalNameParent, nameCompany,
+                           address, city, state, zip
     PROPERTIES(l) NEWSESSION NEW, EDIT, DELETE
     
     LIST Location OBJECT l
 ;
-
-newLocation 'Место хранения' (Location ll) {
-    NEWSESSION {
-        NEW loc = Location {
-            parent(loc) <- ll;
-            
-            SHOW location OBJECTS l = loc;  
-        }
-    }
-} IMAGE 'add.png';
 
 NAVIGATOR {
     settings {
