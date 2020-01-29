@@ -54,8 +54,9 @@ CONSTRAINT product(ReceiptLine l) AND NOT canBePurchased(product(l))
             CHECKED BY product[ReceiptLine]
             MESSAGE 'Товар не предназначен для закупки';
 
-unitMeasure 'Ед.изм.' = DATA ItemMeasure (ReceiptLine);
-nameUnitMeasure 'Ед.изм.' (ReceiptLine l) = name(unitMeasure(l));
+uom = DATA Uom (ReceiptLine);
+nameUom 'Ед. изм.' (ReceiptLine l) = name(uom(l));
+WHEN LOCAL CHANGED(product(ReceiptLine l)) DO uom(l) <- uom(product(l)); 
 
 initialDemand 'Планируемое количество' = DATA NUMERIC[16,3] (ReceiptLine);
 
@@ -83,7 +84,7 @@ FORM receipt 'Поступление'
 
     OBJECTS l = ReceiptLine
     PROPERTIES(l) READONLY               index
-    PROPERTIES(l) READONLYIF readonly(l) nameProduct, nameUnitMeasure, idBarCodeProduct, idProduct,
+    PROPERTIES(l) READONLYIF readonly(l) nameProduct, nameUom, idBarCodeProduct, idProduct,
                                          initialDemand SHOWIF NOT immediate(r) BACKGROUND IF NOT readonly(l) THEN RGB(198,230,247)
     PROPERTIES(l) READONLYIF readonly(l) NEW, DELETE        
     FILTERS receipt(l) = r

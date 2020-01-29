@@ -20,8 +20,9 @@ nameItem 'Номенклатура' (Bom b) = name(item(b));
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (Bom) NONULL;
 
-unitMeasure = DATA ItemMeasure (Bom);
-nameUnitMeasure 'Ед. изм.' (Bom b) = name(unitMeasure(b));
+uom = DATA Uom (Bom);
+nameUom 'Ед. изм.' (Bom b) = name(uom(b));
+WHEN LOCAL CHANGED(item(Bom m)) DO uom(m) <- uom(item(m)); 
 
 // default
 defaultBom = DATA Bom (Item);
@@ -50,9 +51,9 @@ nameItem 'Номенклатура' (ComponentLine l) = name(item(l));
 idBarCodeItem 'Штрихкод' (ComponentLine l) = idBarCode(item(l));
 idItem 'Код' (ComponentLine l) = id(item(l));
 
-unitMeasure 'Ед.изм.' = DATA ItemMeasure (ComponentLine);
-nameUnitMeasure 'Ед.изм.' (ComponentLine l) = name(unitMeasure(l));
-WHEN LOCAL SETCHANGED (item(Bom b)) DO unitMeasure(b) <- unitMeasure(item(b));
+uom = DATA Uom (ComponentLine);
+nameUom 'Ед. изм.' (ComponentLine l) = name(uom(l));
+WHEN LOCAL CHANGED(item(ComponentLine l)) DO uom(l) <- uom(item(l));
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (ComponentLine);
 
@@ -70,30 +71,30 @@ nameProduct 'Товар' (ByproductLine l) = name(product(l));
 idBarCodeProduct 'Штрихкод' (ByproductLine l) = idBarCode(product(l));
 idProduct 'Код' (ByproductLine l) = id(product(l));
 
-unitMeasure 'Ед.изм.' = DATA ItemMeasure (ByproductLine);
-nameUnitMeasure 'Ед.изм.' (ByproductLine l) = name(unitMeasure(l));
+uom = DATA Uom (ByproductLine);
+nameUom 'Ед. изм.' (ByproductLine l) = name(uom(l));
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (ByproductLine);
 
 WHEN LOCAL SETCHANGED (item(ComponentLine c)) DO {
-    unitMeasure(c) <- unitMeasure(item(c));
+    uom(c) <- uom(item(c));
 }
 
 WHEN LOCAL SETCHANGED (product(ByproductLine l)) DO {
-    unitMeasure(l) <- unitMeasure(product(l));
+    uom(l) <- uom(product(l));
 }
 
 FORM bom 'Спецификация'
     OBJECTS b = Bom PANEL 
-    PROPERTIES(b) number, nameItem, quantity, nameUnitMeasure, name, 
+    PROPERTIES(b) number, nameItem, quantity, nameUom, name, 
                   default ON CHANGE changeDefault(b), archived
     
     OBJECTS c = ComponentLine
-    PROPERTIES(c) index, nameItem, nameUnitMeasure, idBarCodeItem, idItem, quantity, costRatio, NEW, DELETE 
+    PROPERTIES(c) index, nameItem, nameUom, idBarCodeItem, idItem, quantity, costRatio, NEW, DELETE 
     FILTERS bom(c) = b
     
     OBJECTS l = ByproductLine
-    PROPERTIES(l) index, nameProduct, nameUnitMeasure, idBarCodeProduct, idProduct, quantity, NEW, DELETE
+    PROPERTIES(l) index, nameProduct, nameUom, idBarCodeProduct, idProduct, quantity, NEW, DELETE
     FILTERS bom(l) = b
     
     EDIT Bom OBJECT b
@@ -115,7 +116,7 @@ DESIGN bom {
                 NEW quantity {
                     type = CONTAINERH;
                     MOVE PROPERTY(quantity(b));
-                    MOVE PROPERTY(nameUnitMeasure(b));
+                    MOVE PROPERTY(nameUom(b));
                 }
                 MOVE PROPERTY(name(b));
             }
@@ -141,7 +142,7 @@ DESIGN bom {
 
 FORM boms 'Спецификации'
     OBJECTS b = Bom
-    PROPERTIES(b) READONLY number, nameItem, quantity, nameUnitMeasure, name, archived
+    PROPERTIES(b) READONLY number, nameItem, quantity, nameUom, name, archived
     PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE
     
     FILTERGROUP active

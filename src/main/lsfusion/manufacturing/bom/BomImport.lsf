@@ -10,13 +10,13 @@ bomExport 'Экспорт спецификаций' () {
             NEW b = Bom {
                 item(b) <- GROUP LAST Item i IF i IS Item;
                 quantity(b) <- 1;
-                unitMeasure(b) <- GROUP LAST ItemMeasure m IF m IS ItemMeasure;
+                uom(b) <- GROUP LAST Uom m IF m IS Uom;
             }
         }
         LOCAL f = EXCELFILE ();
         
         EXPORT XLSX HEADER FROM 'Номер' = number(Bom b), 'Номенклатура' = id(item(b)), 
-            'Кол-во' = quantity(b), 'Единица измерения' = id(unitMeasure(b)) TO f;        
+            'Кол-во' = quantity(b), 'Единица измерения' = id(uom(b)) TO f;        
         open(f());
     }
 }
@@ -28,14 +28,14 @@ componentLineExport 'Экспорт строк спецификаций' () {
                 bom(l) <- GROUP LAST Bom b IF b IS Bom;
                 item(l) <- GROUP LAST Item i IF  i IS Item AND NOT i = item(bom(l));
                 quantity(l) <- 1;
-                unitMeasure(l) <- GROUP LAST ItemMeasure m IF m IS ItemMeasure;
+                uom(l) <- GROUP LAST Uom m IF m IS Uom;
             }
         }
     
         LOCAL f = EXCELFILE ();
         
         EXPORT XLSX HEADER FROM 'Номер спецификации' = number(bom(ComponentLine l)), 'Номенклатура' = id(item(l)), 
-            'Кол-во' = quantity(l), 'Единица измерения' = id(unitMeasure(l)) TO f;
+            'Кол-во' = quantity(l), 'Единица измерения' = id(uom(l)) TO f;
         open(f());
     }
 }
@@ -47,14 +47,14 @@ byProductLineExport 'Экспорт производных номенклату�
                 bom(l) <- GROUP LAST Bom b IF b IS Bom;
                 product(l) <- GROUP LAST Item i IF i IS Item AND NOT i = item(bom(l));
                 quantity(l) <- 1;
-                unitMeasure(l) <- GROUP LAST ItemMeasure m IF m IS ItemMeasure;
+                uom(l) <- GROUP LAST Uom m IF m IS Uom;
             }
         }
     
         LOCAL f = EXCELFILE ();
         
         EXPORT XLSX HEADER FROM 'Номер спецификации' = number(bom(ByproductLine l)), 'Номенклатура' = id(product(l)), 
-                'Кол-во' = quantity(l), 'Единица измерения' = id(unitMeasure(l)) TO f;
+                'Кол-во' = quantity(l), 'Единица измерения' = id(uom(l)) TO f;
         open(f());
     }
 }
@@ -63,12 +63,12 @@ bomImport 'Импорт спецификаций' () {
     LOCAL number = STRING[28] (INTEGER);
     LOCAL idItem = STRING[50] (INTEGER);
     LOCAL quantity = NUMERIC[16,3] (INTEGER);
-    LOCAL idUnitMeasure = STRING[50] (INTEGER);
+    LOCAL idUom = STRING[50] (INTEGER);
     LOCAL sequence = INTEGER (INTEGER);
     
     INPUT f = EXCELFILE DO {
         NEWSESSION {
-            IMPORT XLS HEADER FROM f TO number, idItem, quantity, idUnitMeasure, sequence;
+            IMPORT XLS HEADER FROM f TO number, idItem, quantity, idUom, sequence;
             
             FOR [GROUP SUM 1 BY idItem(INTEGER i)](num) AND NOT item[STRING](num) DO {
                 MESSAGE 'Отсутствует товар в базе данных с кодом ' + num + '. Импорт отменен';
@@ -79,7 +79,7 @@ bomImport 'Импорт спецификаций' () {
                 number(b) <- number(i);
                 item(b) <- item(idItem(i));
                 quantity(b) <- quantity(i);
-                unitMeasure(b) <- itemMeasure(idUnitMeasure(i));
+                uom(b) <- uom(idUom(i));
             }
             
             APPLY;
@@ -92,11 +92,11 @@ componentLineImport 'Импорт строк спецификаций' () {
     LOCAL id = STRING[28] (INTEGER);
     LOCAL idItem = STRING[50] (INTEGER );
     LOCAL quantity = NUMERIC[16,3] (INTEGER);
-    LOCAL idUnitMeasure = STRING[50] (INTEGER);
+    LOCAL idUom = STRING[50] (INTEGER);
     
     INPUT f = EXCELFILE DO {
         NEWSESSION {
-            IMPORT XLS HEADER FROM f TO id, idItem, quantity, idUnitMeasure;
+            IMPORT XLS HEADER FROM f TO id, idItem, quantity, idUom;
             
             FOR [GROUP SUM 1 BY id(INTEGER i)](num) AND NOT bom[STRING](num) DO {
                 MESSAGE 'Отсутствует спецификация в базе данных с кодом ' + num + '. Импорт отменен';
@@ -107,7 +107,7 @@ componentLineImport 'Импорт строк спецификаций' () {
                 bom(l) <- GROUP LAST Bom b IF number(b) = id(i);
                 item(l) <- item(idItem(i));
                 quantity(l) <- quantity(i);
-                unitMeasure(l) <- itemMeasure(idUnitMeasure(i));  
+                uom(l) <- uom(idUom(i));  
             }
             
             APPLY;
@@ -120,11 +120,11 @@ byProductLineImport 'Импорт производных номенклатур'
     LOCAL id = STRING[28] (INTEGER);
     LOCAL idItem = STRING[50] (INTEGER );
     LOCAL quantity = NUMERIC[16,3] (INTEGER);
-    LOCAL idUnitMeasure = STRING[50] (INTEGER);
+    LOCAL idUom = STRING[50] (INTEGER);
     
     INPUT f = EXCELFILE DO {
         NEWSESSION {
-            IMPORT XLS HEADER FROM f TO id, idItem, quantity, idUnitMeasure;
+            IMPORT XLS HEADER FROM f TO id, idItem, quantity, idUom;
             
             FOR [GROUP SUM 1 BY id(INTEGER i)](num) AND NOT bom[STRING](num) DO {
                 MESSAGE 'Отсутствует спецификация в базе данных с кодом ' + num + '. Импорт отменен';
@@ -135,7 +135,7 @@ byProductLineImport 'Импорт производных номенклатур'
                 bom(l) <- GROUP LAST Bom b IF number(b) = id(i);
                 product(l) <- item(idItem(i));
                 quantity(l) <- quantity(i);
-                unitMeasure(l) <- itemMeasure(idUnitMeasure(i));  
+                uom(l) <- uom(idUom(i));  
             }
             
             APPLY;

@@ -14,9 +14,9 @@ WHEN LOCAL SET(ManufacturingOrder o IS ManufacturingOrder) AND NOT CHANGED(sched
 item 'Номенклатура' = DATA Item (ManufacturingOrder) NONULL;
 nameItem 'Номенклатура' (ManufacturingOrder m) = name(item(m));
 
-unitMeasure 'Ед.изм.' = DATA ItemMeasure (ManufacturingOrder);
-nameUnitMeasure 'Ед.изм.' (ManufacturingOrder m) = name(unitMeasure(m));
-WHEN LOCAL SET(item(ManufacturingOrder m)) DO unitMeasure(m) <- unitMeasure(item(m)); 
+uom = DATA Uom (ManufacturingOrder);
+nameUom 'Ед .изм.' (ManufacturingOrder m) = name(uom(m));
+WHEN LOCAL CHANGED(item(ManufacturingOrder m)) DO uom(m) <- uom(item(m)); 
 
 // bom
 bom 'Спецификация' = DATA Bom (ManufacturingOrder) NONULL;
@@ -50,9 +50,9 @@ nameItem 'Номенклатура' (ConsumedLine l) = name(item(l));
 idBarCodeItem 'Штрихкод' (ConsumedLine l) = idBarCode(item(l));
 idItem 'Код' (ConsumedLine l) = id(item(l));
 
-unitMeasure 'Ед.изм.' = DATA ItemMeasure (ConsumedLine);
-nameUnitMeasure 'Ед.изм.' (ConsumedLine l) = name(unitMeasure(l));
-WHEN LOCAL SET(item(ConsumedLine l)) DO unitMeasure(l) <- unitMeasure(item(l));
+uom = DATA Uom (ConsumedLine);
+nameUom 'Ед. изм.' (ConsumedLine l) = name(uom(l));
+WHEN LOCAL CHANGED(item(ConsumedLine l)) DO uom(l) <- uom(item(l));
 
 toConsume 'Израсходовать' = DATA NUMERIC[16,3] (ConsumedLine);
 
@@ -71,8 +71,9 @@ nameItem 'Номенклатура' (FinishedLine l) = name(item(l));
 idBarCodeItem 'Штрихкод' (FinishedLine l) = idBarCode(item(l));
 idItem 'Код' (FinishedLine l) = id(item(l));
 
-unitMeasure 'Ед. изм.' = DATA ItemMeasure (FinishedLine);
-nameUnitMeasure 'Ед. изм.' (FinishedLine l) = name(unitMeasure(l));
+uom 'Ед. изм.' = DATA Uom (FinishedLine);
+nameUom 'Ед. изм.' (FinishedLine l) = name(uom(l));
+WHEN LOCAL CHANGED(item(FinishedLine l)) DO uom(l) <- uom(item(l));
 
 toProduce 'Произвести' = DATA NUMERIC[16,3] (FinishedLine);
 
@@ -97,16 +98,16 @@ FORM manufacturingOrder 'Производственный заказ'
     OBJECTS o = ManufacturingOrder PANEL 
     PROPERTIES(o) READONLYIF readonly(o) scheduledDateTime, number, nameCompany, 
                                          nameItem, unbuild, 
-                                         toManufacture, nameUnitMeasure, 
+                                         toManufacture, nameUom, 
                                          descriptionBom, 
                                          nameMaterialsLocation 
     
     OBJECTS c = ConsumedLine
-    PROPERTIES(c) index READONLY, nameItem, nameUnitMeasure, idBarCodeItem, idItem, toConsume, NEW, DELETE
+    PROPERTIES(c) index READONLY, nameItem, nameUom, idBarCodeItem, idItem, toConsume, NEW, DELETE
     FILTERS manufacturingOrder(c) = o
 
     OBJECTS l = FinishedLine
-    PROPERTIES(l) index READONLY, nameItem, nameUnitMeasure, idBarCodeItem, idItem, toProduce, costRatio, 
+    PROPERTIES(l) index READONLY, nameItem, nameUom, idBarCodeItem, idItem, toProduce, costRatio, 
                   NEW, DELETE
     FILTERS manufacturingOrder(l) = o
     
@@ -129,7 +130,7 @@ DESIGN manufacturingOrder {
                 NEW quantity {
                     type = CONTAINERH;
                     MOVE PROPERTY(toManufacture(o));
-                    MOVE PROPERTY(nameUnitMeasure(o));
+                    MOVE PROPERTY(nameUom(o));
                 }
                 MOVE PROPERTY(descriptionBom(o)) { notNull = TRUE; };
             }
@@ -158,7 +159,7 @@ FORM manufacturingOrders 'Производственные заказы'
     OBJECTS o = ManufacturingOrder
     PROPERTIES(o) READONLY scheduledDateTime, number, nameCompany, 
                            nameItem, unbuild, 
-                           toManufacture, nameUnitMeasure, 
+                           toManufacture, nameUom, 
                            descriptionBom, 
                            nameMaterialsLocation
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
@@ -181,7 +182,7 @@ copy 'Копировать' (ManufacturingOrder m) {
     NEWSESSION {
         NEW o = ManufacturingOrder {
             item(o) <- item(m);
-            unitMeasure(o) <- unitMeasure(m);
+            uom(o) <- uom(m);
             bom(o) <- bom(m);
             company(o) <- company(m);
             materialsLocation(o) <- materialsLocation(m);
@@ -189,14 +190,14 @@ copy 'Копировать' (ManufacturingOrder m) {
             FOR manufacturingOrder(ConsumedLine ml) = m NEW ol = ConsumedLine DO {
                 manufacturingOrder(ol) <- o;
                 item(ol) <- item(ml);
-                unitMeasure(ol) <- unitMeasure(ml);
+                uom(ol) <- uom(ml);
                 toConsume(ol) <- toConsume(ml);
             }
 
             FOR manufacturingOrder(FinishedLine ml) = m NEW ol = FinishedLine DO {
                 manufacturingOrder(ol) <- o;
                 item(ol) <- item(ml);
-                unitMeasure(ol) <- unitMeasure(ml);
+                uom(ol) <- uom(ml);
                 toProduce(ol) <- toProduce(ml);
                 costRatio(ol) <- costRatio(ml);
             }
@@ -233,7 +234,7 @@ fillLines 'Заполнить по спецификации' (ManufacturingOrder
                 FOR bom(ComponentLine cl) = bom(o) DO NEW l = FinishedLine {
                     manufacturingOrder(l) <- o;
                     item(l) <- item(cl);
-                    unitMeasure(l) <- unitMeasure(cl);
+                    uom(l) <- uom(cl);
                     toProduce(l) <- NUMERIC[16,3](quantity(cl) * q);
                     costRatio(l) <- costRatio(cl);
                 }
@@ -241,35 +242,35 @@ fillLines 'Заполнить по спецификации' (ManufacturingOrder
                 NEW l = ConsumedLine {
                     manufacturingOrder(l) <- o;
                     item(l) <- item(o);
-                    unitMeasure(l) <- unitMeasure(o);
+                    uom(l) <- uom(o);
                     toConsume(l) <- q;
                 }
                 
                 FOR bom(ByproductLine bl) = bom(o) DO NEW l = ConsumedLine {
                     manufacturingOrder(l) <- o;
                     item(l) <- product(bl);
-                    unitMeasure(l) <- unitMeasure(bl);
+                    uom(l) <- uom(bl);
                     toConsume(l) <- NUMERIC[16,3](quantity(bl) * q / quantity(bom(o)));
                 }
             } ELSE {
                 FOR intermediateBom(bom(o), ComponentLine cl, TEXT path) AND NOT intermediate(nestedBom(cl)) DO NEW l = ConsumedLine {
                     manufacturingOrder(l) <- o;
                     item(l) <- item(cl);
-                    unitMeasure(l) <- unitMeasure(cl);
+                    uom(l) <- uom(cl);
                     toConsume(l) <- NUMERIC[16,3](quantity(bom(o), cl, path) * q);
                 }
                 
                 NEW l = FinishedLine {
                     manufacturingOrder(l) <- o;
                     item(l) <- item(o);
-                    unitMeasure(l) <- unitMeasure(o);
+                    uom(l) <- uom(o);
                     toProduce(l) <- q;
                 }
                 
                 FOR bom(ByproductLine bl) = bom(o) DO NEW l = FinishedLine {
                     manufacturingOrder(l) <- o;
                     item(l) <- product(bl);
-                    unitMeasure(l) <- unitMeasure(bl);
+                    uom(l) <- uom(bl);
                     toProduce(l) <- NUMERIC[16,3](quantity(bl) * q / quantity(bom(o)));
                 }
             }

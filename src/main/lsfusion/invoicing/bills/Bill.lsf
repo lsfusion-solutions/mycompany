@@ -67,8 +67,9 @@ CONSTRAINT item(BillLine l) AND NOT canBePurchased(item(l))
             CHECKED BY item 
             MESSAGE 'Номенклатура не предназначена для закупки';
 
-unitMeasure = DATA ItemMeasure (BillLine);
-nameUnitMeasure 'Ед. изм.' (BillLine l) = name(unitMeasure(l));
+uom = DATA Uom (BillLine);
+nameUom 'Ед. изм.' (BillLine l) = name(uom(l));
+WHEN LOCAL CHANGED(item(BillLine l)) DO uom(l) <- uom(item(l)); 
 
 description 'Описание' = DATA STRING (BillLine); 
 
@@ -100,7 +101,7 @@ FORM bill 'Приходная накладная'
                              vendorReference, note
         
     OBJECTS l = BillLine
-    PROPERTIES(l) READONLYIF readonly(l) index, nameItem, description, nameUnitMeasure, idBarCodeItem, idItem, quantity, 
+    PROPERTIES(l) READONLYIF readonly(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, quantity, 
                         unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
     FILTERS bill(l) = b
 

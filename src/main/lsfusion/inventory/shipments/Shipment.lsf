@@ -66,8 +66,9 @@ CONSTRAINT product(ShipmentLine l) AND NOT canBeSold(product(l))
             CHECKED BY product[ShipmentLine] 
             MESSAGE 'Товар не предназначен для продажи';
 
-unitMeasure 'Ед.изм.' = DATA ItemMeasure (ShipmentLine);
-nameUnitMeasure 'Ед.изм.' (ShipmentLine l) = name(unitMeasure(l));
+uom = DATA Uom (ShipmentLine);
+nameUom 'Ед. изм.' (ShipmentLine l) = name(uom(l));
+WHEN LOCAL CHANGED(product(ShipmentLine l)) DO uom(l) <- uom(product(l)); 
 
 initialDemand 'Планируемое количество' = DATA NUMERIC[16,3] (ShipmentLine);
 
@@ -103,7 +104,7 @@ FORM shipment 'Отгрузка'
                   
     OBJECTS l = ShipmentLine
     PROPERTIES(l) READONLY               index
-    PROPERTIES(l) READONLYIF readonly(l) nameProduct, nameUnitMeasure, idBarCodeProduct, idProduct, 
+    PROPERTIES(l) READONLYIF readonly(l) nameProduct, nameUom, idBarCodeProduct, idProduct, 
                                          initialDemand SHOWIF NOT immediate(s) BACKGROUND IF NOT readonly(l) THEN RGB(198,230,247) 
     PROPERTIES(l) READONLYIF readonly(l) NEW, DELETE
     FILTERS shipment(l) = s

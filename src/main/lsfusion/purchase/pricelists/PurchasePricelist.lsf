@@ -25,17 +25,18 @@ pricelist 'Прайс-лист' = DATA Pricelist (PricelistLine) NONULL DELETE;
 index 'Индекс' = PARTITION SUM 1 ORDER PricelistLine l BY pricelist(l) IN id MATERIALIZED;
 
 item 'Номенклатура' = DATA Item (PricelistLine);
-nameItem 'Номенклатура' (PricelistLine prl) = name(item(prl));
-nameUnitMeasure 'Единица измерения' (PricelistLine prl) = name(unitMeasure(item(prl))); 
-idBarCodeItem 'Штрихкод' (PricelistLine prl) = idBarCode(item(prl)); 
-idItem 'Код' (PricelistLine prl) = id(item(prl)); 
+nameItem 'Номенклатура' (PricelistLine l) = name(item(l));
+idBarCodeItem 'Штрихкод' (PricelistLine l) = idBarCode(item(l)); 
+idItem 'Код' (PricelistLine l) = id(item(l)); 
 
-unitPrice 'Цена' = DATA NUMERIC[10,2] (PricelistLine);
+uom = DATA Uom (PricelistLine);
+nameUom 'Ед. изм.' (PricelistLine l) = name(uom(l)); 
+WHEN LOCAL CHANGED(item(PricelistLine l)) DO uom(l) <- uom(item(l));
 
 nameItemVendor 'Наименование у поставщика' = DATA STRING[200] (PricelistLine);
 codeItemVendor 'Код у поставщика' = DATA STRING[20] (PricelistLine);
 
-unitMeasure 'Единицы поставщика' = DATA ItemMeasure (PricelistLine);
+unitPrice 'Цена' = DATA NUMERIC[10,2] (PricelistLine);
 
 // Line properties
 number 'Номер' (PricelistLine prl) = number(pricelist(prl));
@@ -54,7 +55,7 @@ FORM pricelist 'Прайс-лист'
     PROPERTIES(p) number, startDateTime, endDateTime, nameVendor, note
     
     OBJECTS l = PricelistLine
-    PROPERTIES(l) index READONLY, nameItem, nameUnitMeasure READONLY, nameItemVendor, codeItemVendor,
+    PROPERTIES(l) index READONLY, nameItem, nameUom READONLY, nameItemVendor, codeItemVendor,
                   idBarCodeItem, idItem, unitPrice
     PROPERTIES(l) NEW, DELETE 
     FILTERS pricelist(l) = p
@@ -111,8 +112,7 @@ copy 'Копировать' (Pricelist pl) {
                 unitPrice(nl) <- unitPrice(l);
                 nameItemVendor(nl) <- nameItemVendor(l);
                 codeItemVendor(nl) <- codeItemVendor(l);
-                unitMeasure(nl) <- unitMeasure(l);
-                
+                uom(nl) <- uom(l);
             }
             SHOW pricelist OBJECTS p = p;
         }

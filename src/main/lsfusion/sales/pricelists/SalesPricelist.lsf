@@ -38,7 +38,10 @@ index 'Индекс' = PARTITION SUM 1 ORDER PricelistLine l BY pricelist(l) IN 
 
 item 'Номенклатура' = DATA Item (PricelistLine);
 nameItem 'Номенклатура' (PricelistLine prl) = name(item(prl));
-nameUnitMeasure 'Единица измерения' (PricelistLine prl) = name(unitMeasure(item(prl))); 
+
+uom = DATA Uom (PricelistLine);
+nameUom 'Ед. изм.' (PricelistLine l) = name(uom(l)); 
+WHEN LOCAL CHANGED(item(PricelistLine l)) DO uom(l) <- uom(item(l));
 
 costPrice 'Себестоимость' = DATA NUMERIC[32,16] (PricelistLine);
 WHEN LOCAL SETCHANGED(item(PricelistLine l)) DO costPrice(l) <- overCost(item(l));
@@ -92,7 +95,7 @@ FORM pricelist 'Прайс-лист'
     FILTERS editIn(p, t) 
    
     OBJECTS l = PricelistLine
-    PROPERTIES(l) index READONLY, nameItem, nameUnitMeasure READONLY, costPrice SHOWIF showCost(p) READONLY
+    PROPERTIES(l) index READONLY, nameItem, nameUom READONLY, costPrice SHOWIF showCost(p) READONLY
     PROPERTIES    markup(l, t) COLUMNS 'p' (t) HEADER name(t) + ' (надбавка)' SHOWIF showMarkup(p) ON CHANGE changeMarkup(l, t)
     PROPERTIES    price(l, t) COLUMNS 'p' (t) HEADER name(t) 
     PROPERTIES(l) NEW, DELETE 

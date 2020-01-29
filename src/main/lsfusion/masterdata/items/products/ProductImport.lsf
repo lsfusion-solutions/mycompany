@@ -16,7 +16,7 @@ productExport 'Экспорт товаров' () {
     
         LOCAL f = EXCELFILE ();
         EXPORT XLSX HEADER FROM 'Код товара' = id(Product p), 'Наименование' = dataName(p), 'Код категории' = idCategory(p), 
-            'Штрихкод' = idBarCode(p), 'Код учетной единицы' = idUnitMeasure(p) WHERE p IS Product TO f;   
+            'Штрихкод' = idBarCode(p), 'Код учетной единицы' = idUom(p) WHERE p IS Product TO f;   
         open(f());
     }
 }
@@ -45,7 +45,7 @@ productImport 'Импорт товаров' () {
                     item(b) <- p;
                     id(b) <- barCode(i);
                 }
-                unitMeasure(p) <- itemMeasure(idUnitM(i));
+                uom(p) <- uom(idUnitM(i));
             }
             APPLY;
             MESSAGE 'Импорт завершен';

@@ -26,8 +26,9 @@ nameProduct 'Продукт' (ScrapLine l) = name(product(l));
 idBarCodeProduct 'Штрихкод' (ScrapLine l) = idBarCode(product(l));
 idProduct 'Код' (ScrapLine l) = id(product(l));
 
-unitMeasure 'Ед.изм.' = DATA ItemMeasure (ScrapLine);
-nameUnitMeasure 'Ед.изм.' (ScrapLine l) = name(unitMeasure(l));
+uom = DATA Uom (ScrapLine);
+nameUom 'Ед. изм.' (ScrapLine l) = name(uom(l));
+WHEN LOCAL CHANGED(product(ScrapLine l)) DO uom(l) <- uom(product(l)); 
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (ScrapLine);
 
@@ -38,7 +39,7 @@ FORM scrap 'Списание'
     PROPERTIES(s) READONLYIF readonly(s) dateTime, number, nameLocationFrom
     
     OBJECTS l = ScrapLine
-    PROPERTIES(l) READONLYIF readonly(s) index, nameProduct, nameUnitMeasure, idBarCodeProduct, idProduct, quantity, NEW, DELETE
+    PROPERTIES(l) READONLYIF readonly(s) index, nameProduct, nameUom, idBarCodeProduct, idProduct, quantity, NEW, DELETE
     FILTERS scrap(l) = s
     
     EDIT Scrap OBJECT s

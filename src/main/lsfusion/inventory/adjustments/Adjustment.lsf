@@ -49,8 +49,9 @@ nameProduct 'Товар' (AdjustmentLine l) = name(product(l));
 idBarCodeProduct 'Штрихкод' (AdjustmentLine l) = idBarCode(product(l));
 idProduct 'Код' (AdjustmentLine l) = id(product(l));
 
-unitMeasure 'Ед.изм.' = DATA ItemMeasure (AdjustmentLine);
-nameUnitMeasure 'Ед.изм.' (AdjustmentLine l) = name(unitMeasure(l));
+uom = DATA Uom (AdjustmentLine);
+nameUom 'Ед. изм.' (AdjustmentLine l) = name(uom(l));
+WHEN LOCAL CHANGED(product(AdjustmentLine l)) DO uom(l) <- uom(product(l)); 
 
 location 'Место хранения' = DATA Location (AdjustmentLine);
 nameLocation 'Место хранения' (AdjustmentLine l) = canonicalName(location(l));
@@ -80,7 +81,7 @@ FORM adjustment 'Инвентаризация'
     
     OBJECTS l = AdjustmentLine
     PROPERTIES(l) index READONLY, 
-                  nameProduct, nameUnitMeasure, idBarCodeProduct, idProduct,
+                  nameProduct, nameUom, idBarCodeProduct, idProduct,
                   nameLocation, 
                   theoreticalQuantity, realQuantity READONLYIF readonly(l) BACKGROUND background(l)
     PROPERTIES(l) NEW, DELETE

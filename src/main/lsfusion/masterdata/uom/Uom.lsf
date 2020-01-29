@@ -1,0 +1,32 @@
+MODULE Uom;
+
+REQUIRE MasterDataSettings, MetaNumerator;
+
+NAMESPACE MasterData;
+
+CLASS Uom 'Единицы измерения';
+
+@defineID(uom, 'Единицы измерений', 'ЕИ');
+
+name 'Наименование' = DATA STRING[50] (Uom) CHARWIDTH 8 NONULL;
+
+FORM uom 'Единицы измерения'
+    OBJECTS i = Uom PANEL 
+    PROPERTIES(i) name, id
+    
+    EDIT Uom OBJECT i
+;
+
+FORM uoms 'Единицы измерения'
+    OBJECTS i = Uom
+    PROPERTIES(i) READONLY name, id
+    PROPERTIES(i) NEWSESSION NEW, EDIT, DELETE
+    
+    LIST Uom OBJECT i
+;
+
+NAVIGATOR {
+    masterData {
+        NEW uoms;
+    }
+}

@@ -67,8 +67,9 @@ CONSTRAINT item(InvoiceLine l) AND NOT canBeSold(item(l))
             CHECKED BY item 
             MESSAGE 'Номенклатура не предназначена для продажи';
 
-unitMeasure = DATA ItemMeasure (InvoiceLine);
-nameUnitMeasure 'Ед. изм.' (InvoiceLine l) = name(unitMeasure(l));
+uom = DATA Uom (InvoiceLine);
+nameUom 'Ед. изм.' (InvoiceLine l) = name(uom(l));
+WHEN LOCAL CHANGED(item(InvoiceLine l)) DO uom(l) <- uom(item(l)); 
 
 description 'Описание' = DATA STRING (InvoiceLine); 
 
@@ -99,7 +100,7 @@ FORM invoice 'Расходная накладная'
                              customerReference, note
         
     OBJECTS l = InvoiceLine
-    PROPERTIES(l) READONLYIF readonly(l) index, nameItem, description, nameUnitMeasure, idBarCodeItem, idItem, quantity, 
+    PROPERTIES(l) READONLYIF readonly(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, quantity, 
                         unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
     FILTERS invoice(l) = i
 

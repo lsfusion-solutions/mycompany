@@ -16,7 +16,7 @@ serviceExport 'Экспорт услуг' () {
     
         LOCAL f = EXCELFILE ();
         EXPORT XLSX HEADER FROM 'Код услуги' = id(Service s), 'Наименование' = dataName(s), 'Код категории' = idCategory(s), 
-            'Штрихкод' = idBarCode(s), 'Код учетной единицы' = idUnitMeasure(s) WHERE s IS Service TO f;   
+            'Штрихкод' = idBarCode(s), 'Код учетной единицы' = idUom(s) WHERE s IS Service TO f;   
         open(f());
     }
 }
@@ -45,7 +45,7 @@ serviceImport 'Импорт услуг' () {
                     item(b) <- s;
                     id(b) <- barCode(i);
                 }
-                unitMeasure(s) <- itemMeasure(idUnitM(i));
+                uom(s) <- uom(idUnitM(i));
             }
             APPLY;
             MESSAGE 'Импорт завершен';

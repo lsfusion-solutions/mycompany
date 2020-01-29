@@ -63,8 +63,9 @@ CONSTRAINT item(OrderLine l) AND NOT canBePurchased(item(l))
 
 description 'Описание' = DATA ISTRING (OrderLine);
 
-unitMeasure = DATA ItemMeasure (OrderLine);
-nameUnitMeasure 'Ед. изм.' (OrderLine l) = name(unitMeasure(l));
+uom = DATA Uom (OrderLine);
+nameUom 'Ед. изм.' (OrderLine l) = name(uom(l));
+WHEN LOCAL CHANGED(item(OrderLine l)) DO uom(l) <- uom(item(l));
 
 quantity 'Количество' = DATA NUMERIC[16,3] (OrderLine);
 unitPrice 'Цена' = DATA NUMERIC[10,2] (OrderLine);
@@ -76,7 +77,7 @@ WHEN LOCAL CHANGED (item(OrderLine ol)) DO {
                                 nameItem(ol); 
     unitPrice(ol) <- OVERRIDE unitPrice(pricelistLineA(vendor(order(ol)), item(ol), dateTime(order(ol)))), 
                               cost(item(ol));
-    unitMeasure(ol) <- unitMeasure(item(ol));
+    uom(ol) <- uom(item(ol));
     in(ol, Tax t) <- purchaseIn(item(ol),t); 
 }
 
@@ -97,7 +98,7 @@ FORM order 'Заказ'
     PROPERTIES(o) READONLY untaxedAmount, totalTax, totalAmount
                  
     OBJECTS l = OrderLine
-    PROPERTIES(l) index, nameItem, description, nameUnitMeasure, idBarCodeItem, idItem, quantity, unitPrice, subtotal, taxes ON CHANGE changeTax(l)
+    PROPERTIES(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, quantity, unitPrice, subtotal, taxes ON CHANGE changeTax(l)
     PROPERTIES(l) NEW, DELETE
     FILTERS order(l) = o
      
