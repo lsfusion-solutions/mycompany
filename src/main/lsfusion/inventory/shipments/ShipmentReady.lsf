@@ -23,9 +23,7 @@ extraCheckAvailability ABSTRACT (Shipment);
 precheckAvailability (Shipment s) {
     reserved(ShipmentLine l) <- max(min(initialDemand(l), available(l)), 0) WHERE shipment(l) = s;
     extraCheckAvailability(s);
-    IF GROUP SUM 1 IF reserved(ShipmentLine l) AND shipment(l) = s THEN {
-        ready(s) <- TRUE;
-    }
+    ready(s) <- reserved(s);
 }
 
 checkAvailability 'Зарезервировать' (Shipment s) {

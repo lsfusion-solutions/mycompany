@@ -36,19 +36,29 @@ FORM inventoryReport 'Текущие остатки'
                             namePartner, nameFromLocation, nameToLocation, 
                             quantity
     PROPERTIES(il) EDIT
-    FILTERGROUP active
+    FILTERGROUP activeInv
         FILTER 'Активный' active(il) DEFAULT
     FILTERS product(il) = p,
             IF singleLocation() THEN (level(fromLocation(il), l) OR level(toLocation(il), l))
                                 ELSE (fromLocation(il) = l OR toLocation(il) = l),
             dateTime(il) <= selectedDateTime() OR NOT selectedDateTime()
+
+    OBJECTS rl = ResLedger
+    PROPERTIES(rl) READONLY type, dateTime, number, 
+                            namePartner, nameLocation, 
+                            reserved
+    PROPERTIES(rl) EDIT
+    FILTERS product(rl) = p,
+            IF singleLocation() THEN (TRUE IF level(location(rl), l))
+                                ELSE location(rl) = l,
+            dateTime(il) <= selectedDateTime() OR NOT selectedDateTime()
             
     OBJECTS a = ItemAttribute
-    OBJECTS rlp = (rl = Location, rp = Product)
-    PROPERTIES READONLY 'Склад' = canonicalName(rl), 'Товар' = name(rp), value(rp, a) COLUMNS (a) HEADER name(a),
+    OBJECTS rlp = (ll = Location, rp = Product)
+    PROPERTIES READONLY 'Склад' = canonicalName(ll), 'Товар' = name(rp), value(rp, a) COLUMNS (a) HEADER name(a),
                     level1(rp), level2(rp), level3(rp), level4(rp), 'Группа полная' = canonicalNameCategory(rp)
-    PROPERTIES(rl, rp) READONLY reserved, available, onHandDateTime, dateReceived, dateShipped
-    FILTERS IF selectedDateTime() THEN onHandDateTime(rl, rp) ELSE onHand(rl, rp)
+    PROPERTIES(ll, rp) READONLY reserved, available, onHandDateTime, dateReceived, dateShipped
+    FILTERS IF selectedDateTime() THEN onHandDateTime(ll, rp) ELSE onHand(ll, rp)
 ;
 
 DESIGN inventoryReport {
@@ -78,6 +88,7 @@ DESIGN inventoryReport {
                     NEW tabs {
                         type = TABBED;
                         MOVE BOX(il) { caption = 'Регистр изменения остатка'; }
+                        MOVE BOX(rl) { caption = 'Регистр резервов'; }
                         NEW image { 
                             caption = 'Изображение';
                             MOVE PROPERTY(image(p)) { caption = ''; fill = 1; } 

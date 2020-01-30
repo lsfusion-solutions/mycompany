@@ -149,25 +149,6 @@ DESIGN shipment {
 @defineBarCodeAdd(shipment, s, product);
 @defineDocHistory(shipment, s, product, initialDemand);
 
-// search
-@defineDocSearchTab(shipment, product);
-EXTEND FORM shipment FILTERS canBeSold(itm);
-
-available 'Доступный остаток' (Shipment s, Product p) = prevAvailableRec(location(s), p); 
-
-EXTEND FORM shipment
-    PROPERTIES(s, itm) available
-    FILTERGROUP  available
-        FILTER 'Остатки' available(s, itm) 'F5' DEFAULT
-;
-
-lastShipmentLine (Shipment s, Product p) = GROUP LAST ShipmentLine l ORDER l BY shipment(l), product(l);
-
-@defineDocSearchAction(shipment, product, initialDemand);
-EXTEND FORM shipment
-    PROPERTIES(s, itm) SHOWIF NOT immediate(s) initialDemand ON CHANGE changeInitialDemand(s, itm)
-;
-        
 // shipments
 FORM shipments 'Отгрузки'
     OBJECTS s = Shipment

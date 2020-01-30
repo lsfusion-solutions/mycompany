@@ -41,7 +41,7 @@ WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(scheduledDateTime(o)) DO schedu
 deliveryAddress 'Адрес доставки' = DATA STRING (Order);
 WHEN LOCAL CHANGED(customer(Order o)) DO deliveryAddress(o) <- addressCustomer(o);
 
-location 'Место отгрузки' = DATA Location (Order);
+location 'Место отгрузки' = DATA Location (Order) PREREAD;
 nameLocation 'Место отгрузки' (Order o) = name(location(o));
 
 incoterm 'Условие поставки' = DATA Incoterm (Order);
@@ -80,8 +80,6 @@ WHEN LOCAL CHANGED(item(OrderLine l)) DO uom(l) <- uom(item(l));
 quantity 'Количество' = DATA NUMERIC[16,3] (OrderLine);
 
 unitPrice 'Цена' = DATA NUMERIC[10,2] (OrderLine);
-cost 'Себестоимость' = DATA NUMERIC[10,2] (OrderLine);
-discount 'Скидка %' =  DATA NUMERIC[4,2] (OrderLine);
 
 @defineTaxCalc(order, o, sales);
 
@@ -118,7 +116,7 @@ FORM order 'Заказ'
     PROPERTIES(o) READONLY untaxedAmount, totalTax, totalAmount
                  
     OBJECTS l = OrderLine
-    PROPERTIES(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, quantity, unitPrice, cost, discount, subtotal, taxes ON CHANGE changeTax(l)
+    PROPERTIES(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, quantity, unitPrice, subtotal, taxes ON CHANGE changeTax(l)
     PROPERTIES(l) NEW, DELETE
     FILTERS order(l) = o
     
@@ -189,7 +187,6 @@ DESIGN order {
 
 @defineBarCodeAdd(order, o, item);
 @defineDocHistory(order, o, item, quantity);
-@defineDocSearch(order, item, quantity, o, canBeSold);
 
 FORM orders 'Заказы'
      OBJECTS o = Order
@@ -209,9 +206,3 @@ NAVIGATOR {
         NEW orders FIRST;    
     }
 }
-
-// price list
-EXTEND FORM order
-    FILTERGROUP pricelist
-        FILTER 'В прайс-листе' priceA(priceType(o), itm, dateTime(o))
-;

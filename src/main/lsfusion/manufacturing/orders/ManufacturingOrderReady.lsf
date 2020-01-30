@@ -28,8 +28,9 @@ checkAvailability 'Зарезервировать' (ManufacturingOrder m) {
     
     NEWSESSION { 
         reserved(ConsumedLine l) <- max(min(toConsume(l), available(l)), 0) WHERE manufacturingOrder(l) = m; 
-
-        ready(m) <- TRUE;
+        
+        IF reserved(m) THEN
+            ready(m) <- TRUE;
         APPLY;
     }
 }

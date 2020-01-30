@@ -1,0 +1,26 @@
+MODULE SalesOrderSearch;
+
+REQUIRE SalesOrder, ResLedger;
+
+NAMESPACE Sales;
+
+@defineDocSearch(order, item, quantity, o, canBeSold);
+
+// available
+available 'Доступно' (Order o, Product p) = prevAvailableRec(location(o), p); 
+
+EXTEND FORM order
+    PROPERTIES(o, itm) READONLY available
+    FILTERGROUP available
+        FILTER 'Доступно' available(o, itm) OR NOT itm IS Product 'F5' DEFAULT
+;
+
+// price list
+listPrice 'Цена' (Order o, Item i) = priceA(priceType(o), i, dateTime(o));
+
+EXTEND FORM order
+    PROPERTIES(o, itm) READONLY listPrice
+
+    FILTERGROUP pricelist
+        FILTER 'В прайс-листе' listPrice(o, itm)
+;

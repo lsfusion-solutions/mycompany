@@ -13,12 +13,10 @@ EXTEND FORM options PROPERTIES nameShipmentType();
 orderLine = DATA OrderLine (ShipmentLine);
 order = DATA Order (Shipment);
 
-initShipment 'Запланирован отпуск со склада ' (OrderLine ol) = 
-    GROUP SUM initialDemand(ShipmentLine rl) IF orderLine(rl) = ol AND status(shipment(rl)) = ShipmentStatus.ready;
-doneShipment 'Отпущено со склада' (OrderLine ol) = 
+doneShipment 'Отгружено' (OrderLine ol) = 
     GROUP SUM done(ShipmentLine rl) IF orderLine(rl) = ol AND status(shipment(rl)) = ShipmentStatus.done;
 toShip 'К отгрузке' (OrderLine ol) = 
-    max(quantity(ol) (-) initShipment(ol) (-) doneShipment(ol), 0) IF item(ol) IS Product;
+    max(quantity(ol) (-) doneShipment(ol), 0) IF item(ol) IS Product MATERIALIZED;
 
 toShip 'К отгрузке' (Order o) = GROUP SUM toShip(OrderLine ol) IF order(ol) = o;
 
@@ -26,26 +24,36 @@ CONSTRAINT (quantity(OrderLine ol) (-) doneShipment(ol)) < 0 AND confirmed(order
     MESSAGE 'По товару отгрузка превышает количество в заказе';
 
 lastOpenShipment 'Последний открытый расход' (Order o)= 
-    GROUP LAST Shipment s IF order(s) = o AND status(s) = ShipmentStatus.ready ORDER s;
+    GROUP LAST Shipment s IF order(s) = o AND (status(s) = ShipmentStatus.waiting OR status(s) = ShipmentStatus.ready) ORDER s;
 
-WHEN ([GROUP SUM 1 IF CHANGED(quantity(OrderLine l)) AND item(l) IS Product BY order(l)](Order o) OR SET(confirmed(o))) AND 
-     toShip(o) > 0 AND status(o) = OrderStatus.confirmed AND shipmentType() DO {
-    IF NOT lastOpenShipment(o) THEN   
+WHEN ([GROUP SUM 1 IF CHANGED(toShip(OrderLine l)) BY order(l)](Order o) OR SET(confirmed(o)) OR 
+      CHANGED(customer(o)) OR CHANGED(scheduledDateTime(o)) OR CHANGED(location(o)) OR CHANGED(number(o))) AND 
+     status(o) = OrderStatus.confirmed AND location(o) AND shipmentType() DO {
+    IF NOT lastOpenShipment(o) AND toShip(o) > 0 THEN   
         NEW ns = Shipment { 
-            customer(ns) <- customer(o);
-            scheduledDateTime(ns) <- scheduledDateTime(o);
-            location(ns) <- location(o);
-            type(ns) <- shipmentType();
-            sourceDocument(ns) <- number(o);
-            waiting(ns) <- TRUE;    
             order(ns) <- o; 
+            type(ns) <- shipmentType();
+            waiting(ns) <- TRUE;    
         }
-    FOR order(OrderLine ol) = o AND toShip(ol) > 0 NEW sl = ShipmentLine DO {            
+        
+    FOR Shipment ns = lastOpenShipment(o) DO {
+        customer(ns) <- customer(o);
+        scheduledDateTime(ns) <- scheduledDateTime(o);
+
+        location(ns) <- location(o);
+        sourceDocument(ns) <- number(o);
+    }
+    
+    FOR order(OrderLine ol) = o AND toShip(ol) > 0 AND 
+        NOT (GROUP SUM 1 IF shipment(ShipmentLine l) = lastOpenShipment(o) AND orderLine(l) = ol) 
+            NEW sl = ShipmentLine DO {            
         shipment(sl) <- lastOpenShipment(o);
         product(sl) <- item(ol);
-        initialDemand(sl) <- toShip(ol);
         orderLine(sl) <- ol;
     }
+    initialDemand(ShipmentLine l) <- toShip(orderLine(l)) IF toShip(orderLine(l)) > 0 WHERE shipment(l) = lastOpenShipment(o);  
+    DELETE ShipmentLine l WHERE shipment(l) = lastOpenShipment(o) AND NOT initialDemand(l);
+
     precheckAvailability(lastOpenShipment(o));
 }
 
@@ -58,12 +66,11 @@ FORM orderShipmentShow 'Расход со склада'
 ;
 
 EXTEND FORM order
-    PROPERTIES(l) SHOWIF confirmed(o) initShipment ON CHANGE { DIALOG orderShipmentShow OBJECTS ol = l; }
     PROPERTIES(l) SHOWIF confirmed(o) doneShipment ON CHANGE { DIALOG orderShipmentShow OBJECTS ol = l; }
     
     OBJECTS sh = Shipment
     PROPERTIES(sh) READONLY number, scheduledDateTime, executionDateTime, nameStatus   
-    PROPERTIES(sh) EDIT GRID   
+    PROPERTIES(sh) NEWSESSION EDIT GRID   
     FILTERS order(sh) = o
 ;
 

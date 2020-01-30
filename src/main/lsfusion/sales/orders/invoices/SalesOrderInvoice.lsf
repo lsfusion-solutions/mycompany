@@ -1,14 +1,15 @@
 MODULE SalesOrderInvoice;
 
-REQUIRE Invoicing, Time, SalesOrderConfirmed;
+REQUIRE SalesOrderConfirmed, 
+        InvoiceDone, InvoiceCanceled, InvoicePaymentTerms;
 
 NAMESPACE Sales;
 
 orderLine = DATA OrderLine (InvoiceLine);
 order = DATA Order (Invoice);
 
-invoiced 'Оформлено по накладным' (OrderLine ol) = 
-    GROUP SUM quantity(InvoiceLine bl) IF orderLine(bl) = ol AND NOT canceled(invoice(bl));
+invoiced 'Выписано накладных' (OrderLine ol) = 
+    GROUP SUM quantity(InvoiceLine bl) IF orderLine(bl) = ol AND ready(invoice(bl)) AND NOT canceled(invoice(bl));
 paid 'Оплачено' (OrderLine ol) = 
     GROUP SUM quantity(InvoiceLine bl) IF orderLine(bl) = ol AND done(invoice(bl)) AND NOT canceled(invoice(bl));
 toInvoice 'К оформлению' (OrderLine l) = max(quantity(l) (-) invoiced(l), 0);
