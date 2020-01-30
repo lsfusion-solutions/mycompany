@@ -8,6 +8,8 @@ NAMESPACE Inventory;
 
 CLASS Receipt 'Поступление';
 
+@defineStatus(receipt, 'поступления');
+
 immediate 'Незапланированное' = DATA BOOLEAN (Receipt);
 
 // type
@@ -63,11 +65,8 @@ initialDemand 'Планируемое количество' = DATA NUMERIC[16,3]
 CONSTRAINT initialDemand(ReceiptLine l) < 0 OR initialDemand(l) > maxQuantity(type(receipt(l))) AND maxQuantity(type(receipt(l))) 
     MESSAGE 'Планируемое количество должно быть от 0 до максимально разрешенного';
     
-// readonly
-readonly = ABSTRACT CASE BOOLEAN (Receipt);
-readonly = ABSTRACT CASE BOOLEAN (ReceiptLine); 
-
 // Line properties
+nameStatus 'Статус' (ReceiptLine l) = nameStatus(receipt(l));
 scheduledDateTime 'Планируемая дата' (ReceiptLine l) = scheduledDateTime(receipt(l));
 vendor (ReceiptLine l) = vendor(receipt(l));
 nameVendor 'Поставщик' (ReceiptLine l) = nameVendor(receipt(l));
@@ -77,16 +76,14 @@ edit (ReceiptLine l) + { edit(receipt(l)); }
            
 FORM receipt 'Поступление'
     OBJECTS r = Receipt PANEL
-    PROPERTIES(r) READONLYIF readonly(r) 
-                        nameType, scheduledDateTime, number, 
-                        nameVendor, nameLocation, sourceDocument,
-                        note
+    PROPERTIES(r) nameType, scheduledDateTime, number, 
+                  nameVendor, nameLocation, sourceDocument,
+                  note
 
     OBJECTS l = ReceiptLine
-    PROPERTIES(l) READONLY               index
-    PROPERTIES(l) READONLYIF readonly(l) nameProduct, nameUom, idBarCodeProduct, idProduct,
-                                         initialDemand SHOWIF NOT immediate(r) BACKGROUND IF NOT readonly(l) THEN RGB(198,230,247)
-    PROPERTIES(l) READONLYIF readonly(l) NEW, DELETE        
+    PROPERTIES(l) index READONLY, nameProduct, nameUom, idBarCodeProduct, idProduct,
+                  initialDemand SHOWIF NOT immediate(r) BACKGROUND IF isDraft(receipt(l)) THEN RGB(198,230,247)
+    PROPERTIES(l) NEW, DELETE        
     FILTERS receipt(l) = r
    
     EDIT Receipt OBJECT r
@@ -129,14 +126,26 @@ DESIGN receipt {
 }
 
 @defineBarCodeAdd(receipt, r, product);
+@defineDocHistory(receipt, r, product, initialDemand);
+
+// search
+@defineDocSearch(receipt, product, initialDemand, r, canBePurchased);
+
+available 'Доступный остаток' (Receipt r, Product p) = prevAvailableRec(location(r), p);
+
+EXTEND FORM receipt
+    PROPERTIES(r, itm) available
+;
 
 FORM receipts 'Поступления'
     OBJECTS r = Receipt
     PROPERTIES(r) READONLY nameType, scheduledDateTime, number, 
                            nameVendor, nameLocation, sourceDocument,
                            note
-    PROPERTIES(r) NEWSESSION NEW, EDIT, DELETE READONLYIF readonly(r)
+    PROPERTIES(r) NEWSESSION NEW, EDIT, DELETE
 ;
+
+@defineStatusForm(receipt, r);
 
 NAVIGATOR {
     operations {
@@ -156,22 +165,6 @@ immediateReceipt 'Незапланированное поступление' () 
 
 EXTEND FORM receipts 
     PROPERTIES immediateReceipt() DRAW r TOOLBAR
-;
-
-// status
-@defineStatus(receipt, 'поступления', r);
-nameStatus 'Статус' (ReceiptLine l) = nameStatus(receipt(l));
-
-// history
-@defineDocHistory(receipt, r, product, initialDemand);
-
-// search
-@defineDocSearch(receipt, product, initialDemand, r, canBePurchased);
-
-available 'Доступный остаток' (Receipt r, Product p) = prevAvailableRec(location(r), p);
-
-EXTEND FORM receipt
-    PROPERTIES(r, itm) available
 ;
 
 // copy

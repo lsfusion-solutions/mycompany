@@ -7,6 +7,8 @@ NAMESPACE Invoicing;
 
 CLASS Bill 'Приходная накладная';
 
+@defineStatus(bill, 'счета');
+
 // dateTime
 dateTime 'Дата' = DATA DATETIME (Bill) NONULL IN id;
 WHEN LOCAL SET (Bill b IS Bill) DO dateTime(b) <- currentDateTime();
@@ -81,11 +83,8 @@ WHEN LOCAL SETCHANGED(item(BillLine l)) AND NOT CHANGED(unitPrice(l)) DO unitPri
 // taxes
 @defineTaxCalc(bill, b, purchase);
 
-// readonly
-readonly = ABSTRACT CASE BOOLEAN (Bill);
-readonly = ABSTRACT CASE BOOLEAN (BillLine);
-
 // Line properties
+nameStatus 'Статус' (BillLine l) = nameStatus(bill(l));
 dateTime 'Дата накладной' (BillLine l) = dateTime(bill(l));
 nameVendor 'Поставщик' (BillLine l) = nameVendor(bill(l));
 nameCompany 'Компания' (BillLine l) = nameCompany(bill(l));
@@ -94,15 +93,14 @@ edit (BillLine l) + { edit(bill(l)); }
 
 FORM bill 'Приходная накладная'
     OBJECTS  b = Bill PANEL 
-    PROPERTIES(b) READONLYIF readonly(b) 
-                             dateTime, number, 
-                             nameVendor, nameCompany, sourceDocument,
-                             dueDateTime, nameVendorAccount, nameCompanyAccount,
-                             vendorReference, note
+    PROPERTIES(b) dateTime, number, 
+                  nameVendor, nameCompany, sourceDocument,
+                  dueDateTime, nameVendorAccount, nameCompanyAccount,
+                  vendorReference, note
         
     OBJECTS l = BillLine
-    PROPERTIES(l) READONLYIF readonly(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, quantity, 
-                        unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
+    PROPERTIES(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, 
+                  quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
     FILTERS bill(l) = b
 
     EDIT Bill OBJECT b
@@ -161,32 +159,29 @@ DESIGN bill {
     }
 }
 
+@defineBarCodeAdd(bill, b, item);
+@defineDocHistory(bill, b, item, quantity);
+@defineDocSearch(bill, item, quantity, b, canBePurchased);
+
 FORM bills 'Приходные накладные'
     OBJECTS b = Bill
     PROPERTIES(b) READONLY dateTime, number, 
                            nameVendor, nameCompany, sourceDocument,
                            dueDateTime, nameVendorAccount, nameCompanyAccount,
                            vendorReference, note
-    PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE READONLYIF readonly(b)
+    PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE
            
-    LIST Bill OBJECT b;
+    LIST Bill OBJECT b
+;
+
+@defineTaxForm(bill, b);
+@defineStatusForm(bill, b);
 
 NAVIGATOR {
     operations {
         NEW bills FIRST;
     }
 }
-
-@defineTaxForm(bill, b);
-@defineBarCodeAdd(bill, b, item);
-
-@defineStatus(bill, 'счета', b);
-@defineDocHistory(bill, b, item, quantity);
-
-nameStatus 'Статус' (BillLine l) = nameStatus(bill(l));
-readonly (BillLine l) += WHEN NOT status(bill(l)) = BillStatus.draft THEN TRUE;
-
-@defineDocSearch(bill, item, quantity, b, canBePurchased);
 
 // copy
 copy 'Копировать' (Bill b)  { 

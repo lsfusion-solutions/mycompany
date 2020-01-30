@@ -6,6 +6,8 @@ NAMESPACE Inventory;
 
 CLASS Adjustment 'Инвентаризация';
 
+@defineStatus(adjustment, 'инвентаризации');
+
 dateTime 'Дата' = DATA DATETIME (Adjustment);
 WHEN LOCAL SET(Adjustment a IS Adjustment) AND NOT CHANGED(dateTime(a)) DO dateTime(a) <- currentDateTime();
 
@@ -57,33 +59,21 @@ location 'Место хранения' = DATA Location (AdjustmentLine);
 nameLocation 'Место хранения' (AdjustmentLine l) = canonicalName(location(l));
 
 theoreticalQuantity 'Теоретическое кол-во' = DATA NUMERIC[16,3] (AdjustmentLine);
-realQuantity 'Фактическое кол-во' = DATA NUMERIC[16,3] (AdjustmentLine);
-
 WHEN LOCAL (SETCHANGED (location(AdjustmentLine l)) OR SETCHANGED(product(l))) AND q = onHand(location(l), product(l)) 
            AND NOT CHANGED(theoreticalQuantity(l)) DO 
     theoreticalQuantity(l) <- q;
 
-WHEN LOCAL CHANGED(theoreticalQuantity(AdjustmentLine l)) AND NOT CHANGED(realQuantity(l)) DO 
-    realQuantity(l) <- theoreticalQuantity(l);
-
-background (AdjustmentLine l) = CASE WHEN theoreticalQuantity(l) < realQuantity(l) THEN RGB(152,251,152)
-                                              WHEN theoreticalQuantity(l) > realQuantity(l) THEN RGB(252,184,205);
-
-// readonly
-readonly = ABSTRACT CASE BOOLEAN (Adjustment);
-readonly = ABSTRACT CASE BOOLEAN (AdjustmentLine);
-
 FORM adjustment 'Инвентаризация'
     OBJECTS a = Adjustment PANEL 
-    PROPERTIES(a) dateTime, number, nameLocation, nameType,
-                  nameCategory SHOWIF type(a) = AdjustmentType.category,
-                  note 
+    PROPERTIES(a) dateTime, number 
+    PROPERTIES(a) nameLocation, nameType, nameCategory SHOWIF type(a) = AdjustmentType.category
+    PROPERTIES(a) note 
     
     OBJECTS l = AdjustmentLine
     PROPERTIES(l) index READONLY, 
                   nameProduct, nameUom, idBarCodeProduct, idProduct,
                   nameLocation, 
-                  theoreticalQuantity, realQuantity READONLYIF readonly(l) BACKGROUND background(l)
+                  theoreticalQuantity
     PROPERTIES(l) NEW, DELETE
     FILTERS adjustment(l) = a
     
@@ -122,6 +112,25 @@ DESIGN adjustment {
     }
 }
 
+@defineDocHistory(adjustment, a, product, theoreticalQuantity);
+
+FORM adjustments 'Инвентаризации'
+    OBJECTS a = Adjustment
+    PROPERTIES(a) READONLY dateTime, number, nameType, nameLocation, nameCategory, note
+    PROPERTIES(a) NEWSESSION EDIT, DELETE 
+    
+    LIST Adjustment OBJECT a
+;
+
+@defineStatusForm(adjustment, a);
+
+NAVIGATOR {
+    operations {
+        NEW adjustments;
+    }
+}
+
+// new
 FORM adjustmentType 'Создать инвентаризацию'
     OBJECTS a = Adjustment PANEL 
     PROPERTIES(a) nameLocation, nameType,
@@ -155,23 +164,6 @@ newAdjustment 'Инвентаризация' () {
     }
 } IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
 
-FORM adjustments 'Инвентаризации'
-    OBJECTS a = Adjustment
-    PROPERTIES(a) READONLY dateTime, number, nameType, nameLocation, nameCategory, note
+EXTEND FORM adjustments
     PROPERTIES newAdjustment() DRAW a TOOLBAR 
-    PROPERTIES(a) NEWSESSION EDIT, DELETE 
-    
-    LIST Adjustment OBJECT a
 ;
-
-NAVIGATOR {
-    operations {
-        NEW adjustments;
-    }
-}
-
-// status
-@defineStatus(adjustment, 'инвентаризации', a);
-
-// history
-@defineDocHistory(adjustment, a, product, realQuantity);

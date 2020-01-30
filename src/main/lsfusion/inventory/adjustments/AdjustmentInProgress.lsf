@@ -12,6 +12,11 @@ inProgress 'В процессе' = DATA BOOLEAN (Adjustment);
 status(Adjustment a) += WHEN inProgress(a) THEN AdjustmentStatus.inProgress;
 colorStatus(Adjustment a) += WHEN status(a) == AdjustmentStatus.inProgress THEN RGB(252,247,149);
 
+realQuantity 'Фактическое кол-во' = DATA NUMERIC[16,3] (AdjustmentLine);
+
+WHEN LOCAL CHANGED(theoreticalQuantity(AdjustmentLine l)) AND NOT CHANGED(realQuantity(l)) DO 
+    realQuantity(l) <- theoreticalQuantity(l);
+
 markAsToDo 'Начать' (Adjustment a) {
     APPLY; 
     IF canceled() THEN RETURN;
@@ -22,8 +27,13 @@ markAsToDo 'Начать' (Adjustment a) {
     }
 }
 
+background (AdjustmentLine l) = CASE WHEN theoreticalQuantity(l) < realQuantity(l) THEN RGB(152,251,152)
+                                              WHEN theoreticalQuantity(l) > realQuantity(l) THEN RGB(252,184,205);
+
 EXTEND FORM adjustment
     PROPERTIES(a) markAsToDo SHOWIF status(a) = AdjustmentStatus.draft, inProgress
+    
+    PROPERTIES(l) realQuantity READONLYIF NOT status(adjustment(l)) = AdjustmentStatus.inProgress BACKGROUND background(l)
     
     FILTERGROUP adjustment
         FILTER 'Расхождения' NOT theoreticalQuantity(l) = realQuantity(l) 'F10'
@@ -39,5 +49,3 @@ DESIGN adjustment {
         MOVE PROPERTY(inProgress(a));                               
     }
 }
-
-readonly (AdjustmentLine l) += WHEN NOT status(adjustment(l)) = AdjustmentStatus.inProgress THEN TRUE;

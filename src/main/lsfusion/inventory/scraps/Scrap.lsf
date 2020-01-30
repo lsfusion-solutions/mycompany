@@ -6,6 +6,8 @@ NAMESPACE Inventory;
 
 CLASS Scrap 'Списание';
 
+@defineStatus(scrap, 'списания');
+
 dateTime 'Дата' = DATA DATETIME (Scrap) NONULL;
 WHEN LOCAL SET(Scrap s IS Scrap) AND NOT CHANGED(dateTime(s)) DO dateTime(s) <- currentDateTime();
 
@@ -32,14 +34,12 @@ WHEN LOCAL CHANGED(product(ScrapLine l)) DO uom(l) <- uom(product(l));
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (ScrapLine);
 
-readonly = ABSTRACT CASE BOOLEAN (Scrap);
-
 FORM scrap 'Списание'
     OBJECTS s = Scrap PANEL 
-    PROPERTIES(s) READONLYIF readonly(s) dateTime, number, nameLocationFrom
+    PROPERTIES(s) dateTime, number, nameLocationFrom
     
     OBJECTS l = ScrapLine
-    PROPERTIES(l) READONLYIF readonly(s) index, nameProduct, nameUom, idBarCodeProduct, idProduct, quantity, NEW, DELETE
+    PROPERTIES(l) index, nameProduct, nameUom, idBarCodeProduct, idProduct, quantity, NEW, DELETE
     FILTERS scrap(l) = s
     
     EDIT Scrap OBJECT s
@@ -58,13 +58,19 @@ DESIGN scrap {
     }
 }
 
+@defineBarCodeAdd(scrap, s, product);
+@defineDocHistory(scrap, s, product, quantity);
+@defineDocSearch(scrap, product, quantity, s);
+
 FORM scraps 'Списания'
     OBJECTS s = Scrap 
     PROPERTIES(s)  READONLY dateTime, number, nameLocationFrom
-    PROPERTIES (s) NEWSESSION NEW, EDIT, DELETE READONLYIF readonly(s)
+    PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
     
     LIST Scrap OBJECT s
 ;
+
+@defineStatusForm(scrap, s);
 
 NAVIGATOR {
     operations {
@@ -72,14 +78,6 @@ NAVIGATOR {
     }
 }
 
-// status
-@defineStatus(scrap, 'списания', s);
-
-// history
-@defineDocHistory(scrap, s, product, quantity);
-
-// search
-@defineDocSearch(scrap, product, quantity, s);
 
 // copy
 copy 'Копировать' (Scrap s) {

@@ -6,6 +6,8 @@ NAMESPACE Sales;
 
 CLASS Pricelist 'Прайс-листы';
 
+@defineStatus(pricelist, 'прайс-листа');
+
 @defineNumber(pricelist, 'Прайс-листы', 'ПЛ');
 
 startDateTime 'Начало действия' = DATA DATETIME (Pricelist) NONULL;
@@ -83,8 +85,6 @@ showCurrentPrice 'Действующие цены' = DATA BOOLEAN (Pricelist);
 showMarkup 'Надбавки' = DATA BOOLEAN (Pricelist);
 showCost 'Себестоимость' = DATA BOOLEAN (Pricelist);
 
-readonly = ABSTRACT CASE BOOLEAN (Pricelist);
-
 FORM pricelist 'Прайс-лист'
     OBJECTS p = Pricelist PANEL
     PROPERTIES(p) number, startDateTime, endDateTime, note,
@@ -147,6 +147,8 @@ FORM pricelists 'Прайс-листы'
     LIST Pricelist OBJECT p
 ;
 
+@defineStatusForm(pricelist, p);
+
 NAVIGATOR {
     sales {
         NEW pricelists BEFORE settings;    
@@ -177,8 +179,6 @@ copy 'Копировать' (Pricelist pl) {
 EXTEND FORM pricelist
     PROPERTIES(p) copy DRAW l TOOLBAR 
 ;
-
-@defineStatus(pricelist, 'прайс-листа', p);
 
 DESIGN pricelist {
     secondaryActions {

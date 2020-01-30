@@ -8,6 +8,8 @@ NAMESPACE Inventory;
 
 CLASS Shipment 'Отгрузка';
 
+@defineStatus(shipment, 'отгрузки');
+
 immediate 'Незапланированная' = DATA BOOLEAN (Shipment);
 
 // type
@@ -75,11 +77,8 @@ initialDemand 'Планируемое количество' = DATA NUMERIC[16,3]
 CONSTRAINT initialDemand(ShipmentLine l) < 0 OR initialDemand(l) > maxQuantity(type(shipment(l))) AND maxQuantity(type(shipment(l))) 
     MESSAGE 'Исходное количество должно быть от 0 до максимально разрешенного';
 
-// readonly
-readonly = ABSTRACT CASE BOOLEAN (Shipment);
-readonly = ABSTRACT CASE BOOLEAN (ShipmentLine);
-
 // line properties
+nameStatus 'Статус' (ShipmentLine l) = nameStatus(shipment(l));
 scheduledDateTime 'Планируемая дата' (ShipmentLine l) = scheduledDateTime(shipment(l));
 number 'Номер' (ShipmentLine l) = number(shipment(l));
 customer (ShipmentLine l) = customer(shipment(l));
@@ -97,16 +96,14 @@ edit (ShipmentLine l) + { edit(shipment(l)); }
 
 FORM shipment 'Отгрузка'
     OBJECTS s = Shipment PANEL 
-    PROPERTIES(s) READONLYIF readonly(s) 
-                        nameType, scheduledDateTime, number, 
-                        nameCustomer SHOWIF NOT isTransfer(type(s)), nameLocation, nameToLocation SHOWIF isTransfer(type(s)), sourceDocument,
-                        note
+    PROPERTIES(s) nameType, scheduledDateTime, number, 
+                  nameCustomer SHOWIF NOT isTransfer(type(s)), nameLocation, nameToLocation SHOWIF isTransfer(type(s)), sourceDocument,
+                  note
                   
     OBJECTS l = ShipmentLine
-    PROPERTIES(l) READONLY               index
-    PROPERTIES(l) READONLYIF readonly(l) nameProduct, nameUom, idBarCodeProduct, idProduct, 
-                                         initialDemand SHOWIF NOT immediate(s) BACKGROUND IF NOT readonly(l) THEN RGB(198,230,247) 
-    PROPERTIES(l) READONLYIF readonly(l) NEW, DELETE
+    PROPERTIES(l) index READONLY, nameProduct, nameUom, idBarCodeProduct, idProduct, 
+                  initialDemand SHOWIF NOT immediate(s) BACKGROUND IF isDraft(shipment(l)) THEN RGB(198,230,247) 
+    PROPERTIES(l) NEW, DELETE
     FILTERS shipment(l) = s
              
     EDIT Shipment OBJECT s
@@ -150,39 +147,6 @@ DESIGN shipment {
 }
 
 @defineBarCodeAdd(shipment, s, product);
-
-FORM shipments 'Отгрузки'
-    OBJECTS s = Shipment
-    PROPERTIES(s) READONLY nameType, scheduledDateTime, number, 
-                           nameCustomer, nameLocation, nameToLocation, sourceDocument,
-                           note
-    PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE READONLYIF readonly(s)
-;
-
-NAVIGATOR {
-    operations {
-        NEW shipments;
-    }
-}
-
-immediateShipment 'Незапланированная отгрузка' () {
-    NEWSESSION {
-        NEW s = Shipment {
-            immediate(s) <- TRUE;
-            SHOW shipment OBJECTS s = s DOCKED;
-        }
-    }
-} IMAGE 'add.png';
-
-EXTEND FORM shipments 
-    PROPERTIES immediateShipment() DRAW s TOOLBAR
-;
-
-// status
-@defineStatus(shipment, 'отгрузки', s);
-nameStatus 'Статус' (ShipmentLine l) = nameStatus(shipment(l));
-
-// history
 @defineDocHistory(shipment, s, product, initialDemand);
 
 // search
@@ -194,6 +158,36 @@ EXTEND FORM shipment
     PROPERTIES(s, itm) available
     FILTERGROUP  available
         FILTER 'Остатки' available(s, itm) 'F5' DEFAULT
+;
+
+FORM shipments 'Отгрузки'
+    OBJECTS s = Shipment
+    PROPERTIES(s) READONLY nameType, scheduledDateTime, number, 
+                           nameCustomer, nameLocation, nameToLocation, sourceDocument,
+                           note
+    PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
+;
+
+@defineStatusForm(shipment, s);
+
+NAVIGATOR {
+    operations {
+        NEW shipments;
+    }
+}
+
+// immediate
+immediateShipment 'Незапланированная отгрузка' () {
+    NEWSESSION {
+        NEW s = Shipment {
+            immediate(s) <- TRUE;
+            SHOW shipment OBJECTS s = s DOCKED;
+        }
+    }
+} IMAGE 'add.png';
+
+EXTEND FORM shipments 
+    PROPERTIES immediateShipment() DRAW s TOOLBAR
 ;
 
 // copy

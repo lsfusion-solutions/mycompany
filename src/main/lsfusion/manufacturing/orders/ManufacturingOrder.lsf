@@ -6,6 +6,8 @@ NAMESPACE Manufacturing;
 
 CLASS ManufacturingOrder 'Производственный заказ';
 
+@defineStatus(manufacturingOrder, 'производственного заказа');
+
 scheduledDateTime 'Дата начала' = DATA DATETIME (ManufacturingOrder);
 WHEN LOCAL SET(ManufacturingOrder o IS ManufacturingOrder) AND NOT CHANGED(scheduledDateTime(o)) DO scheduledDateTime(o) <- currentDateTime();
 
@@ -92,15 +94,13 @@ toManufacture 'Произвести' (ManufacturingOrder o) = IF unbuild(o) THEN
 // line properties
 scheduledDateTime 'Дата начала' (ConsumedLine l) = scheduledDateTime(manufacturingOrder(l));
 
-readonly = ABSTRACT CASE BOOLEAN (ManufacturingOrder);
-
 FORM manufacturingOrder 'Производственный заказ'
     OBJECTS o = ManufacturingOrder PANEL 
-    PROPERTIES(o) READONLYIF readonly(o) scheduledDateTime, number, nameCompany, 
-                                         nameItem, unbuild, 
-                                         toManufacture, nameUom, 
-                                         descriptionBom, 
-                                         nameMaterialsLocation 
+    PROPERTIES(o) scheduledDateTime, number, nameCompany, 
+                  nameItem, unbuild, 
+                  toManufacture, nameUom, 
+                  descriptionBom, 
+                  nameMaterialsLocation 
     
     OBJECTS c = ConsumedLine
     PROPERTIES(c) index READONLY, nameItem, nameUom, idBarCodeItem, idItem, toConsume, NEW, DELETE
@@ -167,14 +167,13 @@ FORM manufacturingOrders 'Производственные заказы'
     LIST ManufacturingOrder OBJECT o
 ;
 
+@defineStatusForm(manufacturingOrder, o);
+
 NAVIGATOR {
     operations {
         NEW manufacturingOrders;
     }
 }
-
-// status
-@defineStatus(manufacturingOrder, 'производственного заказа', o);
 
 // copy
 extraCopy ABSTRACT (ManufacturingOrder, ManufacturingOrder);
@@ -220,7 +219,6 @@ DESIGN manufacturingOrder {
 }
 
 // fill
-
 fillLines 'Заполнить по спецификации' (ManufacturingOrder o) {
     APPLY;
     IF canceled() THEN RETURN;

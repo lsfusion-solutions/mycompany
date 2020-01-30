@@ -8,7 +8,8 @@ REQUIRE Time, MetaNumerator, Individual, Company,
 NAMESPACE Sales;
 
 CLASS Order 'Заказ';
-readonly = ABSTRACT CASE BOOLEAN (Order);
+
+@defineStatus(order, 'заказа');
 
 dateTime 'Дата' = DATA DATETIME (Order);
 WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(dateTime(o)) DO dateTime(o) <- currentDateTime();
@@ -101,6 +102,7 @@ WHEN LOCAL (SETCHANGED(item(OrderLine ol)) OR SETCHANGED(priceType(order(ol)))) 
 }
 
 // Line properties
+nameStatus 'Статус' (OrderLine l) = nameStatus(order(l)); 
 dateTime 'Дата' (OrderLine l) = dateTime(order(l));
 number 'Номер' (OrderLine l) = number(order(l));
 nameLocation 'Место доставки' (OrderLine l) = nameLocation(order(l));
@@ -188,6 +190,10 @@ DESIGN order {
     }            
 }
 
+@defineBarCodeAdd(order, o, item);
+@defineDocHistory(order, o, item, quantity);
+@defineDocSearch(order, item, quantity, o, canBeSold);
+
 FORM orders 'Заказы'
      OBJECTS o = Order
      PROPERTIES(o) READONLY number, nameCustomer,
@@ -205,22 +211,15 @@ DESIGN orders {
     PROPERTY(totalAmount(o)) { pattern = '#,##0.00'; }
 }
 
+@defineStatusForm(order, o);
+
 NAVIGATOR {
     sales {
         NEW orders FIRST;    
     }
 }
 
-// status
-@defineStatus(order, 'заказа', o);
-nameStatus 'Статус' (OrderLine l) = nameStatus(order(l)); 
-
-// history
-@defineDocHistory(order, o, item, quantity);
-
-// search
-@defineDocSearch(order, item, quantity, o, canBeSold);
-
+// price list
 EXTEND FORM order
     FILTERGROUP pricelist
         FILTER 'В прайс-листе' priceA(priceType(o), itm, dateTime(o))

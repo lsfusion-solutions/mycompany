@@ -7,6 +7,8 @@ NAMESPACE Invoicing;
 
 CLASS Invoice 'Расходная накладная';
 
+@defineStatus(invoice, 'счета');
+
 // dateTime
 dateTime 'Дата' = DATA DATETIME (Invoice) NONULL IN id;
 WHEN LOCAL SET (Invoice b IS Invoice) DO dateTime(b) <- currentDateTime();
@@ -81,11 +83,8 @@ WHEN LOCAL SETCHANGED(item(InvoiceLine l)) AND NOT CHANGED(unitPrice(l)) DO unit
 // taxes
 @defineTaxCalc(invoice, i, sales);
 
-// readonly
-readonly = ABSTRACT CASE BOOLEAN (Invoice);
-readonly = ABSTRACT CASE BOOLEAN (InvoiceLine);
-
 // Line properties
+nameStatus 'Статус' (InvoiceLine l) = nameStatus(invoice(l));
 dateTime 'Дата накладной' (InvoiceLine l) = dateTime(invoice(l));
 nameCustomer 'Покупатель' (InvoiceLine l) = nameCustomer(invoice(l));
 nameCompany 'Компания' (InvoiceLine l) = nameCompany(invoice(l));
@@ -94,14 +93,13 @@ edit (InvoiceLine l) + { edit(invoice(l)); }
 
 FORM invoice 'Расходная накладная'
     OBJECTS  i = Invoice PANEL 
-    PROPERTIES(i) READONLYIF readonly(i) 
-                             dateTime, number, nameCustomer, nameCompany, sourceDocument,
-                             dueDateTime, nameCustomerAccount, nameCompanyAccount,
-                             customerReference, note
+    PROPERTIES(i) dateTime, number, nameCustomer, nameCompany, sourceDocument,
+                  dueDateTime, nameCustomerAccount, nameCompanyAccount,
+                  customerReference, note
         
     OBJECTS l = InvoiceLine
-    PROPERTIES(l) READONLYIF readonly(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, quantity, 
-                        unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
+    PROPERTIES(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, 
+                  quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
     FILTERS invoice(l) = i
 
     EDIT Invoice OBJECT i
@@ -161,35 +159,27 @@ DESIGN invoice {
 }
 
 @defineBarCodeAdd(invoice, i, item);
+@defineDocHistory(invoice, i, item, quantity);
+@defineDocSearch(invoice, item, quantity, i, canBeSold);
 
 FORM invoices 'Расходные накладные'
     OBJECTS i = Invoice
     PROPERTIES(i) READONLY dateTime, number, nameCustomer, nameCompany, sourceDocument,
                            dueDateTime, nameCustomerAccount, nameCompanyAccount,
                            customerReference, note         
-    PROPERTIES(i) NEWSESSION NEW, EDIT, DELETE READONLYIF readonly(i)
+    PROPERTIES(i) NEWSESSION NEW, EDIT, DELETE
            
-    LIST Invoice OBJECT i;
+    LIST Invoice OBJECT i
+;
+
+@defineTaxForm(invoice, i);
+@defineStatusForm(invoice, i);
 
 NAVIGATOR {
     operations {
         NEW invoices;
     }
 }
-
-@defineTaxForm(invoice, i);
-
-// status
-@defineStatus(invoice, 'счета', i);
-nameStatus 'Статус' (InvoiceLine l) = nameStatus(invoice(l));
-
-// history
-@defineDocHistory(invoice, i, item, quantity);
-
-// search
-@defineDocSearch(invoice, item, quantity, i, canBeSold);
-
-readonly (InvoiceLine l) += WHEN NOT status(invoice(l)) = InvoiceStatus.draft THEN TRUE;
 
 // copy
 copy 'Копировать' (Invoice i)  { 

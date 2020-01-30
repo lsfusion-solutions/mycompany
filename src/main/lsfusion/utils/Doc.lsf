@@ -4,21 +4,24 @@ REQUIRE Authentication, Time, BarCode;
 
 NAMESPACE Utils;
 
-META defineStatus (doc, title, let)
+META defineStatus (doc, title)
    CLASS ###doc##Status 'Статус '##title {
        draft 'Черновик'
    }
    
-   name 'Имя' (###doc##Status ##let) = staticCaption(##let) IF ##let IS ###doc##Status CHARWIDTH 15;
+   name 'Имя' (###doc##Status s) = staticCaption(s) IF s IS ###doc##Status CHARWIDTH 15;
    
    status 'Статус' = ABSTRACT CASE ###doc##Status (###doc);
-   nameStatus 'Статус' (###doc ##let) = name(status(##let));
+   nameStatus 'Статус' (###doc d) = name(status(d));
    colorStatus 'Цвет' = ABSTRACT CASE COLOR (###doc);
    
-   status(###doc ##let) += WHEN ##let IS ###doc THEN ###doc##Status.draft;
-   colorStatus(###doc ##let) += WHEN status(##let) == ###doc##Status.draft THEN RGB(187,242,210);
-   readonly (###doc ##let) += WHEN NOT status(##let) = ###doc##Status.draft THEN TRUE;
-   
+   status(###doc d) += WHEN d IS ###doc THEN ###doc##Status.draft;
+   colorStatus(###doc d) += WHEN status(d) == ###doc##Status.draft THEN RGB(187,242,210);
+
+   isDraft (###doc d) = status(d) = ###doc##Status.draft;
+END
+
+META defineStatusForm (doc, let)
    EXTEND FORM ##doc##s
        PROPERTIES(##let) READONLY nameStatus BACKGROUND colorStatus(##let)
        FILTERGROUP status
@@ -92,7 +95,6 @@ META defineDocSearch (doc, it, fun, let)
     DESIGN doc {
         details {
             NEW search {
-                showIf = NOT readonly(let);
                 caption = 'Подбор';
                 type = SPLITH;
                 fill = 1;
