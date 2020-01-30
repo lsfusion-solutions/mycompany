@@ -55,13 +55,11 @@ META defineStatusForm (doc, let)
    } 
 END
 
-META defineDocSearch (doc, it, fun, let)
-    quantity 'Кол-во' (###doc i, ###it p) = 
+META defineDocSearchAction (doc, it, fun)
+    fun 'Кол-во' (###doc i, ###it p) = 
         GROUP SUM fun(###doc##Line l) BY doc(l), it(l);
-    last###doc##Line 'Последняя строка' (###doc i, ###it p) = 
-        GROUP LAST ###doc##Line l ORDER l BY doc(l), it(l);
         
-    changeQuantity 'Изменить кол-во' (###doc i, ###it p) {
+    change###fun (###doc i, ###it p) {
         INPUT q = NUMERIC[14,3] DO {
             IF last###doc##Line(i, p) THEN {
                 IF q THEN
@@ -78,7 +76,9 @@ META defineDocSearch (doc, it, fun, let)
                     }
         }
     }
-    
+END
+
+META defineDocSearchTab (doc, it)
     EXTEND FORM doc
         TREE categories c = Category PARENT parent(c)
         PROPERTIES READONLY name(c)
@@ -86,7 +86,6 @@ META defineDocSearch (doc, it, fun, let)
         
         OBJECTS itm = ###it
         PROPERTIES(itm) READONLY name, nameUom, idBarCode, id
-        PROPERTIES(let, itm) quantity ON CHANGE changeQuantity(let, itm)
         FILTERS level(category(itm), c)
         FILTERGROUP active
             FILTER 'Активный' active(itm) 'F10' DEFAULT  
@@ -105,6 +104,17 @@ META defineDocSearch (doc, it, fun, let)
             }
         }
     }
+END
+
+META defineDocSearch (doc, it, fun, let)
+    last###doc##Line (###doc i, ###it p) = GROUP LAST ###doc##Line l ORDER l BY doc(l), it(l);
+
+    @defineDocSearchAction(doc, it, fun);
+    @defineDocSearchTab(doc, it);
+    
+    EXTEND FORM doc
+        PROPERTIES(let, itm) fun ON CHANGE change###fun(let, itm)
+    ;        
 END
 
 META defineDocSearch (doc, it, fun, let, check)

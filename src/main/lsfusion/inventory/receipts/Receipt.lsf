@@ -129,7 +129,8 @@ DESIGN receipt {
 @defineDocHistory(receipt, r, product, initialDemand);
 
 // search
-@defineDocSearch(receipt, product, initialDemand, r, canBePurchased);
+@defineDocSearchTab(receipt, product);
+EXTEND FORM receipt FILTERS canBePurchased(itm);
 
 available 'Доступный остаток' (Receipt r, Product p) = prevAvailableRec(location(r), p);
 
@@ -137,6 +138,14 @@ EXTEND FORM receipt
     PROPERTIES(r, itm) available
 ;
 
+lastReceiptLine (Receipt i, Product p) = GROUP LAST ReceiptLine l ORDER l BY receipt(l), product(l);
+
+@defineDocSearchAction(receipt, product, initialDemand);
+EXTEND FORM receipt
+    PROPERTIES(r, itm) SHOWIF NOT immediate(r) initialDemand ON CHANGE changeInitialDemand(r, itm)
+;        
+
+// receipts
 FORM receipts 'Поступления'
     OBJECTS r = Receipt
     PROPERTIES(r) READONLY nameType, scheduledDateTime, number, 
