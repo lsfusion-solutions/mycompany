@@ -49,17 +49,17 @@ FORM orderInvoiceShow 'Оформлено накладными'
     OBJECTS ol = OrderLine
     
     OBJECTS il = InvoiceLine
-    PROPERTIES(il) READONLY dateTime, nameStatus, quantity    
+    PROPERTIES(il) READONLY nameStatus, number, dateTime, quantity    
     FILTERS orderLine(il) = ol
 ;
 
 EXTEND FORM order   
     PROPERTIES(o) SHOWIF (status(o) = OrderStatus.confirmed AND toInvoice(o) > 0) createInvoice
-    PROPERTIES(l) SHOWIF confirmed(o) invoiced ON CHANGE { DIALOG orderInvoiceShow OBJECTS ol = l; }
-    PROPERTIES(l) SHOWIF confirmed(o) paid ON CHANGE { DIALOG orderInvoiceShow OBJECTS ol = l; }
+    PROPERTIES(l) SHOWIF confirmed(o) invoiced ON CHANGE { DIALOG orderInvoiceShow OBJECTS ol = l; } BACKGROUND NOT invoiced(l) = quantity(l)
+    PROPERTIES(l) SHOWIF confirmed(o) paid ON CHANGE { DIALOG orderInvoiceShow OBJECTS ol = l; } BACKGROUND NOT paid(l) = quantity(l)
     
     OBJECTS in = Invoice
-    PROPERTIES(in) READONLY number, dateTime, nameStatus    
+    PROPERTIES(in) READONLY nameStatus BACKGROUND colorStatus(in), number, dateTime    
     PROPERTIES(in) EDIT GRID   
     FILTERS order(in) = o   
 ;
@@ -69,7 +69,9 @@ DESIGN order {
         MOVE PROPERTY(createInvoice(o)) FIRST { fontStyle = 'bold'; };
     }
     relatedDoc  {
-        MOVE BOX(in);
+        MOVE BOX(in) {
+            GRID(in) { headerHeight = 24; }
+        }
         REMOVE TOOLBARBOX(in);
     }
 }

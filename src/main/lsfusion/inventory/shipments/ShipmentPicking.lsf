@@ -82,7 +82,7 @@ DESIGN shipment {
 // resledger
 CLASS ShipmentPickingRes : ResLedger;
 
-pickingLedger = AGGR ShipmentPickingRes WHERE reserved(ShipmentLine l, Location loc) AND (status(shipment(l)) = ShipmentStatus.waiting OR status(shipment(l)) = ShipmentStatus.ready);
+pickingLedger = AGGR ShipmentPickingRes WHERE reserved(ShipmentLine l, Location loc) AND toReserve(shipment(l));
 
 dateTime(ShipmentPickingRes r) += executionDateTime(shipment(l(r)));
 number(ShipmentPickingRes r) += number(shipment(l(r)));

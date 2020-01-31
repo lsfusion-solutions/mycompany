@@ -48,7 +48,7 @@ FORM orderBillShow 'Выставлено счетов'
     OBJECTS ol = OrderLine
     
     OBJECTS bl = BillLine
-    PROPERTIES(bl) READONLY dateTime, nameStatus, quantity
+    PROPERTIES(bl) READONLY nameStatus, number, dateTime, quantity
     FILTERS orderLine(bl) = ol
 ;
 
@@ -58,7 +58,7 @@ EXTEND FORM order
     PROPERTIES(l) SHOWIF confirmed(o) paid ON CHANGE { DIALOG orderBillShow OBJECTS ol = l; }
 
     OBJECTS bi = Bill
-    PROPERTIES(bi) READONLY number, dateTime, nameStatus    
+    PROPERTIES(bi) READONLY nameStatus BACKGROUND colorStatus(bi), number, dateTime    
     PROPERTIES(bi) EDIT GRID   
     FILTERS order(bi) = o       
 ;
@@ -68,7 +68,9 @@ DESIGN order {
         MOVE PROPERTY(createBill(o)) { fontStyle = 'bold'; };
     }
     relatedDoc  {
-        MOVE BOX(bi);
+        MOVE BOX(bi) {
+            GRID(bi) { headerHeight = 24; }
+        }
         REMOVE TOOLBARBOX(bi);
     }
 }

@@ -1,6 +1,7 @@
 MODULE SalesOrderShipment;
 
-REQUIRE SalesOrder, Inventory, SalesOrderConfirmed, SalesOrderCanceled, SalesSettings;
+REQUIRE SalesOrder, SalesOrderConfirmed, SalesOrderCanceled, SalesOrderLocked,
+        ShipmentCanceled;
 
 NAMESPACE Sales;
 
@@ -13,20 +14,23 @@ EXTEND FORM options PROPERTIES nameShipmentType();
 orderLine = DATA OrderLine (ShipmentLine);
 order = DATA Order (Shipment);
 
-doneShipment 'Отгружено' (OrderLine ol) = 
+reserved 'Зарезервировано' (OrderLine ol) = 
+    GROUP SUM reserved(ShipmentLine rl) IF orderLine(rl) = ol AND toReserve(shipment(rl));
+
+done 'Отгружено' (OrderLine ol) = 
     GROUP SUM done(ShipmentLine rl) IF orderLine(rl) = ol AND status(shipment(rl)) = ShipmentStatus.done;
 toShip 'К отгрузке' (OrderLine ol) = 
-    max(quantity(ol) (-) doneShipment(ol), 0) IF item(ol) IS Product MATERIALIZED;
+    max(quantity(ol) (-) done(ol), 0) IF item(ol) IS Product MATERIALIZED;
 
 toShip 'К отгрузке' (Order o) = GROUP SUM toShip(OrderLine ol) IF order(ol) = o;
 
-CONSTRAINT (quantity(OrderLine ol) (-) doneShipment(ol)) < 0 AND confirmed(order(ol)) 
+CONSTRAINT (quantity(OrderLine ol) (-) done(ol)) < 0 AND confirmed(order(ol)) 
     MESSAGE 'По товару отгрузка превышает количество в заказе';
 
 lastOpenShipment 'Последний открытый расход' (Order o)= 
-    GROUP LAST Shipment s IF order(s) = o AND (status(s) = ShipmentStatus.waiting OR status(s) = ShipmentStatus.ready) ORDER s;
+    GROUP LAST Shipment s IF order(s) = o AND toReserve(s) ORDER s;
 
-WHEN ([GROUP SUM 1 IF CHANGED(toShip(OrderLine l)) BY order(l)](Order o) OR SET(confirmed(o)) OR 
+WHEN ([GROUP SUM 1 IF CHANGED(toShip(OrderLine l)) BY order(l)](Order o) OR SET(confirmed(o)) OR DROPPED(locked(o)) OR  
       CHANGED(customer(o)) OR CHANGED(scheduledDateTime(o)) OR CHANGED(location(o)) OR CHANGED(number(o))) AND 
      status(o) = OrderStatus.confirmed AND location(o) AND shipmentType() DO {
     IF NOT lastOpenShipment(o) AND toShip(o) > 0 THEN   
@@ -53,30 +57,39 @@ WHEN ([GROUP SUM 1 IF CHANGED(toShip(OrderLine l)) BY order(l)](Order o) OR SET(
     }
     initialDemand(ShipmentLine l) <- toShip(orderLine(l)) IF toShip(orderLine(l)) > 0 WHERE shipment(l) = lastOpenShipment(o);  
     DELETE ShipmentLine l WHERE shipment(l) = lastOpenShipment(o) AND NOT initialDemand(l);
+    IF NOT countLines(lastOpenShipment(o)) THEN
+        DELETE Shipment s WHERE s = lastOpenShipment(o); 
 
     precheckAvailability(lastOpenShipment(o));
+}
+
+WHEN SET(locked(Order o)) DO {
+    DELETE Shipment s WHERE s = lastOpenShipment(o);
 }
 
 FORM orderShipmentShow 'Расход со склада'
     OBJECTS ol = OrderLine
     
     OBJECTS sl = ShipmentLine
-    PROPERTIES(sl) READONLY scheduledDateTime, nameStatus, initialDemand, done   
+    PROPERTIES(sl) READONLY nameStatus, number, scheduledDateTime, initialDemand, done   
     FILTERS orderLine(sl) = ol
 ;
 
 EXTEND FORM order
-    PROPERTIES(l) SHOWIF confirmed(o) doneShipment ON CHANGE { DIALOG orderShipmentShow OBJECTS ol = l; }
+    PROPERTIES(l) SHOWIF confirmed(o) reserved ON CHANGE { DIALOG orderShipmentShow OBJECTS ol = l; } BACKGROUND toShip(l) AND NOT reserved(l) = toShip(l)
+    PROPERTIES(l) SHOWIF confirmed(o) done ON CHANGE { DIALOG orderShipmentShow OBJECTS ol = l; } BACKGROUND NOT done(l) = quantity(l)
     
     OBJECTS sh = Shipment
-    PROPERTIES(sh) READONLY number, scheduledDateTime, executionDateTime, nameStatus   
+    PROPERTIES(sh) READONLY nameStatus BACKGROUND colorStatus(sh), number, scheduledDateTime, executionDateTime   
     PROPERTIES(sh) NEWSESSION EDIT GRID   
     FILTERS order(sh) = o
 ;
 
 DESIGN order {
     relatedDoc  {
-        MOVE BOX(sh);
+        MOVE BOX(sh) {
+            GRID(sh) { headerHeight = 24; }
+        }
         REMOVE TOOLBARSYSTEM(sh);
     }
 }

@@ -101,8 +101,8 @@ WHEN LOCAL (SETCHANGED(item(OrderLine ol)) OR SETCHANGED(priceType(order(ol)))) 
 
 // Line properties
 nameStatus 'Статус' (OrderLine l) = nameStatus(order(l)); 
-dateTime 'Дата' (OrderLine l) = dateTime(order(l));
 number 'Номер' (OrderLine l) = number(order(l));
+dateTime 'Дата' (OrderLine l) = dateTime(order(l));
 nameLocation 'Место доставки' (OrderLine l) = nameLocation(order(l));
 nameCustomer 'Заказчик' (OrderLine l) = nameCustomer(order(l));
 
@@ -142,7 +142,9 @@ DESIGN order {
         NEW details {
             fill = 7;
             type = TABBED;
-            MOVE BOX(l);
+            MOVE BOX(l) {
+                PROPERTY(nameItem(l)) { notNull = TRUE; }
+            }
             NEW otherInformation {
                 caption = 'Прочая информация';
                 type = COLUMNS;

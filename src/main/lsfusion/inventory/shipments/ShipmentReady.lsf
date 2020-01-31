@@ -13,6 +13,8 @@ status (Shipment s) += WHEN ready(s) THEN ShipmentStatus.ready;
 colorStatus (Shipment s) += WHEN status(s) = ShipmentStatus.ready THEN RGB(252,247,149);
 
 // reserved
+toReserve (Shipment s) = status(s) = ShipmentStatus.waiting OR status(s) = ShipmentStatus.ready MATERIALIZED;   
+
 reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ShipmentLine);
 linesReserved (Shipment s) = GROUP SUM 1 IF reserved(ShipmentLine l) = initialDemand(l) AND shipment(l) = s;
 reserved (Shipment s) = linesReserved(s) = countLines(s);
@@ -47,8 +49,7 @@ unreserve 'Снять резервирование' (Shipment s) {
 }
 
 EXTEND FORM shipment
-    PROPERTIES(s) checkAvailability SHOWIF (status(s) = ShipmentStatus.waiting OR status(s) = ShipmentStatus.ready) 
-                                            AND NOT reserved(s) AND NOT immediate(s), 
+    PROPERTIES(s) checkAvailability SHOWIF toReserve(s) AND NOT reserved(s) AND NOT immediate(s), 
                   unreserve SHOWIF status(s) = ShipmentStatus.ready, 
                   ready 
        

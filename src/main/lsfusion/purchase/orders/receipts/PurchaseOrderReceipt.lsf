@@ -52,7 +52,7 @@ FORM orderReceiptShow 'Оприходовано на склад'
     OBJECTS ol = OrderLine
     
     OBJECTS rl = ReceiptLine
-    PROPERTIES(rl) READONLY scheduledDateTime, nameStatus, initialDemand, done
+    PROPERTIES(rl) READONLY nameStatus, number, scheduledDateTime, initialDemand, done
     FILTERS orderLine(rl) = ol
 ;
 
@@ -70,14 +70,16 @@ EXTEND FORM order
     PROPERTIES(l) SHOWIF confirmed(o) doneReceipt ON CHANGE { DIALOG orderReceiptShow OBJECTS ol = l; }
         
     OBJECTS rc = Receipt
-    PROPERTIES(rc) READONLY number, scheduledDateTime, executionDateTime, nameStatus
+    PROPERTIES(rc) READONLY nameStatus BACKGROUND colorStatus(rc), number, scheduledDateTime, executionDateTime
     PROPERTIES(rc) EDIT GRID   
     FILTERS order(rc) = o
 ;
 
 DESIGN order {
     relatedDoc  {
-        MOVE BOX(rc);
+        MOVE BOX(rc) {
+            GRID(rc) { headerHeight = 24; }
+        }
         REMOVE TOOLBARSYSTEM(rc);
     }
 }
