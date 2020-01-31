@@ -30,34 +30,10 @@ validate 'Принят' (Receipt r) {
         
     NEWSESSION {
         IF NOT immediate(r) THEN {
-            IF GROUP SUM done(ReceiptLine l) IF receipt(l) = r THEN {
-                IF GROUP SUM 1 IF receipt(ReceiptLine l) = r AND NOT done(l) = initialDemand(l) THEN {
-                    ASK 'Принято не все количество. Создать дополнительную приемку ?' DO {
-                        NEW rn = Receipt {
-                            type(rn) <- type(r);
-
-                            scheduledDateTime(rn) <- scheduledDateTime(r);
-
-                            vendor(rn) <- vendor(r);
-                            location(rn) <- location(r);
-
-                            note(rn) <- note(r);
-
-                            FOR receipt(ReceiptLine l) = r AND (q = initialDemand(l) (-) done(l)) DO NEW ln = ReceiptLine {
-                                receipt(ln) <- rn;
-                                product(ln) <- product(l);
-                                initialDemand(ln) <- q;
-                            }
-                        }
-                        initialDemand(ReceiptLine l) <- done(l) WHERE receipt(l) = r;
-                        DELETE ReceiptLine l WHERE receipt(l) = r AND NOT done(l);
-                    }
-                }
-            } ELSE {
+            IF NOT GROUP SUM 1 IF done(ReceiptLine l) AND receipt(l) = r THEN
                 ASK 'Не заполены принятые количества. Проставить ожидаемыми ?' DO {
                     done(ReceiptLine l) <- initialDemand(l) WHERE receipt(l) = r;
                 } ELSE RETURN;
-            }
         }
         
         done(r) <- TRUE;

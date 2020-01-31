@@ -7,21 +7,21 @@ REQUIRE Time, MetaNumerator, Individual, Company,
 
 NAMESPACE Sales;
 
-CLASS Order 'Заказ';
+CLASS Order 'Заказ покупателя';
 
-@defineStatus(order, 'заказа');
+@defineStatus(order, 'заказа покупателя');
 
 dateTime 'Дата' = DATA DATETIME (Order);
 WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(dateTime(o)) DO dateTime(o) <- currentDateTime();
 
-@defineNumber(order, 'Заказы на продажу', 'ЗР');
+@defineNumber(order, 'Заказы покупателей', 'ЗР');
 
 customer 'Заказчик' = DATA Partner (Order) NONULL;
 nameCustomer 'Заказчик' (Order o) = name(customer(o));
 
 CONSTRAINT customer(Order o) AND NOT isCustomer(customer(o))
                 CHECKED BY customer[Order]
-                MESSAGE 'Контрагент должен быть покупателем';
+                MESSAGE 'Контрагент заказа покупателя должен быть покупателем';
 
 // Quotation
 validity 'Срок действия' = DATA DATETIME (Order);
@@ -106,7 +106,7 @@ dateTime 'Дата' (OrderLine l) = dateTime(order(l));
 nameLocation 'Место доставки' (OrderLine l) = nameLocation(order(l));
 nameCustomer 'Заказчик' (OrderLine l) = nameCustomer(order(l));
 
-FORM order 'Заказ'
+FORM order 'Заказ покупателя'
     OBJECTS o = Order PANEL
     PROPERTIES(o) dateTime, number, nameCustomer, namePriceType,
                   scheduledDateTime, deliveryAddress, nameLocation, nameIncoterm, 
@@ -190,7 +190,7 @@ DESIGN order {
 @defineBarCodeAdd(order, o, item);
 @defineDocHistory(order, o, item, quantity);
 
-FORM orders 'Заказы'
+FORM orders 'Заказы покупателей'
      OBJECTS o = Order
      PROPERTIES(o) READONLY number, nameCustomer,
                             scheduledDateTime, deliveryAddress, nameLocation, nameIncoterm, 
@@ -204,7 +204,7 @@ FORM orders 'Заказы'
 @defineStatusForm(order, o);
 
 NAVIGATOR {
-    sales {
+    operations {
         NEW orders FIRST;    
     }
 }

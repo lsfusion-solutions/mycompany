@@ -4,15 +4,15 @@ REQUIRE ItemPurchase, PartnerPurchase, PurchaseSettings, BarCode, Doc;
 
 NAMESPACE Purchase; 
 
-CLASS Pricelist 'Прайс-листы';
+CLASS Pricelist 'Прайс-лист поставщика';
 
-@defineStatus(pricelist, 'прайс-листа');
+@defineStatus(pricelist, 'прайс-листа поставщика');
 
 startDateTime 'Начало действия' = DATA DATETIME (Pricelist);
 WHEN LOCAL SET(Pricelist l IS Pricelist) AND NOT CHANGED(startDateTime(l)) DO startDateTime(l) <- currentDateTime(); 
 endDateTime 'Окончание действия' = DATA DATETIME (Pricelist);
 
-@defineNumber(pricelist, 'Прайс-листы', 'ПП');
+@defineNumber(pricelist, 'Прайс-листы поставщиков', 'ПП');
 
 note 'Примечание' = DATA STRING[50] (Pricelist);
 
@@ -46,7 +46,7 @@ startDateTime 'Начало действия' (PricelistLine prl) = startDateTim
 endDateTime 'Окончание действия' (PricelistLine prl) = endDateTime(pricelist(prl));
 note 'Примечание' (PricelistLine prl) = note(pricelist(prl));
 
-FORM pricelist 'Прайс-лист'
+FORM pricelist 'Прайс-лист поставщика'
     OBJECTS p = Pricelist PANEL
     PROPERTIES(p) number, startDateTime, endDateTime, nameVendor, note
     
@@ -81,7 +81,7 @@ DESIGN pricelist {
 
 @defineDocSearch(pricelist, item, unitPrice, 'Цена', p, canBePurchased);
 
-FORM pricelists 'Прайс-листы'
+FORM pricelists 'Прайс-листы поставщиков'
     OBJECTS p = Pricelist
     PROPERTIES(p) READONLY number, startDateTime, endDateTime, nameVendor, note
     PROPERTIES(p) NEWSESSION NEW, EDIT, DELETE 
@@ -92,8 +92,8 @@ FORM pricelists 'Прайс-листы'
 @defineStatusForm(pricelist, p);
 
 NAVIGATOR {
-    purchase {
-        NEW pricelists BEFORE settings;       
+    operations {
+        NEW pricelists;       
     }
 }
 

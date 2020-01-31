@@ -8,21 +8,21 @@ REQUIRE Time, MetaNumerator, Individual, Company,
 
 NAMESPACE Purchase;
 
-CLASS Order 'Заказ';
+CLASS Order 'Заказ поставщику';
 
-@defineStatus(order, 'заказа');
+@defineStatus(order, 'заказа поставщику');
 
 dateTime 'Создан'  = DATA DATETIME (Order);
 WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(dateTime(o)) DO { dateTime(o) <- currentDateTime();}
 
-@defineNumber(order, 'Заказы на закупку', 'ЗК');
+@defineNumber(order, 'Заказы поставщикам', 'ЗК');
 
 vendor 'Поставщик' = DATA Partner (Order) NONULL;
 nameVendor 'Поставщик' (Order o) = name(vendor(o));
 
 CONSTRAINT vendor(Order o) AND NOT isVendor(vendor(o))
                 CHECKED BY vendor[Order]
-                MESSAGE 'Контрагент должен быть поставщиком';
+                MESSAGE 'Контрагент заказа поставщику должен быть поставщиком';
 
 // Invoicing information
 paymentTerms 'Условие оплаты' = DATA PaymentTerm (Order);
@@ -91,7 +91,7 @@ nameVendor 'Поставщик' (OrderLine l) = nameVendor(order(l));
 
 edit (OrderLine l) + { edit(order(l)); } 
 
-FORM order 'Заказ'
+FORM order 'Заказ поставщику'
     OBJECTS o = Order PANEL
     PROPERTIES(o) dateTime, number, nameVendor,
                   scheduledDateTime, nameLocation, nameIncoterm,
@@ -164,7 +164,7 @@ DESIGN order {
 @defineBarCodeAdd(order, o, item);
 @defineDocHistory(order, o, item, quantity);
 
-FORM orders 'Заказы'
+FORM orders 'Заказы поставщикам'
     OBJECTS o = Order
     PROPERTIES(o) READONLY dateTime, number, nameVendor,
                            scheduledDateTime, nameLocation, nameIncoterm,
@@ -177,7 +177,7 @@ FORM orders 'Заказы'
 @defineStatusForm(order, o);
 
 NAVIGATOR {
-    purchase {
+    operations {
         NEW orders FIRST;    
     }
 }
