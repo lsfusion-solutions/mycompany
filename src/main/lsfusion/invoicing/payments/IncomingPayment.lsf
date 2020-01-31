@@ -48,10 +48,9 @@ reference 'Ссылка' = DATA ISTRING[50] (IncomingPayment);
 // forms
 FORM incomingPayment 'Входящий платеж'
     OBJECTS p = IncomingPayment PANEL 
-    PROPERTIES(p) dateTime, number,
+    PROPERTIES(p) dateTime, number, amount,
                   namePartner, namePartnerAccount, 
                   nameCompany, nameCompanyAccount,
-                  amount, 
                   note, reference
                
     
@@ -64,24 +63,28 @@ DESIGN incomingPayment {
             NEW params {
                 caption = 'Параметры';
                 type = CONTAINERH;
+                alignment = STRETCH;
                 MOVE PROPERTY(dateTime(p)); 
                 MOVE PROPERTY(number(p));
+                MOVE PROPERTY(amount(p));
             }
             NEW partner {
                 type = CONTAINERH;
+                alignment = STRETCH;
                 caption = 'Контрагент';
                 MOVE PROPERTY(namePartner(p)) { notNull = TRUE; }
                 MOVE PROPERTY(namePartnerAccount(p));
             }
             NEW company { 
                 type = CONTAINERH;
+                alignment = STRETCH;
                 caption = 'Компания';
                 MOVE PROPERTY(nameCompany(p)) { notNull = TRUE; }
                 MOVE PROPERTY(nameCompanyAccount(p));
             }
             NEW otherInformation {
                 caption = 'Прочая информация';
-                MOVE PROPERTY(amount(p)); 
+                alignment = STRETCH;
                 MOVE PROPERTY(note(p)); 
                 MOVE PROPERTY(reference(p));    
             }
@@ -95,10 +98,9 @@ DESIGN incomingPayment {
 
 FORM incomingPayments 'Входящие платежи'
     OBJECTS p = IncomingPayment
-    PROPERTIES(p) READONLY dateTime, number,
+    PROPERTIES(p) READONLY dateTime, number, amount,
                            namePartner, namePartnerAccount, 
                            nameCompany, nameCompanyAccount,
-                           amount, 
                            note, reference
     PROPERTIES(p) NEWSESSION NEW, EDIT, DELETE 
     

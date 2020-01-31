@@ -48,10 +48,9 @@ reference 'Ссылка' = DATA ISTRING[50] (OutgoingPayment);
 // forms
 FORM outgoingPayment 'Исходящий платеж'
     OBJECTS p = OutgoingPayment PANEL 
-    PROPERTIES(p) dateTime, number,
+    PROPERTIES(p) dateTime, number, amount,
                   namePartner, namePartnerAccount, 
                   nameCompany, nameCompanyAccount,
-                  amount, 
                   note, reference
                
     
@@ -64,24 +63,28 @@ DESIGN outgoingPayment {
             NEW params {
                 caption = 'Параметры';
                 type = CONTAINERH;
+                alignment = STRETCH;
                 MOVE PROPERTY(dateTime(p)); 
                 MOVE PROPERTY(number(p));
+                MOVE PROPERTY(amount(p));
             }
             NEW partner {
-                type = CONTAINERH;
                 caption = 'Контрагент';
+                type = CONTAINERH;
+                alignment = STRETCH;
                 MOVE PROPERTY(namePartner(p)) { notNull = TRUE; }
                 MOVE PROPERTY(namePartnerAccount(p));
             }
             NEW company { 
-                type = CONTAINERH;
                 caption = 'Компания';
+                type = CONTAINERH;
+                alignment = STRETCH;
                 MOVE PROPERTY(nameCompany(p)) { notNull = TRUE; }
                 MOVE PROPERTY(nameCompanyAccount(p));
             }
             NEW otherInformation {
                 caption = 'Прочая информация';
-                MOVE PROPERTY(amount(p)); 
+                alignment = STRETCH;
                 MOVE PROPERTY(note(p)); 
                 MOVE PROPERTY(reference(p));    
             }
@@ -95,10 +98,9 @@ DESIGN outgoingPayment {
 
 FORM outgoingPayments 'Исходящие платежи'
     OBJECTS p = OutgoingPayment
-    PROPERTIES(p) READONLY dateTime, number,
+    PROPERTIES(p) READONLY dateTime, number, amount,
                            namePartner, namePartnerAccount, 
-                           nameCompany, nameCompanyAccount,
-                           amount, 
+                           nameCompany, nameCompanyAccount, 
                            note, reference
     PROPERTIES(p) NEWSESSION NEW, EDIT, DELETE 
     
