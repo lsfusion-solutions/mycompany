@@ -38,7 +38,7 @@ WHEN LOCAL CHANGED(item(PricelistLine l)) DO uom(l) <- uom(item(l));
 nameItemVendor 'Наименование у поставщика' = DATA STRING[200] (PricelistLine);
 codeItemVendor 'Код у поставщика' = DATA STRING[20] (PricelistLine);
 
-unitPrice 'Цена' = DATA NUMERIC[10,2] (PricelistLine);
+price 'Цена' = DATA NUMERIC[10,2] (PricelistLine);
 
 // Line properties
 number 'Номер' (PricelistLine prl) = number(pricelist(prl));
@@ -52,7 +52,7 @@ FORM pricelist 'Прайс-лист поставщика'
     
     OBJECTS l = PricelistLine
     PROPERTIES(l) index READONLY, nameItem, nameUom READONLY, nameItemVendor, codeItemVendor,
-                  idBarCodeItem, idItem, unitPrice
+                  idBarCodeItem, idItem, price
     PROPERTIES(l) NEW, DELETE 
     FILTERS pricelist(l) = p
     
@@ -79,7 +79,7 @@ DESIGN pricelist {
     }
 }
 
-@defineDocSearch(pricelist, item, unitPrice, 'Цена', p, canBePurchased);
+@defineDocSearch(pricelist, item, price, 'Цена', p, canBePurchased);
 
 FORM pricelists 'Прайс-листы поставщиков'
     OBJECTS p = Pricelist
@@ -108,7 +108,7 @@ copy 'Копировать' (Pricelist pl) {
             FOR pricelist(PricelistLine l)  = pl DO NEW nl = PricelistLine {
                 pricelist(nl) <- p;
                 item(nl) <- item(l);
-                unitPrice(nl) <- unitPrice(l);
+                price(nl) <- price(l);
                 nameItemVendor(nl) <- nameItemVendor(l);
                 codeItemVendor(nl) <- codeItemVendor(l);
                 uom(nl) <- uom(l);

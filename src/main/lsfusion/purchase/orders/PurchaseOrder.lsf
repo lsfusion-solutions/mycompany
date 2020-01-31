@@ -69,14 +69,14 @@ nameUom 'Ед. изм.' (OrderLine l) = name(uom(l));
 WHEN LOCAL CHANGED(item(OrderLine l)) DO uom(l) <- uom(item(l));
 
 quantity 'Количество' = DATA NUMERIC[16,3] (OrderLine);
-unitPrice 'Цена' = DATA NUMERIC[10,2] (OrderLine);
+price 'Цена' = DATA NUMERIC[10,2] (OrderLine);
 
 @defineTaxCalc(order, o, purchase);
 
 WHEN LOCAL CHANGED (item(OrderLine ol)) DO {
     description(ol) <- OVERRIDE nameItemVendor(pricelistLineA(vendor(order(ol)), item(ol), dateTime(order(ol)))),
                                 nameItem(ol); 
-    unitPrice(ol) <- OVERRIDE unitPrice(pricelistLineA(vendor(order(ol)), item(ol), dateTime(order(ol)))), 
+    price(ol) <- OVERRIDE price(pricelistLineA(vendor(order(ol)), item(ol), dateTime(order(ol)))), 
                               cost(item(ol));
     uom(ol) <- uom(item(ol));
     in(ol, Tax t) <- purchaseIn(item(ol),t); 
@@ -100,7 +100,7 @@ FORM order 'Заказ поставщику'
     PROPERTIES(o) READONLY untaxedAmount, totalTax, totalAmount
                  
     OBJECTS l = OrderLine
-    PROPERTIES(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, quantity, unitPrice, subtotal, taxes ON CHANGE changeTax(l)
+    PROPERTIES(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, quantity, price, subtotal, taxes ON CHANGE changeTax(l)
     PROPERTIES(l) NEW, DELETE
     FILTERS order(l) = o
      

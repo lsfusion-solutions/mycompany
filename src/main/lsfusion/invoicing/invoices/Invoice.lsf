@@ -76,9 +76,9 @@ WHEN LOCAL CHANGED(item(InvoiceLine l)) DO uom(l) <- uom(item(l));
 description 'Описание' = DATA STRING (InvoiceLine); 
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (InvoiceLine) NONULL;
-unitPrice 'Цена за штуку' = DATA NUMERIC[10,2] (InvoiceLine) NONULL;
+price 'Цена' = DATA NUMERIC[10,2] (InvoiceLine) NONULL;
 
-WHEN LOCAL SETCHANGED(item(InvoiceLine l)) AND NOT CHANGED(unitPrice(l)) DO unitPrice(l) <- salesPrice(item(l));
+WHEN LOCAL SETCHANGED(item(InvoiceLine l)) AND NOT CHANGED(price(l)) DO price(l) <- salesPrice(item(l));
 
 // taxes
 @defineTaxCalc(invoice, i, sales);
@@ -100,7 +100,7 @@ FORM invoice 'Расходная накладная'
         
     OBJECTS l = InvoiceLine
     PROPERTIES(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, 
-                  quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
+                  quantity, price, taxes ON CHANGE changeTax(l), NEW, DELETE 
     FILTERS invoice(l) = i
 
     EDIT Invoice OBJECT i
@@ -192,7 +192,7 @@ copy 'Копировать' (Invoice i)  {
                 invoice(nl) <- ni;
                 item(nl) <- item(l);
                 quantity(nl) <- quantity(l);
-                unitPrice(nl) <- unitPrice(l);
+                price(nl) <- price(l);
             }
             SHOW invoice OBJECTS i = ni DOCKED;
         }

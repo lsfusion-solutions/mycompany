@@ -79,7 +79,7 @@ WHEN LOCAL CHANGED(item(OrderLine l)) DO uom(l) <- uom(item(l));
 
 quantity 'Количество' = DATA NUMERIC[16,3] (OrderLine);
 
-unitPrice 'Цена' = DATA NUMERIC[10,2] (OrderLine);
+price 'Цена' = DATA NUMERIC[10,2] (OrderLine);
 
 @defineTaxCalc(order, o, sales);
 
@@ -95,8 +95,8 @@ namePriceType 'Вид цен' (Order o) =  name(priceType(o));
  
 WHEN LOCAL CHANGED(customer(Order o)) DO priceType(o) <- priceType(customer(o));
 
-WHEN LOCAL (SETCHANGED(item(OrderLine ol)) OR SETCHANGED(priceType(order(ol)))) AND NOT CHANGED(unitPrice(ol)) DO {
-    unitPrice(ol) <- OVERRIDE noTaxPriceA(priceType(order(ol)), item(ol), dateTime(order(ol))), salesPrice(item(ol)); 
+WHEN LOCAL (SETCHANGED(item(OrderLine ol)) OR SETCHANGED(priceType(order(ol)))) AND NOT CHANGED(price(ol)) DO {
+    price(ol) <- OVERRIDE noTaxPriceA(priceType(order(ol)), item(ol), dateTime(order(ol))), salesPrice(item(ol)); 
 }
 
 // Line properties
@@ -116,7 +116,7 @@ FORM order 'Заказ покупателя'
     PROPERTIES(o) READONLY untaxedAmount, totalTax, totalAmount
                  
     OBJECTS l = OrderLine
-    PROPERTIES(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, quantity, unitPrice, subtotal, taxes ON CHANGE changeTax(l)
+    PROPERTIES(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, quantity, price, subtotal, taxes ON CHANGE changeTax(l)
     PROPERTIES(l) NEW, DELETE
     FILTERS order(l) = o
     

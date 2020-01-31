@@ -76,9 +76,9 @@ WHEN LOCAL CHANGED(item(BillLine l)) DO uom(l) <- uom(item(l));
 description 'Описание' = DATA STRING (BillLine); 
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (BillLine) NONULL;
-unitPrice 'Цена за штуку' = DATA NUMERIC[10,2] (BillLine) NONULL;
+price 'Цена' = DATA NUMERIC[10,2] (BillLine) NONULL;
 
-WHEN LOCAL SETCHANGED(item(BillLine l)) AND NOT CHANGED(unitPrice(l)) DO unitPrice(l) <- cost(item(l));
+WHEN LOCAL SETCHANGED(item(BillLine l)) AND NOT CHANGED(price(l)) DO price(l) <- cost(item(l));
 
 // taxes
 @defineTaxCalc(bill, b, purchase);
@@ -101,7 +101,7 @@ FORM bill 'Приходная накладная'
         
     OBJECTS l = BillLine
     PROPERTIES(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, 
-                  quantity, unitPrice, taxes ON CHANGE changeTax(l), NEW, DELETE 
+                  quantity, price, taxes ON CHANGE changeTax(l), NEW, DELETE 
     FILTERS bill(l) = b
 
     EDIT Bill OBJECT b
@@ -194,7 +194,7 @@ copy 'Копировать' (Bill b)  {
                 bill(nl) <- nb;
                 item(nl) <- item(l);
                 quantity(nl) <- quantity(l);
-                unitPrice(nl) <- unitPrice(l);
+                price(nl) <- price(l);
             }
             SHOW bill OBJECTS b = nb DOCKED;
         }
