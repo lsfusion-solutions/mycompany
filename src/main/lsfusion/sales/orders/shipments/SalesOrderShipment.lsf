@@ -18,7 +18,7 @@ reserved 'Зарезервировано' (OrderLine ol) =
     GROUP SUM reserved(ShipmentLine rl) IF orderLine(rl) = ol AND toReserve(shipment(rl));
 
 done 'Отгружено' (OrderLine ol) = 
-    GROUP SUM done(ShipmentLine rl) IF orderLine(rl) = ol AND status(shipment(rl)) = ShipmentStatus.done;
+    GROUP SUM done(ShipmentLine rl) IF orderLine(rl) = ol AND active(shipment(rl));
 toShip 'К отгрузке' (OrderLine ol) = 
     max(quantity(ol) (-) done(ol), 0) IF item(ol) IS Product MATERIALIZED;
 
@@ -28,24 +28,24 @@ CONSTRAINT (quantity(OrderLine ol) (-) done(ol)) < 0 AND confirmed(order(ol))
     MESSAGE 'По товару отгрузка превышает количество в заказе';
 
 lastOpenShipment 'Последний открытый расход' (Order o)= 
-    GROUP LAST Shipment s IF order(s) = o AND toReserve(s) ORDER s;
+    GROUP LAST Shipment s IF order(s) = o AND toReserve(s) ORDER s MATERIALIZED;
 
 WHEN ([GROUP SUM 1 IF CHANGED(toShip(OrderLine l)) BY order(l)](Order o) OR SET(confirmed(o)) OR DROPPED(locked(o)) OR  
       CHANGED(customer(o)) OR CHANGED(scheduledDateTime(o)) OR CHANGED(location(o)) OR CHANGED(number(o))) AND 
      status(o) = OrderStatus.confirmed AND location(o) AND shipmentType() DO {
     IF NOT lastOpenShipment(o) AND toShip(o) > 0 THEN   
-        NEW ns = Shipment { 
-            order(ns) <- o; 
-            type(ns) <- shipmentType();
-            waiting(ns) <- TRUE;    
+        NEW s = Shipment { 
+            order(s) <- o; 
+            type(s) <- shipmentType();
+            waiting(s) <- TRUE;    
         }
         
-    FOR Shipment ns = lastOpenShipment(o) DO {
-        customer(ns) <- customer(o);
-        scheduledDateTime(ns) <- scheduledDateTime(o);
+    FOR Shipment s = lastOpenShipment(o) DO {
+        customer(s) <- customer(o);
+        scheduledDateTime(s) <- scheduledDateTime(o);
 
-        location(ns) <- location(o);
-        sourceDocument(ns) <- number(o);
+        location(s) <- location(o);
+        sourceDocument(s) <- number(o);
     }
     
     FOR order(OrderLine ol) = o AND toShip(ol) > 0 AND 

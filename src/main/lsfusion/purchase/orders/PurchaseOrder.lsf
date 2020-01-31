@@ -3,7 +3,7 @@ MODULE PurchaseOrder;
 REQUIRE Time, MetaNumerator, Individual, Company,
         MetaTax, TaxItem, BarCode,
         PurchaseSettings, PartnerPurchase, ItemSale,
-        Incoterms, PaymentTerms, Doc, PurchasePricelist,
+        Incoterms, PaymentTerms, Doc, PurchasePricelistValue,
         Location;  
 
 NAMESPACE Purchase;
@@ -163,7 +163,6 @@ DESIGN order {
 
 @defineBarCodeAdd(order, o, item);
 @defineDocHistory(order, o, item, quantity);
-@defineDocSearch(order, item, quantity, o, canBePurchased);
 
 FORM orders 'Заказы'
     OBJECTS o = Order
@@ -182,10 +181,3 @@ NAVIGATOR {
         NEW orders FIRST;    
     }
 }
-
-// price list
-EXTEND FORM order
-    FILTERGROUP  pricelist
-        FILTER 'В прайс-листе' GROUP SUM 1 IF itm = item(PricelistLine line) AND 
-            startDateTime(pricelist(line)) <= currentDateTime() AND endDateTime(pricelist(line)) >= currentDateTime();
-;

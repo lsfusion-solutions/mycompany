@@ -1,16 +1,18 @@
 MODULE PurchasePricelist;
 
-REQUIRE Item, Partner, ItemPurchase, PartnerPurchase, PurchaseSettings, BarCode;
+REQUIRE ItemPurchase, PartnerPurchase, PurchaseSettings, BarCode, Doc;
 
 NAMESPACE Purchase; 
 
 CLASS Pricelist 'Прайс-листы';
 
-@defineNumber(pricelist, 'Прайс-листы', 'ПП');
+@defineStatus(pricelist, 'прайс-листа');
 
 startDateTime 'Начало действия' = DATA DATETIME (Pricelist);
 WHEN LOCAL SET(Pricelist l IS Pricelist) AND NOT CHANGED(startDateTime(l)) DO startDateTime(l) <- currentDateTime(); 
 endDateTime 'Окончание действия' = DATA DATETIME (Pricelist);
+
+@defineNumber(pricelist, 'Прайс-листы', 'ПП');
 
 note 'Примечание' = DATA STRING[50] (Pricelist);
 
@@ -43,12 +45,6 @@ number 'Номер' (PricelistLine prl) = number(pricelist(prl));
 startDateTime 'Начало действия' (PricelistLine prl) = startDateTime(pricelist(prl));
 endDateTime 'Окончание действия' (PricelistLine prl) = endDateTime(pricelist(prl));
 note 'Примечание' (PricelistLine prl) = note(pricelist(prl));
-
-// value
-pricelistLineA (Partner p, Item i, DATETIME d) =
-    GROUP LAST PricelistLine prl IF item(prl) = i AND vendor(pricelist(prl)) = p AND 
-               NOT startDateTime(pricelist(prl)) > d AND NOT endDateTime(pricelist(prl)) < d
-          ORDER startDateTime(pricelist(prl)), pricelist(prl), prl;
 
 FORM pricelist 'Прайс-лист'
     OBJECTS p = Pricelist PANEL
@@ -83,6 +79,8 @@ DESIGN pricelist {
     }
 }
 
+@defineDocSearch(pricelist, item, unitPrice, 'Цена', p, canBePurchased);
+
 FORM pricelists 'Прайс-листы'
     OBJECTS p = Pricelist
     PROPERTIES(p) READONLY number, startDateTime, endDateTime, nameVendor, note
@@ -91,12 +89,15 @@ FORM pricelists 'Прайс-листы'
     LIST Pricelist OBJECT p
 ;  
 
+@defineStatusForm(pricelist, p);
+
 NAVIGATOR {
     purchase {
         NEW pricelists BEFORE settings;       
     }
 }
 
+// copy
 copy 'Копировать' (Pricelist pl) {
     NEWSESSION {
         NEW p = Pricelist {
@@ -118,6 +119,11 @@ copy 'Копировать' (Pricelist pl) {
 }
 
 EXTEND FORM pricelist
-    PROPERTIES copy(p) DRAW l TOOLBAR 
+    PROPERTIES(p) copy 
 ;
 
+DESIGN pricelist {
+    secondaryActions {
+        MOVE PROPERTY(copy(p)); 
+    }
+}

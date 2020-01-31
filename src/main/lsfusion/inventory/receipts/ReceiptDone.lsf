@@ -20,6 +20,10 @@ done 'Принятое количество' = DATA NUMERIC[16,3] (ReceiptLine);
 CONSTRAINT done(ReceiptLine l) < 0 OR done(l) > initialDemand(l) 
     MESSAGE 'Принятое количество должно быть от 0 до исходного';
 
+setDone 'Заполнить Принято' (Receipt r) {
+    done(ReceiptLine l) <- initialDemand(l) WHERE receipt(l) = r;    
+}
+
 validate 'Принят' (Receipt r) {        
     APPLY; // сохраняем изменения
     IF canceled() THEN RETURN; // если сработало ограничение, то выходим
@@ -66,6 +70,7 @@ toValidate (Receipt r) = status(r) = ReceiptStatus.ready OR (immediate(r) AND st
 EXTEND FORM receipt
     PROPERTIES(r) validate SHOWIF toValidate(r), 
                   done,
+                  setDone DRAW l TOOLBAR SHOWIF status(r) = ReceiptStatus.ready,
                   executionDateTime SHOWIF done(r)
     
     PROPERTIES(l) done BACKGROUND RGB(198,230,247) IF toValidate(r)

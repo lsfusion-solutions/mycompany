@@ -1,0 +1,35 @@
+MODULE PurchasePricelistDone;
+
+REQUIRE PurchasePricelist;
+
+NAMESPACE Purchase;
+
+EXTEND CLASS PricelistStatus {
+    done 'Проведен'
+}
+done 'Проведен' = DATA BOOLEAN (Pricelist);
+
+status(Pricelist p) += WHEN done(p) THEN PricelistStatus.done;
+
+markAsDone 'Провести' (Pricelist p) {
+    APPLY;
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {  
+        done(p) <- TRUE;
+        APPLY;
+    }
+}
+
+EXTEND FORM pricelist
+    PROPERTIES(p) markAsDone SHOWIF status(p) = PricelistStatus.draft, done READONLY 
+;
+
+DESIGN pricelist {
+    primaryActions {
+        MOVE PROPERTY(markAsDone(p)) { fontStyle = 'bold'; }
+    }
+    status {
+        MOVE PROPERTY(done(p));
+    }
+}

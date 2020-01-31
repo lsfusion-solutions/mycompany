@@ -45,6 +45,7 @@ CLASS ReceiptLine 'Строка поступления';
 
 receipt 'Документ' = DATA Receipt (ReceiptLine) NONULL DELETE INDEXED;
 
+countLines 'Кол-во строк' (Receipt r) = GROUP SUM 1 IF receipt(ReceiptLine l) = r MATERIALIZED;
 index 'Индекс' = PARTITION SUM 1 ORDER ReceiptLine l BY receipt(l) IN id MATERIALIZED;
 
 product 'Товар' = DATA Product (ReceiptLine) NONULL INDEXED;

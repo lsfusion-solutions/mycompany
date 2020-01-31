@@ -85,7 +85,7 @@ WHEN LOCAL SETCHANGED(item(BillLine l)) AND NOT CHANGED(unitPrice(l)) DO unitPri
 
 // Line properties
 nameStatus 'Статус' (BillLine l) = nameStatus(bill(l));
-number 'Номер' (BillLine l) = dateTime(bill(l));
+number 'Номер' (BillLine l) = number(bill(l));
 dateTime 'Дата' (BillLine l) = dateTime(bill(l));
 nameVendor 'Поставщик' (BillLine l) = nameVendor(bill(l));
 nameCompany 'Компания' (BillLine l) = nameCompany(bill(l));
@@ -162,7 +162,7 @@ DESIGN bill {
 
 @defineBarCodeAdd(bill, b, item);
 @defineDocHistory(bill, b, item, quantity);
-@defineDocSearch(bill, item, quantity, b, canBePurchased);
+@defineDocSearch(bill, item, quantity, 'Кол-во', b, canBePurchased);
 
 FORM bills 'Приходные накладные'
     OBJECTS b = Bill

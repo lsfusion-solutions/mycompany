@@ -1,0 +1,24 @@
+MODULE PurchaseOrderSearch;
+
+REQUIRE PurchaseOrder, ResLedger;
+
+NAMESPACE Purchase;
+
+@defineDocSearch(order, item, quantity, 'Кол-во', o, canBePurchased);
+
+// available
+available 'Доступно' (Order o, Product p) = prevAvailableRec(location(o), p); 
+
+EXTEND FORM order
+    PROPERTIES(o, itm) READONLY available
+;
+
+// price list
+listPrice 'Цена' (Order o, Item i) = priceA(vendor(o), i, dateTime(o));
+
+EXTEND FORM order
+    PROPERTIES(o, itm) READONLY listPrice
+
+    FILTERGROUP pricelist
+        FILTER 'В прайс-листе' listPrice(o, itm)
+;

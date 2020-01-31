@@ -1,0 +1,12 @@
+MODULE PurchasePricelistValue;
+
+REQUIRE PurchasePricelistDone;
+
+NAMESPACE Purchase;
+
+pricelistLineA (Partner p, Item i, DATETIME d) =
+    GROUP LAST PricelistLine prl IF item(prl) = i AND vendor(pricelist(prl)) = p AND done(pricelist(prl)) AND 
+               NOT startDateTime(pricelist(prl)) > d AND NOT endDateTime(pricelist(prl)) < d
+          ORDER startDateTime(pricelist(prl)), pricelist(prl), prl;
+
+priceA (Partner p, Item i, DATETIME d) = unitPrice(pricelistLineA(p, i, d));

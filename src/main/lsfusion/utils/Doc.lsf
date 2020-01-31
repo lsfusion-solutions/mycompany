@@ -55,8 +55,8 @@ META defineStatusForm (doc, let)
    } 
 END
 
-META defineDocSearchAction (doc, it, fun)
-    fun 'Кол-во' (###doc i, ###it p) = 
+META defineDocSearchAction (doc, it, fun, capt)
+    fun capt (###doc i, ###it p) = 
         GROUP SUM fun(###doc##Line l) BY doc(l), it(l);
         
     change###fun (###doc i, ###it p) {
@@ -106,10 +106,10 @@ META defineDocSearchTab (doc, it)
     }
 END
 
-META defineDocSearch (doc, it, fun, let)
+META defineDocSearch (doc, it, fun, capt, let)
     last###doc##Line (###doc i, ###it p) = GROUP LAST ###doc##Line l ORDER l BY doc(l), it(l);
 
-    @defineDocSearchAction(doc, it, fun);
+    @defineDocSearchAction(doc, it, fun, capt);
     @defineDocSearchTab(doc, it);
     
     EXTEND FORM doc
@@ -117,8 +117,8 @@ META defineDocSearch (doc, it, fun, let)
     ;        
 END
 
-META defineDocSearch (doc, it, fun, let, check)
-    @defineDocSearch(doc, it, fun, let);
+META defineDocSearch (doc, it, fun, capt, let, check)
+    @defineDocSearch(doc, it, fun, capt, let);
     
     EXTEND FORM doc
         FILTERS ##check(itm)

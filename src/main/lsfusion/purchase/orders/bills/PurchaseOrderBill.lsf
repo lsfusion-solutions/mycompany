@@ -7,8 +7,8 @@ NAMESPACE Purchase;
 orderLine = DATA OrderLine (BillLine);
 order = DATA Order (Bill);
 
-billed 'Оформлено по накладным' (OrderLine ol) = 
-    GROUP SUM quantity(BillLine bl) IF orderLine(bl) = ol AND NOT canceled(bill(bl));
+billed 'Оформлено накладных' (OrderLine ol) = 
+    GROUP SUM quantity(BillLine bl) IF orderLine(bl) = ol AND ready(bill(bl)) AND NOT canceled(bill(bl));
 paid 'Оплачено' (OrderLine ol) = 
     GROUP SUM quantity(BillLine bl) IF orderLine(bl) = ol AND done(bill(bl)) AND NOT canceled(bill(bl));
 toBill 'К оформлению' (OrderLine l) = max(quantity(l) (-) billed(l), 0);
@@ -53,9 +53,9 @@ FORM orderBillShow 'Выставлено счетов'
 ;
 
 EXTEND FORM order   
-    PROPERTIES(o) SHOWIF (confirmed(o) AND toBill(o) > 0) createBill
-    PROPERTIES(l) SHOWIF confirmed(o) billed ON CHANGE { DIALOG orderBillShow OBJECTS ol = l; }
-    PROPERTIES(l) SHOWIF confirmed(o) paid ON CHANGE { DIALOG orderBillShow OBJECTS ol = l; }
+    PROPERTIES(o) SHOWIF (status(o) = OrderStatus.confirmed AND toBill(o) > 0) createBill
+    PROPERTIES(l) SHOWIF confirmed(o) billed ON CHANGE { DIALOG orderBillShow OBJECTS ol = l; } BACKGROUND NOT billed(l) = quantity(l)
+    PROPERTIES(l) SHOWIF confirmed(o) paid ON CHANGE { DIALOG orderBillShow OBJECTS ol = l; } BACKGROUND NOT paid(l) = quantity(l)
 
     OBJECTS bi = Bill
     PROPERTIES(bi) READONLY nameStatus BACKGROUND colorStatus(bi), number, dateTime    

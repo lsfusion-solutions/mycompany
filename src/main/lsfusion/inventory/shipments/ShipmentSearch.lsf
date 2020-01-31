@@ -18,13 +18,13 @@ EXTEND FORM shipment
 lastShipmentLine (Shipment s, Product p) = GROUP LAST ShipmentLine l ORDER l BY shipment(l), product(l);
 
 // initial demand
-@defineDocSearchAction(shipment, product, initialDemand);
+@defineDocSearchAction(shipment, product, initialDemand, 'Планируемое кол-во');
 EXTEND FORM shipment
     PROPERTIES(s, itm) SHOWIF NOT immediate(s) initialDemand ON CHANGE changeInitialDemand(s, itm)
 ;
 
 // done
-@defineDocSearchAction(shipment, product, done);
+@defineDocSearchAction(shipment, product, done, 'Отгружено');
 EXTEND FORM shipment
     PROPERTIES(s, itm) SHOWIF immediate(s) done ON CHANGE changeDone(s, itm)
 ;
