@@ -3,7 +3,7 @@ MODULE SalesOrder;
 REQUIRE Time, MetaNumerator, Individual, Company,
         MetaTax, TaxItem, BarCode,
         SalesSettings, PartnerSale, ItemSale,
-        PaymentTerms, SalesPricelistValue, Doc;  
+        PaymentTermsSale, SalesPricelistValue, Doc;  
 
 NAMESPACE Sales;
 
@@ -27,10 +27,10 @@ CONSTRAINT customer(Order o) AND NOT isCustomer(customer(o))
 validity 'Срок действия' = DATA DATETIME (Order);
 
 // Invoicing information
-invoiceDateTime 'Дата счета' = DATA DATETIME (Order);
+paymentTerms = DATA PaymentTerm (Order);
+namePaymentTerms 'Условия оплаты' (Order o)= name(paymentTerms(o));
 
-paymentTerms 'Условие оплаты' = DATA PaymentTerm (Order);
-namePaymentTerms 'Условие оплаты' (Order o)= name(paymentTerms(o));
+WHEN LOCAL CHANGED(customer(Order o)) AND NOT CHANGED(paymentTerms(o)) DO paymentTerms(o) <- customerPaymentTerms(customer(o)); 
 
 addressCustomer 'Адрес получателя' (Order o) = csvAddress(customer(o));
 
