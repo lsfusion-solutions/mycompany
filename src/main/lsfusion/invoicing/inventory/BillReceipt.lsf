@@ -29,6 +29,10 @@ countReceipts 'Кол-во поступлений' (Bill b) = GROUP SUM 1 IF bil
 
 billLine = DATA BillLine (ReceiptLine);
 
+// source
+sourceDocument (Receipt r) += WHEN bill(r) THEN description(bill(r));
+openSourceDocument (Receipt r) + { IF bill(r) THEN edit(bill(r)); }
+
 billReceiptCreated = DATA LOCAL Receipt ();
 newReceipt (Bill b) {
     NEW r = Receipt { 
@@ -38,7 +42,6 @@ newReceipt (Bill b) {
         vendor(r) <- vendor(b);
         type(r) <- typeReceiptFromBill();
         location(r) <- location(b);
-        sourceDocument(r) <- number(b);
 
         immediate(r) <- TRUE;
         done(r) <- TRUE;    
@@ -69,7 +72,7 @@ EXTEND FORM bill
 
     OBJECTS r = Receipt
     PROPERTIES(r) READONLY nameStatus BACKGROUND colorStatus(r), number, scheduledDateTime, executionDateTime
-    PROPERTIES(r) EDIT GRID   
+    PROPERTIES(r) NEWSESSION EDIT GRID   
     FILTERS bill(r) = b
 ;
 

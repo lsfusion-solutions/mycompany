@@ -17,6 +17,7 @@ WHEN LOCAL SET (Bill b IS Bill) DO dateTime(b) <- currentDateTime();
 
 @defineNumber(bill, 'Приходная накладная', 'ПН');
 
+description 'Описание' (Bill b) = 'Накладная ' + number(b) + ' от ' + dateTime(b);
 
 // vendor
 vendor 'Поставщик' = DATA Partner (Bill) NONULL;
@@ -29,6 +30,10 @@ CONSTRAINT vendor(Bill b) AND NOT isVendor(vendor(b))
 company 'Компания' = DATA Company (Bill) NONULL;
 nameCompany 'Компания' (Bill b) = name(company(b));
 WHEN LOCAL SET(Bill b IS Bill) AND NOT CHANGED(company(b)) DO company(b) <- defaultCompany(); 
+
+// source
+sourceDocument 'Основание' = ABSTRACT CASE STRING (Bill) CHARWIDTH 35;
+openSourceDocument ABSTRACT LIST (Bill);
 
 // payment
 paymentTerms = DATA PaymentTerm (Bill); 
@@ -61,7 +66,6 @@ CONSTRAINT companyAccount(Bill b) AND NOT company(b) = holder(companyAccount(b))
     MESSAGE 'Счет должен принадлежать выбранной компании';
 
 vendorReference 'Код поставщика' = DATA STRING[30] (Bill);
-sourceDocument 'Основание' = DATA STRING[31] (Bill);
 note 'Примечание' = DATA ISTRING[50] (Bill);
 
 // lines
@@ -106,7 +110,7 @@ edit (BillLine l) + { edit(bill(l)); }
 FORM bill 'Приходная накладная'
     OBJECTS  b = Bill PANEL 
     PROPERTIES(b) dateTime, number, 
-                  nameVendor, nameCompany, sourceDocument,
+                  nameVendor, nameCompany, sourceDocument ON CHANGE openSourceDocument(b),
                   namePaymentTerms, dueDateTime, nameVendorAccount, nameCompanyAccount,
                   vendorReference, note
         

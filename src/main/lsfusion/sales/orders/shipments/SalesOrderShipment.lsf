@@ -14,6 +14,10 @@ EXTEND FORM options PROPERTIES nameShipmentType();
 orderLine = DATA OrderLine (ShipmentLine);
 order = DATA Order (Shipment);
 
+// source
+sourceDocument (Shipment s) += WHEN order(s) THEN description(order(s));
+openSourceDocument (Shipment s) + { IF order(s) THEN edit(order(s)); }
+
 reserved 'Зарезервировано' (OrderLine ol) = 
     GROUP SUM reserved(ShipmentLine rl) IF orderLine(rl) = ol AND toReserve(shipment(rl));
 
@@ -45,7 +49,6 @@ WHEN ([GROUP SUM 1 IF CHANGED(toShip(OrderLine l)) BY order(l)](Order o) OR SET(
         scheduledDateTime(s) <- scheduledDateTime(o);
 
         location(s) <- location(o);
-        sourceDocument(s) <- number(o);
     }
     
     FOR order(OrderLine ol) = o AND toShip(ol) > 0 AND 

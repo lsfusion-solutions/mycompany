@@ -17,6 +17,7 @@ WHEN LOCAL SET (Invoice b IS Invoice) DO dateTime(b) <- currentDateTime();
 
 @defineNumber(invoice, 'Расходная накладная', 'РН');
 
+description 'Описание' (Invoice i) = 'Накладная ' + number(i) + ' от ' + dateTime(i);
 
 // customer
 customer 'Покупатель' = DATA Partner (Invoice) NONULL;
@@ -29,6 +30,10 @@ CONSTRAINT customer(Invoice b) AND NOT isCustomer(customer(b))
 company 'Компания' = DATA Company (Invoice) NONULL;
 nameCompany 'Компания' (Invoice b) = name(company(b));
 WHEN LOCAL SET(Invoice b IS Invoice) AND NOT CHANGED(company(b)) DO company(b) <- defaultCompany(); 
+
+// source
+sourceDocument 'Основание' = ABSTRACT CASE STRING (Invoice) CHARWIDTH 35;
+openSourceDocument ABSTRACT LIST (Invoice);
 
 // payment
 paymentTerms = DATA PaymentTerm (Invoice); 
@@ -61,7 +66,6 @@ CONSTRAINT companyAccount(Invoice b) AND NOT company(b) = holder(companyAccount(
     MESSAGE 'Счет должен принадлежать выбранной компании';
 
 customerReference 'Код покупателя' = DATA STRING[30] (Invoice);
-sourceDocument 'Основание' = DATA STRING[31] (Invoice);
 note 'Примечание' = DATA ISTRING[50] (Invoice);
 
 // lines
@@ -105,7 +109,7 @@ edit (InvoiceLine l) + { edit(invoice(l)); }
 
 FORM invoice 'Расходная накладная'
     OBJECTS  i = Invoice PANEL 
-    PROPERTIES(i) dateTime, number, nameCustomer, nameCompany, sourceDocument,
+    PROPERTIES(i) dateTime, number, nameCustomer, nameCompany, sourceDocument ON CHANGE openSourceDocument(i),
                   namePaymentTerms, dueDateTime, nameCustomerAccount, nameCompanyAccount,
                   customerReference, note
         

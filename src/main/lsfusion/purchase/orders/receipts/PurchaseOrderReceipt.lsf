@@ -14,6 +14,10 @@ EXTEND FORM options PROPERTIES nameReceiptType();
 orderLine = DATA OrderLine (ReceiptLine) INDEXED;
 order = DATA Order (Receipt);
 
+// source
+sourceDocument (Receipt r) += WHEN order(r) THEN description(order(r));
+openSourceDocument (Receipt r) + { IF order(r) THEN edit(order(r)); }
+
 done 'Поступило' (OrderLine ol) = 
     GROUP SUM done(ReceiptLine rl) IF orderLine(rl) = ol AND active(receipt(rl));
 toReceive 'К поступлению' (OrderLine ol) = 
@@ -42,7 +46,6 @@ WHEN ([GROUP SUM 1 IF CHANGED(toReceive(OrderLine l)) BY order(l)](Order o) OR S
         scheduledDateTime(r) <- scheduledDateTime(o);
         
         location(r) <- location(o);
-        sourceDocument(r) <- number(o);    
     }
 
     FOR order(OrderLine ol) = o AND toReceive(ol) > 0 AND 
@@ -75,7 +78,7 @@ EXTEND FORM order
         
     OBJECTS rc = Receipt
     PROPERTIES(rc) READONLY nameStatus BACKGROUND colorStatus(rc), number, scheduledDateTime, executionDateTime
-    PROPERTIES(rc) EDIT GRID   
+    PROPERTIES(rc) NEWSESSION EDIT GRID   
     FILTERS order(rc) = o
 ;
 

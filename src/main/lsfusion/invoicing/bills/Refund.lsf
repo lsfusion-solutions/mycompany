@@ -7,6 +7,10 @@ NAMESPACE Invoicing;
 refund = DATA Bill (Invoice);
 refundLine = DATA BillLine (InvoiceLine);
 
+// source
+sourceDocument (Invoice i) += WHEN refund(i) THEN description(refund(i));
+openSourceDocument (Invoice i) + { IF refund(i) THEN edit(refund(i)); }
+
 isRefund 'Возврат' (Invoice i) = TRUE IF refund(i);
 
 // add
@@ -26,7 +30,6 @@ addRefund 'Создать возврат' (Bill b) {
             company(i) <- company(b);
             companyAccount(i) <- companyAccount(b);
             
-            sourceDocument(i) <- number(b);
             note(i) <- note(b);
             
             FOR bill(BillLine l) = b INLINE NEW il = InvoiceLine DO {

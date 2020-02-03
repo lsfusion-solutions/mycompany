@@ -28,6 +28,10 @@ countShipments 'Кол-во отгрузок' (Invoice b) = GROUP SUM 1 IF invoi
 
 invoiceLine = DATA InvoiceLine (ShipmentLine);
 
+// source
+sourceDocument (Shipment s) += WHEN invoice(s) THEN description(invoice(s));
+openSourceDocument (Shipment s) + { IF invoice(s) THEN edit(invoice(s)); }
+
 invoiceShipmentCreated = DATA LOCAL Shipment ();
 newShipment (Invoice b) {
     NEW r = Shipment { 
@@ -36,7 +40,6 @@ newShipment (Invoice b) {
         customer(r) <- customer(b);
         type(r) <- typeShipmentFromInvoice();
         location(r) <- location(b);
-        sourceDocument(r) <- number(b);
 
         immediate(r) <- TRUE;
         done(r) <- TRUE;    
@@ -67,7 +70,7 @@ EXTEND FORM invoice
 
     OBJECTS s = Shipment
     PROPERTIES(s) READONLY nameStatus BACKGROUND colorStatus(s), number, scheduledDateTime, executionDateTime
-    PROPERTIES(s) EDIT GRID   
+    PROPERTIES(s) NEWSESSION EDIT GRID   
     FILTERS invoice(s) = i
 ;
 

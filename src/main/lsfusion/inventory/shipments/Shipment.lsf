@@ -40,7 +40,7 @@ CONSTRAINT location(Shipment s) = toLocation(s)
 WHEN SETCHANGED(type(Shipment s)) AND NOT isTransfer(type(s)) DO toLocation(s) <- NULL;
 CONSTRAINT isTransfer(type(Shipment s)) AND NOT toLocation(s) MESSAGE 'Не задано место хранение (куда) для трансфера';
 
-// partner
+// customer
 customer = DATA Partner (Shipment) INDEXED;
 nameCustomer 'Покупатель' (Shipment s) = name(customer(s));
 
@@ -48,7 +48,10 @@ CONSTRAINT customer(Shipment s) AND NOT isCustomer(customer(s))
                 CHECKED BY customer[Shipment]
                 MESSAGE 'Контрагент должен быть покупателем';
 
-sourceDocument 'Основание' = DATA STRING[31] (Shipment) CHARWIDTH 10;
+// source
+sourceDocument 'Основание' = ABSTRACT CASE STRING (Shipment) CHARWIDTH 35;
+openSourceDocument ABSTRACT LIST (Shipment);
+
 note 'Примечание' = DATA ISTRING[50] (Shipment);
 
 // lines
@@ -97,7 +100,8 @@ edit (ShipmentLine l) + { edit(shipment(l)); }
 FORM shipment 'Отгрузка'
     OBJECTS s = Shipment PANEL 
     PROPERTIES(s) nameType, scheduledDateTime, number, 
-                  nameCustomer SHOWIF NOT isTransfer(type(s)), nameLocation, nameToLocation SHOWIF isTransfer(type(s)), sourceDocument,
+                  nameCustomer SHOWIF NOT isTransfer(type(s)), nameLocation, nameToLocation SHOWIF isTransfer(type(s)), 
+                  sourceDocument ON CHANGE openSourceDocument(s),
                   note
                   
     OBJECTS l = ShipmentLine

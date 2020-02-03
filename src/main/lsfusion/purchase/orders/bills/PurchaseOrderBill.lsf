@@ -8,6 +8,10 @@ NAMESPACE Purchase;
 orderLine = DATA OrderLine (BillLine);
 order = DATA Order (Bill);
 
+// source
+sourceDocument (Bill b) += WHEN order(b) THEN description(order(b));
+openSourceDocument (Bill b) + { IF order(b) THEN edit(order(b)); }
+
 billed 'Оформлено накладных' (OrderLine ol) = 
     GROUP SUM quantity(BillLine bl) IF orderLine(bl) = ol AND ready(bill(bl)) AND NOT canceled(bill(bl));
 paid 'Оплачено' (OrderLine ol) = 
@@ -26,7 +30,6 @@ createBill 'Оформить накладную' (Order o) {
             order(nb) <- o;
             vendorReference(nb) <- vendorReference(o);
             paymentTerms(nb) <- paymentTerms(o);             
-            sourceDocument(nb) <- number(o);              
             FOR order(OrderLine ol) = o AND toBill(ol) > 0 NEW bl = BillLine DO {
                 bill(bl) <- nb;
                 item(bl) <- item(ol);
@@ -59,7 +62,7 @@ EXTEND FORM order
 
     OBJECTS bi = Bill
     PROPERTIES(bi) READONLY nameStatus BACKGROUND colorStatus(bi), number, dateTime    
-    PROPERTIES(bi) EDIT GRID   
+    PROPERTIES(bi) NEWSESSION EDIT GRID   
     FILTERS order(bi) = o       
 ;
  

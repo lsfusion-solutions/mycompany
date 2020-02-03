@@ -37,7 +37,10 @@ CONSTRAINT vendor(Receipt r) AND NOT isVendor(vendor(r))
                 CHECKED BY vendor[Receipt]
                 MESSAGE 'Контрагент должен быть поставщиком';
 
-sourceDocument 'Основание' = DATA STRING[31] (Receipt);
+// source
+sourceDocument 'Основание' = ABSTRACT CASE STRING (Receipt) CHARWIDTH 35;
+openSourceDocument ABSTRACT LIST (Receipt);
+
 note 'Примечание' = DATA ISTRING[50] (Receipt);
 
 // lines
@@ -79,7 +82,7 @@ edit (ReceiptLine l) + { edit(receipt(l)); }
 FORM receipt 'Поступление'
     OBJECTS r = Receipt PANEL
     PROPERTIES(r) nameType, scheduledDateTime, number, 
-                  nameVendor, nameLocation, sourceDocument,
+                  nameVendor, nameLocation, sourceDocument ON CHANGE openSourceDocument(r),
                   note
 
     OBJECTS l = ReceiptLine

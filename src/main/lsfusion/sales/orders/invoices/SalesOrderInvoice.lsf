@@ -8,6 +8,10 @@ NAMESPACE Sales;
 orderLine = DATA OrderLine (InvoiceLine);
 order = DATA Order (Invoice);
 
+// source
+sourceDocument (Invoice b) += WHEN order(b) THEN description(order(b));
+openSourceDocument (Invoice b) + { IF order(b) THEN edit(order(b)); }
+
 invoiced 'Выписано накладных' (OrderLine ol) = 
     GROUP SUM quantity(InvoiceLine bl) IF orderLine(bl) = ol AND ready(invoice(bl)) AND NOT canceled(invoice(bl));
 paid 'Оплачено' (OrderLine ol) = 
@@ -27,7 +31,6 @@ createInvoice 'Оформить накладную' (Order o) {
             order(ni) <- o;
             customerReference(ni) <- customerReference(o); 
             paymentTerms(ni) <- paymentTerms(o);          
-            sourceDocument(ni) <- number(o);              
             FOR order(OrderLine ol) = o AND toInvoice(ol) > 0 NEW il = InvoiceLine DO {
                 invoice(il) <- ni;
                 item(il) <- item(ol);
@@ -60,7 +63,7 @@ EXTEND FORM order
     
     OBJECTS in = Invoice
     PROPERTIES(in) READONLY nameStatus BACKGROUND colorStatus(in), number, dateTime    
-    PROPERTIES(in) EDIT GRID   
+    PROPERTIES(in) NEWSESSION EDIT GRID   
     FILTERS order(in) = o   
 ;
  
@@ -75,7 +78,3 @@ DESIGN order {
         REMOVE TOOLBARBOX(in);
     }
 }
-
-
-
-

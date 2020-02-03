@@ -7,6 +7,10 @@ NAMESPACE Invoicing;
 creditNote = DATA Invoice (Bill);
 creditNoteLine = DATA InvoiceLine (BillLine);
 
+// source
+sourceDocument (Bill b) += WHEN creditNote(b) THEN description(creditNote(b));
+openSourceDocument (Bill b) + { IF creditNote(b) THEN edit(creditNote(b)); }
+
 isCreditNote 'Возврат' (Bill b) = TRUE IF creditNote(b);
 
 // add
@@ -26,8 +30,7 @@ addCreditNote 'Создать возврат' (Invoice i) {
             company(b) <- company(i);
             companyAccount(b) <- companyAccount(i);
             
-            sourceDocument(i) <- number(b);
-            note(i) <- note(b);
+            note(b) <- note(i);
             
             FOR invoice(InvoiceLine l) = i INLINE NEW bl = BillLine DO {
                 creditNoteLine(bl) <- l; 
