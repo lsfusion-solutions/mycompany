@@ -1,0 +1,18 @@
+MODULE PaymentTermsPurchase;
+
+REQUIRE PaymentTerms, PartnerPurchase;
+
+NAMESPACE Invoicing;
+
+vendorPaymentTerms = DATA PaymentTerm (Partner);
+nameVendorPaymentTerms 'Условия оплаты' (Partner p) = name(vendorPaymentTerms(p));
+
+EXTEND FORM partner 
+    PROPERTIES(p) nameVendorPaymentTerms
+;
+
+DESIGN partner {
+    vendorOptions {
+        MOVE PROPERTY(nameVendorPaymentTerms(p));
+    } 
+}

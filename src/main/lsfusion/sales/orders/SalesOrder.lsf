@@ -106,10 +106,10 @@ nameCustomer 'Заказчик' (OrderLine l) = nameCustomer(order(l));
 FORM order 'Заказ покупателя'
     OBJECTS o = Order PANEL
     PROPERTIES(o) dateTime, number, nameCustomer, namePriceType,
-                  scheduledDateTime, deliveryAddress, nameLocation, 
-                  nameRepresentative, customerReference,
                   validity,
-                  invoiceDateTime, namePaymentTerms, addressCustomer
+                  namePaymentTerms, addressCustomer,
+                  scheduledDateTime, deliveryAddress, nameLocation, 
+                  nameRepresentative, customerReference
     PROPERTIES(o) READONLY untaxedAmount, totalTax, totalAmount
                  
     OBJECTS l = OrderLine
@@ -148,22 +148,25 @@ DESIGN order {
                 columns = 2;
                 NEW quotation {
                     caption = 'Запрос предложений';
+                    alignment = STRETCH;
                     MOVE PROPERTY(validity(o));
                 }
                 NEW invoicing {
                     caption = 'Расчеты';
-                    MOVE PROPERTY(invoiceDateTime(o));
+                    alignment = STRETCH;
                     MOVE PROPERTY(namePaymentTerms(o));                         
                     MOVE PROPERTY(addressCustomer(o));
                 }
                 NEW shippingInformation {
                     caption = 'Поставка';
+                    alignment = STRETCH;
                     MOVE PROPERTY(scheduledDateTime(o));
                     MOVE PROPERTY(deliveryAddress(o));
                     MOVE PROPERTY(nameLocation(o));               
                 }
                 NEW salesInformation {
                     caption = 'Прочие';
+                    alignment = STRETCH;
                     MOVE PROPERTY(nameRepresentative(o));                                       
                     MOVE PROPERTY(customerReference(o));               
                 }
@@ -189,8 +192,9 @@ DESIGN order {
 FORM orders 'Заказы покупателей'
      OBJECTS o = Order
      PROPERTIES(o) READONLY number, nameCustomer,
+                            validity,
+                            namePaymentTerms, addressCustomer,
                             scheduledDateTime, deliveryAddress, nameLocation, 
-                            invoiceDateTime, namePaymentTerms, addressCustomer,
                             nameRepresentative, customerReference,
                             untaxedAmount, totalTax, totalAmount
                             

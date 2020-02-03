@@ -1,7 +1,7 @@
 MODULE SalesOrderInvoice;
 
 REQUIRE SalesOrderConfirmed, 
-        InvoiceDone, InvoiceCanceled, InvoicePaymentTerms;
+        InvoiceDone, InvoiceCanceled;
 
 NAMESPACE Sales;
 
@@ -18,12 +18,12 @@ toInvoice 'К оформлению' (Order o) =
     GROUP SUM toInvoice(OrderLine ol) IF order(ol) = o;
 
 createInvoice 'Оформить накладную' (Order o) {
+    APPLY;
     IF canceled() THEN RETURN;
                
     NEWSESSION {
         NEW ni = Invoice {
             customer(ni) <- customer(o);
-            dateTime(ni) <- invoiceDateTime(o);
             order(ni) <- o;
             customerReference(ni) <- customerReference(o); 
             paymentTerms(ni) <- paymentTerms(o);          

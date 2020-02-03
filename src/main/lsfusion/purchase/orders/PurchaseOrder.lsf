@@ -3,7 +3,7 @@ MODULE PurchaseOrder;
 REQUIRE Time, MetaNumerator, Individual, Company,
         MetaTax, TaxItem, BarCode,
         PurchaseSettings, PartnerPurchase, ItemSale,
-        PaymentTerms, Doc, PurchasePricelistValue,
+        PaymentTermsPurchase, Doc, PurchasePricelistValue,
         Location;  
 
 NAMESPACE Purchase;
@@ -25,8 +25,10 @@ CONSTRAINT vendor(Order o) AND NOT isVendor(vendor(o))
                 MESSAGE 'Контрагент заказа поставщику должен быть поставщиком';
 
 // Invoicing information
-paymentTerms 'Условие оплаты' = DATA PaymentTerm (Order);
-namePaymentTerms 'Условие оплаты' (Order o)= name(paymentTerms(o));
+paymentTerms = DATA PaymentTerm (Order);
+namePaymentTerms 'Условие оплаты' (Order o) = name(paymentTerms(o));
+
+WHEN LOCAL CHANGED(vendor(Order o)) AND NOT CHANGED(paymentTerms(o)) DO paymentTerms(o) <- vendorPaymentTerms(vendor(o)); 
 
 // Shipping information
 scheduledDateTime 'Срок поставки' = DATA DATETIME (Order);   
@@ -91,9 +93,9 @@ edit (OrderLine l) + { edit(order(l)); }
 FORM order 'Заказ поставщику'
     OBJECTS o = Order PANEL
     PROPERTIES(o) dateTime, number, nameVendor,
+                  namePaymentTerms,
                   scheduledDateTime, nameLocation,
-                  nameRepresentative, vendorReference,
-                  namePaymentTerms
+                  nameRepresentative, vendorReference
     PROPERTIES(o) READONLY untaxedAmount, totalTax, totalAmount
                  
     OBJECTS l = OrderLine
@@ -127,19 +129,22 @@ DESIGN order {
                 caption = 'Прочая информация';
                 type = COLUMNS;
                 columns = 2;
+                NEW invoicing {
+                    caption = 'Расчеты';
+                    alignment = STRETCH;
+                    MOVE PROPERTY(namePaymentTerms(o));                         
+                }
                 NEW shippingInformation {
                     caption = 'Поставка';
+                    alignment = STRETCH;
                     MOVE PROPERTY(scheduledDateTime(o));
                     MOVE PROPERTY(nameLocation(o));
                 }
                 NEW purchaseInformation {
                     caption = 'Прочие';
+                    alignment = STRETCH;
                     MOVE PROPERTY(nameRepresentative(o));
                     MOVE PROPERTY(vendorReference(o));
-                }
-                NEW invoicing {
-                    caption = 'Расчеты';
-                    MOVE PROPERTY(namePaymentTerms(o));                         
                 }
             }            
         }
@@ -163,9 +168,9 @@ DESIGN order {
 FORM orders 'Заказы поставщикам'
     OBJECTS o = Order
     PROPERTIES(o) READONLY dateTime, number, nameVendor,
+                           namePaymentTerms,
                            scheduledDateTime, nameLocation,
                            nameRepresentative, vendorReference,
-                           namePaymentTerms,
                            untaxedAmount, totalTax, totalAmount     
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
 ;

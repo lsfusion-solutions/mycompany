@@ -1,6 +1,7 @@
 MODULE PurchaseOrderBill;
 
-REQUIRE PurchaseOrder, BillPaymentTerms, BillDone, BillCanceled, Time, PurchaseOrderConfirmed;
+REQUIRE PurchaseOrder, PurchaseOrderConfirmed,
+        BillDone, BillCanceled;
 
 NAMESPACE Purchase;
 
@@ -22,7 +23,6 @@ createBill 'Оформить накладную' (Order o) {
     NEWSESSION {
         NEW nb = Bill {
             vendor(nb) <- vendor(o);
-            dateTime(nb) <- scheduledDateTime(o);
             order(nb) <- o;
             vendorReference(nb) <- vendorReference(o);
             paymentTerms(nb) <- paymentTerms(o);             
@@ -74,7 +74,3 @@ DESIGN order {
         REMOVE TOOLBARBOX(bi);
     }
 }
-
-
-
-

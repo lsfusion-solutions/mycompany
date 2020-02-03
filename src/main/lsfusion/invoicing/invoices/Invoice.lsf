@@ -1,6 +1,8 @@
 MODULE Invoice;
 
-REQUIRE InvoicingSettings, TaxItem, BankAccount, Time, MetaTax, ItemSale, PartnerSale, Company, 
+REQUIRE InvoicingSettings, TaxItem, BankAccount, 
+        MetaTax, PaymentTermsSale,  
+        ItemSale, PartnerSale, Company, 
         BarCode, MetaNumerator, Doc;
 
 NAMESPACE Invoicing;
@@ -29,7 +31,16 @@ nameCompany 'Компания' (Invoice b) = name(company(b));
 WHEN LOCAL SET(Invoice b IS Invoice) AND NOT CHANGED(company(b)) DO company(b) <- defaultCompany(); 
 
 // payment
+paymentTerms = DATA PaymentTerm (Invoice); 
+namePaymentTerms 'Условия оплаты' (Invoice i) = name(paymentTerms(i));
+
 dueDateTime 'Оплатить до' = DATA DATETIME (Invoice);
+
+WHEN LOCAL CHANGED(customer(Invoice b)) AND NOT CHANGED(paymentTerms(b)) DO paymentTerms(b) <- customerPaymentTerms(customer(b)); 
+
+WHEN LOCAL (SETCHANGED(paymentTerms(Invoice i)) OR SETCHANGED(dateTime(i))) AND paymentTerms(i) AND NOT CHANGED(dueDateTime(i)) DO {
+    dueDateTime(i) <- sumDay(dateTime(i), days(paymentTerms(i)));
+}
 
 // partner account
 customerAccount 'Счет покупателя' = DATA Account (Invoice);
@@ -95,7 +106,7 @@ edit (InvoiceLine l) + { edit(invoice(l)); }
 FORM invoice 'Расходная накладная'
     OBJECTS  i = Invoice PANEL 
     PROPERTIES(i) dateTime, number, nameCustomer, nameCompany, sourceDocument,
-                  dueDateTime, nameCustomerAccount, nameCompanyAccount,
+                  namePaymentTerms, dueDateTime, nameCustomerAccount, nameCompanyAccount,
                   customerReference, note
         
     OBJECTS l = InvoiceLine
@@ -145,12 +156,15 @@ DESIGN invoice {
                 columns = 2;
                 NEW payment {
                     caption = 'Оплата';
+                    alignment = STRETCH;
+                    MOVE PROPERTY(namePaymentTerms(i)); 
                     MOVE PROPERTY(dueDateTime(i)); 
                     MOVE PROPERTY(nameCompanyAccount(i));
                     MOVE PROPERTY(nameCustomerAccount(i));              
                 }           
                 NEW invoiceInformat {
                     caption = 'Прочие';
+                    alignment = STRETCH;
                     MOVE PROPERTY(customerReference(i)); 
                     MOVE PROPERTY(note(i));
                 }
@@ -166,7 +180,7 @@ DESIGN invoice {
 FORM invoices 'Расходные накладные'
     OBJECTS i = Invoice
     PROPERTIES(i) READONLY dateTime, number, nameCustomer, nameCompany, sourceDocument,
-                           dueDateTime, nameCustomerAccount, nameCompanyAccount,
+                           namePaymentTerms, dueDateTime, nameCustomerAccount, nameCompanyAccount,
                            customerReference, note         
     PROPERTIES(i) NEWSESSION NEW, EDIT, DELETE
            

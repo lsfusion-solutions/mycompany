@@ -1,6 +1,8 @@
 MODULE Bill;
 
-REQUIRE InvoicingSettings, TaxItem, BankAccount, Time, MetaTax, ItemPurchase, PartnerPurchase, Company,
+REQUIRE InvoicingSettings, TaxItem, BankAccount, 
+        MetaTax, PaymentTermsPurchase, 
+        ItemPurchase, PartnerPurchase, Company,
         BarCode, MetaNumerator, Doc;
 
 NAMESPACE Invoicing;
@@ -29,7 +31,16 @@ nameCompany 'Компания' (Bill b) = name(company(b));
 WHEN LOCAL SET(Bill b IS Bill) AND NOT CHANGED(company(b)) DO company(b) <- defaultCompany(); 
 
 // payment
+paymentTerms = DATA PaymentTerm (Bill); 
+namePaymentTerms 'Условия оплаты' (Bill b) = name(paymentTerms(b));
+
 dueDateTime 'Оплатить до' = DATA DATETIME (Bill);
+
+WHEN LOCAL CHANGED(vendor(Bill b)) AND NOT CHANGED(paymentTerms(b)) DO paymentTerms(b) <- vendorPaymentTerms(vendor(b)); 
+
+WHEN LOCAL (SETCHANGED(paymentTerms(Bill b)) OR SETCHANGED(dateTime(b))) AND paymentTerms(b) AND NOT CHANGED(dueDateTime(b)) DO {
+    dueDateTime(b) <- sumDay(dateTime(b), days(paymentTerms(b)));
+}
 
 // partner account
 vendorAccount 'Счет поставщика' = DATA Account (Bill);
@@ -96,7 +107,7 @@ FORM bill 'Приходная накладная'
     OBJECTS  b = Bill PANEL 
     PROPERTIES(b) dateTime, number, 
                   nameVendor, nameCompany, sourceDocument,
-                  dueDateTime, nameVendorAccount, nameCompanyAccount,
+                  namePaymentTerms, dueDateTime, nameVendorAccount, nameCompanyAccount,
                   vendorReference, note
         
     OBJECTS l = BillLine
@@ -146,12 +157,15 @@ DESIGN bill {
                 columns = 2;
                 NEW payment {
                     caption = 'Оплата';
+                    alignment = STRETCH;
+                    MOVE PROPERTY(namePaymentTerms(b)); 
                     MOVE PROPERTY(dueDateTime(b)); 
                     MOVE PROPERTY(nameCompanyAccount(b));
                     MOVE PROPERTY(nameVendorAccount(b));              
                 }           
                 NEW billInformat {
                     caption = 'Прочие';
+                    alignment = STRETCH;
                     MOVE PROPERTY(vendorReference(b)); 
                     MOVE PROPERTY(note(b));
                 }
@@ -168,7 +182,7 @@ FORM bills 'Приходные накладные'
     OBJECTS b = Bill
     PROPERTIES(b) READONLY dateTime, number, 
                            nameVendor, nameCompany, sourceDocument,
-                           dueDateTime, nameVendorAccount, nameCompanyAccount,
+                           namePaymentTerms, dueDateTime, nameVendorAccount, nameCompanyAccount,
                            vendorReference, note
     PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE
            
