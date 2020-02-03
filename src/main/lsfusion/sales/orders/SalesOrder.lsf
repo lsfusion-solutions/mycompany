@@ -3,7 +3,7 @@ MODULE SalesOrder;
 REQUIRE Time, MetaNumerator, Individual, Company,
         MetaTax, TaxItem, BarCode,
         SalesSettings, PartnerSale, ItemSale,
-        Incoterms, PaymentTerms, SalesPricelistValue, Doc;  
+        PaymentTerms, SalesPricelistValue, Doc;  
 
 NAMESPACE Sales;
 
@@ -43,9 +43,6 @@ WHEN LOCAL CHANGED(customer(Order o)) DO deliveryAddress(o) <- addressCustomer(o
 
 location 'Место отгрузки' = DATA Location (Order) PREREAD;
 nameLocation 'Место отгрузки' (Order o) = name(location(o));
-
-incoterm 'Условие поставки' = DATA Incoterm (Order);
-nameIncoterm 'Условие поставки' (Order o)= name(incoterm(o));
 
 // Sales information
 representative 'Наш представитель' = DATA Individual (Order);
@@ -109,7 +106,7 @@ nameCustomer 'Заказчик' (OrderLine l) = nameCustomer(order(l));
 FORM order 'Заказ покупателя'
     OBJECTS o = Order PANEL
     PROPERTIES(o) dateTime, number, nameCustomer, namePriceType,
-                  scheduledDateTime, deliveryAddress, nameLocation, nameIncoterm, 
+                  scheduledDateTime, deliveryAddress, nameLocation, 
                   nameRepresentative, customerReference,
                   validity,
                   invoiceDateTime, namePaymentTerms, addressCustomer
@@ -164,7 +161,6 @@ DESIGN order {
                     MOVE PROPERTY(scheduledDateTime(o));
                     MOVE PROPERTY(deliveryAddress(o));
                     MOVE PROPERTY(nameLocation(o));               
-                    MOVE PROPERTY(nameIncoterm(o));
                 }
                 NEW salesInformation {
                     caption = 'Прочие';
@@ -193,7 +189,7 @@ DESIGN order {
 FORM orders 'Заказы покупателей'
      OBJECTS o = Order
      PROPERTIES(o) READONLY number, nameCustomer,
-                            scheduledDateTime, deliveryAddress, nameLocation, nameIncoterm, 
+                            scheduledDateTime, deliveryAddress, nameLocation, 
                             invoiceDateTime, namePaymentTerms, addressCustomer,
                             nameRepresentative, customerReference,
                             untaxedAmount, totalTax, totalAmount

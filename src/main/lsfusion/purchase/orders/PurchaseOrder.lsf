@@ -3,7 +3,7 @@ MODULE PurchaseOrder;
 REQUIRE Time, MetaNumerator, Individual, Company,
         MetaTax, TaxItem, BarCode,
         PurchaseSettings, PartnerPurchase, ItemSale,
-        Incoterms, PaymentTerms, Doc, PurchasePricelistValue,
+        PaymentTerms, Doc, PurchasePricelistValue,
         Location;  
 
 NAMESPACE Purchase;
@@ -34,9 +34,6 @@ WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(scheduledDateTime(o)) DO schedu
 
 location = DATA Location (Order);
 nameLocation 'Место доставки' (Order o) = name(location(o));
-
-incoterm 'Условие поставки' = DATA Incoterm (Order);
-nameIncoterm 'Условие поставки' (Order o)= name(incoterm(o));
 
 // Purchase information
 representative 'Наш представитель' = DATA Individual (Order);
@@ -94,7 +91,7 @@ edit (OrderLine l) + { edit(order(l)); }
 FORM order 'Заказ поставщику'
     OBJECTS o = Order PANEL
     PROPERTIES(o) dateTime, number, nameVendor,
-                  scheduledDateTime, nameLocation, nameIncoterm,
+                  scheduledDateTime, nameLocation,
                   nameRepresentative, vendorReference,
                   namePaymentTerms
     PROPERTIES(o) READONLY untaxedAmount, totalTax, totalAmount
@@ -134,7 +131,6 @@ DESIGN order {
                     caption = 'Поставка';
                     MOVE PROPERTY(scheduledDateTime(o));
                     MOVE PROPERTY(nameLocation(o));
-                    MOVE PROPERTY(nameIncoterm(o));
                 }
                 NEW purchaseInformation {
                     caption = 'Прочие';
@@ -167,7 +163,7 @@ DESIGN order {
 FORM orders 'Заказы поставщикам'
     OBJECTS o = Order
     PROPERTIES(o) READONLY dateTime, number, nameVendor,
-                           scheduledDateTime, nameLocation, nameIncoterm,
+                           scheduledDateTime, nameLocation,
                            nameRepresentative, vendorReference,
                            namePaymentTerms,
                            untaxedAmount, totalTax, totalAmount     
