@@ -4,7 +4,7 @@ REQUIRE ManufacturingOrderCanceled, ResLedger;
 
 NAMESPACE Manufacturing;
 
-CLASS ManufacturingOrderResLedger : ResLedger;
+CLASS ManufacturingOrderResLedger 'Производство' : ResLedger;
 manLedger = AGGR ManufacturingOrderResLedger WHERE reserved(ConsumedLine line) AND item(line) IS Product AND
     (status(manufacturingOrder(line)) = ManufacturingOrderStatus.waiting OR 
      status(manufacturingOrder(line)) = ManufacturingOrderStatus.ready OR 
@@ -19,3 +19,5 @@ product(ManufacturingOrderResLedger r) += (item(line(r))) AS Product;
 reserved(ManufacturingOrderResLedger r) += reserved(line(r));
 
 number(ManufacturingOrderResLedger r) += number(manufacturingOrder(line(r)));
+
+edit (ManufacturingOrderResLedger r) + { edit(manufacturingOrder(line(r))); }
