@@ -102,8 +102,16 @@ WHEN LOCAL SETCHANGED(item(BillLine l)) AND NOT CHANGED(price(l)) DO price(l) <-
 nameStatus 'Статус' (BillLine l) = nameStatus(bill(l));
 number 'Номер' (BillLine l) = number(bill(l));
 dateTime 'Дата' (BillLine l) = dateTime(bill(l));
+vendor (BillLine l) = vendor(bill(l));
 nameVendor 'Поставщик' (BillLine l) = nameVendor(bill(l));
 nameCompany 'Компания' (BillLine l) = nameCompany(bill(l));
+
+FORM billLines 'Строки приходных накладных'
+    OBJECTS l = BillLine
+    PROPERTIES(l) READONLY dateTime, number, index, nameItem, quantity, price
+
+    LIST BillLine OBJECT l
+;
 
 edit (BillLine l) + { edit(bill(l)); } 
 

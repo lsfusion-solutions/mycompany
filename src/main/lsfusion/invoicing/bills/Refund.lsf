@@ -4,14 +4,43 @@ REQUIRE BillDone, Invoice;
 
 NAMESPACE Invoicing;
 
-refund = DATA Bill (Invoice);
 refundLine = DATA BillLine (InvoiceLine);
+numberRefundLine 'Расходная накладная' (InvoiceLine l) = number(refundLine(l)); 
+
+CONSTRAINT refundLine(InvoiceLine l) AND NOT 
+                (vendor(refundLine(l)) = customer(l) AND 
+                 item(refundLine(l)) = item(l))
+    CHECKED BY refundLine
+    MESSAGE 'Контрагент и номенклатура расходной накладной должны совпадать с контрагентом и товаром возврата';
+
+in (Bill b, Invoice i) = GROUP SUM 1 IF bill(refundLine(InvoiceLine l)) = b AND invoice(l) = i MATERIALIZED; 
+
+countBills 'Кол-во приходных накладных' (Invoice i) = GROUP SUM 1 IF in(Bill b, i) MATERIALIZED;
+descriptionBills 'Приходные накладные' (Invoice i) = GROUP CONCAT description(Bill b) IF in(b, i), ','; 
 
 // source
-sourceDocument (Invoice i) += WHEN refund(i) THEN description(refund(i));
-openSourceDocument (Invoice i) + { IF refund(i) THEN edit(refund(i)); }
+sourceDocument (Invoice i) += WHEN countBills(i) THEN descriptionBills(i);
+openSourceDocument (Invoice i) + { FOR in(Bill b, i) DO edit(b); }
 
-isRefund 'Возврат' (Invoice i) = TRUE IF refund(i);
+// events
+WHEN LOCAL SETCHANGED(refundLine(InvoiceLine l)) DO {
+    price(l) <- price(refundLine(l));
+    in(l, Tax t) <- in(refundLine(l), t);
+}
+
+isRefund 'Возврат' (Invoice i) = DATA BOOLEAN (Invoice);
+
+EXTEND FORM invoice
+    PROPERTIES(i) isRefund
+    
+    PROPERTIES(l) numberRefundLine SHOWIF isRefund(i)
+;
+
+DESIGN invoice {
+    headerRight {
+        MOVE PROPERTY(isRefund(i));
+    }
+}
 
 // add
 addRefund 'Создать возврат' (Bill b) {
@@ -20,7 +49,7 @@ addRefund 'Создать возврат' (Bill b) {
     
     NEWSESSION { 
         NEW i = Invoice {
-            refund(i) <- b;
+            isRefund(i) <- TRUE;
             
             dateTime(i) <- currentDateTime();
             
@@ -32,17 +61,13 @@ addRefund 'Создать возврат' (Bill b) {
             
             note(i) <- note(b);
             
-            FOR bill(BillLine l) = b INLINE NEW il = InvoiceLine DO {
-                refundLine(il) <- l; 
-                invoice(il) <- i;
+            FOR bill(BillLine l) = b INLINE NEW bl = InvoiceLine DO {
+                refundLine(bl) <- l; 
+                invoice(bl) <- i;
 
-                item(il) <- item(l);
+                item(bl) <- item(l);
 
-                quantity(il) <- quantity(l);
-                price(il) <- price(l);
-                FOR in(l, Tax t) DO {
-                    in(il, t) <- in(l,t);
-                }
+                quantity(bl) <- quantity(l);
             }
             SHOW invoice OBJECTS i = i DOCKED;
         }

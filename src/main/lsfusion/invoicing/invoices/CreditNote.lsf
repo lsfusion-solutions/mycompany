@@ -4,14 +4,43 @@ REQUIRE InvoiceDone, Bill;
 
 NAMESPACE Invoicing;
 
-creditNote = DATA Invoice (Bill);
 creditNoteLine = DATA InvoiceLine (BillLine);
+numberCreditNoteLine 'Приходная накладная' (BillLine l) = number(creditNoteLine(l)); 
+
+CONSTRAINT creditNoteLine(BillLine l) AND NOT 
+                (customer(creditNoteLine(l)) = vendor(l) AND 
+                 item(creditNoteLine(l)) = item(l))
+    CHECKED BY creditNoteLine
+    MESSAGE 'Контрагент и номенклатура расходной накладной должны совпадать с контрагентом и товаром возврата';
+
+in (Invoice i, Bill b) = GROUP SUM 1 IF invoice(creditNoteLine(BillLine l)) = i AND bill(l) = b MATERIALIZED; 
+
+countInvoices 'Кол-во расходных накладных' (Bill b) = GROUP SUM 1 IF in(Invoice i, b) MATERIALIZED;
+descriptionInvoices 'Расходные накладные' (Bill b) = GROUP CONCAT description(Invoice i) IF in(i, b), ','; 
 
 // source
-sourceDocument (Bill b) += WHEN creditNote(b) THEN description(creditNote(b));
-openSourceDocument (Bill b) + { IF creditNote(b) THEN edit(creditNote(b)); }
+sourceDocument (Bill b) += WHEN countInvoices(b) THEN descriptionInvoices(b);
+openSourceDocument (Bill b) + { FOR in(Invoice i, b) DO edit(i); }
 
-isCreditNote 'Возврат' (Bill b) = TRUE IF creditNote(b);
+// events
+WHEN LOCAL SETCHANGED(creditNoteLine(BillLine l)) DO {
+    price(l) <- price(creditNoteLine(l));
+    in(l, Tax t) <- in(creditNoteLine(l), t);
+}
+
+isCreditNote 'Возврат' (Bill b) = DATA BOOLEAN (Bill);
+
+EXTEND FORM bill
+    PROPERTIES(b) isCreditNote
+    
+    PROPERTIES(l) numberCreditNoteLine SHOWIF isCreditNote(b)
+;
+
+DESIGN bill {
+    headerRight {
+        MOVE PROPERTY(isCreditNote(b));
+    }
+}
 
 // add
 addCreditNote 'Создать возврат' (Invoice i) {
@@ -20,7 +49,7 @@ addCreditNote 'Создать возврат' (Invoice i) {
     
     NEWSESSION { 
         NEW b = Bill {
-            creditNote(b) <- i;
+            isCreditNote(b) <- TRUE;
             
             dateTime(b) <- currentDateTime();
             
@@ -39,10 +68,6 @@ addCreditNote 'Создать возврат' (Invoice i) {
                 item(bl) <- item(l);
 
                 quantity(bl) <- quantity(l);
-                price(bl) <- price(l);
-                FOR in(l, Tax t) DO {
-                    in(bl, t) <- in(l,t);
-                }
             }
             SHOW bill OBJECTS b = b DOCKED;
         }

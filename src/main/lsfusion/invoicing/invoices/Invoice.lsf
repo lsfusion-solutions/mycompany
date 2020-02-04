@@ -102,8 +102,16 @@ WHEN LOCAL SETCHANGED(item(InvoiceLine l)) AND NOT CHANGED(price(l)) DO price(l)
 nameStatus 'Статус' (InvoiceLine l) = nameStatus(invoice(l));
 number 'Номер' (InvoiceLine l) = number(invoice(l));
 dateTime 'Дата' (InvoiceLine l) = dateTime(invoice(l));
+customer (InvoiceLine l) = customer(invoice(l));
 nameCustomer 'Покупатель' (InvoiceLine l) = nameCustomer(invoice(l));
 nameCompany 'Компания' (InvoiceLine l) = nameCompany(invoice(l));
+
+FORM invoiceLines 'Строки расходных накладных'
+    OBJECTS l = InvoiceLine
+    PROPERTIES(l) READONLY dateTime, number, index, nameItem, quantity, price
+
+    LIST InvoiceLine OBJECT l
+;
 
 edit (InvoiceLine l) + { edit(invoice(l)); } 
 
