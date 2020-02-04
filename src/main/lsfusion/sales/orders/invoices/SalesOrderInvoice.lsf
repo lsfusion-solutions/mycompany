@@ -5,14 +5,29 @@ REQUIRE SalesOrderConfirmed,
 
 NAMESPACE Sales;
 
+// invoicing policy
+CLASS InvoicingPolicy 'Политика оформления накладных' {
+    ordered 'Заказанное количество'
+}
+name 'Имя' (InvoicingPolicy p) = staticCaption(p) IF p IS InvoicingPolicy CHARWIDTH 20;
+
+invoicingPolicy = DATA InvoicingPolicy ();
+nameInvoicingPolicy 'Политика оформления накладных' () = name(invoicingPolicy()); 
+EXTEND FORM options PROPERTIES() nameInvoicingPolicy;
+
+// lines
 orderLine = DATA OrderLine (InvoiceLine);
-order = DATA Order (Invoice);
+
+in (Order o, Invoice i) = GROUP SUM 1 IF order(orderLine(InvoiceLine l)) = o AND invoice(l) = i MATERIALIZED; 
+
+countOrders 'Кол-во заказов' (Invoice i) = GROUP SUM 1 IF in(Order o, i) MATERIALIZED;
+descriptionOrders 'Заказы' (Invoice i) = GROUP CONCAT description(Order o) IF in(o, i), ','; 
 
 // source
-sourceDocument (Invoice b) += WHEN order(b) THEN description(order(b));
-openSourceDocument (Invoice b) + { IF order(b) THEN edit(order(b)); }
+sourceDocument (Invoice i) += WHEN countOrders(i) THEN descriptionOrders(i);
+openSourceDocument (Invoice i) + { FOR in(Order o, i) DO edit(o); }
 
-invoiced 'Выписано накладных' (OrderLine ol) = 
+invoiced 'Оформлено накладных' (OrderLine ol) = 
     GROUP SUM quantity(InvoiceLine bl) IF orderLine(bl) = ol AND ready(invoice(bl)) AND NOT canceled(invoice(bl));
 paid 'Оплачено' (OrderLine ol) = 
     GROUP SUM quantity(InvoiceLine bl) IF orderLine(bl) = ol AND done(invoice(bl)) AND NOT canceled(invoice(bl));
@@ -21,17 +36,23 @@ toInvoice 'К оформлению' (OrderLine l) = max(quantity(l) (-) invoiced
 toInvoice 'К оформлению' (Order o) = 
     GROUP SUM toInvoice(OrderLine ol) IF order(ol) = o;
 
+createOrderInvoiceLines ABSTRACT LIST (Order, Invoice);
+
 createInvoice 'Оформить накладную' (Order o) {
     APPLY;
     IF canceled() THEN RETURN;
                
     NEWSESSION {
         NEW ni = Invoice {
+            ready(ni) <- TRUE;    
+
             customer(ni) <- customer(o);
-            order(ni) <- o;
             customerReference(ni) <- customerReference(o); 
-            paymentTerms(ni) <- paymentTerms(o);          
-            FOR order(OrderLine ol) = o AND toInvoice(ol) > 0 NEW il = InvoiceLine DO {
+            paymentTerms(ni) <- paymentTerms(o);
+            
+            FOR order(OrderLine ol) = o AND toInvoice(ol) > 0 AND 
+                (invoicingPolicy() = InvoicingPolicy.ordered OR NOT invoicingPolicy() OR NOT item(ol) IS Product) 
+                NEW il = InvoiceLine DO {
                 invoice(il) <- ni;
                 item(il) <- item(ol);
                 description(il) <- description(ol);
@@ -39,6 +60,7 @@ createInvoice 'Оформить накладную' (Order o) {
                 price(il) <- price(ol);
                 orderLine(il) <- ol;
             }                            
+            createOrderInvoiceLines(o, ni);
             executeLocalEvents();
             FOR invoice(InvoiceLine il) = ni DO {
                 in(il, Tax t) <- in(orderLine(il), t);
@@ -64,7 +86,7 @@ EXTEND FORM order
     OBJECTS in = Invoice
     PROPERTIES(in) READONLY nameStatus BACKGROUND colorStatus(in), number, dateTime    
     PROPERTIES(in) NEWSESSION EDIT GRID   
-    FILTERS order(in) = o   
+    FILTERS in(o, in)   
 ;
  
 DESIGN order {

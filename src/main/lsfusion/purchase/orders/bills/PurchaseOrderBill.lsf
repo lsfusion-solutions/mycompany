@@ -1,16 +1,31 @@
 MODULE PurchaseOrderBill;
 
 REQUIRE PurchaseOrder, PurchaseOrderConfirmed,
-        BillDone, BillCanceled;
+        BillDone, BillCanceled, Product;
 
 NAMESPACE Purchase;
 
+// invoicing policy
+CLASS InvoicingPolicy 'Политика оформления накладных' {
+    ordered 'Заказанное количество'
+}
+name 'Имя' (InvoicingPolicy p) = staticCaption(p) IF p IS InvoicingPolicy CHARWIDTH 20;
+
+invoicingPolicy = DATA InvoicingPolicy ();
+nameInvoicingPolicy 'Политика оформления накладных' () = name(invoicingPolicy()); 
+EXTEND FORM options PROPERTIES() nameInvoicingPolicy;
+
+// lines
 orderLine = DATA OrderLine (BillLine);
-order = DATA Order (Bill);
+
+in (Order o, Bill i) = GROUP SUM 1 IF order(orderLine(BillLine l)) = o AND bill(l) = i MATERIALIZED; 
+
+countOrders 'Кол-во заказов' (Bill i) = GROUP SUM 1 IF in(Order o, i) MATERIALIZED;
+descriptionOrders 'Заказы' (Bill i) = GROUP CONCAT description(Order o) IF in(o, i), ','; 
 
 // source
-sourceDocument (Bill b) += WHEN order(b) THEN description(order(b));
-openSourceDocument (Bill b) + { IF order(b) THEN edit(order(b)); }
+sourceDocument (Bill i) += WHEN countOrders(i) THEN descriptionOrders(i);
+openSourceDocument (Bill i) + { FOR in(Order o, i) DO edit(o); }
 
 billed 'Оформлено накладных' (OrderLine ol) = 
     GROUP SUM quantity(BillLine bl) IF orderLine(bl) = ol AND ready(bill(bl)) AND NOT canceled(bill(bl));
@@ -20,17 +35,23 @@ toBill 'К оформлению' (OrderLine l) = max(quantity(l) (-) billed(l), 
  
 toBill 'К оформлению' (Order o) = GROUP SUM toBill(OrderLine ol) IF order(ol) = o;
 
+createOrderBillLines ABSTRACT LIST (Order, Bill);
+
 createBill 'Оформить накладную' (Order o) {
     APPLY;
     IF canceled() THEN RETURN;
                
     NEWSESSION {
         NEW nb = Bill {
+            ready(nb) <- TRUE;
+            
             vendor(nb) <- vendor(o);
-            order(nb) <- o;
             vendorReference(nb) <- vendorReference(o);
-            paymentTerms(nb) <- paymentTerms(o);             
-            FOR order(OrderLine ol) = o AND toBill(ol) > 0 NEW bl = BillLine DO {
+            paymentTerms(nb) <- paymentTerms(o);
+                         
+            FOR order(OrderLine ol) = o AND toBill(ol) > 0 AND
+                (invoicingPolicy() = InvoicingPolicy.ordered OR NOT invoicingPolicy() OR NOT item(ol) IS Product) 
+                NEW bl = BillLine DO {
                 bill(bl) <- nb;
                 item(bl) <- item(ol);
                 description(bl) <- description(ol);
@@ -38,6 +59,7 @@ createBill 'Оформить накладную' (Order o) {
                 price(bl) <- price(ol);
                 orderLine(bl) <- ol;
             }                            
+            createOrderBillLines(o, nb);
             executeLocalEvents();
             FOR bill(BillLine bl) = nb DO {
                 in(bl, Tax t) <- in(orderLine(bl), t);
@@ -63,7 +85,7 @@ EXTEND FORM order
     OBJECTS bi = Bill
     PROPERTIES(bi) READONLY nameStatus BACKGROUND colorStatus(bi), number, dateTime    
     PROPERTIES(bi) NEWSESSION EDIT GRID   
-    FILTERS order(bi) = o       
+    FILTERS in(o, bi)       
 ;
  
 DESIGN order {

@@ -1,0 +1,26 @@
+MODULE SalesOrderInvoiceShipment;
+
+REQUIRE SalesOrderInvoice, SalesOrderShipment, InvoiceShipment;
+
+NAMESPACE Invoicing;
+
+EXTEND CLASS InvoicingPolicy {
+    delivered 'Отгруженное количество'
+}
+
+createOrderInvoiceLines (Order o, Invoice i) + {
+    IF invoicingPolicy() = InvoicingPolicy.delivered THEN {
+        FOR order(orderLine(ShipmentLine sl)) = o AND done(sl) > 0 AND active(shipment(sl)) AND NOT invoiceLine(sl) INLINE 
+            NEW il = InvoiceLine DO {
+            invoice(il) <- i;
+            orderLine(il) <- orderLine(sl);
+    
+            item(il) <- product(sl);
+            description(il) <- description(orderLine(sl));
+            quantity(il) <- done(sl);
+            price(il) <- price(orderLine(sl));
+    
+            invoiceLine(sl) <- il; 
+        }
+    }                            
+}

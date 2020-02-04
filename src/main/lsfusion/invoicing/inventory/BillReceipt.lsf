@@ -23,20 +23,23 @@ DESIGN bill {
     }
 }
 
-// receipt
-bill = DATA Bill (Receipt);
-countReceipts 'Кол-во поступлений' (Bill b) = GROUP SUM 1 IF bill(Receipt r) = b;
-
+// lines
 billLine = DATA BillLine (ReceiptLine);
 
+in (Bill i, Receipt s) = GROUP SUM 1 IF bill(billLine(ReceiptLine l)) = i AND receipt(l) = s MATERIALIZED; 
+
+countBills 'Кол-во накладных' (Receipt s) = GROUP SUM 1 IF in(Bill i, s) MATERIALIZED;
+descriptionBills 'Накладные' (Receipt s) = GROUP CONCAT description(Bill i) IF in(i, s), ','; 
+
+countReceiptLines 'Кол-во строк отгрузки' (Bill b) = GROUP SUM 1 IF bill(billLine(ReceiptLine l)) = b;
+
 // source
-sourceDocument (Receipt r) += WHEN bill(r) THEN description(bill(r));
-openSourceDocument (Receipt r) + { IF bill(r) THEN edit(bill(r)); }
+sourceDocument (Receipt s) += WHEN countBills(s) THEN descriptionBills(s);
+openSourceDocument (Receipt s) + { FOR in(Bill i, s) DO edit(i); }
 
 billReceiptCreated = DATA LOCAL Receipt ();
 newReceipt (Bill b) {
     NEW r = Receipt { 
-        bill(r) <- b;
         isReturn(r) <- isCreditNote(b);
 
         vendor(r) <- vendor(b);
@@ -68,12 +71,12 @@ createReceipt 'Создать поступление' (Bill b) {
 } 
 
 EXTEND FORM bill
-    PROPERTIES(b) createReceipt SHOWIF ready(b) AND typeReceiptFromBill() AND NOT countReceipts(b) 
+    PROPERTIES(b) createReceipt SHOWIF ready(b) AND typeReceiptFromBill() AND NOT countReceiptLines(b) 
 
     OBJECTS r = Receipt
     PROPERTIES(r) READONLY nameStatus BACKGROUND colorStatus(r), number, scheduledDateTime, executionDateTime
     PROPERTIES(r) NEWSESSION EDIT GRID   
-    FILTERS bill(r) = b
+    FILTERS in(b, r)
 ;
 
 DESIGN bill {
@@ -91,6 +94,6 @@ autoCreateReceiptFromBill 'Автоматически создавать пос�
 EXTEND FORM options PROPERTIES autoCreateReceiptFromBill() SHOWIF typeReceiptFromBill();
 
 WHEN SET(ready(Bill b)) AND autoCreateReceiptFromBill() DO newReceipt(b);
-WHEN SET(canceled(bill(Receipt r))) AND autoCreateReceiptFromBill() DO canceled(r) <- TRUE; 
+WHEN SET(canceled(Bill b)) AND in(b, Receipt r) AND countBills(r) = 1 AND autoCreateReceiptFromBill() DO canceled(r) <- TRUE; 
 WHEN CHANGED(quantity(billLine(ReceiptLine l))) AND autoCreateReceiptFromBill() DO done(l) <- quantity(billLine(l));
 WHEN CHANGED(item(billLine(ReceiptLine l))) AND autoCreateReceiptFromBill() AND item(billLine(l)) IS Product DO product(l) <- item(billLine(l));

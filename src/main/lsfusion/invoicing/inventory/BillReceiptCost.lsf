@@ -1,7 +1,7 @@
 MODULE BillReceiptCost;
 
-REQUIRE BillReceipt, ReceiptCost;
+REQUIRE BillReceipt, ReceiptCost, CreditNote;
 
 NAMESPACE Invoicing;
 
-cost (ReceiptLine l) += WHEN billLine(l) THEN subtotal(billLine(l));
+cost (ReceiptLine l) += WHEN billLine(l) AND NOT isCreditNote(bill(billLine(l))) THEN NUMERIC[14,2](price(billLine(l)) * done(l));

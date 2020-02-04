@@ -70,8 +70,8 @@ calculateCost () {
     sum (OutCostLedger ol) <- NUMERIC[14,2](quantity(ol) * cost(product(ol))) 
         WHERE calcCost(ol) AND costingMethod(product(ol)) = CostingMethod.standardPrice;
 
-    dataSum (InCostLedger il) <- NUMERIC[14,2](quantity(il) * cost(product(il))) 
-        WHERE calcCost(il) AND costingMethod(product(il)) = CostingMethod.standardPrice;
+    dataSum (InCostLedger il) <- NUMERIC[14,2](quantity(il) * cost(product(il))) IF costingMethod(product(il)) = CostingMethod.standardPrice
+        WHERE calcCost(il);
 
     // расчет по fifo и среднему
     quantity(OutCostLedger out, InCostLedger in) <- NULL WHERE calcCost(out); // сбрасываем старый расчет

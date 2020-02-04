@@ -12,11 +12,15 @@ EXTEND FORM options PROPERTIES nameReceiptType();
 
 // relation
 orderLine = DATA OrderLine (ReceiptLine) INDEXED;
-order = DATA Order (Receipt);
+
+in (Order o, Receipt i) = GROUP SUM 1 IF order(orderLine(ReceiptLine l)) = o AND receipt(l) = i MATERIALIZED; 
+
+countOrders 'Кол-во заказов' (Receipt i) = GROUP SUM 1 IF in(Order o, i) MATERIALIZED;
+descriptionOrders 'Заказы' (Receipt i) = GROUP CONCAT description(Order o) IF in(o, i), ','; 
 
 // source
-sourceDocument (Receipt r) += WHEN order(r) THEN description(order(r));
-openSourceDocument (Receipt r) + { IF order(r) THEN edit(order(r)); }
+sourceDocument (Receipt i) += WHEN countOrders(i) THEN descriptionOrders(i);
+openSourceDocument (Receipt i) + { FOR in(Order o, i) DO edit(o); }
 
 done 'Поступило' (OrderLine ol) = 
     GROUP SUM done(ReceiptLine rl) IF orderLine(rl) = ol AND active(receipt(rl));
@@ -28,20 +32,24 @@ toReceive 'К поступлению' (Order o) = GROUP SUM toReceive(OrderLine 
 CONSTRAINT (quantity(OrderLine ol) (-) done(ol)) < 0 AND confirmed(order(ol)) 
     MESSAGE 'По товару поступление превышает количество в заказе';
 
-lastOpenReceipt 'Последний открытый приход' (Order o) =  
-    GROUP LAST Receipt r IF order(r) = o AND status(r) = ReceiptStatus.ready ORDER r MATERIALIZED;
+reserveReceipt = DATA Receipt (Order);
 
 WHEN ([GROUP SUM 1 IF CHANGED(toReceive(OrderLine l)) BY order(l)](Order o) OR SET(confirmed(o)) OR DROPPED(locked(o)) OR  
       CHANGED(vendor(o)) OR CHANGED(scheduledDateTime(o)) OR CHANGED(location(o)) OR CHANGED(number(o))) AND 
       status(o) = OrderStatus.confirmed AND location(o) AND receiptType() DO {
-    IF NOT lastOpenReceipt(o) AND toReceive(o) > 0 THEN   
+
+    IF reserveReceipt(o) AND NOT status(reserveReceipt(o)) = ReceiptStatus.ready THEN
+        reserveReceipt(o) <- NULL;
+
+    IF NOT reserveReceipt(o) AND toReceive(o) > 0 THEN   
         NEW r = Receipt { 
-            order(r) <- o; 
             type(r) <- receiptType();
-            ready(r) <- TRUE;           
+            ready(r) <- TRUE;
+            
+            reserveReceipt(o) <- r;           
         }
         
-    FOR Receipt r = lastOpenReceipt(o) DO {
+    FOR Receipt r = reserveReceipt(o) DO {
         vendor(r) <- vendor(o);
         scheduledDateTime(r) <- scheduledDateTime(o);
         
@@ -49,20 +57,20 @@ WHEN ([GROUP SUM 1 IF CHANGED(toReceive(OrderLine l)) BY order(l)](Order o) OR S
     }
 
     FOR order(OrderLine ol) = o AND toReceive(ol) > 0 AND 
-        NOT (GROUP SUM 1 IF receipt(ReceiptLine l) = lastOpenReceipt(o) AND orderLine(l) = ol) 
+        NOT (GROUP SUM 1 IF receipt(ReceiptLine l) = reserveReceipt(o) AND orderLine(l) = ol) 
             NEW rl = ReceiptLine DO {            
-        receipt(rl) <- lastOpenReceipt(o);
+        receipt(rl) <- reserveReceipt(o);
         product(rl) <- item(ol);
         orderLine(rl) <- ol;
     }
-    initialDemand(ReceiptLine l) <- toReceive(orderLine(l)) IF toReceive(orderLine(l)) > 0 WHERE receipt(l) = lastOpenReceipt(o);  
-    DELETE ReceiptLine l WHERE receipt(l) = lastOpenReceipt(o) AND NOT initialDemand(l);
-    IF NOT countLines(lastOpenReceipt(o)) THEN
-        DELETE Receipt r WHERE r = lastOpenReceipt(o); 
+    initialDemand(ReceiptLine l) <- toReceive(orderLine(l)) IF toReceive(orderLine(l)) > 0 WHERE receipt(l) = reserveReceipt(o);  
+    DELETE ReceiptLine l WHERE receipt(l) = reserveReceipt(o) AND NOT initialDemand(l);
+    IF NOT countLines(reserveReceipt(o)) THEN
+        DELETE Receipt r WHERE r = reserveReceipt(o); 
 }
 
 WHEN SET(locked(Order o)) DO {
-    DELETE Receipt r WHERE r = lastOpenReceipt(o);
+    DELETE Receipt r WHERE r = reserveReceipt(o) AND status(reserveReceipt(o)) = ReceiptStatus.ready;
 }
 
 FORM orderReceiptShow 'Оприходовано на склад'
@@ -79,7 +87,7 @@ EXTEND FORM order
     OBJECTS rc = Receipt
     PROPERTIES(rc) READONLY nameStatus BACKGROUND colorStatus(rc), number, scheduledDateTime, executionDateTime
     PROPERTIES(rc) NEWSESSION EDIT GRID   
-    FILTERS order(rc) = o
+    FILTERS in(o, rc)
 ;
 
 DESIGN order {
