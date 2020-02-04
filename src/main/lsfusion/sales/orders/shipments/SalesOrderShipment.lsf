@@ -16,11 +16,24 @@ orderLine = DATA OrderLine (ShipmentLine) INDEXED;
 in (Order o, Shipment i) = GROUP SUM 1 IF order(orderLine(ShipmentLine l)) = o AND shipment(l) = i MATERIALIZED; 
 
 countOrders 'Кол-во заказов' (Shipment i) = GROUP SUM 1 IF in(Order o, i) MATERIALIZED;
-descriptionOrders 'Заказы' (Shipment i) = GROUP CONCAT description(Order o) IF in(o, i), ','; 
+numberDateOrders 'Заказы' (Shipment i) = GROUP CONCAT numberDate(Order o) IF in(o, i), ',' CHARWIDTH 30; 
 
-// source
-sourceDocument (Shipment i) += WHEN countOrders(i) THEN descriptionOrders(i);
-openSourceDocument (Shipment i) + { FOR in(Order o, i) DO edit(o); }
+// form
+openOrders (Shipment s) { 
+    FOR in(Order o, s) DO 
+        edit(o); 
+}
+EXTEND FORM shipment
+    PROPERTIES(s) numberDateOrders ON CHANGE openOrders(s)
+;
+DESIGN shipment {
+    footer {
+        MOVE PROPERTY(numberDateOrders(s));
+    }
+}
+EXTEND FORM shipments
+    PROPERTIES(s) READONLY numberDateOrders
+;
 
 reserved 'Зарезервировано' (OrderLine ol) = 
     GROUP SUM reserved(ShipmentLine rl) IF orderLine(rl) = ol AND toReserve(shipment(rl));

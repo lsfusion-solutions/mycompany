@@ -17,7 +17,7 @@ WHEN LOCAL SET (Invoice b IS Invoice) DO dateTime(b) <- currentDateTime();
 
 @defineNumber(invoice, 'Расходная накладная', 'РН');
 
-description 'Описание' (Invoice i) = 'Накладная ' + number(i) + ' от ' + dateTime(i);
+numberDate 'Описание' (Invoice i) = number(i) + ' от ' + dateTime(i);
 
 // customer
 customer 'Покупатель' = DATA Partner (Invoice) NONULL;
@@ -30,10 +30,6 @@ CONSTRAINT customer(Invoice b) AND NOT isCustomer(customer(b))
 company 'Компания' = DATA Company (Invoice) NONULL;
 nameCompany 'Компания' (Invoice b) = name(company(b));
 WHEN LOCAL SET(Invoice b IS Invoice) AND NOT CHANGED(company(b)) DO company(b) <- defaultCompany(); 
-
-// source
-sourceDocument 'Основание' = ABSTRACT CASE STRING (Invoice) CHARWIDTH 35;
-openSourceDocument ABSTRACT LIST (Invoice);
 
 // payment
 paymentTerms = DATA PaymentTerm (Invoice); 
@@ -117,7 +113,7 @@ edit (InvoiceLine l) + { edit(invoice(l)); }
 
 FORM invoice 'Расходная накладная'
     OBJECTS  i = Invoice PANEL 
-    PROPERTIES(i) dateTime, number, nameCustomer, nameCompany, sourceDocument ON CHANGE openSourceDocument(i),
+    PROPERTIES(i) dateTime, number, nameCustomer, nameCompany,
                   namePaymentTerms, dueDateTime, nameCustomerAccount, nameCompanyAccount,
                   customerReference, note
         
@@ -141,7 +137,6 @@ DESIGN invoice {
             NEW headerRight {
                 MOVE PROPERTY(nameCustomer(i))  { notNull = TRUE; }
                 MOVE PROPERTY(nameCompany(i)) { notNull = TRUE; }           
-                MOVE PROPERTY(sourceDocument(i));           
             }
             NEW relatedDoc {
                 fill = 1;
@@ -182,6 +177,9 @@ DESIGN invoice {
                 }
             }
         }
+        NEW footer {
+            type = CONTAINERH;
+        }
     }
 }
 
@@ -191,7 +189,7 @@ DESIGN invoice {
 
 FORM invoices 'Расходные накладные'
     OBJECTS i = Invoice
-    PROPERTIES(i) READONLY dateTime, number, nameCustomer, nameCompany, sourceDocument,
+    PROPERTIES(i) READONLY dateTime, number, nameCustomer, nameCompany,
                            namePaymentTerms, dueDateTime, nameCustomerAccount, nameCompanyAccount,
                            customerReference, note         
     PROPERTIES(i) NEWSESSION NEW, EDIT, DELETE

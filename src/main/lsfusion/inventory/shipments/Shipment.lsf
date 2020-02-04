@@ -48,10 +48,6 @@ CONSTRAINT customer(Shipment s) AND NOT isCustomer(customer(s))
                 CHECKED BY customer[Shipment]
                 MESSAGE 'Контрагент должен быть покупателем';
 
-// source
-sourceDocument 'Основание' = ABSTRACT CASE STRING (Shipment) CHARWIDTH 35;
-openSourceDocument ABSTRACT LIST (Shipment);
-
 note 'Примечание' = DATA ISTRING[50] (Shipment);
 
 // lines
@@ -101,7 +97,6 @@ FORM shipment 'Отгрузка'
     OBJECTS s = Shipment PANEL 
     PROPERTIES(s) nameType, scheduledDateTime, number, 
                   nameCustomer SHOWIF NOT isTransfer(type(s)), nameLocation, nameToLocation SHOWIF isTransfer(type(s)), 
-                  sourceDocument ON CHANGE openSourceDocument(s),
                   note
                   
     OBJECTS l = ShipmentLine
@@ -128,7 +123,6 @@ DESIGN shipment {
                     MOVE PROPERTY(nameCustomer(s))  { notNull = TRUE; }
                     MOVE PROPERTY(nameLocation(s)) { notNull = TRUE; }           
                     MOVE PROPERTY(nameToLocation(s)) { notNull = TRUE; }           
-                    MOVE PROPERTY(sourceDocument(s));
                 }
             }
             NEW headerBottom {
@@ -147,6 +141,9 @@ DESIGN shipment {
                 }
             }                  
         }
+        NEW footer {
+            type = CONTAINERH;
+        }
     }
 }
 
@@ -157,7 +154,7 @@ DESIGN shipment {
 FORM shipments 'Отгрузки'
     OBJECTS s = Shipment
     PROPERTIES(s) READONLY nameType, scheduledDateTime, number, 
-                           nameCustomer, nameLocation, nameToLocation, sourceDocument,
+                           nameCustomer, nameLocation, nameToLocation,
                            note
     PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
 ;

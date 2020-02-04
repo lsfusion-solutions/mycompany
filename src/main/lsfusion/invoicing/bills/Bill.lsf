@@ -17,7 +17,7 @@ WHEN LOCAL SET (Bill b IS Bill) DO dateTime(b) <- currentDateTime();
 
 @defineNumber(bill, 'Приходная накладная', 'ПН');
 
-description 'Описание' (Bill b) = 'Накладная ' + number(b) + ' от ' + dateTime(b);
+numberDate 'Описание' (Bill b) = number(b) + ' от ' + dateTime(b);
 
 // vendor
 vendor 'Поставщик' = DATA Partner (Bill) NONULL;
@@ -30,10 +30,6 @@ CONSTRAINT vendor(Bill b) AND NOT isVendor(vendor(b))
 company 'Компания' = DATA Company (Bill) NONULL;
 nameCompany 'Компания' (Bill b) = name(company(b));
 WHEN LOCAL SET(Bill b IS Bill) AND NOT CHANGED(company(b)) DO company(b) <- defaultCompany(); 
-
-// source
-sourceDocument 'Основание' = ABSTRACT CASE STRING (Bill) CHARWIDTH 35;
-openSourceDocument ABSTRACT LIST (Bill);
 
 // payment
 paymentTerms = DATA PaymentTerm (Bill); 
@@ -118,7 +114,7 @@ edit (BillLine l) + { edit(bill(l)); }
 FORM bill 'Приходная накладная'
     OBJECTS  b = Bill PANEL 
     PROPERTIES(b) dateTime, number, 
-                  nameVendor, nameCompany, sourceDocument ON CHANGE openSourceDocument(b),
+                  nameVendor, nameCompany,
                   namePaymentTerms, dueDateTime, nameVendorAccount, nameCompanyAccount,
                   vendorReference, note
         
@@ -142,7 +138,6 @@ DESIGN bill {
             NEW headerRight {
                 MOVE PROPERTY(nameVendor(b))  { notNull = TRUE; }
                 MOVE PROPERTY(nameCompany(b)) { notNull = TRUE; }           
-                MOVE PROPERTY(sourceDocument(b));           
             }
             NEW relatedDoc {
                 fill = 1;
@@ -183,6 +178,9 @@ DESIGN bill {
                 }
             }
         }
+        NEW footer {
+            type = CONTAINERH;
+        }
     }
 }
 
@@ -193,7 +191,7 @@ DESIGN bill {
 FORM bills 'Приходные накладные'
     OBJECTS b = Bill
     PROPERTIES(b) READONLY dateTime, number, 
-                           nameVendor, nameCompany, sourceDocument,
+                           nameVendor, nameCompany,
                            namePaymentTerms, dueDateTime, nameVendorAccount, nameCompanyAccount,
                            vendorReference, note
     PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE

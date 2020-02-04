@@ -29,13 +29,26 @@ billLine = DATA BillLine (ReceiptLine);
 in (Bill i, Receipt s) = GROUP SUM 1 IF bill(billLine(ReceiptLine l)) = i AND receipt(l) = s MATERIALIZED; 
 
 countBills 'Кол-во накладных' (Receipt s) = GROUP SUM 1 IF in(Bill i, s) MATERIALIZED;
-descriptionBills 'Накладные' (Receipt s) = GROUP CONCAT description(Bill i) IF in(i, s), ','; 
+numberDateBills 'Накладные' (Receipt s) = GROUP CONCAT numberDate(Bill i) IF in(i, s), ',' CHARWIDTH 30; 
 
 countReceiptLines 'Кол-во строк отгрузки' (Bill b) = GROUP SUM 1 IF bill(billLine(ReceiptLine l)) = b;
 
-// source
-sourceDocument (Receipt s) += WHEN countBills(s) THEN descriptionBills(s);
-openSourceDocument (Receipt s) + { FOR in(Bill i, s) DO edit(i); }
+// form
+openBills (Receipt r) { 
+    FOR in(Bill b, r) DO 
+        edit(b); 
+}
+EXTEND FORM receipt
+    PROPERTIES(r) numberDateBills ON CHANGE openBills(r) SHOWIF countBills(r)
+;
+DESIGN receipt {
+    footer {
+        MOVE PROPERTY(numberDateBills(r));
+    }
+}
+EXTEND FORM receipts
+    PROPERTIES(r) READONLY numberDateBills
+;
 
 billReceiptCreated = DATA LOCAL Receipt ();
 newReceipt (Bill b) {

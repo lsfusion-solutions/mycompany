@@ -21,11 +21,24 @@ orderLine = DATA OrderLine (InvoiceLine);
 in (Order o, Invoice i) = GROUP SUM 1 IF order(orderLine(InvoiceLine l)) = o AND invoice(l) = i MATERIALIZED; 
 
 countOrders 'Кол-во заказов' (Invoice i) = GROUP SUM 1 IF in(Order o, i) MATERIALIZED;
-descriptionOrders 'Заказы' (Invoice i) = GROUP CONCAT description(Order o) IF in(o, i), ','; 
+numberDateOrders 'Заказы' (Invoice i) = GROUP CONCAT numberDate(Order o) IF in(o, i), ',' CHARWIDTH 30; 
 
-// source
-sourceDocument (Invoice i) += WHEN countOrders(i) THEN descriptionOrders(i);
-openSourceDocument (Invoice i) + { FOR in(Order o, i) DO edit(o); }
+// form
+openOrders (Invoice i) { 
+    FOR in(Order o, i) DO 
+        edit(o); 
+}
+EXTEND FORM invoice
+    PROPERTIES(i) numberDateOrders ON CHANGE openOrders(i) SHOWIF countOrders(i)
+;
+DESIGN invoice {
+    footer {
+        MOVE PROPERTY(numberDateOrders(i));
+    }
+}
+EXTEND FORM invoices
+    PROPERTIES(i) READONLY numberDateOrders
+;
 
 invoiced 'Оформлено накладных' (OrderLine ol) = 
     GROUP SUM quantity(InvoiceLine bl) IF orderLine(bl) = ol AND ready(invoice(bl)) AND NOT canceled(invoice(bl));

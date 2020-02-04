@@ -16,11 +16,24 @@ CONSTRAINT refundLine(InvoiceLine l) AND NOT
 in (Bill b, Invoice i) = GROUP SUM 1 IF bill(refundLine(InvoiceLine l)) = b AND invoice(l) = i MATERIALIZED; 
 
 countBills 'Кол-во приходных накладных' (Invoice i) = GROUP SUM 1 IF in(Bill b, i) MATERIALIZED;
-descriptionBills 'Приходные накладные' (Invoice i) = GROUP CONCAT description(Bill b) IF in(b, i), ','; 
+numberDateBills 'Приходные накладные' (Invoice i) = GROUP CONCAT numberDate(Bill b) IF in(b, i), ',' CHARWIDTH 30; 
 
-// source
-sourceDocument (Invoice i) += WHEN countBills(i) THEN descriptionBills(i);
-openSourceDocument (Invoice i) + { FOR in(Bill b, i) DO edit(b); }
+// form
+openBills (Invoice i) { 
+    FOR in(Bill b, i) DO 
+        edit(b); 
+}
+EXTEND FORM invoice
+    PROPERTIES(i) numberDateBills ON CHANGE openBills(i) SHOWIF countBills(i)
+;
+DESIGN invoice {
+    footer {
+        MOVE PROPERTY(numberDateBills(i));
+    }
+}
+EXTEND FORM invoices
+    PROPERTIES(i) READONLY numberDateBills
+;
 
 // events
 WHEN LOCAL SETCHANGED(refundLine(InvoiceLine l)) DO {

@@ -37,10 +37,6 @@ CONSTRAINT vendor(Receipt r) AND NOT isVendor(vendor(r))
                 CHECKED BY vendor[Receipt]
                 MESSAGE 'Контрагент должен быть поставщиком';
 
-// source
-sourceDocument 'Основание' = ABSTRACT CASE STRING (Receipt) CHARWIDTH 35;
-openSourceDocument ABSTRACT LIST (Receipt);
-
 note 'Примечание' = DATA ISTRING[50] (Receipt);
 
 // lines
@@ -82,7 +78,7 @@ edit (ReceiptLine l) + { edit(receipt(l)); }
 FORM receipt 'Поступление'
     OBJECTS r = Receipt PANEL
     PROPERTIES(r) nameType, scheduledDateTime, number, 
-                  nameVendor, nameLocation, sourceDocument ON CHANGE openSourceDocument(r),
+                  nameVendor, nameLocation,
                   note
 
     OBJECTS l = ReceiptLine
@@ -108,7 +104,6 @@ DESIGN receipt {
                 NEW headerRight {
                     MOVE PROPERTY(nameVendor(r))  { notNull = TRUE; }
                     MOVE PROPERTY(nameLocation(r)) { notNull = TRUE; }           
-                    MOVE PROPERTY(sourceDocument(r));
                 }
             }
             NEW headerBottom {
@@ -127,6 +122,9 @@ DESIGN receipt {
                 }
             }                  
         }
+        NEW footer {
+            type = CONTAINERH;
+        }
     }
 }
 
@@ -137,7 +135,7 @@ DESIGN receipt {
 FORM receipts 'Поступления'
     OBJECTS r = Receipt
     PROPERTIES(r) READONLY nameType, scheduledDateTime, number, 
-                           nameVendor, nameLocation, sourceDocument,
+                           nameVendor, nameLocation,
                            note
     PROPERTIES(r) NEWSESSION NEW, EDIT, DELETE
 ;
