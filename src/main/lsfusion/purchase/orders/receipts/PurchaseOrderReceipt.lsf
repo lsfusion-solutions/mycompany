@@ -11,29 +11,7 @@ nameReceiptType 'Тип поступления на основе заказа' =
 EXTEND FORM options PROPERTIES nameReceiptType();
 
 // relation
-orderLine = DATA OrderLine (ReceiptLine) INDEXED;
-
-in (Order o, Receipt i) = GROUP SUM 1 IF order(orderLine(ReceiptLine l)) = o AND receipt(l) = i MATERIALIZED; 
-
-countOrders 'Кол-во заказов' (Receipt i) = GROUP SUM 1 IF in(Order o, i) MATERIALIZED;
-numberDateOrders 'Заказы' (Receipt i) = GROUP CONCAT numberDate(Order o) IF in(o, i), ',' CHARWIDTH 30; 
-
-// form
-openOrders (Receipt r) { 
-    FOR in(Order o, r) DO 
-        edit(o); 
-}
-EXTEND FORM receipt
-    PROPERTIES(r) numberDateOrders ON CHANGE openOrders(r) SHOWIF countOrders(r)
-;
-DESIGN receipt {
-    footer {
-        MOVE PROPERTY(numberDateOrders(r));
-    }
-}
-EXTEND FORM receipts
-    PROPERTIES(r) READONLY numberDateOrders
-;
+@defineDocLineRelation(order, receipt, 'Заказы', r);
 
 done 'Поступило' (OrderLine ol) = 
     GROUP SUM done(ReceiptLine rl) IF orderLine(rl) = ol AND active(receipt(rl));

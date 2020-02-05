@@ -24,31 +24,7 @@ DESIGN invoice {
 }
 
 // lines
-invoiceLine = DATA InvoiceLine (ShipmentLine);
-
-in (Invoice i, Shipment s) = GROUP SUM 1 IF invoice(invoiceLine(ShipmentLine l)) = i AND shipment(l) = s MATERIALIZED; 
-
-countInvoices 'Кол-во накладных' (Shipment s) = GROUP SUM 1 IF in(Invoice i, s) MATERIALIZED;
-numberDateInvoices 'Накладные' (Shipment s) = GROUP CONCAT numberDate(Invoice i) IF in(i, s), ',' CHARWIDTH 30; 
-
-countShipmentLines 'Кол-во строк отгрузки' (Invoice b) = GROUP SUM 1 IF invoice(invoiceLine(ShipmentLine l)) = b;
-
-// form
-openInvoices (Shipment s) { 
-    FOR in(Invoice i, s) DO 
-        edit(i); 
-}
-EXTEND FORM shipment
-    PROPERTIES(s) numberDateInvoices ON CHANGE openInvoices(s) SHOWIF countInvoices(s)
-;
-DESIGN shipment {
-    footer {
-        MOVE PROPERTY(numberDateInvoices(s));
-    }
-}
-EXTEND FORM shipments
-    PROPERTIES(s) READONLY numberDateInvoices
-;
+@defineDocLineRelation(invoice, shipment, 'Накладные', s);
 
 invoiceShipmentCreated = DATA LOCAL Shipment ();
 newShipment (Invoice b) {
@@ -82,7 +58,7 @@ createShipment 'Создать отгрузку' (Invoice b) {
 }
 
 EXTEND FORM invoice
-    PROPERTIES(i) createShipment SHOWIF ready(i) AND typeShipmentFromInvoice() AND NOT countShipmentLines(i) 
+    PROPERTIES(i) createShipment SHOWIF ready(i) AND typeShipmentFromInvoice() AND NOT countShipmentLine(i) 
 
     OBJECTS s = Shipment
     PROPERTIES(s) READONLY nameStatus BACKGROUND colorStatus(s), number, scheduledDateTime, executionDateTime
@@ -105,6 +81,6 @@ autoCreateShipmentFromInvoice 'Автоматически создавать о�
 EXTEND FORM options PROPERTIES autoCreateShipmentFromInvoice() SHOWIF typeShipmentFromInvoice();
 
 WHEN SET(ready(Invoice b)) AND autoCreateShipmentFromInvoice() DO newShipment(b);
-WHEN SET(canceled(Invoice i)) AND in(i, Shipment r) AND countInvoices(r) = 1 AND autoCreateShipmentFromInvoice() DO canceled(r) <- TRUE; 
+WHEN SET(canceled(Invoice i)) AND in(i, Shipment r) AND countInvoice(r) = 1 AND autoCreateShipmentFromInvoice() DO canceled(r) <- TRUE; 
 WHEN CHANGED(quantity(invoiceLine(ShipmentLine l))) AND autoCreateShipmentFromInvoice() DO done(l) <- quantity(invoiceLine(l));
 WHEN CHANGED(item(invoiceLine(ShipmentLine l))) AND autoCreateShipmentFromInvoice() AND item(invoiceLine(l)) IS Product DO product(l) <- item(invoiceLine(l));

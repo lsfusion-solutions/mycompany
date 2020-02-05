@@ -215,3 +215,31 @@ META defineDocHistory(doc, let, class, fun)
         }
     }
 END
+
+META defineDocLineRelation(docTo, docFrom, capt, obj)
+    docTo##Line = DATA ###docTo##Line (###docFrom##Line);
+    
+    in (###docTo i, ###docFrom s) = GROUP SUM 1 IF docTo(docTo##Line(###docFrom##Line l)) = i AND docFrom(l) = s MATERIALIZED; 
+    
+    count###docTo (###docFrom s) = GROUP SUM 1 IF in(###docTo i, s) MATERIALIZED;
+    numberDate###docTo capt (###docFrom s) = GROUP CONCAT numberDate(###docTo i) IF in(i, s), ',' CHARWIDTH 30; 
+    
+    count###docFrom##Line (###docTo b) = GROUP SUM 1 IF docTo(docTo##Line(###docFrom##Line l)) = b;
+    
+    // form
+    open###docTo (###docFrom s) { 
+        FOR in(###docTo i, s) DO 
+            edit(i); 
+    }
+    EXTEND FORM docFrom
+        PROPERTIES(obj) numberDate###docTo ON CHANGE open###docTo(obj) SHOWIF count###docTo(obj)
+    ;
+    DESIGN docFrom {
+        footer {
+            MOVE PROPERTY(numberDate###docTo(obj));
+        }
+    }
+    EXTEND FORM docFrom##s
+        PROPERTIES(obj) READONLY numberDate###docTo
+    ;
+END

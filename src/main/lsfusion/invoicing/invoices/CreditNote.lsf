@@ -4,41 +4,20 @@ REQUIRE InvoiceDone, Bill;
 
 NAMESPACE Invoicing;
 
-creditNoteLine = DATA InvoiceLine (BillLine);
-numberCreditNoteLine 'Приходная накладная' (BillLine l) = number(creditNoteLine(l)); 
+@defineDocLineRelation(invoice, bill, 'Расходные накладные', b);
 
-CONSTRAINT creditNoteLine(BillLine l) AND NOT 
-                (customer(creditNoteLine(l)) = vendor(l) AND 
-                 item(creditNoteLine(l)) = item(l))
-    CHECKED BY creditNoteLine
+numberInvoiceLine 'Расходная накладная' (BillLine l) = number(invoiceLine(l)); 
+
+CONSTRAINT invoiceLine(BillLine l) AND NOT 
+                (customer(invoiceLine(l)) = vendor(l) AND 
+                 item(invoiceLine(l)) = item(l))
+    CHECKED BY invoiceLine
     MESSAGE 'Контрагент и номенклатура расходной накладной должны совпадать с контрагентом и товаром возврата';
 
-in (Invoice i, Bill b) = GROUP SUM 1 IF invoice(creditNoteLine(BillLine l)) = i AND bill(l) = b MATERIALIZED; 
-
-countInvoices 'Кол-во расходных накладных' (Bill b) = GROUP SUM 1 IF in(Invoice i, b) MATERIALIZED;
-numberDateInvoices 'Расходные накладные' (Bill b) = GROUP CONCAT numberDate(Invoice i) IF in(i, b), ',' CHARWIDTH 30; 
-
-// form
-openInvoices (Bill b) { 
-    FOR in(Invoice i, b) DO 
-        edit(i); 
-}
-EXTEND FORM bill
-    PROPERTIES(b) numberDateInvoices ON CHANGE openInvoices(b) SHOWIF countInvoices(b)
-;
-DESIGN bill {
-    footer {
-        MOVE PROPERTY(numberDateInvoices(b));
-    }
-}
-EXTEND FORM bills
-    PROPERTIES(b) READONLY numberDateInvoices
-;
-
 // events
-WHEN LOCAL SETCHANGED(creditNoteLine(BillLine l)) DO {
-    price(l) <- price(creditNoteLine(l));
-    in(l, Tax t) <- in(creditNoteLine(l), t);
+WHEN LOCAL SETCHANGED(invoiceLine(BillLine l)) DO {
+    price(l) <- price(invoiceLine(l));
+    in(l, Tax t) <- in(invoiceLine(l), t);
 }
 
 isCreditNote 'Возврат' (Bill b) = DATA BOOLEAN (Bill);
@@ -46,7 +25,7 @@ isCreditNote 'Возврат' (Bill b) = DATA BOOLEAN (Bill);
 EXTEND FORM bill
     PROPERTIES(b) isCreditNote
     
-    PROPERTIES(l) numberCreditNoteLine SHOWIF isCreditNote(b)
+    PROPERTIES(l) numberInvoiceLine SHOWIF isCreditNote(b)
 ;
 
 DESIGN bill {
@@ -75,7 +54,7 @@ addCreditNote 'Создать возврат' (Invoice i) {
             note(b) <- note(i);
             
             FOR invoice(InvoiceLine l) = i INLINE NEW bl = BillLine DO {
-                creditNoteLine(bl) <- l; 
+                invoiceLine(bl) <- l; 
                 bill(bl) <- b;
 
                 item(bl) <- item(l);
