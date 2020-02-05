@@ -5,17 +5,21 @@ REQUIRE Partner, Company;
 NAMESPACE Invoicing;
 
 CLASS ABSTRACT Debt 'Задолженность';
-active 'Активен' = ABSTRACT BOOLEAN (Debt);
-number 'Номер' = ABSTRACT STRING[31] (Debt);
-dateTime 'Дата' = ABSTRACT DATETIME (Debt);
+active 'Активен' = ABSTRACT BOOLEAN (Debt) MATERIALIZED;
+number 'Номер' = ABSTRACT STRING[31] (Debt) MATERIALIZED;
 
-partner = ABSTRACT Partner (Debt);
+dateTime 'Дата' = ABSTRACT DATETIME (Debt) MATERIALIZED;
+dueDateTime 'Оплатить до' = ABSTRACT DATETIME(Debt) MATERIALIZED;
+
+partner = ABSTRACT Partner (Debt) MATERIALIZED;
 namePartner 'Контрагент' (Debt d) = name(partner(d));
 
-company = ABSTRACT Company (Debt);
+INDEX partner(Debt d), dateTime(d), d;
+
+company = ABSTRACT Company (Debt) MATERIALIZED;
 nameCompany 'Компания' (Debt d) = name(partner(d));
 
-amount = ABSTRACT NUMERIC[14,2] (Debt);
+amount 'Сумма' = ABSTRACT NUMERIC[14,2] (Debt) MATERIALIZED;
 
 type 'Тип' (Debt d) = objectClassName(d) IF d IS Debt CHARWIDTH 15;
 
@@ -25,16 +29,23 @@ CLASS ABSTRACT IncomingDebt 'Входящая задолженность' : Debt
 // outgoing
 CLASS ABSTRACT OutgoingDebt 'Исходящая задолженность' : Debt;
 
+signedAmount 'Сумма' (Debt d) = IF d IS OutgoingDebt THEN amount(d) ELSE -amount(d) MATERIALIZED;
+
+// match
 paid 'Оплачено' = DATA NUMERIC[14,2] (IncomingDebt, OutgoingDebt);
 
 canBeMatched (IncomingDebt id, OutgoingDebt od) =
     partner(id) = partner(od) AND company(id) = company(od);
 
-paid 'Оплачено' (IncomingDebt id) = GROUP SUM paid(id, OutgoingDebt od) IF active(od);
-paid 'Оплачено' (OutgoingDebt od) = GROUP SUM paid(IncomingDebt id, od) IF active(id);  
+paid 'Оплачено' (IncomingDebt id) = GROUP SUM paid(id, OutgoingDebt od) IF active(od) MATERIALIZED;
+paid 'Оплачено' (OutgoingDebt od) = GROUP SUM paid(IncomingDebt id, od) IF active(id) MATERIALIZED;  
+paid 'Оплачено' (Debt d) = MULTI paid[IncomingDebt](d), paid[OutgoingDebt](d);
 
 left 'Осталось' (IncomingDebt id) = amount(id) (-) paid(id);
 left 'Осталось' (OutgoingDebt od) = amount(od) (-) paid(od);
+left 'Осталось' (Debt d) = MULTI left[IncomingDebt](d), left[OutgoingDebt](d);
+signedLeft 'Осталось' (Debt d) = IF d IS OutgoingDebt THEN left(d) ELSE -left(d);
+
 left 'Осталось' (IncomingDebt id, OutgoingDebt od) = min(left(id), left(od));
 
 canBePaid (IncomingDebt id, OutgoingDebt od) = canBeMatched(id, od) AND left(id, od) > 0 AND active(id) AND active(od);

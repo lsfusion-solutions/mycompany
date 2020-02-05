@@ -1,0 +1,40 @@
+MODULE DebtPartner;
+
+REQUIRE Debt, Partner;
+
+NAMESPACE Invoicing;
+
+debt 'Долг' (Debt d) = PARTITION SUM signedAmount(d) ORDER dateTime(d), d BY partner(d); 
+
+debt 'Долг' (Partner p) = GROUP SUM signedAmount(Debt d) IF partner(d) = p;
+
+pastDueDebt 'Просроченный долг' (Partner p) = GROUP SUM signedLeft(Debt d) IF partner(d) = p AND dueDateTime(d) < currentDateTime();
+
+FORM debts 'Долги по контрагенту'
+    OBJECTS p = Partner PANEL
+    PROPERTIES(p) READONLY name
+
+    OBJECTS d = Debt
+    PROPERTIES(d) READONLY type, number, dateTime, dueDateTime, nameCompany, amount, left, debt
+    PROPERTIES(d) NEWSESSION EDIT
+    ORDER dateTime(d)
+    
+    FILTERGROUP pastDue
+        FILTER 'Просроченные' dueDateTime(d) < currentDateTime() AND signedLeft(d)
+    FILTERS active(d),
+            partner(d) = p
+;
+
+EXTEND FORM partner
+    PROPERTIES(p) ON CHANGE { SHOW debts OBJECTS p = p DOCKED; } debt, pastDueDebt
+;
+DESIGN partner {
+    headerRight {
+        MOVE PROPERTY(debt(p));
+        MOVE PROPERTY(pastDueDebt(p));
+    }
+}
+
+EXTEND FORM partners
+    PROPERTIES(p) READONLY debt, pastDueDebt
+;
