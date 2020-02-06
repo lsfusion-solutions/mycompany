@@ -3,7 +3,7 @@ MODULE MetaTax;
 META defineTaxCalc(doc, let, prefix)
     subtotal 'Сумма до налогов'  = DATA NUMERIC[14,2] (###doc##Line);
     
-    WHEN LOCAL SETCHANGED(quantity(###doc##Line l)) OR SETCHANGED(price(l)) DO {
+    WHEN LOCAL CHANGED(quantity(###doc##Line l)) OR CHANGED(price(l)) DO {
         subtotal(l) <- NUMERIC[14,2](quantity(l) * price(l));
     }
     
@@ -18,7 +18,7 @@ META defineTaxCalc(doc, let, prefix)
         taxAmount (t, l) <- NUMERIC[14,2] (value(t) / 100 * subtotal(l));
     
     CONSTRAINT (DROPPED(Tax t IS Tax) AND PREV(taxAmount(t, ###doc##Line l))) 
-                                                            MESSAGE 'Нельзя удалять налог, участвующий в рассчетах';
+                                                            MESSAGE 'Нельзя удалять налог, участвующий в расчетах';
     
     taxAmount 'Сумма налога (общая)' (Tax t, ###doc let) = 
         GROUP SUM taxAmount(t, ###doc##Line l) IF doc(l) = let AND in(l, t);
