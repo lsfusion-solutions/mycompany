@@ -26,11 +26,6 @@ EXTEND FORM bill
     PROPERTIES(b) cancel SHOWIF NOT (status(b) = BillStatus.draft OR status(b) = BillStatus.canceled), canceled
 ;
 
-EXTEND FORM bills    
-    EXTEND FILTERGROUP status
-        FILTER 'Отменен' status(b) = BillStatus.canceled 'F5'    
-;
-
 DESIGN bill {
     secondaryActions {
         MOVE PROPERTY(cancel(b));
@@ -39,3 +34,8 @@ DESIGN bill {
         MOVE PROPERTY(canceled(b));                               
     }    
 }
+
+EXTEND FORM bills    
+    EXTEND FILTERGROUP status
+        FILTER 'Отменен' status(b) = BillStatus.canceled    
+;

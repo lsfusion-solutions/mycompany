@@ -26,11 +26,6 @@ EXTEND FORM invoice
     PROPERTIES(i) cancel SHOWIF NOT (status(i) = InvoiceStatus.draft OR status(i) = InvoiceStatus.canceled), canceled 
 ;
 
-EXTEND FORM invoices    
-    EXTEND FILTERGROUP status
-        FILTER 'Отменен' status(i) = InvoiceStatus.canceled 'F5'    
-;
-
 DESIGN invoice {
     secondaryActions {
         MOVE PROPERTY(cancel(i));
@@ -39,3 +34,8 @@ DESIGN invoice {
         MOVE PROPERTY(canceled(i));                               
     }    
 }
+
+EXTEND FORM invoices    
+    EXTEND FILTERGROUP status
+        FILTER 'Отменен' status(i) = InvoiceStatus.canceled
+;

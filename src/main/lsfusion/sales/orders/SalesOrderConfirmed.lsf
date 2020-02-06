@@ -4,7 +4,7 @@ REQUIRE SalesOrder, SalesOrderSent;
 
 NAMESPACE Sales;
 
-EXTEND CLASS OrderStatus{
+EXTEND CLASS OrderStatus {
     confirmed 'Подтвержден'
 }
 confirmed 'Подтвержден' = DATA BOOLEAN (Order);
@@ -34,3 +34,8 @@ DESIGN order {
         MOVE PROPERTY(confirmed(o));    
     }
 }
+
+EXTEND FORM orders    
+    EXTEND FILTERGROUP status
+        FILTER 'Подтвержден' status(o) = OrderStatus.confirmed    
+;

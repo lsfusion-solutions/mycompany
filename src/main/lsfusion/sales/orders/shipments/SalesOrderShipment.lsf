@@ -11,7 +11,7 @@ nameShipmentType 'Тип отгрузки на основе заказа' = name
 EXTEND FORM options PROPERTIES nameShipmentType();
  
 // relation
-@defineDocLineRelation(order, shipment, 'Заказы', s);
+@defineDocLineRelation(order, shipment, 'Заказы', 'Отгрузки', o, s);
 
 reserved 'Зарезервировано' (OrderLine ol) = 
     GROUP SUM reserved(ShipmentLine rl) IF orderLine(rl) = ol AND toReserve(shipment(rl));
@@ -34,8 +34,11 @@ WHEN ([GROUP SUM 1 IF CHANGED(toShip(OrderLine l)) BY order(l)](Order o) OR SET(
      
     IF reserveShipment(o) AND NOT toReserve(reserveShipment(o)) THEN
         reserveShipment(o) <- NULL;
-             
-    IF NOT reserveShipment(o) AND toShip(o) > 0 THEN   
+    
+    IF NOT reserveShipment(o) THEN
+        reserveShipment(o) <- GROUP LAST Shipment s ORDER s WHERE in(o, s) AND toReserve(s);   
+         
+    IF NOT reserveShipment(o) AND toShip(o) > 0 THEN
         NEW s = Shipment { 
             type(s) <- shipmentType();
             waiting(s) <- TRUE;

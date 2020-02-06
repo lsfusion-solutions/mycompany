@@ -44,8 +44,8 @@ WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(scheduledDateTime(o)) DO schedu
 deliveryAddress 'Адрес доставки' = DATA STRING (Order);
 WHEN LOCAL CHANGED(customer(Order o)) DO deliveryAddress(o) <- addressCustomer(o);
 
-location 'Место отгрузки' = DATA Location (Order) PREREAD;
-nameLocation 'Место отгрузки' (Order o) = name(location(o));
+location = DATA Location (Order) PREREAD;
+nameLocation 'Место хранения' (Order o) = name(location(o));
 
 // Sales information
 representative 'Наш представитель' = DATA Individual (Order);
@@ -108,10 +108,10 @@ nameCustomer 'Заказчик' (OrderLine l) = nameCustomer(order(l));
 
 FORM order 'Заказ покупателя'
     OBJECTS o = Order PANEL
-    PROPERTIES(o) dateTime, number, nameCustomer, namePriceType,
+    PROPERTIES(o) dateTime, number, nameCustomer, namePriceType, nameLocation,
                   validity,
                   namePaymentTerms, addressCustomer,
-                  scheduledDateTime, deliveryAddress, nameLocation, 
+                  scheduledDateTime, deliveryAddress, 
                   nameRepresentative, customerReference
     PROPERTIES(o) READONLY untaxedAmount, totalTax, totalAmount
                  
@@ -133,6 +133,7 @@ DESIGN order {
                 MOVE PROPERTY(number(o));
                 MOVE PROPERTY(nameCustomer(o)) { notNull = TRUE; } 
                 MOVE PROPERTY(namePriceType(o)); 
+                MOVE PROPERTY(nameLocation(o));               
             }    
             NEW relatedDoc {
                 type = TABBED;
@@ -165,7 +166,6 @@ DESIGN order {
                     alignment = STRETCH;
                     MOVE PROPERTY(scheduledDateTime(o));
                     MOVE PROPERTY(deliveryAddress(o));
-                    MOVE PROPERTY(nameLocation(o));               
                 }
                 NEW salesInformation {
                     caption = 'Прочие';

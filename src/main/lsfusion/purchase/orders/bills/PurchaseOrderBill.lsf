@@ -16,15 +16,18 @@ nameInvoicingPolicy 'Политика оформления накладных' (
 EXTEND FORM options PROPERTIES() nameInvoicingPolicy;
 
 // lines
-@defineDocLineRelation(order, bill, 'Заказы', b);
+@defineDocLineRelation(order, bill, 'Заказы', 'Накладные', o, b);
 
 billed 'Оформлено накладных' (OrderLine ol) = 
     GROUP SUM quantity(BillLine bl) IF orderLine(bl) = ol AND ready(bill(bl)) AND NOT canceled(bill(bl));
 paid 'Оплачено' (OrderLine ol) = 
     GROUP SUM quantity(BillLine bl) IF orderLine(bl) = ol AND done(bill(bl)) AND NOT canceled(bill(bl));
-toBill 'К оформлению' (OrderLine l) = max(quantity(l) (-) billed(l), 0);
+toBillOrdered 'К оформлению' (OrderLine l) = max(quantity(l) (-) billed(l), 0) IF (invoicingPolicy() = InvoicingPolicy.ordered OR NOT invoicingPolicy() OR NOT item(l) IS Product);
  
-toBill 'К оформлению' (Order o) = GROUP SUM toBill(OrderLine ol) IF order(ol) = o;
+toBillOrdered (Order o) = GROUP SUM toBillOrdered(OrderLine ol) IF order(ol) = o;
+
+toBill = ABSTRACT VALUE BOOLEAN (Order);
+toBill (Order o) += toBillOrdered(o) > 0;
 
 createOrderBillLines ABSTRACT LIST (Order, Bill);
 
@@ -40,13 +43,12 @@ createBill 'Оформить накладную' (Order o) {
             vendorReference(nb) <- vendorReference(o);
             paymentTerms(nb) <- paymentTerms(o);
                          
-            FOR order(OrderLine ol) = o AND toBill(ol) > 0 AND
-                (invoicingPolicy() = InvoicingPolicy.ordered OR NOT invoicingPolicy() OR NOT item(ol) IS Product) 
+            FOR order(OrderLine ol) = o AND toBillOrdered(ol) > 0 
                 NEW bl = BillLine DO {
                 bill(bl) <- nb;
                 item(bl) <- item(ol);
                 description(bl) <- description(ol);
-                quantity(bl) <- toBill(ol);
+                quantity(bl) <- toBillOrdered(ol);
                 price(bl) <- price(ol);
                 orderLine(bl) <- ol;
             }                            
@@ -69,7 +71,7 @@ FORM orderBillShow 'Выставлено счетов'
 ;
 
 EXTEND FORM order   
-    PROPERTIES(o) SHOWIF (status(o) = OrderStatus.confirmed AND toBill(o) > 0) createBill
+    PROPERTIES(o) SHOWIF (status(o) = OrderStatus.confirmed AND toBill(o)) createBill
     PROPERTIES(l) SHOWIF confirmed(o) billed ON CHANGE { DIALOG orderBillShow OBJECTS ol = l; } BACKGROUND NOT billed(l) = quantity(l)
     PROPERTIES(l) SHOWIF confirmed(o) paid ON CHANGE { DIALOG orderBillShow OBJECTS ol = l; } BACKGROUND NOT paid(l) = quantity(l)
 
@@ -90,3 +92,8 @@ DESIGN order {
         REMOVE TOOLBARBOX(bi);
     }
 }
+
+EXTEND FORM orders
+    FILTERGROUP toBill
+        FILTER 'К оформлению накладных' status(o) = OrderStatus.confirmed AND toBill(o)
+;

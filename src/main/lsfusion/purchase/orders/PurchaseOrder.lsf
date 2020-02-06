@@ -38,7 +38,7 @@ scheduledDateTime 'Срок поставки' = DATA DATETIME (Order);
 WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(scheduledDateTime(o)) DO scheduledDateTime(o) <- currentDateTime();     
 
 location = DATA Location (Order);
-nameLocation 'Место доставки' (Order o) = name(location(o));
+nameLocation 'Место хранения' (Order o) = name(location(o));
 
 // Purchase information
 representative 'Наш представитель' = DATA Individual (Order);
@@ -95,9 +95,9 @@ edit (OrderLine l) + { edit(order(l)); }
 
 FORM order 'Заказ поставщику'
     OBJECTS o = Order PANEL
-    PROPERTIES(o) dateTime, number, nameVendor,
+    PROPERTIES(o) dateTime, number, nameVendor, nameLocation,
                   namePaymentTerms,
-                  scheduledDateTime, nameLocation,
+                  scheduledDateTime,
                   nameRepresentative, vendorReference
     PROPERTIES(o) READONLY untaxedAmount, totalTax, totalAmount
                  
@@ -118,6 +118,7 @@ DESIGN order {
                 MOVE PROPERTY(dateTime(o));
                 MOVE PROPERTY(number(o));
                 MOVE PROPERTY(nameVendor(o)) { notNull = TRUE; } 
+                MOVE PROPERTY(nameLocation(o));
             }
             NEW relatedDoc {
                 fill = 1;
@@ -141,7 +142,6 @@ DESIGN order {
                     caption = 'Поставка';
                     alignment = STRETCH;
                     MOVE PROPERTY(scheduledDateTime(o));
-                    MOVE PROPERTY(nameLocation(o));
                 }
                 NEW purchaseInformation {
                     caption = 'Прочие';

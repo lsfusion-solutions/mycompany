@@ -8,9 +8,13 @@ EXTEND CLASS InvoicingPolicy {
     delivered 'Поступившее количество'
 }
 
+toBillShipped (Order o) = 
+    GROUP SUM done(ReceiptLine sl) IF order(orderLine(sl)) = o AND active(receipt(sl)) AND NOT billLine(sl);
+toBill(o) += toBillShipped(o) > 0;
+
 createOrderBillLines (Order o, Bill i) + {
     IF invoicingPolicy() = InvoicingPolicy.delivered THEN {
-        FOR order(orderLine(ReceiptLine sl)) = o AND done(sl) > 0 AND active(receipt(sl)) AND NOT billLine(sl) INLINE 
+        FOR order(orderLine(ReceiptLine sl)) = o AND active(receipt(sl)) AND NOT billLine(sl) INLINE 
             NEW il = BillLine DO {
             bill(il) <- i;
             orderLine(il) <- orderLine(sl);

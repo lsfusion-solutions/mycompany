@@ -24,6 +24,8 @@ WHEN LOCAL SET(Receipt r IS Receipt) AND NOT CHANGED(scheduledDateTime(r)) DO sc
 @defineNumberType(receipt);
 receipt (STRING[31] number) = GROUP LAST Receipt r BY number(r);
 
+numberDate 'Описание' (Receipt r) = number(r) + ' от ' + scheduledDateTime(r);
+
 // location
 location 'Место хранения' = DATA Location (Receipt) NONULL INDEXED;
 nameLocation 'Место хранения' (Receipt r) = name(location(r));

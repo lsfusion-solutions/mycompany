@@ -11,7 +11,7 @@ nameReceiptType 'Тип поступления на основе заказа' =
 EXTEND FORM options PROPERTIES nameReceiptType();
 
 // relation
-@defineDocLineRelation(order, receipt, 'Заказы', r);
+@defineDocLineRelation(order, receipt, 'Заказы', 'Поступления', o, r);
 
 done 'Поступило' (OrderLine ol) = 
     GROUP SUM done(ReceiptLine rl) IF orderLine(rl) = ol AND active(receipt(rl));
@@ -31,6 +31,9 @@ WHEN ([GROUP SUM 1 IF CHANGED(toReceive(OrderLine l)) BY order(l)](Order o) OR S
 
     IF reserveReceipt(o) AND NOT status(reserveReceipt(o)) = ReceiptStatus.ready THEN
         reserveReceipt(o) <- NULL;
+
+    IF NOT reserveReceipt(o) THEN
+        reserveReceipt(o) <- GROUP LAST Receipt r ORDER r WHERE in(o, r) AND status(r) = ReceiptStatus.ready;   
 
     IF NOT reserveReceipt(o) AND toReceive(o) > 0 THEN   
         NEW r = Receipt { 
