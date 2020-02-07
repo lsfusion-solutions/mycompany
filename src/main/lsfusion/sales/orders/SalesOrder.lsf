@@ -80,8 +80,10 @@ WHEN LOCAL CHANGED(item(OrderLine l)) DO uom(l) <- uom(item(l));
 quantity 'Количество' = DATA NUMERIC[16,3] (OrderLine);
 
 price 'Цена' = DATA NUMERIC[10,2] (OrderLine);
+resultPrice = ABSTRACT VALUE NUMERIC[10,2] (OrderLine);
+resultPrice (OrderLine l) += price(l);
 
-@defineTaxCalc(order, o, sales);
+@defineTaxCalc(order, o, sales, resultPrice);
 
 WHEN LOCAL CHANGED(item(OrderLine ol)) DO {
     description(ol) <- nameItem(ol);
@@ -104,6 +106,7 @@ nameStatus 'Статус' (OrderLine l) = nameStatus(order(l));
 number 'Номер' (OrderLine l) = number(order(l));
 dateTime 'Дата' (OrderLine l) = dateTime(order(l));
 nameLocation 'Место доставки' (OrderLine l) = nameLocation(order(l));
+customer (OrderLine l) = customer(order(l));
 nameCustomer 'Заказчик' (OrderLine l) = nameCustomer(order(l));
 
 FORM order 'Заказ покупателя'

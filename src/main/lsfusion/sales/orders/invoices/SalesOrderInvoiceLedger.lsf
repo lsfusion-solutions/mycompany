@@ -1,0 +1,23 @@
+MODULE SalesOrderInvoiceLedger;
+
+REQUIRE InvoiceCanceled, SalesLedger;
+
+NAMESPACE Sales;
+
+CLASS InvoiceSalesLedger 'Накладная' : SalesLedger;
+salesLedger = AGGR InvoiceSalesLedger WHERE quantity(InvoiceLine line) > 0 AND active(invoice(line)) ; 
+
+dateTime(InvoiceSalesLedger l) += dateTime(invoice(line(l)));
+number(InvoiceSalesLedger l) += number(invoice(line(l)));
+
+item(InvoiceSalesLedger l) += item(line(l));
+
+customer(InvoiceSalesLedger l) += customer(invoice(line(l)));
+
+quantity(InvoiceSalesLedger l) += quantity(line(l));
+
+price(InvoiceSalesLedger l) += price(line(l));
+untaxedAmount(InvoiceSalesLedger l) += subtotal(line(l));
+taxes(InvoiceSalesLedger l) += totalTax(line(l));
+
+edit (InvoiceSalesLedger l) + { edit(invoice(line(l))); } 

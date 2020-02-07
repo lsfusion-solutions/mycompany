@@ -1,0 +1,45 @@
+MODULE SalesLedgerPartner;
+
+REQUIRE SalesLedger;
+
+NAMESPACE Sales;
+
+yearMonth (DATETIME d) = extractYear(d) * 12 + extractMonthNumber(d);
+
+// partner
+soldAmount 'Продано' (Partner p) = GROUP SUM amount(SalesLedger l) IF customer(l) = p MATERIALIZED;
+prevSoldAmount (Partner p) = PREV(soldAmount(p));
+
+soldAmount (Partner p, INTEGER ym) = 
+    GROUP SUM amount(SalesLedger l) IF customer(l) = p AND yearMonth(dateTime(l)) = ym MATERIALIZED; 
+
+soldAmountPreviousMonth (Partner p, DATETIME d) = soldAmount(p, yearMonth(d) - 1);
+
+soldAmountPreviousMonth 'Продано за предыдущий месяц' (Partner p) = soldAmountPreviousMonth(p, currentDateTime());
+prevSoldAmountPreviousMonth (Partner p) = PREV(soldAmountPreviousMonth(p));
+
+FORM salesLedgers 'Продажи по контрагенту'
+    OBJECTS p = Partner PANEL
+    PROPERTIES(p) READONLY name
+
+    OBJECTS s = SalesLedger
+    PROPERTIES(s) READONLY type, number, dateTime, nameCustomer, nameItem, quantity, price, untaxedAmount, taxes, amount
+    PROPERTIES(s) NEWSESSION EDIT
+    ORDER dateTime(s)
+    
+    FILTERS customer(s) = p
+;
+
+EXTEND FORM partner
+    PROPERTIES(p) ON CHANGE { SHOW salesLedgers OBJECTS p = p DOCKED; } soldAmount, soldAmountPreviousMonth
+;
+DESIGN partner {
+    headerRight {
+        MOVE PROPERTY(soldAmount(p));
+        MOVE PROPERTY(soldAmountPreviousMonth(p));
+    }
+}
+
+EXTEND FORM partners
+    PROPERTIES(p) READONLY soldAmount, soldAmountPreviousMonth
+;

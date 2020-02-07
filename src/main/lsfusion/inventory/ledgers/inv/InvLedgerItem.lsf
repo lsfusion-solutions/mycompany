@@ -1,0 +1,22 @@
+MODULE InvLedgerItem;
+
+REQUIRE InvLedger;
+
+NAMESPACE Inventory;
+
+EXTEND FORM item
+    OBJECTS inv = InvLedger
+    PROPERTIES(inv) READONLY SHOWIF i IS Product type, dateTime, nameProduct, quantity, nameFromLocation, nameToLocation
+    FILTERGROUP active
+        FILTER 'Активный' active(inv) DEFAULT
+    FILTERS product(inv) = i
+;
+
+DESIGN item {
+    operations {
+        NEW invledger {
+            caption = 'Движения';
+            MOVE BOX(inv);
+        }
+    }
+}

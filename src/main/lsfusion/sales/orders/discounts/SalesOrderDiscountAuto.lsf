@@ -1,0 +1,42 @@
+MODULE SalesOrderDiscountAuto;
+
+REQUIRE SalesOrderDiscount, SalesDiscountLine;
+
+NAMESPACE Sales;
+
+salesDiscount = DATA Discount (OrderLine);
+nameSalesDiscount 'Скидка' (OrderLine l) = name(salesDiscount(l));
+
+EXTEND FORM order
+    PROPERTIES(l) nameSalesDiscount BEFORE discount(l)
+;
+
+WHEN LOCAL CHANGED(salesDiscount(OrderLine l)) AND discount(salesDiscount(l)) AND NOT CHANGED(discount(l)) DO
+    discount(l) <- discount(salesDiscount(l));
+
+WHEN LOCAL CHANGED(salesDiscount(OrderLine l)) AND priceType(salesDiscount(l)) AND NOT CHANGED(discountPrice(l)) DO {
+    discountPrice(l) <- priceA(priceType(salesDiscount(l)), item(l), dateTime(l));
+    recalcDiscount(l);
+}
+
+// auto
+EXTEND CLASS OrderLine : SalesDiscountLine;
+
+dateTime(OrderLine l) += dateTime(l);
+customer(OrderLine l) += customer(l);
+item(OrderLine l) += item(l);
+
+quantity(OrderLine l) += quantity(l);
+price(OrderLine l) += price(l);
+
+fullAmount (Order o) = GROUP SUM NUMERIC[14,2](quantity(OrderLine l) * price(l)) IF order(l) = o;
+totalAmount(OrderLine l) += fullAmount(order(l));
+
+recalcDiscountAuto 'Автоматически рассчитывать скидки в заказе' = DATA BOOLEAN () PREREAD;
+EXTEND FORM options PROPERTIES() recalcDiscountAuto;
+
+WHEN LOCAL (CHANGED(dateTime(OrderLine l)) OR CHANGED(quantity(l)) OR CHANGED(fullAmount(order(l))) OR 
+            CHANGED(customer(l)) OR CHANGED(item(l)) OR CHANGED(price(l))) AND recalcDiscountAuto() DO
+    salesDiscount(l) <- minSalesDiscount(l);
+    
+    

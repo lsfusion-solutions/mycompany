@@ -1,0 +1,20 @@
+MODULE ResLedgerItem;
+
+REQUIRE ResLedger;
+
+NAMESPACE Inventory;
+
+EXTEND FORM item
+    OBJECTS res = ResLedger
+    PROPERTIES(res) READONLY SHOWIF i IS Product type, dateTime, nameProduct, reserved, nameLocation
+    FILTERS product(res) = i
+;
+
+DESIGN item {
+    operations {
+        NEW resledger {
+            caption = 'Резервирование';
+            MOVE BOX(res);
+        }
+    }
+}

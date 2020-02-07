@@ -7,9 +7,9 @@ NAMESPACE Inventory;
 CLASS ABSTRACT InvLedger 'Регистр изменения остатка';
 type 'Тип' (InvLedger l) = objectClassName(l) IF l IS InvLedger CHARWIDTH 15;
 
-active 'Активный' = ABSTRACT BOOLEAN (InvLedger);
+active 'Активный' = ABSTRACT BOOLEAN (InvLedger) MATERIALIZED;
 dateTime 'Время' = ABSTRACT DATETIME (InvLedger) MATERIALIZED;
-number 'Номер' = ABSTRACT STRING[31] (InvLedger);
+number 'Номер' = ABSTRACT STRING[31] (InvLedger) MATERIALIZED;
 
 fromLocation 'Место хранения (откуда)' = ABSTRACT Location (InvLedger) MATERIALIZED;
 nameFromLocation 'Место хранения (откуда)' (InvLedger l) = name(fromLocation(l));
@@ -80,21 +80,3 @@ DESIGN location {
 EXTEND FORM locations
     PROPERTIES(l) READONLY recPositiveOnHand
 ;
-
-// extend item form    
-EXTEND FORM item
-    OBJECTS inv = InvLedger
-    PROPERTIES(inv) READONLY SHOWIF i IS Product type, dateTime, nameProduct, quantity, nameFromLocation, nameToLocation
-    FILTERGROUP active
-        FILTER 'Активный' active(inv) DEFAULT
-    FILTERS product(inv) = i
-;
-
-DESIGN item {
-    operations {
-        NEW invledger {
-            caption = 'Движения';
-            MOVE BOX(inv);
-        }
-    }
-}

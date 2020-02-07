@@ -1,6 +1,6 @@
 MODULE InvoiceCanceled;
 
-REQUIRE Invoice;
+REQUIRE InvoiceReady;
 
 NAMESPACE Invoicing;
     
@@ -8,6 +8,7 @@ EXTEND CLASS InvoiceStatus {
     canceled 'Отменен'
 }
 canceled 'Отменен' = DATA BOOLEAN (Invoice);
+active 'Активен' (Invoice i) = ready(i) AND NOT canceled(i);
 
 status(Invoice i) += WHEN canceled(i) THEN InvoiceStatus.canceled;
 colorStatus(Invoice i) += WHEN status(i) = InvoiceStatus.canceled THEN RGB(181,195,247);

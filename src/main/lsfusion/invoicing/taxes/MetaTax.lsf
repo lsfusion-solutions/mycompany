@@ -1,6 +1,6 @@
 MODULE MetaTax;
 
-META defineTaxCalc(doc, let, prefix)
+META defineTaxCalc(doc, let, prefix, price)
     subtotal 'Сумма до налогов'  = DATA NUMERIC[14,2] (###doc##Line);
     
     WHEN LOCAL CHANGED(quantity(###doc##Line l)) OR CHANGED(price(l)) DO {
@@ -20,6 +20,9 @@ META defineTaxCalc(doc, let, prefix)
     CONSTRAINT (DROPPED(Tax t IS Tax) AND PREV(taxAmount(t, ###doc##Line l))) 
                                                             MESSAGE 'Нельзя удалять налог, участвующий в расчетах';
     
+    totalAmount 'Налог' (###doc##Line l) = GROUP SUM taxAmount(Tax t, l);
+
+    totalTax 'Налог' (###doc##Line l) = GROUP SUM taxAmount(Tax t, l) IF in(l, t);
     taxAmount 'Сумма налога (общая)' (Tax t, ###doc let) = 
         GROUP SUM taxAmount(t, ###doc##Line l) IF doc(l) = let AND in(l, t);
     
@@ -43,6 +46,10 @@ META defineTaxCalc(doc, let, prefix)
             in(l, Tax t) <- setTax(t);
         } 
     } 
+END
+
+META defineTaxCalc(doc, let, prefix)
+    @defineTaxCalc(doc, let, prefix, price);
 END
 
 META defineTaxForm(doc, let)

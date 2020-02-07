@@ -1,0 +1,31 @@
+MODULE SalesDiscountLine;
+
+REQUIRE SalesDiscount, SalesLedgerPartner, SalesPricelistValue;
+
+NAMESPACE Sales;
+
+CLASS ABSTRACT SalesDiscountLine;
+
+dateTime = ABSTRACT DATETIME (SalesDiscountLine);
+customer = ABSTRACT Partner (SalesDiscountLine);
+item = ABSTRACT Item (SalesDiscountLine);
+
+quantity = ABSTRACT NUMERIC[16,3] (SalesDiscountLine);
+price = ABSTRACT NUMERIC[10,2] (SalesDiscountLine);
+totalAmount = ABSTRACT NUMERIC[14,2] (SalesDiscountLine);
+
+matches (Discount d, SalesDiscountLine l) =
+    set(d, item(l)) AND
+    NOT startDateTime(d) > dateTime(l) AND
+    NOT endDateTime(d) < dateTime(l) AND
+    NOT fromQuantity(d) > quantity(l) AND
+    NOT fromAmount(d) > totalAmount(l) AND
+    NOT fromAccumulated(d) > prevSoldAmount(customer(l)) AND
+    NOT fromAccumulatedPreviousMonth(d) > prevSoldAmountPreviousMonth(customer(l)) COMPLEX;
+
+discountPrice (Discount d, SalesDiscountLine l) =
+    IF priceType(d) THEN priceA(priceType(d), item(l), dateTime(l)) ELSE NUMERIC[10,2](price(l) * (100.0 - discount(d)) / 100.0); 
+    
+minSalesDiscount (SalesDiscountLine l) =
+    GROUP LAST Discount d ORDER DESC discountPrice(d, l) IF matches(d, l), d; 
+    

@@ -1,0 +1,118 @@
+MODULE SalesDiscount;
+
+REQUIRE SalesPriceType, BarCode;
+
+NAMESPACE Sales;
+
+CLASS Discount 'Скидка';
+
+name 'Название' = DATA STRING[50] (Discount) CHARWIDTH 10;
+
+startDateTime 'Начало действия' = DATA DATETIME (Discount);
+WHEN LOCAL SET(Discount d IS Discount) AND NOT CHANGED(startDateTime(d)) DO startDateTime(d) <- currentDateTime(); 
+endDateTime 'Окончание действия' = DATA DATETIME (Discount);
+
+// conditions
+fromAmount 'Сумма покупки от' = DATA NUMERIC[14,2] (Discount);
+fromQuantity 'Кол-во в строке от' = DATA NUMERIC[16,3] (Discount);
+
+fromAccumulated 'Продано всего от' = DATA NUMERIC[14,2] (Discount);
+fromAccumulatedPreviousMonth 'Продано за прошедший месяц от' = DATA NUMERIC[14,2] (Discount);
+
+// item
+in 'Вкл' = DATA BOOLEAN (Discount, Category);
+set (Discount d, Category c) = GROUP LAST in(d, Category cp) ORDER level(c, cp) MATERIALIZED;
+categories 'Категории' (Discount d) = GROUP CONCAT name(Category c) IF in(d, c), ',' ORDER name(c), c CHARWIDTH 20;
+
+in 'Вкл' = DATA BOOLEAN (Discount, Item);
+set (Discount d, Item i) = in(d, i) OR set(d, category(i));
+items 'Номенклатура' (Discount d) = GROUP CONCAT name(Item i) IF in(d, i), ',' ORDER name(i), i CHARWIDTH 30;
+
+// discount
+discount 'Скидка, %' = DATA NUMERIC[5,2] (Discount);
+
+priceType = DATA PriceType (Discount);
+namePriceType 'Вид цены' (Discount d) = name(priceType(d));
+
+FORM discount 'Скидка'
+    OBJECTS d = Discount PANEL
+    PROPERTIES(d) name,
+                  startDateTime, endDateTime,
+                  fromAmount, fromQuantity,
+                  fromAccumulatedPreviousMonth, fromAccumulated,
+                  discount, namePriceType
+
+    TREE categories c = Category PARENT parent(c) 
+    PROPERTIES name(c) READONLY, in(d, c) BACKGROUND (GROUP LAST in(d, Category cc) ORDER level(cc, c))
+    ORDER name(c)
+    
+    OBJECTS i = Item
+    PROPERTIES(i) READONLY name, nameUom, idBarCode, id
+    PROPERTIES in(d, i)
+    FILTERGROUP in
+        FILTER 'Включенные' set(d, i)  
+    
+    EDIT Discount OBJECT d
+;
+
+DESIGN discount {
+    OBJECTS {
+        NEW general {
+            caption = 'Основные';
+            type = CONTAINERH;
+            MOVE PROPERTY(name(d));
+        }
+        NEW period {
+            caption = 'Период действия';
+            type = CONTAINERH;
+            MOVE PROPERTY(startDateTime(d));
+            MOVE PROPERTY(endDateTime(d));
+        }
+        NEW conditions {
+            caption = 'Условия';
+            NEW generalConditions {
+                type = CONTAINERH;
+                alignment = STRETCH;
+                MOVE PROPERTY(fromAmount(d));
+                MOVE PROPERTY(fromQuantity(d));
+            }
+            NEW accumulated {
+                type = CONTAINERH;
+                alignment = STRETCH;
+                MOVE PROPERTY(fromAccumulated(d));
+                MOVE PROPERTY(fromAccumulatedPreviousMonth(d));
+            }
+        }
+        NEW discounts {
+            caption = 'Скидка';
+            type = CONTAINERH;
+            MOVE PROPERTY(discount(d));
+            MOVE PROPERTY(namePriceType(d));
+        }
+        NEW items {
+            fill = 1;
+            type = SPLITH;
+            MOVE BOX(TREE categories);
+            MOVE BOX(i) { fill = 2; }
+        }
+    }
+}
+
+FORM discounts 'Скидки'
+    OBJECTS d = Discount
+    PROPERTIES(d) READONLY name,
+                           startDateTime, endDateTime,
+                           fromAmount, fromQuantity,
+                           fromAccumulatedPreviousMonth, fromAccumulated,
+                           discount, namePriceType,
+                           categories, items
+    PROPERTIES(d) NEWSESSION NEW, EDIT, DELETE
+    
+    LIST Discount OBJECT d
+;
+
+NAVIGATOR {
+    operations {
+        NEW discounts;
+    }
+}

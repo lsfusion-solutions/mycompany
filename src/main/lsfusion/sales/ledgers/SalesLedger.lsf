@@ -1,0 +1,28 @@
+MODULE SalesLedger;
+
+REQUIRE Item, Partner, Time;
+
+NAMESPACE Sales;
+
+CLASS ABSTRACT SalesLedger 'Регистр изменения остатка';
+type 'Тип' (SalesLedger l) = objectClassName(l) IF l IS SalesLedger CHARWIDTH 15;
+
+active 'Активный' = ABSTRACT BOOLEAN (SalesLedger) MATERIALIZED;
+dateTime 'Время' = ABSTRACT DATETIME (SalesLedger) MATERIALIZED;
+
+number 'Номер' = ABSTRACT STRING[31] (SalesLedger) MATERIALIZED;
+
+item 'Номенклатура' = ABSTRACT Item (SalesLedger) MATERIALIZED;
+nameItem 'Номенклатура' (SalesLedger l) = name(item(l));
+
+customer = ABSTRACT Partner (SalesLedger) MATERIALIZED;
+nameCustomer 'Контрагент' (SalesLedger l) = name(customer(l));
+
+quantity 'Кол-во' = ABSTRACT NUMERIC[16,3] (SalesLedger) MATERIALIZED;
+
+price 'Цена' = ABSTRACT NUMERIC[10,2] (SalesLedger) MATERIALIZED ;
+
+untaxedAmount 'Сумма без налогов' = ABSTRACT NUMERIC[14,2] (SalesLedger) MATERIALIZED;
+taxes 'Налоги' = ABSTRACT NUMERIC[14,2] (SalesLedger) MATERIALIZED;
+
+amount 'Сумма' (SalesLedger l) = untaxedAmount(l) (+) taxes(l);

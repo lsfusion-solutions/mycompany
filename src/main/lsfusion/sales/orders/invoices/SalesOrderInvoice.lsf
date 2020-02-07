@@ -19,7 +19,7 @@ EXTEND FORM options PROPERTIES() nameInvoicingPolicy;
 @defineDocLineRelation(order, invoice, 'Заказы', 'Накладные', o, i);
 
 invoiced 'Оформлено накладных' (OrderLine ol) = 
-    GROUP SUM quantity(InvoiceLine bl) IF orderLine(bl) = ol AND ready(invoice(bl)) AND NOT canceled(invoice(bl));
+    GROUP SUM quantity(InvoiceLine bl) IF orderLine(bl) = ol AND active(invoice(bl));
 paid 'Оплачено' (OrderLine ol) = 
     GROUP SUM quantity(InvoiceLine bl) IF orderLine(bl) = ol AND done(invoice(bl)) AND NOT canceled(invoice(bl));
 toInvoiceOrdered 'К оформлению' (OrderLine l) = max(quantity(l) (-) invoiced(l), 0) IF (invoicingPolicy() = InvoicingPolicy.ordered OR NOT invoicingPolicy() OR NOT item(l) IS Product);
