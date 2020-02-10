@@ -8,10 +8,10 @@ salesDiscount = DATA Discount (OrderLine);
 nameSalesDiscount 'Скидка' (OrderLine l) = name(salesDiscount(l));
 
 EXTEND FORM order
-    PROPERTIES(l) nameSalesDiscount BEFORE discount(l)
+    PROPERTIES(l) nameSalesDiscount BEFORE discount(l) ON CHANGE { DIALOG selectDiscount OBJECTS l = l, d = salesDiscount(l) CHANGE; }
 ;
 
-WHEN LOCAL CHANGED(salesDiscount(OrderLine l)) AND discount(salesDiscount(l)) AND NOT CHANGED(discount(l)) DO
+WHEN LOCAL CHANGED(salesDiscount(OrderLine l)) AND NOT priceType(salesDiscount(l)) AND NOT CHANGED(discount(l)) DO
     discount(l) <- discount(salesDiscount(l));
 
 WHEN LOCAL CHANGED(salesDiscount(OrderLine l)) AND priceType(salesDiscount(l)) AND NOT CHANGED(discountPrice(l)) DO {
@@ -37,6 +37,4 @@ EXTEND FORM options PROPERTIES() recalcDiscountAuto;
 
 WHEN LOCAL (CHANGED(dateTime(OrderLine l)) OR CHANGED(quantity(l)) OR CHANGED(fullAmount(order(l))) OR 
             CHANGED(customer(l)) OR CHANGED(item(l)) OR CHANGED(price(l))) AND recalcDiscountAuto() DO
-    salesDiscount(l) <- minSalesDiscount(l);
-    
-    
+    salesDiscount(l) <- minSalesDiscountAuto(l);

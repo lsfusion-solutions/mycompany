@@ -7,10 +7,16 @@ NAMESPACE Sales;
 CLASS Discount 'Скидка';
 
 name 'Название' = DATA STRING[50] (Discount) CHARWIDTH 10;
+manual 'Применяется вручную' = DATA BOOLEAN (Discount);
 
 startDateTime 'Начало действия' = DATA DATETIME (Discount);
 WHEN LOCAL SET(Discount d IS Discount) AND NOT CHANGED(startDateTime(d)) DO startDateTime(d) <- currentDateTime(); 
 endDateTime 'Окончание действия' = DATA DATETIME (Discount);
+
+active (Discount d, DATETIME time) = d IS Discount AND time IS DATETIME AND 
+                                                    NOT startDateTime(d) > time AND
+                                                    NOT endDateTime(d) < time;
+active (Discount d) = active(d, currentDateTime()); 
 
 // conditions
 fromAmount 'Сумма покупки от' = DATA NUMERIC[14,2] (Discount);
@@ -36,7 +42,7 @@ namePriceType 'Вид цены' (Discount d) = name(priceType(d));
 
 FORM discount 'Скидка'
     OBJECTS d = Discount PANEL
-    PROPERTIES(d) name,
+    PROPERTIES(d) name, manual,
                   startDateTime, endDateTime,
                   fromAmount, fromQuantity,
                   fromAccumulatedPreviousMonth, fromAccumulated,
@@ -61,6 +67,7 @@ DESIGN discount {
             caption = 'Основные';
             type = CONTAINERH;
             MOVE PROPERTY(name(d));
+            MOVE PROPERTY(manual(d));
         }
         NEW period {
             caption = 'Период действия';
@@ -107,6 +114,9 @@ FORM discounts 'Скидки'
                            discount, namePriceType,
                            categories, items
     PROPERTIES(d) NEWSESSION NEW, EDIT, DELETE
+    
+    FILTERGROUP active
+        FILTER 'Активные' active(d) DEFAULT
     
     LIST Discount OBJECT d
 ;

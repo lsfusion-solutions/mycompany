@@ -23,9 +23,19 @@ matches (Discount d, SalesDiscountLine l) =
     NOT fromAccumulated(d) > prevSoldAmount(customer(l)) AND
     NOT fromAccumulatedPreviousMonth(d) > prevSoldAmountPreviousMonth(customer(l)) COMPLEX;
 
-discountPrice (Discount d, SalesDiscountLine l) =
+discountPrice 'Цена со скидкой' (Discount d, SalesDiscountLine l) =
     IF priceType(d) THEN priceA(priceType(d), item(l), dateTime(l)) ELSE NUMERIC[10,2](price(l) * (100.0 - discount(d)) / 100.0); 
     
-minSalesDiscount (SalesDiscountLine l) =
-    GROUP LAST Discount d ORDER DESC discountPrice(d, l) IF matches(d, l), d; 
+minSalesDiscountAuto (SalesDiscountLine l) =
+    GROUP LAST Discount d ORDER DESC discountPrice(d, l) IF matches(d, l) AND NOT manual(d), d; 
+
+// manual select
+
+FORM selectDiscount 'Выбор скидки'
+    OBJECTS l = SalesDiscountLine PANEL
     
+    OBJECTS d = Discount
+    PROPERTIES(d) READONLY name, manual, discount, namePriceType
+    PROPERTIES    READONLY discountPrice(d, l)
+    FILTERS matches(d, l)
+;
