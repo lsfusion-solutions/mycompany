@@ -4,15 +4,15 @@ REQUIRE InvoiceDone, Bill;
 
 NAMESPACE Invoicing;
 
-@defineDocLineRelation(invoice, bill, 'Расходные накладные', 'Возвраты', i, b);
+@defineDocLineRelation(invoice, bill, 'Реализации', 'Возвраты', i, b);
 
-numberInvoiceLine 'Расходная накладная' (BillLine l) = number(invoiceLine(l)); 
+numberInvoiceLine 'Реализация' (BillLine l) = number(invoiceLine(l)); 
 
 CONSTRAINT invoiceLine(BillLine l) AND NOT 
                 (customer(invoiceLine(l)) = vendor(l) AND 
                  item(invoiceLine(l)) = item(l))
     CHECKED BY invoiceLine
-    MESSAGE 'Контрагент и номенклатура расходной накладной должны совпадать с контрагентом и товаром возврата';
+    MESSAGE 'Контрагент и номенклатура реализации должны совпадать с контрагентом и товаром возврата';
 
 // events
 WHEN LOCAL SETCHANGED(invoiceLine(BillLine l)) DO {

@@ -6,19 +6,19 @@ REQUIRE SalesOrderConfirmed,
 NAMESPACE Sales;
 
 // invoicing policy
-CLASS InvoicingPolicy 'Политика оформления накладных' {
+CLASS InvoicingPolicy 'Политика оформления реализации' {
     ordered 'Заказанное количество'
 }
 name 'Имя' (InvoicingPolicy p) = staticCaption(p) IF p IS InvoicingPolicy CHARWIDTH 20;
 
 invoicingPolicy = DATA InvoicingPolicy ();
-nameInvoicingPolicy 'Политика оформления накладных' () = name(invoicingPolicy()); 
+nameInvoicingPolicy 'Политика оформления реализации' () = name(invoicingPolicy()); 
 EXTEND FORM options PROPERTIES() nameInvoicingPolicy;
 
 // lines
-@defineDocLineRelation(order, invoice, 'Заказы', 'Накладные', o, i);
+@defineDocLineRelation(order, invoice, 'Заказы', 'Реализации', o, i);
 
-invoiced 'Оформлено накладных' (OrderLine ol) = 
+invoiced 'Реализовано' (OrderLine ol) = 
     GROUP SUM quantity(InvoiceLine bl) IF orderLine(bl) = ol AND active(invoice(bl));
 paid 'Оплачено' (OrderLine ol) = 
     GROUP SUM quantity(InvoiceLine bl) IF orderLine(bl) = ol AND done(invoice(bl)) AND NOT canceled(invoice(bl));
@@ -31,7 +31,7 @@ toInvoice (Order o) += toInvoiceOrdered(o) > 0;
  
 createOrderInvoiceLines ABSTRACT LIST (Order, Invoice);
 
-createInvoice 'Оформить накладную' (Order o) {
+createInvoice 'Реализовать' (Order o) {
     APPLY;
     IF canceled() THEN RETURN;
                
@@ -62,7 +62,7 @@ createInvoice 'Оформить накладную' (Order o) {
     }
 }
 
-FORM orderInvoiceShow 'Оформлено накладными'
+FORM orderInvoiceShow 'Реализовано'
     OBJECTS ol = OrderLine
     
     OBJECTS il = InvoiceLine
@@ -95,5 +95,5 @@ DESIGN order {
 
 EXTEND FORM orders
     FILTERGROUP toInvoice
-        FILTER 'К оформлению накладных' status(o) = OrderStatus.confirmed AND toInvoice(o)
+        FILTER 'Реализовать' status(o) = OrderStatus.confirmed AND toInvoice(o)
 ;

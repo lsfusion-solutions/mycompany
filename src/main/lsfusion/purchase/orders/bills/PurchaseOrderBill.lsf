@@ -6,19 +6,19 @@ REQUIRE PurchaseOrder, PurchaseOrderConfirmed,
 NAMESPACE Purchase;
 
 // invoicing policy
-CLASS InvoicingPolicy 'Политика оформления накладных' {
+CLASS InvoicingPolicy 'Политика оформления приобретения' {
     ordered 'Заказанное количество'
 }
 name 'Имя' (InvoicingPolicy p) = staticCaption(p) IF p IS InvoicingPolicy CHARWIDTH 20;
 
 invoicingPolicy = DATA InvoicingPolicy ();
-nameInvoicingPolicy 'Политика оформления накладных' () = name(invoicingPolicy()); 
+nameInvoicingPolicy 'Политика оформления приобретения' () = name(invoicingPolicy()); 
 EXTEND FORM options PROPERTIES() nameInvoicingPolicy;
 
 // lines
-@defineDocLineRelation(order, bill, 'Заказы', 'Накладные', o, b);
+@defineDocLineRelation(order, bill, 'Заказы', 'Приобретения', o, b);
 
-billed 'Оформлено накладных' (OrderLine ol) = 
+billed 'Приобретено' (OrderLine ol) = 
     GROUP SUM quantity(BillLine bl) IF orderLine(bl) = ol AND ready(bill(bl)) AND NOT canceled(bill(bl));
 paid 'Оплачено' (OrderLine ol) = 
     GROUP SUM quantity(BillLine bl) IF orderLine(bl) = ol AND done(bill(bl)) AND NOT canceled(bill(bl));
@@ -31,7 +31,7 @@ toBill (Order o) += toBillOrdered(o) > 0;
 
 createOrderBillLines ABSTRACT LIST (Order, Bill);
 
-createBill 'Оформить накладную' (Order o) {
+createBill 'Приобрести' (Order o) {
     APPLY;
     IF canceled() THEN RETURN;
                
@@ -95,5 +95,5 @@ DESIGN order {
 
 EXTEND FORM orders
     FILTERGROUP toBill
-        FILTER 'К оформлению накладных' status(o) = OrderStatus.confirmed AND toBill(o)
+        FILTER 'Приобрести' status(o) = OrderStatus.confirmed AND toBill(o)
 ;

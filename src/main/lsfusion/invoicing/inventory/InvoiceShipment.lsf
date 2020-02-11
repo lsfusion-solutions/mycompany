@@ -5,7 +5,7 @@ REQUIRE InvoiceCanceled, InvoiceReady, ShipmentCanceled;
 NAMESPACE Invoicing;
 
 typeShipmentFromInvoice = DATA ShipmentType ();
-nameTypeShipmentFromInvoice 'Тип отгрузки на основе расходной накладной' = name(typeShipmentFromInvoice());
+nameTypeShipmentFromInvoice 'Тип отгрузки на основе реализации' = name(typeShipmentFromInvoice());
 
 EXTEND FORM options PROPERTIES nameTypeShipmentFromInvoice();
 
@@ -24,7 +24,7 @@ DESIGN invoice {
 }
 
 // lines
-@defineDocLineRelation(invoice, shipment, 'Накладные', 'Отгрузки', i, s);
+@defineDocLineRelation(invoice, shipment, 'Реализации', 'Отгрузки', i, s);
 
 invoiceShipmentCreated = DATA LOCAL Shipment ();
 newShipment (Invoice b) {
@@ -77,7 +77,7 @@ DESIGN invoice {
 }
 
 // auto create
-autoCreateShipmentFromInvoice 'Автоматически создавать отгрузку на основе расходной накладной' = DATA BOOLEAN ();
+autoCreateShipmentFromInvoice 'Автоматически создавать отгрузку на основе реализации' = DATA BOOLEAN ();
 EXTEND FORM options PROPERTIES autoCreateShipmentFromInvoice() SHOWIF typeShipmentFromInvoice();
 
 WHEN SET(ready(Invoice b)) AND autoCreateShipmentFromInvoice() DO newShipment(b);

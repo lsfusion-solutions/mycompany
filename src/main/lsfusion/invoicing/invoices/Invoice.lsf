@@ -7,7 +7,7 @@ REQUIRE InvoicingSettings, TaxItem, BankAccount,
 
 NAMESPACE Invoicing;
 
-CLASS Invoice 'Расходная накладная';
+CLASS Invoice 'Реализация';
 
 @defineStatus(invoice, 'счета');
 
@@ -15,7 +15,7 @@ CLASS Invoice 'Расходная накладная';
 dateTime 'Дата' = DATA DATETIME (Invoice) NONULL IN id;
 WHEN LOCAL SET (Invoice b IS Invoice) DO dateTime(b) <- currentDateTime();
 
-@defineNumber(invoice, 'Расходная накладная', 'РН');
+@defineNumber(invoice, 'Реализация', 'РН');
 
 numberDate 'Описание' (Invoice i) = number(i) + ' от ' + dateTime(i);
 
@@ -67,7 +67,7 @@ note 'Примечание' = DATA ISTRING[50] (Invoice);
 // lines
 CLASS InvoiceLine 'Строки документа';
 
-invoice 'Расходная накладная' = DATA Invoice (InvoiceLine) NONULL DELETE;
+invoice 'Реализация' = DATA Invoice (InvoiceLine) NONULL DELETE;
 
 index 'Индекс' = PARTITION SUM 1 ORDER InvoiceLine l BY invoice(l) IN id MATERIALIZED;
 
@@ -102,7 +102,7 @@ customer (InvoiceLine l) = customer(invoice(l));
 nameCustomer 'Покупатель' (InvoiceLine l) = nameCustomer(invoice(l));
 nameCompany 'Компания' (InvoiceLine l) = nameCompany(invoice(l));
 
-FORM invoiceLines 'Строки расходных накладных'
+FORM invoiceLines 'Строки реализаций'
     OBJECTS l = InvoiceLine
     PROPERTIES(l) READONLY dateTime, number, index, nameItem, quantity, price
 
@@ -111,7 +111,7 @@ FORM invoiceLines 'Строки расходных накладных'
 
 edit (InvoiceLine l) + { edit(invoice(l)); } 
 
-FORM invoice 'Расходная накладная'
+FORM invoice 'Реализация'
     OBJECTS  i = Invoice PANEL 
     PROPERTIES(i) dateTime, number, nameCustomer, nameCompany,
                   namePaymentTerms, dueDateTime, nameCustomerAccount, nameCompanyAccount,
@@ -187,7 +187,7 @@ DESIGN invoice {
 @defineDocHistory(invoice, i, item, quantity);
 @defineDocSearch(invoice, item, quantity, 'Кол-во', i, canBeSold);
 
-FORM invoices 'Расходные накладные'
+FORM invoices 'Реализации'
     OBJECTS i = Invoice
     PROPERTIES(i) READONLY dateTime, number, nameCustomer, nameCompany,
                            namePaymentTerms, dueDateTime, nameCustomerAccount, nameCompanyAccount,

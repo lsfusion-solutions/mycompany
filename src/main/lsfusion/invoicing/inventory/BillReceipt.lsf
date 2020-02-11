@@ -6,7 +6,7 @@ REQUIRE BillCanceled, BillReady, ReceiptCanceled,
 NAMESPACE Invoicing;
 
 typeReceiptFromBill = DATA ReceiptType ();
-nameTypeReceiptFromBill 'Тип поступления на основе приходной накладной' = name(typeReceiptFromBill());
+nameTypeReceiptFromBill 'Тип поступления на основе приобретения' = name(typeReceiptFromBill());
 
 EXTEND FORM options PROPERTIES nameTypeReceiptFromBill();
 
@@ -24,7 +24,7 @@ DESIGN bill {
 }
 
 // lines
-@defineDocLineRelation(bill, receipt, 'Накладные', 'Поступления', b, r);
+@defineDocLineRelation(bill, receipt, 'Приобретения', 'Поступления', b, r);
 
 billReceiptCreated = DATA LOCAL Receipt ();
 newReceipt (Bill b) {
@@ -79,7 +79,7 @@ DESIGN bill {
 }
 
 // auto create
-autoCreateReceiptFromBill 'Автоматически создавать поступление на основе приходной накладной' = DATA BOOLEAN ();
+autoCreateReceiptFromBill 'Автоматически создавать поступление на основе приобретения' = DATA BOOLEAN ();
 EXTEND FORM options PROPERTIES autoCreateReceiptFromBill() SHOWIF typeReceiptFromBill();
 
 WHEN SET(ready(Bill b)) AND autoCreateReceiptFromBill() DO newReceipt(b);
