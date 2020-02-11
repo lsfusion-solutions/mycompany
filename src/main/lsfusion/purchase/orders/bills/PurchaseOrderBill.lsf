@@ -5,6 +5,11 @@ REQUIRE PurchaseOrder, PurchaseOrderConfirmed,
 
 NAMESPACE Purchase;
 
+// type
+billType = DATA BillType();
+nameBillType 'Тип приобретения на основе заказа' = name(billType());
+EXTEND FORM options PROPERTIES nameBillType();
+
 // invoicing policy
 CLASS InvoicingPolicy 'Политика оформления приобретения' {
     ordered 'Заказанное количество'
@@ -38,6 +43,7 @@ createBill 'Приобрести' (Order o) {
     NEWSESSION {
         NEW nb = Bill {
             ready(nb) <- TRUE;
+            type(nb) <- billType();
             
             vendor(nb) <- vendor(o);
             vendorReference(nb) <- vendorReference(o);

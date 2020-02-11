@@ -3,7 +3,8 @@ MODULE Bill;
 REQUIRE InvoicingSettings, TaxItem, BankAccount, 
         MetaTax, PaymentTermsPurchase, 
         ItemPurchase, PartnerPurchase, Company,
-        BarCode, MetaNumerator, Doc;
+        BarCode, MetaNumerator, Doc,
+        BillType;
 
 NAMESPACE Invoicing;
 
@@ -11,11 +12,17 @@ CLASS Bill 'Приобретение';
 
 @defineStatus(bill, 'счета');
 
+// type
+type 'Тип' = DATA BillType (Bill) NONULL;
+nameType 'Тип' (Bill s) = name(type(s));
+
+WHEN LOCAL SET(Bill s IS Bill) AND NOT CHANGED(type(s)) DO type(s) <- defaultBillType(); 
+
 // dateTime
 dateTime 'Дата' = DATA DATETIME (Bill) NONULL IN id;
 WHEN LOCAL SET (Bill b IS Bill) DO dateTime(b) <- currentDateTime();
 
-@defineNumber(bill, 'Приобретение', 'ПН');
+@defineNumberType(bill);
 
 numberDate 'Описание' (Bill b) = number(b) + ' от ' + dateTime(b);
 
@@ -113,7 +120,7 @@ edit (BillLine l) + { edit(bill(l)); }
 
 FORM bill 'Приобретение'
     OBJECTS  b = Bill PANEL 
-    PROPERTIES(b) dateTime, number, 
+    PROPERTIES(b) nameType, dateTime, number, 
                   nameVendor, nameCompany,
                   namePaymentTerms, dueDateTime, nameVendorAccount, nameCompanyAccount,
                   vendorReference, note
@@ -132,6 +139,7 @@ DESIGN bill {
             alignment = STRETCH;    
             type = CONTAINERH;
             NEW headerLeft {
+                MOVE PROPERTY(nameType(b));
                 MOVE PROPERTY(dateTime(b));
                 MOVE PROPERTY(number(b));
             }
@@ -190,7 +198,7 @@ DESIGN bill {
 
 FORM bills 'Приобретения'
     OBJECTS b = Bill
-    PROPERTIES(b) READONLY dateTime, number, 
+    PROPERTIES(b) READONLY nameType, dateTime, number, 
                            nameVendor, nameCompany,
                            namePaymentTerms, dueDateTime, nameVendorAccount, nameCompanyAccount,
                            vendorReference, note

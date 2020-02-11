@@ -5,17 +5,17 @@ REQUIRE BillCanceled, BillReady, ReceiptCanceled,
 
 NAMESPACE Invoicing;
 
-typeReceiptFromBill = DATA ReceiptType ();
-nameTypeReceiptFromBill 'Тип поступления на основе приобретения' = name(typeReceiptFromBill());
+receiptType = DATA ReceiptType (BillType);
+nameReceiptType 'Тип поступления на основе приобретения' (BillType t) = name(receiptType(t));
 
-EXTEND FORM options PROPERTIES nameTypeReceiptFromBill();
+EXTEND FORM billType PROPERTIES nameReceiptType(o);
 
 // location
 location 'Место хранения' = DATA Location (Bill);
 nameLocation 'Место хранения' (Bill b) = name(location(b));
 
 EXTEND FORM bill 
-    PROPERTIES(b) nameLocation SHOWIF typeReceiptFromBill()
+    PROPERTIES(b) nameLocation SHOWIF receiptType(type(b))
 ;
 DESIGN bill {
     headerLeft {
@@ -32,7 +32,7 @@ newReceipt (Bill b) {
         isReturn(r) <- isCreditNote(b);
 
         vendor(r) <- vendor(b);
-        type(r) <- typeReceiptFromBill();
+        type(r) <- receiptType(type(b));
         location(r) <- location(b);
 
         immediate(r) <- TRUE;
@@ -60,7 +60,7 @@ createReceipt 'Создать поступление' (Bill b) {
 } 
 
 EXTEND FORM bill
-    PROPERTIES(b) createReceipt SHOWIF ready(b) AND typeReceiptFromBill() AND NOT countReceiptLine(b) 
+    PROPERTIES(b) createReceipt SHOWIF ready(b) AND receiptType(type(b)) AND NOT countReceiptLine(b) 
 
     OBJECTS r = Receipt
     PROPERTIES(r) READONLY nameStatus BACKGROUND colorStatus(r), number, scheduledDateTime, executionDateTime
@@ -79,10 +79,14 @@ DESIGN bill {
 }
 
 // auto create
-autoCreateReceiptFromBill 'Автоматически создавать поступление на основе приобретения' = DATA BOOLEAN ();
-EXTEND FORM options PROPERTIES autoCreateReceiptFromBill() SHOWIF typeReceiptFromBill();
+autoCreateReceipt 'Автоматически создавать поступление на основе приобретения' = DATA BOOLEAN (BillType);
+EXTEND FORM billType PROPERTIES autoCreateReceipt(o) SHOWIF receiptType(o);
 
-WHEN SET(ready(Bill b)) AND autoCreateReceiptFromBill() DO newReceipt(b);
-WHEN SET(canceled(Bill b)) AND in(b, Receipt r) AND countBill(r) = 1 AND autoCreateReceiptFromBill() DO canceled(r) <- TRUE; 
-WHEN CHANGED(quantity(billLine(ReceiptLine l))) AND autoCreateReceiptFromBill() DO done(l) <- quantity(billLine(l));
-WHEN CHANGED(item(billLine(ReceiptLine l))) AND autoCreateReceiptFromBill() AND item(billLine(l)) IS Product DO product(l) <- item(billLine(l));
+WHEN SET(ready(Bill b)) AND autoCreateReceipt(type(b)) DO 
+    newReceipt(b);
+WHEN SET(canceled(Bill b)) AND in(b, Receipt r) AND countBill(r) = 1 AND autoCreateReceipt(type(b)) DO 
+    canceled(r) <- TRUE; 
+WHEN CHANGED(quantity(billLine(ReceiptLine l))) AND autoCreateReceipt(type(bill(billLine(l)))) DO 
+    done(l) <- quantity(billLine(l));
+WHEN CHANGED(item(billLine(ReceiptLine l))) AND autoCreateReceipt(type(bill(billLine(l)))) DO 
+    product(l) <- item(billLine(l));

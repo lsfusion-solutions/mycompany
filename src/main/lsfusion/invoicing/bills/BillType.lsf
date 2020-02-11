@@ -1,0 +1,38 @@
+MODULE BillType;
+
+REQUIRE Numerator, InvoicingSettings;
+
+NAMESPACE Invoicing;
+
+CLASS BillType 'Тип приобретения';
+name 'Название' = DATA ISTRING[50] (BillType) NONULL;
+
+numerator 'Нумератор' = DATA Numerator (BillType);
+nameNumerator 'Нумератор' (BillType o) = name(numerator(o));
+
+FORM billType 'Тип приобретения'
+    OBJECTS o = BillType PANEL 
+    PROPERTIES(o) name, nameNumerator 
+     
+    EDIT BillType OBJECT o;
+;
+
+FORM billTypes 'Типы приобретения'
+    OBJECTS o = BillType
+    PROPERTIES(o) READONLY name
+    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+    
+    LIST BillType OBJECT o;
+;
+
+NAVIGATOR {
+    settings {
+        NEW billTypes;
+    }
+}
+
+// default type
+countBillTypes 'Кол-во типов' () = GROUP SUM 1 IF r IS BillType; 
+firstBillType = GROUP LAST BillType r ORDER DESC r WHERE r IS BillType;
+
+defaultBillType = firstBillType() IF countBillTypes() = 1;
