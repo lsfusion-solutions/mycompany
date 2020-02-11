@@ -4,17 +4,17 @@ REQUIRE InvoiceCanceled, InvoiceReady, ShipmentCanceled;
 
 NAMESPACE Invoicing;
 
-typeShipmentFromInvoice = DATA ShipmentType ();
-nameTypeShipmentFromInvoice 'Тип отгрузки на основе реализации' = name(typeShipmentFromInvoice());
+typeShipmentFromInvoice = DATA ShipmentType (InvoiceType);
+nameTypeShipmentFromInvoice 'Тип отгрузки на основе реализации' (InvoiceType t) = name(typeShipmentFromInvoice(t));
 
-EXTEND FORM options PROPERTIES nameTypeShipmentFromInvoice();
+EXTEND FORM invoiceType PROPERTIES nameTypeShipmentFromInvoice(o);
 
 // location
 location 'Место хранения' = DATA Location (Invoice);
 nameLocation 'Место хранения' (Invoice i) = name(location(i));
 
 EXTEND FORM invoice 
-    PROPERTIES(i) nameLocation SHOWIF typeShipmentFromInvoice()
+    PROPERTIES(i) nameLocation SHOWIF typeShipmentFromInvoice(type(i))
 ;
  
 DESIGN invoice {
@@ -27,16 +27,16 @@ DESIGN invoice {
 @defineDocLineRelation(invoice, shipment, 'Реализации', 'Отгрузки', i, s);
 
 invoiceShipmentCreated = DATA LOCAL Shipment ();
-newShipment (Invoice b) {
+newShipment (Invoice i) {
     NEW r = Shipment { 
-        customer(r) <- customer(b);
-        type(r) <- typeShipmentFromInvoice();
-        location(r) <- location(b);
+        customer(r) <- customer(i);
+        type(r) <- typeShipmentFromInvoice(type(i));
+        location(r) <- location(i);
 
         immediate(r) <- TRUE;
         done(r) <- TRUE;    
     
-        FOR invoice(InvoiceLine l) = b AND item(l) IS Product INLINE NEW rl = ShipmentLine DO {            
+        FOR invoice(InvoiceLine l) = i AND item(l) IS Product INLINE NEW rl = ShipmentLine DO {            
             shipment(rl) <- r;
             product(rl) <- item(l);
             done(rl) <- quantity(l);
@@ -58,7 +58,7 @@ createShipment 'Создать отгрузку' (Invoice b) {
 }
 
 EXTEND FORM invoice
-    PROPERTIES(i) createShipment SHOWIF active(i) AND typeShipmentFromInvoice() AND NOT countShipmentLine(i) 
+    PROPERTIES(i) createShipment SHOWIF active(i) AND typeShipmentFromInvoice(type(i)) AND NOT countShipmentLine(i) 
 
     OBJECTS s = Shipment
     PROPERTIES(s) READONLY nameStatus BACKGROUND colorStatus(s), number, scheduledDateTime, executionDateTime
@@ -77,10 +77,14 @@ DESIGN invoice {
 }
 
 // auto create
-autoCreateShipmentFromInvoice 'Автоматически создавать отгрузку на основе реализации' = DATA BOOLEAN ();
-EXTEND FORM options PROPERTIES autoCreateShipmentFromInvoice() SHOWIF typeShipmentFromInvoice();
+autoCreateShipmentFromInvoice 'Автоматически создавать отгрузку на основе реализации' = DATA BOOLEAN (InvoiceType);
+EXTEND FORM invoiceType PROPERTIES autoCreateShipmentFromInvoice(o) SHOWIF typeShipmentFromInvoice(o);
 
-WHEN SET(ready(Invoice b)) AND autoCreateShipmentFromInvoice() DO newShipment(b);
-WHEN SET(canceled(Invoice i)) AND in(i, Shipment r) AND countInvoice(r) = 1 AND autoCreateShipmentFromInvoice() DO canceled(r) <- TRUE; 
-WHEN CHANGED(quantity(invoiceLine(ShipmentLine l))) AND autoCreateShipmentFromInvoice() DO done(l) <- quantity(invoiceLine(l));
-WHEN CHANGED(item(invoiceLine(ShipmentLine l))) AND autoCreateShipmentFromInvoice() AND item(invoiceLine(l)) IS Product DO product(l) <- item(invoiceLine(l));
+WHEN SET(ready(Invoice i)) AND autoCreateShipmentFromInvoice(type(i)) DO 
+    newShipment(i);
+WHEN SET(canceled(Invoice i)) AND in(i, Shipment s) AND countInvoice(s) = 1 AND autoCreateShipmentFromInvoice(type(i)) DO 
+    canceled(s) <- TRUE; 
+WHEN CHANGED(quantity(invoiceLine(ShipmentLine l))) AND autoCreateShipmentFromInvoice(type(invoice(invoiceLine(l)))) DO 
+    done(l) <- quantity(invoiceLine(l));
+WHEN CHANGED(item(invoiceLine(ShipmentLine l))) AND autoCreateShipmentFromInvoice(type(invoice(invoiceLine(l)))) AND item(invoiceLine(l)) IS Product DO 
+    product(l) <- item(invoiceLine(l));

@@ -3,7 +3,8 @@ MODULE Invoice;
 REQUIRE InvoicingSettings, TaxItem, BankAccount, 
         MetaTax, PaymentTermsSales,  
         ItemSales, PartnerSales, Company, 
-        BarCode, MetaNumerator, Doc;
+        BarCode, MetaNumerator, Doc,
+        InvoiceType;
 
 NAMESPACE Invoicing;
 
@@ -11,11 +12,17 @@ CLASS Invoice 'Реализация';
 
 @defineStatus(invoice, 'счета');
 
+// type
+type 'Тип' = DATA InvoiceType (Invoice) NONULL;
+nameType 'Тип' (Invoice s) = name(type(s));
+
+WHEN LOCAL SET(Invoice s IS Invoice) AND NOT CHANGED(type(s)) DO type(s) <- defaultInvoiceType(); 
+
 // dateTime
 dateTime 'Дата' = DATA DATETIME (Invoice) NONULL IN id;
 WHEN LOCAL SET (Invoice b IS Invoice) DO dateTime(b) <- currentDateTime();
 
-@defineNumber(invoice, 'Реализация', 'РН');
+@defineNumberType(invoice);
 
 numberDate 'Описание' (Invoice i) = number(i) + ' от ' + dateTime(i);
 
@@ -113,7 +120,7 @@ edit (InvoiceLine l) + { edit(invoice(l)); }
 
 FORM invoice 'Реализация'
     OBJECTS  i = Invoice PANEL 
-    PROPERTIES(i) dateTime, number, nameCustomer, nameCompany,
+    PROPERTIES(i) nameType, dateTime, number, nameCustomer, nameCompany,
                   namePaymentTerms, dueDateTime, nameCustomerAccount, nameCompanyAccount,
                   customerReference, note
         
@@ -131,6 +138,7 @@ DESIGN invoice {
             type = CONTAINERH;
             alignment = STRETCH;
             NEW headerLeft {
+                MOVE PROPERTY(nameType(i));
                 MOVE PROPERTY(dateTime(i));
                 MOVE PROPERTY(number(i));
             }
@@ -189,7 +197,7 @@ DESIGN invoice {
 
 FORM invoices 'Реализации'
     OBJECTS i = Invoice
-    PROPERTIES(i) READONLY dateTime, number, nameCustomer, nameCompany,
+    PROPERTIES(i) READONLY nameType, dateTime, number, nameCustomer, nameCompany,
                            namePaymentTerms, dueDateTime, nameCustomerAccount, nameCompanyAccount,
                            customerReference, note         
     PROPERTIES(i) NEWSESSION NEW, EDIT, DELETE

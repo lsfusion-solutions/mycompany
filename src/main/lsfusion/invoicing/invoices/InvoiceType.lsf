@@ -1,0 +1,38 @@
+MODULE InvoiceType;
+
+REQUIRE Numerator, InvoicingSettings;
+
+NAMESPACE Invoicing;
+
+CLASS InvoiceType 'Тип отгрузки';
+name 'Название' = DATA ISTRING[50] (InvoiceType) NONULL;
+
+numerator 'Нумератор' = DATA Numerator (InvoiceType);
+nameNumerator 'Нумератор' (InvoiceType o) = name(numerator(o));
+
+FORM invoiceType 'Тип отгрузки'
+    OBJECTS o = InvoiceType PANEL 
+    PROPERTIES(o) name, nameNumerator 
+     
+    EDIT InvoiceType OBJECT o;
+;
+
+FORM invoiceTypes 'Типы отгрузки'
+    OBJECTS o = InvoiceType
+    PROPERTIES(o) READONLY name
+    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+    
+    LIST InvoiceType OBJECT o;
+;
+
+NAVIGATOR {
+    settings {
+        NEW invoiceTypes;
+    }
+}
+
+// default type
+countInvoiceTypes 'Кол-во типов' () = GROUP SUM 1 IF r IS InvoiceType; 
+firstInvoiceType = GROUP LAST InvoiceType r ORDER DESC r WHERE r IS InvoiceType;
+
+defaultInvoiceType = firstInvoiceType() IF countInvoiceTypes() = 1;

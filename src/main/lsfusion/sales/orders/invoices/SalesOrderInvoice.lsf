@@ -5,6 +5,11 @@ REQUIRE SalesOrderConfirmed,
 
 NAMESPACE Sales;
 
+// type
+invoiceType = DATA InvoiceType();
+nameInvoiceType 'Тип реализации на основе заказа' = name(invoiceType());
+EXTEND FORM options PROPERTIES nameInvoiceType();
+
 // invoicing policy
 CLASS InvoicingPolicy 'Политика оформления реализации' {
     ordered 'Заказанное количество'
@@ -37,7 +42,8 @@ createInvoice 'Реализовать' (Order o) {
                
     NEWSESSION {
         NEW ni = Invoice {
-            ready(ni) <- TRUE;    
+            ready(ni) <- TRUE;
+            type(ni) <- invoiceType();    
 
             customer(ni) <- customer(o);
             customerReference(ni) <- customerReference(o); 
