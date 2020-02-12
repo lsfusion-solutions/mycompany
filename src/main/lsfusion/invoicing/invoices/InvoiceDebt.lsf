@@ -18,13 +18,7 @@ amount (Invoice i) += totalAmount(i);
 
 // pay
 pay 'Разнести' (IncomingDebt d, Invoice i) {
-    APPLY; 
-    IF canceled() THEN RETURN;
-    
-    NEWSESSION {
-        paid(d, i) <- left(d, i);
-        APPLY;
-    }
+    paid(d, i) <- left(d, i) (+) paid(d, i);
 } CHANGEMOUSE 'DBLCLK';
 
 EXTEND FORM invoice

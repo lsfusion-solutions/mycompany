@@ -4,7 +4,7 @@ REQUIRE BillDone, BillDebt, OutgoingPaymentDebt;
 
 NAMESPACE Invoicing;
 
-registerPayment 'Зарегистрировать платеж' (Bill b) {
+registerPayment 'Оплатить' (Bill b) {
     APPLY; 
     IF canceled() THEN RETURN;
     
@@ -17,14 +17,10 @@ registerPayment 'Зарегистрировать платеж' (Bill b) {
             companyAccount(p) <- companyAccount(b);
             
             amount(p) <- left(b);
-            DIALOG outgoingPayment OBJECTS p = p DOCKED DO {
-               paid(b, p) <- left(b, p);
-               IF (left(b) > 0) THEN {
-                   ASK 'Оплачена не вся сумма. Закрыть документ?' DO {
-                       done(b) <- TRUE;
-                   }
-               }
-               APPLY; 
+            paid(b, p) <- left(b, p);
+            DIALOG outgoingPayment OBJECTS p = p DOCKED NOMANAGESESSION DO {
+                IF amount(p) < paid(b, p) THEN paid(b, p) <- amount(p);
+                APPLY; 
             }
        } 
    }

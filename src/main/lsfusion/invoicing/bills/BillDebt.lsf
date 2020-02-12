@@ -18,13 +18,7 @@ amount (Bill b) += totalAmount(b);
 
 // pay
 pay 'Разнести' (Bill b, OutgoingDebt d) {
-    APPLY; 
-    IF canceled() THEN RETURN;
-    
-    NEWSESSION {
-        paid(b, d) <- left(b, d);
-        APPLY;
-    }
+    paid(b, d) <- left(b, d) (+) paid(b, d);
 } CHANGEMOUSE 'DBLCLK';
 
 EXTEND FORM bill

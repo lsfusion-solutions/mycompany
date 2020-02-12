@@ -17,13 +17,7 @@ amount (OutgoingPayment p) += amount(p);
 
 // pay
 pay 'Разнести' (IncomingDebt d, OutgoingPayment p) {
-    APPLY; 
-    IF canceled() THEN RETURN;
-    
-    NEWSESSION {
-        paid(d, p) <- left(d, p);
-        APPLY;
-    }
+    paid(d, p) <- left(d, p) (+) paid(d, p);
 } CHANGEMOUSE 'DBLCLK';
 
 EXTEND FORM outgoingPayment
