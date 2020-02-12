@@ -51,12 +51,16 @@ createInvoice 'Реализовать' (Order o) {
             
             FOR order(OrderLine ol) = o AND toInvoiceOrdered(ol) > 0
                 NEW il = InvoiceLine DO {
+                orderLine(il) <- ol;
                 invoice(il) <- ni;
                 item(il) <- item(ol);
                 description(il) <- description(ol);
+                
                 quantity(il) <- toInvoiceOrdered(ol);
-                price(il) <- resultPrice(ol);
-                orderLine(il) <- ol;
+                
+                price(il) <- price(ol);
+                discount(il) <- discount(ol);
+                discountPrice(il) <- discountPrice(ol);
             }                            
             createOrderInvoiceLines(o, ni);
             executeLocalEvents();

@@ -94,12 +94,13 @@ WHEN LOCAL CHANGED(item(InvoiceLine l)) DO uom(l) <- uom(item(l));
 description 'Описание' = DATA STRING (InvoiceLine); 
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (InvoiceLine) NONULL;
-price 'Цена' = DATA NUMERIC[10,2] (InvoiceLine) NONULL;
 
+price 'Цена' = DATA NUMERIC[10,2] (InvoiceLine) NONULL;
 WHEN LOCAL SETCHANGED(item(InvoiceLine l)) AND NOT CHANGED(price(l)) DO price(l) <- salesPrice(item(l));
 
-// taxes
-@defineTaxCalc(invoice, i, sales);
+@defineDocDiscount(invoice);
+
+@defineTaxCalc(invoice, i, sales, resultPrice);
 
 // Line properties
 nameStatus 'Статус' (InvoiceLine l) = nameStatus(invoice(l));
@@ -194,6 +195,7 @@ DESIGN invoice {
 @defineBarCodeAdd(invoice, i, item);
 @defineDocHistory(invoice, i, item, quantity);
 @defineDocSearch(invoice, item, quantity, 'Кол-во', i, canBeSold);
+@defineDocDiscountForm(invoice);
 
 FORM invoices 'Реализации'
     OBJECTS i = Invoice
@@ -223,8 +225,12 @@ copy 'Копировать' (Invoice i)  {
             FOR invoice(InvoiceLine l) = i INLINE NEW nl = InvoiceLine DO {
                 invoice(nl) <- ni;
                 item(nl) <- item(l);
+                
                 quantity(nl) <- quantity(l);
+                
                 price(nl) <- price(l);
+                discount(nl) <- discount(l);
+                discountPrice(nl) <- discountPrice(l);
             }
             SHOW invoice OBJECTS i = ni DOCKED;
         }

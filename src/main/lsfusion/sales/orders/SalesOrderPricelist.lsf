@@ -1,0 +1,35 @@
+MODULE SalesOrderPricelist;
+
+REQUIRE SalesOrderSearch;
+
+NAMESPACE Sales;
+
+// price types
+priceType 'Вид цен' =  DATA PriceType (Order);
+namePriceType 'Вид цен' (Order o) =  name(priceType(o));
+ 
+WHEN LOCAL CHANGED(customer(Order o)) DO priceType(o) <- priceType(customer(o));
+
+WHEN LOCAL (SETCHANGED(item(OrderLine ol)) OR SETCHANGED(priceType(order(ol)))) AND NOT CHANGED(price(ol)) DO {
+    price(ol) <- OVERRIDE noTaxPriceA(priceType(order(ol)), item(ol), dateTime(order(ol))), salesPrice(item(ol)); 
+}
+
+EXTEND FORM order
+    PROPERTIES(o) namePriceType
+;
+
+DESIGN order {
+    title {
+        MOVE PROPERTY(namePriceType(o)); 
+    }
+}
+
+// search
+listPrice 'Цена' (Order o, Item i) = priceA(priceType(o), i, dateTime(o));
+
+EXTEND FORM order
+    PROPERTIES(o, itm) READONLY listPrice
+
+    FILTERGROUP pricelist
+        FILTER 'В прайс-листе' listPrice(o, itm)
+;

@@ -80,8 +80,7 @@ WHEN LOCAL CHANGED(item(OrderLine l)) DO uom(l) <- uom(item(l));
 quantity 'Количество' = DATA NUMERIC[16,3] (OrderLine);
 
 price 'Цена' = DATA NUMERIC[10,2] (OrderLine);
-resultPrice = ABSTRACT VALUE NUMERIC[10,2] (OrderLine);
-resultPrice (OrderLine l) += price(l);
+@defineDocDiscount(order);
 
 @defineTaxCalc(order, o, sales, resultPrice);
 
@@ -89,16 +88,6 @@ WHEN LOCAL CHANGED(item(OrderLine ol)) DO {
     description(ol) <- nameItem(ol);
     uom(ol) <- uom(item(ol));
     in(ol, Tax t) <- salesIn(item(ol), t); 
-}
-
-// price types
-priceType 'Вид цен' =  DATA PriceType (Order);
-namePriceType 'Вид цен' (Order o) =  name(priceType(o));
- 
-WHEN LOCAL CHANGED(customer(Order o)) DO priceType(o) <- priceType(customer(o));
-
-WHEN LOCAL (SETCHANGED(item(OrderLine ol)) OR SETCHANGED(priceType(order(ol)))) AND NOT CHANGED(price(ol)) DO {
-    price(ol) <- OVERRIDE noTaxPriceA(priceType(order(ol)), item(ol), dateTime(order(ol))), salesPrice(item(ol)); 
 }
 
 // Line properties
@@ -111,7 +100,7 @@ nameCustomer 'Заказчик' (OrderLine l) = nameCustomer(order(l));
 
 FORM order 'Заказ покупателя'
     OBJECTS o = Order PANEL
-    PROPERTIES(o) dateTime, number, nameCustomer, namePriceType, nameLocation,
+    PROPERTIES(o) dateTime, number, nameCustomer, nameLocation,
                   validity,
                   namePaymentTerms, addressCustomer,
                   scheduledDateTime, deliveryAddress, 
@@ -135,7 +124,6 @@ DESIGN order {
                 MOVE PROPERTY(dateTime(o));
                 MOVE PROPERTY(number(o));
                 MOVE PROPERTY(nameCustomer(o)) { notNull = TRUE; } 
-                MOVE PROPERTY(namePriceType(o)); 
                 MOVE PROPERTY(nameLocation(o));               
             }    
             NEW relatedDoc {
@@ -194,6 +182,7 @@ DESIGN order {
 
 @defineBarCodeAdd(order, o, item);
 @defineDocHistory(order, o, item, quantity);
+@defineDocDiscountForm(order);
 
 FORM orders 'Заказы покупателей'
      OBJECTS o = Order

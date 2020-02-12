@@ -248,3 +248,29 @@ META defineDocLineRelation(docTo, docFrom, captTo, captFrom, objTo, objFrom)
         PROPERTIES(objTo) READONLY numberDate###docFrom##s
     ;
 END
+
+META defineDocDiscount (doc)
+    discount 'Скидка, %' = DATA NUMERIC[5,2] (###doc##Line);
+    
+    discountPrice 'Цена со скидкой' = DATA NUMERIC[10,2] (###doc##Line);
+    resultPrice 'Цена итоговая' (###doc##Line l) = OVERRIDE discountPrice(l), price(l);
+    
+    WHEN LOCAL (CHANGED(price(###doc##Line l)) OR CHANGED(discount(l))) AND NOT CHANGED(discountPrice(l)) DO 
+        discountPrice(l) <- NUMERIC[10,2] (price(l) * (100.0 - discount(l)) / 100.0);
+    
+    recalcDiscount (###doc##Line l) { 
+        discount(l) <- NUMERIC[5,2](min(100.0 - (discountPrice(l) * 100.0 / price(l)), 100.0));
+    }
+    changeDiscountPrice (###doc##Line l) {
+        INPUT p = discountPrice(l) CHANGE DO {
+            recalcDiscount(l);
+        } 
+    }
+    
+END
+
+META defineDocDiscountForm (doc)
+    EXTEND FORM doc
+        PROPERTIES(l) AFTER price(l) discount, discountPrice ON CHANGE changeDiscountPrice(l)
+    ;
+END

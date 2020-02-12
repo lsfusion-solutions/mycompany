@@ -1,0 +1,35 @@
+MODULE SalesInvoicePricelist;
+
+REQUIRE Invoice, SalesPricelistValue;
+
+NAMESPACE Sales;
+
+// price types
+priceType 'Вид цен' =  DATA PriceType (Invoice);
+namePriceType 'Вид цен' (Invoice o) =  name(priceType(o));
+ 
+WHEN LOCAL CHANGED(customer(Invoice o)) DO priceType(o) <- priceType(customer(o));
+
+WHEN LOCAL (SETCHANGED(item(InvoiceLine ol)) OR SETCHANGED(priceType(invoice(ol)))) AND NOT CHANGED(price(ol)) DO {
+    price(ol) <- OVERRIDE noTaxPriceA(priceType(invoice(ol)), item(ol), dateTime(invoice(ol))), salesPrice(item(ol)); 
+}
+
+EXTEND FORM invoice
+    PROPERTIES(i) namePriceType
+;
+
+DESIGN invoice {
+    headerRight {
+        MOVE PROPERTY(namePriceType(i)); 
+    }
+}
+
+// search
+listPrice 'Цена' (Invoice o, Item i) = priceA(priceType(o), i, dateTime(o));
+
+EXTEND FORM invoice
+    PROPERTIES(i, itm) READONLY listPrice
+
+    FILTERGROUP pricelist
+        FILTER 'В прайс-листе' listPrice(i, itm)
+;
