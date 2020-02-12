@@ -1,0 +1,23 @@
+MODULE SalesBillLedger;
+
+REQUIRE BillCanceled, CreditNote, SalesLedger;
+
+NAMESPACE Sales;
+
+CLASS BillSalesLedger 'Возврат' : SalesLedger;
+salesLedger = AGGR BillSalesLedger WHERE quantity(BillLine line) > 0 AND active(bill(line)) AND isCreditNote(bill(line)); 
+
+dateTime(BillSalesLedger l) += dateTime(bill(line(l)));
+number(BillSalesLedger l) += number(bill(line(l)));
+
+item(BillSalesLedger l) += item(line(l));
+
+customer(BillSalesLedger l) += vendor(bill(line(l)));
+
+quantity(BillSalesLedger l) += -quantity(line(l));
+
+price(BillSalesLedger l) += price(line(l));
+untaxedAmount(BillSalesLedger l) += -subtotal(line(l));
+taxes(BillSalesLedger l) += -totalTax(line(l));
+
+edit (BillSalesLedger l) + { edit(bill(line(l))); } 
