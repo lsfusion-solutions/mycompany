@@ -4,6 +4,17 @@ REQUIRE InvoiceDone, Bill;
 
 NAMESPACE Invoicing;
 
+// types
+isCreditNote 'Возврат' = DATA BOOLEAN (BillType);
+EXTEND FORM billType PROPERTIES(o) isCreditNote;
+
+isCreditNote (Bill r) = isCreditNote(type(r));
+
+billType = DATA BillType (InvoiceType);
+nameBillType 'Тип приобретения для возврата' (InvoiceType t) = name(billType(t));
+EXTEND FORM invoiceType PROPERTIES(o) nameBillType;
+
+// lines
 @defineDocLineRelation(invoice, bill, 'Реализации', 'Возвраты', i, b);
 
 numberInvoiceLine 'Реализация' (BillLine l) = number(invoiceLine(l)); 
@@ -20,19 +31,9 @@ WHEN LOCAL SETCHANGED(invoiceLine(BillLine l)) DO {
     in(l, Tax t) <- in(invoiceLine(l), t);
 }
 
-isCreditNote 'Возврат' (Bill b) = DATA BOOLEAN (Bill);
-
 EXTEND FORM bill
-    PROPERTIES(b) isCreditNote
-    
     PROPERTIES(l) numberInvoiceLine SHOWIF isCreditNote(b)
 ;
-
-DESIGN bill {
-    headerRight {
-        MOVE PROPERTY(isCreditNote(b));
-    }
-}
 
 // add
 addCreditNote 'Создать возврат' (Invoice i) {
@@ -41,7 +42,7 @@ addCreditNote 'Создать возврат' (Invoice i) {
     
     NEWSESSION { 
         NEW b = Bill {
-            isCreditNote(b) <- TRUE;
+            type(b) <- billType(type(i));
             
             dateTime(b) <- currentDateTime();
             
@@ -76,7 +77,3 @@ DESIGN invoice {
         MOVE PROPERTY(addCreditNote(i));
     }               
 }
-
-EXTEND FORM bills
-    PROPERTIES READONLY isCreditNote(b)
-;

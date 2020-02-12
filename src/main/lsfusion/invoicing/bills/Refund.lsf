@@ -4,6 +4,17 @@ REQUIRE BillDone, Invoice;
 
 NAMESPACE Invoicing;
 
+// types
+isRefund 'Возврат' = DATA BOOLEAN (InvoiceType);
+EXTEND FORM invoiceType PROPERTIES(o) isRefund;
+
+isRefund (Invoice i) = isRefund(type(i));
+
+invoiceType = DATA InvoiceType (BillType);
+nameInvoiceType 'Тип реализации для возврата' (BillType t) = name(invoiceType(t));
+EXTEND FORM billType PROPERTIES(o) nameInvoiceType;
+
+// lines
 @defineDocLineRelation(bill, invoice, 'Приобретения', 'Возвраты', b, i);
 
 numberBillLine 'Реализация' (InvoiceLine l) = number(billLine(l)); 
@@ -20,19 +31,9 @@ WHEN LOCAL SETCHANGED(billLine(InvoiceLine l)) DO {
     in(l, Tax t) <- in(billLine(l), t);
 }
 
-isRefund 'Возврат' (Invoice i) = DATA BOOLEAN (Invoice);
-
 EXTEND FORM invoice
-    PROPERTIES(i) isRefund
-    
     PROPERTIES(l) numberBillLine SHOWIF isRefund(i)
 ;
-
-DESIGN invoice {
-    headerRight {
-        MOVE PROPERTY(isRefund(i));
-    }
-}
 
 // add
 addRefund 'Создать возврат' (Bill b) {
@@ -41,7 +42,7 @@ addRefund 'Создать возврат' (Bill b) {
     
     NEWSESSION { 
         NEW i = Invoice {
-            isRefund(i) <- TRUE;
+            type(i) <- invoiceType(type(b));
             
             dateTime(i) <- currentDateTime();
             
@@ -76,7 +77,3 @@ DESIGN bill {
         MOVE PROPERTY(addRefund(b));
     }               
 }
-
-EXTEND FORM invoices
-    PROPERTIES READONLY isRefund(i)
-;

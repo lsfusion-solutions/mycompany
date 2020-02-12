@@ -12,11 +12,13 @@ toBillShipped (Order o) =
     GROUP SUM done(ReceiptLine sl) IF order(orderLine(sl)) = o AND active(receipt(sl)) AND NOT billLine(sl);
 toBill(o) += toBillShipped(o) > 0;
 
-createOrderBillLines (Order o, Bill i) + {
+createOrderBillLines (Order o, Bill b) + {
     IF invoicingPolicy() = InvoicingPolicy.delivered THEN {
+        location(b) <- location(o);
+
         FOR order(orderLine(ReceiptLine sl)) = o AND active(receipt(sl)) AND NOT billLine(sl) INLINE 
             NEW il = BillLine DO {
-            bill(il) <- i;
+            bill(il) <- b;
             orderLine(il) <- orderLine(sl);
     
             item(il) <- product(sl);

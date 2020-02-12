@@ -14,6 +14,8 @@ toInvoice(o) += toInvoiceShipped(o) > 0;
 
 createOrderInvoiceLines (Order o, Invoice i) + {
     IF invoicingPolicy() = InvoicingPolicy.delivered THEN {
+        location(i) <- location(o);
+        
         FOR order(orderLine(ShipmentLine sl)) = o AND active(shipment(sl)) AND NOT invoiceLine(sl) INLINE 
             NEW il = InvoiceLine DO {
             invoice(il) <- i;
