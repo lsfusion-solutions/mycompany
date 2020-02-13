@@ -9,6 +9,7 @@ CLASS ABSTRACT SalesDiscountLine;
 dateTime = ABSTRACT DATETIME (SalesDiscountLine);
 customer = ABSTRACT Partner (SalesDiscountLine);
 item = ABSTRACT Item (SalesDiscountLine);
+priceType = ABSTRACT PriceType (SalesDiscountLine);
 
 quantity = ABSTRACT NUMERIC[16,3] (SalesDiscountLine);
 price = ABSTRACT NUMERIC[10,2] (SalesDiscountLine);
@@ -16,6 +17,7 @@ totalAmount = ABSTRACT NUMERIC[14,2] (SalesDiscountLine);
 
 matches (Discount d, SalesDiscountLine l) =
     set(d, item(l)) AND
+    NOT (countPriceType(d) AND NOT in(d, priceType(l))) AND
     NOT startDateTime(d) > dateTime(l) AND
     NOT endDateTime(d) < dateTime(l) AND
     NOT fromQuantity(d) > quantity(l) AND
@@ -47,6 +49,7 @@ META defineDocSalesDiscountLine (doc, caption, NS)
     dateTime(###doc##Line l) += NS.dateTime(l);
     customer(###doc##Line l) += NS.customer(l);
     item(###doc##Line l) += NS.item(l);
+    priceType(###doc##Line l) += priceType(l);
     
     quantity(###doc##Line l) += NS.quantity(l);
     price(###doc##Line l) += NS.price(l);
@@ -60,4 +63,8 @@ META defineDocSalesDiscountLine (doc, caption, NS)
     WHEN LOCAL (CHANGED(dateTime(###doc##Line l)) OR CHANGED(quantity(l)) OR CHANGED(fullAmount(doc(l))) OR 
                 CHANGED(customer(l)) OR CHANGED(item(l)) OR CHANGED(price(l))) AND recalcDiscountAuto###doc() DO
         salesDiscount(l) <- minSalesDiscountAuto(l);
+    
+    recalcDiscountAuto 'Рассчитать скидки' (###doc d) {
+        salesDiscount(###doc##Line l) <- minSalesDiscountAuto(l) WHERE doc(l) = d;
+    }
 END

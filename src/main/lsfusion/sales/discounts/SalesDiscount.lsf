@@ -34,6 +34,10 @@ in 'Вкл' = DATA BOOLEAN (Discount, Item);
 set (Discount d, Item i) = in(d, i) OR set(d, category(i));
 items 'Номенклатура' (Discount d) = GROUP CONCAT name(Item i) IF in(d, i), ',' ORDER name(i), i CHARWIDTH 30;
 
+// pricetype
+in 'Вкл' = DATA BOOLEAN (Discount, PriceType);
+countPriceType (Discount d) = GROUP SUM 1 IF in(d, PriceType t) MATERIALIZED;
+
 // discount
 discount 'Скидка, %' = DATA NUMERIC[5,2] (Discount);
 
@@ -55,8 +59,12 @@ FORM discount 'Скидка'
     OBJECTS i = Item
     PROPERTIES(i) READONLY name, nameUom, idBarCode, id
     PROPERTIES in(d, i)
-    FILTERGROUP in
-        FILTER 'Включенные' set(d, i)  
+    FILTERGROUP inItem
+        FILTER 'Включенные' set(d, i)
+    
+    OBJECTS t = PriceType
+    PROPERTIES(t) READONLY name
+    PROPERTIES in(d, t)  
     
     EDIT Discount OBJECT d
 ;
@@ -96,11 +104,18 @@ DESIGN discount {
             MOVE PROPERTY(discount(d));
             MOVE PROPERTY(namePriceType(d));
         }
-        NEW items {
+        NEW details {
+            type = TABBED;
             fill = 1;
-            type = SPLITH;
-            MOVE BOX(TREE categories);
-            MOVE BOX(i) { fill = 2; }
+            NEW items {
+                caption = 'Номенклатура';
+                type = SPLITH;
+                MOVE BOX(TREE categories);
+                MOVE BOX(i) { fill = 2; }
+            }
+            MOVE BOX(t) {
+                caption = 'Виды цен';
+            }
         }
     }
 }
