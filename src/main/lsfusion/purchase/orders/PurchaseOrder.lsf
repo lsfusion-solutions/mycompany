@@ -80,6 +80,7 @@ quantity 'Количество' = DATA NUMERIC[16,3] (OrderLine);
 price 'Цена' = DATA NUMERIC[10,2] (OrderLine);
 
 @defineTaxCalc(order, o, purchase);
+taxIncluded (OrderLine l) += taxIncluded(type(order(l)));
 
 WHEN LOCAL CHANGED (item(OrderLine ol)) DO {
     description(ol) <- OVERRIDE nameItemVendor(pricelistLineA(vendor(order(ol)), item(ol), dateTime(order(ol)))),
@@ -95,7 +96,7 @@ nameStatus 'Статус' (OrderLine l) = nameStatus(order(l));
 type (OrderLine l) = type(order(l)); 
 number 'Номер' (OrderLine l) = number(order(l));
 dateTime 'Создан' (OrderLine l) = dateTime(order(l));
-nameLocation 'Место доставки' (OrderLine l) = nameLocation(order(l));
+nameLocation 'Место хранения' (OrderLine l) = nameLocation(order(l));
 nameVendor 'Поставщик' (OrderLine l) = nameVendor(order(l));
 
 edit (OrderLine l) + { edit(order(l)); } 
@@ -121,10 +122,12 @@ DESIGN order {
         NEW header {
             alignment = STRETCH;    
             type = CONTAINERH;
-            NEW title {
+            NEW headerLeft {
                 MOVE PROPERTY(nameType(o));
                 MOVE PROPERTY(dateTime(o));
                 MOVE PROPERTY(number(o));
+            }
+            NEW headerRight {
                 MOVE PROPERTY(nameVendor(o)) { notNull = TRUE; } 
                 MOVE PROPERTY(nameLocation(o));
             }

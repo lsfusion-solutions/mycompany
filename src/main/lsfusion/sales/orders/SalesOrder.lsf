@@ -89,6 +89,7 @@ price 'Цена' = DATA NUMERIC[10,2] (OrderLine);
 @defineDocDiscount(order);
 
 @defineTaxCalc(order, o, sales, resultPrice);
+taxIncluded (OrderLine l) += taxIncluded(type(order(l)));
 
 WHEN LOCAL CHANGED(item(OrderLine ol)) DO {
     description(ol) <- nameItem(ol);
@@ -101,7 +102,7 @@ nameStatus 'Статус' (OrderLine l) = nameStatus(order(l));
 type (OrderLine l) = type(order(l)); 
 number 'Номер' (OrderLine l) = number(order(l));
 dateTime 'Дата' (OrderLine l) = dateTime(order(l));
-nameLocation 'Место доставки' (OrderLine l) = nameLocation(order(l));
+nameLocation 'Место хранения' (OrderLine l) = nameLocation(order(l));
 customer (OrderLine l) = customer(order(l));
 nameCustomer 'Заказчик' (OrderLine l) = nameCustomer(order(l));
 
@@ -127,10 +128,12 @@ DESIGN order {
         NEW header {
             alignment = STRETCH;   
             type = CONTAINERH;
-            NEW title {
+            NEW headerLeft {
                 MOVE PROPERTY(nameType(o));
                 MOVE PROPERTY(dateTime(o));
                 MOVE PROPERTY(number(o));
+            }
+            NEW headerRight {
                 MOVE PROPERTY(nameCustomer(o)) { notNull = TRUE; } 
                 MOVE PROPERTY(nameLocation(o));               
             }    
