@@ -27,7 +27,7 @@ WHEN LOCAL SET (Invoice b IS Invoice) DO dateTime(b) <- currentDateTime();
 numberDate 'Описание' (Invoice i) = number(i) + ' от ' + dateTime(i);
 
 // customer
-customer 'Покупатель' = DATA Partner (Invoice) NONULL;
+customer = DATA Partner (Invoice);
 nameCustomer 'Покупатель' (Invoice b) = name(customer(b));
 CONSTRAINT customer(Invoice b) AND NOT isCustomer(customer(b)) 
                 CHECKED BY customer
@@ -101,6 +101,7 @@ WHEN LOCAL SETCHANGED(item(InvoiceLine l)) AND NOT CHANGED(price(l)) DO price(l)
 @defineDocDiscount(invoice);
 
 @defineTaxCalc(invoice, i, sales, resultPrice);
+taxIncluded (InvoiceLine l) += taxIncluded(type(invoice(l)));
 
 // Line properties
 nameStatus 'Статус' (InvoiceLine l) = nameStatus(invoice(l));
@@ -144,7 +145,7 @@ DESIGN invoice {
                 MOVE PROPERTY(number(i));
             }
             NEW headerRight {
-                MOVE PROPERTY(nameCustomer(i))  { notNull = TRUE; }
+                MOVE PROPERTY(nameCustomer(i));
                 MOVE PROPERTY(nameCompany(i)) { notNull = TRUE; }           
             }
             NEW relatedDoc {

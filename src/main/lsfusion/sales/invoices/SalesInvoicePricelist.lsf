@@ -4,16 +4,30 @@ REQUIRE Invoice, SalesPricelistValue;
 
 NAMESPACE Sales;
 
+// invoice type
+priceType = DATA PriceType (InvoiceType);
+namePriceType 'Вид цен' (InvoiceType t) = name(priceType(t));
+
+EXTEND FORM invoiceType
+    PROPERTIES(o) namePriceType
+;
+
 // price types
-priceType 'Вид цен' =  DATA PriceType (Invoice);
+priceType 'Вид цен' = DATA PriceType (Invoice);
 namePriceType 'Вид цен' (Invoice o) =  name(priceType(o));
 
 priceType (InvoiceLine l) = priceType(invoice(l));
- 
-WHEN LOCAL CHANGED(customer(Invoice o)) DO priceType(o) <- priceType(customer(o));
+
+CONSTRAINT InvoiceType it = type(Invoice i) AND PriceType pt = priceType(i) AND 
+           ((taxIncluded(it) AND NOT taxIncluded(pt)) OR (taxIncluded(pt) AND NOT taxIncluded(it)))
+           CHECKED BY priceType[Invoice]
+           MESSAGE 'Для операции реализации выбран недопустимый вид цены, (не)включающий налоги'; 
+
+WHEN LOCAL CHANGED(customer(Invoice o)) DO 
+    priceType(o) <- OVERRIDE priceType(customer(o)), priceType(type(o));
 
 WHEN LOCAL (SETCHANGED(item(InvoiceLine ol)) OR SETCHANGED(priceType(invoice(ol)))) AND NOT CHANGED(price(ol)) DO {
-    price(ol) <- OVERRIDE noTaxPriceA(priceType(invoice(ol)), item(ol), dateTime(invoice(ol))), salesPrice(item(ol)); 
+    price(ol) <- OVERRIDE priceA(priceType(invoice(ol)), item(ol), dateTime(invoice(ol))), salesPrice(item(ol)); 
 }
 
 EXTEND FORM invoice

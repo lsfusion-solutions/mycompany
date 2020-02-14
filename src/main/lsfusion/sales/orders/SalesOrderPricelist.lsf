@@ -5,7 +5,7 @@ REQUIRE SalesOrderSearch;
 NAMESPACE Sales;
 
 // price types
-priceType 'Вид цен' = DATA PriceType (Order);
+priceType = DATA PriceType (Order);
 namePriceType 'Вид цен' (Order o) =  name(priceType(o));
 
 WHEN LOCAL CHANGED(customer(Order o)) DO priceType(o) <- priceType(customer(o));
@@ -13,7 +13,7 @@ WHEN LOCAL CHANGED(customer(Order o)) DO priceType(o) <- priceType(customer(o));
 priceType (OrderLine l) = priceType(order(l));
 
 WHEN LOCAL (SETCHANGED(item(OrderLine ol)) OR SETCHANGED(priceType(order(ol)))) AND NOT CHANGED(price(ol)) DO {
-    price(ol) <- OVERRIDE noTaxPriceA(priceType(order(ol)), item(ol), dateTime(order(ol))), salesPrice(item(ol)); 
+    price(ol) <- OVERRIDE priceA(priceType(order(ol)), item(ol), dateTime(order(ol))), salesPrice(item(ol)); 
 }
 
 EXTEND FORM order
