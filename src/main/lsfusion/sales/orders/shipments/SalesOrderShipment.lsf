@@ -6,9 +6,9 @@ REQUIRE SalesOrder, SalesOrderConfirmed, SalesOrderCanceled, SalesOrderLocked,
 NAMESPACE Sales;
 
 // options
-shipmentType = DATA ShipmentType();
-nameShipmentType 'Тип отгрузки на основе заказа' = name(shipmentType());
-EXTEND FORM options PROPERTIES nameShipmentType();
+shipmentType = DATA ShipmentType (OrderType);
+nameShipmentType 'Тип отгрузки на основе заказа' (OrderType t) = name(shipmentType(t));
+EXTEND FORM orderType PROPERTIES nameShipmentType(o);
  
 // relation
 @defineDocLineRelation(order, shipment, 'Заказы', 'Отгрузки', o, s);
@@ -30,7 +30,7 @@ reserveShipment = DATA Shipment (Order);
 
 WHEN ([GROUP SUM 1 IF CHANGED(toShip(OrderLine l)) BY order(l)](Order o) OR SET(confirmed(o)) OR DROPPED(locked(o)) OR  
       CHANGED(customer(o)) OR CHANGED(scheduledDateTime(o)) OR CHANGED(location(o)) OR CHANGED(number(o))) AND 
-     status(o) = OrderStatus.confirmed AND location(o) AND shipmentType() DO {
+     status(o) = OrderStatus.confirmed AND location(o) AND shipmentType(type(o)) DO {
      
     IF reserveShipment(o) AND NOT toReserve(reserveShipment(o)) THEN
         reserveShipment(o) <- NULL;
@@ -40,7 +40,7 @@ WHEN ([GROUP SUM 1 IF CHANGED(toShip(OrderLine l)) BY order(l)](Order o) OR SET(
          
     IF NOT reserveShipment(o) AND toShip(o) > 0 THEN
         NEW s = Shipment { 
-            type(s) <- shipmentType();
+            type(s) <- shipmentType(type(o));
             waiting(s) <- TRUE;
             
             reserveShipment(o) <- s;    

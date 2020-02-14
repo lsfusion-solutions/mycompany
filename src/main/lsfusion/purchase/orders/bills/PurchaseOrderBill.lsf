@@ -6,9 +6,9 @@ REQUIRE PurchaseOrder, PurchaseOrderConfirmed,
 NAMESPACE Purchase;
 
 // type
-billType = DATA BillType();
-nameBillType 'Тип приобретения на основе заказа' = name(billType());
-EXTEND FORM options PROPERTIES nameBillType();
+billType = DATA BillType (OrderType);
+nameBillType 'Тип приобретения на основе заказа' (OrderType t) = name(billType(t));
+EXTEND FORM orderType PROPERTIES nameBillType(o);
 
 // invoicing policy
 CLASS InvoicingPolicy 'Политика оформления приобретения' {
@@ -16,9 +16,9 @@ CLASS InvoicingPolicy 'Политика оформления приобрете�
 }
 name 'Имя' (InvoicingPolicy p) = staticCaption(p) IF p IS InvoicingPolicy CHARWIDTH 20;
 
-invoicingPolicy = DATA InvoicingPolicy ();
-nameInvoicingPolicy 'Политика оформления приобретения' () = name(invoicingPolicy()); 
-EXTEND FORM options PROPERTIES() nameInvoicingPolicy;
+invoicingPolicy = DATA InvoicingPolicy (OrderType);
+nameInvoicingPolicy 'Политика оформления приобретения' (OrderType t) = name(invoicingPolicy(t)); 
+EXTEND FORM orderType PROPERTIES nameInvoicingPolicy(o);
 
 // lines
 @defineDocLineRelation(order, bill, 'Заказы', 'Приобретения', o, b);
@@ -27,7 +27,9 @@ billed 'Приобретено' (OrderLine ol) =
     GROUP SUM quantity(BillLine bl) IF orderLine(bl) = ol AND ready(bill(bl)) AND NOT canceled(bill(bl));
 paid 'Оплачено' (OrderLine ol) = 
     GROUP SUM quantity(BillLine bl) IF orderLine(bl) = ol AND done(bill(bl)) AND NOT canceled(bill(bl));
-toBillOrdered 'К оформлению' (OrderLine l) = max(quantity(l) (-) billed(l), 0) IF (invoicingPolicy() = InvoicingPolicy.ordered OR NOT invoicingPolicy() OR NOT item(l) IS Product);
+toBillOrdered 'К оформлению' (OrderLine l) = 
+    max(quantity(l) (-) billed(l), 0) IF 
+        (invoicingPolicy(type(l)) = InvoicingPolicy.ordered OR NOT invoicingPolicy(type(l)) OR NOT item(l) IS Product);
  
 toBillOrdered (Order o) = GROUP SUM toBillOrdered(OrderLine ol) IF order(ol) = o;
 
@@ -43,7 +45,7 @@ createBill 'Приобрести' (Order o) {
     NEWSESSION {
         NEW nb = Bill {
             ready(nb) <- TRUE;
-            type(nb) <- billType();
+            type(nb) <- billType(type(o));
             
             vendor(nb) <- vendor(o);
             vendorReference(nb) <- vendorReference(o);

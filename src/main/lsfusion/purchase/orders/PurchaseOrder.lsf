@@ -1,7 +1,7 @@
 MODULE PurchaseOrder;
 
 REQUIRE Time, MetaNumerator, Individual, Company,
-        MetaTax, TaxItem, BarCode,
+        MetaTax, TaxItem, BarCode, PurchaseOrderType,
         PurchaseSettings, PartnerPurchase, ItemSales,
         PaymentTermsPurchase, Doc, PurchasePricelistValue,
         DebtPartner,
@@ -13,10 +13,16 @@ CLASS Order 'Заказ поставщику';
 
 @defineStatus(order, 'заказа поставщику');
 
+// type
+type 'Тип' = DATA OrderType (Order) NONULL;
+nameType 'Тип' (Order s) = name(type(s));
+
+WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(type(o)) DO type(o) <- defaultOrderType(); 
+
 dateTime 'Создан'  = DATA DATETIME (Order);
 WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(dateTime(o)) DO { dateTime(o) <- currentDateTime();}
 
-@defineNumber(order, 'Заказы поставщикам', 'ЗК');
+@defineNumberType(order);
 
 numberDate 'Описание' (Order o) = number(o) + ' от ' + dateTime(o);
 
@@ -86,6 +92,7 @@ WHEN LOCAL CHANGED (item(OrderLine ol)) DO {
 
 // Line properties
 nameStatus 'Статус' (OrderLine l) = nameStatus(order(l)); 
+type (OrderLine l) = type(order(l)); 
 number 'Номер' (OrderLine l) = number(order(l));
 dateTime 'Создан' (OrderLine l) = dateTime(order(l));
 nameLocation 'Место доставки' (OrderLine l) = nameLocation(order(l));
@@ -95,7 +102,7 @@ edit (OrderLine l) + { edit(order(l)); }
 
 FORM order 'Заказ поставщику'
     OBJECTS o = Order PANEL
-    PROPERTIES(o) dateTime, number, nameVendor, nameLocation,
+    PROPERTIES(o) nameType, dateTime, number, nameVendor, nameLocation,
                   namePaymentTerms,
                   scheduledDateTime,
                   nameRepresentative, vendorReference
@@ -115,6 +122,7 @@ DESIGN order {
             alignment = STRETCH;    
             type = CONTAINERH;
             NEW title {
+                MOVE PROPERTY(nameType(o));
                 MOVE PROPERTY(dateTime(o));
                 MOVE PROPERTY(number(o));
                 MOVE PROPERTY(nameVendor(o)) { notNull = TRUE; } 
@@ -170,7 +178,7 @@ DESIGN order {
 
 FORM orders 'Заказы поставщикам'
     OBJECTS o = Order
-    PROPERTIES(o) READONLY dateTime, number, nameVendor,
+    PROPERTIES(o) READONLY nameType, dateTime, number, nameVendor,
                            namePaymentTerms,
                            scheduledDateTime, nameLocation,
                            nameRepresentative, vendorReference,

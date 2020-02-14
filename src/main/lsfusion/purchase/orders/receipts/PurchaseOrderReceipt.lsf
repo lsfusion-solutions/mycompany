@@ -6,9 +6,9 @@ REQUIRE PurchaseOrder, PurchaseOrderConfirmed, PurchaseOrderCanceled,
 NAMESPACE Purchase;
 
 // options
-receiptType = DATA ReceiptType ();
-nameReceiptType 'Тип поступления на основе заказа' = name(receiptType());
-EXTEND FORM options PROPERTIES nameReceiptType();
+receiptType = DATA ReceiptType (OrderType);
+nameReceiptType 'Тип поступления на основе заказа' (OrderType t) = name(receiptType(t));
+EXTEND FORM orderType PROPERTIES nameReceiptType(o);
 
 // relation
 @defineDocLineRelation(order, receipt, 'Заказы', 'Поступления', o, r);
@@ -27,7 +27,7 @@ reserveReceipt = DATA Receipt (Order);
 
 WHEN ([GROUP SUM 1 IF CHANGED(toReceive(OrderLine l)) BY order(l)](Order o) OR SET(confirmed(o)) OR DROPPED(locked(o)) OR  
       CHANGED(vendor(o)) OR CHANGED(scheduledDateTime(o)) OR CHANGED(location(o)) OR CHANGED(number(o))) AND 
-      status(o) = OrderStatus.confirmed AND location(o) AND receiptType() DO {
+      status(o) = OrderStatus.confirmed AND location(o) AND receiptType(type(o)) DO {
 
     IF reserveReceipt(o) AND NOT status(reserveReceipt(o)) = ReceiptStatus.ready THEN
         reserveReceipt(o) <- NULL;
@@ -37,7 +37,7 @@ WHEN ([GROUP SUM 1 IF CHANGED(toReceive(OrderLine l)) BY order(l)](Order o) OR S
 
     IF NOT reserveReceipt(o) AND toReceive(o) > 0 THEN   
         NEW r = Receipt { 
-            type(r) <- receiptType();
+            type(r) <- receiptType(type(o));
             ready(r) <- TRUE;
             
             reserveReceipt(o) <- r;           
@@ -85,7 +85,7 @@ EXTEND FORM order
 ;
 
 DESIGN order {
-    relatedDoc  {
+    relatedDoc {
         MOVE BOX(rc) {
             GRID(rc) { headerHeight = 24; }
         }

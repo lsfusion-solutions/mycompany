@@ -4,13 +4,33 @@ REQUIRE SalesOrderSearch;
 
 NAMESPACE Sales;
 
+// order type
+priceType = DATA PriceType (OrderType);
+namePriceType 'Вид цен' (OrderType t) = name(priceType(t));
+
+EXTEND FORM orderType
+    PROPERTIES(o) namePriceType
+;
+
+taxValid (OrderType it, PriceType pt) = 
+    (taxIncluded(it) AND taxIncluded(pt)) OR (NOT taxIncluded(pt) AND NOT taxIncluded(it));
+
+CONSTRAINT priceType(OrderType i) AND priceType(i) AND NOT taxValid(i, priceType(i))
+           CHECKED BY priceType[OrderType]
+           MESSAGE 'Для типа заказа выбран недопустимый вид цены, (не)включающий налоги'; 
+
 // price types
 priceType = DATA PriceType (Order);
 namePriceType 'Вид цен' (Order o) =  name(priceType(o));
 
-WHEN LOCAL CHANGED(customer(Order o)) DO priceType(o) <- priceType(customer(o));
-
 priceType (OrderLine l) = priceType(order(l));
+
+CONSTRAINT type(Order i) AND priceType(i) AND NOT taxValid(type(i), priceType(i))
+           CHECKED BY priceType[Order]
+           MESSAGE 'Для реализации выбран недопустимый для типа вид цены, (не)включающий налоги'; 
+
+WHEN LOCAL CHANGED(customer(Order o)) DO 
+    priceType(o) <- OVERRIDE priceType(customer(o)), priceType(type(o));
 
 WHEN LOCAL (SETCHANGED(item(OrderLine ol)) OR SETCHANGED(priceType(order(ol)))) AND NOT CHANGED(price(ol)) DO {
     price(ol) <- OVERRIDE priceA(priceType(order(ol)), item(ol), dateTime(order(ol))), salesPrice(item(ol)); 

@@ -12,16 +12,22 @@ EXTEND FORM invoiceType
     PROPERTIES(o) namePriceType
 ;
 
+taxValid (InvoiceType it, PriceType pt) = 
+    (taxIncluded(it) AND taxIncluded(pt)) OR (NOT taxIncluded(pt) AND NOT taxIncluded(it));
+
+CONSTRAINT priceType(InvoiceType i) AND priceType(i) AND NOT taxValid(i, priceType(i))
+           CHECKED BY priceType[InvoiceType]
+           MESSAGE 'Для типа реализации выбран недопустимый вид цены, (не)включающий налоги'; 
+
 // price types
 priceType 'Вид цен' = DATA PriceType (Invoice);
 namePriceType 'Вид цен' (Invoice o) =  name(priceType(o));
 
 priceType (InvoiceLine l) = priceType(invoice(l));
 
-CONSTRAINT InvoiceType it = type(Invoice i) AND PriceType pt = priceType(i) AND 
-           ((taxIncluded(it) AND NOT taxIncluded(pt)) OR (taxIncluded(pt) AND NOT taxIncluded(it)))
+CONSTRAINT type(Invoice i) AND priceType(i) AND NOT taxValid(type(i), priceType(i))
            CHECKED BY priceType[Invoice]
-           MESSAGE 'Для операции реализации выбран недопустимый вид цены, (не)включающий налоги'; 
+           MESSAGE 'Для реализации выбран недопустимый для типа вид цены, (не)включающий налоги'; 
 
 WHEN LOCAL CHANGED(customer(Invoice o)) DO 
     priceType(o) <- OVERRIDE priceType(customer(o)), priceType(type(o));

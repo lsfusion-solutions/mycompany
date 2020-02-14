@@ -6,9 +6,9 @@ REQUIRE SalesOrderConfirmed,
 NAMESPACE Sales;
 
 // type
-invoiceType = DATA InvoiceType();
-nameInvoiceType 'Тип реализации на основе заказа' = name(invoiceType());
-EXTEND FORM options PROPERTIES nameInvoiceType();
+invoiceType = DATA InvoiceType (OrderType);
+nameInvoiceType 'Тип реализации на основе заказа' (OrderType t) = name(invoiceType(t));
+EXTEND FORM orderType PROPERTIES nameInvoiceType(o);
 
 // invoicing policy
 CLASS InvoicingPolicy 'Политика оформления реализации' {
@@ -16,9 +16,9 @@ CLASS InvoicingPolicy 'Политика оформления реализаци�
 }
 name 'Имя' (InvoicingPolicy p) = staticCaption(p) IF p IS InvoicingPolicy CHARWIDTH 20;
 
-invoicingPolicy = DATA InvoicingPolicy ();
-nameInvoicingPolicy 'Политика оформления реализации' () = name(invoicingPolicy()); 
-EXTEND FORM options PROPERTIES() nameInvoicingPolicy;
+invoicingPolicy = DATA InvoicingPolicy (OrderType);
+nameInvoicingPolicy 'Политика оформления реализации' (OrderType t) = name(invoicingPolicy(t)); 
+EXTEND FORM orderType PROPERTIES nameInvoicingPolicy(o);
 
 // lines
 @defineDocLineRelation(order, invoice, 'Заказы', 'Реализации', o, i);
@@ -27,7 +27,9 @@ invoiced 'Реализовано' (OrderLine ol) =
     GROUP SUM quantity(InvoiceLine bl) IF orderLine(bl) = ol AND active(invoice(bl));
 paid 'Оплачено' (OrderLine ol) = 
     GROUP SUM quantity(InvoiceLine bl) IF orderLine(bl) = ol AND done(invoice(bl)) AND NOT canceled(invoice(bl));
-toInvoiceOrdered 'К оформлению' (OrderLine l) = max(quantity(l) (-) invoiced(l), 0) IF (invoicingPolicy() = InvoicingPolicy.ordered OR NOT invoicingPolicy() OR NOT item(l) IS Product);
+toInvoiceOrdered 'К оформлению' (OrderLine l) = 
+    max(quantity(l) (-) invoiced(l), 0) 
+        IF (invoicingPolicy(type(l)) = InvoicingPolicy.ordered OR NOT invoicingPolicy(type(l)) OR NOT item(l) IS Product);
 
 toInvoiceOrdered (Order o) = GROUP SUM toInvoiceOrdered(OrderLine ol) IF order(ol) = o;
 
@@ -43,7 +45,7 @@ createInvoice 'Реализовать' (Order o) {
     NEWSESSION {
         NEW ni = Invoice {
             ready(ni) <- TRUE;
-            type(ni) <- invoiceType();    
+            type(ni) <- invoiceType(type(o));    
 
             customer(ni) <- customer(o);
             customerReference(ni) <- customerReference(o); 

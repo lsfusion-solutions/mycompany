@@ -1,0 +1,40 @@
+MODULE PurchaseOrderType;
+
+REQUIRE Numerator, PurchaseSettings;
+
+NAMESPACE Purchase;
+
+CLASS OrderType 'Тип заказа';
+name 'Название' = DATA ISTRING[50] (OrderType) NONULL;
+
+numerator 'Нумератор' = DATA Numerator (OrderType);
+nameNumerator 'Нумератор' (OrderType o) = name(numerator(o));
+
+taxIncluded 'Цена включает налоги' = DATA BOOLEAN (OrderType);
+
+FORM orderType 'Тип заказа'
+    OBJECTS o = OrderType PANEL 
+    PROPERTIES(o) name, nameNumerator, taxIncluded
+     
+    EDIT OrderType OBJECT o;
+;
+
+FORM orderTypes 'Типы заказов'
+    OBJECTS o = OrderType
+    PROPERTIES(o) READONLY name
+    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+    
+    LIST OrderType OBJECT o;
+;
+
+NAVIGATOR {
+    settings {
+        NEW orderTypes;
+    }
+}
+
+// default type
+countOrderTypes 'Кол-во типов' () = GROUP SUM 1 IF r IS OrderType; 
+firstOrderType = GROUP LAST OrderType r ORDER DESC r WHERE r IS OrderType;
+
+defaultOrderType = firstOrderType() IF countOrderTypes() = 1;
