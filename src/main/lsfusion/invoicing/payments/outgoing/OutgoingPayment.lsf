@@ -1,16 +1,21 @@
 MODULE OutgoingPayment;
 
 REQUIRE Time, MetaNumerator,
-        Partner, Company, Account;
+        Partner, Company, Account,
+        OutgoingPaymentType;
 
 NAMESPACE Invoicing;
 
 CLASS OutgoingPayment 'Исходящий платеж';
 
+// type
+type 'Тип' = DATA OutgoingPaymentType (OutgoingPayment) NONULL;
+nameType 'Тип' (OutgoingPayment s) = name(type(s));
+
 dateTime 'Дата' = DATA DATETIME (OutgoingPayment) NONULL;
 dateTime(OutgoingPayment p) <- currentDateTime() WHEN SET(p IS OutgoingPayment);
 
-@defineNumber(outgoingPayment, 'Исходящие платежи', 'ВП');
+@defineNumberType(outgoingPayment);
 
 // partners
 partner 'Контрагент' = DATA Partner (OutgoingPayment) NONULL;
@@ -48,7 +53,7 @@ reference 'Ссылка' = DATA ISTRING[50] (OutgoingPayment);
 // forms
 FORM outgoingPayment 'Исходящий платеж'
     OBJECTS p = OutgoingPayment PANEL 
-    PROPERTIES(p) dateTime, number, amount,
+    PROPERTIES(p) nameType, dateTime, number, amount,
                   namePartner, namePartnerAccount, 
                   nameCompany, nameCompanyAccount,
                   note, reference
@@ -64,6 +69,7 @@ DESIGN outgoingPayment {
                 caption = 'Параметры';
                 type = CONTAINERH;
                 alignment = STRETCH;
+                MOVE PROPERTY(nameType(p)); 
                 MOVE PROPERTY(dateTime(p)); 
                 MOVE PROPERTY(number(p));
                 MOVE PROPERTY(amount(p));
@@ -98,7 +104,7 @@ DESIGN outgoingPayment {
 
 FORM outgoingPayments 'Исходящие платежи'
     OBJECTS p = OutgoingPayment
-    PROPERTIES(p) READONLY dateTime, number, amount,
+    PROPERTIES(p) READONLY nameType, dateTime, number, amount,
                            namePartner, namePartnerAccount, 
                            nameCompany, nameCompanyAccount, 
                            note, reference

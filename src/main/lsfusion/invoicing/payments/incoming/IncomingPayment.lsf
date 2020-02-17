@@ -1,11 +1,16 @@
 MODULE IncomingPayment;
 
 REQUIRE Time, MetaNumerator,
-        Partner, Company, Account;
+        Partner, Company, Account,
+        IncomingPaymentType;
 
 NAMESPACE Invoicing;
 
 CLASS IncomingPayment 'Входящий платеж';
+
+// type
+type 'Тип' = DATA IncomingPaymentType (IncomingPayment) NONULL;
+nameType 'Тип' (IncomingPayment s) = name(type(s));
 
 dateTime 'Дата' = DATA DATETIME (IncomingPayment) NONULL;
 dateTime(IncomingPayment p) <- currentDateTime() WHEN SET(p IS IncomingPayment);
@@ -48,7 +53,7 @@ reference 'Ссылка' = DATA ISTRING[50] (IncomingPayment);
 // forms
 FORM incomingPayment 'Входящий платеж'
     OBJECTS p = IncomingPayment PANEL 
-    PROPERTIES(p) dateTime, number, amount,
+    PROPERTIES(p) nameType, dateTime, number, amount,
                   namePartner, namePartnerAccount, 
                   nameCompany, nameCompanyAccount,
                   note, reference
@@ -64,6 +69,7 @@ DESIGN incomingPayment {
                 caption = 'Параметры';
                 type = CONTAINERH;
                 alignment = STRETCH;
+                MOVE PROPERTY(nameType(p)); 
                 MOVE PROPERTY(dateTime(p)); 
                 MOVE PROPERTY(number(p));
                 MOVE PROPERTY(amount(p));
@@ -98,7 +104,7 @@ DESIGN incomingPayment {
 
 FORM incomingPayments 'Входящие платежи'
     OBJECTS p = IncomingPayment
-    PROPERTIES(p) READONLY dateTime, number, amount,
+    PROPERTIES(p) READONLY nameType, dateTime, number, amount,
                            namePartner, namePartnerAccount, 
                            nameCompany, nameCompanyAccount,
                            note, reference

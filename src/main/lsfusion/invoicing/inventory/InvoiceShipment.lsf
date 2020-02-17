@@ -5,7 +5,7 @@ REQUIRE InvoiceCanceled, InvoiceReady, ShipmentCanceled;
 NAMESPACE Invoicing;
 
 shipmentType = DATA ShipmentType (InvoiceType);
-nameShipmentType 'Тип отгрузки на основе реализации' (InvoiceType t) = name(shipmentType(t));
+nameShipmentType 'Тип отгрузки' (InvoiceType t) = name(shipmentType(t));
 
 EXTEND FORM invoiceType PROPERTIES nameShipmentType(o);
 
@@ -77,7 +77,7 @@ DESIGN invoice {
 }
 
 // auto create
-autoCreateShipment 'Автоматически создавать отгрузку на основе реализации' = DATA BOOLEAN (InvoiceType);
+autoCreateShipment 'Автоматически создавать отгрузку' = DATA BOOLEAN (InvoiceType);
 EXTEND FORM invoiceType PROPERTIES autoCreateShipment(o) SHOWIF shipmentType(o);
 
 WHEN SET(ready(Invoice i)) AND autoCreateShipment(type(i)) DO 

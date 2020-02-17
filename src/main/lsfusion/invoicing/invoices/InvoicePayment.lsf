@@ -4,12 +4,19 @@ REQUIRE InvoiceDone, InvoiceDebt, IncomingPaymentDebt;
 
 NAMESPACE Invoicing;
 
+paymentType = DATA IncomingPaymentType (InvoiceType);
+namePaymentType 'Тип платежа' (InvoiceType t) = name(paymentType(t));
+
+EXTEND FORM invoiceType PROPERTIES namePaymentType(o);
+
 registerPayment 'Оплатить' (Invoice i) {
     APPLY; 
     IF canceled() THEN RETURN;
     
     NEWSESSION {
         NEW p = IncomingPayment {
+            type(p) <- paymentType(type(i));
+
             partner(p) <- customer(i);
             partnerAccount(p) <- customerAccount(i);
             

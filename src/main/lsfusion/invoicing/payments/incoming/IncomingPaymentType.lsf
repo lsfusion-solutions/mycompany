@@ -1,0 +1,32 @@
+MODULE IncomingPaymentType;
+
+REQUIRE Numerator, InvoicingSettings;
+
+NAMESPACE Invoicing;
+
+CLASS IncomingPaymentType 'Тип входящего платежа';
+name 'Название' = DATA ISTRING[50] (IncomingPaymentType) NONULL;
+
+numerator 'Нумератор' = DATA Numerator (IncomingPaymentType);
+nameNumerator 'Нумератор' (IncomingPaymentType o) = name(numerator(o));
+
+FORM incomingPaymentType 'Тип входящего платежа'
+    OBJECTS o = IncomingPaymentType PANEL 
+    PROPERTIES(o) name, nameNumerator
+     
+    EDIT IncomingPaymentType OBJECT o;
+;
+
+FORM incomingPaymentTypes 'Типы входящих платежей'
+    OBJECTS o = IncomingPaymentType
+    PROPERTIES(o) READONLY name
+    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+    
+    LIST IncomingPaymentType OBJECT o;
+;
+
+NAVIGATOR {
+    settings {
+        NEW incomingPaymentTypes;
+    }
+}
