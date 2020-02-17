@@ -32,7 +32,9 @@ CONSTRAINT type(Order i) AND priceType(i) AND NOT taxValid(type(i), priceType(i)
 WHEN LOCAL CHANGED(customer(Order o)) DO 
     priceType(o) <- OVERRIDE priceType(customer(o)), priceType(type(o));
 
-WHEN LOCAL (SETCHANGED(item(OrderLine ol)) OR SETCHANGED(priceType(order(ol)))) AND NOT CHANGED(price(ol)) DO {
+WHEN LOCAL (SETCHANGED(item(OrderLine ol)) OR SETCHANGED(priceType(order(ol))) OR 
+            (SETCHANGED(dateTime(order(ol))) AND status(order(ol)) = OrderStatus.draft)) 
+            AND NOT CHANGED(price(ol)) DO {
     price(ol) <- OVERRIDE priceA(priceType(order(ol)), item(ol), dateTime(order(ol))), salesPrice(item(ol)); 
 }
 

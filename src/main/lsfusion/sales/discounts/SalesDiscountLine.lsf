@@ -61,10 +61,11 @@ META defineDocSalesDiscountLine (doc, caption, NS)
     EXTEND FORM options PROPERTIES() recalcDiscountAuto###doc;
     
     WHEN LOCAL (CHANGED(dateTime(###doc##Line l)) OR CHANGED(quantity(l)) OR CHANGED(fullAmount(doc(l))) OR 
-                CHANGED(customer(l)) OR CHANGED(item(l)) OR CHANGED(price(l))) AND recalcDiscountAuto###doc() DO
+                CHANGED(customer(l)) OR CHANGED(item(l)) OR CHANGED(price(l))) AND 
+                recalcDiscountAuto###doc() AND NOT manual(salesDiscount(l)) DO
         salesDiscount(l) <- minSalesDiscountAuto(l);
     
     recalcDiscountAuto 'Рассчитать скидки' (###doc d) {
-        salesDiscount(###doc##Line l) <- minSalesDiscountAuto(l) WHERE doc(l) = d;
+        salesDiscount(###doc##Line l) <- minSalesDiscountAuto(l) WHERE doc(l) = d AND NOT manual(salesDiscount(l));
     }
 END
