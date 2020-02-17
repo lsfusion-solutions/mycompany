@@ -1,0 +1,38 @@
+MODULE IncomingPaymentDone;
+
+REQUIRE IncomingPayment;
+
+NAMESPACE Invoicing;
+
+EXTEND CLASS IncomingPaymentStatus {
+    done 'Проведен'
+}
+done 'Проведен' = DATA BOOLEAN (IncomingPayment);
+
+status(IncomingPayment s) += WHEN done(s) THEN IncomingPaymentStatus.done;
+
+markAsDone 'Провести' (IncomingPayment s) {
+    APPLY;
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {
+        done(s) <- TRUE;
+        APPLY;
+    }
+}
+
+EXTEND FORM incomingPayment
+    PROPERTIES(p) markAsDone SHOWIF status(p) = IncomingPaymentStatus.draft
+;
+    
+
+DESIGN incomingPayment {
+    primaryActions {
+        MOVE PROPERTY(markAsDone(p)) { font = 'bold'; };
+    }
+}
+
+EXTEND FORM incomingPayments
+    EXTEND FILTERGROUP status
+        FILTER 'Проведен' status(p) = IncomingPaymentStatus.done
+;

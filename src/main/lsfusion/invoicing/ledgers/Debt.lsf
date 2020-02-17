@@ -34,6 +34,12 @@ signedAmount 'Сумма' (Debt d) = IF d IS OutgoingDebt THEN amount(d) ELSE -a
 // match
 paid 'Оплачено' = DATA NUMERIC[14,2] (IncomingDebt, OutgoingDebt);
 
+WHEN CHANGED(amount(IncomingDebt id)) AND amount(id) < paid(id, OutgoingDebt od) DO
+    paid(id, od) <- amount(id);
+
+WHEN CHANGED(amount(OutgoingDebt od)) AND amount(od) < paid(IncomingDebt id, od) DO
+    paid(id, od) <- amount(od);
+
 canBeMatched (IncomingDebt id, OutgoingDebt od) =
     partner(id) = partner(od) AND company(id) = company(od);
 

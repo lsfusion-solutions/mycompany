@@ -1,0 +1,42 @@
+MODULE IncomingPaymentCanceled;
+
+REQUIRE IncomingPaymentDone;
+
+NAMESPACE Invoicing;
+    
+EXTEND CLASS IncomingPaymentStatus {
+    canceled 'Отменен'
+}
+canceled 'Отменен' = DATA BOOLEAN (IncomingPayment);
+active 'Активен' (IncomingPayment s) = done(s) AND NOT canceled(s);
+
+status(IncomingPayment s) += WHEN canceled(s) THEN IncomingPaymentStatus.canceled;
+colorStatus(IncomingPayment s) += WHEN status(s) = IncomingPaymentStatus.canceled THEN RGB(181,195,247);
+
+cancel 'Отменить' (IncomingPayment s) {
+    APPLY; 
+    IF canceled() THEN RETURN;
+           
+    NEWSESSION {
+        canceled(s) <- TRUE;
+        APPLY;
+    }
+}
+
+EXTEND FORM incomingPayment
+    PROPERTIES(p) cancel SHOWIF NOT (status(p) = IncomingPaymentStatus.draft OR status(p) = IncomingPaymentStatus.canceled), canceled 
+;
+
+DESIGN incomingPayment {
+    secondaryActions {
+        MOVE PROPERTY(cancel(p));
+    }             
+    status {
+        MOVE PROPERTY(canceled(p));                               
+    }    
+}
+
+EXTEND FORM incomingPayments    
+    EXTEND FILTERGROUP status
+        FILTER 'Отменен' status(p) = IncomingPaymentStatus.canceled    
+;

@@ -1,12 +1,14 @@
 MODULE IncomingPayment;
 
 REQUIRE Time, MetaNumerator,
-        Partner, Company, Account,
+        Partner, Company, Account, Doc,
         IncomingPaymentType;
 
 NAMESPACE Invoicing;
 
 CLASS IncomingPayment 'Входящий платеж';
+
+@defineStatus(incomingPayment, 'входящего платежа');
 
 // type
 type 'Тип' = DATA IncomingPaymentType (IncomingPayment) NONULL;
@@ -15,7 +17,7 @@ nameType 'Тип' (IncomingPayment s) = name(type(s));
 dateTime 'Дата' = DATA DATETIME (IncomingPayment) NONULL;
 dateTime(IncomingPayment p) <- currentDateTime() WHEN SET(p IS IncomingPayment);
 
-@defineNumber(incomingPayment, 'Входящие платежи', 'ВП');
+@defineNumberType(incomingPayment);
 
 // partners
 partner 'Контрагент' = DATA Partner (IncomingPayment) NONULL;
@@ -112,6 +114,8 @@ FORM incomingPayments 'Входящие платежи'
     
     LIST IncomingPayment OBJECT p
 ;
+
+@defineStatusForm(incomingPayment, p);
 
 NAVIGATOR {
     invoicing {

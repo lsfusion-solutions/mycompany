@@ -1,0 +1,41 @@
+MODULE OutgoingPaymentReady;
+
+REQUIRE OutgoingPayment;
+
+NAMESPACE Invoicing;
+
+EXTEND CLASS OutgoingPaymentStatus {
+    ready 'К оплате'
+}
+ready 'К оплате' = DATA BOOLEAN (OutgoingPayment);
+
+status (OutgoingPayment r) += WHEN ready(r) THEN OutgoingPaymentStatus.ready;
+colorStatus (OutgoingPayment r) += WHEN status(r) = OutgoingPaymentStatus.ready THEN RGB(252,247,149);
+
+markAsToDo 'В работу' (OutgoingPayment r) {
+    APPLY; 
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {
+        ready(r) <- TRUE;
+        APPLY;
+    }
+}
+
+EXTEND FORM outgoingPayment
+    PROPERTIES(p) markAsToDo SHOWIF status(p) = OutgoingPaymentStatus.draft, ready 
+;
+
+DESIGN outgoingPayment {
+    primaryActions {
+        MOVE PROPERTY(markAsToDo(p)) { fontStyle = 'bold'; }
+    }       
+    status {
+        MOVE PROPERTY(ready(p));                               
+    }
+}
+
+EXTEND FORM outgoingPayments    
+    EXTEND FILTERGROUP status
+        FILTER 'К оплате' status(p) = OutgoingPaymentStatus.ready    
+;

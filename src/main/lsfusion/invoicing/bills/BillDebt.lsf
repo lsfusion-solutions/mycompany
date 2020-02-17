@@ -6,7 +6,7 @@ NAMESPACE Invoicing;
 
 // extend
 EXTEND CLASS Bill : IncomingDebt;
-active (Bill b) += ready(b) AND NOT canceled(b);
+active (Bill b) += active(b);
 number (Bill b) += number(b);
 dateTime (Bill b) += dateTime(b);
 dueDateTime (Bill b) += dueDateTime(b);
@@ -27,12 +27,12 @@ EXTEND FORM bill
     OBJECTS d = OutgoingDebt
     PROPERTIES(d) READONLY dateTime, number, type
     PROPERTIES paid(b, d)
-    FILTERS paid(b, d)
+    FILTERS paid(b, d), active(d)
     
     OBJECTS dd = OutgoingDebt
     PROPERTIES(dd) READONLY dateTime, number, type, left
     PROPERTIES pay(b, dd) TOOLBAR
-    FILTERS canBePaid(b, dd)   
+    FILTERS canBePaid(b, dd), active(dd)   
 ;
 
 DESIGN bill {

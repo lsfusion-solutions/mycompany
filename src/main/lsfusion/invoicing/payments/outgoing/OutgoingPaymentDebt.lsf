@@ -1,12 +1,12 @@
 MODULE OutgoingPaymentDebt;
 
-REQUIRE OutgoingPayment, Debt;
+REQUIRE OutgoingPaymentCanceled, Debt;
 
 NAMESPACE Invoicing;
 
 // extend
 EXTEND CLASS OutgoingPayment : OutgoingDebt;
-active (OutgoingPayment p) += p IS OutgoingPayment;
+active (OutgoingPayment p) += active(p);
 number (OutgoingPayment p) += number(p);
 dateTime (OutgoingPayment p) += dateTime(p);
 
@@ -24,12 +24,12 @@ EXTEND FORM outgoingPayment
     OBJECTS d = IncomingDebt
     PROPERTIES(d) READONLY dateTime, number, type
     PROPERTIES paid(d, p)
-    FILTERS paid(d, p)
+    FILTERS paid(d, p), active(d)
     
     OBJECTS dd = IncomingDebt
     PROPERTIES(dd) READONLY dateTime, number, type, left
     PROPERTIES pay(dd, p) TOOLBAR
-    FILTERS canBePaid(dd, p)   
+    FILTERS canBePaid(dd, p), active(dd)   
 ;
 
 DESIGN outgoingPayment {

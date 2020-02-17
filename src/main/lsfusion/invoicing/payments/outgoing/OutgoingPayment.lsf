@@ -1,12 +1,14 @@
 MODULE OutgoingPayment;
 
 REQUIRE Time, MetaNumerator,
-        Partner, Company, Account,
+        Partner, Company, Account, Doc,
         OutgoingPaymentType;
 
 NAMESPACE Invoicing;
 
 CLASS OutgoingPayment 'Исходящий платеж';
+
+@defineStatus(outgoingPayment, 'исходящего платежа');
 
 // type
 type 'Тип' = DATA OutgoingPaymentType (OutgoingPayment) NONULL;
@@ -112,6 +114,8 @@ FORM outgoingPayments 'Исходящие платежи'
     
     LIST OutgoingPayment OBJECT p
 ;
+
+@defineStatusForm(outgoingPayment, p);
 
 NAVIGATOR {
     invoicing {
