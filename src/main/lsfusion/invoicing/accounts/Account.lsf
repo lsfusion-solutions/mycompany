@@ -6,8 +6,6 @@ NAMESPACE Invoicing;
 
 CLASS ABSTRACT Account 'Счет';
 
-number 'Номер счета' = DATA ISTRING[30] (Account) IN id NONULL;
-
 holder 'Держатель счета' = DATA Partner (Account) NONULL;
 nameAccountHolder 'Держатель счета' (Account a) = name(holder(a)) IN id;
 
@@ -37,7 +35,7 @@ changeDefault (Account a) {
 
 FORM account 'Счет'
     OBJECTS a = Account PANEL 
-    PROPERTIES(a) nameType, number, default ON CHANGE changeDefault(a), 
+    PROPERTIES(a) nameType, default ON CHANGE changeDefault(a), 
                   nameAccountHolder, note
     
     EDIT Account OBJECT a
@@ -50,7 +48,6 @@ DESIGN account {
             MOVE PROPERTY(nameType(a));
             MOVE PROPERTY(default(a));
         }
-        MOVE PROPERTY(number(a));
         MOVE PROPERTY(nameAccountHolder(a)) { notNull = TRUE; }
         MOVE PROPERTY(note(a));
     }
@@ -58,7 +55,7 @@ DESIGN account {
 
 FORM accounts 'Счета'
     OBJECTS a = Account
-    PROPERTIES(a) READONLY nameType, number, nameAccountHolder, note, default
+    PROPERTIES(a) READONLY nameType, name, nameAccountHolder, note, default
     PROPERTIES(a) NEWSESSION EDIT, DELETE
     
     LIST Account OBJECT a
@@ -84,7 +81,7 @@ newAccount 'Счет' (Partner p) {
 
 EXTEND FORM partner
     OBJECTS a = Account
-    PROPERTIES(a) READONLY nameType, number, note, default
+    PROPERTIES(a) READONLY nameType, name, note, default
     PROPERTIES(a) NESTEDSESSION EDIT, DELETE 
 //    PROPERTIES newAccount(p) DRAW a TOOLBAR
         

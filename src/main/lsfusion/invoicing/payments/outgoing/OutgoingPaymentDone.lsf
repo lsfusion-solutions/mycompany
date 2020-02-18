@@ -23,7 +23,8 @@ markAsDone 'Провести' (OutgoingPayment s) {
 
 EXTEND FORM outgoingPayment
     PROPERTIES(p) markAsDoneReady = markAsDone SHOWIF status(p) = OutgoingPaymentStatus.ready,
-                  markAsDoneDraft = markAsDone SHOWIF status(p) = OutgoingPaymentStatus.draft
+                  markAsDoneDraft = markAsDone SHOWIF status(p) = OutgoingPaymentStatus.draft,
+                  done
 ;
 
 DESIGN outgoingPayment {
@@ -32,6 +33,9 @@ DESIGN outgoingPayment {
     }
     secondaryActions {
         MOVE PROPERTY(markAsDoneDraft);
+    }
+    status {
+        MOVE PROPERTY(done(p));
     }
 }
 

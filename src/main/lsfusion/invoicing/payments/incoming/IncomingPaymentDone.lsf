@@ -22,13 +22,16 @@ markAsDone 'Провести' (IncomingPayment s) {
 }
 
 EXTEND FORM incomingPayment
-    PROPERTIES(p) markAsDone SHOWIF status(p) = IncomingPaymentStatus.draft
+    PROPERTIES(p) markAsDone SHOWIF status(p) = IncomingPaymentStatus.draft, done
 ;
     
 
 DESIGN incomingPayment {
     primaryActions {
         MOVE PROPERTY(markAsDone(p)) { font = 'bold'; };
+    }
+    status {
+        MOVE PROPERTY(done(p));
     }
 }
 

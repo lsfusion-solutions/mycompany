@@ -6,6 +6,8 @@ NAMESPACE Invoicing;
 
 CLASS BankAccount 'Банковский счет' : Account;
 
+number 'Номер счета' = DATA ISTRING[30] (BankAccount) IN id NONULL;
+
 bank 'Банк' = DATA Bank (BankAccount) NONULL;
 nameBank 'Банк' (BankAccount b) = name(bank(b));
 code 'Код банка' (BankAccount b) = code(bank(b));
@@ -19,13 +21,14 @@ EXTEND CLASS AccountType {
 type(Account a) += WHEN a IS BankAccount THEN AccountType.bank;
 
 EXTEND FORM account
-    PROPERTIES(a) nameBank, code READONLY
+    PROPERTIES(a) number, nameBank, code READONLY
 ;
 
 DESIGN account {
     OBJECTS {
         NEW bank AFTER params {
             type = CONTAINERH;
+            MOVE PROPERTY(number(a));
             MOVE PROPERTY(nameBank(a)) { notNull = TRUE; }
             MOVE PROPERTY(code(a));
         }

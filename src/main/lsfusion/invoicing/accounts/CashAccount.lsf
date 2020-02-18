@@ -6,13 +6,24 @@ NAMESPACE Invoicing;
 
 CLASS CashAccount 'Касса' : Account;
 
-name (CashAccount a) += (CONCAT ' ', 'Касса', number(a)) IF a IS CashAccount; 
+name 'Наименование' = DATA ISTRING[100] (CashAccount);
+name (CashAccount a) += name(a); 
 
 EXTEND CLASS AccountType {
     cash 'Касса'
 }
 
 type(Account a) += WHEN a IS CashAccount THEN AccountType.cash;
+
+EXTEND FORM account
+    PROPERTIES(a) name[CashAccount]
+;
+
+DESIGN account {
+    OBJECTS {
+        MOVE PROPERTY(name(a)) AFTER params;
+    }
+}
 
 newCashAccount 'Касса' () {
     NEWSESSION {
