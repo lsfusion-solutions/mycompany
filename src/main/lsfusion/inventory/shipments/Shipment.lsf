@@ -19,7 +19,7 @@ nameType 'Тип' (Shipment s) = name(type(s));
 WHEN LOCAL SET(Shipment s IS Shipment) AND NOT CHANGED(type(s)) DO type(s) <- defaultShipmentType(); 
 
 scheduledDateTime 'Планируемая дата' = DATA DATETIME (Shipment) NONULL IN id;
-WHEN LOCAL SET(Shipment s IS Shipment) AND NOT CHANGED(scheduledDateTime(s)) DO scheduledDateTime(s) <- currentDateTime();
+scheduledDateTime(Shipment s) <- currentDateTime() WHEN SET(s IS Shipment);
 
 @defineNumberType(shipment);
 

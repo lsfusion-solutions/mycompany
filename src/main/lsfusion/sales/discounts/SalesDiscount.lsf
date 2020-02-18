@@ -10,7 +10,8 @@ name 'Название' = DATA STRING[50] (Discount) CHARWIDTH 10;
 manual 'Применяется вручную' = DATA BOOLEAN (Discount);
 
 startDateTime 'Начало действия' = DATA DATETIME (Discount);
-WHEN LOCAL SET(Discount d IS Discount) AND NOT CHANGED(startDateTime(d)) DO startDateTime(d) <- currentDateTime(); 
+startDateTime(Discount d) <- currentDateTime() WHEN SET(d IS Discount);
+
 endDateTime 'Окончание действия' = DATA DATETIME (Discount);
 
 active (Discount d, DATETIME time) = d IS Discount AND time IS DATETIME AND 

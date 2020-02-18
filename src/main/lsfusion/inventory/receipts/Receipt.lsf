@@ -19,7 +19,7 @@ nameType 'Тип' (Receipt r) = name(type(r));
 WHEN LOCAL SET(Receipt r IS Receipt) AND NOT CHANGED(type(r)) DO type(r) <- defaultReceiptType(); 
 
 scheduledDateTime 'Планируемая дата' = DATA DATETIME (Receipt) NONULL IN id;
-WHEN LOCAL SET(Receipt r IS Receipt) AND NOT CHANGED(scheduledDateTime(r)) DO scheduledDateTime(r) <- currentDateTime();
+scheduledDateTime(Receipt r) <- currentDateTime() WHEN (r IS Receipt); 
 
 @defineNumberType(receipt);
 receipt (STRING[31] number) = GROUP LAST Receipt r BY number(r);

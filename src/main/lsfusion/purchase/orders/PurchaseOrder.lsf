@@ -40,8 +40,8 @@ namePaymentTerms 'Условия оплаты' (Order o) = name(paymentTerms(o))
 WHEN LOCAL CHANGED(vendor(Order o)) AND NOT CHANGED(paymentTerms(o)) DO paymentTerms(o) <- vendorPaymentTerms(vendor(o)); 
 
 // Shipping information
-scheduledDateTime 'Срок поставки' = DATA DATETIME (Order);   
-WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(scheduledDateTime(o)) DO scheduledDateTime(o) <- currentDateTime();     
+scheduledDateTime 'Срок поставки' = DATA DATETIME (Order);
+scheduledDateTime(Order o) <- currentDateTime() WHEN SET(o IS Order);   
 
 location = DATA Location (Order);
 nameLocation 'Место хранения' (Order o) = name(location(o));
