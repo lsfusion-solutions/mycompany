@@ -35,7 +35,7 @@ WHEN LOCAL CHANGED(customer(Order o)) DO
 WHEN LOCAL (SETCHANGED(item(OrderLine ol)) OR SETCHANGED(priceType(order(ol))) OR 
             (SETCHANGED(dateTime(order(ol))) AND status(order(ol)) = OrderStatus.draft)) 
             AND NOT CHANGED(price(ol)) DO {
-    price(ol) <- OVERRIDE priceA(priceType(order(ol)), item(ol), dateTime(order(ol))), salesPrice(item(ol)); 
+    price(ol) <- overPriceA(priceType(order(ol)), item(ol), dateTime(order(ol))); 
 }
 
 EXTEND FORM order
@@ -49,11 +49,11 @@ DESIGN order {
 }
 
 // search
-listPrice 'Цена' (Order o, Item i) = priceA(priceType(o), i, dateTime(o));
+listPrice 'Цена' (Order o, Item i) = overPriceA(priceType(o), i, dateTime(o));
 
 EXTEND FORM order
     PROPERTIES(o, itm) READONLY listPrice
 
     FILTERGROUP pricelist
-        FILTER 'В прайс-листе' listPrice(o, itm)
+        FILTER 'С ценой' listPrice(o, itm)
 ;
