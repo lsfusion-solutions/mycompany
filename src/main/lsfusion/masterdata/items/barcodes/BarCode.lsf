@@ -9,8 +9,10 @@ CLASS BarCode 'Штрихкод';
 item 'Номенклатура' = DATA Item (BarCode) NONULL DELETE;
 idItem 'Код номенклатуры' (BarCode b) = id(item(b));
 nameItem 'Номенклатура' (BarCode b) = name(item(b));
+
 id 'Штрихкод' = DATA STRING[20] (BarCode);
 barcode (STRING[50] id) = GROUP AGGR BarCode b BY id(b);
+itemBarcode (STRING[50] id) = item(barcode(id));
 
 dataDefaultBarCode = DATA BarCode (Item);
 calcDefaultBarCode (Item i) = GROUP LAST BarCode b ORDER DESC b WHERE item(b) = i;
@@ -63,21 +65,19 @@ EXTEND FORM items
     PROPERTIES(i) READONLYIF isReadonly() idBarCode AFTER name(i)
 ;
 
-META defineBarCodeAdd(doc, let, itm)
-    ##docBarCode 'Штрихкод' = DATA ISTRING[20] (###doc) CHANGEKEY 'F4';
-    
-    addProduct 'Добавить продукт' (###doc ##let) {
-        INPUT q = ISTRING[20] DO {
-            IF (GROUP LAST item(BarCode bar) ORDER name(item(bar)) WHERE (id(bar) = q AND item(bar) IS ###itm)) THEN {
-                NEW l = ###doc##Line {
-                    ##doc(l) <- ##let;
-                    ##itm(l) <- GROUP LAST item(BarCode bar) ORDER name(item(bar)) WHERE (id(bar) = q AND item(bar) IS ###itm);
-                }
-            } ELSE MESSAGE 'Штрихкод не найден';
+barcode 'Штрихкод' = DATA LOCAL STRING[20] () CHANGEKEY 'F4';
+
+META defineBarCodeSearch(doc, let, itm, quantity)
+    scanBarcode (###doc d) {
+        INPUT id = STRING[20] DO {
+            IF itemBarcode(id) THEN
+                set###quantity(d, itemBarcode(id), quantity(d, itemBarcode(id)) (+) 1);
+            ELSE 
+                MESSAGE 'Штрихкод не найден';
         }
-    };
+    }
     
     EXTEND FORM ##doc
-        PROPERTIES(##let) ##docBarCode DRAW l TOOLBAR ON CHANGE addProduct(##let)
+        PROPERTIES() barcode DRAW l TOOLBAR ON CHANGE scanBarcode(##let)
     ;
 END
