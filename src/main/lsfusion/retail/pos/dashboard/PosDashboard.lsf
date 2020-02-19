@@ -39,13 +39,13 @@ DESIGN posDashboard {
                     type = CONTAINERH;
                     MOVE PROPERTY(name(p)) { caption = 'ККМ'; }
                     MOVE PROPERTY(openSession(p));
-                    MOVE PROPERTY(openingDateTime(s)) { caption = 'Смена открыта'; }
+                    MOVE PROPERTY(openingDateTime(s)) { caption = 'Смена открыта'; focusable = FALSE; }
                     MOVE PROPERTY(close(s)) { caption = 'Закрыть смену'; }
                 }
                 NEW invoice {
                     alignment = STRETCH;
                     type = CONTAINERH;
-                    MOVE PROPERTY(nameCustomer(i));
+                    MOVE PROPERTY(nameCustomer(i)) { changeKey = 'F5'; }
                 }
                 REMOVE BOX(l);
                 MOVE GRID(l);
@@ -58,15 +58,15 @@ DESIGN posDashboard {
                         NEW itemDetails {
                             type = CONTAINERH;
                             alignment = STRETCH;
-                            MOVE PROPERTY(idBarCodeItem(l));
-                            MOVE PROPERTY(idItem(l));
+                            MOVE PROPERTY(idBarCodeItem(l)) { focusable = FALSE; }
+                            MOVE PROPERTY(idItem(l)) { focusable = FALSE; }
                         }
                         NEW total {
                             type = CONTAINERH;
                             alignment = STRETCH;
-                            MOVE PROPERTY(fullAmount(i)) { panelCaptionAbove = TRUE; fontSize = 24; }
-                            MOVE PROPERTY(discountAmount(i)) { panelCaptionAbove = TRUE; fontSize = 24; }
-                            MOVE PROPERTY(totalAmount(i)) { panelCaptionAbove = TRUE; fontSize = 24; }
+                            MOVE PROPERTY(fullAmount(i)) { panelCaptionAbove = TRUE; fontSize = 24; focusable = FALSE; }
+                            MOVE PROPERTY(discountAmount(i)) { panelCaptionAbove = TRUE; fontSize = 24; focusable = FALSE; }
+                            MOVE PROPERTY(totalAmount(i)) { panelCaptionAbove = TRUE; fontSize = 24; focusable = FALSE; }
                         }
                     }
                     NEW actions {
@@ -115,9 +115,31 @@ EXTEND FORM posDashboard
 
 DESIGN posDashboard {
     actions {
-        MOVE PROPERTY(newReceipt(s)) {
-            fill = 1;
-            fontStyle = 'bold';
-        }
+        MOVE PROPERTY(newReceipt(s)) { fill = 1; fontStyle = 'bold'; }
+    }
+}
+
+// barcode handling
+consumedBarcode = DATA BOOLEAN ();
+processBarcode ABSTRACT LIST (Invoice, STRING[20]);
+changeBarcode (Invoice i) {
+    INPUT b = STRING[20] DO {
+        IF b THEN {
+            consumedBarcode() <- NULL;
+            processBarcode(i, b);
+            
+            IF NOT consumedBarcode() THEN
+                MESSAGE 'Штрих-код не найден';
+        } 
+    }
+}
+
+EXTEND FORM posDashboard
+    PROPERTIES() barCode ON CHANGE changeBarcode(i)
+;
+
+DESIGN posDashboard {
+    invoice {
+        MOVE PROPERTY(barCode()) FIRST;
     }
 }

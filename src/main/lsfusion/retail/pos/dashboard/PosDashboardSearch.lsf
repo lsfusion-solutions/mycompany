@@ -25,3 +25,12 @@ DESIGN posDashboard {
         }
     }
 }
+
+// barcode add
+processBarcode (Invoice i, STRING[20] b) + {
+    FOR Item it = itemBarCode(b) DO {
+        setQuantity(i, it, quantity(i, it) (+) 1);
+        SEEK posDashboard.l = lastInvoiceLine(i, it);
+        consumedBarcode() <- TRUE;
+    }
+}
