@@ -1,0 +1,33 @@
+MODULE Pos;
+
+REQUIRE RetailSettings, Company;
+
+NAMESPACE Retail;
+
+CLASS Pos 'Касса ККМ';
+
+name 'Наименование' = DATA ISTRING[100] (Pos) NONULL CHARWIDTH 15;
+
+company 'Компания' = DATA Company (Pos);
+nameCompany 'Компания' (Pos p) = name(company(p));
+
+FORM pos 'Касса ККМ'
+    OBJECTS p = Pos PANEL
+    PROPERTIES(p) name, nameCompany
+    
+    EDIT Pos OBJECT p
+;
+
+FORM poss 'Кассы ККМ'
+    OBJECTS p = Pos
+    PROPERTIES(p) READONLY name
+    PROPERTIES(p) NEWSESSION NEW, EDIT, DELETE
+
+    LIST Pos OBJECT p
+;
+
+NAVIGATOR {
+    settings {
+        NEW poss;
+    }
+}

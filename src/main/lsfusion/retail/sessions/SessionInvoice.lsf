@@ -1,0 +1,21 @@
+MODULE SessionInvoice;
+
+REQUIRE Session, Invoice;
+
+NAMESPACE Retail;
+
+invoiceType = DATA InvoiceType (Pos);
+nameInvoiceType 'Тип реализации' (Pos p) = name(invoiceType(p));
+
+EXTEND FORM pos
+    PROPERTIES(p) nameInvoiceType
+;
+
+session = DATA Session (Invoice);
+numberSession 'Смена' (Invoice i) = number(session(i));
+
+WHEN LOCAL SET(session(Invoice i)) AND NOT CHANGED(type(i)) DO
+    type(i) <- invoiceType(pos(session(i)));
+    
+WHEN LOCAL SET(session(Invoice i)) AND NOT CHANGED(company(i)) DO
+    company(i) <- company(pos(session(i)));

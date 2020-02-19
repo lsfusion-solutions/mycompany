@@ -1,0 +1,19 @@
+MODULE PosDashboardShipment;
+
+REQUIRE PosDashboardSearch, SessionShipment, InvoiceShipmentSearch;
+
+NAMESPACE Retail;
+
+EXTEND FORM posDashboard
+    PROPERTIES(i) nameLocation
+
+    PROPERTIES(i, it) READONLY available
+    FILTERGROUP available
+        FILTER 'Доступно' available(i, it) OR NOT it IS Product 'F5'
+;
+
+DESIGN posDashboard {
+    invoice {
+        MOVE PROPERTY(nameLocation(i));
+    }
+}

@@ -148,8 +148,12 @@ META defineDocSalesDiscount(doc)
     salesDiscount = DATA Discount (###doc##Line);
     nameSalesDiscount 'Скидка' (###doc##Line l) = name(salesDiscount(l));
     
+    changeSalesDiscount(###doc##Line l) {
+        DIALOG selectDiscount OBJECTS l = l, d = salesDiscount(l) CHANGE;
+    } 
+    
     EXTEND FORM doc
-        PROPERTIES(l) nameSalesDiscount BEFORE discount(l) ON CHANGE { DIALOG selectDiscount OBJECTS l = l, d = salesDiscount(l) CHANGE; }
+        PROPERTIES(l) nameSalesDiscount BEFORE discount(l) ON CHANGE changeSalesDiscount(l)
     ;
     
     WHEN LOCAL CHANGED(salesDiscount(###doc##Line l)) AND NOT priceType(salesDiscount(l)) AND NOT CHANGED(discount(l)) DO

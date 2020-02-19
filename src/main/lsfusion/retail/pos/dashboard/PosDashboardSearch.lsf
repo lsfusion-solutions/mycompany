@@ -1,0 +1,27 @@
+MODULE PosDashboardSearch;
+
+REQUIRE PosDashboard, 
+        SalesInvoicePricelist;
+
+NAMESPACE Retail;
+
+EXTEND FORM posDashboard
+    OBJECTS it = Item
+    PROPERTIES(it) READONLY name, idBarCode
+    PROPERTIES(i, it) quantity ON CHANGE changeQuantity(i, it)
+    PROPERTIES listPrice(i, it)
+    ORDER name(it)
+
+    FILTERS canBeSold(it),
+            listPrice(i, it),
+            active(it)
+;
+
+DESIGN posDashboard {
+    tabPane {
+        NEW search {
+            caption = 'Поиск';
+            MOVE BOX(it) { caption = ''; }
+        }
+    }
+}

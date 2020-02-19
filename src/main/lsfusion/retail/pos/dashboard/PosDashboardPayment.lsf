@@ -1,0 +1,93 @@
+MODULE PosDashboardPayment;
+
+REQUIRE PosDashboard, PaymentMethod, IncomingPaymentDebt, PosPaymentMethod, SessionPayment;
+
+NAMESPACE Retail;
+
+amount 'Сумма' = DATA LOCAL NUMERIC[14,2] (PaymentMethod);
+change (Invoice i) = (GROUP SUM amount(PaymentMethod pm)) (-) totalAmount(i); 
+
+FORM posPayment 'Оплата'
+    OBJECTS i = Invoice PANEL
+    PROPERTIES nameCustomer(i), totalAmount(i), change 'Сдача' = change(i) IF change(i) > 0
+    
+    OBJECTS pm = PaymentMethod
+    PROPERTIES(pm) name READONLY, amount 
+    FILTERS NOT disabled(pos(session(i)), pm)
+    
+    PROPERTIES overFormOk = formOk() READONLYIF change(i) < 0 
+;
+
+DESIGN posPayment {
+    OBJECTS {
+        NEW top {
+            alignment = STRETCH;
+            MOVE PROPERTY(nameCustomer(i)) { alignment = STRETCH; }
+            MOVE PROPERTY(totalAmount(i)) { alignment = STRETCH; }
+        }
+        NEW center {
+            fill = 1;
+            MOVE BOX(pm) {
+                GRID(pm) {
+                    defaultComponent = TRUE;
+                    PROPERTY(name(pm)) { focusable = FALSE; }
+                }
+                REMOVE TOOLBARBOX(pm);
+            }
+        }
+        NEW bottom {
+            alignment = STRETCH;
+            MOVE PROPERTY(change) { alignment = STRETCH; }
+        }
+    }
+    
+    TOOLBARRIGHT {
+        REMOVE PROPERTY(formRefresh());
+        REMOVE PROPERTY(formOk());
+        MOVE PROPERTY(overFormOk);
+    }
+    
+}
+
+EXTEND FORM posPayment
+    EVENTS ON INIT { ACTIVATE PROPERTY posPayment.amount(pm); }
+;
+
+posPayment 'Оплата' (Session s, Invoice i) {
+    amount(PaymentMethod pm) <- NULL;
+    DIALOG posPayment OBJECTS i = i NOMANAGESESSION DO {
+        FOR am = (amount(PaymentMethod pm) (-) (change(i) IF isCash(pm))) DO NEW p = IncomingPayment {
+            done(p) <- TRUE;
+            
+            paymentMethod(p, i) <- pm;
+            type(p) <- incomingPaymentType(pm);
+            
+            company(p) <- company(pos(session(i)), pm);
+            companyAccount(p) <- account(pos(session(i)), pm);
+            
+            partner(p) <- customer(i);
+            
+            amount(p) <- am;
+            paid(p, i) <- am;
+        }
+        APPLY;
+        IF canceled() THEN {
+            DELETE IncomingPayment p WHERE SET(p IS IncomingPayment);
+        } ELSE {
+            createInvoice(s);
+        }
+    }
+} CHANGEKEY 'ctrl ENTER';
+
+EXTEND FORM posDashboard
+    PROPERTIES(s, i) posPayment READONLYIF NOT totalAmount(i)
+;
+
+DESIGN posDashboard {
+    actions {
+        MOVE PROPERTY(posPayment(s, i)) {
+            fill = 1;
+            fontStyle = 'bold';
+        }
+    }
+}

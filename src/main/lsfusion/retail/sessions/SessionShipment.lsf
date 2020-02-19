@@ -1,0 +1,15 @@
+MODULE SessionShipment;
+
+REQUIRE SessionInvoice, InvoiceShipment, Location;
+
+NAMESPACE Retail;
+
+location = DATA Location (Pos);
+nameLocation 'Место хранения' (Pos p) = name(location(p));
+
+EXTEND FORM pos
+    PROPERTIES(p) nameLocation
+;
+
+WHEN LOCAL SET(session(Invoice i)) AND NOT CHANGED(location(i)) DO
+    location(i) <- location(pos(session(i)));

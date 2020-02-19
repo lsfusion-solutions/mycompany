@@ -1,0 +1,123 @@
+MODULE PosDashboard;
+
+REQUIRE Pos, Session,
+        InvoiceReady, SessionInvoice, SalesInvoiceDiscount;
+
+NAMESPACE Retail;
+
+FORM posDashboard 'POS'
+    OBJECTS p = Pos PANEL
+    PROPERTIES(p) name SELECTOR
+    
+    OBJECTS s = Session PANEL
+    PROPERTIES(s) openingDateTime READONLY
+    FILTERS s = openedSession(p)
+    
+    OBJECTS i = Invoice PANEL
+    PROPERTIES(i) 'Итого' = fullAmount, 'Скидка' = discountAmount, 'К оплате' = totalAmount, 
+                  nameCustomer
+    FILTERS session(i) = s
+    
+    OBJECTS l = InvoiceLine
+    PROPERTIES(l) index READONLY, nameItem, quantity, price, 
+                  nameSalesDiscount ON CHANGE changeSalesDiscount(l), discount, discountPrice, 
+                  DELETE GRID
+    PROPERTIES(l) PANEL READONLY idBarCodeItem, idItem
+    FILTERS invoice(l) = i
+
+    PROPERTIES openSession(p) SHOWIF NOT s, close(s) READONLYIF totalAmount(i)
+;
+
+DESIGN posDashboard {
+    OBJECTS {
+        NEW mainPane {
+            fill = 1;
+            type = SPLITH;
+            NEW leftPane {
+                NEW session {
+                    alignment = STRETCH;
+                    type = CONTAINERH;
+                    MOVE PROPERTY(name(p)) { caption = 'ККМ'; }
+                    MOVE PROPERTY(openSession(p));
+                    MOVE PROPERTY(openingDateTime(s)) { caption = 'Смена открыта'; }
+                    MOVE PROPERTY(close(s)) { caption = 'Закрыть смену'; }
+                }
+                NEW invoice {
+                    alignment = STRETCH;
+                    type = CONTAINERH;
+                    MOVE PROPERTY(nameCustomer(i));
+                }
+                REMOVE BOX(l);
+                MOVE GRID(l);
+                NEW linesFooter {
+                    type = CONTAINERH;
+                    alignment = STRETCH;
+                    NEW info {
+                        fill = 1;
+                        MOVE TOOLBARBOX(l);
+                        NEW itemDetails {
+                            type = CONTAINERH;
+                            alignment = STRETCH;
+                            MOVE PROPERTY(idBarCodeItem(l));
+                            MOVE PROPERTY(idItem(l));
+                        }
+                        NEW total {
+                            type = CONTAINERH;
+                            alignment = STRETCH;
+                            MOVE PROPERTY(fullAmount(i)) { panelCaptionAbove = TRUE; fontSize = 24; }
+                            MOVE PROPERTY(discountAmount(i)) { panelCaptionAbove = TRUE; fontSize = 24; }
+                            MOVE PROPERTY(totalAmount(i)) { panelCaptionAbove = TRUE; fontSize = 24; }
+                        }
+                    }
+                    NEW actions {
+                        alignment = STRETCH;
+                    }
+                }
+            }
+            NEW tabPane {
+                fill = 1;
+                type = TABBED;
+            }   
+        }
+    }
+    
+    REMOVE TOOLBARBOX;
+}
+
+createInvoice (Session s) {
+    IF s THEN
+        NEW i = Invoice {
+            ready(i) <- TRUE;
+            session(i) <- s;
+            SEEK posDashboard.i = i;
+        }
+}
+
+EXTEND FORM posDashboard
+    EVENTS ON CHANGE s createInvoice(s);
+;
+
+NAVIGATOR {
+    operations {
+        NEW posDashboard;
+    }
+}
+
+// new receipt
+newReceipt 'Новый чек' (Session s) {
+    CANCEL;
+    createInvoice(s);
+} CONFIRM CHANGEKEY 'shift F12';
+
+EXTEND FORM posDashboard
+    PROPERTIES(s) newReceipt
+;
+
+DESIGN posDashboard {
+    actions {
+        MOVE PROPERTY(newReceipt(s)) {
+            fill = 1;
+            fontStyle = 'bold';
+        }
+    }
+}

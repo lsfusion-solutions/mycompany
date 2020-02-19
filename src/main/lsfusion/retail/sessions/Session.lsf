@@ -1,0 +1,74 @@
+MODULE Session;
+
+REQUIRE MetaNumerator, MasterDataSettings, Time, 
+        RetailSettings, Pos;
+
+NAMESPACE Retail;
+
+CLASS Session 'Смена';
+
+openingDateTime 'Открыта' = DATA DATETIME (Session) NONULL;
+openingDateTime(Session s) <- currentDateTime() WHEN SET(s IS Session);
+
+closingDateTime 'Закрыта' = DATA DATETIME (Session);
+
+opened 'Открыта' (Session s) = openingDateTime(s) AND NOT closingDateTime(s);
+
+@defineNumber(session, 'Смены', 'СМ');
+
+pos 'POS' = DATA Pos (Session) NONULL;
+namePos 'POS' (Session s) = name(pos(s));
+
+// opened
+openedSession (Pos p) = GROUP AGGR Session s WHERE opened(s) BY pos(s);
+
+FORM session 'Смена'
+    OBJECTS o = Session PANEL
+    PROPERTIES(o) openingDateTime, closingDateTime, number, namePos
+    
+    EDIT Session OBJECT o
+;
+
+FORM sessions 'Смены'
+    OBJECTS o = Session
+    PROPERTIES(o) READONLY openingDateTime, closingDateTime, number, namePos
+    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+    
+    LIST Session OBJECT o
+;
+
+NAVIGATOR {
+    operations {
+        NEW sessions;
+    }
+}
+
+// actions
+afterOpen ABSTRACT LIST (Session);
+openSession 'Открыть смену' (Pos p) {
+    CANCEL;
+
+    NEWSESSION {
+        IF NOT openedSession(p) THEN
+            NEW s = Session {
+                pos(s) <- p;
+                APPLY;
+                IF NOT canceled() THEN
+                    afterOpen(s);
+            }
+        ELSE
+            MESSAGE 'Уже есть открытая смена';
+    }
+}
+
+afterClose ABSTRACT LIST (Session);
+close 'Закрыть смену' (Session s) {
+    CANCEL;
+
+    NEWSESSION {
+        closingDateTime(s) <- currentDateTime();
+        APPLY;
+        IF NOT canceled() THEN
+            afterClose(s);
+    }
+} CONFIRM;

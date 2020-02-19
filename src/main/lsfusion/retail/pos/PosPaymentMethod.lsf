@@ -1,0 +1,23 @@
+MODULE PosPaymentMethod;
+
+REQUIRE PaymentMethod;
+
+NAMESPACE Retail;
+
+disabled 'Отключен' = DATA BOOLEAN (Pos, PaymentMethod);
+
+company = DATA Company (Pos, PaymentMethod);
+nameCompany 'Компания' (Pos p, PaymentMethod pm) = name(company(p, pm));
+
+account = DATA Account (Pos, PaymentMethod);
+nameAccount 'Счет' (Pos p, PaymentMethod pm) = name(account(p, pm));
+
+CONSTRAINT company(Pos p, PaymentMethod pm) AND account(p, pm) AND NOT holder(account(p, pm)) = company(p, pm)
+                CHECKED BY account
+                MESSAGE 'Владелец счета компании не совпадает с компанией в методе оплаты';
+
+EXTEND FORM pos
+    OBJECTS pm = PaymentMethod
+    PROPERTIES(pm) READONLY id, name 
+    PROPERTIES(p, pm) disabled, nameCompany, nameAccount
+;

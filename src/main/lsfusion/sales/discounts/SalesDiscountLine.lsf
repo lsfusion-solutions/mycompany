@@ -22,8 +22,8 @@ matches (Discount d, SalesDiscountLine l) =
     NOT endDateTime(d) < dateTime(l) AND
     NOT fromQuantity(d) > quantity(l) AND
     NOT fromAmount(d) > totalAmount(l) AND
-    NOT fromAccumulated(d) > prevSoldAmount(customer(l)) AND
-    NOT fromAccumulatedPreviousMonth(d) > prevSoldAmountPreviousMonth(customer(l)) COMPLEX;
+    NOT fromAccumulated(d) > (OVERRIDE prevSoldAmount(customer(l)), 0.0) AND
+    NOT fromAccumulatedPreviousMonth(d) > (OVERRIDE prevSoldAmountPreviousMonth(customer(l)), 0.0) COMPLEX;
 
 discountPrice 'Цена со скидкой' (Discount d, SalesDiscountLine l) =
     IF priceType(d) THEN priceA(priceType(d), item(l), dateTime(l)) ELSE NUMERIC[10,2](price(l) * (100.0 - discount(d)) / 100.0); 
@@ -55,6 +55,8 @@ META defineDocSalesDiscountLine (doc, caption, NS)
     price(###doc##Line l) += NS.price(l);
     
     fullAmount (###doc o) = GROUP SUM NUMERIC[14,2](quantity(###doc##Line l) * price(l)) IF doc(l) = o;
+    discountAmount (###doc o) = fullAmount(o) (-) totalAmount(o);
+    
     totalAmount(###doc##Line l) += fullAmount(doc(l));
     
     recalcDiscountAuto###doc 'Автоматически рассчитывать скидки в '##caption = DATA BOOLEAN () PREREAD;

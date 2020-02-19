@@ -1,0 +1,35 @@
+MODULE PaymentMethod;
+
+REQUIRE Pos, CashAccount, IncomingPaymentType, RetailSettings;
+
+NAMESPACE Retail;
+
+CLASS PaymentMethod 'Метод оплаты';
+
+id 'Код' = DATA STRING[10] (PaymentMethod); 
+name 'Наименование' = DATA ISTRING[20] (PaymentMethod);
+
+incomingPaymentType = DATA IncomingPaymentType (PaymentMethod) NONULL;
+nameIncomingPaymentType 'Тип входящего платежа' (PaymentMethod m) = name(incomingPaymentType(m));
+
+cashPaymentMethod = DATA PaymentMethod();
+isCash 'Наличные' (PaymentMethod pm) = cashPaymentMethod() = pm;  
+
+FORM paymentMethod 'Метод оплаты'
+    OBJECTS pm = PaymentMethod PANEL
+    PROPERTIES(pm) id, name, isCash, nameIncomingPaymentType
+    
+    EDIT PaymentMethod OBJECT pm
+;
+
+FORM paymentMethods 'Методы оплаты'
+    OBJECTS pm = PaymentMethod
+    PROPERTIES(pm) READONLY name, isCash
+    PROPERTIES(pm) NEWSESSION NEW, EDIT, DELETE
+;
+
+NAVIGATOR {
+    settings {
+        NEW paymentMethods;
+    }
+}
