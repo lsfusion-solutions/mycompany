@@ -23,7 +23,7 @@ FORM posDashboard 'POS'
     PROPERTIES(l) index READONLY, nameItem, quantity, price, 
                   nameSalesDiscount ON CHANGE changeSalesDiscount(l), discount, discountPrice, 
                   DELETE GRID
-    PROPERTIES(l) PANEL READONLY idBarCodeItem, idItem
+    PROPERTIES(l) PANEL READONLY nameItemPanel = nameItem, nameUom, idBarCodeItem, idItem
     FILTERS invoice(l) = i
 
     PROPERTIES openSession(p) SHOWIF NOT s, close(s) READONLYIF totalAmount(i)
@@ -35,21 +35,16 @@ DESIGN posDashboard {
             fill = 1;
             type = SPLITH;
             NEW leftPane {
-                NEW session {
-                    alignment = STRETCH;
-                    type = CONTAINERH;
-                    MOVE PROPERTY(name(p)) { caption = 'ККМ'; }
-                    MOVE PROPERTY(openSession(p));
-                    MOVE PROPERTY(openingDateTime(s)) { caption = 'Смена открыта'; focusable = FALSE; }
-                    MOVE PROPERTY(close(s)) { caption = 'Закрыть смену'; }
-                }
+                showIf = openedSession(p);
                 NEW invoice {
                     alignment = STRETCH;
                     type = CONTAINERH;
                     MOVE PROPERTY(nameCustomer(i)) { changeKey = 'F5'; }
                 }
                 REMOVE BOX(l);
-                MOVE GRID(l);
+                MOVE GRID(l) {
+                    PROPERTY(nameItem(l)) { charWidth = 10; }
+                }
                 NEW linesFooter {
                     type = CONTAINERH;
                     alignment = STRETCH;
@@ -57,17 +52,26 @@ DESIGN posDashboard {
                         fill = 1;
                         MOVE TOOLBARBOX(l);
                         NEW itemDetails {
-                            type = CONTAINERH;
                             alignment = STRETCH;
-                            MOVE PROPERTY(idBarCodeItem(l)) { focusable = FALSE; }
-                            MOVE PROPERTY(idItem(l)) { focusable = FALSE; }
+                            NEW itemDetails1 {
+                                alignment = STRETCH;
+                                type = CONTAINERH;
+                                MOVE PROPERTY(nameItemPanel) { panelCaptionAbove = TRUE; focusable = FALSE; }
+                                MOVE PROPERTY(nameUom(l)) { panelCaptionAbove = TRUE; focusable = FALSE; }
+                            }
+                            NEW itemDetails2 {
+                                alignment = STRETCH;
+                                type = CONTAINERH;
+                                MOVE PROPERTY(idBarCodeItem(l)) { panelCaptionAbove = TRUE; focusable = FALSE; }
+                                MOVE PROPERTY(idItem(l)) { panelCaptionAbove = TRUE; focusable = FALSE; }
+                            }
                         }
                         NEW total {
                             type = CONTAINERH;
                             alignment = STRETCH;
-                            MOVE PROPERTY(fullAmount(i)) { panelCaptionAbove = TRUE; fontSize = 24; focusable = FALSE; }
-                            MOVE PROPERTY(discountAmount(i)) { panelCaptionAbove = TRUE; fontSize = 24; focusable = FALSE; }
-                            MOVE PROPERTY(totalAmount(i)) { panelCaptionAbove = TRUE; fontSize = 24; focusable = FALSE; }
+                            MOVE PROPERTY(fullAmount(i)) { charWidth = 8; panelCaptionAbove = TRUE; fontSize = 24; focusable = FALSE; }
+                            MOVE PROPERTY(discountAmount(i)) { charWidth = 8; panelCaptionAbove = TRUE; fontSize = 24; focusable = FALSE; }
+                            MOVE PROPERTY(totalAmount(i)) { charWidth = 8; panelCaptionAbove = TRUE; fontSize = 24; focusable = FALSE; }
                         }
                     }
                     NEW actions {
@@ -76,8 +80,16 @@ DESIGN posDashboard {
                 }
             }
             NEW tabPane {
-                fill = 1;
+                fill = 2;
                 type = TABBED;
+                
+                NEW session {
+                    caption = 'Смена';
+                    MOVE PROPERTY(name(p)) { caption = 'ККМ'; }
+                    MOVE PROPERTY(openSession(p));
+                    MOVE PROPERTY(openingDateTime(s)) { caption = 'Смена открыта'; focusable = FALSE; }
+                    MOVE PROPERTY(close(s)) { caption = 'Закрыть смену'; }
+                }
             }   
         }
     }
@@ -140,7 +152,7 @@ EXTEND FORM posDashboard
 ;
 
 DESIGN posDashboard {
-    invoice {
+    leftPane {
         MOVE PROPERTY(barCode()) FIRST;
     }
 }

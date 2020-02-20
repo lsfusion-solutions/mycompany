@@ -58,7 +58,7 @@ CLASS ShipmentLine 'Строка отгрузки';
 shipment 'Документ' = DATA Shipment (ShipmentLine) NONULL DELETE INDEXED IN id;
 
 countLines 'Кол-во строк' (Shipment s) = GROUP SUM 1 IF shipment(ShipmentLine l) = s MATERIALIZED;
-index 'Индекс' = PARTITION SUM 1 ORDER ShipmentLine l BY shipment(l) IN id MATERIALIZED;
+index '№' = PARTITION SUM 1 ORDER ShipmentLine l BY shipment(l) IN id MATERIALIZED CHARWIDTH 3;
 
 product 'Товар' = DATA Product (ShipmentLine) NONULL INDEXED;
 nameProduct 'Товар' (ShipmentLine l) = name(product(l)) IN id;

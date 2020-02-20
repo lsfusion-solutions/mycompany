@@ -10,7 +10,7 @@ filterPrice 'Цена' = DATA LOCAL NUMERIC[14,2] ();
 
 EXTEND FORM posDashboard
     OBJECTS it = Item
-    PROPERTIES(it) READONLY name, idBarCode
+    PROPERTIES(it) READONLY name, idBarCode, id
     PROPERTIES(i, it) quantity ON CHANGE changeQuantity(i, it)
     PROPERTIES READONLY listPrice(i, it)
     ORDER name(it)
@@ -22,12 +22,16 @@ EXTEND FORM posDashboard
     PROPERTIES() filterName, filterPrice
     FILTERS isISubstring(name(it), filterName()) OR NOT filterName(),
             listPrice(i, it) = filterPrice() OR NOT filterPrice()
+
+    FILTERGROUP searchFilter
+        FILTER 'В чеке' quantity(i, it) 'shift F10'
 ;
 
 DESIGN posDashboard {
     tabPane {
-        NEW search {
+        NEW search FIRST {
             caption = 'Поиск';
+            showIf = openedSession(p);
             NEW filters {
                 type = CONTAINERH;
                 alignment = STRETCH;
