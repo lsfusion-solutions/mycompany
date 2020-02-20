@@ -1,6 +1,6 @@
 MODULE PosPaymentMethod;
 
-REQUIRE PaymentMethod;
+REQUIRE PaymentMethod, Payment;
 
 NAMESPACE Retail;
 
@@ -12,6 +12,9 @@ nameAccount 'Счет' (Pos p, PaymentMethod pm) = name(account(p, pm));
 CONSTRAINT company(Pos p) AND account(p, PaymentMethod pm) AND NOT holder(account(p, pm)) = company(p)
                 CHECKED BY account
                 MESSAGE 'Владелец счета компании не совпадает с компанией в методе оплаты';
+
+cashAccount (Pos p) = account(p, cashPaymentMethod());
+cashBalance 'Наличных в кассе' (Pos p) = balance(cashAccount(p));
 
 EXTEND FORM pos
     OBJECTS pm = PaymentMethod

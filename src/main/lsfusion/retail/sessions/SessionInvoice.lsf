@@ -14,6 +14,8 @@ EXTEND FORM pos
 session = DATA Session (Invoice);
 numberSession 'Смена' (Invoice i) = number(session(i));
 
+totalAmount 'Итого' (Session s) = GROUP SUM totalAmount(Invoice i) IF session(i) = s; 
+
 WHEN LOCAL SET(session(Invoice i)) AND NOT CHANGED(type(i)) DO
     type(i) <- invoiceType(pos(session(i)));
     

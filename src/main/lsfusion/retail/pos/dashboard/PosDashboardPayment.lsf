@@ -89,3 +89,17 @@ DESIGN posDashboard {
         MOVE PROPERTY(posPayment(s, i)) { fill = 1; fontStyle = 'bold'; }
     }
 }
+
+// payment method total
+EXTEND FORM posDashboard
+    OBJECTS pm = PaymentMethod BEFORE si
+    PROPERTIES READONLY paid(s, pm) COLUMNS (pm) HEADER name(pm) 
+
+    PROPERTIES READONLY paid(si, pm) COLUMNS (pm) HEADER name(pm) 
+;
+
+DESIGN posDashboard {
+    sessionTotal {
+        MOVE PROPERTY(paid(s, pm));
+    }
+}

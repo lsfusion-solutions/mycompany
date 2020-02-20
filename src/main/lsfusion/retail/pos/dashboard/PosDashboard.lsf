@@ -11,7 +11,7 @@ FORM posDashboard 'POS'
     FILTERS in(p, currentComputer()) OR NOT countPos(currentComputer())
     
     OBJECTS s = Session PANEL
-    PROPERTIES(s) openingDateTime READONLY
+    PROPERTIES(s) READONLY number
     FILTERS s = openedSession(p)
     
     OBJECTS i = Invoice PANEL
@@ -26,7 +26,14 @@ FORM posDashboard 'POS'
     PROPERTIES(l) PANEL READONLY nameItemPanel = nameItem, nameUom, idBarCodeItem, idItem
     FILTERS invoice(l) = i
 
+    // session results
     PROPERTIES openSession(p) SHOWIF NOT s, close(s) READONLYIF totalAmount(i)
+    PROPERTIES(s) READONLY openingDateTime, totalAmount
+    
+    OBJECTS si = Invoice
+    PROPERTIES(si) READONLY dateTime, number, nameCustomer, 'Итого' = fullAmount, 'Скидка' = discountAmount, 'К оплате' = totalAmount
+    PROPERTIES(si) EDIT
+    FILTERS PREV(session(si)) = s
 ;
 
 DESIGN posDashboard {
@@ -85,10 +92,31 @@ DESIGN posDashboard {
                 
                 NEW session {
                     caption = 'Смена';
-                    MOVE PROPERTY(name(p)) { caption = 'ККМ'; }
-                    MOVE PROPERTY(openSession(p));
-                    MOVE PROPERTY(openingDateTime(s)) { caption = 'Смена открыта'; focusable = FALSE; }
-                    MOVE PROPERTY(close(s)) { caption = 'Закрыть смену'; }
+                    NEW posHeader {
+                        type = CONTAINERH;
+                        alignment = STRETCH;
+                        MOVE PROPERTY(name(p)) { caption = 'ККМ'; }
+                    }
+                    NEW sessionHeader {
+                        type = CONTAINERH;
+                        alignment = STRETCH;
+                        MOVE PROPERTY(number(s));
+                        MOVE PROPERTY(openSession(p)) { fill = 1; fontStyle = 'bold';  };
+                        MOVE PROPERTY(openingDateTime(s)) { caption = 'Смена открыта'; focusable = FALSE; }
+                        MOVE PROPERTY(close(s)) { fontStyle = 'bold'; caption = 'Закрыть смену'; }
+                    }
+                    
+                    NEW sessionTotal {
+                        type = CONTAINERH;
+                        alignment = STRETCH;
+                        MOVE PROPERTY(totalAmount(s));
+                    }
+                    
+                    NEW sessionDetails {
+                        fill = 1;
+                        type = TABBED;
+                        MOVE BOX(si) { showIf = openedSession(p); }
+                    }
                 }
             }   
         }

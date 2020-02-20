@@ -1,9 +1,14 @@
 MODULE SessionPayment;
 
-REQUIRE PaymentMethod, Invoice, IncomingPayment;
+REQUIRE PaymentMethod, IncomingPayment, SessionInvoice, Debt;
 
 NAMESPACE Retail;
 
 paymentMethod = DATA PaymentMethod (IncomingPayment, Invoice);
 namePaymentMethod 'Метод оплаты' (IncomingPayment p, Invoice i) = name(paymentMethod(p, i));
 
+paid 'Оплачено' (Invoice i, PaymentMethod pm) = 
+    GROUP SUM paid(IncomingPayment p, i) IF paymentMethod(p, i) = pm;
+    
+paid 'Оплачено' (Session s, PaymentMethod pm) = 
+    GROUP SUM paid(IncomingPayment p, Invoice i) IF session(i) = s AND paymentMethod(p, i) = pm;

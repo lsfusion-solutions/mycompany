@@ -1,0 +1,98 @@
+MODULE PosDashboardCash;
+
+REQUIRE PosDashboard, PosPaymentMethod, IncomingPaymentDone, OutgoingPaymentDone;
+
+NAMESPACE Retail;
+
+FORM inputMoney 'Внесение/изъятие денег'
+    OBJECTS a = NUMERIC[14,2] PANEL
+    PROPERTIES(a) amount 'Сумма' = VALUE
+;
+DESIGN inputMoney {
+    BOX(a) {
+        caption = '';
+        PROPERTY(amount) { fontSize = 24; }
+    }
+}
+
+// deposit
+depositPaymentType = DATA IncomingPaymentType ();
+nameDepositPaymentType 'Тип внесения денег' = name(depositPaymentType());
+EXTEND FORM options PROPERTIES() nameDepositPaymentType;
+
+deposit 'Внесение денег' (Pos p) {
+    DIALOG inputMoney OBJECTS a INPUT DO {
+        NEWSESSION {
+            NEW ip = IncomingPayment {
+                done(ip) <- TRUE;
+                
+                type(ip) <- depositPaymentType();
+                
+                company(ip) <- company(p);
+                companyAccount(ip) <- cashAccount(p);
+                
+                amount(ip) <- a;
+                
+                APPLY;
+            }
+        }
+    } 
+}
+
+withdrawPaymentType = DATA OutgoingPaymentType ();
+nameWithdrawPaymentType 'Тип изъятия денег' = name(withdrawPaymentType());
+EXTEND FORM options PROPERTIES() nameWithdrawPaymentType;
+
+// withdraw
+withdraw 'Выемка денег' (Pos p) {
+    DIALOG inputMoney OBJECTS a INPUT DO {
+        NEWSESSION {
+            NEW op = OutgoingPayment {
+                done(op) <- TRUE;
+                
+                type(op) <- withdrawPaymentType();
+                
+                company(op) <- company(p);
+                companyAccount(op) <- cashAccount(p);
+                
+                amount(op) <- a;
+                
+                APPLY;
+            }
+        }
+    } 
+}
+
+
+EXTEND FORM posDashboard
+    PROPERTIES(p) cashBalance
+    
+    OBJECTS ip = IncomingPayment
+    PROPERTIES(ip) READONLY dateTime, amount
+    PROPERTIES(p)  deposit DRAW ip TOOLBAR
+    PROPERTIES(ip) DELETE GRID
+    FILTERS companyAccount(ip) = cashAccount(p), 
+            type(ip) = depositPaymentType()
+             
+
+    OBJECTS op = OutgoingPayment
+    PROPERTIES(op) READONLY dateTime, amount
+    PROPERTIES(p)  withdraw DRAW op TOOLBAR
+    PROPERTIES(op) DELETE GRID
+    FILTERS companyAccount(op) = cashAccount(p),
+            type(op) = withdrawPaymentType()
+;
+
+DESIGN posDashboard {
+    posHeader {
+        MOVE PROPERTY(cashBalance(p));
+    }
+    sessionDetails {
+        MOVE BOX(ip) {
+            caption = 'Внесение денег';
+        }
+        MOVE BOX(op) {
+            caption = 'Выемка денег';
+        }
+    }
+}
