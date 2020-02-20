@@ -5,23 +5,42 @@ REQUIRE PosDashboard,
 
 NAMESPACE Retail;
 
+filterName 'Наименование' = DATA LOCAL ISTRING (); 
+filterPrice 'Цена' = DATA LOCAL NUMERIC[14,2] ();
+
 EXTEND FORM posDashboard
     OBJECTS it = Item
     PROPERTIES(it) READONLY name, idBarCode
     PROPERTIES(i, it) quantity ON CHANGE changeQuantity(i, it)
-    PROPERTIES listPrice(i, it)
+    PROPERTIES READONLY listPrice(i, it)
     ORDER name(it)
 
     FILTERS canBeSold(it),
             listPrice(i, it),
             active(it)
+
+    PROPERTIES() filterName, filterPrice
+    FILTERS isISubstring(name(it), filterName()) OR NOT filterName(),
+            listPrice(i, it) = filterPrice() OR NOT filterPrice()
 ;
 
 DESIGN posDashboard {
     tabPane {
         NEW search {
             caption = 'Поиск';
-            MOVE BOX(it) { caption = ''; }
+            NEW filters {
+                type = CONTAINERH;
+                alignment = STRETCH;
+                MOVE PROPERTY(filterName()) { changeKey = 'F6'; }                
+                MOVE PROPERTY(filterPrice()) { changeKey = 'F7'; }                
+            }
+            NEW searchItems {
+                fill = 1;
+                REMOVE BOX(it);
+                MOVE GRID(it);
+                MOVE TOOLBARBOX(it);
+                MOVE USERFILTER(it);
+            }
         }
     }
 }
