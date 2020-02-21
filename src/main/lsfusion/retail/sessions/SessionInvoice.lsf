@@ -1,6 +1,6 @@
 MODULE SessionInvoice;
 
-REQUIRE Session, Invoice;
+REQUIRE Session, SalesInvoiceDiscount;
 
 NAMESPACE Retail;
 
@@ -21,3 +21,23 @@ WHEN LOCAL SET(session(Invoice i)) AND NOT CHANGED(type(i)) DO
     
 WHEN LOCAL SET(session(Invoice i)) AND NOT CHANGED(company(i)) DO
     company(i) <- company(pos(session(i)));
+
+EXTEND FORM session
+    OBJECTS i = Invoice
+    PROPERTIES(i) READONLY dateTime, number, nameCustomer, 'Итого' = fullAmount, 'Скидка' = discountAmount, 'К оплате' = totalAmount
+    PROPERTIES(i) NEWSESSION EDIT
+    FILTERS session(i) = s
+;
+
+EXTEND FORM invoice
+    PROPERTIES(i) READONLY numberSession SHOWIF session(i)
+;
+
+DESIGN invoice {
+    otherInformation {
+        NEW session {
+            caption = 'Смена';
+            MOVE PROPERTY(numberSession(i));
+        }
+    }
+}

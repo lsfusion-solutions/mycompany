@@ -1,6 +1,6 @@
 MODULE SessionPayment;
 
-REQUIRE PaymentMethod, IncomingPayment, SessionInvoice, Debt;
+REQUIRE PaymentMethod, IncomingPayment, SessionInvoice, InvoiceDebt;
 
 NAMESPACE Retail;
 
@@ -12,3 +12,14 @@ paid 'Оплачено' (Invoice i, PaymentMethod pm) =
     
 paid 'Оплачено' (Session s, PaymentMethod pm) = 
     GROUP SUM paid(IncomingPayment p, Invoice i) IF session(i) = s AND paymentMethod(p, i) = pm;
+
+EXTEND FORM invoice
+    PROPERTIES namePaymentMethod(d, i) GRID SHOWIF session(i)    
+;
+
+EXTEND FORM session
+    OBJECTS pm = PaymentMethod BEFORE s
+    PROPERTIES READONLY paid(s, pm) COLUMNS (pm) HEADER name(pm)
+    
+    PROPERTIES READONLY paid(i, pm) COLUMNS (pm) HEADER name(pm) 
+;
