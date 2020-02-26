@@ -1,9 +1,10 @@
 MODULE SessionInvoice;
 
-REQUIRE Session, SalesInvoiceDiscount;
+REQUIRE Session, SalesInvoiceDiscount, Bill;
 
 NAMESPACE Retail;
 
+// invoice
 invoiceType = DATA InvoiceType (Pos);
 nameInvoiceType 'Тип реализации' (Pos p) = name(invoiceType(p));
 
@@ -14,8 +15,6 @@ EXTEND FORM pos
 session = DATA Session (Invoice);
 numberSession 'Смена' (Invoice i) = number(session(i));
 
-totalAmount 'Итого' (Session s) = GROUP SUM totalAmount(Invoice i) IF session(i) = s; 
-
 WHEN LOCAL SET(session(Invoice i)) AND NOT CHANGED(type(i)) DO
     type(i) <- invoiceType(pos(session(i)));
     
@@ -24,10 +23,17 @@ WHEN LOCAL SET(session(Invoice i)) AND NOT CHANGED(company(i)) DO
 
 EXTEND FORM session
     OBJECTS i = Invoice
-    PROPERTIES(i) READONLY dateTime, number, nameCustomer, 'Итого' = fullAmount, 'Скидка' = discountAmount, 'К оплате' = totalAmount
+    PROPERTIES(i) READONLY nameStatus BACKGROUND colorStatus(i), dateTime, number, nameCustomer, 
+                           'Итого' = fullAmount, 'Скидка' = discountAmount, 'К оплате' = totalAmount
     PROPERTIES(i) NEWSESSION EDIT
     FILTERS session(i) = s
 ;
+
+DESIGN session {
+    tabPane {
+        MOVE BOX(i);
+    }
+}
 
 EXTEND FORM invoice
     PROPERTIES(i) READONLY numberSession SHOWIF session(i)
@@ -41,3 +47,41 @@ DESIGN invoice {
         }
     }
 }
+
+totalAmountInvoice 'Продано' (Session s) = GROUP SUM totalAmount(Invoice i) IF session(i) = s; 
+
+// bill
+session = DATA Session (Bill);
+numberSession 'Смена' (Bill i) = number(session(i));
+
+EXTEND FORM session
+    OBJECTS b = Bill
+    PROPERTIES(b) READONLY nameStatus BACKGROUND colorStatus(i), dateTime, number, nameVendor, 
+                           'К оплате' = totalAmount
+    PROPERTIES(b) NEWSESSION EDIT
+    FILTERS session(b) = s
+;
+
+DESIGN session {
+    tabPane {
+        MOVE BOX(b);
+    }
+}
+
+EXTEND FORM bill
+    PROPERTIES(b) READONLY numberSession SHOWIF session(b)
+;
+
+DESIGN bill {
+    otherInformation {
+        NEW session {
+            caption = 'Смена';
+            MOVE PROPERTY(numberSession(b));
+        }
+    }
+}
+
+totalAmountBill 'Возвращено' (Session s) = GROUP SUM totalAmount(Bill b) IF session(b) = s;
+
+// total
+totalAmount 'Итого' (Session s) = totalAmountInvoice(s) (-) totalAmountBill(s);

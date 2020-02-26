@@ -5,7 +5,10 @@ REQUIRE PosDashboard, PaymentMethod, IncomingPaymentDebt, PosPaymentMethod, Sess
 NAMESPACE Retail;
 
 amount 'Сумма' = DATA LOCAL NUMERIC[14,2] (PaymentMethod);
-change (Invoice i) = (GROUP SUM amount(PaymentMethod pm)) (-) totalAmount(i); 
+paymentAmount() = GROUP SUM amount(PaymentMethod pm); 
+notCashPaymentAmount() = GROUP SUM amount(PaymentMethod pm) IF NOT isCash(pm); 
+
+change (Invoice i) = paymentAmount() (-) totalAmount(i); 
 
 FORM posPayment 'Оплата'
     OBJECTS i = Invoice PANEL
@@ -15,7 +18,7 @@ FORM posPayment 'Оплата'
     PROPERTIES(pm) name READONLY, amount 
     FILTERS NOT disabled(pos(session(i)), pm)
     
-    PROPERTIES overFormOk = formOk() READONLYIF change(i) < 0 
+    PROPERTIES overFormOk = formOk() READONLYIF change(i) < 0 OR notCashPaymentAmount() > totalAmount(i) 
 ;
 
 DESIGN posPayment {

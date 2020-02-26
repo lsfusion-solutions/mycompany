@@ -1,6 +1,6 @@
 MODULE SessionShipment;
 
-REQUIRE SessionInvoice, InvoiceShipment, Location;
+REQUIRE SessionInvoice, InvoiceShipment, BillReceipt, Location;
 
 NAMESPACE Retail;
 
@@ -13,3 +13,6 @@ EXTEND FORM pos
 
 WHEN LOCAL SET(session(Invoice i)) AND NOT CHANGED(location(i)) DO
     location(i) <- location(pos(session(i)));
+
+WHEN LOCAL SET(session(Bill b)) AND NOT CHANGED(location(b)) DO
+    location(b) <- location(pos(session(b)));

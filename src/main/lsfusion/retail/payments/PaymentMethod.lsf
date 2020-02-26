@@ -1,6 +1,6 @@
 MODULE PaymentMethod;
 
-REQUIRE Pos, IncomingPaymentType, RetailSettings;
+REQUIRE Pos, IncomingPaymentType, OutgoingPaymentType, RetailSettings;
 
 NAMESPACE Retail;
 
@@ -9,21 +9,25 @@ CLASS PaymentMethod 'Метод оплаты';
 id 'Код' = DATA STRING[10] (PaymentMethod); 
 name 'Наименование' = DATA ISTRING[20] (PaymentMethod);
 
-incomingPaymentType = DATA IncomingPaymentType (PaymentMethod) NONULL;
-nameIncomingPaymentType 'Тип входящего платежа' (PaymentMethod m) = name(incomingPaymentType(m));
-
 cashPaymentMethod = DATA PaymentMethod();
 isCash 'Наличные' (PaymentMethod pm) = cashPaymentMethod() = pm;  
 
+incomingPaymentType = DATA IncomingPaymentType (PaymentMethod) NONULL;
+nameIncomingPaymentType 'Тип входящего платежа' (PaymentMethod m) = name(incomingPaymentType(m));
+
+outgoingPaymentType = DATA OutgoingPaymentType (PaymentMethod) NONULL;
+nameOutgoingPaymentType 'Тип возвратного платежа' (PaymentMethod m) = name(outgoingPaymentType(m));
+
 FORM paymentMethod 'Метод оплаты'
     OBJECTS pm = PaymentMethod PANEL
-    PROPERTIES(pm) id, name, isCash, nameIncomingPaymentType
+    PROPERTIES(pm) id, name, isCash, nameIncomingPaymentType, nameOutgoingPaymentType
     
     EDIT PaymentMethod OBJECT pm
 ;
 
 DESIGN paymentMethod {
     PROPERTY(nameIncomingPaymentType(pm)) { notNull = TRUE; }
+    PROPERTY(nameOutgoingPaymentType(pm)) { notNull = TRUE; }
 }
 
 FORM paymentMethods 'Методы оплаты'

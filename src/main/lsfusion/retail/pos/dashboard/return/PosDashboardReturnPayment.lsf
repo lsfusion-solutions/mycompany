@@ -1,0 +1,94 @@
+MODULE PosDashboardReturnPayment;
+
+REQUIRE PosDashboardReturn, PosDashboardPayment, CreditNote, OutgoingPaymentDone;
+
+NAMESPACE Retail;
+
+invoicePaid 'Оплачено' (Bill b, PaymentMethod pm) = GROUP SUM paid(Invoice i, pm) IF in(i, b);
+invalidAmount(Bill b, PaymentMethod pm) = amount(pm) > OVERRIDE invoicePaid(b, pm), 0.0; 
+
+FORM posPaymentReturn 'Оплата'
+    OBJECTS b = Bill PANEL
+    PROPERTIES nameVendor(b), totalAmount(b)
+    
+    OBJECTS pm = PaymentMethod
+    PROPERTIES name(pm) READONLY, invoicePaid(b, pm), amount(pm) BACKGROUND invalidAmount(b, pm)
+    FILTERS NOT disabled(pos(session(b)), pm)
+    
+    PROPERTIES overFormOk = formOk() 
+        READONLYIF NOT paymentAmount() = totalAmount(b) OR GROUP SUM 1 IF invalidAmount(b, PaymentMethod ppm) 
+;
+
+DESIGN posPaymentReturn {
+    OBJECTS {
+        NEW top {
+            alignment = STRETCH;
+            MOVE PROPERTY(nameVendor(b)) { fontSize = 24; alignment = STRETCH; changeKey = 'F5'; }
+            MOVE PROPERTY(totalAmount(b)) { fontSize = 24; alignment = STRETCH; }
+        }
+        NEW center {
+            fill = 1;
+            MOVE BOX(pm) {
+                GRID(pm) {
+                    defaultComponent = TRUE;
+                    PROPERTY(name(pm)) { fontSize = 24; focusable = FALSE; }
+                    PROPERTY(invoicePaid(b, pm)) { fontSize = 24; }
+                    PROPERTY(amount(pm)) { fontSize = 24; }
+                }
+                REMOVE TOOLBARBOX(pm);
+            }
+        }
+    }
+    
+    TOOLBARRIGHT {
+        REMOVE PROPERTY(formRefresh());
+        REMOVE PROPERTY(formOk());
+        PROPERTY(formClose()) { fontSize = 24; fill = 1; }
+        MOVE PROPERTY(overFormOk) { fontSize = 24; fill = 1; }
+    }
+}
+
+EXTEND FORM posPaymentReturn
+    EVENTS ON INIT { ACTIVATE PROPERTY posPaymentReturn.amount(pm); }
+;
+
+posPayment 'Оплата' (Session s, Bill b) {
+    amount(PaymentMethod pm) <- NULL;
+    DIALOG posPaymentReturn OBJECTS b = b NOMANAGESESSION DO {
+        FOR am = amount(PaymentMethod pm) DO NEW p = OutgoingPayment {
+            done(p) <- TRUE;
+            
+            paymentMethod(b, p) <- pm;
+            type(p) <- outgoingPaymentType(pm);
+            
+            company(p) <- company(pos(session(b)));
+            companyAccount(p) <- account(pos(session(b)), pm);
+            
+            partner(p) <- vendor(b);
+            
+            amount(p) <- am;
+            paid(b, p) <- am;
+        }
+        APPLY;
+        IF canceled() THEN {
+            DELETE IncomingPayment p WHERE SET(p IS IncomingPayment);
+        } ELSE {
+            createInvoice(s);
+        }
+    }
+} CHANGEKEY 'ctrl ENTER';
+
+EXTEND FORM posDashboard
+    PROPERTIES(s, b) posPayment READONLYIF NOT totalAmount(i)
+;
+
+DESIGN posDashboard {
+    billActions {
+        MOVE PROPERTY(posPayment(s, b)) { fill = 1; fontStyle = 'bold'; }
+    }
+}
+
+// payment method total
+EXTEND FORM posDashboard
+    PROPERTIES READONLY paid(sb, pm) COLUMNS (pm) HEADER name(pm) 
+;

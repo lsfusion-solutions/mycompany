@@ -1,25 +1,53 @@
 MODULE SessionPayment;
 
-REQUIRE PaymentMethod, IncomingPayment, SessionInvoice, InvoiceDebt;
+REQUIRE PaymentMethod, IncomingPayment, OutgoingPayment, 
+        SessionInvoice, InvoiceDebt, BillDebt;
 
 NAMESPACE Retail;
 
+EXTEND FORM session
+    OBJECTS pm = PaymentMethod
+;
+
+// invoice
 paymentMethod = DATA PaymentMethod (IncomingPayment, Invoice);
 namePaymentMethod 'Метод оплаты' (IncomingPayment p, Invoice i) = name(paymentMethod(p, i));
 
 paid 'Оплачено' (Invoice i, PaymentMethod pm) = 
     GROUP SUM paid(IncomingPayment p, i) IF paymentMethod(p, i) = pm;
     
-paid 'Оплачено' (Session s, PaymentMethod pm) = 
-    GROUP SUM paid(IncomingPayment p, Invoice i) IF session(i) = s AND paymentMethod(p, i) = pm;
-
 EXTEND FORM invoice
     PROPERTIES namePaymentMethod(d, i) GRID SHOWIF session(i)    
 ;
 
+paidInvoice 'Оплачено' (Session s, PaymentMethod pm) = 
+    GROUP SUM paid(Invoice i, pm) IF session(i) = s;
+
 EXTEND FORM session
-    OBJECTS pm = PaymentMethod BEFORE s
-    PROPERTIES READONLY paid(s, pm) COLUMNS (pm) HEADER name(pm)
-    
     PROPERTIES READONLY paid(i, pm) COLUMNS (pm) HEADER name(pm) 
+;
+// bill
+paymentMethod = DATA PaymentMethod (Bill, OutgoingPayment);
+namePaymentMethod 'Метод оплаты' (Bill b, OutgoingPayment p) = name(paymentMethod(b, p));
+
+paid 'Оплачено' (Bill b, PaymentMethod pm) = 
+    GROUP SUM paid(b, OutgoingPayment p) IF paymentMethod(b, p) = pm;
+    
+EXTEND FORM bill
+    PROPERTIES namePaymentMethod(b, d) GRID SHOWIF session(b)    
+;
+
+EXTEND FORM session
+    PROPERTIES READONLY paid(b, pm) COLUMNS (pm) HEADER name(pm) 
+;
+
+paidBill 'Оплачено' (Session s, PaymentMethod pm) = 
+    GROUP SUM paid(Bill b, pm) IF session(b) = s;
+
+// total
+paid 'Оплачено' (Session s, PaymentMethod pm) = 
+    paidInvoice(s, pm) (-) paidBill(s, pm);
+
+EXTEND FORM session
+    PROPERTIES READONLY paid(s, pm) COLUMNS (pm) HEADER name(pm) 
 ;

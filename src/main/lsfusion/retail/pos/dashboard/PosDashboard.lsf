@@ -5,6 +5,8 @@ REQUIRE Pos, Session,
 
 NAMESPACE Retail;
 
+hideInvoice = DATA LOCAL BOOLEAN ();
+
 FORM posDashboard 'POS'
     OBJECTS p = Pos PANEL
     PROPERTIES(p) name SELECTOR
@@ -42,47 +44,50 @@ DESIGN posDashboard {
             fill = 1;
             type = SPLITH;
             NEW leftPane {
-                showIf = openedSession(p);
-                NEW invoice {
-                    alignment = STRETCH;
-                    type = CONTAINERH;
-                    MOVE PROPERTY(nameCustomer(i)) { changeKey = 'F5'; }
-                }
-                REMOVE BOX(l);
-                MOVE GRID(l) {
-                    PROPERTY(nameItem(l)) { charWidth = 10; }
-                }
-                NEW linesFooter {
-                    type = CONTAINERH;
-                    alignment = STRETCH;
-                    NEW info {
-                        fill = 1;
-                        MOVE TOOLBARBOX(l);
-                        NEW itemDetails {
-                            alignment = STRETCH;
-                            NEW itemDetails1 {
-                                alignment = STRETCH;
-                                type = CONTAINERH;
-                                MOVE PROPERTY(nameItemPanel) { panelCaptionAbove = TRUE; focusable = FALSE; }
-                                MOVE PROPERTY(nameUom(l)) { panelCaptionAbove = TRUE; focusable = FALSE; }
-                            }
-                            NEW itemDetails2 {
-                                alignment = STRETCH;
-                                type = CONTAINERH;
-                                MOVE PROPERTY(idBarCodeItem(l)) { panelCaptionAbove = TRUE; focusable = FALSE; }
-                                MOVE PROPERTY(idItem(l)) { panelCaptionAbove = TRUE; focusable = FALSE; }
-                            }
-                        }
-                        NEW total {
-                            type = CONTAINERH;
-                            alignment = STRETCH;
-                            MOVE PROPERTY(fullAmount(i)) { charWidth = 8; panelCaptionAbove = TRUE; fontSize = 24; focusable = FALSE; }
-                            MOVE PROPERTY(discountAmount(i)) { charWidth = 8; panelCaptionAbove = TRUE; fontSize = 24; focusable = FALSE; }
-                            MOVE PROPERTY(totalAmount(i)) { charWidth = 8; panelCaptionAbove = TRUE; fontSize = 24; focusable = FALSE; }
-                        }
-                    }
-                    NEW actions {
+                NEW invoicePane {
+                    fill = 1;
+                    showIf = openedSession(p) AND NOT hideInvoice();
+                    NEW invoice {
                         alignment = STRETCH;
+                        type = CONTAINERH;
+                        MOVE PROPERTY(nameCustomer(i)) { changeKey = 'F5'; }
+                    }
+                    REMOVE BOX(l);
+                    MOVE GRID(l) {
+                        PROPERTY(nameItem(l)) { charWidth = 10; }
+                    }
+                    NEW linesFooter {
+                        type = CONTAINERH;
+                        alignment = STRETCH;
+                        NEW info {
+                            fill = 1;
+                            MOVE TOOLBARBOX(l);
+                            NEW itemDetails {
+                                alignment = STRETCH;
+                                NEW itemDetails1 {
+                                    alignment = STRETCH;
+                                    type = CONTAINERH;
+                                    MOVE PROPERTY(nameItemPanel) { panelCaptionAbove = TRUE; focusable = FALSE; }
+                                    MOVE PROPERTY(nameUom(l)) { panelCaptionAbove = TRUE; focusable = FALSE; }
+                                }
+                                NEW itemDetails2 {
+                                    alignment = STRETCH;
+                                    type = CONTAINERH;
+                                    MOVE PROPERTY(idBarCodeItem(l)) { panelCaptionAbove = TRUE; focusable = FALSE; }
+                                    MOVE PROPERTY(idItem(l)) { panelCaptionAbove = TRUE; focusable = FALSE; }
+                                }
+                            }
+                            NEW total {
+                                type = CONTAINERH;
+                                alignment = STRETCH;
+                                MOVE PROPERTY(fullAmount(i)) { charWidth = 8; panelCaptionAbove = TRUE; fontSize = 24; focusable = FALSE; }
+                                MOVE PROPERTY(discountAmount(i)) { charWidth = 8; panelCaptionAbove = TRUE; fontSize = 24; focusable = FALSE; }
+                                MOVE PROPERTY(totalAmount(i)) { charWidth = 8; panelCaptionAbove = TRUE; fontSize = 24; focusable = FALSE; }
+                            }
+                        }
+                        NEW actions {
+                            alignment = STRETCH;
+                        }
                     }
                 }
             }
@@ -118,7 +123,7 @@ DESIGN posDashboard {
                         MOVE BOX(si) { showIf = openedSession(p); }
                     }
                 }
-            }   
+            }
         }
     }
     
@@ -180,7 +185,7 @@ EXTEND FORM posDashboard
 ;
 
 DESIGN posDashboard {
-    leftPane {
+    invoicePane {
         MOVE PROPERTY(barCode()) FIRST;
     }
 }

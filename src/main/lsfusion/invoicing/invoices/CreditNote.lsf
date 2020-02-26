@@ -20,10 +20,13 @@ EXTEND FORM invoiceType PROPERTIES(o) nameBillType;
 numberInvoiceLine 'Реализация' (BillLine l) = number(invoiceLine(l)); 
 
 CONSTRAINT invoiceLine(BillLine l) AND NOT 
-                (customer(invoiceLine(l)) = vendor(l) AND 
-                 item(invoiceLine(l)) = item(l))
+                (customer(invoiceLine(l)) = vendor(l) OR (NOT customer(invoiceLine(l)) AND NOT vendor(l)))
     CHECKED BY invoiceLine
-    MESSAGE 'Контрагент и номенклатура реализации должны совпадать с контрагентом и товаром возврата';
+    MESSAGE 'Контрагент реализации должен совпадать с контрагентом возврата';
+
+CONSTRAINT invoiceLine(BillLine l) AND NOT item(invoiceLine(l)) = item(l)
+    CHECKED BY invoiceLine
+    MESSAGE 'Номенклатура реализации должны совпадать с номенклатурой возврата';
 
 // events
 WHEN LOCAL SETCHANGED(invoiceLine(BillLine l)) DO {
@@ -36,32 +39,34 @@ EXTEND FORM bill
 ;
 
 // add
+fillCreditNote (Bill b, Invoice i) {
+    type(b) <- billType(type(i));
+        
+    vendor(b) <- customer(i);
+    vendorAccount(b) <- customerAccount(i);
+    
+    company(b) <- company(i);
+    companyAccount(b) <- companyAccount(i);
+    
+    note(b) <- note(i);
+    
+    FOR invoice(InvoiceLine l) = i INLINE NEW bl = BillLine DO {
+        invoiceLine(bl) <- l; 
+        bill(bl) <- b;
+
+        item(bl) <- item(l);
+
+        quantity(bl) <- quantity(l);
+    }
+}
+
 addCreditNote 'Вернуть' (Invoice i) {
     APPLY; 
     IF canceled() THEN RETURN;
     
     NEWSESSION { 
         NEW b = Bill {
-            type(b) <- billType(type(i));
-            
-            dateTime(b) <- currentDateTime();
-            
-            vendor(b) <- customer(i);
-            vendorAccount(b) <- customerAccount(i);
-            
-            company(b) <- company(i);
-            companyAccount(b) <- companyAccount(i);
-            
-            note(b) <- note(i);
-            
-            FOR invoice(InvoiceLine l) = i INLINE NEW bl = BillLine DO {
-                invoiceLine(bl) <- l; 
-                bill(bl) <- b;
-
-                item(bl) <- item(l);
-
-                quantity(bl) <- quantity(l);
-            }
+            fillCreditNote(b, i);
             SHOW bill OBJECTS b = b DOCKED;
         }
         
