@@ -10,16 +10,25 @@ account = DATA Account (Pos, PaymentMethod);
 nameAccount 'Счет' (Pos p, PaymentMethod pm) = name(account(p, pm));
 
 CONSTRAINT company(Pos p) AND account(p, PaymentMethod pm) AND NOT holder(account(p, pm)) = company(p)
-                CHECKED BY account
-                MESSAGE 'Владелец счета компании не совпадает с компанией в методе оплаты';
+                CHECKED BY account[Pos,PaymentMethod]
+                MESSAGE 'Владелец счета кассы не совпадает с компанией в методе оплаты';
+
+account = DATA Account (Pos);
+nameAccount 'Центральная касса' (Pos p) = name(account(p));
+
+CONSTRAINT company(Pos p) AND account(p) AND NOT holder(account(p)) = company(p)
+                CHECKED BY account[Pos]
+                MESSAGE 'Владелец счета центральной кассы не совпадает с компанией в методе оплаты';
 
 cashAccount (Pos p) = account(p, cashPaymentMethod());
 cashBalance 'Наличных в кассе' (Pos p) = balance(cashAccount(p));
 
 EXTEND FORM pos
+    PROPERTIES(p) nameAccount
+
     OBJECTS pm = PaymentMethod
     PROPERTIES(pm) READONLY id, name 
-    PROPERTIES(p, pm) disabled, nameAccount
+    PROPERTIES(p, pm) disabled, Retail.nameAccount[Pos,PaymentMethod]
 ;
 
 DESIGN pos {

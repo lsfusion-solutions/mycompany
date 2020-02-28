@@ -1,0 +1,69 @@
+MODULE IncomingPaymentOutgoing;
+
+REQUIRE IncomingPaymentCanceled, OutgoingPaymentCanceled;
+
+NAMESPACE Invoicing;
+
+// type
+incomingPaymentType = DATA IncomingPaymentType (OutgoingPaymentType);
+nameIncomingPaymentType 'Тип входящего платежа' (OutgoingPaymentType t) = name(incomingPaymentType(t));
+
+EXTEND FORM outgoingPaymentType
+    PROPERTIES(o) nameIncomingPaymentType
+;
+
+// outgoing
+@defineDocRelation(outgoingPayment, incomingPayment, 'Исходящий платеж', 'Входящий платеж', p, p);
+
+incomingPaymentCreated = DATA LOCAL IncomingPayment ();
+newIncomingPayment (OutgoingPayment op) {
+    NEW ip = IncomingPayment {
+        outgoingPayment(ip) <- op;
+        
+        done(ip) <- done(op);
+        
+        type(ip) <- incomingPaymentType(type(op));
+        
+        partner(ip) <- company(op);
+        company(ip) <- partner(op);
+
+        partnerAccount(ip) <- companyAccount(op);
+        companyAccount(ip) <- partnerAccount(op);
+        
+        amount(ip) <- amount(op);
+
+        note(ip) <- note(op);
+        reference(ip) <- reference(op);
+
+        incomingPaymentCreated() <- ip;
+    }
+}
+
+createIncomingPayment 'Создать входящий платеж' (OutgoingPayment op) {
+    APPLY;
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {
+        newIncomingPayment(op);
+        SHOW incomingPayment OBJECTS p = incomingPaymentCreated() DOCKED;
+    }
+} 
+
+EXTEND FORM outgoingPayment
+    PROPERTIES(p) createIncomingPayment SHOWIF ready(p) AND incomingPaymentType(type(p)) AND NOT countIncomingPayment(p) 
+;
+
+DESIGN outgoingPayment {
+    primaryActions {
+        MOVE PROPERTY(createIncomingPayment(p)) { fontStyle = 'bold'; }
+    }
+}
+
+// auto create
+autoCreateIncomingPayment 'Автоматически создавать входящий платеж' = DATA BOOLEAN (OutgoingPaymentType);
+EXTEND FORM outgoingPaymentType PROPERTIES(o) autoCreateIncomingPayment;
+
+WHEN SET(active(OutgoingPayment op)) AND autoCreateIncomingPayment(type(op)) DO
+    newIncomingPayment(op);
+WHEN CHANGED(canceled(outgoingPayment(IncomingPayment ip))) AND autoCreateIncomingPayment(type(outgoingPayment(ip))) DO 
+    canceled(ip) <- TRUE; 

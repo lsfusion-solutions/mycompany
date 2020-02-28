@@ -220,6 +220,29 @@ META defineDocHistory(doc, let, class, fun)
     }
 END
 
+META defineDocRelation(docTo, docFrom, captTo, captFrom, objTo, objFrom)
+    docTo = DATA ###docTo (###docFrom) INDEXED;
+    numberDate###docTo captTo (###docFrom s) = numberDate(docTo(s)); 
+    
+    count###docFrom (###docTo t) = GROUP SUM 1 IF docTo(###docFrom f) = t;
+    
+    // form
+    open###docTo (###docFrom f) { 
+        edit(docTo(f)); 
+    }
+    EXTEND FORM docFrom
+        PROPERTIES(objFrom) numberDate###docTo ON CHANGE open###docTo(objFrom) SHOWIF docTo(objFrom)
+    ;
+    DESIGN docFrom {
+        footer {
+            MOVE PROPERTY(numberDate###docTo(objFrom));
+        }
+    }
+    EXTEND FORM docFrom##s
+        PROPERTIES(objFrom) READONLY numberDate###docTo
+    ;
+END
+
 META defineDocLineRelation(docTo, docFrom, captTo, captFrom, objTo, objFrom)
     docTo##Line = DATA ###docTo##Line (###docFrom##Line) INDEXED;
     

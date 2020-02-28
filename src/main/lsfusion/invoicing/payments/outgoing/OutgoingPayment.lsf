@@ -19,6 +19,8 @@ dateTime(OutgoingPayment p) <- currentDateTime() WHEN SET(p IS OutgoingPayment);
 
 @defineNumberType(outgoingPayment);
 
+numberDate 'Описание' (OutgoingPayment p) = number(p) + ' от ' + dateTime(p);
+
 // partners
 partner 'Контрагент' = DATA Partner (OutgoingPayment);
 namePartner 'Контрагент' (OutgoingPayment p) = name(partner(p));
@@ -100,6 +102,9 @@ DESIGN outgoingPayment {
         NEW details {
             type = TABBED;
             fill = 1;
+        }
+        NEW footer {
+            type = CONTAINERH;
         }
     }
 }
