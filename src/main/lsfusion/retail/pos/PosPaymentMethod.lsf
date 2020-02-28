@@ -1,6 +1,6 @@
 MODULE PosPaymentMethod;
 
-REQUIRE PaymentMethod, Payment;
+REQUIRE PaymentMethod, Payment, CashAccount;
 
 NAMESPACE Retail;
 
@@ -13,7 +13,7 @@ CONSTRAINT company(Pos p) AND account(p, PaymentMethod pm) AND NOT holder(accoun
                 CHECKED BY account[Pos,PaymentMethod]
                 MESSAGE 'Владелец счета кассы не совпадает с компанией в методе оплаты';
 
-account = DATA Account (Pos);
+account = DATA CashAccount (Pos);
 nameAccount 'Центральная касса' (Pos p) = name(account(p));
 
 CONSTRAINT company(Pos p) AND account(p) AND NOT holder(account(p)) = company(p)
