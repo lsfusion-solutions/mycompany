@@ -41,10 +41,10 @@ META defineTaxCalc(doc, let, prefix, price)
     taxLine 'Сумма налогов' (###doc##Line l) = GROUP SUM taxAmount(Tax t, l) IF in(l, t);
     
     changeTax ( ###doc##Line l) {
-        setTax (Tax t) <- in(l, t);
-        DIALOG changeTax DO {
-            in(l, Tax t) <- setTax(t);
-        } 
+        REQUEST {
+            setTax (Tax t) <- in(l, t);
+            DIALOG changeTax; 
+        } DO in(l, Tax t) <- setTax(t);
     } 
 END
 
