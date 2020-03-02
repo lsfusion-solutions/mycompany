@@ -26,6 +26,7 @@ DESIGN bill {
 // lines
 @defineDocLineRelation(bill, receipt, 'Приобретения', 'Поступления', b, r);
 
+fill ABSTRACT LIST (ReceiptLine, BillLine);
 billReceiptCreated = DATA LOCAL Receipt ();
 newReceipt (Bill b) {
     NEW r = Receipt { 
@@ -41,6 +42,7 @@ newReceipt (Bill b) {
             product(rl) <- item(l);
             done(rl) <- quantity(l);
             billLine(rl) <- l;
+            fill(rl, l);
         }
         
         billReceiptCreated() <- r;

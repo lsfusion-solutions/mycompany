@@ -26,6 +26,7 @@ DESIGN invoice {
 // lines
 @defineDocLineRelation(invoice, shipment, 'Реализации', 'Отгрузки', i, s);
 
+fill ABSTRACT LIST (ShipmentLine, InvoiceLine);
 invoiceShipmentCreated = DATA LOCAL Shipment ();
 newShipment (Invoice i) {
     NEW r = Shipment { 
@@ -41,6 +42,7 @@ newShipment (Invoice i) {
             product(rl) <- item(l);
             done(rl) <- quantity(l);
             invoiceLine(rl) <- l;
+            fill(rl, l);
         }
         
         invoiceShipmentCreated() <- r;

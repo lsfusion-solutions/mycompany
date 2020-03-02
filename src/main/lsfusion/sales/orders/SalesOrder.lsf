@@ -47,6 +47,8 @@ addressCustomer 'Адрес получателя' (Order o) = csvAddress(custome
 scheduledDateTime 'Срок поставки' = DATA DATETIME (Order);
 scheduledDateTime(Order o) <- currentDateTime() WHEN SET(o IS Order);
 
+scheduledDate 'Дата поставки' (Order o) = DATE(scheduledDateTime(o));
+
 deliveryAddress 'Адрес доставки' = DATA STRING (Order);
 WHEN LOCAL CHANGED(customer(Order o)) DO deliveryAddress(o) <- addressCustomer(o);
 

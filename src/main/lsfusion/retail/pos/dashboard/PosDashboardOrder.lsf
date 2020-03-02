@@ -1,0 +1,29 @@
+MODULE PosDashboardOrder;
+
+REQUIRE PosDashboard, SalesOrderConfirmed, SalesOrderInvoice;
+
+NAMESPACE Retail;
+
+EXTEND FORM posDashboard
+    OBJECTS o = Order
+    PROPERTIES(o) READONLY nameType, number, nameCustomer, scheduledDateTime, nameLocation, untaxedAmount, totalTax, totalAmount
+    PROPERTIES(o) EDIT
+    
+    FILTERS customer(i) = customer(o) OR (NOT customer(i) AND NOT customer(o)),
+            status(o) = OrderStatus.confirmed
+    
+    FILTERGROUP today
+        FILTER 'Поставка сегодня' scheduledDate(o) = currentDate()
+;    
+
+DESIGN posDashboard {
+    tabPane {
+        MOVE BOX(o) {
+            caption = 'По заказу';
+        }
+    }
+}
+
+EXTEND FORM posDashboard
+    PROPERTIES 'Добавить в чек' = fill(i, o) TOOLBAR
+;

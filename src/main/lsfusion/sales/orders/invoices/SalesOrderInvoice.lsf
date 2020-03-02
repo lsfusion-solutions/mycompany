@@ -38,38 +38,44 @@ toInvoice (Order o) += toInvoiceOrdered(o) > 0;
  
 createOrderInvoiceLines ABSTRACT LIST (Order, Invoice);
 
+fill (Invoice i, Order o) {
+    type(i) <- invoiceType(type(o));    
+
+    customer(i) <- customer(o);
+    customerReference(i) <- customerReference(o); 
+    paymentTerms(i) <- paymentTerms(o);
+    
+    FOR order(OrderLine ol) = o AND toInvoiceOrdered(ol) > 0
+        NEW il = InvoiceLine DO {
+        orderLine(il) <- ol;
+        invoice(il) <- i;
+        item(il) <- item(ol);
+        description(il) <- description(ol);
+        
+        quantity(il) <- toInvoiceOrdered(ol);
+        
+        price(il) <- price(ol);
+        discount(il) <- discount(ol);
+        discountPrice(il) <- discountPrice(ol);
+    }                            
+    createOrderInvoiceLines(o, i);
+    executeLocalEvents();
+    FOR invoice(InvoiceLine il) = i DO {
+        in(il, Tax t) <- in(orderLine(il), t);
+    }                                
+}
+
 createInvoice 'Реализовать' (Order o) {
     APPLY;
     IF canceled() THEN RETURN;
                
     NEWSESSION {
-        NEW ni = Invoice {
-            ready(ni) <- TRUE;
-            type(ni) <- invoiceType(type(o));    
-
-            customer(ni) <- customer(o);
-            customerReference(ni) <- customerReference(o); 
-            paymentTerms(ni) <- paymentTerms(o);
+        NEW i = Invoice {
+            ready(i) <- TRUE;
             
-            FOR order(OrderLine ol) = o AND toInvoiceOrdered(ol) > 0
-                NEW il = InvoiceLine DO {
-                orderLine(il) <- ol;
-                invoice(il) <- ni;
-                item(il) <- item(ol);
-                description(il) <- description(ol);
-                
-                quantity(il) <- toInvoiceOrdered(ol);
-                
-                price(il) <- price(ol);
-                discount(il) <- discount(ol);
-                discountPrice(il) <- discountPrice(ol);
-            }                            
-            createOrderInvoiceLines(o, ni);
-            executeLocalEvents();
-            FOR invoice(InvoiceLine il) = ni DO {
-                in(il, Tax t) <- in(orderLine(il), t);
-            }                                
-            SHOW invoice OBJECTS i = ni DOCKED;
+            fill(i, o);
+            
+            SHOW invoice OBJECTS i = i DOCKED;
         }
     }
 }
