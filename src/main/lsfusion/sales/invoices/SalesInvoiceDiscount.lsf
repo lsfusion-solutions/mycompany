@@ -1,12 +1,14 @@
 MODULE SalesInvoiceDiscount;
 
-REQUIRE SalesInvoicePricelist, SalesDiscountLine;
+REQUIRE SalesInvoicePricelist, SalesDiscountLine, Refund;
 
 NAMESPACE Sales;
 
 @defineDocSalesDiscount(invoice);
 
 @defineDocSalesDiscountLine(invoice, 'реализации', Invoicing);
+
+skip(InvoiceLine l) += isRefund(invoice(l));
 
 EXTEND FORM invoice
     PROPERTIES recalcDiscountAuto(i) DRAW l TOOLBAR

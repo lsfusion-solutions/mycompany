@@ -6,6 +6,8 @@ NAMESPACE Sales;
 
 CLASS ABSTRACT SalesDiscountLine;
 
+skip = ABSTRACT BOOLEAN (SalesDiscountLine);
+
 dateTime = ABSTRACT DATETIME (SalesDiscountLine);
 customer = ABSTRACT Partner (SalesDiscountLine);
 item = ABSTRACT Item (SalesDiscountLine);
@@ -17,6 +19,7 @@ totalAmount = ABSTRACT NUMERIC[14,2] (SalesDiscountLine);
 
 matches (Discount d, SalesDiscountLine l) =
     set(d, item(l)) AND
+    NOT skip(l) AND
     NOT (countPriceType(d) AND NOT in(d, priceType(l))) AND
     NOT startDateTime(d) > dateTime(l) AND
     NOT endDateTime(d) < dateTime(l) AND
@@ -63,7 +66,7 @@ META defineDocSalesDiscountLine (doc, caption, NS)
     EXTEND FORM options PROPERTIES() recalcDiscountAuto###doc;
     
     WHEN LOCAL (CHANGED(dateTime(###doc##Line l)) OR CHANGED(quantity(l)) OR CHANGED(fullAmount(doc(l))) OR 
-                CHANGED(customer(l)) OR CHANGED(item(l)) OR CHANGED(price(l))) AND 
+                CHANGED(customer(l)) OR CHANGED(item(l)) OR CHANGED(price(l)) OR CHANGED(type(l))) AND 
                 recalcDiscountAuto###doc() AND NOT manual(salesDiscount(l)) DO
         salesDiscount(l) <- minSalesDiscountAuto(l);
     
