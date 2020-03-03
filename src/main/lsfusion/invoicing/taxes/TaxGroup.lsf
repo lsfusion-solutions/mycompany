@@ -4,7 +4,7 @@ REQUIRE InvoicingSettings;
 
 NAMESPACE Invoicing;
 
-CLASS TaxGroup;
+CLASS TaxGroup 'Группа налогов';
 
 name 'Название' = DATA ISTRING[30] (TaxGroup) NONULL;
 
@@ -18,15 +18,18 @@ FORM taxGroup 'Группа налога'
 FORM taxGroups 'Группы налогов'
     OBJECTS t = TaxGroup
     PROPERTIES(t) READONLY name
-    PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
         
     LIST TaxGroup OBJECT t
 ;
 
-NAVIGATOR {
-    invoicing {
-        Invoicing.settings{
-            NEW taxGroups;        
-        }
+EXTEND FORM options
+    OBJECTS t = TaxGroup
+    PROPERTIES(t) READONLY name
+    PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(t);
     }
 }

@@ -22,16 +22,21 @@ FORM receiptType 'Тип поступления'
     EDIT ReceiptType OBJECT o;
 ;
 
-FORM receiptTypes 'Типы поступления'
+FORM receiptTypes 'Типы поступлений'
     OBJECTS o = ReceiptType
     PROPERTIES(o) READONLY name
-    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
     LIST ReceiptType OBJECT o;
 ;
 
-NAVIGATOR {
-    settings {
-        NEW receiptTypes;
+EXTEND FORM options
+    OBJECTS rt = ReceiptType
+    PROPERTIES(rt) READONLY name
+    PROPERTIES(rt) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(rt);
     }
 }
 

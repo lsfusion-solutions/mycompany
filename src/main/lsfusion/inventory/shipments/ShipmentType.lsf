@@ -33,17 +33,22 @@ FORM shipmentType 'Тип отгрузки'
     EDIT ShipmentType OBJECT o;
 ;
 
-FORM shipmentTypes 'Типы отгрузки'
+FORM shipmentTypes 'Типы отгрузок'
     OBJECTS o = ShipmentType
     PROPERTIES(o) READONLY name
-    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
     
     LIST ShipmentType OBJECT o;
 ;
 
-NAVIGATOR {
-    settings {
-        NEW shipmentTypes;
+EXTEND FORM options
+    OBJECTS st = ShipmentType
+    PROPERTIES(st) READONLY name
+    PROPERTIES(st) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(st);
     }
 }
 

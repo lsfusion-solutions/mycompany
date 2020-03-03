@@ -20,13 +20,18 @@ FORM incomingPaymentType 'Тип входящего платежа'
 FORM incomingPaymentTypes 'Типы входящих платежей'
     OBJECTS o = IncomingPaymentType
     PROPERTIES(o) READONLY name
-    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
     
     LIST IncomingPaymentType OBJECT o;
 ;
 
-NAVIGATOR {
-    settings {
-        NEW incomingPaymentTypes;
+EXTEND FORM options
+    OBJECTS ipt = IncomingPaymentType
+    PROPERTIES(ipt) READONLY name
+    PROPERTIES(ipt) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(ipt);
     }
 }

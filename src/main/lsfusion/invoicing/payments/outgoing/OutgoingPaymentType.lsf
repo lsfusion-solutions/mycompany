@@ -20,13 +20,18 @@ FORM outgoingPaymentType 'Тип исходящего платежа'
 FORM outgoingPaymentTypes 'Типы исходящих платежей'
     OBJECTS o = OutgoingPaymentType
     PROPERTIES(o) READONLY name
-    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
     
     LIST OutgoingPaymentType OBJECT o;
 ;
 
-NAVIGATOR {
-    settings {
-        NEW outgoingPaymentTypes;
+EXTEND FORM options
+    OBJECTS opt = OutgoingPaymentType
+    PROPERTIES(opt) READONLY name
+    PROPERTIES(opt) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(opt);
     }
 }

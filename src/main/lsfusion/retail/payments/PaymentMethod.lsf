@@ -32,19 +32,19 @@ DESIGN paymentMethod {
 
 FORM paymentMethods 'Методы оплаты'
     OBJECTS pm = PaymentMethod
-    PROPERTIES(pm) READONLY name, isCash
-    PROPERTIES(pm) NEWSESSION NEW, EDIT, DELETE
-;
-
-FORM dialogPaymentMethods 'Методы оплаты'
-    OBJECTS pm = PaymentMethod
     PROPERTIES(pm) READONLY name
     
     LIST PaymentMethod OBJECT pm
 ;
 
-NAVIGATOR {
-    settings {
-        NEW paymentMethods;
+EXTEND FORM options
+    OBJECTS pm = PaymentMethod
+    PROPERTIES(pm) READONLY name, isCash
+    PROPERTIES(pm) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(pm);
     }
 }
