@@ -1,6 +1,6 @@
 MODULE ShipmentReceipt;
 
-REQUIRE ShipmentCanceled, ReceiptDone;
+REQUIRE ShipmentCanceled, ReceiptCanceled;
 
 NAMESPACE Inventory;
 
@@ -15,8 +15,7 @@ nameReceiptType 'Тип поступления для возврата' (Shipmen
 EXTEND FORM shipmentType PROPERTIES(o) nameReceiptType;
 
 // line
-shipmentLine = DATA ShipmentLine (ReceiptLine);
-numberShipmentLine 'Отгрузка' (ReceiptLine l) = number(shipment(shipmentLine(l)));
+@defineDocLineRelation (shipment, receipt, 'Отгрузка', 'Поступление', s, r);
 
 CONSTRAINT shipmentLine(ReceiptLine l) AND NOT 
                 (customer(shipmentLine(l)) = vendor(l) AND 
@@ -25,11 +24,11 @@ CONSTRAINT shipmentLine(ReceiptLine l) AND NOT
     MESSAGE 'Контрагент и товар отгрузки должны совпадать с контрагентом и товаром возврата';
     
 EXTEND FORM receipt
-    PROPERTIES(l) numberShipmentLine SHOWIF isReturn(r)
+    PROPERTIES(l) numberDateShipmentLine SHOWIF isReturn(r)
 ;
 
 // Shipment
-return 'Возврат' (Shipment s) {    
+return 'Вернуть' (Shipment s) {    
     NEWSESSION {
         NEW nr = Receipt {
             type(nr) <- receiptType(type(s));
@@ -65,3 +64,20 @@ WHEN LOCAL (SETCHANGED(product(ReceiptLine l)) OR SETCHANGED(vendor(l))) AND isR
                                     active(shipment(sl)) 
                              ORDER executionDateTime(shipment(sl)), sl;
 }
+
+// returned quantity
+returned 'Возвращено' (ShipmentLine sl) = 
+    GROUP SUM done(ReceiptLine rl) IF shipmentLine(rl) = sl AND active(receipt(rl));
+
+FORM shipmentReceiptShow 'Возвраты'
+    OBJECTS sl = ShipmentLine
+    
+    OBJECTS rl = ReceiptLine
+    PROPERTIES(rl) READONLY nameStatus, number, executionDateTime, done
+    FILTERS shipmentLine(rl) = sl,
+            active(receipt(rl))
+;
+    
+EXTEND FORM shipment
+    PROPERTIES(l) returned ON CHANGE { SHOW shipmentReceiptShow OBJECTS sl = l; } SHOWIF countReceiptLine(s)
+;

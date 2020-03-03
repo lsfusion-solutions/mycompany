@@ -1,6 +1,6 @@
 MODULE Refund;
 
-REQUIRE BillDone, Invoice;
+REQUIRE BillDone, InvoiceCanceled;
 
 NAMESPACE Invoicing;
 
@@ -77,3 +77,20 @@ DESIGN bill {
         MOVE PROPERTY(addRefund(b));
     }               
 }
+
+// returned quantity
+returned 'Возвращено' (BillLine bl) = 
+    GROUP SUM quantity(InvoiceLine il) IF billLine(il) = bl AND active(invoice(il));
+
+FORM billInvoiceShow 'Возвраты'
+    OBJECTS bl = BillLine
+    
+    OBJECTS il = InvoiceLine
+    PROPERTIES(il) READONLY nameStatus, number, dateTime, quantity
+    FILTERS billLine(il) = bl,
+            active(invoice(il))
+;
+    
+EXTEND FORM bill
+    PROPERTIES(l) returned ON CHANGE { SHOW billInvoiceShow OBJECTS bl = l; } SHOWIF countInvoiceLine(b)
+;

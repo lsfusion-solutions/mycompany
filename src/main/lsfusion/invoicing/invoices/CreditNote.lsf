@@ -1,6 +1,6 @@
 MODULE CreditNote;
 
-REQUIRE InvoiceDone, Bill;
+REQUIRE InvoiceDone, BillCanceled;
 
 NAMESPACE Invoicing;
 
@@ -82,3 +82,20 @@ DESIGN invoice {
         MOVE PROPERTY(addCreditNote(i));
     }               
 }
+
+// returned quantity
+returned 'Возвращено' (InvoiceLine il) = 
+    GROUP SUM quantity(BillLine bl) IF invoiceLine(bl) = il AND active(bill(bl));
+
+FORM invoiceBillShow 'Возвраты'
+    OBJECTS il = InvoiceLine
+    
+    OBJECTS bl = BillLine
+    PROPERTIES(bl) READONLY nameStatus, number, dateTime, quantity
+    FILTERS invoiceLine(bl) = il,
+            active(bill(bl))
+;
+    
+EXTEND FORM invoice
+    PROPERTIES(l) returned ON CHANGE { SHOW invoiceBillShow OBJECTS il = l; } SHOWIF countBillLine(i)
+;
