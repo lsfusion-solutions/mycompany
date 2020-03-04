@@ -22,6 +22,7 @@ META defineTaxCalc(doc, let, prefix, price)
                                                             MESSAGE 'Нельзя удалять налог, участвующий в расчетах';
     
     totalTax 'Налог' (###doc##Line l) = GROUP SUM taxAmount(Tax t, l) IF in(l, t);
+    percentTax 'Налоги, %' (###doc##Line l) = prefix##Tax(item(l));
 
     totalAmount 'Налог' (###doc##Line l) = subtotal(l) (+) (totalTax(l) IF NOT taxIncluded(l));
 

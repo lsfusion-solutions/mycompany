@@ -1,6 +1,6 @@
 MODULE Scrap;
 
-REQUIRE InventorySettings, Product, Location, InvLedger, BarCode, Doc;
+REQUIRE InventorySettings, Product, Location, InvLedger, BarCode, Doc, ScrapType;
 
 NAMESPACE Inventory;
 
@@ -8,13 +8,19 @@ CLASS Scrap 'Списание';
 
 @defineStatus(scrap, 'списания');
 
+// type
+type 'Тип' = DATA ScrapType (Scrap) NONULL;
+nameType 'Тип' (Scrap r) = name(type(r));
+
+WHEN LOCAL SET(Scrap r IS Scrap) AND NOT CHANGED(type(r)) DO type(r) <- defaultScrapType(); 
+
 dateTime 'Дата' = DATA DATETIME (Scrap) NONULL;
 dateTime(Scrap s) <- currentDateTime() WHEN SET(s IS Scrap);
 
-@defineNumber(scrap, 'Списания', 'СП');
+@defineNumberType(scrap);
 
-locationFrom 'Место хранения' = DATA Location (Scrap) NONULL;
-nameLocationFrom 'Место хранения' (Scrap s) = name(locationFrom(s));
+location 'Место хранения' = DATA Location (Scrap) NONULL;
+nameLocation 'Место хранения' (Scrap s) = name(location(s));
 
 // lines
 CLASS ScrapLine 'Строка списания';
@@ -36,7 +42,7 @@ quantity 'Кол-во' = DATA NUMERIC[16,3] (ScrapLine);
 
 FORM scrap 'Списание'
     OBJECTS s = Scrap PANEL 
-    PROPERTIES(s) dateTime, number, nameLocationFrom
+    PROPERTIES(s) nameType, dateTime, number, nameLocation
     
     OBJECTS l = ScrapLine
     PROPERTIES(l) index, nameProduct, nameUom, idBarCodeProduct, idProduct, quantity, NEW, DELETE
@@ -47,6 +53,7 @@ FORM scrap 'Списание'
 
 DESIGN scrap {
     OBJECTS {
+        PROPERTY(nameType(s)) { notNull = TRUE; }
         NEW details {
             fill = 1;
             type = TABBED;
@@ -59,12 +66,10 @@ DESIGN scrap {
 }
 
 @defineDocHistory(scrap, s, product, quantity);
-@defineDocSearch(scrap, product, quantity, 'Кол-во', s);
-@defineBarCodeSearch(scrap, s, product, quantity);
 
 FORM scraps 'Списания'
     OBJECTS s = Scrap 
-    PROPERTIES(s)  READONLY dateTime, number, nameLocationFrom
+    PROPERTIES(s) READONLY nameType, dateTime, number, nameLocation
     PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
     
     LIST Scrap OBJECT s
@@ -84,7 +89,7 @@ copy 'Копировать' (Scrap s) {
     NEWSESSION {
         NEW ns = Scrap {
             dateTime(ns) <- dateTime(s);
-            locationFrom(ns) <- locationFrom(s);
+            location(ns) <- location(s);
             FOR scrap(ScrapLine l) = s INLINE NEW nl = ScrapLine DO {
                 scrap(nl) <- ns;
                 product(nl) <- product(l);

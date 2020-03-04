@@ -32,6 +32,8 @@ CONSTRAINT customer(Order o) AND NOT isCustomer(customer(o))
                 CHECKED BY customer[Order]
                 MESSAGE 'Контрагент заказа покупателя должен быть покупателем';
 
+addressCustomer 'Адрес получателя' (Order o) = csvAddress(customer(o));
+
 // Quotation
 validity 'Срок действия' = DATA DATETIME (Order);
 
@@ -40,8 +42,6 @@ paymentTerms = DATA PaymentTerm (Order);
 namePaymentTerms 'Условия оплаты' (Order o)= name(paymentTerms(o));
 
 WHEN LOCAL CHANGED(customer(Order o)) AND NOT CHANGED(paymentTerms(o)) DO paymentTerms(o) <- customerPaymentTerms(customer(o)); 
-
-addressCustomer 'Адрес получателя' (Order o) = csvAddress(customer(o));
 
 // Shipping information
 scheduledDateTime 'Срок поставки' = DATA DATETIME (Order);

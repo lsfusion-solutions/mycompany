@@ -1,0 +1,123 @@
+MODULE DocTemplate;
+
+REQUIRE MasterData;
+
+NAMESPACE Utils;
+
+CLASS TemplateFormat 'Формат шаблона' {
+    pdf 'PDF',
+    docx 'DOCX',
+    xlsx 'XLSX',
+    rtf 'RTF',
+    html 'HTML'
+}
+
+name 'Наименование' (TemplateFormat o) = staticCaption(o) IF o IS TemplateFormat CHARWIDTH 15;
+
+FORM dialogTemplateFormats 'Формат шаблона'
+    OBJECTS o = TemplateFormat
+    PROPERTIES(o) READONLY name
+    
+    LIST TemplateFormat OBJECT o
+;
+
+META defineDocTemplate(doc, caption)
+    CLASS ###doc##Template 'Шаблон '##caption;
+    name 'Название' = DATA ISTRING[100] (###doc##Template) CHARWIDTH 15;
+    template 'Имя файла шаблона' = DATA STRING (###doc##Template) CHARWIDTH 50;
+    
+    format = DATA TemplateFormat (###doc##Template);
+    nameFormat 'Формат' (###doc##Template t) = name(format(t));
+    
+    // types
+    in 'Вкл' = DATA BOOLEAN (###doc##Template, ###doc##Type);
+    count###doc##Template (###doc##Type tp) = GROUP SUM 1 IF in(###doc##Template tm, tp);
+    
+    FORM doc##Template 'Шаблон '##caption
+        OBJECTS o = ###doc##Template PANEL
+        PROPERTIES(o) name, template, nameFormat
+        
+        OBJECTS t = ###doc##Type
+        PROPERTIES             in(o, t)
+        PROPERTIES(t) READONLY name
+        
+        EDIT ###doc##Template OBJECT o
+    ;
+    
+    FORM doc##Templates 'Шаблон '##caption
+        OBJECTS o = ###doc##Template
+        PROPERTIES(o) READONLY name
+        
+        LIST ###doc##Template OBJECT o
+    ;
+    
+    FORM dialogTemplates###doc 'Шаблон '##caption
+        OBJECTS itp = ###doc##Type
+        
+        OBJECTS itm = ###doc##Template
+        PROPERTIES(itm) READONLY name
+        FILTERS in(itm, itp)
+    ;
+    
+    EXTEND FORM options
+        OBJECTS tm###doc = ###doc##Template
+        PROPERTIES(tm###doc) READONLY name, template, nameFormat
+        PROPERTIES(tm###doc) NEWSESSION NEW, EDIT, DELETE
+    ;
+    
+    DESIGN options {
+        tabbedPane {
+            MOVE BOX(tm###doc);
+        }
+    }
+    
+    // extend type
+    EXTEND FORM doc##Type
+        OBJECTS tm = ###doc##Template
+        PROPERTIES in(tm, o)
+        PROPERTIES(tm) READONLY name
+    ;
+    
+END
+
+META defineDocTemplateForm(doc, obj)
+    doc##Template = DATA LOCAL ###doc##Template();
+    EXTEND FORM print###doc
+        REPORT template(doc##Template())
+    ;
+
+    print 'Печать' (###doc o) {
+        IF count###doc##Template(type(o)) = 1 THEN
+            doc##Template() <- GROUP MAX ###doc##Template it IF in(it, type(o));
+        ELSE
+            DIALOG dialogTemplates###doc OBJECTS itp = type(o), itm INPUT DO {
+                doc##Template() <- itm;
+            }
+        IF doc##Template() THEN {
+            CASE EXCLUSIVE
+                WHEN format(doc##Template()) = TemplateFormat.pdf THEN
+                    PRINT print###doc OBJECTS obj = o PDF;
+                WHEN format(doc##Template()) = TemplateFormat.docx THEN
+                    PRINT print###doc OBJECTS obj = o DOCX;
+                WHEN format(doc##Template()) = TemplateFormat.xlsx THEN
+                    PRINT print###doc OBJECTS obj = o XLSX;
+                WHEN format(doc##Template()) = TemplateFormat.rtf THEN
+                    PRINT print###doc OBJECTS obj = o RTF;
+                WHEN format(doc##Template()) = TemplateFormat.html THEN
+                    PRINT print###doc OBJECTS obj = o HTML;
+                ELSE
+                    PRINT print###doc OBJECTS obj = o;
+        }
+             
+    }
+
+    EXTEND FORM doc
+        PROPERTIES(obj) print SHOWIF count###doc##Template(type(obj))
+    ;
+    
+    DESIGN doc {
+        secondaryActions {
+            MOVE PROPERTY(print(obj));
+        }
+    }
+END

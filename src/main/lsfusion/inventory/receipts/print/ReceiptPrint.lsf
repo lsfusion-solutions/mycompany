@@ -1,33 +1,24 @@
 MODULE ReceiptPrint;
 
-REQUIRE ReceiptDone;
+REQUIRE ReceiptDone, DocTemplate;
 
 NAMESPACE Inventory;
 
-locationAddress (Receipt r)  = linesAddress(location(r));
-partnerAddress (Receipt r) = linesAddress(vendor(r)); 
-partnerPhone (Receipt r) = phone(vendor(r));
+addressVendor (Receipt r) = linesAddress(vendor(r)); 
+phoneVendor (Receipt r) = phone(vendor(r));
+
+addressLocation (Receipt r)  = linesAddress(location(r));
 
 FORM printReceipt 'Задание на поступление'
     OBJECTS r = Receipt PANEL 
-    PROPERTIES(r) nameLocation, nameVendor, nameStatus, scheduledDateTime, number,
-                  locationAddress, partnerAddress, partnerPhone
+    PROPERTIES(r) scheduledDateTime, number,
+                  nameVendor, addressVendor, phoneVendor,
+                  nameLocation, addressLocation 
     
     OBJECTS l = ReceiptLine
     PROPERTIES(l) index, nameProduct, initialDemand, done
     FILTERS receipt(l) = r
 ;
 
-print(Receipt r) {
-    PRINT printReceipt OBJECTS r = r; 
-}
-
-EXTEND FORM receipt
-    PROPERTIES(r) print
-;
-
-DESIGN receipt {
-    secondaryActions {
-        MOVE PROPERTY(print(r)) { caption = 'Печатать'; charWidth = 10; }
-    }
-}
+@defineDocTemplate(receipt, 'поступления');
+@defineDocTemplateForm(receipt, r);

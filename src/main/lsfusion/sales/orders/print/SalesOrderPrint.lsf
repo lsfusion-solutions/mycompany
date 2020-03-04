@@ -1,35 +1,30 @@
 MODULE SalesOrderPrint;
 
-REQUIRE SalesOrder;
+REQUIRE SalesOrder, DocTemplate;
 
 NAMESPACE Sales;
 
-phoneVendor 'Телефон поставщика' (Order o) = phone(customer(o));
-fullAddressVendor 'Адрес поставщика' (Order o) = linesAddress(customer(o)); 
-fullAddressLocation 'Адрес места доставки' (Order o ) = linesAddress(location(o));
-fullAddressCompany 'Адрес компании' (Order o) = csvAddress(company(location(o)));
-nameCompany 'Компания' (Order o) = name(company(location(o)));
-phoneCompany 'Телефон компании' (Order o) = phone(company(location(o)));
+phoneCustomer (Order o) = phone(customer(o));
 
-FORM printOrder 'Заказ поставщику'   
+addressLocation (Order o ) = linesAddress(location(o));
+
+nameCompany (Order o) = name(company(location(o)));
+addressCompany (Order o) = csvAddress(company(location(o)));
+phoneCompany (Order o) = phone(company(location(o)));
+
+FORM printOrder 'Заказ покупателя'   
     OBJECTS o = Order PANEL 
-    PROPERTIES(o) scheduledDateTime, number, nameLocation, fullAddressLocation, nameCustomer, fullAddressVendor, phoneVendor, nameCompany, fullAddressCompany, phoneCompany
+    PROPERTIES(o) scheduledDateTime, number,
+                  nameCustomer, addressCustomer, phoneCustomer, deliveryAddress,   
+                  nameLocation, addressLocation, nameCompany, addressCompany, phoneCompany
         
     OBJECTS l = OrderLine
-    PROPERTIES(l) nameItem, description, quantity, taxes, subtotal, price, uom
+    PROPERTIES(l) nameItem, description, 
+                  quantity, price, subtotal,
+                  percentTax, totalTax, taxes, 
+                  totalAmount
     FILTERS order(l) = o
 ; 
 
-print 'Печать' (Order o) {
-    PRINT printOrder OBJECTS o = o;
-}  
-
-EXTEND FORM order
-     PROPERTIES(o) print
-;
-
-DESIGN order {
-    secondaryActions {
-        MOVE PROPERTY(print(o));             
-    }
-}
+@defineDocTemplate(order, 'заказа покупателю');
+@defineDocTemplateForm(order, o);

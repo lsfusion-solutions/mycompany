@@ -1,41 +1,30 @@
 MODULE InvoicePrint;
 
-REQUIRE InvoiceDebt;
+REQUIRE Invoice, DocTemplate;
 
 NAMESPACE Invoicing;
 
-partnerAddress 'Адрес' (Invoice i) = linesAddress(customer(i)); 
-partnerPhone 'Телефон' (Invoice i) = phone(customer(i));
-companyAddress 'Адрес' (Invoice i) = linesAddress(company(i));
-companyPhone 'Телефон' (Invoice i) = phone(company(i));
-companyEmail 'Электронная почта' (Invoice i) = email(company(i));
-companyWebsite 'Веб сайт' (Invoice i) = website(company(i));
+addressCompany (Invoice i) = linesAddress(company(i));
+phoneCompany (Invoice i) = phone(company(i));
+emailCompany (Invoice i) = email(company(i));
+websiteCompany (Invoice i) = website(company(i));
+
+addressCustomer (Invoice i) = linesAddress(customer(i)); 
+phoneCustomer (Invoice i) = phone(customer(i));
 
 FORM printInvoice 'Реализация'
     OBJECTS i = Invoice PANEL 
-    PROPERTIES(i) dateTime, dueDateTime, nameCustomer, nameStatus, number, partnerAddress, partnerPhone
-    PROPERTIES(i) nameCompany, companyAddress, companyPhone, companyEmail, companyWebsite
-    PROPERTIES(i) untaxedAmount, totalAmount, paid
+    PROPERTIES(i) dateTime, dueDateTime, number,
+                  nameCompany, addressCompany, phoneCompany, emailCompany, websiteCompany,
+                  nameCustomer, addressCustomer, phoneCustomer
     
     OBJECTS l = InvoiceLine
-    PROPERTIES(l) nameItem, quantity, price, taxes, subtotal
+    PROPERTIES(l) nameItem, 
+                  quantity, price, subtotal,
+                  percentTax, totalTax, taxes, 
+                  totalAmount
     FILTERS invoice(l) = i
-    
-    OBJECTS t = Tax
-    PROPERTIES name(t), taxAmount(t, i)
-    FILTERS countLine(i, t)
 ;
 
-print(Invoice i) {
-    PRINT printInvoice OBJECTS i = i; 
-}
-
-EXTEND FORM invoice
-    PROPERTIES(i) print
-;
-
-DESIGN invoice {
-    secondaryActions {
-        MOVE PROPERTY(print(i)) { caption = 'Печатать'; charWidth = 10;}
-    }
-}
+@defineDocTemplate(invoice, 'реализации');
+@defineDocTemplateForm(invoice, i);

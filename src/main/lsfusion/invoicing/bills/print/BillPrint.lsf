@@ -1,42 +1,30 @@
 MODULE BillPrint;
 
-REQUIRE BillDebt;
+REQUIRE Bill, DocTemplate;
 
 NAMESPACE Invoicing;
 
-partnerAddress 'Адрес' (Bill b) = linesAddress(vendor(b)); 
-partnerPhone 'Телефон' (Bill b) = phone(vendor(b));
-companyAddress 'Адрес' (Bill b) = linesAddress(company(b));
-companyPhone 'Телефон' (Bill b) = phone(company(b));
-companyEmail 'Электронная почта' (Bill b) = email(company(b));
-companyWebsite 'Веб сайт' (Bill b) = website(company(b));
+addressCompany (Bill i) = linesAddress(company(i));
+phoneCompany (Bill i) = phone(company(i));
+emailCompany (Bill i) = email(company(i));
+websiteCompany (Bill i) = website(company(i));
 
+addressVendor (Bill i) = linesAddress(vendor(i)); 
+phoneVendor (Bill i) = phone(vendor(i));
 
-FORM printBill 'Приобретение'
+FORM printBill 'Реализация'
     OBJECTS b = Bill PANEL 
-    PROPERTIES(b) dateTime, dueDateTime, nameVendor, nameStatus, number, partnerAddress, partnerPhone
-    PROPERTIES(b) nameCompany, companyAddress, companyPhone, companyEmail, companyWebsite
-    PROPERTIES(b) untaxedAmount, totalAmount, paid
+    PROPERTIES(b) dateTime, dueDateTime, number,
+                  nameCompany, addressCompany, phoneCompany, emailCompany, websiteCompany,
+                  nameVendor, addressVendor, phoneVendor
     
     OBJECTS l = BillLine
-    PROPERTIES(l) nameItem, quantity, price, taxes, subtotal
+    PROPERTIES(l) nameItem, 
+                  quantity, price, subtotal,
+                  percentTax, totalTax, taxes, 
+                  totalAmount
     FILTERS bill(l) = b
-    
-    OBJECTS t = Tax
-    PROPERTIES name(t), taxAmount(t, b)
-    FILTERS countLine(b, t)
 ;
 
-print(Bill b) {
-    PRINT printBill OBJECTS b = b; 
-}
-
-EXTEND FORM bill
-    PROPERTIES(b) print
-;
-
-DESIGN bill {
-    secondaryActions {
-        MOVE PROPERTY(print(b)) { caption = 'Печатать'; charWidth = 10; }
-    }
-}
+@defineDocTemplate(bill, 'реализации');
+@defineDocTemplateForm(bill, b);

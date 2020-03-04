@@ -1,0 +1,64 @@
+MODULE ScrapType;
+
+REQUIRE Numerator, Location;
+
+NAMESPACE Inventory;
+
+CLASS ScrapType 'Тип списания';
+name 'Название' = DATA ISTRING[50] (ScrapType) NONULL;
+
+numerator = DATA Numerator (ScrapType);
+nameNumerator 'Нумератор' (ScrapType o) = name(numerator(o));
+
+defaultLocation = DATA Location (ScrapType);
+nameDefaultLocation 'Место хранения по умолчанию' (ScrapType o) = name(defaultLocation(o));
+
+FORM scrapType 'Тип поступления'
+    OBJECTS o = ScrapType PANEL 
+    PROPERTIES(o) name, nameNumerator, nameDefaultLocation
+     
+    EDIT ScrapType OBJECT o;
+;
+
+FORM scrapTypes 'Типы поступлений'
+    OBJECTS o = ScrapType
+    PROPERTIES(o) READONLY name
+    LIST ScrapType OBJECT o;
+;
+
+EXTEND FORM options
+    OBJECTS sct = ScrapType
+    PROPERTIES(sct) READONLY name
+    PROPERTIES(sct) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(sct);
+    }
+}
+
+// default type
+countScrapTypes 'Кол-во типов' () = GROUP SUM 1 IF r IS ScrapType; 
+firstScrapType = GROUP LAST ScrapType r ORDER DESC r WHERE r IS ScrapType;
+
+defaultScrapType = firstScrapType() IF countScrapTypes() = 1;
+
+// initial data
+loadInitialData () + {
+    NEWSESSION {
+        NEW r = ScrapType {
+            name(r) <- 'Списание товара';
+
+            NEW n = Numerator {
+                name(n) <- 'Списание товара';
+                series(n) <- 'СТ';
+                minValue(n) <- 1;
+                maxValue(n) <- 999999;
+                stringLength(n) <- 6;
+                numerator(r) <- n;
+            }
+        }
+        APPLY;
+    }
+}

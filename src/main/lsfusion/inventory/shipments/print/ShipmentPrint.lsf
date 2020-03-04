@@ -1,41 +1,28 @@
 MODULE ShipmentPrint;
 
-REQUIRE ShipmentDone;
+REQUIRE ShipmentDone, DocTemplate;
 
 NAMESPACE Inventory;
 
-locationAddress 'Адрес' (Shipment s)  = linesAddress(location(s));
-toLocationAddress 'Адрес' (Shipment s)  = linesAddress(toLocation(s));
-partnerAddress 'Адрес' (Shipment s) = linesAddress(customer(s)); 
-partnerPhone 'Телефон' (Shipment s) = phone(customer(s));
+addressCustomer 'Адрес' (Shipment s) = linesAddress(customer(s)); 
+phoneCustomer 'Телефон' (Shipment s) = phone(customer(s));
+
+addressLocation 'Адрес' (Shipment s)  = linesAddress(location(s));
+addressToLocation 'Адрес' (Shipment s)  = linesAddress(toLocation(s));
 
 note 'Примечание' = ABSTRACT TEXT (ShipmentLine);
 
 FORM printShipment 'Задание на отгрузку'
     OBJECTS s = Shipment PANEL 
-    PROPERTIES(s) nameLocation, nameToLocation SHOWIF NOT isTransfer(type(s)), nameCustomer SHOWIF isTransfer(type(s)), 
-                    'Дата' = scheduledDateTime, number, locationAddress, 
-                    toLocationAddress SHOWIF NOT isTransfer(type(s)), partnerAddress SHOWIF isTransfer(type(s)), 
-                    partnerPhone SHOWIF isTransfer(type(s))
+    PROPERTIES(s) scheduledDateTime, number,
+                  nameCustomer, addressCustomer, phoneCustomer,
+                  nameLocation, addressLocation,
+                  nameToLocation, addressToLocation
     
     OBJECTS l = ShipmentLine
     PROPERTIES(l) nameProduct, done, note
     FILTERS shipment(l) = s
 ;
 
-print(Shipment s) {
-    PRINT printShipment OBJECTS s = s; 
-}
-
-EXTEND FORM shipment
-    PROPERTIES(s) print
-;
-
-DESIGN shipment {
-    secondaryActions {
-        MOVE PROPERTY(print(s)) { caption = 'Печатать'; charWidth = 10; }
-    }
-}
-
-
-
+@defineDocTemplate(shipment, 'отгрузки');
+@defineDocTemplateForm(shipment, s);
