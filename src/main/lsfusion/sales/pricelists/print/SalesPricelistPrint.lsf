@@ -7,13 +7,19 @@ NAMESPACE Sales;
 CLASS PrintPricelistType 'Тип прайс-листа';
 
 name 'Наименование' = DATA STRING[50] (PrintPricelistType);
+template 'Шаблон для заголовка' = DATA STRING (PrintPricelistType) CHARWIDTH 50;
+templateCategory 'Шаблон для спецификации' = DATA STRING (PrintPricelistType) CHARWIDTH 50;
+
+company = DATA Company (PrintPricelistType);
+nameCompany 'Компания' (PrintPricelistType t) = name(company(t)); 
 
 set 'Вкл' = DATA BOOLEAN (PrintPricelistType, Category);
 set 'Вкл' = DATA BOOLEAN (PrintPricelistType, PriceType);
 
 FORM printPricelistType 'Тип прайс-листа'
     OBJECTS t = PrintPricelistType PANEL
-    PROPERTIES(t) name
+    PROPERTIES(t) name, nameCompany,
+                  template, templateCategory
     
     TREE categories cat = Category PARENT parent(cat) 
     PROPERTIES name(cat) READONLY, set(t, cat) BACKGROUND (GROUP LAST set(t, Category cc) ORDER level(cc, cat))
@@ -35,7 +41,20 @@ FORM printPricelistTypes 'Типы прайс-листа'
 
 DESIGN printPricelistType {
     OBJECTS {
-        MOVE PROPERTY(name(t));
+        NEW header {
+            NEW general {
+                alignment = STRETCH;
+                type = CONTAINERH;
+                MOVE PROPERTY(name(t));
+                MOVE PROPERTY(nameCompany(t));
+            } 
+            NEW templates {
+                alignment = STRETCH;
+                type = CONTAINERH;
+                MOVE PROPERTY(template(t));
+                MOVE PROPERTY(templateCategory(t));
+            }
+        }
         NEW details {
             fill = 1;
             type = CONTAINERH;
@@ -68,20 +87,29 @@ DESIGN pricelists {
     }
 }
 
+// print
+addressCompany (PrintPricelistType t) = linesAddress(company(t));
+phoneCompany (PrintPricelistType t) = phone(company(t));
+emailCompany (PrintPricelistType t) = email(company(t));
+websiteCompany (PrintPricelistType t) = website(company(t));
+
 FORM printPricelist 'Текущие цены'
     OBJECTS dt = DATETIME PANEL
     
     OBJECTS pt = PrintPricelistType PANEL
+    PROPERTIES(pt) name, nameCompany, phoneCompany, emailCompany, websiteCompany
+    REPORT template(pt)
 
     OBJECTS t = PriceType
     FILTERS set(pt, t)
-    
-    OBJECTS c = Category
-    FILTERS set(pt, c)
-    
+
+    OBJECTS c = Category SUBREPORT templateCategory(pt)
+    PROPERTIES(c) name
+    FILTERS GROUP LAST set(pt, Category pc) ORDER level(c, pc) 
+
     OBJECTS i = Item
-    PROPERTIES nameCategory(i), name(i), nameUom(i), price = priceB(t, i, dt) COLUMNS (t) HEADER name(t)
-    FILTERS (GROUP SUM 1 IF priceB(PriceType type, i, dt) AND set(pt, type)), category(i) = c 
+    PROPERTIES id(i), name(i), description(i), nameUom(i), price = priceB(t, i, dt) COLUMNS (t) HEADER name(t)
+    FILTERS (GROUP SUM 1 IF priceB(PriceType type, i, dt) AND set(pt, type)), category(i) = c, canBeSold(i) 
 ;
 
 printPriceList 'Сформировать' (PrintPricelistType pt) {
@@ -89,8 +117,7 @@ printPriceList 'Сформировать' (PrintPricelistType pt) {
 }
 
 printPriceListXls 'Сформировать (xls)' (PrintPricelistType pt) {
-    PRINT printPricelist OBJECTS dt = currentDateTime(), pt = pt XLS TO file;
-    open(file());
+    PRINT printPricelist OBJECTS dt = currentDateTime(), pt = pt XLS;
 }
 
 EXTEND FORM pricelists
