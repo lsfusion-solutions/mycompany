@@ -1,0 +1,23 @@
+MODULE LegalEntityRu;
+
+REQUIRE LegalEntity;
+
+NAMESPACE MasterData;
+
+inn 'ИНН' = DATA STRING[10] (LegalEntity);
+okpo 'ОКПО' = DATA STRING[8] (LegalEntity);
+
+EXTEND FORM partner
+    PROPERTIES(p) inn, okpo
+;
+
+DESIGN partner {
+    legalInfo {
+        MOVE PROPERTY(inn(p));
+        MOVE PROPERTY(okpo(p));
+    }
+}
+
+EXTEND FORM partners
+    PROPERTIES(p) READONLY GRID inn, okpo
+;

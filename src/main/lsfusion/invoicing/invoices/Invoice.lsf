@@ -4,7 +4,7 @@ REQUIRE InvoicingSettings, TaxItem, BankAccount,
         MetaTax, PaymentTermsSales,  
         ItemSales, PartnerSales, Company, 
         BarCode, MetaNumerator, Doc,
-        InvoiceType;
+        InvoiceType, Product;
 
 NAMESPACE Invoicing;
 
@@ -94,6 +94,8 @@ WHEN LOCAL CHANGED(item(InvoiceLine l)) DO uom(l) <- uom(item(l));
 description 'Описание' = DATA STRING (InvoiceLine); 
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (InvoiceLine) NONULL CHARWIDTH 7;
+
+weight 'Вес' (InvoiceLine l) = NUMERIC[16,3](quantity(l) * weight(item(l)));
 
 price 'Цена' = DATA NUMERIC[10,2] (InvoiceLine) NONULL;
 WHEN LOCAL SETCHANGED(item(InvoiceLine l)) AND NOT CHANGED(price(l)) DO price(l) <- salesPrice(item(l));
