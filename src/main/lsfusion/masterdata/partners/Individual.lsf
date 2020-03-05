@@ -1,6 +1,6 @@
 MODULE Individual;
 
-REQUIRE Partner, MasterData, LegalEntity;
+REQUIRE Partner, MasterData, LegalEntity, Position;
 
 NAMESPACE MasterData;
 
@@ -14,6 +14,9 @@ legalEntity = DATA LegalEntity (Individual);
 idLegalEntity 'Организация' (Individual i) = id(legalEntity(i));
 nameLegalEntity 'Организация' (Individual i) = name(legalEntity(i));
 
+position = DATA Position (Individual);
+namePosition 'Должность' (Individual i) = name(position(i));
+
 EXTEND CLASS Individual : Partner;
 
 name (Individual i) += CONCAT ' ', lastName(i), firstName(i), middleName(i);
@@ -25,7 +28,7 @@ EXTEND CLASS PartnerType {
 type (Partner p) += WHEN p IS Individual THEN PartnerType.individual;
 
 EXTEND FORM partner
-    PROPERTIES(p) firstName, lastName, middleName, nameLegalEntity
+    PROPERTIES(p) firstName, lastName, middleName, nameLegalEntity, namePosition
 ;
 
 DESIGN partner {
@@ -37,7 +40,12 @@ DESIGN partner {
             MOVE PROPERTY(lastName(p));
             MOVE PROPERTY(middleName(p));
         }
-        MOVE PROPERTY(nameLegalEntity(p));
+        NEW job {
+            type = CONTAINERH;
+            alignment = STRETCH;
+            MOVE PROPERTY(nameLegalEntity(p));
+            MOVE PROPERTY(namePosition(p));
+        }
     }
 }
 
@@ -52,13 +60,18 @@ newIndividual 'Физическое лицо' () {
 
 EXTEND FORM partners
     PROPERTIES newIndividual() DRAW p TOOLBAR
-    
-    LIST Individual OBJECT p
+;
+
+FORM individuals 'Физические лица'
+    OBJECTS i = Individual
+    PROPERTIES(i) READONLY firstName, lastName, middleName, nameLegalEntity, namePosition, id
+
+    LIST Individual OBJECT i
 ;
 
 EXTEND FORM partner
     OBJECTS em = Individual
-    PROPERTIES(em) firstName, lastName, phone, email
+    PROPERTIES(em) firstName, lastName, middleName, namePosition, phone, email
     PROPERTIES(em) NEW, DELETE 
     FILTERS legalEntity(em) = p  
 ;

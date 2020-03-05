@@ -1,0 +1,35 @@
+MODULE Position;
+
+REQUIRE MasterData;
+
+NAMESPACE MasterData;
+
+CLASS Position 'Должность';
+
+name 'Наименование' = DATA ISTRING[100] (Position) CHARWIDTH 15;
+
+FORM position 'Должность'
+    OBJECTS o = Position PANEL
+    PROPERTIES(o) name
+    
+    EDIT Position OBJECT o
+;
+
+FORM positions 'Должность'
+    OBJECTS o = Position
+    PROPERTIES(o) READONLY name
+    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+
+    LIST Position OBJECT o
+;
+
+FORM dialogPositions 'Должность'
+    OBJECTS o = Position
+    PROPERTIES(o) READONLY name
+;
+
+NAVIGATOR {
+    masterData {
+        NEW positions;
+    }
+}
