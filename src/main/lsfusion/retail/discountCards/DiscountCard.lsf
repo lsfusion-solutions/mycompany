@@ -1,0 +1,33 @@
+MODULE DiscountCard;
+
+REQUIRE Partner, RetailSettings;
+
+NAMESPACE Retail;
+
+CLASS DiscountCard 'Дисконтные карты';
+
+customer 'Покупатель' = DATA Partner (DiscountCard) NONULL;
+id 'Номер' = DATA STRING[20] (DiscountCard) IN id;
+
+nameCustomer 'Владелец' (DiscountCard d) = name(customer(d)) IN id;
+
+discountCardBarCode (STRING[20] id) = GROUP AGGR DiscountCard d BY id(d);
+
+FORM discountCard 'Дисконтная карта'
+    OBJECTS dc = DiscountCard PANEL
+    PROPERTIES(dc) id, nameCustomer
+    
+    EDIT DiscountCard OBJECT dc
+;
+
+FORM discountCards 'Дисконтные карты'
+    OBJECTS dc = DiscountCard
+    PROPERTIES(dc) READONLY id, nameCustomer
+    PROPERTIES(dc) NEWSESSION NEW, EDIT, DELETE;
+;
+
+NAVIGATOR {
+    settings {
+    NEW discountCards;
+    }
+}

@@ -1,47 +1,36 @@
 MODULE DiscountOnDashboard;
 
-REQUIRE Invoice, DiscountCards,
-    PosDashboard, DiscountCategories,
-    DiscountCardsSettings, DiscountStocks;
+REQUIRE Invoice, DiscountCard, PosDashboard;
 
 NAMESPACE Retail;
 
-discountCard 'Дисконтная карта' = DATA Cards(Invoice);
-cardHolder (Invoice i) = partner(discountCard(i));
-cardCategory (Invoice i) = category(discountCard(i));
-cardCategoryName 'Дисконтная карта' (Invoice i) = name(category(discountCard(i)));
+discountCard 'Дисконтная карта' = DATA DiscountCard(Invoice);
+cardHolder (Invoice i) = customer(discountCard(i));
+cardId 'Номер дисконтной карты' (Invoice i) = id(discountCard(i));
 
-// При выборе дисконтной карты мы можем однозначно установить покупателя
-// и, заодно, пересчитать скидки по строкам
 ON LOCAL {
-    FOR CHANGED(cardCategory(Invoice i)) DO {
-        customer(i) <- partner(discountCard(i));
-        salesDiscount(SalesDiscountLine l) <- minSalesDiscountAuto(l);
-    }
+    FOR CHANGED(discountCard(Invoice i)) DO 
+        customer(i) <- customer(discountCard(i));
+    FOR CHANGED(customer(Invoice i)) AND NOT CHANGED(discountCard(i)) DO 
+        discountCard(i) <- NULL;
 }
-
-// Оставим стандартный механизм автоматического выбора скидки,
-// а после того как он отработает определим подходит ли нам скидка
-// если подходит оставим, нет - очистим.
-ON LOCAL {
-    FOR CHANGED (salesDiscount(InvoiceLine l)) DO {
-        IF categoryVisible(salesDiscount(l)) AND
-            (NOT cardCategory(invoice(l)) OR
-            cardCategory(invoice(l)) != category(salesDiscount(l)) OR 
-            NOT customer(invoice(l))) THEN
-            salesDiscount(l) <- NULL;
-    }
-}
-
-// Установим ограничеие "покупетель = владелец карты"
-CONSTRAINT partner(discountCard(Invoice i)) != customer(i) CHECKED MESSAGE 'Покупатель должен быть держателем карты';
 
 EXTEND FORM posDashboard
-    PROPERTIES(i) cardCategoryName
- ;
+    PROPERTIES(i) cardId
+;
 
 DESIGN posDashboard {
-    invoicePane {
-        MOVE PROPERTY(cardCategoryName(i)) AFTER PROPERTY (barCode());
+    invoice {
+            MOVE PROPERTY(cardId(i)) AFTER PROPERTY(nameCustomer(i));
     }
 }
+
+processBarcode (Invoice i, STRING[20] b) + {
+    FOR DiscountCard dc = discountCardBarCode(b) DO {
+        discountCard(i) <- discountCardBarCode(b);
+        consumedBarcode() <- TRUE;
+    }
+}
+
+
+
