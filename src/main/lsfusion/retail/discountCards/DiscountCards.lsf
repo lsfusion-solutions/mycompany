@@ -1,0 +1,35 @@
+MODULE DiscountCards;
+
+REQUIRE DiscountCardsSettings, DiscountCategories, Partner, Individual;
+
+NAMESPACE Retail;
+
+CLASS Cards 'Дисконтные карты';
+
+partner = DATA Partner (Cards) NONULL;
+id 'Номер' = DATA STRING[13] (Cards) IN base;
+category = DATA DiscountCategory (Cards) NONULL;
+
+partnerName 'Владелец карты' (Cards card)= name(partner(card)) IN base;
+categoryName'Категория карты' (Cards card) = name(category(card)) IN base;
+
+// А здесь можно, для единообразия стиля, редактировать в новой форме, а не в списке 
+FORM discountCard 'Дисконтная карта'
+    OBJECTS dc = Cards PANEL
+    PROPERTIES(dc) partnerName, id, categoryName
+    
+    EDIT Cards OBJECT dc
+;
+
+FORM discountCards 'Карты'
+    OBJECTS dc=Cards
+    PROPERTIES(dc) partnerName, id, categoryName
+    PROPERTIES(dc) NEWSESSION NEW, EDIT, DELETE;
+;
+
+
+NAVIGATOR {
+    discount {
+    NEW discountCards;
+    }
+}
