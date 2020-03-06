@@ -25,8 +25,8 @@ matches (Discount d, SalesDiscountLine l) =
     NOT endDateTime(d) < dateTime(l) AND
     NOT fromQuantity(d) > quantity(l) AND
     NOT fromAmount(d) > totalAmount(l) AND
-    NOT fromAccumulated(d) > (OVERRIDE prevSoldAmount(customer(l)), 0.0) AND
-    NOT fromAccumulatedPreviousMonth(d) > (OVERRIDE prevSoldAmountPreviousMonth(customer(l)), 0.0) COMPLEX;
+    NOT fromAccumulated(d) >= (OVERRIDE prevSoldAmount(customer(l)), 0.0) AND
+    NOT fromAccumulatedPreviousMonth(d) >= (OVERRIDE prevSoldAmountPreviousMonth(customer(l)), 0.0) COMPLEX;
 
 discountPrice 'Цена со скидкой' (Discount d, SalesDiscountLine l) =
     IF priceType(d) THEN priceA(priceType(d), item(l), dateTime(l)) ELSE NUMERIC[10,2](price(l) * (100.0 - discount(d)) / 100.0); 
