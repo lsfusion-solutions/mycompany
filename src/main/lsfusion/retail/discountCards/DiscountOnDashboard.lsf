@@ -1,33 +1,22 @@
 MODULE DiscountOnDashboard;
 
-REQUIRE Invoice, DiscountCard, PosDashboard;
+REQUIRE Invoice, DiscountCard, PosDashboard, DiscountCardInvoice;
 
 NAMESPACE Retail;
 
-discountCard 'Дисконтная карта' = DATA DiscountCard(Invoice);
-cardHolder (Invoice i) = customer(discountCard(i));
-idDiscountCard 'Номер дисконтной карты' (Invoice i) = id(discountCard(i));
-
-ON LOCAL {
-    FOR CHANGED(discountCard(Invoice i)) DO 
-        customer(i) <- customer(discountCard(i));
-    FOR CHANGED(customer(Invoice i)) AND NOT CHANGED(discountCard(i)) DO 
-        discountCard(i) <- NULL;
-}
-
 EXTEND FORM posDashboard
-    PROPERTIES(i) cardId
+    PROPERTIES(i) idDiscountCard
 ;
 
 DESIGN posDashboard {
     invoice {
-            MOVE PROPERTY(cardId(i)) AFTER PROPERTY(nameCustomer(i));
+            MOVE PROPERTY(idDiscountCard(i)) AFTER PROPERTY(nameCustomer(i));
     }
 }
 
 processBarcode (Invoice i, STRING[20] b) + {
-    FOR DiscountCard dc = discountCardBarCode(b) DO {
-        discountCard(i) <- discountCardBarCode(b);
+    FOR DiscountCard dc = discountCard(b) DO {
+        discountCard(i) <- discountCard(b);
         consumedBarcode() <- TRUE;
     }
 }
