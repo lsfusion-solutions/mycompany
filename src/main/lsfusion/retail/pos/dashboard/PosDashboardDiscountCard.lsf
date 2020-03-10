@@ -1,0 +1,22 @@
+MODULE PosDashboardDiscountCard;
+
+REQUIRE Invoice, DiscountCard, PosDashboard, DiscountCardInvoice;
+
+NAMESPACE Retail;
+
+EXTEND FORM posDashboard
+    PROPERTIES(i) idDiscountCard
+;
+
+DESIGN posDashboard {
+    invoice {
+        MOVE PROPERTY(idDiscountCard(i)) AFTER PROPERTY(nameCustomer(i));
+    }
+}
+
+processBarcode (Invoice i, STRING[20] b) + {
+    IF discountCard(b) THEN {
+        discountCard(i) <- discountCard(b);
+        consumedBarcode() <- TRUE;
+    }
+}
