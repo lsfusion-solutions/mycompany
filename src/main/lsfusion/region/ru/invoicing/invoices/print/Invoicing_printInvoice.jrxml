@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Реализация" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" isFloatColumnFooter="true" isIgnorePagination="true" uuid="a3483978-f1f9-4419-97ee-5e21965d14b5">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Реализация" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" isFloatColumnFooter="true" uuid="a3483978-f1f9-4419-97ee-5e21965d14b5">
 	<property name="net.sf.jasperreports.export.xls.print.page.width" value="842"/>
 	<property name="net.sf.jasperreports.export.xls.print.page.height" value="595"/>
 	<style name="DefaultStyle" isDefault="true" vTextAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
@@ -80,20 +80,23 @@
 	<variable name="sumTotal" class="java.lang.Integer" resetType="Page" calculation="Sum">
 		<variableExpression><![CDATA[$F{totalAmount(l)}]]></variableExpression>
 	</variable>
-	<variable name="sumWeight2" class="java.lang.Integer" calculation="Sum">
+	<variable name="sumWeightTot" class="java.lang.Integer" calculation="Sum">
 		<variableExpression><![CDATA[$F{weight(l)}]]></variableExpression>
 	</variable>
-	<variable name="sumQuan2" class="java.lang.Integer" calculation="Sum">
+	<variable name="sumQuanTot" class="java.lang.Integer" calculation="Sum">
 		<variableExpression><![CDATA[$F{quantity(l)}]]></variableExpression>
 	</variable>
-	<variable name="sumSubtot2" class="java.lang.Integer" calculation="Sum">
+	<variable name="sumSubtotTot" class="java.lang.Integer" calculation="Sum">
 		<variableExpression><![CDATA[$F{subtotal(l)}]]></variableExpression>
 	</variable>
-	<variable name="sumTax2" class="java.lang.Integer" calculation="Sum">
+	<variable name="sumTaxTot" class="java.lang.Integer" calculation="Sum">
 		<variableExpression><![CDATA[$F{totalTax(l)}]]></variableExpression>
 	</variable>
-	<variable name="sumTotal2" class="java.lang.Integer" calculation="Sum">
+	<variable name="sumTotalTot" class="java.lang.Integer" calculation="Sum">
 		<variableExpression><![CDATA[$F{totalAmount(l)}]]></variableExpression>
+	</variable>
+	<variable name="totalPages" class="java.lang.Integer" resetType="None" incrementType="Report">
+		<variableExpression><![CDATA[$V{PAGE_NUMBER}]]></variableExpression>
 	</variable>
 	<title>
 		<band height="280">
@@ -162,7 +165,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA["структурное подразделение"]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="68" width="668" height="18" uuid="4bcd0c3f-14eb-4c37-a4d3-7aa0f6e91784"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -173,7 +176,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameLocation(i)}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="110" y="127" width="558" height="18" uuid="fa6be534-bdae-48a5-a2de-b51634c3f6a2"/>
@@ -213,11 +216,13 @@
 				<textFieldExpression><![CDATA["Адрес доставки"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="110" y="98" width="558" height="18" uuid="967deb6b-1fac-4630-a85a-7b92f50d4b7b"/>
+				<reportElement x="110" y="98" width="558" height="18" uuid="967deb6b-1fac-4630-a85a-7b92f50d4b7b">
+					<printWhenExpression><![CDATA[$F{nameCustomer(i)}!=null||$F{phoneCustomer(i)}!=null||$F{innCustomer(i)}!=null]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.75" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
@@ -237,14 +242,14 @@
 				<textFieldExpression><![CDATA["Грузополучатель"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="227" y="116" width="230" height="11" uuid="576309f9-9eae-488e-b40c-f82f72c5bc87"/>
+				<reportElement x="110" y="116" width="558" height="11" uuid="576309f9-9eae-488e-b40c-f82f72c5bc87"/>
 				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<topPen lineWidth="0.75" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement>
+				<textElement textAlignment="Center">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA["организация, адрес, телефон, факс, банковские реквизиты"]]></textFieldExpression>
@@ -298,11 +303,13 @@
 				<textFieldExpression><![CDATA["Плательщик"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="110" y="185" width="558" height="18" uuid="275022f3-8dd5-4df4-8d97-ffb2297e501c"/>
+				<reportElement x="110" y="185" width="558" height="18" uuid="275022f3-8dd5-4df4-8d97-ffb2297e501c">
+					<printWhenExpression><![CDATA[$F{nameCustomer(i)}!=null||$F{phoneCustomer(i)}!=null||$F{innCustomer(i)}!=null]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.75" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
@@ -311,14 +318,14 @@
 				<textFieldExpression><![CDATA[$F{nameCustomer(i)}!=null?($F{nameCustomer(i)} + ", "):"" + $F{phoneCustomer(i)}!=null?($F{phoneCustomer(i)} + ", "):"" + $F{innCustomer(i)}!=null?$F{innCustomer(i)}:""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="227" y="203" width="230" height="11" uuid="37cb8f6e-59b1-4800-aebe-11fd5cbf1138"/>
+				<reportElement x="110" y="203" width="558" height="11" uuid="37cb8f6e-59b1-4800-aebe-11fd5cbf1138"/>
 				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<topPen lineWidth="0.75" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement>
+				<textElement textAlignment="Center">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA["организация, адрес, телефон, факс, банковские реквизиты"]]></textFieldExpression>
@@ -442,14 +449,14 @@
 				</textElement>
 				<textFieldExpression><![CDATA["по ОКПО"]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement positionType="Float" x="738" y="45" width="64" height="12" uuid="6325aad8-8399-4f08-a5c9-022ddd003143"/>
 				<box>
 					<leftPen lineWidth="1.5"/>
 					<rightPen lineWidth="1.5"/>
 				</box>
 				<textElement textAlignment="Center"/>
-				<textFieldExpression><![CDATA[""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{okpoCustomer(i)}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement positionType="Float" x="738" y="21" width="64" height="12" uuid="5d23a1df-8352-4719-aecd-30cc9dc0e18a"/>
@@ -563,14 +570,14 @@
 				<textElement textAlignment="Center"/>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement positionType="Float" x="738" y="116" width="64" height="58" uuid="21356918-c520-493f-890e-a013dd3e658c"/>
 				<box>
 					<leftPen lineWidth="1.5"/>
 					<rightPen lineWidth="1.5"/>
 				</box>
-				<textElement textAlignment="Center"/>
-				<textFieldExpression><![CDATA[""]]></textFieldExpression>
+				<textElement textAlignment="Center" verticalAlignment="Bottom"/>
+				<textFieldExpression><![CDATA[$F{okpoCustomer(i)}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement positionType="Float" x="738" y="98" width="64" height="18" uuid="099d2e71-1797-43d1-92a7-623579037c65"/>
@@ -592,14 +599,14 @@
 				<textElement textAlignment="Center"/>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement positionType="Float" x="738" y="174" width="64" height="29" uuid="00a08804-9032-4b9d-bf78-04dd8cd3985a"/>
 				<box>
 					<leftPen lineWidth="1.5"/>
 					<rightPen lineWidth="1.5"/>
 				</box>
 				<textElement textAlignment="Center"/>
-				<textFieldExpression><![CDATA[""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{okpoCustomer(i)}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement positionType="Float" x="738" y="203" width="64" height="29" uuid="15cfa398-ab2f-4e86-b90e-67d7c62c40a1"/>
@@ -1044,14 +1051,14 @@
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="410" y="0" width="47" height="12" uuid="57fc549b-28ca-4298-89de-9f94899a385f"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{sumWeight}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="457" y="0" width="51" height="12" uuid="0e23f1a2-93d5-4651-85f9-06ef64bd639e"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
@@ -1065,7 +1072,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA["Х"]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="559" y="0" width="64" height="12" uuid="7537edcf-dad2-4878-b883-ee878357d874"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
@@ -1079,14 +1086,14 @@
 				</textElement>
 				<textFieldExpression><![CDATA["Х"]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="668" y="0" width="70" height="12" uuid="0fbbaa3a-81a3-460c-8dde-401553654bcc"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{sumTax}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="738" y="0" width="64" height="12" uuid="1130cb29-110c-4832-810a-ba97498d61de"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
@@ -1096,78 +1103,9 @@
 		</band>
 	</columnFooter>
 	<summary>
-		<band height="414">
+		<band height="235" splitType="Immediate">
 			<textField>
-				<reportElement x="279" y="0" width="99" height="12" uuid="bd2bdd2a-d611-4221-865a-4190288cb5ec"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement>
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Всего по накладной"]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="559" y="0" width="64" height="12" uuid="8d16888b-1f0f-4ecc-a7e1-8b346cef69ff"/>
-				<textElement textAlignment="Right">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{sumSubtot2}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="623" y="0" width="45" height="12" uuid="60ad8a3d-3ed6-4e01-91b9-596d8d06abef"/>
-				<textElement textAlignment="Center">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Х"]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="668" y="0" width="70" height="12" uuid="0accadd7-cfd4-4c58-8cba-c7f3dd8fa98b"/>
-				<textElement textAlignment="Right">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{sumTax2}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="738" y="0" width="64" height="12" uuid="9e7fc38e-5841-47e6-a5f2-29f779a8b6f4"/>
-				<textElement textAlignment="Right">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{sumTotal2}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="378" y="0" width="32" height="12" uuid="39e5cef7-0e0d-4233-8c3f-5f1b4e7b0950"/>
-				<textElement>
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[""]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="410" y="0" width="47" height="12" uuid="98288859-2e5c-4441-b1e4-c482c182a3f7"/>
-				<textElement textAlignment="Right">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{sumWeight2}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="457" y="0" width="51" height="12" uuid="02b9d44b-b072-4db4-953a-a886c6539e30"/>
-				<textElement textAlignment="Right">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{sumQuan2}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="508" y="0" width="51" height="12" uuid="a2c11b75-9c6c-469f-872e-a49a2e0d5a17"/>
-				<textElement textAlignment="Center">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Х"]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement positionType="Float" x="110" y="15" width="169" height="12" uuid="0ec36498-7f5a-4e97-89af-b8fde8258fca"/>
+				<reportElement positionType="Float" x="110" y="12" width="169" height="12" uuid="49ff9f55-4d7a-4f39-a7df-012ed66d021f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1180,7 +1118,7 @@
 				<textFieldExpression><![CDATA["Товарная накладная имеет приложение на"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="279" y="15" width="178" height="12" uuid="d19682eb-69c5-4d60-a853-d68abf190037"/>
+				<reportElement positionType="Float" x="279" y="12" width="178" height="12" uuid="4c5c6aa6-46b4-401d-a32d-2a95bf96c1da"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1193,7 +1131,7 @@
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="110" y="28" width="80" height="12" uuid="09518ab7-37af-4174-b452-f6e47e8fb9bd"/>
+				<reportElement positionType="Float" x="110" y="25" width="80" height="12" uuid="11f428a8-4710-4bc3-861e-f17a162048df"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1206,7 +1144,7 @@
 				<textFieldExpression><![CDATA["и содержит"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" x="190" y="28" width="267" height="12" uuid="8d0cc949-be7e-4930-984b-8c512dd5d3d0"/>
+				<reportElement positionType="Float" x="190" y="25" width="267" height="12" uuid="e2275fc3-5663-4c1f-919d-00ce351cb9ec"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1219,7 +1157,7 @@
 				<textFieldExpression><![CDATA[lsfusion.base.Words.toString($V{npp})]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="457" y="28" width="166" height="12" uuid="68648666-437e-4c41-9c56-ad1f18965677"/>
+				<reportElement positionType="Float" x="457" y="25" width="166" height="12" uuid="bd9773e2-4bb1-4727-a20e-f14e6b02466e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1232,7 +1170,7 @@
 				<textFieldExpression><![CDATA["порядковых номеров записей"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="227" y="40" width="119" height="11" uuid="3c83c964-f6dc-43d1-b3c6-8d808d574e82"/>
+				<reportElement x="227" y="37" width="119" height="11" uuid="fcc31b0f-594c-4a30-a042-de7b04d2c0ed"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1245,7 +1183,7 @@
 				<textFieldExpression><![CDATA["прописью"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="110" y="74" width="80" height="12" uuid="0847967b-abcb-4aa8-a304-c2a6f6ccec4e"/>
+				<reportElement positionType="Float" x="110" y="71" width="80" height="12" uuid="f6a43c42-74f3-4fda-818b-77fe28a628a4"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1258,7 +1196,7 @@
 				<textFieldExpression><![CDATA["всего мест"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="227" y="86" width="119" height="11" uuid="5230883a-04c3-4076-995b-9efb6cd6f245"/>
+				<reportElement x="227" y="83" width="119" height="11" uuid="fbae7809-b05a-4c56-94ef-4fc513f9c030"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1271,7 +1209,7 @@
 				<textFieldExpression><![CDATA["прописью"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="190" y="74" width="156" height="12" uuid="30df61b7-edcc-410c-a39c-b9606560d8ac"/>
+				<reportElement positionType="Float" x="190" y="71" width="156" height="12" uuid="3644cb0b-2a9b-47d6-8a87-9d7d814194ca"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1284,7 +1222,7 @@
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="346" y="51" width="111" height="12" uuid="1c3c802a-93f6-4218-a6d8-e274a3f6a6bb"/>
+				<reportElement positionType="Float" x="346" y="48" width="111" height="12" uuid="f4019dc7-397e-492e-b879-8c3b92506d5d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1297,7 +1235,7 @@
 				<textFieldExpression><![CDATA["Количество"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" x="457" y="51" width="166" height="12" uuid="412f78cd-3216-40af-a666-d17d4d4dbcd7"/>
+				<reportElement positionType="Float" x="457" y="48" width="166" height="12" uuid="a1c357a8-4e7a-464a-81b8-017c14aef51b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1307,10 +1245,10 @@
 				<textElement textAlignment="Left" verticalAlignment="Bottom">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[lsfusion.base.Words.toString($V{sumQuan2})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.Words.toString($V{sumQuanTot})]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="508" y="63" width="115" height="11" uuid="f60504fa-1d51-4c75-9079-1b0bc35a08d0"/>
+				<reportElement x="508" y="60" width="115" height="11" uuid="1faa45f3-305a-4c25-8729-13fc2691d4a5"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1323,7 +1261,7 @@
 				<textFieldExpression><![CDATA["прописью"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="346" y="74" width="111" height="12" uuid="43b082f8-69bc-47ad-8b65-b6d770e23dfa"/>
+				<reportElement positionType="Float" x="346" y="71" width="111" height="12" uuid="da695983-b95e-417b-b83a-3f46ecd35994"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1336,7 +1274,7 @@
 				<textFieldExpression><![CDATA["Масса груза (брутто)"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" x="457" y="74" width="166" height="12" uuid="1c11c090-4868-4351-beb4-933681e729fc"/>
+				<reportElement positionType="Float" x="457" y="71" width="166" height="12" uuid="cff1612b-c377-4269-a2de-540398a1ef7d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1346,10 +1284,10 @@
 				<textElement textAlignment="Left" verticalAlignment="Bottom">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[lsfusion.base.Words.toString($V{sumWeight2}) + " кг"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.Words.toString($V{sumWeightTot}) + " кг"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="508" y="86" width="115" height="11" uuid="9e9a438d-a48a-44f4-8d75-c675a95bc010"/>
+				<reportElement x="508" y="83" width="115" height="11" uuid="c0c7289a-c61b-4096-94b1-7de513934261"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1362,24 +1300,21 @@
 				<textFieldExpression><![CDATA["прописью"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="623" y="40" width="179" height="23" uuid="049c1ccb-4643-4639-8509-153b89875d4d"/>
+				<reportElement x="623" y="37" width="179" height="23" uuid="8fae6337-ba9b-448f-984d-9596c39bc595"/>
 				<box>
 					<pen lineWidth="1.5"/>
 				</box>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="623" y="63" width="179" height="23" uuid="f7b4213f-8801-4397-9990-e77abc64039c"/>
+				<reportElement x="623" y="60" width="179" height="23" uuid="ccac6937-8636-4ab6-9c90-6528e2e42c69"/>
 				<box>
 					<pen lineWidth="1.5"/>
 				</box>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
-			<line>
-				<reportElement x="378" y="106" width="1" height="132" uuid="f2092c5f-5a58-4aea-b497-bd9050293d8d"/>
-			</line>
 			<textField>
-				<reportElement positionType="Float" x="0" y="97" width="190" height="12" uuid="ae8592bd-2d8d-48f3-98e2-3a217497a1f9"/>
+				<reportElement positionType="Float" x="0" y="94" width="190" height="12" uuid="73e7e5bc-a1c5-44da-ba70-c5cb20d2ea18"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1392,7 +1327,7 @@
 				<textFieldExpression><![CDATA["Приложение (паспорта, сертификаты и т.п.) на"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="190" y="97" width="89" height="12" uuid="8a34aa24-0f13-488f-9de0-17ee0df44315"/>
+				<reportElement positionType="Float" x="190" y="94" width="89" height="12" uuid="236c70d5-0771-42bb-b86b-7378f3d80645"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1405,7 +1340,7 @@
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="227" y="109" width="119" height="11" uuid="0097e60f-d457-443f-b33e-c6ec74803ee5"/>
+				<reportElement x="227" y="106" width="119" height="11" uuid="3b0c0db3-6acb-4d4f-95a1-af06f9f824ca"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1418,7 +1353,7 @@
 				<textFieldExpression><![CDATA["прописью"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="280" y="97" width="66" height="12" uuid="c888e8c3-2719-44c0-b8a9-66b3996193e9"/>
+				<reportElement positionType="Float" x="279" y="94" width="67" height="12" uuid="cc01e235-909b-47e4-8a8f-6a5424bfab18"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1431,7 +1366,7 @@
 				<textFieldExpression><![CDATA["листах"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="0" y="120" width="190" height="12" uuid="1b9d20e2-3080-48d6-9754-301ea12a3f6c"/>
+				<reportElement positionType="Float" x="0" y="117" width="190" height="12" uuid="d7f2625c-45d4-47ea-b3c2-2b085b280891"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1443,8 +1378,8 @@
 				</textElement>
 				<textFieldExpression><![CDATA["Всего отпущено  на сумму"]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement positionType="Float" x="0" y="132" width="346" height="12" uuid="74b11e8b-3b17-4d32-a3d6-2c31882e5229"/>
+			<textField isBlankWhenNull="true">
+				<reportElement positionType="Float" x="0" y="129" width="346" height="12" uuid="0f38d406-ddd5-4593-a535-6de9d8274dba"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1454,10 +1389,10 @@
 				<textElement textAlignment="Left" verticalAlignment="Bottom">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[lsfusion.base.Words.toString($V{sumTotal2},"BYN")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.Words.toString($V{sumTotalTot},"BYN")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="227" y="144" width="119" height="11" uuid="e68b58e4-8056-4562-9ba2-178f9fe5c1d3"/>
+				<reportElement x="227" y="141" width="119" height="11" uuid="0dce3753-e16e-4f25-b779-45ed85e8bf67"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1470,7 +1405,7 @@
 				<textFieldExpression><![CDATA["прописью"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="0" y="155" width="110" height="12" uuid="57b8a957-ff86-4e7b-8931-731b156a4e49"/>
+				<reportElement positionType="Float" x="0" y="152" width="110" height="12" uuid="7ea8e629-589d-4964-94c4-cbe4d180277b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1483,7 +1418,7 @@
 				<textFieldExpression><![CDATA["Отпуск груза разрешил"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" x="110" y="155" width="169" height="12" uuid="ddb6d65e-d0db-4d13-98bf-3afc2270dd84"/>
+				<reportElement positionType="Float" x="110" y="152" width="169" height="12" uuid="6fa46722-1391-425e-b3d5-9254446a0d48"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1496,7 +1431,7 @@
 				<textFieldExpression><![CDATA[$F{positionAllowed(i)}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" x="280" y="155" width="66" height="12" uuid="bf72708c-bd2a-457b-a403-aa6b02bc4bac"/>
+				<reportElement positionType="Float" x="279" y="152" width="67" height="12" uuid="fa36891d-3ce3-45c1-a3d0-1c5cf9869b93"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1509,7 +1444,7 @@
 				<textFieldExpression><![CDATA[$F{nameAllowed(i)}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="227" y="167" width="52" height="11" uuid="b14d5bfe-939c-467d-92f8-db762366aa11"/>
+				<reportElement x="227" y="164" width="52" height="11" uuid="20b0439c-c5c5-4c98-8e7c-3f24fae2b226"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1522,7 +1457,7 @@
 				<textFieldExpression><![CDATA["подпись"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="110" y="167" width="117" height="11" uuid="d2023619-2485-4279-8974-5f17533dacad"/>
+				<reportElement x="110" y="164" width="117" height="11" uuid="2d7393ff-8748-49f6-b644-881d50f4428e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1535,7 +1470,7 @@
 				<textFieldExpression><![CDATA["должность"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="280" y="167" width="98" height="11" uuid="31ca42a1-5fde-4bfc-b5bb-9a6d332b421b"/>
+				<reportElement x="279" y="164" width="99" height="11" uuid="e0213d2f-04dd-454a-be7c-3f6213352fd0"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1548,7 +1483,7 @@
 				<textFieldExpression><![CDATA["расшифровка подписи"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="0" y="178" width="190" height="12" uuid="e701de21-4610-4a0c-bc83-02f4d988af38"/>
+				<reportElement positionType="Float" x="0" y="175" width="190" height="12" uuid="874ddc6a-6f69-423f-b8b7-fbbcd23ba290"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1561,7 +1496,7 @@
 				<textFieldExpression><![CDATA["Главный (старший) бухгалтер"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="190" y="178" width="89" height="12" uuid="1d566e8e-5e6c-46cd-a118-12b4336074d9"/>
+				<reportElement positionType="Float" x="190" y="175" width="89" height="12" uuid="22a06f03-981e-48a7-988a-e7b4d16cdd86"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1574,7 +1509,7 @@
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="227" y="190" width="52" height="11" uuid="cefcc791-947c-4b69-ab54-6f775d704929"/>
+				<reportElement x="227" y="187" width="52" height="11" uuid="8d8323dc-dff5-49ce-8443-8a64cadb755f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1587,7 +1522,7 @@
 				<textFieldExpression><![CDATA["подпись"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="280" y="190" width="98" height="11" uuid="e7a17dcd-9cc1-49d0-b38b-cd0964477c8d"/>
+				<reportElement x="279" y="187" width="99" height="11" uuid="d2070220-e8d4-414c-8bca-e29a08a19eb4"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1600,7 +1535,7 @@
 				<textFieldExpression><![CDATA["расшифровка подписи"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" x="280" y="178" width="66" height="12" uuid="063d313f-0646-4a2e-aca6-232932f33d40"/>
+				<reportElement positionType="Float" x="279" y="175" width="67" height="12" uuid="f2c5028c-4f20-484b-af74-c59b3c6c744d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1613,7 +1548,7 @@
 				<textFieldExpression><![CDATA[$F{nameAccountant(i)}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="0" y="201" width="110" height="12" uuid="885869d7-9973-4a6b-967c-5ca1ec65a363"/>
+				<reportElement positionType="Float" x="0" y="198" width="110" height="12" uuid="9fdb36c0-ecb7-4c10-8475-1e8015f63f1d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1626,7 +1561,7 @@
 				<textFieldExpression><![CDATA["Отпуск груза произвел"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" x="110" y="201" width="169" height="12" uuid="5beea0a9-a2e6-40c5-b42f-0f2e21a2f7af"/>
+				<reportElement positionType="Float" x="110" y="198" width="169" height="12" uuid="315a5890-3679-4933-8dfc-eb5dbe932ffa"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1639,7 +1574,7 @@
 				<textFieldExpression><![CDATA[$F{positionPerformed(i)}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" x="280" y="201" width="66" height="12" uuid="ad8502ec-edb2-4ac4-9010-3196bf6a27ae"/>
+				<reportElement positionType="Float" x="279" y="198" width="67" height="12" uuid="5a2d6b2f-f593-4566-85f5-f53d0934cb74"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1652,7 +1587,7 @@
 				<textFieldExpression><![CDATA[$F{namePerformed(i)}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="280" y="213" width="98" height="11" uuid="ee0544b7-c638-4e08-a8da-eb2e2f12e995"/>
+				<reportElement x="279" y="210" width="99" height="11" uuid="3c595d14-adfa-41b6-9ae6-d365239702af"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1665,7 +1600,7 @@
 				<textFieldExpression><![CDATA["расшифровка подписи"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="227" y="213" width="52" height="11" uuid="81c9e29f-d632-4936-8c98-c5bcb29a6b0b"/>
+				<reportElement x="227" y="210" width="52" height="11" uuid="cae68b06-db34-4aef-a8f9-8278510f66a6"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1678,7 +1613,7 @@
 				<textFieldExpression><![CDATA["подпись"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="110" y="213" width="117" height="11" uuid="e5d398e8-6a48-49e9-bcb6-80f62a3c1350"/>
+				<reportElement x="110" y="210" width="117" height="11" uuid="966e4b13-1c2f-46d8-a7b8-1fa2954e068d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1691,7 +1626,7 @@
 				<textFieldExpression><![CDATA["должность"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="0" y="226" width="190" height="12" uuid="6b99c00b-b0eb-4911-9d96-7f5df43af997"/>
+				<reportElement positionType="Float" x="0" y="223" width="190" height="12" uuid="2701a9a1-e790-4477-97a9-647d6393f2a6"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1703,8 +1638,8 @@
 				</textElement>
 				<textFieldExpression><![CDATA["М.П."]]></textFieldExpression>
 			</textField>
-			<textField pattern="d MMMM yyyy года">
-				<reportElement positionType="Float" x="190" y="226" width="156" height="12" uuid="9bd39095-1c76-4960-a07d-bb00f6efdd9a"/>
+			<textField pattern="d MMMM yyyy года" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="190" y="223" width="156" height="12" uuid="4d1a37c1-8c4d-45e9-ab43-8bf6454ec729"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1717,7 +1652,7 @@
 				<textFieldExpression><![CDATA[$F{dateTime(i)}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="379" y="97" width="129" height="12" uuid="6567fb1c-76b3-4d79-9864-8cb005bdfa30"/>
+				<reportElement positionType="Float" x="378" y="94" width="130" height="12" uuid="ea44db79-4995-43d4-b715-1ba38d3a6756"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1730,7 +1665,7 @@
 				<textFieldExpression><![CDATA["По доверенности №"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="508" y="97" width="51" height="12" uuid="ace4639a-2a30-4ba8-870e-a588af81ba1a"/>
+				<reportElement positionType="Float" x="508" y="94" width="51" height="12" uuid="798cbc05-ed58-49ad-8f1d-c7e6d2f72350"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1743,7 +1678,7 @@
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="559" y="97" width="64" height="12" uuid="a51ee28d-9109-4d18-87b5-54a96fddd732"/>
+				<reportElement positionType="Float" x="559" y="94" width="64" height="12" uuid="67a48ee2-3a10-485f-81f3-9807e5068157"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1756,7 +1691,7 @@
 				<textFieldExpression><![CDATA["от"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="623" y="97" width="179" height="12" uuid="7704b2f7-8d6d-44e9-9fdb-4487cdddedd9"/>
+				<reportElement positionType="Float" x="623" y="94" width="179" height="12" uuid="a2072737-f5c8-4b8c-b7cf-cdd5df844b07"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1769,7 +1704,7 @@
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="379" y="132" width="129" height="12" uuid="fd749beb-42e3-4ffa-8bf8-8b6341ef0dcd"/>
+				<reportElement positionType="Float" x="378" y="129" width="130" height="12" uuid="a072c6f5-566a-49cb-9df6-84481ab7ecf3"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1782,7 +1717,7 @@
 				<textFieldExpression><![CDATA["Выданной"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="508" y="132" width="294" height="12" uuid="01021ba9-853d-4841-94b6-275599dc792b"/>
+				<reportElement positionType="Float" x="508" y="129" width="294" height="12" uuid="5c14322b-1bc3-4409-837f-f801385e021f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1795,7 +1730,7 @@
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="559" y="144" width="179" height="11" uuid="fd0dee0b-ad39-4551-9cce-4a01b3f5bc7d"/>
+				<reportElement x="559" y="141" width="179" height="11" uuid="c3676316-a2f7-46d8-888a-2b4758dac930"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1808,7 +1743,7 @@
 				<textFieldExpression><![CDATA["кем, кому (организация, должность, фамилия, и. о.)"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="508" y="155" width="294" height="12" uuid="9f582755-b648-480e-8d52-4079f6a7c434"/>
+				<reportElement positionType="Float" x="508" y="152" width="294" height="12" uuid="4fafbe6f-84f5-4d9c-9d8a-34e4d957812b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1821,7 +1756,7 @@
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="379" y="178" width="129" height="12" uuid="610e883a-8db9-4410-941b-8ae81ac28ffa"/>
+				<reportElement positionType="Float" x="378" y="175" width="130" height="12" uuid="3b5e3ed3-d163-4331-8ce9-0d3867f6e794"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1834,7 +1769,7 @@
 				<textFieldExpression><![CDATA["Груз принял"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="508" y="178" width="294" height="12" uuid="95c24943-dfc6-4c3e-b668-ba3ec77f2790"/>
+				<reportElement positionType="Float" x="508" y="175" width="294" height="12" uuid="59fcc281-8629-4298-a1b9-631eb8ca8714"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1847,7 +1782,7 @@
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="508" y="190" width="51" height="11" uuid="63cc8cee-dc6b-4b9d-8738-366ebb0c8b6b"/>
+				<reportElement x="508" y="187" width="51" height="11" uuid="047cb458-e3f6-4442-adc0-2590ca83b6c1"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1860,7 +1795,7 @@
 				<textFieldExpression><![CDATA["должность"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="559" y="190" width="109" height="11" uuid="f3b5dd83-b83e-4c95-8985-d4d9604305ec"/>
+				<reportElement x="559" y="187" width="109" height="11" uuid="c044be13-f1a7-4881-9b16-26f13fd918ea"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1873,7 +1808,7 @@
 				<textFieldExpression><![CDATA["подпись"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="668" y="190" width="134" height="11" uuid="b3aa509b-c3d5-4422-b184-43b35d777ce4"/>
+				<reportElement x="668" y="187" width="134" height="11" uuid="ebe62596-b097-47fb-9e3a-4cfbfa3e1fae"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1886,7 +1821,7 @@
 				<textFieldExpression><![CDATA["расшифровка подписи"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="379" y="201" width="129" height="12" uuid="466d2bfb-68a3-4fd1-80cc-494c0470b130"/>
+				<reportElement positionType="Float" x="378" y="198" width="130" height="12" uuid="5f109b82-877f-4d4c-90d1-1157a115911c"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1899,7 +1834,7 @@
 				<textFieldExpression><![CDATA["Груз получил грузополучатель"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="508" y="201" width="294" height="12" uuid="2eff9ef0-a5f5-43b9-877c-9cc7125afa46"/>
+				<reportElement positionType="Float" x="508" y="198" width="294" height="12" uuid="03697a11-0e59-4967-b1c8-5466a4ec09c8"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1912,7 +1847,7 @@
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="508" y="213" width="51" height="11" uuid="e4e6461e-9a1a-4ce1-8f96-cf8ee17e759a"/>
+				<reportElement x="508" y="210" width="51" height="11" uuid="b82b455b-d1a9-4d4a-8bc7-5f212a2079fa"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1925,7 +1860,7 @@
 				<textFieldExpression><![CDATA["должность"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="559" y="213" width="109" height="11" uuid="5c5f404f-e11c-4eed-9da5-2e604800cba7"/>
+				<reportElement x="559" y="210" width="109" height="11" uuid="cc1d0909-bb8f-40b7-95e4-6601ea50d0ac"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1938,7 +1873,7 @@
 				<textFieldExpression><![CDATA["подпись"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="668" y="213" width="134" height="11" uuid="6348d9cb-3bf1-4f46-8f59-84b1419dee2f"/>
+				<reportElement x="668" y="210" width="134" height="11" uuid="7a669bce-4d1d-47fd-865e-6ed8c219028a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1951,7 +1886,7 @@
 				<textFieldExpression><![CDATA["расшифровка подписи"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="379" y="226" width="180" height="12" uuid="deecae7b-aace-41c0-b5f6-e11d41086564"/>
+				<reportElement positionType="Float" x="378" y="223" width="181" height="12" uuid="20d706a2-671c-4385-b3bf-977aaf3f707d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1964,7 +1899,7 @@
 				<textFieldExpression><![CDATA["М.П."]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="559" y="226" width="64" height="12" uuid="d6b0c7f3-a4bc-4fc5-8705-ebdfa346f036"/>
+				<reportElement positionType="Float" x="559" y="223" width="64" height="12" uuid="3330feb8-1fd6-42d9-8e60-f0ec73bdf601"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1977,7 +1912,7 @@
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="623" y="226" width="45" height="12" uuid="75a6d42a-7c42-47ad-942b-8e0270cbdf80"/>
+				<reportElement positionType="Float" x="623" y="223" width="45" height="12" uuid="5c7761ea-5afb-47d2-8113-104780c7180f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1988,6 +1923,115 @@
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA["20    года"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="346" y="94" width="32" height="35" uuid="17d519b4-f60c-416b-8099-71d3b4bd304d"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textFieldExpression><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="279" y="0" width="99" height="12" uuid="2982c4af-27e1-4803-9dfe-ccb658af2698"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Всего по накладной"]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="378" y="0" width="32" height="12" uuid="5590fc4e-c402-4795-80f2-017f56c83a53"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement x="410" y="0" width="47" height="12" uuid="c5d595e1-44fa-4aa7-b46e-4c37af6cf6d8"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sumWeightTot}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement x="457" y="0" width="51" height="12" uuid="be28d9d9-423a-4fe7-a9c3-54e9f7f6bc6c"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sumQuanTot}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="508" y="0" width="51" height="12" uuid="154f5462-0d82-492e-9a31-be783c054d07"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Х"]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement x="559" y="0" width="64" height="12" uuid="d414bd85-8b30-450d-b60a-755b7c28014a"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sumSubtotTot}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="623" y="0" width="45" height="12" uuid="d395b5ea-d2f7-4749-ac52-b2dbf3ef8144"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Х"]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement x="668" y="0" width="70" height="12" uuid="1fd106cd-45ca-41cb-9a23-8f8ad2300d43"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sumTaxTot}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement x="738" y="0" width="64" height="12" uuid="f01f8d33-3d5c-4536-956d-dba3801e27f3"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sumTotalTot}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="346" y="129" width="32" height="35" uuid="ee8b0ef8-9521-4d09-bde8-41392d7ae284"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textFieldExpression><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="346" y="164" width="32" height="35" uuid="81f303b8-2b45-4c79-8ed2-31994f0cb448"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textFieldExpression><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="346" y="187" width="32" height="48" uuid="270dc270-71e6-41e1-9096-9c084c852e31"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>
