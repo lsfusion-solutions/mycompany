@@ -1,0 +1,45 @@
+MODULE ShipmentInitial;
+
+REQUIRE ShipmentType;
+
+NAMESPACE Inventory;
+
+loadInitialData () + {
+    NEW s = ShipmentType {
+        name(s) <- 'Отгрузка';
+        id(s) <- 'shipment';
+        NEW n = Numerator {
+            name(n) <- 'Отгрузка';
+            series(n) <- 'ОП';
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+            numerator(s) <- n;
+        }
+    }
+    NEW s = ShipmentType {
+        name(s) <- 'Перемещение';
+        id(s) <- 'transfer';
+        isTransfer(s) <- TRUE;
+        NEW n = Numerator {
+            name(n) <- 'Перемещение';
+            series(n) <- 'ПР';
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+            numerator(s) <- n;
+        }
+    }
+    NEW s = ShipmentType {
+        name(s) <- 'Возврат поставщику';
+        id(s) <- 'return';
+        NEW n = Numerator {
+            name(n) <- 'Возврат поставщику';
+            series(n) <- 'ВП';
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+            numerator(s) <- n;
+        }
+    }
+}

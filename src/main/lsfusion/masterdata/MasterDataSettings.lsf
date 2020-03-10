@@ -4,11 +4,17 @@ REQUIRE Numerator;
 
 NAMESPACE MasterData;
 
-loadInitialData 'Начальные настройки' ABSTRACT LIST();
-defaultData () = IF NOT GROUP SUM 1 IF Numerator n IS Numerator THEN TRUE ELSE NULL;
+loadInitialData ABSTRACT LIST ();
+
+createInitialData 'Загрузить начальные настройки' {
+    NEWSESSION {
+        loadInitialData();
+        APPLY;
+    }
+}
 
 FORM options 'Настройки'
-    PROPERTIES loadInitialData() SHOWIF defaultData() TOOLBAR
+    PROPERTIES createInitialData()
 ;
 
 DESIGN options {
@@ -18,7 +24,8 @@ DESIGN options {
             caption = 'Общие';
         } 
         NEW import {
-            caption = 'Импорт/экспорт';
+            caption = 'Загрузка данных';
+            MOVE PROPERTY(createInitialData());
         } 
     }
 }

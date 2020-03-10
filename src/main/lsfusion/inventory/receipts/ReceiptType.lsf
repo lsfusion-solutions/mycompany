@@ -7,6 +7,9 @@ NAMESPACE Inventory;
 CLASS ReceiptType 'Тип поступления';
 name 'Название' = DATA ISTRING[50] (ReceiptType) NONULL;
 
+id 'Код' = DATA STRING[20] (ReceiptType);
+receiptType = GROUP AGGR ReceiptType t BY id(t);
+
 numerator = DATA Numerator (ReceiptType);
 nameNumerator 'Нумератор' (ReceiptType o) = name(numerator(o));
 
@@ -17,20 +20,20 @@ maxQuantity 'Максимальное кол-во товара' = DATA NUMERIC[1
 
 FORM receiptType 'Тип поступления'
     OBJECTS o = ReceiptType PANEL 
-    PROPERTIES(o) name, nameNumerator, nameDefaultLocation, maxQuantity
+    PROPERTIES(o) name, id, nameNumerator, nameDefaultLocation, maxQuantity
      
     EDIT ReceiptType OBJECT o;
 ;
 
 FORM receiptTypes 'Типы поступлений'
     OBJECTS o = ReceiptType
-    PROPERTIES(o) READONLY name
+    PROPERTIES(o) READONLY name, id
     LIST ReceiptType OBJECT o;
 ;
 
 EXTEND FORM options
     OBJECTS rt = ReceiptType
-    PROPERTIES(rt) READONLY name
+    PROPERTIES(rt) READONLY name, id
     PROPERTIES(rt) NEWSESSION NEW, EDIT, DELETE
 ;
 
@@ -45,22 +48,3 @@ countReceiptTypes 'Кол-во типов' () = GROUP SUM 1 IF r IS ReceiptType;
 firstReceiptType = GROUP LAST ReceiptType r ORDER DESC r WHERE r IS ReceiptType;
 
 defaultReceiptType = firstReceiptType() IF countReceiptTypes() = 1;
-
-// initial data
-loadInitialData () + {
-    NEWSESSION {
-        NEW r = ReceiptType {
-            name(r) <- 'Поступление от поставщика';
-
-            NEW n = Numerator {
-                name(n) <- 'Поступления от поставщика';
-                series(n) <- 'ПП';
-                minValue(n) <- 1;
-                maxValue(n) <- 999999;
-                stringLength(n) <- 6;
-                numerator(r) <- n;
-            }
-        }
-        APPLY;
-    }
-}

@@ -1,0 +1,37 @@
+MODULE CreditNoteInitial;
+
+REQUIRE CreditNote;
+
+NAMESPACE Invoicing;
+
+loadInitialData () + {
+    NEW t = BillType {
+        name(t) <- 'Оптовый возврат';
+        id(t) <- 'creditnotewholesale';
+        isCreditNote(t) <- TRUE;
+        NEW n = Numerator {
+            name(n) <- 'Оптовый возврат';
+            series(n) <- 'ОВ';
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+            numerator(t) <- n;
+        }
+        billType(InvoiceType it) <- t WHERE id(it) = 'wholesale';
+    }
+    NEW t = BillType {
+        name(t) <- 'Розничный возврат';
+        id(t) <- 'creditnoteretail';
+        isCreditNote(t) <- TRUE;
+        taxIncluded(t) <- TRUE;
+        NEW n = Numerator {
+            name(n) <- 'Розничный возврат';
+            series(n) <- 'РВ';
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+            numerator(t) <- n;
+        }
+        billType(InvoiceType it) <- t WHERE id(it) = 'retail';
+    }
+}

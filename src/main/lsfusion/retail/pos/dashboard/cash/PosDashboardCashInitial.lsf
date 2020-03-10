@@ -1,0 +1,64 @@
+MODULE PosDashboardCashInitial;
+
+REQUIRE PosDashboardCash;
+
+NAMESPACE Invoicing;
+
+loadInitialData () + {
+    NEW i = IncomingPaymentType {
+        name(i) <- 'Перемещение денег из ККМ';
+        id(i) <- 'withdrawcash';
+        NEW n = Numerator {
+            name(n) <- 'Перемещение денег из ККМ';
+            series(n) <- 'ИК';
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+            numerator(i) <- n;
+        }
+    }
+    NEW i = OutgoingPaymentType {
+        name(i) <- 'Перемещение денег в ККМ';
+        id(i) <- 'depositсash';
+        NEW n = Numerator {
+            name(n) <- 'Перемещение денег в ККМ';
+            series(n) <- 'ВК';
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+            numerator(i) <- n;
+        }
+    }
+    NEW i = IncomingPaymentType {
+        name(i) <- 'Внесение денег в ККМ';
+        id(i) <- 'depositpos';
+        NEW n = Numerator {
+            name(n) <- 'Внесение денег в ККМ';
+            series(n) <- 'ВК';
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+            numerator(i) <- n;
+        }
+        outgoingPaymentType(i) <- outgoingPaymentType('depositсash');
+        autoCreateOutgoingPayment(i) <- TRUE;
+        
+        depositPaymentType() <- i;
+    }
+    NEW i = OutgoingPaymentType {
+        name(i) <- 'Выемка денег из ККМ';
+        id(i) <- 'withdrawpos';
+        NEW n = Numerator {
+            name(n) <- 'Выемка денег из ККМ';
+            series(n) <- 'ИК';
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+            numerator(i) <- n;
+        }
+        incomingPaymentType(i) <- incomingPaymentType('withdrawcash');
+        autoCreateIncomingPayment(i) <- TRUE;
+
+        withdrawPaymentType() <- i;
+    }
+}

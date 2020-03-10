@@ -7,6 +7,9 @@ NAMESPACE Sales;
 CLASS OrderType 'Тип заказа';
 name 'Название' = DATA ISTRING[50] (OrderType) NONULL;
 
+id 'Код' = DATA STRING[20] (OrderType);
+orderType = GROUP AGGR OrderType t BY id(t);
+
 numerator 'Нумератор' = DATA Numerator (OrderType);
 nameNumerator 'Нумератор' (OrderType o) = name(numerator(o));
 
@@ -14,21 +17,21 @@ taxIncluded 'Цена включает налоги' = DATA BOOLEAN (OrderType);
 
 FORM orderType 'Тип заказа'
     OBJECTS o = OrderType PANEL 
-    PROPERTIES(o) name, nameNumerator, taxIncluded
+    PROPERTIES(o) name, id, nameNumerator, taxIncluded
      
     EDIT OrderType OBJECT o;
 ;
 
 FORM orderTypes 'Типы заказов'
     OBJECTS o = OrderType
-    PROPERTIES(o) READONLY name
+    PROPERTIES(o) READONLY name, id
     
     LIST OrderType OBJECT o;
 ;
 
 EXTEND FORM options
     OBJECTS ot = OrderType
-    PROPERTIES(ot) READONLY name
+    PROPERTIES(ot) READONLY name, id
     PROPERTIES(ot) NEWSESSION NEW, EDIT, DELETE
 ;
 

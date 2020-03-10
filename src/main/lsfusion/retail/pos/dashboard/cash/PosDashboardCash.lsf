@@ -1,6 +1,8 @@
 MODULE PosDashboardCash;
 
-REQUIRE PosDashboard, PosPaymentMethod, IncomingPaymentDone, OutgoingPaymentDone;
+REQUIRE PosDashboard, PosPaymentMethod, 
+        IncomingPaymentDone, IncomingPaymentOutgoing, 
+        OutgoingPaymentDone, OutgoingPaymentIncoming;
 
 NAMESPACE Retail;
 
@@ -19,6 +21,11 @@ DESIGN inputMoney {
 depositPaymentType = DATA IncomingPaymentType ();
 nameDepositPaymentType 'Тип внесения денег' = name(depositPaymentType());
 EXTEND FORM options PROPERTIES() nameDepositPaymentType;
+DESIGN options {
+    general {
+        MOVE PROPERTY(nameDepositPaymentType());
+    }
+}
 
 deposit 'Внесение денег' (Pos p) {
     DIALOG inputMoney OBJECTS a INPUT DO {
@@ -45,6 +52,11 @@ deposit 'Внесение денег' (Pos p) {
 withdrawPaymentType = DATA OutgoingPaymentType ();
 nameWithdrawPaymentType 'Тип изъятия денег' = name(withdrawPaymentType());
 EXTEND FORM options PROPERTIES() nameWithdrawPaymentType;
+DESIGN options {
+    general {
+        MOVE PROPERTY(nameWithdrawPaymentType());
+    }
+}
 
 // withdraw
 withdraw 'Выемка денег' (Pos p) {

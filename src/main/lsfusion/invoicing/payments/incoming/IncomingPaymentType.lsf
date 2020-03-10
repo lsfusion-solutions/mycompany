@@ -1,32 +1,35 @@
 MODULE IncomingPaymentType;
 
-REQUIRE Numerator, InvoicingSettings;
+REQUIRE Numerator, InvoicingSettings, MasterDataSettings;
 
 NAMESPACE Invoicing;
 
 CLASS IncomingPaymentType 'Тип входящего платежа';
 name 'Название' = DATA ISTRING[50] (IncomingPaymentType) NONULL;
 
+id 'Код' = DATA STRING[20] (IncomingPaymentType);
+incomingPaymentType = GROUP AGGR IncomingPaymentType t BY id(t);
+
 numerator 'Нумератор' = DATA Numerator (IncomingPaymentType);
 nameNumerator 'Нумератор' (IncomingPaymentType o) = name(numerator(o));
 
 FORM incomingPaymentType 'Тип входящего платежа'
     OBJECTS o = IncomingPaymentType PANEL 
-    PROPERTIES(o) name, nameNumerator
+    PROPERTIES(o) name, id, nameNumerator
      
     EDIT IncomingPaymentType OBJECT o;
 ;
 
 FORM incomingPaymentTypes 'Типы входящих платежей'
     OBJECTS o = IncomingPaymentType
-    PROPERTIES(o) READONLY name
+    PROPERTIES(o) READONLY name, id
     
     LIST IncomingPaymentType OBJECT o;
 ;
 
 EXTEND FORM options
     OBJECTS ipt = IncomingPaymentType
-    PROPERTIES(ipt) READONLY name
+    PROPERTIES(ipt) READONLY name, id
     PROPERTIES(ipt) NEWSESSION NEW, EDIT, DELETE
 ;
 

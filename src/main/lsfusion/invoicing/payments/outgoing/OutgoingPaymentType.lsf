@@ -1,32 +1,35 @@
 MODULE OutgoingPaymentType;
 
-REQUIRE Numerator, InvoicingSettings;
+REQUIRE Numerator, InvoicingSettings, MasterDataSettings;
 
 NAMESPACE Invoicing;
 
 CLASS OutgoingPaymentType 'Тип исходящего платежа';
 name 'Название' = DATA ISTRING[50] (OutgoingPaymentType) NONULL;
 
+id 'Код' = DATA STRING[20] (OutgoingPaymentType);
+outgoingPaymentType = GROUP AGGR OutgoingPaymentType t BY id(t);
+
 numerator 'Нумератор' = DATA Numerator (OutgoingPaymentType);
 nameNumerator 'Нумератор' (OutgoingPaymentType o) = name(numerator(o));
 
 FORM outgoingPaymentType 'Тип исходящего платежа'
     OBJECTS o = OutgoingPaymentType PANEL 
-    PROPERTIES(o) name, nameNumerator
+    PROPERTIES(o) name, id, nameNumerator
      
     EDIT OutgoingPaymentType OBJECT o;
 ;
 
 FORM outgoingPaymentTypes 'Типы исходящих платежей'
     OBJECTS o = OutgoingPaymentType
-    PROPERTIES(o) READONLY name
+    PROPERTIES(o) READONLY name, id
     
     LIST OutgoingPaymentType OBJECT o;
 ;
 
 EXTEND FORM options
     OBJECTS opt = OutgoingPaymentType
-    PROPERTIES(opt) READONLY name
+    PROPERTIES(opt) READONLY name, id
     PROPERTIES(opt) NEWSESSION NEW, EDIT, DELETE
 ;
 

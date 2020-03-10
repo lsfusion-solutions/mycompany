@@ -5,9 +5,10 @@ REQUIRE Pos, IncomingPaymentType, OutgoingPaymentType, RetailSettings;
 NAMESPACE Retail;
 
 CLASS PaymentMethod 'Метод оплаты';
+name 'Наименование' = DATA ISTRING[20] (PaymentMethod);
 
 id 'Код' = DATA STRING[10] (PaymentMethod); 
-name 'Наименование' = DATA ISTRING[20] (PaymentMethod);
+paymentMethod = GROUP AGGR PaymentMethod p BY id(p);
 
 cashPaymentMethod = DATA PaymentMethod();
 isCash 'Наличные' (PaymentMethod pm) = cashPaymentMethod() = pm;  
@@ -20,7 +21,7 @@ nameOutgoingPaymentType 'Тип возвратного платежа' (PaymentM
 
 FORM paymentMethod 'Метод оплаты'
     OBJECTS pm = PaymentMethod PANEL
-    PROPERTIES(pm) id, name, isCash, nameIncomingPaymentType, nameOutgoingPaymentType
+    PROPERTIES(pm) name, id, isCash, nameIncomingPaymentType, nameOutgoingPaymentType
     
     EDIT PaymentMethod OBJECT pm
 ;
@@ -32,14 +33,14 @@ DESIGN paymentMethod {
 
 FORM paymentMethods 'Методы оплаты'
     OBJECTS pm = PaymentMethod
-    PROPERTIES(pm) READONLY name
+    PROPERTIES(pm) READONLY name, id
     
     LIST PaymentMethod OBJECT pm
 ;
 
 EXTEND FORM options
     OBJECTS pm = PaymentMethod
-    PROPERTIES(pm) READONLY name, isCash
+    PROPERTIES(pm) READONLY name, id, isCash
     PROPERTIES(pm) NEWSESSION NEW, EDIT, DELETE
 ;
 

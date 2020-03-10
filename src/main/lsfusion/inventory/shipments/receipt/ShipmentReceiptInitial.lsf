@@ -1,0 +1,23 @@
+MODULE ShipmentReceiptInitial;
+
+REQUIRE ShipmentReceipt;
+
+NAMESPACE Inventory;
+
+loadInitialData () + {
+    NEW r = ReceiptType {
+        name(r) <- 'Возврат';
+        id(r) <- 'return';
+        isReturn(r) <- TRUE;
+        
+        NEW n = Numerator {
+            name(n) <- 'Возврат';
+            series(n) <- 'ВЗ';
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+            numerator(r) <- n;
+        }
+        receiptType(ShipmentType t) <- r WHERE id(t) = 'shipment';
+    }
+}

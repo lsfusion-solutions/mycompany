@@ -1,0 +1,12 @@
+MODULE BillReceiptInitial;
+
+REQUIRE BillReceipt;
+
+NAMESPACE Invoicing;
+
+// initial data
+loadInitialData () + {
+    receiptType(BillType t) <- receiptType('receipt') WHERE id(t) = 'wholesale'; 
+    receiptType(BillType t) <- receiptType('return') WHERE id(t) = 'creditnotewholesale' OR id(t) = 'creditnoteretail';
+    autoCreateReceipt(BillType t) <- TRUE WHERE id(t) = 'creditnotewholesale' OR id(t) = 'creditnoteretail';
+}
