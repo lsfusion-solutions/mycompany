@@ -13,6 +13,8 @@ value 'Значение, %' = DATA NUMERIC[5,2] (Tax);
 taxGroup 'Группа налога' = DATA TaxGroup (Tax);
 nameTaxGroup 'Группа налога' (Tax t) = name(taxGroup(t));
 
+tax (TaxGroup g, NUMERIC[5,2] v) = GROUP LAST Tax t ORDER t WHERE taxGroup(t) = g AND value(t) = v; 
+
 FORM tax 'Налог'
     OBJECTS t = Tax PANEL 
     PROPERTIES(t) name, value, nameTaxGroup
