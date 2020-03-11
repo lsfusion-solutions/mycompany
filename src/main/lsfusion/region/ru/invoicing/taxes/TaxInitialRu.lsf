@@ -1,0 +1,27 @@
+MODULE TaxInitialRu;
+
+REQUIRE Tax, MasterDataSettings;
+
+NAMESPACE Invoicing;
+
+loadInitialData() + {
+    NEW g = TaxGroup {
+        name(g) <- 'НДС';
+        id(g) <- 'vat';
+        NEW t = Tax {
+            name(t) <- '20%';
+            value(t) <- 20; 
+            taxGroup(t) <- g;
+        }
+        NEW t = Tax {
+            name(t) <- '10%';
+            value(t) <- 10; 
+            taxGroup(t) <- g;
+        }
+        NEW t = Tax {
+            name(t) <- '0%';
+            value(t) <- 0; 
+            taxGroup(t) <- g;
+        }
+    }
+}

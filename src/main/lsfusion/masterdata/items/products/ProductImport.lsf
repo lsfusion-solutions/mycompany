@@ -1,6 +1,7 @@
 MODULE ProductImport;
 
-REQUIRE Product, BarCode, System;
+REQUIRE Product, BarCode, System, 
+        ItemPurchase, ItemSales;
 
 NAMESPACE MasterData;
 
@@ -11,12 +12,19 @@ productExport 'Экспорт товаров' () {
                 id(p) <- '123';
                 dataName(p) <- 'Мой продукт';
                 category(p) <- GROUP LAST Category c ORDER name(c) IF c IS Category;
+                
+                weight(p) <- 0.415;
+                volume(p) <- 1.5;
+                
+                cost(p) <- 3.45;
+                salesPrice(p) <- 6.14;
             }
         }
     
         LOCAL f = EXCELFILE ();
         EXPORT XLSX HEADER FROM 'Код товара' = id(Product p), 'Наименование' = dataName(p), 'Код категории' = idCategory(p), 
-            'Штрихкод' = idBarCode(p), 'Код учетной единицы' = idUom(p) WHERE p IS Product TO f;   
+                                'Код единицы измерения' = idUom(p), 'Вес единицы, кг' = weight(p), 'Объем единицы, м3' = volume(p),
+                                'Плановая себестоимость' = cost(p), 'Цена продажи' = salesPrice(p) WHERE p IS Product TO f;   
         open(f());
     }
 }
@@ -25,15 +33,23 @@ productImport 'Импорт товаров' () {
     LOCAL id = STRING[50] (INTEGER);
     LOCAL name = ISTRING[50] (INTEGER);
     LOCAL idCategory = ISTRING[50] (INTEGER);
-    LOCAL barCode = ISTRING[20] (INTEGER);
-    LOCAL idUnitM = ISTRING[50] (INTEGER);
+    LOCAL idUom = ISTRING[50] (INTEGER);
+    LOCAL weight = NUMERIC[11,3] (INTEGER);
+    LOCAL volume = NUMERIC[11,3] (INTEGER);
+    LOCAL cost = NUMERIC[10,2] (INTEGER);
+    LOCAL salesPrice = NUMERIC[10,2] (INTEGER);
        
     INPUT f = EXCELFILE DO {
         NEWSESSION {
-            IMPORT XLS HEADER FROM f TO id = A, name =B, idCategory = C, barCode = D, idUnitM = E; 
+            IMPORT XLS HEADER FROM f TO id = A, name = B, idCategory = C, idUom = D, weight = E, volume = F, cost = G, salesPrice = H; 
             
-            FOR [GROUP SUM 1 BY idCategory(INTEGER i)](num) AND NOT category[STRING](num) DO {
+            FOR [GROUP SUM 1 BY idCategory(INTEGER i)](STRING num) AND NOT category(num) DO {
                 MESSAGE 'Отсутствует категория в базе данных с кодом ' + num + '. Импорт отменен';
+                RETURN;
+            }  
+
+            FOR [GROUP SUM 1 BY idUom(INTEGER i)](STRING num) AND NOT uom(num) DO {
+                MESSAGE 'Отсутствует единица измерения в базе данных с кодом ' + num + '. Импорт отменен';
                 RETURN;
             }  
             
@@ -41,11 +57,11 @@ productImport 'Импорт товаров' () {
                 id(p) <- id(i);
                 dataName(p) <- name(i);
                 category(p) <- category(idCategory(i));
-                NEW b = BarCode {
-                    item(b) <- p;
-                    id(b) <- barCode(i);
-                }
-                uom(p) <- uom(idUnitM(i));
+                uom(p) <- uom(idUom(i));
+                weight(p) <- weight(i);
+                volume(p) <- volume(i);
+                cost(p) <- cost(i);
+                salesPrice(p) <- salesPrice(i);
             }
             APPLY;
             MESSAGE 'Импорт завершен';

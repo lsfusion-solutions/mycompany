@@ -1,6 +1,6 @@
 MODULE LegalEntityImport;
 
-REQUIRE LegalEntity;
+REQUIRE LegalEntity, PartnerPurchase, PartnerSales;
 
 NAMESPACE MasterData;
 
@@ -14,9 +14,10 @@ legalEntityExport 'Экспорт организаций' () {
         }
     
         LOCAL f = EXCELFILE ();
-        EXPORT XLSX HEADER FROM 'Код' = id(LegalEntity l), 'Организация' = name(l), 'Веб сайт' = website(l),
+        EXPORT XLSX HEADER FROM 'Код' = id(LegalEntity l), 'Наименование' = name(l),
             'Адрес' = address(l), 'Город' = city(l), 'Область' = state(l), 'Почтовый индекс' = zip(l), 
-            'Телефон' = phone(l), 'Электронная почта' = email(l) WHERE l IS LegalEntity TO f;   
+            'Телефон' = phone(l), 'Электронная почта' = email(l), 'Веб сайт' = website(l),
+            'Является поставщиком' = isVendor(l), 'Является покупателем' = isCustomer(l) WHERE l IS LegalEntity TO f;   
         open(f());
     }
 }
@@ -31,10 +32,12 @@ legalEntityImport 'Импорт организаций' () {
     LOCAL zip = ISTRING[10] (INTEGER);
     LOCAL phone = ISTRING[30] (INTEGER);
     LOCAL email = ISTRING[30] (INTEGER);
+    LOCAL isVendor = BOOLEAN (INTEGER);
+    LOCAL isCustomer = BOOLEAN (INTEGER);
        
     INPUT f = EXCELFILE DO {
         NEWSESSION {
-            IMPORT XLS HEADER FROM f TO id, name, website, address, city, state, zip, phone, email; 
+            IMPORT XLS HEADER FROM f TO id, name, address, city, state, zip, phone, email, website, isVendor, isCustomer; 
             
             FOR imported(INTEGER j) DO NEW l = LegalEntity {
                 id(l) <- id(j);
@@ -46,6 +49,8 @@ legalEntityImport 'Импорт организаций' () {
                 zip(l) <- zip(j);
                 phone(l) <- phone(j);
                 email(l) <- email(j);
+                isVendor(l) <- isVendor(j);
+                isCustomer(l) <- isCustomer(j);
             }
             APPLY;
             MESSAGE 'Импорт завершен';
