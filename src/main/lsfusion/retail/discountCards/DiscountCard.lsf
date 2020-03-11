@@ -12,17 +12,25 @@ nameCustomer 'Владелец' (DiscountCard d) = name(customer(d)) IN id;
 id 'Номер' = DATA STRING[20] (DiscountCard) IN id;
 discountCard (STRING[20] id) = GROUP AGGR DiscountCard d BY id(d);
 
+dateIssueDiscountCard 'Дата выпуска' = DATA DATE (DiscountCard) NONULL;
+dateLockDiscountCard 'Дата блокировки' = DATA DATE (DiscountCard);
+
+dateIssueDiscountCard(DiscountCard d) <- currentDate() WHEN SET(d IS DiscountCard);
+
+CONSTRAINT dateIssueDiscountCard(DiscountCard d) > dateLockDiscountCard(d) 
+    MESSAGE 'Дата блокировки дисконтной карты не может быть раньше даты выпуска';
+
 FORM discountCard 'Дисконтная карта'
-    OBJECTS dc = DiscountCard PANEL
-    PROPERTIES(dc) id, nameCustomer
+    OBJECTS d = DiscountCard PANEL
+    PROPERTIES(d) id, nameCustomer, dateIssueDiscountCard, dateLockDiscountCard
     
-    EDIT DiscountCard OBJECT dc
+    EDIT DiscountCard OBJECT d
 ;
 
 FORM discountCards 'Дисконтные карты'
-    OBJECTS dc = DiscountCard
-    PROPERTIES(dc) READONLY id, nameCustomer
-    PROPERTIES(dc) NEWSESSION NEW, EDIT, DELETE;
+    OBJECTS d = DiscountCard
+    PROPERTIES(d) READONLY id, nameCustomer, dateIssueDiscountCard, dateLockDiscountCard
+    PROPERTIES(d) NEWSESSION NEW, EDIT, DELETE;
 ;
 
 NAVIGATOR {
