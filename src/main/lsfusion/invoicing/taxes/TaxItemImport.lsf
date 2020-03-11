@@ -6,7 +6,7 @@ NAMESPACE Invoicing;
 
 taxItemImportSales 'Импорт налогов на реализацию' () {
     LOCAL id = STRING[50] (INTEGER);
-    LOCAL group = STRING[50] (INTEGER);
+    LOCAL group = STRING[20] (INTEGER);
     LOCAL value = NUMERIC[5,2] (INTEGER);
     
     INPUT f = EXCELFILE DO {
@@ -15,7 +15,7 @@ taxItemImportSales 'Импорт налогов на реализацию' () {
             
             FOR [GROUP SUM 1 BY id(INTEGER i)](STRING id) AND id(Item item) = id DO {
                 FOR imported(INTEGER i) AND id(i) = id DO {
-                    salesIn(item, GROUP LAST Tax t IF nameTaxGroup(t) = group(i) AND value(t) = value(i)) <- TRUE;
+                    salesIn(item, tax(taxGroup(group(i)), value(i))) <- TRUE;
                 }
             } 
             
@@ -27,7 +27,7 @@ taxItemImportSales 'Импорт налогов на реализацию' () {
 
 taxItemImportPurchase 'Импорт налогов на закупку' () {
     LOCAL id = STRING[50] (INTEGER);
-    LOCAL group = STRING[50] (INTEGER);
+    LOCAL group = STRING[20] (INTEGER);
     LOCAL value = NUMERIC[5,2] (INTEGER);
     
     INPUT f = EXCELFILE DO {
@@ -36,7 +36,7 @@ taxItemImportPurchase 'Импорт налогов на закупку' () {
             
             FOR [GROUP SUM 1 BY id(INTEGER i)](STRING id) AND id(Item item) = id DO {
                 FOR imported(INTEGER i) AND id(i) = id DO {
-                    purchaseIn(item, GROUP LAST Tax t IF nameTaxGroup(t) = group(i) AND value(t) = value(i)) <- TRUE;
+                    purchaseIn(item,tax(taxGroup(group(i)), value(i))) <- TRUE;
                 }
             } 
             
@@ -50,7 +50,7 @@ taxItemImportPurchase 'Импорт налогов на закупку' () {
 taxItemExportSales 'Экспорт налогов на реализацию' () {
     NEWSESSION {
         LOCAL f = EXCELFILE ();
-        EXPORT XLSX FROM id(Item i), name(TaxGroup g), value(Tax t) WHERE salesIn(i, t) AND taxGroup(t) = g TO f;   
+        EXPORT XLSX FROM id(Item i), id(taxGroup(Tax t)), value(t) WHERE salesIn(i, t) TO f;   
         open(f());
     }
 }
@@ -58,7 +58,7 @@ taxItemExportSales 'Экспорт налогов на реализацию' () 
 taxItemExportPurchase 'Экспорт налогов на закупку' () {
     NEWSESSION {
         LOCAL f = EXCELFILE ();
-        EXPORT XLSX FROM id(Item i), name(TaxGroup g), value(Tax t) WHERE purchaseIn(i, t) AND taxGroup(t) = g TO f;   
+        EXPORT XLSX FROM id(Item i), id(taxGroup(Tax t)), value(t) WHERE purchaseIn(i, t) TO f;   
         open(f());
     }
 }
