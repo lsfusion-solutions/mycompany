@@ -13,10 +13,8 @@ taxItemImportSales 'Импорт налогов на реализацию' () {
         NEWSESSION {
             IMPORT XLS FROM f TO id = A, group = B, value = C;
             
-            FOR [GROUP SUM 1 BY id(INTEGER i)](STRING id) AND id(Item item) = id DO {
-                FOR imported(INTEGER i) AND id(i) = id DO {
-                    salesIn(item, tax(taxGroup(group(i)), value(i))) <- TRUE;
-                }
+            FOR imported(INTEGER i) AND id(Item item) = id(i) DO {
+                salesIn(item, tax(taxGroup(group(i)), value(i))) <- TRUE;
             } 
             
             APPLY;
@@ -34,10 +32,8 @@ taxItemImportPurchase 'Импорт налогов на закупку' () {
         NEWSESSION {
             IMPORT XLS FROM f TO id = A, group = B, value = C;
             
-            FOR [GROUP SUM 1 BY id(INTEGER i)](STRING id) AND id(Item item) = id DO {
-                FOR imported(INTEGER i) AND id(i) = id DO {
-                    purchaseIn(item,tax(taxGroup(group(i)), value(i))) <- TRUE;
-                }
+            FOR imported(INTEGER i) AND id(Item item) = id(i) DO {
+                purchaseIn(item, tax(taxGroup(group(i)), value(i))) <- TRUE;
             } 
             
             APPLY;
