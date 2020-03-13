@@ -132,48 +132,7 @@ END
 
 META defineDocHistory(doc, let, class, fun)
 
-    CLASS ###doc##History 'История изменений';
-    
-    ##doc = DATA ###doc (###doc##History);
-
-    dateTime 'Дата' = DATA DATETIME (###doc##History);
-    user 'Пользователь' = DATA User (###doc##History) CHARWIDTH 15;
-    nameUser 'Пользователь' (###doc##History l) = name(user(l));
-    type 'Тип' = DATA ISTRING[100] (###doc##History);
-    description 'Описание' = DATA TEXT (###doc##History);
-     
-    WHEN SETCHANGED(status(###doc let)) DO {     
-        NEW l = ###doc##History {
-            ##doc(l) <- let;
-            dateTime(l) <- currentDateTime();
-            user(l) <- currentUser();
-            type(l) <- 'Изменен статус';
-            description (l) <- 'Изменен статус на ' + staticCaption(status(let));
-        }
-            
-        
-    }
-
-    EXTEND FORM doc
-        OBJECTS doc##l = ###doc##History
-        PROPERTIES(doc##l) READONLY dateTime, nameUser, type, description, pdescription = description PANEL
-        FILTERS ##doc(doc##l) = let
-    ;
-    
-    DESIGN doc {
-        details {
-            NEW history {
-                caption = 'История';
-                fill = 1;
-                type = SPLITH;
-                MOVE BOX(doc##l) { 
-                    fill = 2;
-                    PROPERTY(description(doc##l)) { valueHeight = 18; }
-                }
-                MOVE PROPERTY(pdescription) { panelCaptionAbove = TRUE; fill = 1; }
-            }
-        }
-    }
+    @defineDocHistoryHead(##doc, ##let);
     
     WHEN SETCHANGED(###doc##Line l IS ###doc##Line) AND ##doc(l) = ###doc ##let 
                         AND NOT status(##let) = ###doc##Status.draft DO {     
@@ -216,6 +175,49 @@ META defineDocHistory(doc, let, class, fun)
             user(h) <- currentUser();
             type(h) <- 'Изменен продукт';
             description (h) <- 'Изменен продукт в строке ' + index(l) + ' на ' + name###class(l);
+        }
+    }
+END
+
+META defineDocHistoryHead(doc, let)
+    CLASS ###doc##History 'История изменений';
+    
+    ##doc = DATA ###doc (###doc##History);
+
+    dateTime 'Дата' = DATA DATETIME (###doc##History);
+    user 'Пользователь' = DATA User (###doc##History) CHARWIDTH 15;
+    nameUser 'Пользователь' (###doc##History l) = name(user(l));
+    type 'Тип' = DATA ISTRING[100] (###doc##History);
+    description 'Описание' = DATA TEXT (###doc##History);
+     
+    WHEN SETCHANGED(status(###doc let)) DO {     
+        NEW l = ###doc##History {
+            ##doc(l) <- let;
+            dateTime(l) <- currentDateTime();
+            user(l) <- currentUser();
+            type(l) <- 'Изменен статус';
+            description (l) <- 'Изменен статус на ' + staticCaption(status(let));
+        }
+    }
+
+    EXTEND FORM doc
+        OBJECTS doc##l = ###doc##History
+        PROPERTIES(doc##l) READONLY dateTime, nameUser, type, description, pdescription = description PANEL
+        FILTERS ##doc(doc##l) = let
+    ;
+    
+    DESIGN doc {
+        details {
+            NEW history {
+                caption = 'История';
+                fill = 1;
+                type = SPLITH;
+                MOVE BOX(doc##l) { 
+                    fill = 2;
+                    PROPERTY(description(doc##l)) { valueHeight = 18; }
+                }
+                MOVE PROPERTY(pdescription) { panelCaptionAbove = TRUE; fill = 1; }
+            }
         }
     }
 END
