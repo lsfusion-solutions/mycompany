@@ -4,8 +4,7 @@ REQUIRE Time, MetaNumerator, Individual, Company,
         MetaTax, TaxItem, BarCode, PurchaseOrderType,
         PurchaseSettings, PartnerPurchase, ItemSales,
         PaymentTermsPurchase, Doc, PurchasePricelistValue,
-        DebtPartner,
-        Location;  
+        DebtPartner, Location;  
 
 NAMESPACE Purchase;
 
@@ -198,3 +197,34 @@ NAVIGATOR {
         NEW orders FIRST;    
     }
 }
+
+copyOrder 'Копировать' (Order o)  { 
+    NEWSESSION {
+        NEW no = Order {
+            type(no) <- type(o);
+            vendor(no) <- vendor(o);
+            paymentTerms(no) <- paymentTerms(o);
+            location(no) <- location(o);
+            representative(no) <- representative(o); 
+            FOR order(OrderLine l) = o INLINE NEW nl = OrderLine DO {
+                order(nl) <- no;
+                item(nl) <- item(l);
+                description(nl) <- description(l);
+                uom(nl) <- uom(l); 
+                
+                quantity(nl) <- quantity(l);
+                
+                price(nl) <- price(l);
+            }
+            SHOW order OBJECTS o = no DOCKED;
+        }
+    }
+}
+
+EXTEND FORM order PROPERTIES copyOrder(o);
+
+DESIGN order {
+    primaryActions {
+        MOVE PROPERTY(copyOrder(o));
+    }
+};

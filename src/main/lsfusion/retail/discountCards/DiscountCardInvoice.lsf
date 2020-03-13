@@ -10,6 +10,9 @@ idDiscountCard 'Номер дисконтной карты' (Invoice i) = id(dis
 CONSTRAINT discountCard(Invoice i) AND NOT customer(discountCard(i)) = customer(i) 
     MESSAGE 'Покупатель должен быть держателем дисконтной карты';
 
+CONSTRAINT DATE(dateTime(Invoice i)) >= blockedDate(discountCard(i)) CHECKED BY discountCard[Invoice]
+    MESSAGE 'Выбрана заблокированная дисконтная карта'; 
+
 WHEN LOCAL CHANGED(discountCard(Invoice i)) AND NOT CHANGED(customer(i)) DO 
     customer(i) <- customer(discountCard(i));
 WHEN LOCAL CHANGED(customer(Invoice i)) AND NOT CHANGED(discountCard(i)) DO 

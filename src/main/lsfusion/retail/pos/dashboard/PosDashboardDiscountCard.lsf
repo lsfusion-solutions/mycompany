@@ -10,13 +10,17 @@ EXTEND FORM posDashboard
 
 DESIGN posDashboard {
     invoice {
-        MOVE PROPERTY(idDiscountCard(i)) AFTER PROPERTY(nameCustomer(i));
+        MOVE PROPERTY(idDiscountCard(i)) BEFORE PROPERTY(nameCustomer(i));
     }
 }
 
 processBarcode (Invoice i, STRING[20] b) + {
     IF discountCard(b) THEN {
-        discountCard(i) <- discountCard(b);
         consumedBarcode() <- TRUE;
+        IF DATE(dateTime(i)) >= blockedDate(discountCard(b)) THEN
+            MESSAGE 'Дисконтная карта заблокирована'; 
+        ELSE 
+            discountCard(i) <- discountCard(b);
+            
     }
 }

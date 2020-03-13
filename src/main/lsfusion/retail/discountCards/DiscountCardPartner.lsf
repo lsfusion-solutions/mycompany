@@ -1,0 +1,32 @@
+MODULE DiscountCardPartner;
+
+REQUIRE DiscountCard, Partner;
+
+NAMESPACE Retail;
+
+newDiscountCard 'Карта' (Partner p) {
+    NESTEDSESSION {
+        NEW d = DiscountCard {
+            customer(d) <- p;
+            SHOW discountCard OBJECTS d = d;  
+        }
+    }
+} IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+
+EXTEND FORM partner
+    OBJECTS d = DiscountCard
+    PROPERTIES(d) READONLY id, issuedDate, blockedDate
+    PROPERTIES(d) NESTEDSESSION EDIT, DELETE
+    PROPERTIES newDiscountCard(p) DRAW d TOOLBAR 
+    
+    FILTERS customer(d) = p
+;
+
+DESIGN partner {
+    tabs {
+        NEW discountCardPartner {
+            caption = 'Дисконтные карты';
+            MOVE BOX(d);
+        }
+    }
+}
