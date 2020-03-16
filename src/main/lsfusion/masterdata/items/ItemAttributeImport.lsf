@@ -1,0 +1,59 @@
+MODULE ItemAttributeImport;
+
+REQUIRE ItemAttribute, Item, System;
+
+NAMESPACE MasterData;
+
+attributeExport 'Экспорт атрибутов' () {
+    NEWSESSION {
+        LOCAL f = EXCELFILE ();
+        EXPORT XLSX HEADER FROM
+            'Код товара' = id(Item i), 'Код атрибута' = id(ItemAttribute a), 'Значение атрибута' = value(attribute(i, a))
+                WHERE value(attribute(i, a)) TO f
+        ; 
+        open(f());
+    }
+}
+
+itemAttribute (ItemAttribute a, STRING v) = GROUP MAX ItemAttributeValue av
+    BY itemAttribute(av), value(av)
+;
+
+attributeImport 'Импорт атрибутов' () {
+    LOCAL idItem = STRING[50] (INTEGER);
+    LOCAL idItemAttribute = STRING[50] (INTEGER);
+    LOCAL value = STRING (INTEGER);
+       
+    INPUT f = EXCELFILE DO {
+        NEWSESSION {
+            IMPORT XLS HEADER FROM f TO idItem = A, idItemAttribute = B, value = C; 
+            
+            FOR id(Item i) == idItem(INTEGER j) AND id(ItemAttribute a) == idItemAttribute(j) DO {
+                IF NOT itemAttribute(a, value(j)) AND value(j) THEN {
+                    NEW v = ItemAttributeValue {
+                        itemAttribute(v) <- a;
+                        value(v) <- value(j);
+                    }
+                }
+                attribute(i, a) <- itemAttribute(a, value(j));
+            }
+            APPLY;
+            MESSAGE 'Импорт завершен';
+        }
+    }    
+}
+
+EXTEND FORM MasterData.options 
+    PROPERTIES attributeExport(), attributeImport()
+;
+
+DESIGN MasterData.options {
+    import {
+        NEW attribute {
+            type = CONTAINERH;
+            caption = 'Атрибуты товаров';
+            MOVE PROPERTY(attributeImport());
+            MOVE PROPERTY(attributeExport());
+        }
+    }
+}
