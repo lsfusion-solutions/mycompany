@@ -304,31 +304,3 @@ META defineDocDiscountForm (doc)
         PROPERTIES(l) AFTER price(l) discount, discountPrice ON CHANGE changeDiscountPrice(l)
     ;
 END
-
-META defineDocPrintAction(doc, report, name)
-    FORM print###report   
-        OBJECTS o = ###doc PANEL
-        PROPERTIES(o)
-            dateTime, number, textCustomer, textCompany, scheduledDate,
-            totalTax, nameRepresentative        
-    
-        OBJECTS l = ###doc##Line
-        PROPERTIES(l) index, nameItem, idItem, nameUom, quantity, 
-                      price, totalExtended, totalDiscount, totalAmount
-        FILTERS ##doc(l) = o
-    ; 
-
-    print###report(###doc o) {
-        PRINT print###report OBJECTS o = o; 
-    }
-
-    EXTEND FORM ##doc
-        PROPERTIES(o) print###report
-    ; 
-
-    DESIGN ##doc {
-        secondaryActions {
-            MOVE PROPERTY(print###report(o)) { caption = name; charWidth = 10; }
-        }
-    }
-END

@@ -1,28 +1,18 @@
 MODULE SalesOrderPrintRu;
 
-REQUIRE Doc, SalesOrder, LegalEntityRu;
+REQUIRE LegalEntityRu, SalesOrderPrint;
 
 NAMESPACE Sales;
 
-textCustomer (Order o)= CONCAT ', ',
-    name(customer(o)),
-    'ИНН' + inn(customer(o)),
-    'ОКПО' + okpo(customer(o)),
-    csvAddress(customer(o)),
-    'Тел.' + phone(customer(o))
+innCustomer (Order o) = inn(customer(o));
+okpoCustomer (Order o) = okpo(customer(o));
+
+innCompany (Order o) = inn(company(location(o)));
+okpoCompany (Order o) = okpo(company(location(o)));
+
+EXTEND FORM printOrder
+    PROPERTIES(o)
+        dateTime, nameRepresentative, innCustomer, okpoCustomer, innCompany, okpoCompany 
+    
+    PROPERTIES(l) idItem, nameUom
 ;
-
-textCompany (Order o)= CONCAT ', ',
-        name(company(location(o))),
-        'ИНН' + inn(company(location(o))),
-        'ОКПО' + okpo(company(location(o))),
-        csvAddress(company(location(o))),
-        'Тел.' + phone(company(location(o)))
-;
-
-totalExtended (OrderLine l) = NUMERIC[14,2] (price(l) * quantity(l));
-totalDiscount (OrderLine l) = totalExtended(l) (-) totalAmount(l);
-
-@defineDocPrintAction(order, orderRu, 'Печать заказа');
-@defineDocPrintAction(order, annexRu, 'Печать приложения');
-@defineDocPrintAction(order, proposalRu, 'Печать предложения');
