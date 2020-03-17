@@ -15,7 +15,7 @@ locationExport 'Экспорт мест хранения' () {
     
         LOCAL f = EXCELFILE ();
         EXPORT XLSX HEADER FROM 'Код' = id(Location l), 'Название' = name(l), 'Код родителя' = idParent(l), 
-                                'Имя владельца' = nameCompany(l) TO f;   
+                                'Код владельца' = nameCompany(l) TO f;   
         open(f());
     }
 }
@@ -35,13 +35,9 @@ locationImport 'Импорт мест хранения' () {
                 name(l) <- name(i);
                 company(l) <- partner(owner(i));
             }
-            APPLY;
             
-            IMPORT XLS HEADER FROM f TO id = A, name = B, parent = C, owner = D;
-            FOR imported(INTEGER i) DO {
-                FOR id(Location l) = id(i) DO {
-                    parent(l) <- location(parent(i));
-                }
+            FOR imported(INTEGER i) AND id(Location l) = id(i) DO {
+                parent(l) <- location(parent(i));
             }
             APPLY;
             MESSAGE 'Импорт завершен';
