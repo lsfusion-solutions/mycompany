@@ -7,7 +7,7 @@ NAMESPACE Invoicing;
 bankExport 'Экспорт банков' () {
     NEWSESSION {
         LOCAL f = EXCELFILE ();
-        EXPORT XLSX HEADER FROM 'Код' = code(Bank b), 'Наименование' = name(b),
+        EXPORT XLSX HEADER FROM 'БИК' = id(Bank b), 'Наименование' = name(b),
                                 'Код страны' = id(country(b)),  'Город' = city(b),
                                  'Адрес' = address(b), 'Телефон' = phone(b) TO f;   
         open(f());
@@ -15,7 +15,7 @@ bankExport 'Экспорт банков' () {
 }
 
 bankImport 'Импорт банков' () {
-    LOCAL code = INTEGER (INTEGER);
+    LOCAL id = STRING[11] (INTEGER);
     LOCAL name = ISTRING[30] (INTEGER);
     LOCAL idCountry = STRING[3] (INTEGER);
     LOCAL city = ISTRING[30] (INTEGER);
@@ -24,11 +24,11 @@ bankImport 'Импорт банков' () {
     
     INPUT f = EXCELFILE DO {
         NEWSESSION {
-            IMPORT XLS HEADER FROM f TO code = A, name = B, idCountry = C,
+            IMPORT XLS HEADER FROM f TO id = A, name = B, idCountry = C,
                                         city = D, address = E, phone = F;
             
             FOR imported(INTEGER i) DO NEW b = Bank{
-                code(b) <- code(i);
+                id(b) <- id(i);
                 name(b) <- name(i);
                 country(b) <- country(idCountry(i));
                 city(b) <- city(i);
