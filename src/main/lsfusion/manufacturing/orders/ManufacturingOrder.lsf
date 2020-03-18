@@ -1,12 +1,20 @@
 MODULE ManufacturingOrder;
 
-REQUIRE ManufacturingSettings, Numerator, BomNested, Individual, SalesOrder, MetaNumerator, Input;
+REQUIRE ManufacturingOrderType, ManufacturingSettings, Numerator, BomNested,
+        Individual, SalesOrder, MetaNumerator, Input;
 
 NAMESPACE Manufacturing;
 
 CLASS ManufacturingOrder 'Производственный заказ';
 
 @defineStatus(manufacturingOrder, 'производственного заказа');
+
+type 'Тип' = DATA ManufacturingOrderType (ManufacturingOrder) NONULL;
+nameType 'Тип' (ManufacturingOrder o) = name(type(o));
+
+WHEN LOCAL SET(ManufacturingOrder o IS ManufacturingOrder) AND NOT CHANGED(type(o))
+    DO type(o) <- defaultManufacturingOrderType()
+; 
 
 scheduledDateTime 'Дата начала' = DATA DATETIME (ManufacturingOrder);
 scheduledDateTime(ManufacturingOrder o) <- currentDateTime() WHEN SET(o IS ManufacturingOrder);
@@ -96,7 +104,7 @@ scheduledDateTime 'Дата начала' (ConsumedLine l) = scheduledDateTime(m
 
 FORM manufacturingOrder 'Производственный заказ'
     OBJECTS o = ManufacturingOrder PANEL 
-    PROPERTIES(o) scheduledDateTime, number, nameCompany, 
+    PROPERTIES(o) nameType, scheduledDateTime, number, nameCompany, 
                   nameItem, unbuild, 
                   toManufacture, nameUom, 
                   descriptionBom, 
@@ -120,6 +128,7 @@ DESIGN manufacturingOrder {
             alignment = STRETCH;
             type = CONTAINERH;
             NEW headerLeft {
+                MOVE PROPERTY(nameType(o));
                 MOVE PROPERTY(scheduledDateTime(o));
                 MOVE PROPERTY(number(o)) { notNull = TRUE; }
                 MOVE PROPERTY(nameCompany(o));
@@ -157,7 +166,7 @@ DESIGN manufacturingOrder {
 
 FORM manufacturingOrders 'Производственные заказы'
     OBJECTS o = ManufacturingOrder
-    PROPERTIES(o) READONLY scheduledDateTime, number, nameCompany, 
+    PROPERTIES(o) READONLY nameType, scheduledDateTime, number, nameCompany, 
                            nameItem, unbuild, 
                            toManufacture, nameUom, 
                            descriptionBom, 
