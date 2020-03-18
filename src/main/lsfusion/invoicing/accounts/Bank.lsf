@@ -1,29 +1,24 @@
 MODULE Bank;
 
-REQUIRE InvoicingSettings, CountryP;
+REQUIRE InvoicingSettings;
 
 NAMESPACE Invoicing;
 
 CLASS Bank 'Банк';
 
-name 'Наименование' = DATA ISTRING[30] (Bank) IN id NONULL;
-id 'Код' = DATA STRING[11] (Bank);
-country 'Страна' = DATA Country (Bank);
-nameCountry  'Страна' (Bank b) = name(country(b)); 
-city 'Город' = DATA ISTRING[30] (Bank);
-address 'Адрес' = DATA ISTRING[50] (Bank);
-phone 'Телефон' = DATA ISTRING[30] (Bank);
+name 'Название' = DATA ISTRING[30] (Bank) IN id NONULL;
+code 'Код' = DATA INTEGER (Bank);
 
 FORM bank 'Банк'
     OBJECTS b = Bank PANEL 
-    PROPERTIES(b) name, id, nameCountry, city, address, phone
+    PROPERTIES(b) name, code
     
     EDIT Bank OBJECT b
 ;
 
 FORM banks 'Банки'
     OBJECTS b = Bank
-    PROPERTIES(b) READONLY name, id, nameCountry, city, address, phone
+    PROPERTIES(b) READONLY name, code
     PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE
     
     LIST Bank OBJECT b

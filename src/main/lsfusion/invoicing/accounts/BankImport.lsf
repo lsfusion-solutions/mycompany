@@ -7,7 +7,11 @@ NAMESPACE Invoicing;
 bankExport 'Экспорт банков' () {
     NEWSESSION {
         LOCAL f = EXCELFILE ();
+<<<<<<< HEAD
         EXPORT XLSX HEADER FROM 'БИК' = id(Bank b), 'Наименование' = name(b),
+=======
+        EXPORT XLSX HEADER FROM 'Код' = code(Bank b), 'Наименование' = name(b),
+>>>>>>> Добавлена логика стран и расширена логика банков.
                                 'Код страны' = id(country(b)),  'Город' = city(b),
                                  'Адрес' = address(b), 'Телефон' = phone(b) TO f;   
         open(f());
@@ -15,7 +19,11 @@ bankExport 'Экспорт банков' () {
 }
 
 bankImport 'Импорт банков' () {
+<<<<<<< HEAD
     LOCAL id = STRING[11] (INTEGER);
+=======
+    LOCAL code = INTEGER (INTEGER);
+>>>>>>> Добавлена логика стран и расширена логика банков.
     LOCAL name = ISTRING[30] (INTEGER);
     LOCAL idCountry = STRING[3] (INTEGER);
     LOCAL city = ISTRING[30] (INTEGER);
@@ -24,11 +32,19 @@ bankImport 'Импорт банков' () {
     
     INPUT f = EXCELFILE DO {
         NEWSESSION {
+<<<<<<< HEAD
             IMPORT XLS HEADER FROM f TO id = A, name = B, idCountry = C,
                                         city = D, address = E, phone = F;
             
             FOR imported(INTEGER i) DO NEW b = Bank{
                 id(b) <- id(i);
+=======
+            IMPORT XLS HEADER FROM f TO code = A, name = B, idCountry = C,
+                                        city = D, address = E, phone = F;
+            
+            FOR imported(INTEGER i) DO NEW b = Bank{
+                code(b) <- code(i);
+>>>>>>> Добавлена логика стран и расширена логика банков.
                 name(b) <- name(i);
                 country(b) <- country(idCountry(i));
                 city(b) <- city(i);
