@@ -20,3 +20,13 @@ quantity(ReceiptCostLedger l) += done(line(l));
 calcSum (ReceiptCostLedger l) += cost(line(l));
 
 edit(ReceiptCostLedger l) + { edit(line(l)); }
+
+// data cost
+showCost 'Показывать себестоимость' = DATA BOOLEAN (ReceiptType);
+
+dataCost 'Себестоимость' = DATA NUMERIC[14,2] (ReceiptLine);
+cost (ReceiptLine l) += WHEN dataCost(l) THEN dataCost(l);
+
+EXTEND FORM receipt
+    PROPERTIES(l) cost SHOWIF showCost(type(r))
+;
