@@ -1,6 +1,6 @@
 MODULE LocationImport;
 
-REQUIRE Location, MasterData;
+REQUIRE CostLocation, MasterData;
 
 NAMESPACE Inventory;
 
@@ -14,8 +14,9 @@ locationExport 'Экспорт мест хранения' () {
         }
     
         LOCAL f = EXCELFILE ();
-        EXPORT XLSX HEADER FROM 'Код' = id(Location l), 'Название' = name(l), 'Код родителя' = idParent(l), 
-                                'Код владельца' = nameCompany(l) TO f;   
+        EXPORT XLSX HEADER FROM 'Код' = id(Location l), 'Название' = name(l), 'Код родителя' = idParent(l), 'Код владельца' = idCompany(l), 
+                                'Адрес' = address(l), 'Город' = city(l), 'Область' = state(l), 'Почтовый индекс' = zip(l),
+                                'Расчет себестоимости' = calcCost(l) TO f;   
         open(f());
     }
 }
@@ -25,15 +26,25 @@ locationImport 'Импорт мест хранения' () {
     LOCAL name = ISTRING[30] (INTEGER);
     LOCAL parent = ISTRING[50] (INTEGER);
     LOCAL owner = ISTRING[50] (INTEGER);
+    LOCAL address = ISTRING[50] (INTEGER);
+    LOCAL city = ISTRING[30] (INTEGER);
+    LOCAL state = ISTRING[30] (INTEGER);
+    LOCAL zip = ISTRING[10] (INTEGER);
+    LOCAL calcCost = BOOLEAN (INTEGER);
     
     INPUT f = EXCELFILE DO {
         NEWSESSION {   
-            IMPORT XLS HEADER FROM f TO id = A, name = B, parent = C, owner = D;
+            IMPORT XLS HEADER FROM f TO id = A, name = B, parent = C, owner = D, address = E, city = F, state = G, zip = H, calcCost = I;
             
             FOR imported(INTEGER i) DO NEW l = Location {
                 id(l) <- id(i);
                 name(l) <- name(i);
                 company(l) <- partner(owner(i));
+                address(l) <- address(i);
+                city(l) <- city(i);
+                state(l) <- state(i);
+                zip(l) <- zip(i);
+                calcCost(l) <- calcCost(i);
             }
             
             FOR imported(INTEGER i) AND id(Location l) = id(i) DO {
@@ -53,7 +64,7 @@ DESIGN MasterData.options {
     import {
         NEW location {
             type = CONTAINERH;
-            caption = 'Места Хранения';
+            caption = 'Места хранения';
             MOVE PROPERTY(locationImport());
             MOVE PROPERTY(locationExport());
         }

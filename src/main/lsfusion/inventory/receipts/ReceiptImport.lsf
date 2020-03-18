@@ -1,17 +1,18 @@
 MODULE ReceiptImport;
 
-REQUIRE ReceiptDone, InvLedger, CostLedger, ItemPurchase;
+REQUIRE ReceiptDone, InvLedger, ReceiptCost, ItemPurchase;
 
 NAMESPACE Inventory;
 
 receiptExport 'Экспорт остатков' () {
     LOCAL f = EXCELFILE ();
     
-    IF NOT (GROUP SUM 1 IF onHand(Location l, Product p) AND l IS Location AND p IS Product) THEN
-        EXPORT XLSX HEADER FROM 'Код места хранения' = '123', 'Код продукта' = '123', 
-                                    'Кол-во' = '1' TO f;
-        ELSE EXPORT XLSX HEADER FROM 'Код места хранения' = id(Location l), 'Код продукта' = id(Product p), 
-                                    'Кол-во' = onHand(l, p), 'Себестоимость' =  costSum(l,p) WHERE onHand(l, p) TO f;   
+    IF GROUP SUM 1 IF onHand(Location l, Product p) THEN
+        EXPORT XLSX HEADER FROM 'Код места хранения' = id(Location l), 'Код продукта' = id(Product p), 
+                                'Кол-во' = onHand(l, p), 'Себестоимость' = costSum(l,p) WHERE onHand(l, p) TO f;   
+    ELSE 
+        EXPORT XLSX HEADER FROM 'Код места хранения' = '111', 'Код продукта' = '222', 
+                                'Кол-во' = '1', 'Себестоимость' = 1.43 TO f;
     open(f());
 }
 
@@ -19,7 +20,7 @@ receiptImport 'Импорт остатков' () {
     LOCAL idLocation = STRING[50] (INTEGER);
     LOCAL idProduct = ISTRING[50] (INTEGER);
     LOCAL quantity = NUMERIC[16,3] (INTEGER);
-    LOCAL cost = NUMERIC[16,3] (INTEGER);
+    LOCAL cost = NUMERIC[14,2] (INTEGER);
     
     INPUT f = EXCELFILE DO {
         NEWSESSION {
@@ -47,16 +48,16 @@ receiptImport 'Импорт остатков' () {
             FOR INTEGER i = [GROUP MIN INTEGER ii BY idLocation(ii)](num) AND number(Receipt r) = 'INIT_' + num DO {
                 scheduledDateTime(r) <- currentDateTime();
                 location(r) <- location(idLocation(i));
-                type(r) <- GROUP LAST ReceiptType t ORDER name(t);
+                type(r) <- receiptType('initial');
                 done(r) <- TRUE;
             }
             
             FOR idProduct(INTEGER i) DO NEW l = ReceiptLine {
+                receipt(l) <- receipt('INIT_' + idLocation(i));
                 product(l) <- item(idProduct(i));
                 initialDemand(l) <- quantity(i);
                 done(l) <- quantity(i);
-                receipt(l) <- receipt(idLocation(i));
-                cost(product(l)) <- NUMERIC[10,2](cost(i)/quantity(i));
+                dataCost(l) <- cost(i);
             }
                         
             APPLY;
