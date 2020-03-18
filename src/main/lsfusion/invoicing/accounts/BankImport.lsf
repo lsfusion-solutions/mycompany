@@ -1,0 +1,57 @@
+MODULE BankImport;
+
+REQUIRE Bank;
+
+NAMESPACE Invoicing;
+
+bankExport 'Экспорт банков' () {
+    NEWSESSION {
+        LOCAL f = EXCELFILE ();
+        EXPORT XLSX HEADER FROM 'БИК' = id(Bank b), 'Наименование' = name(b),
+                                'Код страны' = id(country(b)),  'Город' = city(b),
+                                 'Адрес' = address(b), 'Телефон' = phone(b) TO f;   
+        open(f());
+    }
+}
+
+bankImport 'Импорт банков' () {
+    LOCAL id = STRING[11] (INTEGER);
+    LOCAL name = ISTRING[30] (INTEGER);
+    LOCAL idCountry = STRING[3] (INTEGER);
+    LOCAL city = ISTRING[30] (INTEGER);
+    LOCAL address = ISTRING[50] (INTEGER);
+    LOCAL phone = ISTRING[30] (INTEGER);
+    
+    INPUT f = EXCELFILE DO {
+        NEWSESSION {
+            IMPORT XLS HEADER FROM f TO id = A, name = B, idCountry = C,
+                                        city = D, address = E, phone = F;
+            
+            FOR imported(INTEGER i) DO NEW b = Bank{
+                id(b) <- id(i);
+                name(b) <- name(i);
+                country(b) <- country(idCountry(i));
+                city(b) <- city(i);
+                address(b) <- address(i);
+                phone(b) <- phone(i);
+            }
+            APPLY;
+            MESSAGE 'Импорт завершен';
+        }
+    }
+}    
+
+EXTEND FORM MasterData.options 
+    PROPERTIES bankExport(), bankImport()
+;
+
+DESIGN MasterData.options {
+    import {
+        NEW bank {
+            type = CONTAINERH;
+            caption = 'Банки';
+            MOVE PROPERTY(bankImport());
+            MOVE PROPERTY(bankExport());
+        }
+    }
+}

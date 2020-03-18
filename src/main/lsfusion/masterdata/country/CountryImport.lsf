@@ -1,0 +1,55 @@
+MODULE CountryImport;
+
+REQUIRE CountryP;
+
+NAMESPACE MasterData;
+
+countryExport 'Экспорт стран' () {
+    NEWSESSION {
+        LOCAL f = EXCELFILE ();
+        EXPORT XLSX HEADER FROM 'Код' = id(Country c), 'Наименование' = name(c),
+                                'Альфа-2' = alpha2(c),  'Альфа-3' = alpha3(c) TO f;   
+        open(f());
+    }
+}
+
+countryImport 'Импорт стран' () {
+    LOCAL id = STRING[3] (INTEGER);
+    LOCAL name = ISTRING[50] (INTEGER);
+    LOCAL alpha2 = ISTRING[2] (INTEGER);
+    LOCAL alpha3 = ISTRING[3] (INTEGER);
+    
+    INPUT f = EXCELFILE DO {
+        NEWSESSION {
+            IMPORT XLS HEADER FROM f TO id = A, name = B, alpha2 = C, alpha3 = D;
+            
+            FOR imported(INTEGER i) DO {
+                IF NOT country(id(i)) THEN { 
+                    NEW im = Country {
+                    id(im) <- id(i);
+                    }
+                }
+                name(country(id(i))) <- name(i);
+                alpha2(country(id(i))) <- alpha2(i);
+                alpha3(country(id(i))) <- alpha3(i);
+            }
+            APPLY;
+            MESSAGE 'Импорт завершен';
+        }
+    }    
+}
+
+EXTEND FORM options 
+    PROPERTIES countryExport(), countryImport()
+;
+
+DESIGN options {
+    import {
+        NEW country {
+            type = CONTAINERH;
+            caption = 'Страны';
+            MOVE PROPERTY(countryImport());
+            MOVE PROPERTY(countryExport());
+        }
+    }
+}

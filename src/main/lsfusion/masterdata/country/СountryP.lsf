@@ -1,0 +1,35 @@
+MODULE CountryP;
+
+REQUIRE MasterDataSettings;
+
+NAMESPACE MasterData;
+
+CLASS Country 'Страна';
+
+id 'Код'= DATA STRING[3] (Country) NONULL;
+country (STRING[3] i) = GROUP AGGR Country c BY id(c);
+
+name 'Наименование' = DATA ISTRING[50] (Country) IN id NONULL;
+alpha2 'Альфа-2' = DATA ISTRING[2] (Country);
+alpha3 'Альфа-3' = DATA ISTRING[3] (Country);
+
+FORM country 'Страна'
+    OBJECTS c = Country PANEL
+    PROPERTIES(c) id, name, alpha2, alpha3
+
+    EDIT Country OBJECT c
+;
+
+FORM countries 'Страны'
+    OBJECTS c = Country
+    PROPERTIES(c) READONLY id, name
+    PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE
+    
+    LIST Country OBJECT c
+;
+
+NAVIGATOR {
+    masterData {
+        NEW countries;
+    }
+}
