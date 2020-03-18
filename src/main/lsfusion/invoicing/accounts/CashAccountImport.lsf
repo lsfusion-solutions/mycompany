@@ -1,0 +1,52 @@
+MODULE CashAccountImport;
+
+REQUIRE CashAccount, Partner;
+
+NAMESPACE Invoicing;
+
+cashAccountExport 'Экспорт касс' () {
+    NEWSESSION {
+        LOCAL f = EXCELFILE ();
+        EXPORT XLSX HEADER FROM 'Код контрагента' = id(holder(CashAccount c)), 'Примечание' = note(c),
+                                'Наименование' = name(c) WHERE type(c) = AccountType.cash TO f;
+        open(f());
+    }
+}
+
+cashAccountImport 'Импорт касс' () {
+    LOCAL idPartner = STRING[50] (INTEGER);
+    LOCAL note = ISTRING[100] (INTEGER);
+    LOCAL name = ISTRING[100] (INTEGER);
+    
+    INPUT f = EXCELFILE DO {
+        NEWSESSION {
+            IMPORT XLS HEADER FROM f TO idPartner = A, note = B, name = C;
+            
+            FOR imported(INTEGER i)  AND
+                partner(idPartner(i))
+                DO NEW c = CashAccount {
+                    holder(c) <- partner(idPartner(i));
+                    note(c) <- note(i);
+                    name(c) <- name(i); 
+            }
+            
+            APPLY;
+            MESSAGE 'Импорт завершен';
+        }
+    }
+}    
+
+EXTEND FORM MasterData.options 
+    PROPERTIES cashAccountExport(), cashAccountImport()
+;
+
+DESIGN MasterData.options {
+    import {
+        NEW bankAccount {
+            type = CONTAINERH;
+            caption = 'Кассы контрагентов';
+            MOVE PROPERTY(cashAccountImport());
+            MOVE PROPERTY(cashAccountExport());
+        }
+    }
+}
