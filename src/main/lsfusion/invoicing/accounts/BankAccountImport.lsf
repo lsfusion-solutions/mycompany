@@ -1,0 +1,55 @@
+MODULE BankAccountImport;
+
+REQUIRE BankAccount, Partner;
+
+NAMESPACE Invoicing;
+
+bankAccountExport 'Экспорт счетов' () {
+    NEWSESSION {
+        LOCAL f = EXCELFILE ();
+        EXPORT XLSX HEADER FROM 'Код контрагента' = id(holder(BankAccount b)), 'Примечание' = note(b),
+                                'Номер счета' = number(b), 'Код банка' = id(bank(b)) WHERE b IS BankAccount TO f;
+        open(f());
+    }
+}
+
+bankAccountImport 'Импорт счетов' () {
+    LOCAL idPartner = STRING[50] (INTEGER);
+    LOCAL note = ISTRING[100] (INTEGER);
+    LOCAL number = ISTRING[100] (INTEGER);
+    LOCAL idBank = STRING[11] (INTEGER);
+    
+    INPUT f = EXCELFILE DO {
+        NEWSESSION {
+            IMPORT XLS HEADER FROM f TO idPartner = A, note = B, number = C, idBank = D;
+            
+            FOR imported(INTEGER i)  AND
+                partner(idPartner(i)) AND
+                bank(idBank(i))
+                DO NEW b = BankAccount {
+                    holder(b) <- partner(idPartner(i));
+                    note(b) <- note(i);
+                    number(b) <- number(i);
+                    bank(b) <- bank(idBank(i)); 
+            }
+            
+            APPLY;
+            MESSAGE 'Импорт завершен';
+        }
+    }
+}    
+
+EXTEND FORM MasterData.options 
+    PROPERTIES bankAccountExport(), bankAccountImport()
+;
+
+DESIGN MasterData.options {
+    import {
+        NEW bankAccount {
+            type = CONTAINERH;
+            caption = 'Банковские счета контрагентов';
+            MOVE PROPERTY(bankAccountImport());
+            MOVE PROPERTY(bankAccountExport());
+        }
+    }
+}
