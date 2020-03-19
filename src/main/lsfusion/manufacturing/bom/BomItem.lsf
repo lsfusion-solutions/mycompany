@@ -1,0 +1,34 @@
+MODULE BomItem;
+
+REQUIRE Bom;
+
+NAMESPACE Manufacturing;
+
+newBom 'Добавить' (Item i) {
+    NESTEDSESSION {
+        NEW bm = Bom {
+            item(bm) <- i;
+            SHOW bom OBJECTS b = bm;  
+        }
+    }
+} IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+
+EXTEND FORM item
+    OBJECTS bm = Bom
+    PROPERTIES(bm) READONLY number, quantity, nameUom, name, archived
+    PROPERTIES(bm) NESTEDSESSION EDIT, DELETE
+    PROPERTIES newBom(i) DRAW bm TOOLBAR
+    FILTERS item(bm) = i
+    
+    FILTERGROUP active
+        FILTER 'Активные' active(bm) DEFAULT
+;
+
+DESIGN item {
+    tabs {
+        NEW boms {
+            caption = 'Спецификации';
+            MOVE BOX (bm);
+        }
+    }
+}
