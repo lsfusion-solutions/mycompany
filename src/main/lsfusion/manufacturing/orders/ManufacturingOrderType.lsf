@@ -1,0 +1,42 @@
+MODULE ManufacturingOrderType;
+
+REQUIRE ManufacturingSettings;
+
+NAMESPACE Manufacturing;
+
+CLASS ManufacturingOrderType 'Тип производственного заказа';
+
+name 'Название' = DATA STRING[50] (ManufacturingOrderType) NONULL IN id;
+id 'Код'= DATA STRING[20] (ManufacturingOrderType);
+
+FORM manufacturingOrderType 'Тип производственного заказа'
+    OBJECTS o = ManufacturingOrderType PANEL 
+    PROPERTIES(o) name, id
+     
+    EDIT ManufacturingOrderType OBJECT o;
+;
+
+FORM manufacturingOrderTypes 'Типы производственных заказов'
+    OBJECTS o = ManufacturingOrderType
+    PROPERTIES(o) READONLY name, id
+    
+    LIST ManufacturingOrderType OBJECT o;
+;
+
+EXTEND FORM options
+    OBJECTS ot = ManufacturingOrderType
+    PROPERTIES(ot) READONLY name, id
+    PROPERTIES(ot) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(ot);
+    }
+}
+
+countManufacturingOrderTypes 'Кол-во типов' () = GROUP SUM 1 IF r IS ManufacturingOrderType; 
+firstManufacturingOrderType () = GROUP LAST ManufacturingOrderType t ORDER DESC t WHERE t IS ManufacturingOrderType;
+
+defaultManufacturingOrderType () = firstManufacturingOrderType()
+    IF countManufacturingOrderTypes() = 1;
