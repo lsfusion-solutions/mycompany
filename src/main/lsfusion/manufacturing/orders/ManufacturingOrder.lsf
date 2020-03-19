@@ -12,9 +12,7 @@ CLASS ManufacturingOrder 'Производственный заказ';
 type 'Тип' = DATA ManufacturingOrderType (ManufacturingOrder) NONULL;
 nameType 'Тип' (ManufacturingOrder o) = name(type(o));
 
-WHEN LOCAL SET(ManufacturingOrder o IS ManufacturingOrder) AND NOT CHANGED(type(o))
-    DO type(o) <- defaultManufacturingOrderType()
-; 
+WHEN LOCAL SET(ManufacturingOrder o IS ManufacturingOrder) AND NOT CHANGED(type(o)) DO type(o) <- defaultManufacturingOrderType(); 
 
 scheduledDateTime 'Дата начала' = DATA DATETIME (ManufacturingOrder);
 scheduledDateTime(ManufacturingOrder o) <- currentDateTime() WHEN SET(o IS ManufacturingOrder);
