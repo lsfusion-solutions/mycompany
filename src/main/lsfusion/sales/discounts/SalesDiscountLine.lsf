@@ -57,7 +57,9 @@ META defineDocSalesDiscountLine (doc, caption, NS)
     quantity(###doc##Line l) += NS.quantity(l);
     price(###doc##Line l) += NS.price(l);
     
-    fullAmount (###doc o) = GROUP SUM NUMERIC[14,2](quantity(###doc##Line l) * price(l)) IF doc(l) = o;
+    fullAmount (###doc o) = GROUP SUM NUMERIC[14,2](quantity(###doc##Line l) * price(l) *
+                                                    (IF taxIncluded(l) THEN 1.0 ELSE (100.0 (+) percentTax(l)) / 100.0)) 
+                                      IF doc(l) = o;
     discountAmount (###doc o) = fullAmount(o) (-) totalAmount(o);
     
     totalAmount(###doc##Line l) += fullAmount(doc(l));
