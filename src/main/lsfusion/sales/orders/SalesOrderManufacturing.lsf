@@ -1,0 +1,126 @@
+MODULE SalesOrderManufacturing;
+
+REQUIRE SalesOrder, SalesOrderType, SalesOrderConfirmed, SalesOrderCanceled,
+        ManufacturingOrder, ManufacturingOrderDone, ManufacturingOrderCanceled,
+        Location;
+
+NAMESPACE Sales;
+
+// manufacturing order
+orderLine = DATA OrderLine (ManufacturingOrder) INDEXED;
+numberDateOrder 'Заказ' (ManufacturingOrder mo) = numberDate(order(orderLine(mo)));
+
+openOrder (ManufacturingOrder mo) { 
+    edit(order(orderLine(mo))); 
+}
+
+EXTEND FORM manufacturingOrder
+    PROPERTIES(o) numberDateOrder ON CHANGE openOrder(o) SHOWIF order(orderLine(o))
+;
+
+DESIGN manufacturingOrder {
+    headerRight {
+        MOVE PROPERTY(numberDateOrder(o)) BEFORE PROPERTY (nameItem(o));
+    }
+}
+
+EXTEND FORM manufacturingOrders
+    PROPERTIES(o) READONLY numberDateOrder
+;
+
+// order type
+typeManufacturingOrder 'Тип заказа на производство' = DATA ManufacturingOrderType (OrderType);
+nameTypeManufacturingOrder 'Тип заказа на производство' (OrderType t) = name(typeManufacturingOrder(t));
+
+autoCreateManufacturingOrder 'Автоматически создавать производственный заказ' = DATA BOOLEAN (OrderType);
+
+EXTEND FORM orderType
+    PROPERTIES(o) nameTypeManufacturingOrder, autoCreateManufacturingOrder SHOWIF typeManufacturingOrder(o)
+;
+
+// manufacturing order type
+materialsLocation 'Списывать из' = DATA Location (ManufacturingOrderType);
+nameMaterialsLocation 'Списывать из' (ManufacturingOrderType t) = name(materialsLocation(t)); 
+
+WHEN LOCAL SETCHANGED(type(ManufacturingOrder mo)) AND NOT materialsLocation(mo) DO materialsLocation(mo) <- materialsLocation(type(mo)); 
+
+EXTEND FORM manufacturingOrderType
+    PROPERTIES(o) nameMaterialsLocation 
+;
+
+// order line
+bom 'Спецификация' = DATA Bom (OrderLine);
+nameBom 'Спецификация' (OrderLine l) = name(bom(l)); 
+calcDefaultBom (Item i) = GROUP LAST Bom b ORDER DESC b WHERE active(b) AND item(b) == i;
+
+manufacturingOrder (OrderLine l) = GROUP MAX ManufacturingOrder mo BY orderLine(mo);
+
+countManufacturingOrders (Order o) = GROUP SUM 1 IF order(orderLine(ManufacturingOrder mo)) == o AND NOT isDraft(mo) AND NOT canceled(mo);
+countFreeBomLines (Order o)= GROUP SUM 1 IF order(OrderLine l) == o AND bom(l) AND NOT manufacturingOrder(l);
+
+CONSTRAINT bom(OrderLine l) AND NOT item(l) = item(bom(l)) CHECKED BY bom[OrderLine]
+    MESSAGE 'Спецификация должна соответствовать выбранной номенклатуре';
+CONSTRAINT DROPPED(OrderLine l IS OrderLine) AND PREV(manufacturingOrder(l))
+    MESSAGE 'Нельзя удалить строку на основании которой создан производственный заказ';
+
+WHEN LOCAL CHANGED(item(OrderLine l)) AND typeManufacturingOrder(type(Order o))
+    DO bom(l) <- OVERRIDE defaultBom(item(l)), calcDefaultBom(item(l));
+  
+newManufacturingOrder (OrderLine l) {
+    NEW o = ManufacturingOrder { 
+        orderLine(o) <- l;
+        type(o) <- typeManufacturingOrder(type(order(l)));
+        materialsLocation(o) <-materialsLocation(typeManufacturingOrder(type(order(l))));
+        scheduledDateTime(o) <- scheduledDateTime(order(l));
+        productsLocation(o) <- location(order(l));
+        company(o) <- defaultCompany();
+        item(o) <- item(l);
+        uom(o) <- uom(l);
+        bom(o) <- bom(l);
+        fillByQuantity(o, quantity(l));
+    }
+}
+
+// sales order
+needManufacturingOrders (Order o) = typeManufacturingOrder(type(o)) AND countFreeBomLines(o) AND confirmed(o);
+
+createManufacturingOrders 'Производственные заказы' (Order o) {
+    IF needManufacturingOrders(o) THEN {
+        FOR order(OrderLine l) = o AND bom(l) AND NOT manufacturingOrder(l) INLINE DO {
+            newManufacturingOrder(l);
+        }
+    }
+}
+
+cancelManufacturingOrders (Order o) {
+    FOR order(OrderLine l) = o AND manufacturingOrder(l) INLINE DO {
+        canceled(manufacturingOrder(l)) <- TRUE;
+    }
+}
+
+EXTEND FORM order
+    PROPERTIES createManufacturingOrders(o) SHOWIF needManufacturingOrders(o)
+    PROPERTIES nameBom(l)  BACKGROUND colorStatus(manufacturingOrder(l)) SHOWIF typeManufacturingOrder(type(o)) READONLYIF manufacturingOrder(l)
+    
+    OBJECTS mo = ManufacturingOrder
+    PROPERTIES(mo) READONLY nameStatus BACKGROUND colorStatus(mo), number, scheduledDateTime
+    FILTERS order(orderLine(mo)) = o
+;
+
+DESIGN order {
+    relatedDoc  {
+        MOVE BOX(mo) {
+             GRID(mo) { headerHeight = 24; }
+        }
+        REMOVE TOOLBARSYSTEM(mo);
+    }
+    primaryActions {
+        MOVE PROPERTY(createManufacturingOrders(o)) { fontStyle = 'bold'; };
+    }
+}
+
+WHEN SET(confirmed(Order o)) AND autoCreateManufacturingOrder(type(o)) DO createManufacturingOrders(o);
+WHEN SET(canceled(Order o)) DO cancelManufacturingOrders(o);
+
+CONSTRAINT SET(canceled(Order o)) AND PREV(countManufacturingOrders(o))
+    MESSAGE 'Нельзя отменить заказ, к которому существуют действующие производственные заказы';
