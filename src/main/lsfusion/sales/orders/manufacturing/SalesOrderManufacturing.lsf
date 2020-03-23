@@ -1,14 +1,39 @@
 MODULE SalesOrderManufacturing;
 
 REQUIRE SalesOrder, SalesOrderType, SalesOrderConfirmed, SalesOrderCanceled,
-        ManufacturingOrder, ManufacturingOrderDone, ManufacturingOrderCanceled,
-        Location;
+        ManufacturingOrder, ManufacturingOrderDone, ManufacturingOrderCanceled;
 
 NAMESPACE Sales;
+
+// order line
+bom 'Спецификация' = DATA Bom (OrderLine);
+nameBom 'Спецификация' (OrderLine l) = name(bom(l)); 
+
+CONSTRAINT bom(OrderLine l) AND NOT item(l) = item(bom(l)) CHECKED BY bom[OrderLine]
+    MESSAGE 'Спецификация должна соответствовать выбранной номенклатуре';
+
+// order type
+typeManufacturingOrder 'Тип заказа на производство' = DATA ManufacturingOrderType (OrderType);
+nameTypeManufacturingOrder 'Тип заказа на производство' (OrderType t) = name(typeManufacturingOrder(t));
+
+autoCreateManufacturingOrder 'Автоматически создавать производственный заказ' = DATA BOOLEAN (OrderType);
+
+EXTEND FORM orderType
+    PROPERTIES(o) nameTypeManufacturingOrder, autoCreateManufacturingOrder SHOWIF typeManufacturingOrder(o)
+;
+
+WHEN LOCAL CHANGED(item(OrderLine l)) AND typeManufacturingOrder(type(Order o))
+    DO bom(l) <- defaultBom(item(l));
 
 // manufacturing order
 orderLine = DATA OrderLine (ManufacturingOrder) INDEXED;
 numberDateOrder 'Заказ' (ManufacturingOrder mo) = numberDate(order(orderLine(mo)));
+
+manufacturingOrder (OrderLine l) = GROUP AGGR ManufacturingOrder mo BY orderLine(mo);
+countFreeBomLines (Order o)= GROUP SUM 1 IF order(OrderLine l) == o AND bom(l) AND NOT manufacturingOrder(l);
+
+CONSTRAINT DROPPED(OrderLine l IS OrderLine) AND PREV(manufacturingOrder(l))
+    MESSAGE 'Нельзя удалить строку на основании которой создан производственный заказ';
 
 openOrder (ManufacturingOrder mo) { 
     edit(order(orderLine(mo))); 
@@ -28,44 +53,6 @@ EXTEND FORM manufacturingOrders
     PROPERTIES(o) READONLY numberDateOrder
 ;
 
-// order type
-typeManufacturingOrder 'Тип заказа на производство' = DATA ManufacturingOrderType (OrderType);
-nameTypeManufacturingOrder 'Тип заказа на производство' (OrderType t) = name(typeManufacturingOrder(t));
-
-autoCreateManufacturingOrder 'Автоматически создавать производственный заказ' = DATA BOOLEAN (OrderType);
-
-EXTEND FORM orderType
-    PROPERTIES(o) nameTypeManufacturingOrder, autoCreateManufacturingOrder SHOWIF typeManufacturingOrder(o)
-;
-
-// manufacturing order type
-materialsLocation 'Списывать из' = DATA Location (ManufacturingOrderType);
-nameMaterialsLocation 'Списывать из' (ManufacturingOrderType t) = name(materialsLocation(t)); 
-
-WHEN LOCAL SETCHANGED(type(ManufacturingOrder mo)) AND NOT materialsLocation(mo) DO materialsLocation(mo) <- materialsLocation(type(mo)); 
-
-EXTEND FORM manufacturingOrderType
-    PROPERTIES(o) nameMaterialsLocation 
-;
-
-// order line
-bom 'Спецификация' = DATA Bom (OrderLine);
-nameBom 'Спецификация' (OrderLine l) = name(bom(l)); 
-calcDefaultBom (Item i) = GROUP LAST Bom b ORDER DESC b WHERE active(b) AND item(b) == i;
-
-manufacturingOrder (OrderLine l) = GROUP MAX ManufacturingOrder mo BY orderLine(mo);
-
-countManufacturingOrders (Order o) = GROUP SUM 1 IF order(orderLine(ManufacturingOrder mo)) == o AND NOT isDraft(mo) AND NOT canceled(mo);
-countFreeBomLines (Order o)= GROUP SUM 1 IF order(OrderLine l) == o AND bom(l) AND NOT manufacturingOrder(l);
-
-CONSTRAINT bom(OrderLine l) AND NOT item(l) = item(bom(l)) CHECKED BY bom[OrderLine]
-    MESSAGE 'Спецификация должна соответствовать выбранной номенклатуре';
-CONSTRAINT DROPPED(OrderLine l IS OrderLine) AND PREV(manufacturingOrder(l))
-    MESSAGE 'Нельзя удалить строку на основании которой создан производственный заказ';
-
-WHEN LOCAL CHANGED(item(OrderLine l)) AND typeManufacturingOrder(type(Order o))
-    DO bom(l) <- OVERRIDE defaultBom(item(l)), calcDefaultBom(item(l));
-  
 newManufacturingOrder (OrderLine l) {
     NEW o = ManufacturingOrder { 
         orderLine(o) <- l;
@@ -122,5 +109,6 @@ DESIGN order {
 WHEN SET(confirmed(Order o)) AND autoCreateManufacturingOrder(type(o)) DO createManufacturingOrders(o);
 WHEN SET(canceled(Order o)) DO cancelManufacturingOrders(o);
 
+countManufacturingOrders (Order o) = GROUP SUM 1 IF order(orderLine(ManufacturingOrder mo)) == o AND NOT isDraft(mo) AND NOT canceled(mo);
 CONSTRAINT SET(canceled(Order o)) AND PREV(countManufacturingOrders(o))
     MESSAGE 'Нельзя отменить заказ, к которому существуют действующие производственные заказы';

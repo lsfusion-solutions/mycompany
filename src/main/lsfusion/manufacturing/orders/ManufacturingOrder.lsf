@@ -42,6 +42,7 @@ WHEN LOCAL SET(ManufacturingOrder o IS ManufacturingOrder) AND NOT CHANGED(compa
 
 materialsLocation 'Списать из' = DATA Location (ManufacturingOrder) NONULL;
 nameMaterialsLocation 'Списать из' (ManufacturingOrder m) = name(materialsLocation(m));
+WHEN LOCAL SETCHANGED(type(ManufacturingOrder mo)) AND NOT materialsLocation(mo) DO materialsLocation(mo) <- materialsLocation(type(mo));
 
 unbuild 'Разборка' = DATA BOOLEAN (ManufacturingOrder); 
 
@@ -282,8 +283,8 @@ fillLines 'Заполнить по спецификации' (ManufacturingOrder
     
     NEWSESSION {
         DIALOG dialogQuantity OBJECTS q = toManufacture(o) INPUT DO {
-        fillByQuantity(o, q);
-        APPLY;
+            fillByQuantity(o, q);
+            APPLY;
         }
     }
 }

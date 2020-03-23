@@ -1,6 +1,6 @@
 MODULE ManufacturingOrderType;
 
-REQUIRE ManufacturingSettings;
+REQUIRE ManufacturingSettings, Location;
 
 NAMESPACE Manufacturing;
 
@@ -9,9 +9,12 @@ CLASS ManufacturingOrderType 'Тип производственного зака
 name 'Название' = DATA STRING[50] (ManufacturingOrderType) NONULL IN id;
 id 'Код'= DATA STRING[20] (ManufacturingOrderType);
 
+materialsLocation 'Списывать из' = DATA Location (ManufacturingOrderType);
+nameMaterialsLocation 'Списывать из' (ManufacturingOrderType t) = name(materialsLocation(t)); 
+
 FORM manufacturingOrderType 'Тип производственного заказа'
     OBJECTS o = ManufacturingOrderType PANEL 
-    PROPERTIES(o) name, id
+    PROPERTIES(o) name, id, nameMaterialsLocation
      
     EDIT ManufacturingOrderType OBJECT o;
 ;
