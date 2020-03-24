@@ -1,0 +1,15 @@
+MODULE PurchaseOrderPrintRu;
+
+REQUIRE PurchaseOrderPrint, LegalEntityRu;
+
+NAMESPACE Purchase;
+
+innCompany (Order o) = inn(company(location(o)));
+
+innVendor (Order o) = inn(vendor(o));
+
+EXTEND FORM printOrder
+    PROPERTIES(o) innCompany, innVendor, dateTime
+    PROPERTIES(l) idBarCodeItem, nameUom
+;
+
