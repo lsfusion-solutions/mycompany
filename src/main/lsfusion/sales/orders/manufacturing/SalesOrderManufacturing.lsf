@@ -15,12 +15,7 @@ CONSTRAINT bom(OrderLine l) AND NOT item(l) = item(bom(l)) CHECKED BY bom[OrderL
 // order type
 typeManufacturingOrder 'Тип заказа на производство' = DATA ManufacturingOrderType (OrderType);
 nameTypeManufacturingOrder 'Тип заказа на производство' (OrderType t) = name(typeManufacturingOrder(t));
-
-autoCreateManufacturingOrder 'Автоматически создавать производственный заказ' = DATA BOOLEAN (OrderType);
-
-EXTEND FORM orderType
-    PROPERTIES(o) nameTypeManufacturingOrder, autoCreateManufacturingOrder SHOWIF typeManufacturingOrder(o)
-;
+EXTEND FORM orderType PROPERTIES nameTypeManufacturingOrder(o);
 
 WHEN LOCAL CHANGED(item(OrderLine l)) AND typeManufacturingOrder(type(Order o))
     DO bom(l) <- defaultBom(item(l));
@@ -106,9 +101,32 @@ DESIGN order {
     }
 }
 
-WHEN SET(confirmed(Order o)) AND autoCreateManufacturingOrder(type(o)) DO createManufacturingOrders(o);
-WHEN SET(canceled(Order o)) DO cancelManufacturingOrders(o);
+autoCreateManufacturingOrder 'Автоматически создавать производственный заказ' = DATA BOOLEAN (OrderType);
+EXTEND FORM orderType PROPERTIES autoCreateManufacturingOrder(o) SHOWIF typeManufacturingOrder(o);
 
-countManufacturingOrders (Order o) = GROUP SUM 1 IF order(orderLine(ManufacturingOrder mo)) == o AND NOT isDraft(mo) AND NOT canceled(mo);
+WHEN SET(confirmed(Order o)) AND autoCreateManufacturingOrder(type(o)) DO
+    createManufacturingOrders(o);
+WHEN SET(canceled(Order o)) AND autoCreateManufacturingOrder(type(o)) DO
+    cancelManufacturingOrders(o);
+WHEN CHANGED(quantity(OrderLine l)) AND autoCreateManufacturingOrder(type(order(l))) AND manufacturingOrder(l) DO
+    fillByQuantity(manufacturingOrder(l), quantity(l));
+WHEN CHANGED(item(OrderLine l)) AND autoCreateManufacturingOrder(type(order(l))) AND manufacturingOrder(l) DO {
+    item(manufacturingOrder(l)) <- item(l);
+    uom(manufacturingOrder(l)) <- uom(l);
+    fillByQuantity(manufacturingOrder(l), quantity(l));
+}
+WHEN CHANGED(bom(OrderLine l)) AND autoCreateManufacturingOrder(type(order(l))) AND manufacturingOrder(l) DO {
+    bom(manufacturingOrder(l)) <- bom(l);
+    fillByQuantity(manufacturingOrder(l), quantity(l));    
+}    
+
+isActing (ManufacturingOrder mo) = NOT isDraft(mo) AND NOT canceled(mo);
+countManufacturingOrders (Order o) = GROUP SUM 1 IF order(orderLine(ManufacturingOrder mo)) == o AND isActing(mo);
 CONSTRAINT SET(canceled(Order o)) AND PREV(countManufacturingOrders(o))
     MESSAGE 'Нельзя отменить заказ, к которому существуют действующие производственные заказы';
+CONSTRAINT CHANGED(quantity(OrderLine l)) AND manufacturingOrder(l) AND isActing(manufacturingOrder(l))
+    MESSAGE 'Нельзя изменить количество в строке, к которой существует действующий производственный заказ';
+CONSTRAINT CHANGED(item(OrderLine l)) AND manufacturingOrder(l) AND isActing(manufacturingOrder(l))
+    MESSAGE 'Нельзя изменить номенклатуру в строке, к которой существует действующий производственный заказ';
+CONSTRAINT CHANGED(bom(OrderLine l)) AND manufacturingOrder(l) AND isActing(manufacturingOrder(l))
+    MESSAGE 'Нельзя изменить спецификацию в строке, к которой существует действующий производственный заказ';

@@ -236,7 +236,7 @@ fillByQuantity (ManufacturingOrder o, NUMERIC[16,3] q) {
             manufacturingOrder(l) <- o;
             item(l) <- item(cl);
             uom(l) <- uom(cl);
-            toProduce(l) <- NUMERIC[16,3](quantity(cl) * q);
+            toProduce(l) <- NUMERIC[16,3](quantity(cl) * q / quantity(bom(o)));
             costRatio(l) <- costRatio(cl);
         }
                 
@@ -258,7 +258,7 @@ fillByQuantity (ManufacturingOrder o, NUMERIC[16,3] q) {
             manufacturingOrder(l) <- o;
             item(l) <- item(cl);
             uom(l) <- uom(cl);
-            toConsume(l) <- NUMERIC[16,3](quantity(bom(o), cl, path) * q);
+            toConsume(l) <- NUMERIC[16,3](quantity(bom(o), cl, path) * q / quantity(bom(o)));
         }
                 
         NEW l = FinishedLine {

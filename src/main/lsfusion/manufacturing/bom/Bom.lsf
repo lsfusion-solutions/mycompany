@@ -31,7 +31,7 @@ defaultBom (Item i) = OVERRIDE dataDefaultBom(i), calcDefaultBom(i);
 
 CONSTRAINT defaultBom(Item i) AND NOT item(defaultBom(i)) = i
     MESSAGE 'Номенклатура спецификации по умолчанию должна совпадать с номенклатурой';
-WHEN DROPPED(item(defaultBom(Item i)) = i) DO dataDefaultBom(i) <- calcDefaultBom(i);
+WHEN DROPPED(item(defaultBom(Item i)) = i) DO dataDefaultBom(i) <- NULL;
 
 CONSTRAINT dataDefaultBom(Item i) AND archived(dataDefaultBom(i))
     MESSAGE 'Спецификация по умолчанию должна быть активной';
