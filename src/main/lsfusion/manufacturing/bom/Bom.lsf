@@ -25,18 +25,21 @@ nameUom 'Ед. изм.' (Bom b) = name(uom(b));
 WHEN LOCAL CHANGED(item(Bom m)) DO uom(m) <- uom(item(m)); 
 
 // default
-defaultBom = DATA Bom (Item);
+dataDefaultBom = DATA Bom (Item);
+calcDefaultBom (Item i) = GROUP LAST Bom b ORDER DESC b WHERE active(b) AND item(b) == i;
+defaultBom (Item i) = OVERRIDE dataDefaultBom(i), calcDefaultBom(i);  
+
 CONSTRAINT defaultBom(Item i) AND NOT item(defaultBom(i)) = i
     MESSAGE 'Номенклатура спецификации по умолчанию должна совпадать с номенклатурой';
-WHEN DROPPED(item(defaultBom(Item i)) = i) DO defaultBom(i) <- NULL;
+WHEN DROPPED(item(defaultBom(Item i)) = i) DO dataDefaultBom(i) <- NULL;
 
-CONSTRAINT defaultBom(Item i) AND archived(defaultBom(i))
+CONSTRAINT dataDefaultBom(Item i) AND archived(dataDefaultBom(i))
     MESSAGE 'Спецификация по умолчанию должна быть активной';
 
 default 'По умолчанию' (Bom b) = defaultBom(item(b)) = b;
 changeDefault (Bom b) {
     INPUT l = BOOLEAN DO
-        defaultBom(Item i) <- b IF l WHERE i = item(b);
+        dataDefaultBom(Item i) <- b IF l WHERE i = item(b);
 }
 
 // lines
