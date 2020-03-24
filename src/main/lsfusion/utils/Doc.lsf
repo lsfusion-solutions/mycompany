@@ -130,12 +130,22 @@ META defineDocSearch (doc, it, fun, capt, let, check)
     ;
 END
 
+disableHistory 'Отключить запись истории' = DATA BOOLEAN () PREREAD;
+EXTEND FORM MasterData.options 
+    PROPERTIES() disableHistory
+;
+DESIGN MasterData.options {
+    general { 
+        MOVE PROPERTY(disableHistory()); 
+    }
+}
+
 META defineDocHistory(doc, let, class, fun)
 
     @defineDocHistoryHead(##doc, ##let);
     
     WHEN SETCHANGED(###doc##Line l IS ###doc##Line) AND ##doc(l) = ###doc ##let 
-                        AND NOT status(##let) = ###doc##Status.draft DO {     
+                        AND NOT status(##let) = ###doc##Status.draft AND NOT disableHistory() DO {     
         NEW h = ###doc##History {
             ##doc(h) <- ##let;
             dateTime(h) <- currentDateTime();
@@ -146,7 +156,7 @@ META defineDocHistory(doc, let, class, fun)
     }
     
     WHEN DROPPED(###doc##Line l IS ###doc##Line) AND PREV(##doc(l)) = ###doc ##let 
-                        AND NOT status(##let) = ###doc##Status.draft DO {     
+                        AND NOT status(##let) = ###doc##Status.draft AND NOT disableHistory() DO {     
         NEW h = ###doc##History {
             ##doc(h) <- ##let;
             dateTime(h) <- currentDateTime();
@@ -157,7 +167,7 @@ META defineDocHistory(doc, let, class, fun)
     }
     
     WHEN CHANGED(##fun(###doc##Line l)) AND ##doc(l) = ###doc ##let 
-                        AND NOT status(##let) = ###doc##Status.draft DO {     
+                        AND NOT status(##let) = ###doc##Status.draft AND NOT disableHistory() DO {     
         NEW h = ###doc##History {
             ##doc(h) <- ##let;
             dateTime(h) <- currentDateTime();
@@ -168,7 +178,7 @@ META defineDocHistory(doc, let, class, fun)
     }
     
     WHEN CHANGED(class(###doc##Line l)) AND ##doc(l) = ###doc ##let 
-                        AND NOT status(##let) = ###doc##Status.draft DO {     
+                        AND NOT status(##let) = ###doc##Status.draft AND NOT disableHistory() DO {     
         NEW h = ###doc##History {
             ##doc(h) <- ##let;
             dateTime(h) <- currentDateTime();
@@ -190,7 +200,7 @@ META defineDocHistoryHead(doc, let)
     type 'Тип' = DATA ISTRING[100] (###doc##History);
     description 'Описание' = DATA TEXT (###doc##History);
      
-    WHEN SETCHANGED(status(###doc let)) DO {     
+    WHEN SETCHANGED(status(###doc let)) AND NOT disableHistory() DO {     
         NEW l = ###doc##History {
             ##doc(l) <- let;
             dateTime(l) <- currentDateTime();
