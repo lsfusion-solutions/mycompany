@@ -42,6 +42,7 @@ WHEN LOCAL SET(ManufacturingOrder o IS ManufacturingOrder) AND NOT CHANGED(compa
 
 materialsLocation 'Списать из' = DATA Location (ManufacturingOrder) NONULL;
 nameMaterialsLocation 'Списать из' (ManufacturingOrder m) = name(materialsLocation(m));
+WHEN LOCAL SETCHANGED(type(ManufacturingOrder mo)) AND NOT materialsLocation(mo) DO materialsLocation(mo) <- materialsLocation(type(mo));
 
 unbuild 'Разборка' = DATA BOOLEAN (ManufacturingOrder); 
 
@@ -226,60 +227,63 @@ DESIGN manufacturingOrder {
 }
 
 // fill
+fillByQuantity (ManufacturingOrder o, NUMERIC[16,3] q) {
+    DELETE ConsumedLine l WHERE manufacturingOrder(l) = o; 
+    DELETE FinishedLine l WHERE manufacturingOrder(l) = o;
+
+    IF unbuild(o) THEN {
+        FOR bom(ComponentLine cl) = bom(o) DO NEW l = FinishedLine {
+            manufacturingOrder(l) <- o;
+            item(l) <- item(cl);
+            uom(l) <- uom(cl);
+            toProduce(l) <- NUMERIC[16,3](quantity(cl) * q / quantity(bom(o)));
+            costRatio(l) <- costRatio(cl);
+        }
+                
+        NEW l = ConsumedLine {
+            manufacturingOrder(l) <- o;
+            item(l) <- item(o);
+            uom(l) <- uom(o);
+            toConsume(l) <- q;
+        }
+                
+        FOR bom(ByproductLine bl) = bom(o) DO NEW l = ConsumedLine {
+            manufacturingOrder(l) <- o;
+            item(l) <- product(bl);
+            uom(l) <- uom(bl);
+            toConsume(l) <- NUMERIC[16,3](quantity(bl) * q / quantity(bom(o)));
+        }
+    } ELSE {
+        FOR intermediateBom(bom(o), ComponentLine cl, TEXT path) AND NOT intermediate(nestedBom(cl)) DO NEW l = ConsumedLine {
+            manufacturingOrder(l) <- o;
+            item(l) <- item(cl);
+            uom(l) <- uom(cl);
+            toConsume(l) <- NUMERIC[16,3](quantity(bom(o), cl, path) * q / quantity(bom(o)));
+        }
+                
+        NEW l = FinishedLine {
+            manufacturingOrder(l) <- o;
+            item(l) <- item(o);
+            uom(l) <- uom(o);
+            toProduce(l) <- q;
+        }
+                
+        FOR bom(ByproductLine bl) = bom(o) DO NEW l = FinishedLine {
+            manufacturingOrder(l) <- o;
+            item(l) <- product(bl);
+            uom(l) <- uom(bl);
+            toProduce(l) <- NUMERIC[16,3](quantity(bl) * q / quantity(bom(o)));
+        }
+    }
+}
+
 fillLines 'Заполнить по спецификации' (ManufacturingOrder o) {
     APPLY;
     IF canceled() THEN RETURN;
     
     NEWSESSION {
         DIALOG dialogQuantity OBJECTS q = toManufacture(o) INPUT DO {
-            DELETE ConsumedLine l WHERE manufacturingOrder(l) = o; 
-            DELETE FinishedLine l WHERE manufacturingOrder(l) = o;
-
-            IF unbuild(o) THEN {
-                FOR bom(ComponentLine cl) = bom(o) DO NEW l = FinishedLine {
-                    manufacturingOrder(l) <- o;
-                    item(l) <- item(cl);
-                    uom(l) <- uom(cl);
-                    toProduce(l) <- NUMERIC[16,3](quantity(cl) * q / quantity(bom(o)));
-                    costRatio(l) <- costRatio(cl);
-                }
-                
-                NEW l = ConsumedLine {
-                    manufacturingOrder(l) <- o;
-                    item(l) <- item(o);
-                    uom(l) <- uom(o);
-                    toConsume(l) <- q;
-                }
-                
-                FOR bom(ByproductLine bl) = bom(o) DO NEW l = ConsumedLine {
-                    manufacturingOrder(l) <- o;
-                    item(l) <- product(bl);
-                    uom(l) <- uom(bl);
-                    toConsume(l) <- NUMERIC[16,3](quantity(bl) * q / quantity(bom(o)));
-                }
-            } ELSE {
-                FOR intermediateBom(bom(o), ComponentLine cl, TEXT path) AND NOT intermediate(nestedBom(cl)) DO NEW l = ConsumedLine {
-                    manufacturingOrder(l) <- o;
-                    item(l) <- item(cl);
-                    uom(l) <- uom(cl);
-                    toConsume(l) <- NUMERIC[16,3](quantity(bom(o), cl, path) * q / quantity(bom(o)));
-                }
-                
-                NEW l = FinishedLine {
-                    manufacturingOrder(l) <- o;
-                    item(l) <- item(o);
-                    uom(l) <- uom(o);
-                    toProduce(l) <- q;
-                }
-                
-                FOR bom(ByproductLine bl) = bom(o) DO NEW l = FinishedLine {
-                    manufacturingOrder(l) <- o;
-                    item(l) <- product(bl);
-                    uom(l) <- uom(bl);
-                    toProduce(l) <- NUMERIC[16,3](quantity(bl) * q / quantity(bom(o)));
-                }
-            }
-            
+            fillByQuantity(o, q);
             APPLY;
         }
     }
