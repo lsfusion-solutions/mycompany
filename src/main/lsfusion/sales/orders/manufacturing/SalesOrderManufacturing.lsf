@@ -13,11 +13,11 @@ CONSTRAINT bom(OrderLine l) AND NOT item(l) = item(bom(l)) CHECKED BY bom[OrderL
     MESSAGE 'Спецификация должна соответствовать выбранной номенклатуре';
 
 // order type
-typeManufacturingOrder 'Тип заказа на производство' = DATA ManufacturingOrderType (OrderType);
-nameTypeManufacturingOrder 'Тип заказа на производство' (OrderType t) = name(typeManufacturingOrder(t));
-EXTEND FORM orderType PROPERTIES nameTypeManufacturingOrder(o);
+manufacturingOrderType 'Тип заказа на производство' = DATA ManufacturingOrderType (OrderType);
+nameManufacturingOrderType 'Тип заказа на производство' (OrderType t) = name(manufacturingOrderType(t));
+EXTEND FORM orderType PROPERTIES nameManufacturingOrderType(o);
 
-WHEN LOCAL CHANGED(item(OrderLine l)) AND typeManufacturingOrder(type(Order o))
+WHEN LOCAL CHANGED(item(OrderLine l)) AND manufacturingOrderType(type(Order o))
     DO bom(l) <- defaultBom(item(l));
 
 // manufacturing order
@@ -51,8 +51,8 @@ EXTEND FORM manufacturingOrders
 newManufacturingOrder (OrderLine l) {
     NEW o = ManufacturingOrder { 
         orderLine(o) <- l;
-        type(o) <- typeManufacturingOrder(type(order(l)));
-        materialsLocation(o) <-materialsLocation(typeManufacturingOrder(type(order(l))));
+        type(o) <- manufacturingOrderType(type(order(l)));
+        materialsLocation(o) <-materialsLocation(manufacturingOrderType(type(order(l))));
         scheduledDateTime(o) <- scheduledDateTime(order(l));
         productsLocation(o) <- location(order(l));
         company(o) <- defaultCompany();
@@ -64,7 +64,7 @@ newManufacturingOrder (OrderLine l) {
 }
 
 // sales order
-needManufacturingOrders (Order o) = typeManufacturingOrder(type(o)) AND countFreeBomLines(o) AND confirmed(o);
+needManufacturingOrders (Order o) = manufacturingOrderType(type(o)) AND countFreeBomLines(o) AND confirmed(o);
 
 createManufacturingOrders 'Производственные заказы' (Order o) {
     IF needManufacturingOrders(o) THEN {
@@ -76,7 +76,7 @@ createManufacturingOrders 'Производственные заказы' (Order
 
 EXTEND FORM order
     PROPERTIES createManufacturingOrders(o) SHOWIF needManufacturingOrders(o)
-    PROPERTIES nameBom(l)  BACKGROUND colorStatus(manufacturingOrder(l)) SHOWIF typeManufacturingOrder(type(o)) READONLYIF manufacturingOrder(l)
+    PROPERTIES nameBom(l) BACKGROUND colorStatus(manufacturingOrder(l)) SHOWIF manufacturingOrderType(type(o)) READONLYIF manufacturingOrder(l)
     
     OBJECTS mo = ManufacturingOrder
     PROPERTIES(mo) READONLY nameStatus BACKGROUND colorStatus(mo), number, scheduledDateTime
@@ -96,7 +96,7 @@ DESIGN order {
 }
 
 autoCreateManufacturingOrder 'Автоматически создавать производственный заказ' = DATA BOOLEAN (OrderType);
-EXTEND FORM orderType PROPERTIES autoCreateManufacturingOrder(o) SHOWIF typeManufacturingOrder(o);
+EXTEND FORM orderType PROPERTIES autoCreateManufacturingOrder(o) SHOWIF manufacturingOrderType(o);
 
 WHEN SET(confirmed(Order o)) AND autoCreateManufacturingOrder(type(o)) DO
     createManufacturingOrders(o);
