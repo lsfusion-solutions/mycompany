@@ -1,0 +1,15 @@
+MODULE CashRegisterMeta;
+
+NAMESPACE Hardware;
+
+META defFiscal(doc, d, command) 
+fiscal 'Фискальный' = DATA BOOLEAN (###doc);
+
+EXTEND FORM ##doc PROPERTIES ##command(##d) SHOWIF fiscal(##d);
+
+DESIGN ##doc {
+    TOOLBARRIGHT {
+        MOVE PROPERTY(##command(##d)) AFTER PROPERTY(formRefresh()) {caption = 'Повторная фискализация';};
+    }
+}
+END

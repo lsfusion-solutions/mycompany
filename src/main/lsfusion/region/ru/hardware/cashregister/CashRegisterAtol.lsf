@@ -1,0 +1,156 @@
+MODULE CashRegisterAtol;
+
+REQUIRE CashRegister, ServiceP, Debt;
+
+NAMESPACE Hardware;
+
+EXTEND CLASS CashDriver {
+    atol10 'Драйвер ККТ АТОЛ v.10'
+}
+
+uid = FORMULA STRING[32] 'md5(random()::text)::text';
+GROUP request;
+
+// report X
+FORM reportX
+    PROPERTIES uuid = uid()
+    PROPERTIES IN request type = 'reportX'
+;
+devReportX() {
+    EXPORT reportX JSON CHARSET 'UTF-8';
+    TRY {
+        EXTERNAL HTTP 'http://' + hostname(currentComputer()) + ':16732/requests' PARAMS exportFile();
+    } CATCH {
+        MESSAGE 'Ошибка - ' + STRING(statusHttp());
+    }
+}
+reportX(Pos p) + WHEN driver(p) = CashDriver.atol10 THEN {devReportX();}
+
+// continue print
+FORM continuePrint
+    PROPERTIES uuid = uid()
+    PROPERTIES IN request type = 'reportX'
+;
+devContinuePrint() {
+    EXPORT reportX JSON CHARSET 'UTF-8';
+    TRY {
+        EXTERNAL HTTP 'http://' + hostname(currentComputer()) + ':16732/requests' PARAMS exportFile();
+    } CATCH {
+        MESSAGE 'Ошибка - ' + STRING(statusHttp());
+    }
+}
+continuePrint(Pos p) + WHEN driver(p) = CashDriver.atol10 THEN {devContinuePrint();}
+
+// open shift
+FORM openShift
+    PROPERTIES uuid = uid()
+    PROPERTIES IN request type = 'openShift'
+;
+devOpenShift(Session s) {
+    EXPORT openShift JSON CHARSET 'UTF-8';
+    TRY {
+        EXTERNAL HTTP 'http://' + hostname(currentComputer()) + ':16732/requests' PARAMS exportFile();
+        fiscal(s) <- TRUE;
+    } CATCH {
+        fiscal(s) <- NULL;
+        MESSAGE 'Ошибка - ' + STRING(statusHttp());
+    } FINALLY APPLY;
+}
+openShift(Session s) + WHEN driver(pos(s)) = CashDriver.atol10 THEN {devOpenShift(s);}
+
+// close shift
+FORM closeShift
+    PROPERTIES uuid = uid()
+    PROPERTIES IN request type = 'closeShift'
+;
+devCloseShift(Session s) {
+    EXPORT closeShift JSON CHARSET 'UTF-8';
+    TRY {
+        EXTERNAL HTTP 'http://' + hostname(currentComputer()) + ':16732/requests' PARAMS exportFile();
+        fiscal(s) <- TRUE;
+    } CATCH {
+        fiscal(s) <- NULL;
+        MESSAGE 'Ошибка - ' + STRING(statusHttp());
+    } FINALLY APPLY;
+}
+closeShift(Session s) + WHEN driver(pos(s)) = CashDriver.atol10 THEN {devCloseShift(s);}
+
+// cash in
+FORM cashIn
+    PROPERTIES uuid = uid()
+    
+    OBJECTS i = IncomingPayment  
+    PROPERTIES IN request type = 'cashIn'
+    PROPERTIES IN request cashSum = amount(i)
+;
+devCashIn(IncomingPayment i) {
+    EXPORT cashIn OBJECTS i = i JSON CHARSET 'UTF-8';
+    TRY {
+        EXTERNAL HTTP 'http://' + hostname(currentComputer()) + ':16732/requests' PARAMS exportFile();
+        fiscal(i) <- TRUE;
+    } CATCH {
+        fiscal(i) <- NULL;
+        MESSAGE 'Ошибка - ' + STRING(statusHttp());
+    } FINALLY APPLY;
+}
+cashIn(IncomingPayment i) + WHEN driver(pos(i)) == CashDriver.atol10 AND i IS IncomingPayment THEN {devCashIn(i);}
+
+// cash out
+FORM cashOut
+    PROPERTIES uuid = uid()
+    
+    OBJECTS o = OutgoingPayment  
+    PROPERTIES IN request type = 'cashOut'
+    PROPERTIES IN request cashSum = amount(o)
+;
+devCashIn(OutgoingPayment o) {
+    EXPORT cashOut OBJECTS o = o JSON CHARSET 'UTF-8';
+    TRY {
+        EXTERNAL HTTP 'http://' + hostname(currentComputer()) + ':16732/requests' PARAMS exportFile();
+        fiscal(o) <- TRUE;
+    } CATCH {
+        fiscal(o) <- NULL;
+        MESSAGE 'Ошибка - ' + STRING(statusHttp());
+    } FINALLY APPLY;
+}
+cashOut(OutgoingPayment o) + WHEN driver(pos(o)) == CashDriver.atol10 THEN {devCashIn(o);}
+
+//buy
+typeLine = ABSTRACT STRING (InvoiceLine);
+typeLine(InvoiceLine l) += 'position';
+ 
+paymentObject = ABSTRACT CASE STRING (InvoiceLine);
+paymentObject (InvoiceLine l) += WHEN item(l) IS Product THEN 'commodity';
+paymentObject (InvoiceLine l) += WHEN item(l) IS Service THEN 'service';
+
+paymentType = ABSTRACT CASE STRING (IncomingPayment, Invoice);
+paymentType (IncomingPayment p, Invoice i) += WHEN isCash(paymentMethod(p, i)) AND p IS IncomingPayment THEN 'cash';
+paymentType (IncomingPayment p, Invoice i) += WHEN NOT isCash(paymentMethod(p, i))  AND p IS IncomingPayment THEN 'electronically';
+ 
+FORM buy
+    PROPERTIES uuid = uid()
+    
+    OBJECTS i = Invoice
+    PROPERTIES IN request type = 'buy' 
+    
+    OBJECTS l = InvoiceLine IN request EXTID 'items'
+    PROPERTIES(l) typeLine EXTID 'type', nameItem EXTID 'name', price, quantity,
+                  nameUom EXTID 'measurementUnit', paymentObject, subtotal EXTID 'amount'
+
+    FILTERS i = invoice(l)
+    
+    OBJECTS d = Debt IN request EXTID 'payments'
+    PROPERTIES (d, i) paymentType EXTID 'type', paid EXTID 'sum'
+    FILTERS paid(d, i), active(d)
+;
+devBuy(Invoice i) {
+    EXPORT buy OBJECTS i = i JSON CHARSET 'UTF-8';
+    TRY {
+        EXTERNAL HTTP 'http://' + hostname(currentComputer()) + ':16732/requests' PARAMS exportFile();
+        fiscal(i) <- TRUE;
+    } CATCH {
+        fiscal(i) <- NULL;
+        MESSAGE 'Ошибка - ' + STRING(statusHttp());
+    } FINALLY APPLY;
+}
+buy(Invoice i) + WHEN driver(pos(session(i))) THEN {devBuy(i);} 

@@ -1,0 +1,69 @@
+MODULE CashRegister;
+
+REQUIRE Pos, Session, IncomingPayment, OutgoingPayment, Invoicing,
+        PosDashboard, PosDashboardPayment, PosDashboardCash,
+        CashRegisterMeta;
+
+NAMESPACE Retail;
+
+CLASS CashDriver 'Драйвер ККТ';
+
+name 'Имя' (CashDriver d) = staticCaption(d) IF d IS CashDriver;
+
+driver 'Драйвер' = DATA CashDriver (Pos);
+nameDriver 'Драйвер' (Pos p) = name(driver(p));
+
+FORM cashDriver 'Драйвер'
+    OBJECTS d = CashDriver
+    PROPERTIES(d) READONLY name
+    
+    LIST CashDriver OBJECT d
+;
+
+EXTEND FORM pos PROPERTIES nameDriver(p);    
+EXTEND FORM poss PROPERTIES nameDriver(p);
+
+pos = DATA Pos (Payment);
+
+openShift 'Открыть смену' ABSTRACT CASE EXCLUSIVE (Session);
+closeShift 'Закрыть смену' ABSTRACT CASE EXCLUSIVE (Session);
+cashIn 'Внесение' ABSTRACT CASE EXCLUSIVE (Payment);
+cashOut 'Выемка' ABSTRACT CASE EXCLUSIVE (Payment);
+buy 'Чек расхода' ABSTRACT CASE EXCLUSIVE (Invoice);
+
+continuePrint 'Допечатать' ABSTRACT CASE EXCLUSIVE (Pos);
+reportX 'X-отчет' ABSTRACT CASE EXCLUSIVE (Pos);
+
+afterOpen(Session s) + {openShift(s);}
+afterClose(Session s) + {closeShift(s);}
+afterPosPayment(Invoice i) + {buy(i);}
+afterDeposit(Pos p, IncomingPayment i) + {
+    pos(i) <- p;
+    cashIn(i);
+}
+afterWithdraw(Pos p, OutgoingPayment o) + {
+    pos(o) <- p;
+    cashOut(o);
+}
+
+refiscalSession (Session s) {
+    IF NOT closingDateTime(s) THEN {
+        openShift(s);
+    } ELSE {
+        closeShift(s);
+    }
+}
+
+@defFiscal(incomingPayment, p, cashIn);
+@defFiscal(outgoingPayment, p, cashOut);
+@defFiscal(session, s, refiscalSession);
+@defFiscal(invoice, i, buy);
+
+EXTEND FORM posDashboard PROPERTIES(p) continuePrint, reportX; 
+
+DESIGN posDashboard {
+    sessionHeader {
+        MOVE PROPERTY(continuePrint(p));
+        MOVE PROPERTY(reportX(p));
+    }
+}

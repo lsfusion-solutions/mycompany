@@ -57,6 +57,8 @@ EXTEND FORM posPayment
     EVENTS ON INIT { ACTIVATE PROPERTY posPayment.amount(pm); }
 ;
 
+afterPosPayment ABSTRACT LIST (Invoice);
+
 posPayment 'Оплата' (Session s, Invoice i) {
     amount(PaymentMethod pm) <- NULL;
     DIALOG posPayment OBJECTS i = i NOMANAGESESSION DO {
@@ -79,6 +81,7 @@ posPayment 'Оплата' (Session s, Invoice i) {
             DELETE IncomingPayment p WHERE SET(p IS IncomingPayment);
         } ELSE {
             createInvoice(s);
+            afterPosPayment(i);
         }
     }
 } CHANGEKEY 'ctrl ENTER';
