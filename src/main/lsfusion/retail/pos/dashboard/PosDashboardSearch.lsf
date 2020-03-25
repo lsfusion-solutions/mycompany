@@ -12,16 +12,16 @@ EXTEND FORM posDashboard
     OBJECTS it = Item
     PROPERTIES(it) READONLY name, idBarCode, id
     PROPERTIES(i, it) quantity ON CHANGE changeQuantity(i, it)
-    PROPERTIES READONLY listPrice(i, it)
+    PROPERTIES READONLY overListPrice(i, it)
     ORDER name(it)
 
     FILTERS canBeSold(it),
-            listPrice(i, it),
+            overListPrice(i, it),
             active(it)
 
     PROPERTIES() filterName, filterPrice
     FILTERS isISubstring(name(it), filterName()) OR NOT filterName(),
-            listPrice(i, it) = filterPrice() OR NOT filterPrice()
+            overListPrice(i, it) = filterPrice() OR NOT filterPrice()
 
     FILTERGROUP searchFilter
         FILTER 'В чеке' quantity(i, it) 'shift F10'
