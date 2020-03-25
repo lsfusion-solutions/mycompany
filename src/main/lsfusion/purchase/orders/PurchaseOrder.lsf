@@ -84,8 +84,7 @@ price 'Цена' = DATA NUMERIC[10,2] (OrderLine);
 taxIncluded (OrderLine l) += taxIncluded(type(order(l)));
 
 WHEN LOCAL CHANGED (item(OrderLine ol)) DO {
-    description(ol) <- OVERRIDE nameItemVendor(pricelistLineA(vendor(order(ol)), item(ol), dateTime(order(ol)))),
-                                nameItem(ol); 
+    description(ol) <- nameItemVendor(pricelistLineA(vendor(order(ol)), item(ol), dateTime(order(ol)))); 
     price(ol) <- OVERRIDE price(pricelistLineA(vendor(order(ol)), item(ol), dateTime(order(ol)))), 
                               cost(item(ol));
     uom(ol) <- uom(item(ol));

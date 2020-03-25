@@ -1,7 +1,7 @@
 MODULE InvoicePrintRu;
 
 REQUIRE InvoicePrint, InvoicePrintShipment, LegalEntityRu, UomRu,
-        Individual, Location;
+        Individual, LocationEmployee;
 
 NAMESPACE Invoicing;
 
@@ -29,9 +29,9 @@ DESIGN invoice {
     }
 }
 
-@defineIndividual(allowed, 'Отпуск разрешил', invoice, i, invoicePrint);
-@defineIndividual(accountant, 'Главный (старший) бухгалтер', invoice, i, invoicePrint);
-@defineIndividual(performed, 'Отпуск произвел', invoice, i, invoicePrint);
+@defineEmployee(allowed, 'Отпуск разрешил', invoice, i, invoicePrint);
+@defineEmployee(accountant, 'Главный (старший) бухгалтер', invoice, i, invoicePrint);
+@defineEmployee(performed, 'Отпуск произвел', invoice, i, invoicePrint);
 
 WHEN LOCAL SETCHANGED(location(Invoice i)) DO {
     allowed(i) <- GROUP LAST allowed(Location parent) ORDER DESC level(location(i),parent);

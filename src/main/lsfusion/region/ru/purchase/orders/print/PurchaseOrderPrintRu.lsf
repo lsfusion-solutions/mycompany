@@ -24,22 +24,3 @@ DESIGN order {
         }
     }
 }
-
-@defineIndividual(allowed, 'Отпуск разрешил', order, o, orderPrint);
-@defineIndividual(accountant, 'Главный (старший) бухгалтер', order, o, orderPrint);
-@defineIndividual(performed, 'Отпуск произвел', order, o, orderPrint);
-
-WHEN LOCAL SETCHANGED(location(Order i)) DO {
-    allowed(i) <- GROUP LAST allowed(Location parent) ORDER DESC level(location(i),parent);
-    accountant(i) <- GROUP LAST accountant(Location parent) ORDER DESC level(location(i),parent);
-    performed(i) <- GROUP LAST performed(Location parent) ORDER DESC level(location(i),parent);
-}
-
-// print
-
-EXTEND FORM printOrder
-    PROPERTIES(o) positionAllowed, nameAllowed,
-                  positionAccountant, nameAccountant,
-                  positionPerformed, namePerformed 
-;
-
