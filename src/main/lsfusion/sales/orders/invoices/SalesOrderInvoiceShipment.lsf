@@ -12,10 +12,11 @@ toInvoiceShipped (Order o) =
     GROUP SUM done(ShipmentLine sl) IF order(orderLine(sl)) = o AND active(shipment(sl)) AND NOT invoiceLine(sl);
 toInvoice(o) += toInvoiceShipped(o) > 0;
 
-createOrderInvoiceLines (Order o, Invoice i) + {
+fill (Invoice i, Order o) + {
+    location(i) <- location(o);
+
     IF invoicingPolicy(type(o)) = InvoicingPolicy.delivered THEN {
-        location(i) <- location(o);
-        
+       
         FOR order(orderLine(ShipmentLine sl)) = o AND active(shipment(sl)) AND NOT invoiceLine(sl) INLINE 
             NEW il = InvoiceLine DO {
             invoice(il) <- i;
