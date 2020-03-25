@@ -14,44 +14,10 @@ okpoCustomer (Invoice i) = okpo(customer(i));
 legalCodeUom (InvoiceLine l) = legalCode(uom(l));
 
 EXTEND FORM printInvoice
-    PROPERTIES(i) innCustomer, okpoCustomer
+    PROPERTIES(o) innCustomer, okpoCustomer, innCompany
     
     PROPERTIES(l) legalCodeUom
 ;
-
-// individuals
-
-META defineIndividual (prop, caption, cls, obj, container)
-    prop = DATA Individual (###cls);
-    positionName###prop 'Отпуск разрешил' (###cls o) = positionName(prop(o)); 
-    name###prop (###cls o) = name(prop(o)); 
-    position###prop (###cls o) = position(prop(o));
-     
-    CONSTRAINT prop(###cls o) AND NOT type(legalEntity(prop(o))) = PartnerType.company 
-        CHECKED BY prop[###cls] MESSAGE 'Должен быть наш работник';
-    
-    EXTEND FORM cls
-        PROPERTIES(obj) positionName###prop 
-    ;
-    DESIGN cls {
-        container {
-            MOVE PROPERTY(positionName###prop(obj));
-        }
-    }
-END
-
-// location
-DESIGN location {
-    tabbedPane {
-        NEW invoicePrint {
-            caption = 'Печать накладных';
-        }
-    }
-}
-
-@defineIndividual(allowed, 'Отпуск разрешил', location, l, invoicePrint);
-@defineIndividual(accountant, 'Главный (старший) бухгалтер', location, l, invoicePrint);
-@defineIndividual(performed, 'Отпуск произвел', location, l, invoicePrint);
 
 // invoice
 DESIGN invoice {
@@ -76,7 +42,7 @@ WHEN LOCAL SETCHANGED(location(Invoice i)) DO {
 // print
 
 EXTEND FORM printInvoice
-    PROPERTIES(i) positionAllowed, nameAllowed,
+    PROPERTIES(o) positionAllowed, nameAllowed,
                   positionAccountant, nameAccountant,
                   positionPerformed, namePerformed 
 ;

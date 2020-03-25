@@ -1,6 +1,6 @@
 MODULE Individual;
 
-REQUIRE Partner, MasterData, LegalEntity, Position;
+REQUIRE Partner, MasterData, LegalEntity, Position, DocTemplate, Location;
 
 NAMESPACE MasterData;
 
@@ -86,3 +86,16 @@ DESIGN partner {
         }
     }
 }
+
+// location
+DESIGN location {
+    tabbedPane {
+        NEW invoicePrint {
+            caption = 'Печать накладных';
+        }
+    }
+}
+
+@defineIndividual(allowed, 'Отпуск разрешил', location, l, invoicePrint);
+@defineIndividual(accountant, 'Главный (старший) бухгалтер', location, l, invoicePrint);
+@defineIndividual(performed, 'Отпуск произвел', location, l, invoicePrint);

@@ -1,15 +1,45 @@
 MODULE PurchaseOrderPrintRu;
 
-REQUIRE PurchaseOrderPrint, LegalEntityRu;
+REQUIRE PurchaseOrderPrint, LegalEntityRu, UomRu;
 
 NAMESPACE Purchase;
 
 innCompany (Order o) = inn(company(location(o)));
 
-innVendor (Order o) = inn(vendor(o));
+innCustomer (Order o) = inn(vendor(o));
+
+legalCodeUom (OrderLine l) = legalCode(uom(l));
 
 EXTEND FORM printOrder
-    PROPERTIES(o) innCompany, innVendor, dateTime
+    PROPERTIES(o) innCompany, innCustomer, dateTime
     PROPERTIES(l) idBarCodeItem, nameUom
+;
+
+// order
+DESIGN order {
+    details {
+        NEW orderPrint {
+            caption = 'Печать';
+            showIf = countOrderTemplate(type(o));
+        }
+    }
+}
+
+@defineIndividual(allowed, 'Отпуск разрешил', order, o, orderPrint);
+@defineIndividual(accountant, 'Главный (старший) бухгалтер', order, o, orderPrint);
+@defineIndividual(performed, 'Отпуск произвел', order, o, orderPrint);
+
+WHEN LOCAL SETCHANGED(location(Order i)) DO {
+    allowed(i) <- GROUP LAST allowed(Location parent) ORDER DESC level(location(i),parent);
+    accountant(i) <- GROUP LAST accountant(Location parent) ORDER DESC level(location(i),parent);
+    performed(i) <- GROUP LAST performed(Location parent) ORDER DESC level(location(i),parent);
+}
+
+// print
+
+EXTEND FORM printOrder
+    PROPERTIES(o) positionAllowed, nameAllowed,
+                  positionAccountant, nameAccountant,
+                  positionPerformed, namePerformed 
 ;
 
