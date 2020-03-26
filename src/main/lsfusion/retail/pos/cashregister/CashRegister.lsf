@@ -13,6 +13,9 @@ name 'Имя' (CashDriver d) = staticCaption(d) IF d IS CashDriver;
 driver 'Драйвер' = DATA CashDriver (Pos);
 nameDriver 'Драйвер' (Pos p) = name(driver(p));
 
+dataHostname 'Хост' = DATA ISTRING[30] (Pos);
+hostname 'Хост' (Pos p) = OVERRIDE dataHostname(p), hostname(currentComputer()); 
+
 FORM cashDriver 'Драйвер'
     OBJECTS d = CashDriver
     PROPERTIES(d) READONLY name
@@ -20,10 +23,10 @@ FORM cashDriver 'Драйвер'
     LIST CashDriver OBJECT d
 ;
 
-EXTEND FORM pos PROPERTIES nameDriver(p);    
-EXTEND FORM poss PROPERTIES nameDriver(p);
+EXTEND FORM pos PROPERTIES(p) nameDriver, dataHostname SHOWIF driver(p);    
+EXTEND FORM poss PROPERTIES(p) READONLY nameDriver, hostname;
 
-pos = DATA Pos (Payment);
+session = DATA Session (Payment);
 
 openShift 'Открыть смену' ABSTRACT CASE EXCLUSIVE (Session);
 closeShift 'Закрыть смену' ABSTRACT CASE EXCLUSIVE (Session);
@@ -38,25 +41,40 @@ afterOpen(Session s) + {openShift(s);}
 afterClose(Session s) + {closeShift(s);}
 afterPosPayment(Invoice i) + {buy(i);}
 afterDeposit(Pos p, IncomingPayment i) + {
-    pos(i) <- p;
+    session(i) <- openedSession(p);
     cashIn(i);
 }
 afterWithdraw(Pos p, OutgoingPayment o) + {
-    pos(o) <- p;
+    session(o) <- openedSession(p);
     cashOut(o);
 }
 
+fiscalOpenSession = DATA BOOLEAN (Session);
+fiscalCloseSession = DATA BOOLEAN (Session);
+fiscal 'Фискальный' (Session s) = fiscalOpenSession(s) AND (fiscalCloseSession(s) OR NOT closingDateTime(s)); 
+
 refiscalSession (Session s) {
-    IF NOT closingDateTime(s) THEN {
-        openShift(s);
-    } ELSE {
+    IF fiscalOpenSession(s) AND NOT fiscalCloseSession(s) AND closingDateTime(s) THEN
         closeShift(s);
+    ELSE
+        IF NOT fiscalOpenSession(s) AND NOT closingDateTime(s) THEN
+            openShift(s);
+}
+
+EXTEND FORM session PROPERTIES(s) fiscal, refiscalSession SHOWIF NOT fiscal(s);
+
+DESIGN session {
+    GROUP (,s) {
+        type = CONTAINERH;
+        MOVE PROPERTY(fiscal(s)) AFTER PROPERTY(namePos(s));
+    }
+    TOOLBARRIGHT {
+        MOVE PROPERTY(refiscalSession(s)) AFTER PROPERTY(formRefresh()) {caption = 'Повторная фискализация';};
     }
 }
 
 @defFiscal(incomingPayment, p, cashIn);
 @defFiscal(outgoingPayment, p, cashOut);
-@defFiscal(session, s, refiscalSession);
 @defFiscal(invoice, i, buy);
 
 EXTEND FORM posDashboard PROPERTIES(p) continuePrint, reportX; 
