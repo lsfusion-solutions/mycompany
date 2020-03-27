@@ -1,0 +1,30 @@
+MODULE OutgoingPaymentPrintRu;
+
+REQUIRE OutgoingPaymentPrint, LegalEntityRu, Individual;
+
+NAMESPACE Invoicing;
+
+okpoCustomer (OutgoingPayment i) = okpo(partner(i));
+
+EXTEND FORM printOutgoingPayment
+     PROPERTIES(o) okpoCustomer
+;
+
+DESIGN outgoingPayment {
+    details {
+        NEW outgoingPaymentPrint {
+            caption = 'Печать';
+            showIf = countOutgoingPaymentTemplate(type(p));
+        }
+    }
+}
+
+@defineEmployee(cashier, 'Кассир', outgoingPayment, p, outgoingPaymentPrint);
+
+@defineEmployee(accountant, 'Главный бухгалтер', outgoingPayment, p, outgoingPaymentPrint);
+
+@defineEmployee(manager, 'Руководитель организации', outgoingPayment, p, outgoingPaymentPrint);
+
+EXTEND FORM printOutgoingPayment
+     PROPERTIES(o) nameAccountant, nameCashier, nameManager
+;

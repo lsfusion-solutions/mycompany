@@ -1,6 +1,6 @@
 MODULE Individual;
 
-REQUIRE Partner, MasterData, LegalEntity, Position;
+REQUIRE Partner, MasterData, LegalEntity, Position, DocTemplate, Location;
 
 NAMESPACE MasterData;
 
@@ -86,3 +86,32 @@ DESIGN partner {
         }
     }
 }
+
+// location
+DESIGN location {
+    tabbedPane {
+        NEW invoicePrint {
+            caption = 'Печать накладных';
+        }
+    }
+}
+
+// employee
+META defineEmployee (prop, caption, cls, obj, container)
+    prop = DATA Individual (###cls);
+    positionName###prop ##caption (###cls o) = positionName(prop(o)); 
+    name###prop (###cls o) = name(prop(o)); 
+    position###prop (###cls o) = position(prop(o));
+     
+    CONSTRAINT prop(###cls o) AND NOT type(legalEntity(prop(o))) = PartnerType.company 
+        CHECKED BY prop[###cls] MESSAGE 'Должен быть наш работник';
+    
+    EXTEND FORM cls
+        PROPERTIES(obj) positionName###prop 
+    ;
+    DESIGN cls {
+        container {
+            MOVE PROPERTY(positionName###prop(obj));
+        }
+    }
+END

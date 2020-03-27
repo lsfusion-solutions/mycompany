@@ -4,19 +4,20 @@ REQUIRE PurchaseOrder, DocTemplate;
 
 NAMESPACE Purchase;
 
-phoneVendor (Order o) = phone(vendor(o));
-
-addressLocation (Order o ) = linesAddress(location(o));
-
 nameCompany (Order o) = name(company(location(o)));
 addressCompany (Order o) = csvAddress(company(location(o)));
 phoneCompany (Order o) = phone(company(location(o)));
 
+phoneVendor (Order o) = phone(vendor(o));
+
+addressLocation (Order o ) = linesAddress(location(o));
+
 FORM printOrder 'Заказ поставщику'   
     OBJECTS o = Order PANEL 
-    PROPERTIES(o) scheduledDateTime, number,
+    PROPERTIES(o) scheduledDateTime, number, nameRepresentative,
+                  nameCompany, addressCompany, phoneCompany,
                   nameVendor, addressVendor, phoneVendor,  
-                  nameLocation, addressLocation, nameCompany, addressCompany, phoneCompany
+                  nameLocation, addressLocation
         
     OBJECTS l = OrderLine
     PROPERTIES(l) nameItem, description, 

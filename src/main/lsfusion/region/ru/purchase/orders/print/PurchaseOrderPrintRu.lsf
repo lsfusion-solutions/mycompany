@@ -1,0 +1,26 @@
+MODULE PurchaseOrderPrintRu;
+
+REQUIRE PurchaseOrderPrint, LegalEntityRu, UomRu;
+
+NAMESPACE Purchase;
+
+innCompany (Order o) = inn(company(location(o)));
+
+innVendor (Order o) = inn(vendor(o));
+
+legalCodeUom (OrderLine l) = legalCode(uom(l));
+
+EXTEND FORM printOrder
+    PROPERTIES(o) innCompany, innVendor, dateTime
+    PROPERTIES(l) idBarCodeItem, nameUom
+;
+
+// order
+DESIGN order {
+    details {
+        NEW orderPrint {
+            caption = 'Печать';
+            showIf = countOrderTemplate(type(o));
+        }
+    }
+}

@@ -87,6 +87,7 @@ META defineDocTemplateForm(doc, obj)
     ;
 
     print 'Печать' (###doc o) {
+        doc##Template() <- NULL;
         IF count###doc##Template(type(o)) = 1 THEN
             doc##Template() <- GROUP MAX ###doc##Template it IF in(it, type(o));
         ELSE
@@ -96,17 +97,17 @@ META defineDocTemplateForm(doc, obj)
         IF doc##Template() THEN {
             CASE EXCLUSIVE
                 WHEN format(doc##Template()) = TemplateFormat.pdf THEN
-                    PRINT print###doc OBJECTS obj = o PDF;
+                    PRINT print###doc OBJECTS o = o PDF;
                 WHEN format(doc##Template()) = TemplateFormat.docx THEN
-                    PRINT print###doc OBJECTS obj = o DOCX;
+                    PRINT print###doc OBJECTS o = o DOCX;
                 WHEN format(doc##Template()) = TemplateFormat.xlsx THEN
-                    PRINT print###doc OBJECTS obj = o XLSX;
+                    PRINT print###doc OBJECTS o = o XLSX;
                 WHEN format(doc##Template()) = TemplateFormat.rtf THEN
-                    PRINT print###doc OBJECTS obj = o RTF;
+                    PRINT print###doc OBJECTS o = o RTF;
                 WHEN format(doc##Template()) = TemplateFormat.html THEN
-                    PRINT print###doc OBJECTS obj = o HTML;
+                    PRINT print###doc OBJECTS o = o HTML;
                 ELSE
-                    PRINT print###doc OBJECTS obj = o;
+                    PRINT print###doc OBJECTS o = o;
         }
              
     }
