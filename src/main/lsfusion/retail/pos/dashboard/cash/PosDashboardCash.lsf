@@ -27,6 +27,7 @@ DESIGN options {
     }
 }
 
+afterDeposit ABSTRACT LIST (Pos, IncomingPayment); 
 deposit 'Внесение денег' (Pos p) {
     DIALOG inputMoney OBJECTS a INPUT DO {
         NEWSESSION {
@@ -44,6 +45,8 @@ deposit 'Внесение денег' (Pos p) {
                 amount(ip) <- a;
                 
                 APPLY;
+                IF NOT canceled() THEN
+                    afterDeposit(p, ip);
             }
         }
     } 
@@ -59,6 +62,7 @@ DESIGN options {
 }
 
 // withdraw
+afterWithdraw ABSTRACT LIST (Pos, OutgoingPayment);
 withdraw 'Выемка денег' (Pos p) {
     DIALOG inputMoney OBJECTS a INPUT DO {
         NEWSESSION {
@@ -76,6 +80,8 @@ withdraw 'Выемка денег' (Pos p) {
                 amount(op) <- a;
                 
                 APPLY;
+                IF NOT canceled() THEN 
+                    afterWithdraw(p, op);
             }
         }
     } 

@@ -1,0 +1,22 @@
+MODULE CashRegisterMeta;
+
+NAMESPACE Hardware;
+
+META defFiscal(doc, d, command) 
+fiscal 'Фискальный' = DATA BOOLEAN (###doc);
+
+needFiscal(###doc ##d) = NOT fiscal(##d) AND fiscalOpenSession(session(##d)) AND NOT fiscalCloseSession(session(##d));
+
+EXTEND FORM ##doc PROPERTIES(##d)
+    fiscal SHOWIF session(##d) READONLYIF fiscalCloseSession(session(##d)), ##command SHOWIF needFiscal(##d)
+;
+
+DESIGN ##doc {
+    statusPane {
+        MOVE PROPERTY(fiscal(##d));
+    }
+    TOOLBARRIGHT {
+        MOVE PROPERTY(##command(##d)) AFTER PROPERTY(formRefresh()) {caption = 'Фискализация';};
+    }
+}
+END

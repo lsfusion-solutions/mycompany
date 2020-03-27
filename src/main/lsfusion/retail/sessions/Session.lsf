@@ -11,6 +11,8 @@ openingDateTime 'Открыта' = DATA DATETIME (Session) NONULL;
 openingDateTime(Session s) <- currentDateTime() WHEN SET(s IS Session);
 
 closingDateTime 'Закрыта' = DATA DATETIME (Session);
+CONSTRAINT closingDateTime(Session s) < openingDateTime(s)
+    MESSAGE 'Смена не может быть закрыта раньше чем была открыта';
 
 opened 'Открыта' (Session s) = openingDateTime(s) AND NOT closingDateTime(s);
 
