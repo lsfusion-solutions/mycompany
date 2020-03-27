@@ -9,27 +9,10 @@ EXTEND CLASS CashDriver {
 }
 
 // atol options
-CLASS PaymentType 'Вид оплаты';
+dataIdPaymentAtol 'Код платежа Атол' = DATA STRING[20] (PaymentMethod);
+idPaymentAtol 'Код платежа Атол' (PaymentMethod p) = OVERRIDE dataIdPaymentAtol(p), IF isCash(p) THEN 'cash' ELSE 'electronically';
 
-method 'Метод оплаты' = DATA PaymentMethod (PaymentType);
-nameMethod 'Метод оплаты' (PaymentType t) = name(method(t)) IN id;
-
-stringCashRegister 'Строка ФР' = DATA STRING (PaymentType);
-paymentType(PaymentMethod m) = GROUP AGGR PaymentType t BY method(t);
-
-EXTEND FORM Retail.options
-    OBJECTS t = PaymentType
-    PROPERTIES(t) nameMethod, stringCashRegister, NEW, EDIT, DELETE;
-;
-
-DESIGN Retail.options {
-    tabbedPane {
-        NEW atol10 {
-            caption = 'АТОЛ v.10';
-            MOVE BOX(t);
-        }
-    }
-}
+EXTEND FORM paymentMethod PROPERTIES dataIdPaymentAtol(pm); 
 
 uid = FORMULA STRING[32] 'md5(random()::text)::text';
 GROUP request;
@@ -74,9 +57,9 @@ openShift(Session s) {
     TRY {
         EXTERNAL HTTP 'http://' + hostname(pos(s)) + ':16732/requests' PARAMS exportFile();
         fiscalOpenSession(s) <- TRUE;
+        APPLY;
     } CATCH
         MESSAGE 'Ошибка - ' + STRING(statusHttp());
-    FINALLY APPLY;
 }
 openShift(Session s) + WHEN driver(pos(s)) = CashDriver.atol10 THEN {openShift(s);}
 
@@ -143,10 +126,7 @@ paymentObject = ABSTRACT CASE STRING (InvoiceLine);
 paymentObject (InvoiceLine l) += WHEN item(l) IS Product THEN 'commodity';
 paymentObject (InvoiceLine l) += WHEN item(l) IS Service THEN 'service';
 
-paymentType = ABSTRACT CASE STRING (IncomingPayment, Invoice);
-paymentType (IncomingPayment p, Invoice i) += WHEN paymentType(paymentMethod(p, i)) AND p IS IncomingPayment THEN stringCashRegister(paymentType(paymentMethod(p, i)));
-paymentType (IncomingPayment p, Invoice i) += WHEN NOT paymentType(paymentMethod(p, i)) AND isCash(paymentMethod(p, i)) AND p IS IncomingPayment THEN 'cash';
-paymentType (IncomingPayment p, Invoice i) += WHEN NOT paymentType(paymentMethod(p, i)) AND NOT isCash(paymentMethod(p, i))  AND p IS IncomingPayment THEN 'electronically';
+paymentType (IncomingPayment p, Invoice i) = idPaymentAtol(paymentMethod(p, i));
  
 FORM buy
     PROPERTIES uuid = uid()
