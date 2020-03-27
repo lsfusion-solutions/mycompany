@@ -1,0 +1,62 @@
+MODULE AnalyticAccount;
+
+REQUIRE AnalyticAccountMeta, InvoicingSettings;
+
+NAMESPACE Invoicing;
+
+CLASS AnalyticAccount 'Статья ДДС';
+
+id 'Код' = DATA STRING[20] (AnalyticAccount);
+name 'Наименование' = DATA ISTRING[50] (AnalyticAccount) NONULL;
+
+parent 'Родитель' = DATA AnalyticAccount (AnalyticAccount);
+parent 'Родитель' (STRING[20] s) = GROUP AGGR AnalyticAccount a BY id(a);
+
+level 'Уровень' (AnalyticAccount p, AnalyticAccount c) = RECURSION 1l IF c IS AnalyticAccount AND p == c
+    STEP 2l IF p == parent($p) MATERIALIZED ;
+
+canonicalName 'Каноническое имя' (AnalyticAccount a) = GROUP CONCAT name(AnalyticAccount p), '/' ORDER DESC level(a, p) IN id;
+canonicalNameParent 'Родитель' (AnalyticAccount a) = canonicalName(parent(a));
+
+CONSTRAINT DROPPED(AnalyticAccount a IS AnalyticAccount) AND PREV(parent(AnalyticAccount c) = a)
+        MESSAGE 'Запрещено удалять статьи, на которые ссылаются другие статьи';
+
+FORM analyticAccount 'Статья ДДС'
+    OBJECTS a = AnalyticAccount PANEL 
+    PROPERTIES (a) id, name, canonicalNameParent
+    
+    EDIT AnalyticAccount OBJECT a
+;
+
+FORM analyticAccounts 'Статьи ДДС'
+    OBJECTS a = AnalyticAccount
+    PROPERTIES(a) READONLY id, name, canonicalNameParent
+    PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE 
+    
+    TREE tree aa = AnalyticAccount PARENT parent(aa)
+    PROPERTIES(aa) READONLY name
+    PROPERTIES(aa) NEWSESSION EDIT, DELETE
+    
+    LIST AnalyticAccount OBJECT a
+    
+    EVENTS ON CHANGE aa {SEEK analyticAccounts.a = aa;} 
+;
+
+newAnalyticAccount 'Добавить' (AnalyticAccount a) {
+    NEWSESSION {
+        NEW na = AnalyticAccount {
+            parent(na) <- a;
+            SHOW analyticAccount OBJECTS a = na;
+        }
+    }
+} IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+
+EXTEND FORM analyticAccounts PROPERTIES newAnalyticAccount(aa) DRAW aa TOOLBAR;
+
+@setTabbedDesign(analyticAccounts);
+
+NAVIGATOR {
+    settings {
+        NEW analyticAccounts;
+    }
+}

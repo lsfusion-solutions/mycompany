@@ -1,0 +1,56 @@
+MODULE AnalyticAccountMeta;
+
+NAMESPACE Invoicing;
+
+META setTabbedDesign(form)
+DESIGN ##form {
+    OBJECTS {
+        NEW tabbedPane {
+            type = TABBED;
+            fill = 1;
+            NEW list {
+                caption = 'Список';
+                MOVE BOX(a);
+            }
+            NEW tree {
+                caption = 'Дерево';
+                MOVE BOX(TREE tree);
+            }
+        }
+    }
+}
+END
+
+META extendType(pay)
+in 'Вкл.' = DATA BOOLEAN (###pay###PaymentType, AnalyticAccount);
+
+EXTEND FORM ##pay###PaymentType
+    OBJECTS a = AnalyticAccount
+    PROPERTIES READONLY canonicalName(a)
+    PROPERTIES in(o, a)
+    
+    TREE tree aa = AnalyticAccount PARENT parent(aa)
+    PROPERTIES READONLY name(aa)
+    PROPERTIES in(o, aa)
+;
+@setTabbedDesign(##pay###PaymentType);
+END
+
+META extendPayment(pay)
+analiticAccount (###pay###PaymentType t) = GROUP MAX AnalyticAccount a IF in(t, a);
+countAnalyticAccount (###pay###PaymentType t) = GROUP SUM 1 IF in(t, a);
+
+WHEN LOCAL CHANGED(type(###pay###Payment p)) AND countAnalyticAccount(type(p)) == 1 DO
+    analyticAccount(p) <- analiticAccount(type(p)); 
+
+EXTEND FORM ##pay###Payment PROPERTIES(p) nameAnalyticAccount READONLYIF  countAnalyticAccount(type(p)) == 1;
+
+CONSTRAINT type(###pay###Payment p) AND analyticAccount(p) AND NOT in(type(p), analyticAccount(p)) AND countAnalyticAccount(type(p))
+    CHECKED MESSAGE 'Статья ДДС должна соответствовать типу платежа';
+
+DESIGN ##pay###Payment {
+    params {
+        MOVE PROPERTY(nameAnalyticAccount(p)) AFTER PROPERTY (nameType(p));
+    }
+}
+END

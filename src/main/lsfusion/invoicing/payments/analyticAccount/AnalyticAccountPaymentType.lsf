@@ -1,0 +1,19 @@
+MODULE AnalyticAccountPaymentType;
+
+REQUIRE AnalyticAccount, AnalyticAccountMeta,
+        Payment,
+        IncomingPayment, IncomingPaymentType,
+        OutgoingPayment, OutgoingPaymentType;
+
+NAMESPACE Invoicing;
+
+@extendType(incoming);
+@extendType(outgoing);
+
+analyticAccount 'Статья ДДС' = DATA AnalyticAccount (Payment);
+nameAnalyticAccount 'Статья ДДС' (Payment p) = name(analyticAccount(p));
+
+EXTEND FORM payments PROPERTIES READONLY nameAnalyticAccount(p);
+
+@extendPayment(incoming);
+@extendPayment(outgoing);
