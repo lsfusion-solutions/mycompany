@@ -1,10 +1,15 @@
 MODULE SalesPricelist;
 
-REQUIRE Item, Partner, ItemSales, PartnerSales, TaxItem, SalesSettings, SalesPriceType, CostLedger, Doc;
+REQUIRE SalesPricelistType, Item, Partner, ItemSales, PartnerSales, TaxItem, SalesSettings, SalesPriceType, CostLedger, Doc;
 
 NAMESPACE Sales; 
 
 CLASS Pricelist 'Прайс-лист';
+
+type 'Тип' = DATA PricelistType (Pricelist);
+nameType 'Тип' (Pricelist p) = name(type(p));
+
+WHEN LOCAL SET(Pricelist p IS Pricelist) AND NOT CHANGED(type(p)) DO type(p) <- defaultPricelistType();
 
 @defineStatus(pricelist, 'прайс-листа');
 
@@ -23,6 +28,13 @@ editIn 'Изменять цены' = DATA BOOLEAN (Pricelist, PriceType);
 priceListTypes 'Виды цен' (Pricelist pricelist) = 
     GROUP CONCAT name(PriceType pricelistType) IF editIn(pricelist, pricelistType) , ', '
           ORDER pricelistType CHARWIDTH 10 MATERIALIZED;
+
+WHEN LOCAL CHANGED (type(Pricelist pl)) AND NOT priceListTypes(pl) DO {
+    FOR in(type(pl), PriceType pt) DO editIn(pl, pt) <- in(type(pl), pt);
+}
+
+CONSTRAINT NOT isDraft(Pricelist pl) AND CHANGED(priceListTypes(pl))
+    MESSAGE 'Нельзя изменить перечень видов цен проведенного прайслиста';
 
 FORM chooseTypes 'Выбор видов цен'
     OBJECTS pr = Pricelist PANEL 
@@ -82,23 +94,17 @@ note 'Примечание' (PricelistLine prl) = note(pricelist(prl));
 
 editIn (PricelistLine pl, PriceType priceType) = editIn(pricelist(pl), priceType);
 
-// show columns
-showCurrentPrice 'Действующие цены' = DATA BOOLEAN (Pricelist);
-showMarkup 'Надбавки' = DATA BOOLEAN (Pricelist);
-showCost 'Себестоимость' = DATA BOOLEAN (Pricelist);
-
 FORM pricelist 'Прайс-лист'
     OBJECTS p = Pricelist PANEL
-    PROPERTIES(p) number, startDateTime, endDateTime, note,
-                  priceListTypes ON CHANGE { SHOW chooseTypes OBJECTS pr = p; }, 
-                  showCost, showMarkup, showCurrentPrice
+    PROPERTIES(p) nameType, number, startDateTime, endDateTime, note,
+                  priceListTypes READONLYIF NOT isDraft(p) ON CHANGE { SHOW chooseTypes OBJECTS pr = p; }
 
     OBJECTS t = PriceType
     FILTERS editIn(p, t) 
    
     OBJECTS l = PricelistLine
-    PROPERTIES(l) index READONLY, nameItem, nameUom READONLY, costPrice SHOWIF showCost(p) READONLY
-    PROPERTIES    markup(l, t) COLUMNS 'p' (t) HEADER name(t) + ' (надбавка)' SHOWIF showMarkup(p) ON CHANGE changeMarkup(l, t)
+    PROPERTIES(l) index READONLY, nameItem, nameUom READONLY, costPrice SHOWIF showCost(type(p)) READONLY
+    PROPERTIES    markup(l, t) COLUMNS 'p' (t) HEADER name(t) + ' (надбавка)' SHOWIF showMarkup(type(p)) ON CHANGE changeMarkup(l, t)
     PROPERTIES    price(l, t) COLUMNS 'p' (t) HEADER name(t) 
     PROPERTIES(l) NEW, DELETE 
     FILTERS pricelist(l) = p 
@@ -111,7 +117,11 @@ DESIGN pricelist {
         NEW header {
             type = CONTAINERH;
             NEW params {
-                MOVE PROPERTY(number(p));
+                NEW title {
+                    type = CONTAINERH;
+                    MOVE PROPERTY (nameType(p));
+                    MOVE PROPERTY(number(p));
+                }
                 NEW period {
                     type = CONTAINERH;
                     MOVE PROPERTY(startDateTime(p)) { caption = 'Действует с '; }
@@ -120,12 +130,6 @@ DESIGN pricelist {
                 MOVE PROPERTY(priceListTypes(p)); 
                 MOVE PROPERTY(note(p)); 
             }
-            NEW show {
-                caption = 'Показывать';
-                MOVE PROPERTY(showCost(p));
-                MOVE PROPERTY(showMarkup(p));
-                MOVE PROPERTY(showCurrentPrice(p));     
-            }     
         }
         NEW details {
             fill = 1;
@@ -158,12 +162,10 @@ NAVIGATOR {
 copy 'Копировать' (Pricelist pl) {
     NEWSESSION {
         NEW p = Pricelist {
+            type(p) <- type(pl);
             startDateTime(p) <- startDateTime(pl);
             endDateTime(p) <- endDateTime(pl);
             note(p) <- note(pl);
-            showCost(p) <- showCost(pl);
-            showMarkup(p) <- showMarkup(pl);
-            showCurrentPrice(p) <- showCurrentPrice(pl);
             editIn(p, PriceType t) <- editIn(pl, t);
             FOR pricelist(PricelistLine l)  = pl DO NEW nl = PricelistLine {
                 pricelist(nl) <- p;
