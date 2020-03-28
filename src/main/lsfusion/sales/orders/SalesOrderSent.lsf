@@ -1,13 +1,57 @@
 MODULE SalesOrderSent;
 
-REQUIRE SalesOrder;
+REQUIRE SalesOrder, SalesOrderPrint, Email;
 
 NAMESPACE Sales;
 
+
+partner (Order o) = customer(o); // init
+
+// order type
+defaultTemplate 'Шаблон по умолчанию' = DATA OrderTemplate (OrderType);
+nameDefaultTemplate 'Шаблон по умолчанию' (OrderType o) = name(defaultTemplate(o)) IN id;
+
+mailSubject 'Тема' = DATA STRING (OrderType);
+mailBody '' = DATA TEXT (OrderType);
+
+CONSTRAINT defaultTemplate(OrderType o) AND NOT in(defaultTemplate(o),  o) CHECKED 
+    MESSAGE 'Шаблон должен быть включен для данного типа заказа';  
+
+EXTEND FORM orderType
+    PROPERTIES(o) mailSubject, mailBody, nameDefaultTemplate 
+;
+
+DESIGN orderType {
+    OBJECTS {
+        NEW tabbedPane {
+            type = TABBED;
+            fill = 1;
+            NEW orderTemplate {
+                caption = 'Шаблон';
+                MOVE BOX(tm); 
+            }
+            NEW mail {
+                caption = 'Почта';
+                type = CONTAINERV;
+                MOVE PROPERTY(mailSubject(o));
+                MOVE PROPERTY(mailBody(o));
+                MOVE PROPERTY(nameDefaultTemplate(o));
+            }
+        }
+    }   
+}
+
+// order
 EXTEND CLASS OrderStatus {
     sent 'Отправлен'
 }
 sent 'Отправлен'  = DATA BOOLEAN (Order);
+
+mailSubject 'Тема' = DATA STRING (Order);
+mailBody '' = DATA TEXT (Order);
+
+countMailAccounts() = GROUP SUM 1 IF Account a IS Account AND NOT disable(a);
+canSendMail(Order o) = countMailAccounts() AND email(partner(o)) AND defaultTemplate(type(o));
 
 status(Order o) += WHEN sent(o) THEN OrderStatus.sent;
 colorStatus(Order i) += WHEN status(i) = OrderStatus.sent THEN RGB(252,247,149);
@@ -16,14 +60,40 @@ send 'Отправить' (Order o) {
     APPLY;
     IF canceled() THEN RETURN;
     
-    NEWSESSION {
-        sent(o) <- TRUE;
-        APPLY;
+    LOCAL attachFile = FILE();
+    orderTemplate() <- defaultTemplate(type(o));
+    IF defaultTemplate(type(o)) THEN {
+        CASE EXCLUSIVE
+            WHEN format(orderTemplate()) = TemplateFormat.pdf THEN
+                PRINT printOrder OBJECTS o = o PDF TO attachFile;
+            WHEN format(orderTemplate()) = TemplateFormat.docx THEN
+                PRINT printOrder OBJECTS o = o DOCX TO attachFile;
+            WHEN format(orderTemplate()) = TemplateFormat.xlsx THEN
+                PRINT printOrder OBJECTS o = o XLSX TO attachFile;
+            WHEN format(orderTemplate()) = TemplateFormat.rtf THEN
+                PRINT printOrder OBJECTS o = o RTF TO attachFile;
+            WHEN format(orderTemplate()) = TemplateFormat.html THEN
+                PRINT printOrder OBJECTS o = o HTML TO attachFile;
+            ELSE
+                RETURN;
+
+        EMAIL
+            SUBJECT mailSubject(o)
+            TO email(partner(o))
+            BODY mailBody(o)
+            ATTACH attachFile() NAME name(orderTemplate()); 
+        ;
+    
+        NEWSESSION {
+            sent(o) <- TRUE;
+            APPLY;
+        }
     }
 }
 
 EXTEND FORM order
-     PROPERTIES(o) send SHOWIF (status(o) = OrderStatus.draft), sent
+     PROPERTIES(o) send SHOWIF (status(o) = OrderStatus.draft) AND canSendMail(o), sent,
+                   mailSubject READONLYIF sent(o), mailBody READONLYIF sent(o)
 ;
 
 DESIGN order {
@@ -33,9 +103,27 @@ DESIGN order {
     status {
         MOVE PROPERTY(sent(o));    
     }
+    otherInformation {
+        NEW mail {
+            showIf = canSendMail(o);
+            caption = 'Почта';
+            type = CONTAINERV;
+            fill = 1;
+            MOVE PROPERTY(mailSubject(o));
+            MOVE PROPERTY(mailBody(o));
+        }
+    }
 }
 
 EXTEND FORM orders    
     EXTEND FILTERGROUP status
         FILTER 'Отправлен' status(o) = OrderStatus.sent    
 ;
+
+WHEN LOCAL SETCHANGED(type(Order o)) AND defaultTemplate(type(o)) DO {
+    NEWSESSION {
+        mailBody(o) <- mailBody(type(o)) IF NOT mailBody(o);
+        mailSubject(o) <- OVERRIDE mailSubject(type(o)), name(defaultTemplate(type(o))) IF NOT mailSubject(o);
+        APPLY;  
+    }
+}
