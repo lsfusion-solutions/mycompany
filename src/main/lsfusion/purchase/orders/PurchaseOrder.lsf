@@ -44,6 +44,11 @@ WHEN LOCAL CHANGED(vendor(Order o)) AND NOT CHANGED(paymentTerms(o)) DO paymentT
 scheduledDateTime 'Срок поставки' = DATA DATETIME (Order);
 scheduledDateTime(Order o) <- currentDateTime() WHEN SET(o IS Order);   
 
+// company
+company 'Компания' = DATA Company (Order) NONULL;
+nameCompany 'Компания' (Order o) = name(company(o));
+WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(company(o)) DO company(o) <- defaultCompany();
+
 location = DATA Location (Order);
 nameLocation 'Место хранения' (Order o) = name(location(o));
 
@@ -104,7 +109,7 @@ edit (OrderLine l) + { edit(order(l)); }
 
 FORM order 'Заказ поставщику'
     OBJECTS o = Order PANEL
-    PROPERTIES(o) nameType, dateTime, number, nameVendor, nameLocation,
+    PROPERTIES(o) nameType, dateTime, number, nameVendor, nameCompany, nameLocation,
                   namePaymentTerms,
                   scheduledDateTime,
                   nameRepresentative, vendorReference
@@ -130,6 +135,7 @@ DESIGN order {
             }
             NEW headerRight {
                 MOVE PROPERTY(nameVendor(o)) { notNull = TRUE; } 
+                MOVE PROPERTY(nameCompany(o)) { notNull = TRUE; }
                 MOVE PROPERTY(nameLocation(o));
             }
             NEW relatedDoc {
@@ -203,6 +209,7 @@ copyOrder 'Копировать' (Order o)  {
             type(no) <- type(o);
             vendor(no) <- vendor(o);
             paymentTerms(no) <- paymentTerms(o);
+            company(no) <- company(o);
             location(no) <- location(o);
             representative(no) <- representative(o); 
             FOR order(OrderLine l) = o INLINE NEW nl = OrderLine DO {
