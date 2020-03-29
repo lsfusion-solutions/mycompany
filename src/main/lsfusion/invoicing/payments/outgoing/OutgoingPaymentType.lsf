@@ -1,6 +1,6 @@
 MODULE OutgoingPaymentType;
 
-REQUIRE Numerator, InvoicingSettings, MasterDataSettings;
+REQUIRE Numerator, InvoicingSettings, MasterDataSettings, BankAccount, CashAccount;
 
 NAMESPACE Invoicing;
 
@@ -10,15 +10,35 @@ name 'Название' = DATA ISTRING[50] (OutgoingPaymentType) NONULL;
 id 'Код' = DATA STRING[20] (OutgoingPaymentType);
 outgoingPaymentType = GROUP AGGR OutgoingPaymentType t BY id(t);
 
+interpay 'Внутренний платеж' = DATA BOOLEAN (OutgoingPaymentType);
+
+cash 'Касса' = DATA BOOLEAN (OutgoingPaymentType);
+bank 'Банковский счет' = DATA BOOLEAN (OutgoingPaymentType);
+
+CONSTRAINT OutgoingPaymentType t IS OutgoingPaymentType AND NOT cash(t) AND NOT bank(t)
+    MESSAGE 'Должен быть разрешен хотя бы один вид счета';
+
 numerator 'Нумератор' = DATA Numerator (OutgoingPaymentType);
 nameNumerator 'Нумератор' (OutgoingPaymentType o) = name(numerator(o));
 
 FORM outgoingPaymentType 'Тип исходящего платежа'
     OBJECTS o = OutgoingPaymentType PANEL 
-    PROPERTIES(o) name, id, nameNumerator
+    PROPERTIES(o) name, id, nameNumerator,
+                  interpay, cash, bank
      
     EDIT OutgoingPaymentType OBJECT o;
 ;
+
+DESIGN outgoingPaymentType {
+    OBJECTS {
+        NEW typeAcoount {
+            caption = 'Разрешенные типы счетов';
+            type = CONTAINERH;
+            MOVE PROPERTY(cash(o));
+            MOVE PROPERTY(bank(o));
+        }
+    }   
+}
 
 FORM outgoingPaymentTypes 'Типы исходящих платежей'
     OBJECTS o = OutgoingPaymentType
@@ -38,3 +58,9 @@ DESIGN options {
         MOVE BOX(opt);
     }
 }
+
+defaultAccount(Partner p, OutgoingPaymentType t) = CASE OVERRIDE
+    WHEN bank(t) AND cash(t) THEN defaultAccount(p)
+    WHEN bank(t) THEN defaultBankAccount(p)
+    WHEN cash(t) THEN defaultCashAccount(p)
+;

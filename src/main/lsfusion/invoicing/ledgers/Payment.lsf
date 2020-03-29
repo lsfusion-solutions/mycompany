@@ -19,6 +19,9 @@ namePartner 'Контрагент' (Payment p) = name(partner(p));
 company = ABSTRACT Company (Payment) MATERIALIZED;
 nameCompany 'Компания' (Payment p) = name(company(p));
 
+WHEN LOCAL SET(Payment p IS Payment) AND NOT CHANGED(company(p)) DO
+    company(p) <- defaultCompany();
+
 // acounts
 partnerAccount = ABSTRACT Account (Payment) MATERIALIZED;
 namePartnerAccount 'Счет контрагента' (Payment p) = name(partnerAccount(p));
