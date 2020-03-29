@@ -1,31 +1,9 @@
 MODULE ShipmentPrintRu;
 
-REQUIRE ShipmentPrint, SalesOrderShipment, LocationEmployee, InvoiceShipment, LegalEntityRu, UomRu;
+REQUIRE ShipmentPrint, SalesOrderShipment, LocationEmployee, InvoiceShipment;
 
 NAMESPACE Inventory;
 
-company (Shipment s) = company(location(s)); 
-nameCompany (Shipment s) = name(company(s));
-
-accountCompany (Shipment s) = defaultAccount(company(s));
-nameAccountCompany (Shipment s) = name(accountCompany(s));
-
-innCompany (Shipment i) = inn(company(i));
-okpoCompany (Shipment i) = okpo(company(i));
-
-legalCodeUom (ShipmentLine l) = legalCode(uom(l));
-
-addressCompany (Shipment i) = address(company(i));
-phoneCompany (Shipment i) = phone(company(i));
-emailCompany (Shipment i) = email(company(i));
-websiteCompany (Shipment i) = website(company(i));
-
 EXTEND FORM printShipment
-    PROPERTIES performed = namePerformed(location(o)), numberDateOrder(o), numberDateInvoice(o),
-               positionPerformed = positionNamePerformed(location(o)),
-               received = namePerformed(toLocation(o)),
-               positionReceived = positionNamePerformed(toLocation(o)),
-               nameCompany(o), nameAccountCompany(o), innCompany(o), okpoCompany(o),
-               addressCompany(o), phoneCompany(o), emailCompany(o), websiteCompany(o)
-    PROPERTIES legalCodeUom(l), nameUom(l), idBarCodeProduct(l)
+    PROPERTIES performed = namePerformed(location(o)), numberDateOrder(o), numberDateInvoice(o) 
 ;
