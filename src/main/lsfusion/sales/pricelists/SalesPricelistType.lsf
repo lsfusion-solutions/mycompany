@@ -1,0 +1,71 @@
+MODULE SalesPricelistType;
+
+REQUIRE SalesSettings, SalesPriceType;
+
+NAMESPACE Sales;
+
+CLASS PricelistType 'Тип прайслиста';
+name 'Наименование' = DATA ISTRING[50] (PricelistType) NONULL IN id;
+
+id 'Код' = DATA STRING[20] (PricelistType) CHARWIDTH 10;
+priceListType (STRING[20] id) = GROUP AGGR PricelistType t BY id(t);
+
+showCurrentPrice 'Действующие цены' = DATA BOOLEAN (PricelistType);
+showMarkup 'Надбавки' = DATA BOOLEAN (PricelistType);
+showCost 'Себестоимость' = DATA BOOLEAN (PricelistType);
+
+in 'Вкл.' = DATA BOOLEAN (PricelistType, PriceType);
+
+FORM pricelistType 'Тип прайслиста'
+    OBJECTS t = PricelistType PANEL
+    PROPERTIES(t) name, id,
+                  showCurrentPrice, showMarkup, showCost
+                  
+    OBJECTS p = PriceType
+    PROPERTIES in(t ,p)
+    PROPERTIES READONLY name(p)   
+    
+    EDIT PricelistType OBJECT t
+;
+
+FORM pricelistTypes 'Типы прайслистов'
+    OBJECTS t = PricelistType
+    PROPERTIES(t) READONLY name, id
+    
+    LIST PricelistType OBJECT t
+;
+ 
+EXTEND FORM options
+    OBJECTS pt = PricelistType
+    PROPERTIES(pt) READONLY name, id
+    PROPERTIES(pt) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN pricelistType {
+    OBJECTS {
+        NEW header {
+            type = CONTAINERH;
+            MOVE PROPERTY(name(t));
+            MOVE PROPERTY(id(t));
+        }
+        NEW show {
+            caption = 'Показывать';
+            type = CONTAINERH;
+            MOVE PROPERTY(showCurrentPrice(t));
+            MOVE PROPERTY(showMarkup(t));
+            MOVE PROPERTY(showCost(t));
+        }
+        MOVE BOX(p);
+    }
+}
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(pt);
+    }
+}
+
+countPricelistTypes 'Кол-во типов' () = GROUP SUM 1 IF PricelistType t IS PricelistType; 
+firstPricelistType = GROUP LAST PricelistType t ORDER DESC t WHERE t IS PricelistType;
+
+defaultPricelistType = firstPricelistType() IF countPricelistTypes() = 1;
