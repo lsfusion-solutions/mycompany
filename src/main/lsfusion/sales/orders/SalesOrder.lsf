@@ -43,6 +43,11 @@ namePaymentTerms 'Условия оплаты' (Order o)= name(paymentTerms(o));
 
 WHEN LOCAL CHANGED(customer(Order o)) AND NOT CHANGED(paymentTerms(o)) DO paymentTerms(o) <- customerPaymentTerms(customer(o)); 
 
+// company
+company 'Компания' = DATA Company (Order) NONULL;
+nameCompany 'Компания' (Order o) = name(company(o));
+WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(company(o)) DO company(o) <- defaultCompany();
+
 // Shipping information
 scheduledDateTime 'Срок поставки' = DATA DATETIME (Order);
 scheduledDateTime(Order o) <- currentDateTime() WHEN SET(o IS Order);
@@ -110,7 +115,7 @@ nameCustomer 'Заказчик' (OrderLine l) = nameCustomer(order(l));
 
 FORM order 'Заказ покупателя'
     OBJECTS o = Order PANEL
-    PROPERTIES(o) nameType, dateTime, number, nameCustomer, nameLocation,
+    PROPERTIES(o) nameType, dateTime, number, nameCustomer, nameCompany, nameLocation,
                   validity,
                   namePaymentTerms, addressCustomer,
                   scheduledDateTime, deliveryAddress, 
@@ -137,6 +142,7 @@ DESIGN order {
             }
             NEW headerRight {
                 MOVE PROPERTY(nameCustomer(o)) { notNull = TRUE; } 
+                MOVE PROPERTY(nameCompany(o)) { notNull = TRUE; }
                 MOVE PROPERTY(nameLocation(o));               
             }    
             NEW relatedDoc {
@@ -222,6 +228,7 @@ copyOrder 'Копировать' (Order o)  {
             type(no) <- type(o);
             customer(no) <- customer(o);
             paymentTerms(no) <- paymentTerms(o);
+            company(no) <- company(o);
             location(no) <- location(o);
             representative(no) <- representative(o); 
             FOR order(OrderLine l) = o INLINE NEW nl = OrderLine DO {
