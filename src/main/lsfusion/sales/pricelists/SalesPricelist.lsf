@@ -29,12 +29,7 @@ priceListTypes 'Виды цен' (Pricelist pricelist) =
     GROUP CONCAT name(PriceType pricelistType) IF editIn(pricelist, pricelistType) , ', '
           ORDER pricelistType CHARWIDTH 10 MATERIALIZED;
 
-WHEN LOCAL CHANGED (type(Pricelist pl)) AND NOT priceListTypes(pl) DO {
-    FOR in(type(pl), PriceType pt) DO editIn(pl, pt) <- in(type(pl), pt);
-}
-
-CONSTRAINT NOT isDraft(Pricelist pl) AND CHANGED(priceListTypes(pl))
-    MESSAGE 'Нельзя изменить перечень видов цен проведенного прайслиста';
+WHEN LOCAL CHANGED (type(Pricelist pl)) AND NOT priceListTypes(pl) DO editIn(pl, PriceType pt) <- in(type(pl), pt);
 
 FORM chooseTypes 'Выбор видов цен'
     OBJECTS pr = Pricelist PANEL 
