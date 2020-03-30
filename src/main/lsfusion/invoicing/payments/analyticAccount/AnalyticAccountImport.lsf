@@ -1,0 +1,46 @@
+MODULE AnalyticAccountImport;
+
+REQUIRE AnalyticAccount, MasterDataSettings;
+
+analyticAccountExport 'Экспорт статей ДДС' () {
+    NEWSESSION {
+        LOCAL f = EXCELFILE ();
+        EXPORT XLSX HEADER FROM 'Код' = id(AnalyticAccount a), 'Наименование' = name(a), 'Код родителя' = id(parent(a)) TO f;   
+        open(f());
+    }
+}
+
+analyticAccountImport 'Импорт статей ДДС' () {
+    LOCAL id = STRING[20] (INTEGER);
+    LOCAL name = ISTRING[50] (INTEGER);
+    LOCAL idParent = STRING[20] (INTEGER);
+    
+    INPUT f = EXCELFILE DO {
+        NEWSESSION {
+            IMPORT XLS HEADER FROM f TO id = A, name = B, idParent = C;
+            
+            FOR imported(INTEGER i) DO NEW a = AnalyticAccount{
+                id(a) <- id(i);
+                name(a) <- name(i);
+                parent(a) <- parent(idParent(i));
+            }
+            APPLY;
+            MESSAGE 'Импорт завершен';
+        }
+    }
+}    
+
+EXTEND FORM MasterData.options 
+    PROPERTIES analyticAccountExport(), analyticAccountImport()
+;
+
+DESIGN MasterData.options {
+    import {
+        NEW bank {
+            type = CONTAINERH;
+            caption = 'Статьи ДДС';
+            MOVE PROPERTY(analyticAccountExport());
+            MOVE PROPERTY(analyticAccountImport());
+        }
+    }
+}
