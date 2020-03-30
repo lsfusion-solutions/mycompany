@@ -48,6 +48,7 @@ CLASS ComponentLine 'Строка компонентов';
 bom 'Спецификация' = DATA Bom (ComponentLine) NONULL DELETE;
 
 index '№' = PARTITION SUM 1 ORDER ComponentLine l BY bom(l) IN id MATERIALIZED CHARWIDTH 3;
+componentLine (Bom b, INTEGER i) = GROUP AGGR ComponentLine l WHERE bom(l) = b BY index(l);
 
 item 'Номенклатура' = DATA Item (ComponentLine);
 nameItem 'Номенклатура' (ComponentLine l) = name(item(l));
@@ -157,5 +158,45 @@ FORM boms 'Спецификации'
 NAVIGATOR {
     operations {
         NEW boms;
+    }
+}
+
+// copy
+extraCopy ABSTRACT (Bom, Bom);
+copy 'Копировать' (Bom b) {
+    NEWSESSION {
+        NEW nb = Bom {
+            name(nb) <- name(b);
+            item(nb) <- item(b);
+            quantity(nb) <- quantity(b);
+            uom(nb) <- uom(b);
+            
+            FOR bom(ComponentLine l) = b DO NEW nl = ComponentLine {
+                bom(nl) <- nb;
+                item(nl) <- item(l);
+                uom(nl) <- uom(l);
+                quantity(nl) <- quantity(l);
+                costRatio(nl) <- costRatio(l);
+            }
+            
+            FOR bom(ByproductLine l) = b DO NEW nl = ByproductLine {
+                bom(nl) <- nb;
+                product(nl) <- product(l);
+                uom(nl) <- uom(l);
+                quantity(nl) <- quantity(l);
+            }
+            
+            extraCopy(b, nb);
+            
+            SHOW bom OBJECTS b = nb DOCKED;
+        }
+    }
+}
+
+EXTEND FORM bom PROPERTIES copy(b);
+
+DESIGN bom {
+    actions {
+        MOVE PROPERTY(copy(b)); 
     }
 }
