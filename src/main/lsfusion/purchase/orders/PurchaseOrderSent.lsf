@@ -4,8 +4,6 @@ REQUIRE PurchaseOrder, PurchaseOrderPrint, Email;
 
 NAMESPACE Purchase;
 
-partner (Order o) = vendor(o); // init
-
 // order type
 defaultMailTemplate 'Шаблон по умолчанию' = DATA OrderTemplate (OrderType);
 nameDefaultMailTemplate 'Шаблон по умолчанию' (OrderType o) = name(defaultMailTemplate(o)) IN id;
@@ -76,7 +74,7 @@ send 'Отправить' (Order o) {
 
         EMAIL
             SUBJECT mailSubject(type(o))
-            TO email(partner(o))
+            TO email(vendor(o))
             BCC mailSendCopyTo(type(o))
             BODY mailBody(type(o))
             ATTACH attachFile() NAME nameFile(); 
