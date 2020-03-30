@@ -32,12 +32,12 @@ WHEN LOCAL SETCHANGED(type(OutgoingPayment p)) AND NOT CHANGED(partner(p)) AND i
 CONSTRAINT interpay(type(OutgoingPayment p)) AND NOT partner(p) IS Company
                 CHECKED BY partner
                 MESSAGE 'При внутреннем платеже контрагентом может быть только компания';
-CONSTRAINT NOT interpay(type(OutgoingPayment p)) AND partner(p) IS Company
-                CHECKED BY partner
-                MESSAGE 'Компания может быть контрагентом только при внутреннем платеже';
 
 company 'Компания' = DATA Company (OutgoingPayment) NONULL;
 nameCompany 'Компания' (OutgoingPayment p) = name(company(p));
+
+WHEN LOCAL SET(OutgoingPayment p IS OutgoingPayment) AND NOT CHANGED(company(p)) DO
+    company(p) <- defaultCompany();
 
 // accounts
 // partner
@@ -45,10 +45,6 @@ partnerAccount = DATA Account (OutgoingPayment);
 namePartnerAccount 'Счет контрагента' (OutgoingPayment p) = name(partnerAccount(p));
 
 WHEN LOCAL CHANGED(partner(OutgoingPayment p)) AND NOT CHANGED(partnerAccount(p)) DO
-    partnerAccount(p) <- defaultAccount(partner(p), type(p));
-WHEN LOCAL DROPPED(bank(type(OutgoingPayment p))) AND partnerAccount(p) IS BankAccount AND NOT CHANGED(partnerAccount(p)) DO
-    partnerAccount(p) <- defaultAccount(partner(p), type(p));
-WHEN LOCAL DROPPED(cash(type(OutgoingPayment p))) AND partnerAccount(p) IS CashAccount AND NOT CHANGED(partnerAccount(p)) DO
     partnerAccount(p) <- defaultAccount(partner(p), type(p));
 WHEN LOCAL SET(type(OutgoingPayment p)) AND NOT CHANGED(partnerAccount(p)) DO
     partnerAccount(p) <- defaultAccount(partner(p), type(p)); 
@@ -68,10 +64,6 @@ companyAccount = DATA Account (OutgoingPayment);
 nameCompanyAccount 'Счет компании' (OutgoingPayment p) = name(companyAccount(p));
 
 WHEN LOCAL CHANGED(company(OutgoingPayment p)) AND NOT CHANGED(companyAccount(p)) DO
-    companyAccount(p) <- defaultAccount(company(p), type(p));
-WHEN LOCAL DROPPED(bank(type(OutgoingPayment p))) AND companyAccount(p) IS BankAccount AND NOT CHANGED(companyAccount(p)) DO
-    companyAccount(p) <- defaultAccount(company(p), type(p));
-WHEN LOCAL DROPPED(cash(type(OutgoingPayment p))) AND companyAccount(p) IS CashAccount AND NOT CHANGED(companyAccount(p)) DO
     companyAccount(p) <- defaultAccount(company(p), type(p));
 WHEN LOCAL SET(type(OutgoingPayment p)) AND NOT CHANGED(companyAccount(p)) DO
     companyAccount(p) <- defaultAccount(company(p), type(p)); 
@@ -98,7 +90,6 @@ FORM outgoingPayment 'Исходящий платеж'
                   namePartner, namePartnerAccount, 
                   nameCompany, nameCompanyAccount,
                   note, reference
-               
     
     EDIT OutgoingPayment OBJECT p
 ;
