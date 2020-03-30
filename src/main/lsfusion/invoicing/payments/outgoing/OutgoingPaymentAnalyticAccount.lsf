@@ -1,0 +1,14 @@
+MODULE OutgoingPaymentAnalyticAccount;
+
+REQUIRE AnalyticAccount, OutgoingPayment, OutgoingPaymentType;
+
+NAMESPACE Invoicing;
+
+@definePaymentTypeAnalytic(outgoing);
+
+analyticAccount 'Статья ДДС' = DATA AnalyticAccount (OutgoingPayment);
+nameAnalyticAccount 'Статья ДДС' (OutgoingPayment p) = name(analyticAccount(p));
+
+EXTEND FORM outgoingPayments PROPERTIES READONLY nameAnalyticAccount(p);
+
+@definePaymentAnalytic(outgoing);
