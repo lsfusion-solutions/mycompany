@@ -61,3 +61,7 @@ EXTEND FORM accounts
 EXTEND FORM partner
     PROPERTIES newBankAccount(p) DRAW a TOOLBAR
 ;
+
+countBankAccounts (Partner p) = GROUP SUM 1 IF BankAccount a IS BankAccount AND holder(a) = p; 
+calcDefaultBankAccount (Partner p) = GROUP LAST BankAccount a WHERE holder(a) = p IF countBankAccounts(p) == 1;
+defaultBankAccount (Partner p) = OVERRIDE defaultAccount(p) AS BankAccount, calcDefaultBankAccount(p);

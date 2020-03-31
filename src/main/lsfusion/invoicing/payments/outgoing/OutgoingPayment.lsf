@@ -1,7 +1,8 @@
 MODULE OutgoingPayment;
 
-REQUIRE Time, MetaNumerator,
-        Partner, Company, Account, Doc,
+REQUIRE Time, MetaNumerator, Doc,
+        Partner, Company,
+        Account, BankAccount, CashAccount,
         OutgoingPaymentType;
 
 NAMESPACE Invoicing;
@@ -25,29 +26,57 @@ numberDate 'Описание' (OutgoingPayment p) = number(p) + ' от ' + dateT
 partner 'Контрагент' = DATA Partner (OutgoingPayment);
 namePartner 'Контрагент' (OutgoingPayment p) = name(partner(p));
 
+WHEN LOCAL SETCHANGED(type(OutgoingPayment p)) AND NOT CHANGED(partner(p)) AND interpay(type(p)) AND countCompanies() == 1 DO
+    partner(p) <- defaultCompany();
+
+CONSTRAINT interpay(type(OutgoingPayment p)) AND NOT partner(p) IS Company
+                CHECKED BY partner
+                MESSAGE 'При внутреннем платеже контрагентом может быть только компания';
+
 company 'Компания' = DATA Company (OutgoingPayment) NONULL;
 nameCompany 'Компания' (OutgoingPayment p) = name(company(p));
+
+WHEN LOCAL SET(OutgoingPayment p IS OutgoingPayment) AND NOT CHANGED(company(p)) DO
+    company(p) <- defaultCompany();
 
 // accounts
 // partner
 partnerAccount = DATA Account (OutgoingPayment);
 namePartnerAccount 'Счет контрагента' (OutgoingPayment p) = name(partnerAccount(p));
 
-WHEN LOCAL CHANGED(partner(OutgoingPayment p)) AND NOT CHANGED(partnerAccount(p)) DO partnerAccount(p) <- defaultAccount(partner(p));
+WHEN LOCAL CHANGED(partner(OutgoingPayment p)) AND NOT CHANGED(partnerAccount(p)) DO
+    partnerAccount(p) <- defaultAccount(partner(p), type(p));
+WHEN LOCAL SET(type(OutgoingPayment p)) AND NOT CHANGED(partnerAccount(p)) DO
+    partnerAccount(p) <- defaultAccount(partner(p), type(p)); 
 
 CONSTRAINT partnerAccount(OutgoingPayment p) AND NOT holder(partnerAccount(p)) = partner(p)
                 CHECKED BY partnerAccount
                 MESSAGE 'Владелец счета контрагента не совпадает с контрагентом в исходящем платеже';
+CONSTRAINT partnerAccount(OutgoingPayment p) IS BankAccount AND NOT bank(type(p))
+                CHECKED BY partnerAccount
+                MESSAGE 'Для этого типа платежа банковские счета контрагента не разрешены';
+CONSTRAINT partnerAccount(OutgoingPayment p) IS CashAccount AND NOT cash(type(p))
+                CHECKED BY partnerAccount
+                MESSAGE 'Для этого типа платежа кассы контрагента не разрешены';
 
 // company
 companyAccount = DATA Account (OutgoingPayment);
 nameCompanyAccount 'Счет компании' (OutgoingPayment p) = name(companyAccount(p));
 
-WHEN LOCAL CHANGED(company(OutgoingPayment p)) AND NOT CHANGED(companyAccount(p)) DO companyAccount(p) <- defaultAccount(company(p));
+WHEN LOCAL CHANGED(company(OutgoingPayment p)) AND NOT CHANGED(companyAccount(p)) DO
+    companyAccount(p) <- defaultAccount(company(p), type(p));
+WHEN LOCAL SET(type(OutgoingPayment p)) AND NOT CHANGED(companyAccount(p)) DO
+    companyAccount(p) <- defaultAccount(company(p), type(p)); 
 
 CONSTRAINT companyAccount(OutgoingPayment p) AND NOT holder(companyAccount(p)) = company(p)
                 CHECKED BY companyAccount
                 MESSAGE 'Владелец счета компании не совпадает с компанией в исходящем платеже';
+CONSTRAINT companyAccount(OutgoingPayment p) IS BankAccount AND NOT bank(type(p))
+                CHECKED BY companyAccount
+                MESSAGE 'Для этого типа платежа банковские счета компании не разрешены';
+CONSTRAINT companyAccount(OutgoingPayment p) IS CashAccount AND NOT cash(type(p))
+                CHECKED BY companyAccount
+                MESSAGE 'Для этого типа платежа кассы компании не разрешены';
 
 amount 'Сумма' = DATA NUMERIC[14,2] (OutgoingPayment) NONULL;
 
@@ -61,7 +90,6 @@ FORM outgoingPayment 'Исходящий платеж'
                   namePartner, namePartnerAccount, 
                   nameCompany, nameCompanyAccount,
                   note, reference
-               
     
     EDIT OutgoingPayment OBJECT p
 ;
