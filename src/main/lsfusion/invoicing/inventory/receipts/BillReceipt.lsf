@@ -82,7 +82,7 @@ DESIGN bill {
 autoCreateReceipt 'Автоматически создавать поступление' = DATA BOOLEAN (BillType);
 EXTEND FORM billType PROPERTIES autoCreateReceipt(o) SHOWIF receiptType(o);
 
-WHEN SET(ready(Bill b)) AND autoCreateReceipt(type(b)) DO 
+WHEN (SET(ready(Bill b)) OR SET(countProductLines(b))) AND autoCreateReceipt(type(b)) AND countProductLines(b) DO 
     newReceipt(b);
 WHEN SET(canceled(Bill b)) AND in(b, Receipt r) AND countBill(r) = 1 AND autoCreateReceipt(type(b)) DO 
     canceled(r) <- TRUE; 

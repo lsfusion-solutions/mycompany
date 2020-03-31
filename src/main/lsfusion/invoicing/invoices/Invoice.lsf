@@ -87,6 +87,8 @@ CONSTRAINT item(InvoiceLine l) AND NOT canBeSold(item(l))
             CHECKED BY item 
             MESSAGE 'Номенклатура не предназначена для продажи';
 
+countProductLines 'Кол-во строк с товарами' (Invoice i) = GROUP SUM 1 IF invoice(InvoiceLine l) = i AND item(l) IS Product;
+
 uom = DATA Uom (InvoiceLine);
 nameUom 'Ед. изм.' (InvoiceLine l) = name(uom(l));
 WHEN LOCAL CHANGED(item(InvoiceLine l)) DO uom(l) <- uom(item(l)); 

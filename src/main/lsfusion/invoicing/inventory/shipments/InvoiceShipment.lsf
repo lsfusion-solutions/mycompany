@@ -82,7 +82,7 @@ DESIGN invoice {
 autoCreateShipment 'Автоматически создавать отгрузку' = DATA BOOLEAN (InvoiceType);
 EXTEND FORM invoiceType PROPERTIES autoCreateShipment(o) SHOWIF shipmentType(o);
 
-WHEN SET(ready(Invoice i)) AND autoCreateShipment(type(i)) DO 
+WHEN (SET(ready(Invoice i)) OR SET(countProductLines(i))) AND autoCreateShipment(type(i)) AND countProductLines(i) DO 
     newShipment(i);
 WHEN SET(canceled(Invoice i)) AND in(i, Shipment s) AND countInvoice(s) = 1 AND autoCreateShipment(type(i)) DO 
     canceled(s) <- TRUE; 
