@@ -1,9 +1,46 @@
 MODULE SalesOrderSent;
 
-REQUIRE SalesOrder;
+REQUIRE SalesOrder, SalesOrderPrint;
 
 NAMESPACE Sales;
 
+// order type
+defaultMailTemplate 'Шаблон по умолчанию' = DATA OrderTemplate (OrderType);
+nameDefaultMailTemplate 'Шаблон по умолчанию' (OrderType o) = name(defaultMailTemplate(o)) IN id;
+
+mailSendCopyTo 'Копия адресату' = DATA STRING[50] (OrderType);
+mailSubject 'Тема' = DATA STRING (OrderType);
+mailBody '' = DATA TEXT (OrderType);
+
+CONSTRAINT defaultMailTemplate(OrderType o) AND NOT in(defaultMailTemplate(o),  o) CHECKED 
+    MESSAGE 'Шаблон должен быть включен для данного типа заказа';  
+
+EXTEND FORM orderType
+    PROPERTIES(o) mailSendCopyTo, mailSubject, mailBody, nameDefaultMailTemplate 
+;
+
+DESIGN orderType {
+    OBJECTS {
+        NEW tabbedPane {
+            type = TABBED;
+            fill = 1;
+            NEW orderTemplate {
+                caption = 'Шаблон';
+                MOVE BOX(tm); 
+            }
+            NEW mail {
+                caption = 'Почта';
+                type = CONTAINERV;
+                MOVE PROPERTY(mailSendCopyTo(o));
+                MOVE PROPERTY(mailSubject(o));
+                MOVE PROPERTY(mailBody(o));
+                MOVE PROPERTY(nameDefaultMailTemplate(o));
+            }
+        }
+    }   
+}
+
+// order
 EXTEND CLASS OrderStatus {
     sent 'Отправлен'
 }
@@ -16,6 +53,33 @@ send 'Отправить' (Order o) {
     APPLY;
     IF canceled() THEN RETURN;
     
+    LOCAL attachFile = FILE();
+    LOCAL nameFile = STRING();
+    nameFile() <- 'Заказ №' + numberDate(o) + ' (' + OVERRIDE nameCompany(o), name(defaultCompany()) + ')';
+    orderTemplate() <- defaultMailTemplate(type(o));
+    IF defaultMailTemplate(type(o)) THEN {
+        CASE EXCLUSIVE
+            WHEN format(orderTemplate()) = TemplateFormat.pdf THEN
+                PRINT printOrder OBJECTS o = o PDF TO attachFile;
+            WHEN format(orderTemplate()) = TemplateFormat.docx THEN
+                PRINT printOrder OBJECTS o = o DOCX TO attachFile;
+            WHEN format(orderTemplate()) = TemplateFormat.xlsx THEN
+                PRINT printOrder OBJECTS o = o XLSX TO attachFile;
+            WHEN format(orderTemplate()) = TemplateFormat.rtf THEN
+                PRINT printOrder OBJECTS o = o RTF TO attachFile;
+            WHEN format(orderTemplate()) = TemplateFormat.html THEN
+                PRINT printOrder OBJECTS o = o HTML TO attachFile;
+            ELSE
+                RETURN;
+
+        EMAIL
+            SUBJECT mailSubject(type(o))
+            TO email(customer(o))
+            BCC mailSendCopyTo(type(o))
+            BODY mailBody(type(o))
+            ATTACH attachFile() NAME nameFile(); 
+        ;
+    }
     NEWSESSION {
         sent(o) <- TRUE;
         APPLY;
@@ -23,7 +87,7 @@ send 'Отправить' (Order o) {
 }
 
 EXTEND FORM order
-     PROPERTIES(o) send SHOWIF (status(o) = OrderStatus.draft), sent
+     PROPERTIES(o) send SHOWIF status(o) = OrderStatus.draft, sent
 ;
 
 DESIGN order {
