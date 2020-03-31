@@ -159,3 +159,47 @@ NAVIGATOR {
         NEW boms;
     }
 }
+
+// copy
+extraCopy ABSTRACT (Bom, Bom);
+extraCopy ABSTRACT (ComponentLine, ComponentLine);
+
+copy 'Копировать' (Bom b) {
+    NEWSESSION {
+        NEW nb = Bom {
+            name(nb) <- name(b);
+            item(nb) <- item(b);
+            quantity(nb) <- quantity(b);
+            uom(nb) <- uom(b);
+            
+            FOR bom(ComponentLine l) = b DO NEW nl = ComponentLine {
+                bom(nl) <- nb;
+                item(nl) <- item(l);
+                uom(nl) <- uom(l);
+                quantity(nl) <- quantity(l);
+                costRatio(nl) <- costRatio(l);
+                
+                extraCopy(l, nl);
+            }
+            
+            FOR bom(ByproductLine l) = b DO NEW nl = ByproductLine {
+                bom(nl) <- nb;
+                product(nl) <- product(l);
+                uom(nl) <- uom(l);
+                quantity(nl) <- quantity(l);
+            }
+            
+            extraCopy(b, nb);
+            
+            SHOW bom OBJECTS b = nb DOCKED;
+        }
+    }
+}
+
+EXTEND FORM bom PROPERTIES copy(b);
+
+DESIGN bom {
+    actions {
+        MOVE PROPERTY(copy(b)); 
+    }
+}
