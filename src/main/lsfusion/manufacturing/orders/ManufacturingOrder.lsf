@@ -44,7 +44,7 @@ materialsLocation 'Списать из' = DATA Location (ManufacturingOrder) NON
 nameMaterialsLocation 'Списать из' (ManufacturingOrder m) = name(materialsLocation(m));
 WHEN LOCAL SETCHANGED(type(ManufacturingOrder mo)) AND NOT materialsLocation(mo) DO materialsLocation(mo) <- materialsLocation(type(mo));
 
-unbuild 'Разборка' = DATA BOOLEAN (ManufacturingOrder); 
+unbuild 'Разборка' (ManufacturingOrder mo)= unbuild(type(mo)); 
 
 // consumed
 CLASS ConsumedLine 'Материалы';
@@ -103,11 +103,10 @@ scheduledDateTime 'Дата начала' (ConsumedLine l) = scheduledDateTime(m
 
 FORM manufacturingOrder 'Производственный заказ'
     OBJECTS o = ManufacturingOrder PANEL 
+    PROPERTIES(o) READONLY unbuild
     PROPERTIES(o) nameType, scheduledDateTime, number, nameCompany, 
-                  nameItem, unbuild, 
-                  toManufacture, nameUom, 
-                  descriptionBom, 
-                  nameMaterialsLocation 
+                  nameItem, toManufacture, nameUom, 
+                  descriptionBom, nameMaterialsLocation 
     
     OBJECTS c = ConsumedLine
     PROPERTIES(c) index READONLY, nameItem, nameUom, idBarCodeItem, idItem, toConsume, NEW, DELETE
