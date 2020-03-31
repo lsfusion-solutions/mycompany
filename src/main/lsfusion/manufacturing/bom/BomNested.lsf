@@ -48,9 +48,5 @@ intermediateBom (Bom b, ComponentLine c, TEXT path) =
          STEP 2l IF bom(c) = nestedBom($c) AND path = ($path + '/' + textIndex(c)) AND intermediate(nestedBom($c));
 
 // copy
-extraCopy(Bom b, Bom nb) + {
-    intermediate(nb) <- intermediate(b);
-
-    FOR bom(ComponentLine l) = b AND nestedBom(l) DO
-        nestedBom(componentLine(b, index(l))) <- nestedBom(l);  
-}
+extraCopy(Bom b, Bom nb) + { intermediate(nb) <- intermediate(b); }
+extraCopy(ComponentLine l, ComponentLine nl) + { nestedBom(nl) <- nestedBom(l); }
