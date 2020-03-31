@@ -1,6 +1,6 @@
 MODULE InvoicePrint;
 
-REQUIRE Invoice, DocTemplate;
+REQUIRE Invoice, DocTemplate, BillCustomsDeclaration;
 
 NAMESPACE Invoicing;
 
@@ -12,6 +12,8 @@ websiteCompany (Invoice i) = website(company(i));
 addressCustomer (Invoice i) = linesAddress(customer(i)); 
 phoneCustomer (Invoice i) = phone(customer(i));
 
+idCustomsDeclaration(InvoiceLine l) = id(customsDeclaration(item(l), company(invoice(l)), dateTime(invoice(l))));
+
 FORM printInvoice 'Реализация'
     OBJECTS o = Invoice PANEL 
     PROPERTIES(o) dateTime, dueDateTime, number,
@@ -22,7 +24,7 @@ FORM printInvoice 'Реализация'
     PROPERTIES(l) nameItem, idItem, nameUom,
                   quantity, price, subtotal,
                   percentTax, totalTax, taxes, 
-                  totalAmount,
+                  totalAmount, idCustomsDeclaration,
                   weight
     FILTERS invoice(l) = o
 ;

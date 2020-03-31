@@ -1,0 +1,34 @@
+MODULE CustomsDeclaration;
+
+REQUIRE InvoicingSettings;
+
+NAMESPACE Invoicing;
+
+CLASS CustomsDeclaration 'Таможенная декларация';
+
+date 'Дата декларирования' = DATA DATE (CustomsDeclaration) NONULL;
+id 'Номер' = DATA STRING[20] (CustomsDeclaration) NONULL;
+
+nameCustomsDeclaration 'Таможенная декларация' (CustomsDeclaration d) = ' №' + id(d) + ' от ' + date(d);
+
+FORM customsDeclaration 'Таможенная декларация'
+    OBJECTS d = CustomsDeclaration PANEL 
+    PROPERTIES(d) id, date
+    
+    EDIT CustomsDeclaration OBJECT d
+;
+
+FORM customsDeclarations 'Таможенные декларации'
+    OBJECTS d = CustomsDeclaration 
+    PROPERTIES(d) READONLY id, date
+    PROPERTIES(d) NEW, EDIT, DELETE
+    
+    LIST CustomsDeclaration OBJECT d
+;
+ 
+NAVIGATOR {
+    operations {
+        NEW customsDeclarations;
+    }
+}
+

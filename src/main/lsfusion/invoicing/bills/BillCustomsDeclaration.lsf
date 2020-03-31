@@ -1,0 +1,15 @@
+MODULE BillCustomsDeclaration;
+
+REQUIRE Bill, CustomsDeclaration;
+
+NAMESPACE Invoicing;
+
+customsDeclaration 'Таможенная декларация' = DATA CustomsDeclaration (BillLine);
+
+nameCustomsDeclaration 'Таможенная декларация' (BillLine bl) = nameCustomsDeclaration(customsDeclaration(bl));
+
+customsDeclaration 'Таможенная декларация' (Item i, Company c, DATETIME d) = GROUP LAST customsDeclaration(BillLine bl) ORDER DESC dateTime(bill(bl))
+    WHERE date(customsDeclaration(bl)) <= DATE(d) AND dateTime(bill(bl)) <= d AND item(bl) = i AND company(bill(bl)) = c
+;
+
+EXTEND FORM bill PROPERTIES nameCustomsDeclaration(l);
