@@ -1,6 +1,6 @@
 MODULE Product;
 
-REQUIRE MasterData, Item;
+REQUIRE MasterData, Item, CountryP;
 
 NAMESPACE MasterData;
 
@@ -8,11 +8,15 @@ CLASS Product 'Товар' : Item;
 weight 'Вес единицы, кг' = DATA NUMERIC[11,3] (Product);
 volume 'Объем единицы, м3' = DATA NUMERIC[11,3] (Product);
 
+countryOrigin 'Страна происхождения'  = DATA Country (Product);
+nameCountryOrigin 'Страна происхождения' (Product p) = name(countryOrigin(p));
+
 copyProduct 'Копировать' (Product p) {
     NEWSESSION {
         NEW np = Product {
             weight(np) <- weight(p);
             volume(np) <- volume(p);
+            countryOrigin(np) <- countryOrigin(p);
             copy(np, p);
             SHOW item OBJECTS i = np;
         }
@@ -20,7 +24,7 @@ copyProduct 'Копировать' (Product p) {
 }
 
 EXTEND FORM item
-    PROPERTIES(i) weight, volume
+    PROPERTIES(i) weight, volume, nameCountryOrigin
 ;
 
 DESIGN item {
@@ -32,6 +36,9 @@ DESIGN item {
                 MOVE PROPERTY(volume(i)) { charWidth = 5; };
             }  
         }
+    }
+    row1 {
+        MOVE PROPERTY(nameCountryOrigin(i));
     }
 }
 

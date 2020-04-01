@@ -24,7 +24,7 @@ productExport 'Экспорт товаров' () {
         LOCAL f = EXCELFILE ();
         EXPORT XLSX HEADER FROM 'Код товара' = id(Product p), 'Наименование' = dataName(p), 'Код категории' = idCategory(p), 
                                 'Код единицы измерения' = idUom(p), 'Вес единицы, кг' = weight(p), 'Объем единицы, м3' = volume(p),
-                                'Плановая себестоимость' = cost(p), 'Цена продажи' = salesPrice(p) WHERE p IS Product TO f;   
+                                'Плановая себестоимость' = cost(p), 'Цена продажи' = salesPrice(p), 'Код страны происхождения' = id(countryOrigin(p)) WHERE p IS Product TO f;   
         open(f());
     }
 }
@@ -38,10 +38,12 @@ productImport 'Импорт товаров' () {
     LOCAL volume = NUMERIC[11,3] (INTEGER);
     LOCAL cost = NUMERIC[10,2] (INTEGER);
     LOCAL salesPrice = NUMERIC[10,2] (INTEGER);
+    LOCAL idCountryOrigin = STRING[3] (INTEGER);
        
     INPUT f = EXCELFILE DO {
         NEWSESSION {
-            IMPORT XLS HEADER FROM f TO id = A, name = B, idCategory = C, idUom = D, weight = E, volume = F, cost = G, salesPrice = H; 
+            IMPORT XLS HEADER FROM f TO id = A, name = B, idCategory = C, idUom = D, weight = E,
+                                        volume = F, cost = G, salesPrice = H, idCountryOrigin = I; 
             
             FOR [GROUP SUM 1 BY idCategory(INTEGER i)](STRING num) AND NOT category(num) DO {
                 MESSAGE 'Отсутствует категория в базе данных с кодом ' + num + '. Импорт отменен';
@@ -62,6 +64,7 @@ productImport 'Импорт товаров' () {
                 volume(p) <- volume(i);
                 cost(p) <- cost(i);
                 salesPrice(p) <- salesPrice(i);
+                countryOrigin(p) <- country(idCountryOrigin(i));
             }
             APPLY;
             MESSAGE 'Импорт завершен';
