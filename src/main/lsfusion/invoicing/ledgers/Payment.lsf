@@ -35,6 +35,9 @@ reference 'Ссылка' = ABSTRACT ISTRING[50] (Payment) MATERIALIZED;
 
 balance 'Остаток' (Account a) = GROUP SUM signedAmount(Payment p) IF companyAccount(p) = a AND active(p) MATERIALIZED;
 
+CONSTRAINT balance(Account a) < 0 AND NOT allowNegative(a)
+    MESSAGE 'Остаток по счету / кассе не может быть отрицательным';
+
 FORM payments 'Движение денежных средств'
     OBJECTS p = Payment
     PROPERTIES(p) READONLY nameType, dateTime, number, 

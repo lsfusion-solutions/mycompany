@@ -17,7 +17,9 @@ default 'По умолчанию' (Account a) = defaultAccount(holder(a)) = a CH
 
 note 'Примечание' = DATA ISTRING (Account);
 
-name 'Наименование' = ABSTRACT ISTRING[100] (Account) CHARWIDTH 20;
+name 'Наименование' = ABSTRACT ISTRING[100] (Account) CHARWIDTH 20 IN id;
+
+allowNegative 'Разрешить отрицательный остаток' = DATA BOOLEAN (Account);
 
 CLASS AccountType 'Тип счета';
 
@@ -36,7 +38,7 @@ changeDefault (Account a) {
 FORM account 'Счет'
     OBJECTS a = Account PANEL 
     PROPERTIES(a) nameType, default ON CHANGE changeDefault(a), 
-                  nameAccountHolder, note
+                  allowNegative, nameAccountHolder, note
     
     EDIT Account OBJECT a
 ;
@@ -47,6 +49,7 @@ DESIGN account {
             type = CONTAINERH;
             MOVE PROPERTY(nameType(a));
             MOVE PROPERTY(default(a));
+            MOVE PROPERTY(allowNegative(a));
         }
         MOVE PROPERTY(nameAccountHolder(a)) { notNull = TRUE; }
         MOVE PROPERTY(note(a));
