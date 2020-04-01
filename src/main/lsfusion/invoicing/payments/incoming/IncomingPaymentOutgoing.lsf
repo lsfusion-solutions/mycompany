@@ -63,7 +63,43 @@ DESIGN outgoingPayment {
 autoCreateIncomingPayment 'Автоматически создавать входящий платеж' = DATA BOOLEAN (OutgoingPaymentType);
 EXTEND FORM outgoingPaymentType PROPERTIES(o) autoCreateIncomingPayment;
 
-WHEN SET(active(OutgoingPayment op)) AND autoCreateIncomingPayment(type(op)) DO
+WHEN SET(active(OutgoingPayment op)) AND NOT countIncomingPayment(op) AND autoCreateIncomingPayment(type(op)) DO
     newIncomingPayment(op);
+
+WHEN SET(active(outgoingPayment(IncomingPayment ip))) AND autoCreateIncomingPayment(type(outgoingPayment(ip))) DO
+    canceled(ip) <- NULL;
+WHEN DROPPED (active(outgoingPayment(IncomingPayment ip))) AND autoCreateIncomingPayment(type(outgoingPayment(ip))) DO
+    canceled(ip) <- TRUE;
+
 WHEN CHANGED(canceled(outgoingPayment(IncomingPayment ip))) AND autoCreateIncomingPayment(type(outgoingPayment(ip))) DO 
-    canceled(ip) <- TRUE; 
+    canceled(ip) <- canceled(outgoingPayment(ip));
+WHEN CHANGED(done(outgoingPayment(IncomingPayment ip))) AND autoCreateIncomingPayment(type(outgoingPayment(ip))) DO 
+    done(ip) <- done(outgoingPayment(ip));
+
+WHEN CHANGED(company(outgoingPayment(IncomingPayment ip))) AND autoCreateIncomingPayment(type(outgoingPayment(ip))) DO 
+    partner(ip) <- company(outgoingPayment(ip));
+WHEN CHANGED(partner(outgoingPayment(IncomingPayment ip))) AND autoCreateIncomingPayment(type(outgoingPayment(ip))) DO 
+    company(ip) <- partner(outgoingPayment(ip));
+
+WHEN CHANGED(companyAccount(outgoingPayment(IncomingPayment ip))) AND autoCreateIncomingPayment(type(outgoingPayment(ip))) DO 
+    partnerAccount(ip) <- companyAccount(outgoingPayment(ip));
+WHEN CHANGED(partnerAccount(outgoingPayment(IncomingPayment ip))) AND autoCreateIncomingPayment(type(outgoingPayment(ip))) DO 
+    companyAccount(ip) <- partnerAccount(outgoingPayment(ip));
+    
+WHEN CHANGED(amount(outgoingPayment(IncomingPayment ip))) AND autoCreateIncomingPayment(type(outgoingPayment(ip))) DO 
+    amount(ip) <- amount(outgoingPayment(ip));
+
+WHEN CHANGED(note(outgoingPayment(IncomingPayment ip))) AND autoCreateIncomingPayment(type(outgoingPayment(ip))) DO 
+    note(ip) <- note(outgoingPayment(ip));
+WHEN CHANGED(reference(outgoingPayment(IncomingPayment ip))) AND autoCreateIncomingPayment(type(outgoingPayment(ip))) DO 
+    reference(ip) <- reference(outgoingPayment(ip));
+    
+WHEN CHANGED(reference(outgoingPayment(IncomingPayment ip))) AND autoCreateIncomingPayment(type(outgoingPayment(ip))) DO 
+    reference(ip) <- reference(outgoingPayment(ip));
+
+WHEN CHANGED(type(outgoingPayment(IncomingPayment ip))) AND DROPPED(autoCreateIncomingPayment(type(outgoingPayment(ip)))) DO
+    canceled(ip) <- TRUE;
+WHEN CHANGED(type(outgoingPayment(IncomingPayment ip))) AND NOT DROPPED(autoCreateIncomingPayment(type(outgoingPayment(ip)))) DO
+    type(ip) <- incomingPaymentType(type(outgoingPayment(ip)));
+WHEN CHANGED(type(outgoingPayment(IncomingPayment ip))) AND SET(autoCreateIncomingPayment(type(outgoingPayment(ip)))) DO
+    canceled(ip) <- canceled(outgoingPayment(ip));
