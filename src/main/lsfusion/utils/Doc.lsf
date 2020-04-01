@@ -314,3 +314,9 @@ META defineDocDiscountForm (doc)
         PROPERTIES(l) AFTER price(l) discount, discountPrice ON CHANGE changeDiscountPrice(l)
     ;
 END
+
+META defineDocLinesCount(doc, d) 
+    count###doc###Lines 'Кол-во строк' (###doc d) = GROUP SUM 1 IF ##doc(###doc###Line l) = d MATERIALIZED;
+    
+    EXTEND FORM ##doc##s PROPERTIES(d) READONLY count###doc###Lines;
+END

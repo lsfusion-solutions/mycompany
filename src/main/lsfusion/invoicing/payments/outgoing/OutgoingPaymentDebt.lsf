@@ -46,4 +46,11 @@ DESIGN outgoingPayment {
 WHEN (SETCHANGED(reference(OutgoingPayment p)) OR SETCHANGED(partner(p)) OR SET(active(p))) AND 
      isISubstring(reference(p), number(IncomingDebt d)) AND 
      canBePaid(d, p) DO
-    paid(d, p) <- left(d, p); 
+    paid(d, p) <- left(d, p);
+    
+countPaid 'Разнесено кол-во' (OutgoingPayment p) = GROUP SUM 1 IF paid(IncomingDebt d, p) AND active(d) MATERIALIZED;
+totalPaid 'Разнесено сумма' (OutgoingPayment p) = GROUP SUM paid(IncomingDebt d, p) IF active(d) MATERIALIZED;
+
+EXTEND FORM outgoingPayments
+    PROPERTIES(p) READONLY countPaid, totalPaid
+; 
