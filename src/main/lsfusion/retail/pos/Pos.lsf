@@ -6,6 +6,9 @@ NAMESPACE Retail;
 
 CLASS Pos 'Касса ККМ';
 
+id 'Код' = DATA STRING[20] (Pos) IN id;
+pos (STRING[20] id) = GROUP AGGR Pos d BY id(d);
+
 name 'Наименование' = DATA ISTRING[100] (Pos) NONULL CHARWIDTH 15;
 
 company 'Компания' = DATA Company (Pos);
@@ -16,7 +19,7 @@ countPos (Computer c) = GROUP SUM 1 IF in(Pos p, c) MATERIALIZED;
 
 FORM pos 'Касса ККМ'
     OBJECTS p = Pos PANEL
-    PROPERTIES(p) name, nameCompany
+    PROPERTIES(p) name, id, nameCompany
     
     OBJECTS c = Computer
     PROPERTIES(p, c)       in
@@ -37,7 +40,7 @@ DESIGN pos {
 
 FORM poss 'Кассы ККМ'
     OBJECTS p = Pos
-    PROPERTIES(p) READONLY name
+    PROPERTIES(p) READONLY name, id
     PROPERTIES(p) NEWSESSION NEW, EDIT, DELETE
 
     LIST Pos OBJECT p

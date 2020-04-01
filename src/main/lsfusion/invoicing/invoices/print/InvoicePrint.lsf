@@ -1,6 +1,6 @@
 MODULE InvoicePrint;
 
-REQUIRE Invoice, DocTemplate, BillCustomsDeclaration;
+REQUIRE Invoice, Product, DocTemplate, BillCustomsDeclaration;
 
 NAMESPACE Invoicing;
 
@@ -14,6 +14,9 @@ phoneCustomer (Invoice i) = phone(customer(i));
 
 idCustomsDeclaration(InvoiceLine l) = id(customsDeclaration(item(l), company(invoice(l)), dateTime(invoice(l))));
 
+nameCountryOrigin (InvoiceLine l) = nameCountryOrigin(item(l));
+idCountryOrigin (InvoiceLine l) = id(countryOrigin(item(l)));
+
 FORM printInvoice 'Реализация'
     OBJECTS o = Invoice PANEL 
     PROPERTIES(o) dateTime, dueDateTime, number,
@@ -24,7 +27,7 @@ FORM printInvoice 'Реализация'
     PROPERTIES(l) nameItem, idItem, nameUom,
                   quantity, price, subtotal,
                   percentTax, totalTax, taxes, 
-                  totalAmount, idCustomsDeclaration,
+                  totalAmount, nameCountryOrigin, idCountryOrigin, idCustomsDeclaration,
                   weight
     FILTERS invoice(l) = o
 ;
