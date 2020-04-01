@@ -8,8 +8,9 @@ customsDeclaration 'Таможенная декларация' = DATA CustomsDec
 
 nameCustomsDeclaration 'Таможенная декларация' (BillLine bl) = nameCustomsDeclaration(customsDeclaration(bl));
 
-customsDeclaration 'Таможенная декларация' (Item i, Company c, DATETIME d) = GROUP LAST customsDeclaration(BillLine bl) ORDER DESC dateTime(bill(bl))
-    WHERE date(customsDeclaration(bl)) <= DATE(d) AND dateTime(bill(bl)) <= d AND item(bl) = i AND company(bill(bl)) = c
+customsDeclaration 'Таможенная декларация' (Item i, Company c, DATETIME d) = 
+    GROUP LAST customsDeclaration(BillLine bl) ORDER DESC dateTime(bill(bl)), bl
+          WHERE date(customsDeclaration(bl)) <= DATE(d) AND dateTime(bill(bl)) <= d AND item(bl) = i AND company(bill(bl)) = c
 ;
 
 EXTEND FORM bill PROPERTIES nameCustomsDeclaration(l);
