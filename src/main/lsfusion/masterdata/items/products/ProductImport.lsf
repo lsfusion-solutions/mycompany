@@ -54,6 +54,11 @@ productImport 'Импорт товаров' () {
                 MESSAGE 'Отсутствует единица измерения в базе данных с кодом ' + num + '. Импорт отменен';
                 RETURN;
             }  
+
+            FOR [GROUP SUM 1 BY idCountryOrigin(INTEGER i)](STRING num) AND NOT country(num) DO {
+                MESSAGE 'Отсутствует страна в базе данных с кодом ' + num + '. Импорт отменен';
+                RETURN;
+            }  
             
             FOR imported(INTEGER i) DO NEW p = Product {
                 id(p) <- id(i);
