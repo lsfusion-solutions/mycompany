@@ -54,9 +54,8 @@ WHEN (SETCHANGED(reference(IncomingPayment p)) OR SETCHANGED(partner(p)) OR SET(
      canBePaid(p, d) DO
     paid(p, d) <- left(p, d);
     
-countPaid 'Разнесено кол-во' (IncomingPayment p) = GROUP SUM 1 IF paid(p, OutgoingDebt d) AND active(d) MATERIALIZED;
-totalPaid 'Разнесено сумма' (IncomingPayment p) = GROUP SUM paid(p, OutgoingDebt d) IF active(d) MATERIALIZED;
+countPaid 'Кол-во оплат' (IncomingPayment p) = GROUP SUM 1 IF paid(p, OutgoingDebt d) AND active(d) MATERIALIZED;
 
 EXTEND FORM incomingPayments
-    PROPERTIES(p) READONLY countPaid, totalPaid
+    PROPERTIES(p) READONLY countPaid, paid
 ;
