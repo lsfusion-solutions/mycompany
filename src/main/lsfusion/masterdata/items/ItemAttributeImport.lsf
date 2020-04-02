@@ -15,10 +15,6 @@ attributeExport 'Экспорт атрибутов' () {
     }
 }
 
-itemAttribute (ItemAttribute a, STRING v) = GROUP MAX ItemAttributeValue av
-    BY itemAttribute(av), value(av)
-;
-
 attributeImport 'Импорт атрибутов' () {
     LOCAL idItem = STRING[50] (INTEGER);
     LOCAL idItemAttribute = STRING[50] (INTEGER);
@@ -27,16 +23,21 @@ attributeImport 'Импорт атрибутов' () {
     INPUT f = EXCELFILE DO {
         NEWSESSION {
             IMPORT XLS HEADER FROM f TO idItem = A, idItemAttribute = B, value = C; 
+
+            FOR [GROUP SUM 1 BY idItemAttribute(INTEGER i)](STRING num) AND NOT itemAttribute(num) DO {
+                MESSAGE 'Отсутствует атрибут в базе данных с кодом ' + num + '. Импорт отменен';
+                RETURN;
+            }  
             
-            FOR id(Item i) == idItem(INTEGER j) AND id(ItemAttribute a) == idItemAttribute(j) DO {
-                IF NOT itemAttribute(a, value(j)) AND value(j) THEN {
-                    NEW v = ItemAttributeValue {
-                        itemAttribute(v) <- a;
-                        value(v) <- value(j);
-                    }
+            FOR [GROUP SUM 1 BY idItemAttribute(INTEGER i), value(i)](STRING a, STRING v) AND NOT value(itemAttribute(a), v) 
+                NEW av = ItemAttributeValue DO {
+                    itemAttribute(av) <- itemAttribute(a);
+                    value(av) <- v;
                 }
-                attribute(i, a) <- itemAttribute(a, value(j));
-            }
+            
+            FOR id(Item i) == idItem(INTEGER j) AND id(ItemAttribute a) == idItemAttribute(j) DO
+                attribute(i, a) <- value(a, value(j));
+            
             APPLY;
             MESSAGE 'Импорт завершен';
         }

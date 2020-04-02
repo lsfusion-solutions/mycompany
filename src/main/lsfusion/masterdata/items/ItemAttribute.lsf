@@ -27,6 +27,7 @@ itemAttribute 'Атрибут' = DATA ItemAttribute (ItemAttributeValue) NONULL 
 nameAttribute 'Атрибут' (ItemAttributeValue v) = name(itemAttribute(v));
 
 value 'Значение' = DATA STRING (ItemAttributeValue) NONULL IN id;
+value (ItemAttribute a, STRING v) = GROUP AGGR ItemAttributeValue av BY itemAttribute(av), value(av);
 
 // форма по вводу значений
 FORM value 'Значение'
@@ -200,12 +201,11 @@ attributeFilter = DATA LOCAL ItemAttributeValue (ItemAttribute);
 value 'Значение' (ItemAttribute a) = value(attributeFilter(a));
 
 CONSTRAINT attributeFilter(ItemAttribute a) AND NOT itemAttribute(attributeFilter(a)) = a
-    CHECKED BY attributeFilter
-    MESSAGE 'Значение должно принадлежать атрибуту';
+    CHECKED BY attributeFilter MESSAGE '';
 
 EXTEND FORM items
     OBJECTS ia = ItemAttribute BEFORE i
-    PROPERTIES name(ia) READONLY, value(ia)
+    PROPERTIES name(ia) READONLY, value(ia) ON CHANGE { DIALOG values OBJECTS a = ia, c = c, v = attributeFilter(ia) CHANGE; }
     FILTERS attributeFilter(ia) = attribute(i, ia) OR NOT attributeFilter(ia)
     FILTERS GROUP SUM 1 IF set(ia, Category cc) AND (level(cc, c) OR level(c, cc)) 
 ;
