@@ -35,7 +35,9 @@ FORM posDashboard 'POS'
     OBJECTS si = Invoice
     PROPERTIES(si) READONLY dateTime, number, nameCustomer, 'Итого' = fullAmount, 'Скидка' = discountAmount, 'К оплате' = totalAmount
     PROPERTIES(si) NEWSESSION EDIT
-    FILTERS PREV(session(si)) = s
+    FILTERGROUP invoices
+        FILTER 'По смене' PREV(session(si)) = s DEFAULT
+        FILTER 'По кассе' PREV(pos(session(si))) = p
 ;
 
 DESIGN posDashboard {
@@ -120,7 +122,10 @@ DESIGN posDashboard {
                     NEW sessionDetails {
                         fill = 1;
                         type = TABBED;
-                        MOVE BOX(si) { showIf = openedSession(p); }
+                        MOVE BOX(si) { 
+                            showIf = openedSession(p); 
+                            MOVE TOOLBAR(si) { alignment = END; }
+                        }
                     }
                 }
             }
