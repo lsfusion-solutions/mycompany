@@ -22,7 +22,17 @@ bankAccountImport 'Импорт счетов' () {
     INPUT f = EXCELFILE DO {
         NEWSESSION {
             IMPORT XLS HEADER FROM f TO idPartner = A, note = B, number = C, idBank = D;
-            
+    
+            FOR [GROUP SUM 1 BY idPartner(INTEGER i)](num) AND NOT partner[STRING](num) DO {
+                MESSAGE 'Отсутствует контрагент в базе данных с кодом ' + num + '. Импорт отменен';
+                RETURN;
+            } 
+
+            FOR [GROUP SUM 1 BY idBank(INTEGER i)](num) AND NOT bank[STRING](num) DO {
+                MESSAGE 'Отсутствует банк в базе данных с кодом ' + num + '. Импорт отменен';
+                RETURN;
+            } 
+        
             FOR imported(INTEGER i)  AND
                 partner(idPartner(i)) AND
                 bank(idBank(i))
