@@ -1,14 +1,15 @@
 MODULE BillServiceCost;
 
-REQUIRE ReceiptCost, BillReceipt, ServiceP, BarCode, Utils;
+REQUIRE MasterData, BillReceipt, ServiceP, BarCode, Utils;
 
 NAMESPACE Invoicing;
 
-checkedLine 'Распределять' = DATA BOOLEAN (ReceiptLine, BillLine);
-countReceiptLines(BillLine bl) = GROUP SUM 1 IF dataCost(ReceiptLine rl, bl);
-checkedReceipt 'Распределять' (Receipt r, BillLine bl) = GROUP MAX checkedLine(ReceiptLine rl, bl) IF receipt(rl) = r;
+checkedBillLine 'Распределять' = DATA BOOLEAN (BillLine, BillLine);
+checkedBill 'Распределять' (Bill b, BillLine bsl) = GROUP MAX checkedBillLine(BillLine bl, bsl) IF bill(bl) = b;
 
-CLASS CostAllocationBase 'База распределения' {
+@defineStaticObject(CostAllocationBase, 'База распределения');
+
+EXTEND CLASS CostAllocationBase {
     ammount 'Стоимость приобретения',
     cost 'Плановая себестоимость',
     salesPrice 'Сумма по ценам продажи',
@@ -18,7 +19,7 @@ CLASS CostAllocationBase 'База распределения' {
 }
 
 costAllocationBase 'База распределения' = DATA CostAllocationBase (Service);
-nameCostAllocationBase 'База распределения' (Service s) = staticCaption(costAllocationBase(s));
+nameCostAllocationBase 'База распределения' (Service s) = name(costAllocationBase(s));
 
 EXTEND FORM item PROPERTIES nameCostAllocationBase(i); 
 
@@ -28,46 +29,43 @@ DESIGN item {
     }
 }
 
-allocationItem 'База распределения' (rl, bl) = ABSTRACT CASE NUMERIC[14,3] (ReceiptLine, BillLine);
+allocationBase 'База распределения' (bl, bsl) = ABSTRACT CASE NUMERIC[14,3] (BillLine, BillLine);
 
-allocationItem (ReceiptLine rl, BillLine bl) += WHEN rl IS ReceiptLine AND costAllocationBase(item(bl)) == CostAllocationBase.ammount THEN NUMERIC[14,3](price(billLine(rl)) * done(rl)) IF checkedLine(rl, bl) AND done(receipt(rl));  
-allocationItem (ReceiptLine rl, BillLine bl) += WHEN rl IS ReceiptLine AND costAllocationBase(item(bl)) == CostAllocationBase.cost THEN NUMERIC[14,3](cost(product(rl)) * done(rl)) IF checkedLine(rl, bl) AND done(receipt(rl)); 
-allocationItem (ReceiptLine rl, BillLine bl) += WHEN rl IS ReceiptLine AND costAllocationBase(item(bl)) == CostAllocationBase.salesPrice THEN NUMERIC[14,3](salesPrice(product(rl)) * done(rl)) IF checkedLine(rl, bl) AND done(receipt(rl));
-allocationItem (ReceiptLine rl, BillLine bl) += WHEN rl IS ReceiptLine AND costAllocationBase(item(bl)) == CostAllocationBase.weight THEN NUMERIC[14,3](weight(product(rl)) * done(rl)) IF checkedLine(rl, bl) AND done(receipt(rl));
-allocationItem (ReceiptLine rl, BillLine bl) += WHEN rl IS ReceiptLine AND costAllocationBase(item(bl)) == CostAllocationBase.volume THEN NUMERIC[14,3](volume(product(rl)) * done(rl)) IF checkedLine(rl, bl) AND done(receipt(rl));
-allocationItem (ReceiptLine rl, BillLine bl) += WHEN rl IS ReceiptLine AND costAllocationBase(item(bl)) == CostAllocationBase.volumetric THEN NUMERIC[14,3](max(volume(product(rl)) * 200, weight(product(rl))) * done(rl)) IF checkedLine(rl, bl) AND done(receipt(rl));
+allocationBase (BillLine bl, BillLine bsl) += WHEN item(bl) IS Product AND costAllocationBase(item(bsl)) = CostAllocationBase.ammount THEN NUMERIC[14,3](subtotal(bl));  
+allocationBase (BillLine bl, BillLine bsl) += WHEN item(bl) IS Product AND costAllocationBase(item(bsl)) = CostAllocationBase.cost THEN NUMERIC[14,3](cost(item(bl)) * quantity(bl)); 
+allocationBase (BillLine bl, BillLine bsl) += WHEN item(bl) IS Product AND costAllocationBase(item(bsl)) = CostAllocationBase.salesPrice THEN NUMERIC[14,3](salesPrice(item(bl)) * quantity(bl));
+allocationBase (BillLine bl, BillLine bsl) += WHEN item(bl) IS Product AND costAllocationBase(item(bsl)) = CostAllocationBase.weight THEN NUMERIC[14,3](weight(item(bl)) * quantity(bl));
+allocationBase (BillLine bl, BillLine bsl) += WHEN item(bl) IS Product AND costAllocationBase(item(bsl)) = CostAllocationBase.volume THEN NUMERIC[14,3](volume(item(bl)) * quantity(bl));
+allocationBase (BillLine bl, BillLine bsl) += WHEN item(bl) IS Product AND costAllocationBase(item(bsl)) = CostAllocationBase.volumetric THEN NUMERIC[14,3](max(volume(item(bl)) * 200, weight(item(bl))) * quantity(bl));
 
-allocationBase 'База распределения' (BillLine bl) = GROUP SUM allocationItem(ReceiptLine rl, bl);
+costAllocated 'Распределено' (BillLine rl, BillLine bsl) = PARTITION UNGROUP subtotal
+    PROPORTION STRICT ROUND(2) allocationBase(rl, bsl) IF checkedBillLine(rl, bsl)
+    ORDER rl BY bsl MATERIALIZED;
 
-allocate 'Распределить' (BillLine bl) {
-        dataCost(ReceiptLine rl, bl) <- subtotal(bl) * allocationItem(rl, bl) / allocationBase(bl) IF allocationBase(bl) AND checkedLine(rl, bl) AND done(receipt(rl));
-}
+costBillLine (BillLine bl) = GROUP SUM costAllocated(bl, BillLine bsl);
 
-checkReceipt (Receipt r, BillLine l) {
+checkBill (Bill b, BillLine bsl) {
     LOCAL checked = BOOLEAN ();
-    checked() <- NOT checkedReceipt(r,l);
-    FOR receipt(ReceiptLine rl) == r DO
-        checkedLine(rl, l) <- checked();
+    checked() <- NOT checkedBill(b,bsl);
+    FOR bill(BillLine bl) == b DO
+        checkedBillLine(bl, bsl) <- checked();
 }
 
 EXTEND FORM bill
-    OBJECTS bl = BillLine PANEL
-    PROPERTIES(bl) READONLY nameItem, subtotal
-    FILTERS bl = l
+    OBJECTS bsl = BillLine PANEL
+    PROPERTIES(bsl) READONLY nameItem, subtotal
+    FILTERS bsl = l
+
+    OBJECTS bc = Bill
+    PROPERTIES(bc) READONLY numberDate, nameVendor
+    PROPERTIES checkedBill(bc, l) ON CHANGE checkBill(bc, l)
     
-    OBJECTS rc = Receipt
-    PROPERTIES(rc) READONLY numberDate, nameVendor
-    PROPERTIES checkedReceipt(rc, l) ON CHANGE checkReceipt(rc, l)
-    FILTERS done(rc)
-    
-    OBJECTS rl = ReceiptLine
-    PROPERTIES(rl) READONLY nameProduct, nameUom, done, cost
-    PROPERTIES(rl, l) READONLY allocationItem, dataCost
-    PROPERTIES checkedLine(rl, l)
-    FILTERS checkedReceipt(receipt(rl), l)
-    FILTERS done(rl)
-    
-    EVENTS ON APPLY allocate(l)
+    OBJECTS bl = BillLine
+    PROPERTIES(bl) READONLY nameItem, nameUom, quantity
+    PROPERTIES(bl, l) READONLY allocationBase, costAllocated
+    PROPERTIES checkedBillLine(bl, l)
+    FILTERS checkedBill(bill(bl), l)
+    FILTERS item(bl) IS Product
 ;
 
 DESIGN bill {
@@ -78,16 +76,16 @@ DESIGN bill {
                 showIf = costAllocationBase(item(l));
                 NEW info {
                     type = CONTAINERH;
-                    MOVE PROPERTY(nameItem(bl)) { caption = 'Распределить стоимость услуги'; }
-                    MOVE PROPERTY(subtotal(bl));
+                    MOVE PROPERTY(nameItem(bsl)) { caption = 'Распределить стоимость услуги'; }
+                    MOVE PROPERTY(subtotal(bsl));
                 }
                 NEW receipts {
                     fill = 1;
-                    MOVE BOX(rc);
+                    MOVE BOX(bc);
                 }
                 NEW receiptLines {
                     fill = 1;
-                    MOVE BOX(rl);                
+                    MOVE BOX(bl);                
                 }
             }
         }
