@@ -1,6 +1,6 @@
 MODULE ReceiptCost;
 
-REQUIRE ReceiptCanceled, CostLedger, CostLocation;
+REQUIRE ReceiptCanceled, CostLedger, CostLocation, BillDone;
 
 NAMESPACE Inventory;
 
@@ -25,8 +25,13 @@ edit(ReceiptCostLedger l) + { edit(line(l)); }
 showCost 'Показывать себестоимость' = DATA BOOLEAN (ReceiptType);
 
 dataCost 'Себестоимость' = DATA NUMERIC[14,2] (ReceiptLine);
-cost (ReceiptLine l) += WHEN dataCost(l) THEN dataCost(l);
+
+dataCost 'Себестоимость услуги' = DATA NUMERIC[14,2] (ReceiptLine, BillLine);
+
+calcCost (ReceiptLine rl) = GROUP SUM dataCost(rl, BillLine bl) IF ready(bill(bl)) OR done(bill(bl)) MATERIALIZED;
+
+cost (ReceiptLine l) += WHEN dataCost(l) (+) calcCost(l) THEN dataCost(l) (+) calcCost(l) ;
 
 EXTEND FORM receipt
-    PROPERTIES(l) cost SHOWIF showCost(type(r))
+    PROPERTIES(l) dataCost SHOWIF showCost(type(r))
 ;

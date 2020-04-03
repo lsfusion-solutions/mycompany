@@ -1,0 +1,95 @@
+MODULE BillServiceCost;
+
+REQUIRE ReceiptCost, BillReceipt, ServiceP, BarCode, Utils;
+
+NAMESPACE Invoicing;
+
+checkedLine 'Распределять' = DATA BOOLEAN (ReceiptLine, BillLine);
+countReceiptLines(BillLine bl) = GROUP SUM 1 IF dataCost(ReceiptLine rl, bl);
+checkedReceipt 'Распределять' (Receipt r, BillLine bl) = GROUP MAX checkedLine(ReceiptLine rl, bl) IF receipt(rl) = r;
+
+CLASS CostAllocationBase 'База распределения' {
+    ammount 'Стоимость приобретения',
+    cost 'Плановая себестоимость',
+    salesPrice 'Сумма по ценам продажи',
+    weight 'Масса',
+    volume 'Объем',
+    volumetric 'Габаритный вес'
+}
+
+costAllocationBase 'База распределения' = DATA CostAllocationBase (Service);
+nameCostAllocationBase 'База распределения' (Service s) = staticCaption(costAllocationBase(s));
+
+EXTEND FORM item PROPERTIES nameCostAllocationBase(i); 
+
+DESIGN item {
+    column2 {
+        MOVE PROPERTY(nameCostAllocationBase(i));
+    }
+}
+
+allocationItem 'База распределения' (rl, bl) = ABSTRACT CASE NUMERIC[14,3] (ReceiptLine, BillLine);
+
+allocationItem (ReceiptLine rl, BillLine bl) += WHEN rl IS ReceiptLine AND costAllocationBase(item(bl)) == CostAllocationBase.ammount THEN NUMERIC[14,3](price(billLine(rl)) * done(rl)) IF checkedLine(rl, bl) AND done(receipt(rl));  
+allocationItem (ReceiptLine rl, BillLine bl) += WHEN rl IS ReceiptLine AND costAllocationBase(item(bl)) == CostAllocationBase.cost THEN NUMERIC[14,3](cost(product(rl)) * done(rl)) IF checkedLine(rl, bl) AND done(receipt(rl)); 
+allocationItem (ReceiptLine rl, BillLine bl) += WHEN rl IS ReceiptLine AND costAllocationBase(item(bl)) == CostAllocationBase.salesPrice THEN NUMERIC[14,3](salesPrice(product(rl)) * done(rl)) IF checkedLine(rl, bl) AND done(receipt(rl));
+allocationItem (ReceiptLine rl, BillLine bl) += WHEN rl IS ReceiptLine AND costAllocationBase(item(bl)) == CostAllocationBase.weight THEN NUMERIC[14,3](weight(product(rl)) * done(rl)) IF checkedLine(rl, bl) AND done(receipt(rl));
+allocationItem (ReceiptLine rl, BillLine bl) += WHEN rl IS ReceiptLine AND costAllocationBase(item(bl)) == CostAllocationBase.volume THEN NUMERIC[14,3](volume(product(rl)) * done(rl)) IF checkedLine(rl, bl) AND done(receipt(rl));
+allocationItem (ReceiptLine rl, BillLine bl) += WHEN rl IS ReceiptLine AND costAllocationBase(item(bl)) == CostAllocationBase.volumetric THEN NUMERIC[14,3](max(volume(product(rl)) * 200, weight(product(rl))) * done(rl)) IF checkedLine(rl, bl) AND done(receipt(rl));
+
+allocationBase 'База распределения' (BillLine bl) = GROUP SUM allocationItem(ReceiptLine rl, bl);
+
+allocate 'Распределить' (BillLine bl) {
+        dataCost(ReceiptLine rl, bl) <- subtotal(bl) * allocationItem(rl, bl) / allocationBase(bl) IF allocationBase(bl) AND checkedLine(rl, bl) AND done(receipt(rl));
+}
+
+checkReceipt (Receipt r, BillLine l) {
+    LOCAL checked = BOOLEAN ();
+    checked() <- NOT checkedReceipt(r,l);
+    FOR receipt(ReceiptLine rl) == r DO
+        checkedLine(rl, l) <- checked();
+}
+
+EXTEND FORM bill
+    OBJECTS bl = BillLine PANEL
+    PROPERTIES(bl) READONLY nameItem, subtotal
+    FILTERS bl = l
+    
+    OBJECTS rc = Receipt
+    PROPERTIES(rc) READONLY numberDate, nameVendor
+    PROPERTIES checkedReceipt(rc, l) ON CHANGE checkReceipt(rc, l)
+    FILTERS done(rc)
+    
+    OBJECTS rl = ReceiptLine
+    PROPERTIES(rl) READONLY nameProduct, nameUom, done, cost
+    PROPERTIES(rl, l) READONLY allocationItem, dataCost
+    PROPERTIES checkedLine(rl, l)
+    FILTERS checkedReceipt(receipt(rl), l)
+    FILTERS done(rl)
+    
+    EVENTS ON APPLY allocate(l)
+;
+
+DESIGN bill {
+    OBJECTS {
+        details {
+            NEW cost {
+                caption = 'Распределение на себестоимость';
+                showIf = costAllocationBase(item(l));
+                NEW info {
+                    type = CONTAINERH;
+                    MOVE PROPERTY(nameItem(bl)) { caption = 'Распределить стоимость услуги'; }
+                    MOVE PROPERTY(subtotal(bl));
+                }
+                NEW receipts {
+                    fill = 1;
+                    MOVE BOX(rc);
+                }
+                NEW receiptLines {
+                    fill = 1;
+                    MOVE BOX(rl);                
+                }
+            }
+        }
+    }
+}
