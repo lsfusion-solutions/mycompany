@@ -48,8 +48,6 @@ DESIGN invoice {
     }
 }
 
-totalAmountInvoice 'Продано' (Session s) = GROUP SUM totalAmount(Invoice i) IF session(i) = s; 
-
 // bill
 session = DATA Session (Bill);
 numberSession 'Смена' (Bill i) = number(session(i));
@@ -68,6 +66,20 @@ DESIGN session {
     }
 }
 
+totalAmountInvoice 'Продано' (Session s) = GROUP SUM totalAmount(Invoice i) IF session(i) = s MATERIALIZED ; 
+countInvoices 'Продаж' (Session s) = GROUP SUM 1 IF session(Invoice i) = s MATERIALIZED;
+
+totalAmountBill 'Возвращено' (Session s) = GROUP SUM totalAmount(Bill b) IF session(b) = s MATERIALIZED;
+countBills 'Возвратов' (Session s) = GROUP SUM 1 IF  session(Bill b) = s MATERIALIZED;
+
+totalAmount 'Итого' (Session s) = totalAmountInvoice(s) (-) totalAmountBill(s) MATERIALIZED;
+
+EXTEND FORM sessions
+    PROPERTIES(o) countInvoices, totalAmountInvoice,
+                  countBills, totalAmountBill,
+                  totalAmount
+;
+
 EXTEND FORM bill
     PROPERTIES(b) READONLY numberSession SHOWIF session(b)
 ;
@@ -80,8 +92,3 @@ DESIGN bill {
         }
     }
 }
-
-totalAmountBill 'Возвращено' (Session s) = GROUP SUM totalAmount(Bill b) IF session(b) = s;
-
-// total
-totalAmount 'Итого' (Session s) = totalAmountInvoice(s) (-) totalAmountBill(s);

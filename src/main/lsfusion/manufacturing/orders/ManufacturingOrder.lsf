@@ -19,6 +19,8 @@ scheduledDateTime(ManufacturingOrder o) <- currentDateTime() WHEN SET(o IS Manuf
 
 @defineNumber(manufacturingOrder, 'Производственные заказы', 'ПЗ');
 
+numberDate 'Описание' (ManufacturingOrder o) = number(o) + ' от ' + scheduledDateTime(o) IN id;
+
 item 'Номенклатура' = DATA Item (ManufacturingOrder) NONULL;
 nameItem 'Номенклатура' (ManufacturingOrder m) = name(item(m));
 
@@ -51,7 +53,7 @@ CLASS ConsumedLine 'Материалы';
 
 manufacturingOrder = DATA ManufacturingOrder (ConsumedLine) NONULL DELETE;
 
-countConsumedLines (ManufacturingOrder m) = GROUP SUM 1 IF manufacturingOrder(ConsumedLine l) = m;
+countConsumedLines 'Строк материалов' (ManufacturingOrder m) = GROUP SUM 1 IF manufacturingOrder(ConsumedLine l) = m MATERIALIZED;
 index '№' = PARTITION SUM 1 ORDER ConsumedLine l BY manufacturingOrder(l) IN id MATERIALIZED CHARWIDTH 3;
 
 item 'Номенклатура' = DATA Item (ConsumedLine);
@@ -72,7 +74,7 @@ CLASS FinishedLine 'Продукция';
 
 manufacturingOrder = DATA ManufacturingOrder (FinishedLine) NONULL DELETE;
 
-countFinishedLines (ManufacturingOrder m) = GROUP SUM 1 IF manufacturingOrder(ConsumedLine l) = m;
+countFinishedLines 'Строк продукции' (ManufacturingOrder m) = GROUP SUM 1 IF manufacturingOrder(ConsumedLine l) = m MATERIALIZED;
 index '№' = PARTITION SUM 1 ORDER FinishedLine l BY manufacturingOrder(l) IN id MATERIALIZED CHARWIDTH 3;
 
 item 'Номенклатура' = DATA Item (FinishedLine);
@@ -168,7 +170,8 @@ FORM manufacturingOrders 'Производственные заказы'
                            nameItem, unbuild, 
                            toManufacture, nameUom, 
                            descriptionBom, 
-                           nameMaterialsLocation
+                           nameMaterialsLocation,
+                           countConsumedLines, countFinishedLines
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
     
     LIST ManufacturingOrder OBJECT o

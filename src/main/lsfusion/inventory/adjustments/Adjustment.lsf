@@ -12,6 +12,9 @@ dateTime 'Дата' = DATA DATETIME (Adjustment);
 WHEN LOCAL SET(Adjustment a IS Adjustment) AND NOT CHANGED(dateTime(a)) DO dateTime(a) <- currentDateTime();
 
 @defineNumber(adjustment, 'Инвентаризации', 'ИН');
+
+numberDate 'Описание' (Adjustment a) = number(a) + ' от ' + dateTime(a) IN id;
+
 DESIGN options {
     general {
         MOVE PROPERTY(nameNumeratorAdjustment());
@@ -128,6 +131,7 @@ FORM adjustments 'Инвентаризации'
 ;
 
 @defineStatusForm(adjustment, a);
+@defineDocLinesCount(adjustment, a);
 
 NAVIGATOR {
     operations {

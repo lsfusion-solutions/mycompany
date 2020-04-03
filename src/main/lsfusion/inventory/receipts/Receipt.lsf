@@ -24,7 +24,7 @@ scheduledDateTime(Receipt r) <- currentDateTime() WHEN (r IS Receipt);
 @defineNumberType(receipt);
 receipt (STRING[31] number) = GROUP LAST Receipt r BY number(r);
 
-numberDate 'Описание' (Receipt r) = number(r) + ' от ' + scheduledDateTime(r);
+numberDate 'Описание' (Receipt r) = number(r) + ' от ' + scheduledDateTime(r) IN id;
 
 // location
 location 'Место хранения' = DATA Location (Receipt) NONULL INDEXED;
@@ -139,7 +139,7 @@ FORM receipts 'Поступления'
     OBJECTS r = Receipt
     PROPERTIES(r) READONLY nameType, scheduledDateTime, number, 
                            nameVendor, nameLocation,
-                           note
+                           note, countLines
     PROPERTIES(r) NEWSESSION NEW, EDIT, DELETE
 ;
 
