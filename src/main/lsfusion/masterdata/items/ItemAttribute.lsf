@@ -55,8 +55,7 @@ CONSTRAINT set(ItemAttributeValue v, Category c) AND NOT valid(itemAttribute(v),
 
 // диалог выбора значений по атрибуту
 FORM values 'Значения'
-    OBJECTS a = ItemAttribute PANEL
-    OBJECTS c = Category PANEL 
+    OBJECTS a = ItemAttribute PANEL, c = Category PANEL 
 
     OBJECTS v = ItemAttributeValue
     PROPERTIES READONLY value(v)
@@ -64,6 +63,17 @@ FORM values 'Значения'
     PROPERTIES(v) NEWSESSION EDIT, DELETE
     FILTERS itemAttribute(v) = a,
             valid(v, c) OR NOT countCategory(v)
+;
+
+FORM childValues 'Значения'
+    OBJECTS a = ItemAttribute PANEL, c = Category PANEL 
+
+    OBJECTS v = ItemAttributeValue
+    PROPERTIES READONLY value(v)
+    PROPERTIES newValue(a) DRAW v TOOLBAR 
+    PROPERTIES(v) NEWSESSION EDIT, DELETE
+    FILTERS itemAttribute(v) = a,
+            valid(v, c) OR (GROUP LAST set(v, Category cc) ORDER level(cc, c)) OR NOT countCategory(v)
 ;
 
 // формы ввода атрибутов
@@ -205,7 +215,7 @@ CONSTRAINT attributeFilter(ItemAttribute a) AND NOT itemAttribute(attributeFilte
 
 EXTEND FORM items
     OBJECTS ia = ItemAttribute BEFORE i
-    PROPERTIES name(ia) READONLY, value(ia) ON CHANGE { DIALOG values OBJECTS a = ia, c = c, v = attributeFilter(ia) CHANGE; }
+    PROPERTIES name(ia) READONLY, value(ia) ON CHANGE { DIALOG childValues OBJECTS a = ia, c = c, v = attributeFilter(ia) CHANGE; }
     FILTERS attributeFilter(ia) = attribute(i, ia) OR NOT attributeFilter(ia)
     FILTERS GROUP SUM 1 IF set(ia, Category cc) AND (level(cc, c) OR level(c, cc)) 
 ;
