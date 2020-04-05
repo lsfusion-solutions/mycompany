@@ -1,6 +1,6 @@
 MODULE SalesOrder;
 
-REQUIRE Time, MetaNumerator, Individual, Company,
+REQUIRE Time, MetaNumerator, Employee, Company,
         MetaTax, TaxItem, BarCode,
         SalesSettings, PartnerSales, ItemSales, SalesOrderType,
         PaymentTermsSales, SalesPricelistValue, Doc;  
@@ -61,10 +61,10 @@ location = DATA Location (Order) PREREAD;
 nameLocation 'Место хранения' (Order o) = name(location(o));
 
 // Sales information
-representative 'Наш представитель' = DATA Individual (Order);
-nameRepresentative 'Наш представитель' (Order o)= name(representative(o));
+representative 'Наш представитель' = DATA Employee (Order);
+nameRepresentative 'Наш представитель' (Order o)= MasterData.name(representative(o));
 
-CONSTRAINT representative(Order o) AND NOT type(legalEntity(representative(o))) = PartnerType.company 
+CONSTRAINT representative(Order o) AND NOT legalEntity(representative(o)) = company(o) 
     CHECKED BY representative MESSAGE 'Должен быть наш работник';
 
 customerReference 'Входящий номер заказчика' = DATA STRING[30] (Order);
