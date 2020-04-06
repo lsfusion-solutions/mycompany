@@ -1,13 +1,23 @@
 MODULE BillServiceCost;
 
-REQUIRE MasterData, BillReceipt, ServiceP, BarCode, Utils;
+REQUIRE MasterData, BillReceiptCost, ServiceP, BarCode, Utils;
 
 NAMESPACE Invoicing;
 
-checkedBillLine 'Распределять' = DATA BOOLEAN (BillLine, BillLine);
-checkedBill 'Распределять' (Bill b, BillLine bsl) = GROUP MAX checkedBillLine(BillLine bl, bsl) IF bill(bl) = b;
+serviceLine 'Распределять' = DATA BOOLEAN (BillLine, BillLine);
+service 'Распределять' (Bill b, BillLine bsl) = GROUP MAX serviceLine(BillLine bl, bsl) IF bill(bl) = b;
 
-@defineStaticObject(CostAllocationBase, 'База распределения');
+CLASS CostAllocationBase 'База распределения';
+TABLE CostAllocationBase (CostAllocationBase);
+
+name '{master.data.name}' (CostAllocationBase o) = staticCaption(o) IF o IS CostAllocationBase CHARWIDTH 15;
+
+FORM dialogCostAllocationBases 'База распределения'
+    OBJECTS o = CostAllocationBase
+    PROPERTIES(o) READONLY name
+    
+    LIST CostAllocationBase OBJECT o
+;
 
 EXTEND CLASS CostAllocationBase {
     ammount 'Стоимость приобретения',
@@ -29,42 +39,62 @@ DESIGN item {
     }
 }
 
+costAllocationBase 'База распределения' = DATA CostAllocationBase (BillLine);
+nameCostAllocationBase 'База распределения' (BillLine bsl) = name(costAllocationBase(bsl));
+
+countServiceBillLine (Bill b) = GROUP SUM 1 IF b = bill(BillLine bl) AND item(bl) IS Service;
+
+WHEN LOCAL CHANGED(item(BillLine bsl)) DO costAllocationBase(bsl) <- costAllocationBase(item(bsl) AS Service);
+
 allocationBase 'База распределения' (bl, bsl) = ABSTRACT CASE NUMERIC[14,3] (BillLine, BillLine);
 
-allocationBase (BillLine bl, BillLine bsl) += WHEN item(bl) IS Product AND costAllocationBase(item(bsl)) = CostAllocationBase.ammount THEN NUMERIC[14,3](subtotal(bl));  
-allocationBase (BillLine bl, BillLine bsl) += WHEN item(bl) IS Product AND costAllocationBase(item(bsl)) = CostAllocationBase.cost THEN NUMERIC[14,3](cost(item(bl)) * quantity(bl)); 
-allocationBase (BillLine bl, BillLine bsl) += WHEN item(bl) IS Product AND costAllocationBase(item(bsl)) = CostAllocationBase.salesPrice THEN NUMERIC[14,3](salesPrice(item(bl)) * quantity(bl));
-allocationBase (BillLine bl, BillLine bsl) += WHEN item(bl) IS Product AND costAllocationBase(item(bsl)) = CostAllocationBase.weight THEN NUMERIC[14,3](weight(item(bl)) * quantity(bl));
-allocationBase (BillLine bl, BillLine bsl) += WHEN item(bl) IS Product AND costAllocationBase(item(bsl)) = CostAllocationBase.volume THEN NUMERIC[14,3](volume(item(bl)) * quantity(bl));
-allocationBase (BillLine bl, BillLine bsl) += WHEN item(bl) IS Product AND costAllocationBase(item(bsl)) = CostAllocationBase.volumetric THEN NUMERIC[14,3](max(volume(item(bl)) * 200, weight(item(bl))) * quantity(bl));
+allocationBase (BillLine bl, BillLine bsl) += WHEN item(bl) IS Product AND (OVERRIDE costAllocationBase(bsl), costAllocationBase(item(bsl))) = CostAllocationBase.ammount THEN NUMERIC[14,3](subtotal(bl));  
+allocationBase (BillLine bl, BillLine bsl) += WHEN item(bl) IS Product AND (OVERRIDE costAllocationBase(bsl), costAllocationBase(item(bsl))) = CostAllocationBase.cost THEN NUMERIC[14,3](cost(item(bl)) * quantity(bl)); 
+allocationBase (BillLine bl, BillLine bsl) += WHEN item(bl) IS Product AND (OVERRIDE costAllocationBase(bsl), costAllocationBase(item(bsl))) = CostAllocationBase.salesPrice THEN NUMERIC[14,3](salesPrice(item(bl)) * quantity(bl));
+allocationBase (BillLine bl, BillLine bsl) += WHEN item(bl) IS Product AND (OVERRIDE costAllocationBase(bsl), costAllocationBase(item(bsl))) = CostAllocationBase.weight THEN NUMERIC[14,3](weight(item(bl)) * quantity(bl));
+allocationBase (BillLine bl, BillLine bsl) += WHEN item(bl) IS Product AND (OVERRIDE costAllocationBase(bsl), costAllocationBase(item(bsl))) = CostAllocationBase.volume THEN NUMERIC[14,3](volume(item(bl)) * quantity(bl));
+allocationBase (BillLine bl, BillLine bsl) += WHEN item(bl) IS Product AND (OVERRIDE costAllocationBase(bsl), costAllocationBase(item(bsl))) = CostAllocationBase.volumetric THEN NUMERIC[14,3](max(volume(item(bl)) * 200, weight(item(bl))) * quantity(bl));
 
-costAllocated 'Распределено' (BillLine rl, BillLine bsl) = PARTITION UNGROUP subtotal
-    PROPORTION STRICT ROUND(2) allocationBase(rl, bsl) IF checkedBillLine(rl, bsl)
-    ORDER rl BY bsl MATERIALIZED;
+dataCostAllocated 'Распределено' = DATA NUMERIC[14,2] (BillLine, BillLine);
 
-costBillLine (BillLine bl) = GROUP SUM costAllocated(bl, BillLine bsl);
+costAllocated 'Распределено' (BillLine bl, BillLine bsl) = PARTITION UNGROUP subtotal
+    PROPORTION STRICT ROUND(2) allocationBase(bl, bsl) IF serviceLine(bl, bsl)
+    ORDER bl BY bsl MATERIALIZED;
+
+sumAllocated (BillLine bsl) = GROUP SUM dataCostAllocated(BillLine bl, bsl) IF serviceLine(bl, bsl);
+
+CONSTRAINT sumAllocated(BillLine bsl) AND NOT sumAllocated(bsl) <= subtotal(bsl)
+    MESSAGE 'Распределенная сумма не может превышать стоимость услуги';  
+
+allocate 'Распределить' (BillLine bsl) {
+    dataCostAllocated (BillLine bl, bsl) <- costAllocated(bl, bsl);
+}
+
+costBillLine (BillLine bl) += GROUP SUM dataCostAllocated(bl, BillLine bsl)  IF serviceLine(bl, bsl);
 
 checkBill (Bill b, BillLine bsl) {
     LOCAL checked = BOOLEAN ();
-    checked() <- NOT checkedBill(b,bsl);
+    checked() <- NOT service(b,bsl);
     FOR bill(BillLine bl) == b DO
-        checkedBillLine(bl, bsl) <- checked();
+        serviceLine(bl, bsl) <- checked();
 }
 
 EXTEND FORM bill
-    OBJECTS bsl = BillLine PANEL
+    OBJECTS bsl = BillLine
     PROPERTIES(bsl) READONLY nameItem, subtotal
-    FILTERS bsl = l
+    PROPERTIES(bsl) nameCostAllocationBase, allocate 
+    FILTERS b = bill(bsl)
+    FILTERS item(bsl) IS Service
 
     OBJECTS bc = Bill
     PROPERTIES(bc) READONLY numberDate, nameVendor
-    PROPERTIES checkedBill(bc, l) ON CHANGE checkBill(bc, l)
+    PROPERTIES service(bc, bsl) ON CHANGE checkBill(bc, bsl)
     
     OBJECTS bl = BillLine
     PROPERTIES(bl) READONLY nameItem, nameUom, quantity
-    PROPERTIES(bl, l) READONLY allocationBase, costAllocated
-    PROPERTIES checkedBillLine(bl, l)
-    FILTERS checkedBill(bill(bl), l)
+    PROPERTIES(bl, bsl) READONLY allocationBase
+    PROPERTIES(bl, bsl) dataCostAllocated, serviceLine
+    FILTERS service(bill(bl), bsl)
     FILTERS item(bl) IS Product
 ;
 
@@ -72,12 +102,11 @@ DESIGN bill {
     OBJECTS {
         details {
             NEW cost {
+                showIf = countServiceBillLine(b);
                 caption = 'Распределение на себестоимость';
-                showIf = costAllocationBase(item(l));
                 NEW info {
-                    type = CONTAINERH;
-                    MOVE PROPERTY(nameItem(bsl)) { caption = 'Распределить стоимость услуги'; }
-                    MOVE PROPERTY(subtotal(bsl));
+                    fill = 0.3;
+                    MOVE BOX(bsl);
                 }
                 NEW receipts {
                     fill = 1;
