@@ -27,7 +27,13 @@ reportX(Pos p) {
     TRY {
         EXTERNAL HTTP 'http://' + hostname(p) + ':16732/requests' PARAMS exportFile();
     } CATCH {
-        MESSAGE 'Ошибка - ' + STRING(statusHttp());
+        CASE
+            WHEN statusHttp() > 299 THEN
+                MESSAGE 'Ошибка - ' + STRING(statusHttp());
+            WHEN NOT statusHttp() THEN
+                MESSAGE 'Ошибка - нет связи с хостом АТОЛ v.10';
+            ELSE
+                MESSAGE 'Ошибка - потеряна связь с хостом АТОЛ v.10';
     }
 }
 reportX(Pos p) + WHEN driver(p) = CashDriver.atol10 THEN {reportX(p);}
@@ -42,7 +48,13 @@ continuePrint(Pos p) {
     TRY {
         EXTERNAL HTTP 'http://' + hostname(p) + ':16732/requests' PARAMS exportFile();
     } CATCH {
-        MESSAGE 'Ошибка - ' + STRING(statusHttp());
+        CASE
+            WHEN statusHttp() > 299 THEN
+                MESSAGE 'Ошибка - ' + STRING(statusHttp());
+            WHEN NOT statusHttp() THEN
+                MESSAGE 'Ошибка - нет связи с хостом АТОЛ v.10';
+            ELSE
+                MESSAGE 'Ошибка - потеряна связь с хостом АТОЛ v.10';
     }
 }
 continuePrint(Pos p) + WHEN driver(p) = CashDriver.atol10 THEN {continuePrint(p);}
@@ -59,7 +71,13 @@ openShift(Session s) {
         fiscalOpenSession(s) <- TRUE;
         APPLY;
     } CATCH
-        MESSAGE 'Ошибка - ' + STRING(statusHttp());
+        CASE
+            WHEN statusHttp() > 299 THEN
+                MESSAGE 'Ошибка - ' + STRING(statusHttp());
+            WHEN NOT statusHttp() THEN
+                MESSAGE 'Ошибка - нет связи с хостом АТОЛ v.10';
+            ELSE
+                MESSAGE 'Ошибка - потеряна связь с хостом АТОЛ v.10';
 }
 openShift(Session s) + WHEN driver(pos(s)) = CashDriver.atol10 THEN {openShift(s);}
 
@@ -76,7 +94,13 @@ closeShift(Session s) {
         APPLY;
     }
     CATCH
-        MESSAGE 'Ошибка - ' + STRING(statusHttp());
+        CASE
+            WHEN statusHttp() > 299 THEN
+                MESSAGE 'Ошибка - ' + STRING(statusHttp());
+            WHEN NOT statusHttp() THEN
+                MESSAGE 'Ошибка - нет связи с хостом АТОЛ v.10';
+            ELSE
+                MESSAGE 'Ошибка - потеряна связь с хостом АТОЛ v.10';
 }
 closeShift(Session s) + WHEN driver(pos(s)) = CashDriver.atol10 THEN {closeShift(s);}
 
@@ -95,7 +119,13 @@ cashIn(IncomingPayment i) {
         fiscal(i) <- TRUE;
         APPLY;
     } CATCH
-        MESSAGE 'Ошибка - ' + STRING(statusHttp());
+        CASE
+            WHEN statusHttp() > 299 THEN
+                MESSAGE 'Ошибка - ' + STRING(statusHttp());
+            WHEN NOT statusHttp() THEN
+                MESSAGE 'Ошибка - нет связи с хостом АТОЛ v.10';
+            ELSE
+                MESSAGE 'Ошибка - потеряна связь с хостом АТОЛ v.10';
 }
 cashIn(IncomingPayment i) + WHEN driver(pos(session(i))) == CashDriver.atol10 AND i IS IncomingPayment THEN {cashIn(i);}
 
@@ -114,7 +144,13 @@ cashOut(OutgoingPayment o) {
         fiscal(o) <- TRUE;
         APPLY;
     } CATCH
-        MESSAGE 'Ошибка - ' + STRING(statusHttp());
+        CASE
+            WHEN statusHttp() > 299 THEN
+                MESSAGE 'Ошибка - ' + STRING(statusHttp());
+            WHEN NOT statusHttp() THEN
+                MESSAGE 'Ошибка - нет связи с хостом АТОЛ v.10';
+            ELSE
+                MESSAGE 'Ошибка - потеряна связь с хостом АТОЛ v.10';
 }
 cashOut(OutgoingPayment o) + WHEN driver(pos(session(o))) == CashDriver.atol10 THEN {cashOut(o);}
 
@@ -151,6 +187,12 @@ buy(Invoice i) {
         fiscal(i) <- TRUE;
         APPLY;
     } CATCH
-        MESSAGE 'Ошибка - ' + STRING(statusHttp());
+        CASE
+            WHEN statusHttp() > 299 THEN
+                MESSAGE 'Ошибка - ' + STRING(statusHttp());
+            WHEN NOT statusHttp() THEN
+                MESSAGE 'Ошибка - нет связи с хостом АТОЛ v.10';
+            ELSE
+                MESSAGE 'Ошибка - потеряна связь с хостом АТОЛ v.10';
 }
 buy(Invoice i) + WHEN driver(pos(session(i))) THEN {buy(i);}
