@@ -8,7 +8,6 @@ CLASS PrintPricelistType 'Тип прайс-листа';
 
 name 'Наименование' = DATA STRING[50] (PrintPricelistType);
 template 'Шаблон для заголовка' = DATA STRING (PrintPricelistType) CHARWIDTH 50;
-templateCategory 'Шаблон для спецификации' = DATA STRING (PrintPricelistType) CHARWIDTH 50;
 
 company = DATA Company (PrintPricelistType);
 nameCompany 'Компания' (PrintPricelistType t) = name(company(t)); 
@@ -18,8 +17,7 @@ set 'Вкл' = DATA BOOLEAN (PrintPricelistType, PriceType);
 
 FORM printPricelistType 'Тип прайс-листа'
     OBJECTS t = PrintPricelistType PANEL
-    PROPERTIES(t) name, nameCompany,
-                  template, templateCategory
+    PROPERTIES(t) name, nameCompany, template
     
     TREE categories cat = Category PARENT parent(cat) 
     PROPERTIES name(cat) READONLY, set(t, cat) BACKGROUND (GROUP LAST set(t, Category cc) ORDER level(cc, cat))
@@ -42,18 +40,11 @@ FORM printPricelistTypes 'Типы прайс-листа'
 DESIGN printPricelistType {
     OBJECTS {
         NEW header {
-            NEW general {
-                alignment = STRETCH;
-                type = CONTAINERH;
-                MOVE PROPERTY(name(t));
-                MOVE PROPERTY(nameCompany(t));
-            } 
-            NEW templates {
-                alignment = STRETCH;
-                type = CONTAINERH;
-                MOVE PROPERTY(template(t));
-                MOVE PROPERTY(templateCategory(t));
-            }
+            alignment = STRETCH;
+            type = CONTAINERH;
+            MOVE PROPERTY(name(t));
+            MOVE PROPERTY(nameCompany(t));
+            MOVE PROPERTY(template(t));
         }
         NEW details {
             fill = 1;
@@ -103,7 +94,7 @@ FORM printPricelist 'Текущие цены'
     OBJECTS t = PriceType
     FILTERS set(pt, t)
 
-    OBJECTS c = Category SUBREPORT templateCategory(pt)
+    OBJECTS c = Category
     PROPERTIES(c) name
     FILTERS GROUP LAST set(pt, Category pc) ORDER level(c, pc) 
 
