@@ -12,19 +12,16 @@ EXTEND CLASS PartnerType {
 
 type (Partner p) += WHEN p IS Employee THEN PartnerType.employee;
 
-WHEN CHANGED(login(Employee e)) AND NOT CHANGED(id(e)) DO id(e) <- login(e);
-WHEN CHANGED(id(Employee e)) AND NOT CHANGED(login(e)) DO login(e) <- id(e);
-
 WHEN CHANGED(address(Employee e)) AND NOT CHANGED(postAddress(e)) DO postAddress(e) <- (address(e));
 WHEN CHANGED(postAddress(Employee e)) AND NOT CHANGED(address(e)) DO address(e) <- (postAddress(e));
 
-CONSTRAINT NOT legalEntity(Employee e) IS Company
+CONSTRAINT Employee e IS Employee AND NOT legalEntity(e) IS Company
     CHECKED BY legalEntity
     MESSAGE 'Организацией сотрудника может быть только компания';
 
 FORM employee 'Сотрудник'
     OBJECTS e = Employee PANEL
-    PROPERTIES(e) login, sha256Password ON CHANGE changeSHA256Password(e), isLocked, archived,
+    PROPERTIES(e) id, login, sha256Password ON CHANGE changeSHA256Password(e), isLocked, archived,
                   firstName, middleName, lastName, nameMainRole,  email, phone, address, city, state, zip, birthday, nameLegalEntity,
                   useClientLocale, userLanguage SHOWIF NOT useClientLocale(e), userCountry SHOWIF NOT useClientLocale(e), 
                   userTimeZone, userTwoDigitYearStart,
@@ -48,6 +45,7 @@ DESIGN employee {
                 NEW login {
                     alignment = STRETCH;
                     caption = '{authentication.custom.user.login}';
+                    MOVE PROPERTY(id(e));
                     MOVE PROPERTY(login(e));    
                     MOVE PROPERTY(sha256Password(e));
                     MOVE PROPERTY(isLocked(e));
