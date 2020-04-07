@@ -1,0 +1,92 @@
+MODULE SalesPricelistPrintType;
+
+REQUIRE SalesPricelist, DocTemplate;
+
+NAMESPACE Sales;
+
+CLASS PrintPricelistType 'Тип прайс-листа';
+
+name 'Наименование' = DATA STRING[50] (PrintPricelistType);
+
+company = DATA Company (PrintPricelistType);
+nameCompany 'Компания' (PrintPricelistType t) = name(company(t)); 
+
+template 'Шаблон для заголовка' = DATA STRING (PrintPricelistType) CHARWIDTH 50;
+
+format = DATA TemplateFormat (PrintPricelistType);
+nameFormat 'Формат' (PrintPricelistType t) = name(format(t));
+
+set 'Вкл' = DATA BOOLEAN (PrintPricelistType, Category);
+set 'Вкл' = DATA BOOLEAN (PrintPricelistType, PriceType);
+
+FORM printPricelistType 'Тип прайс-листа'
+    OBJECTS t = PrintPricelistType PANEL
+    PROPERTIES(t) name, nameCompany, 
+                  template, nameFormat
+    
+    TREE categories cat = Category PARENT parent(cat) 
+    PROPERTIES name(cat) READONLY, set(t, cat) BACKGROUND (GROUP LAST set(t, Category cc) ORDER level(cc, cat))
+    ORDER name(cat)
+    
+    OBJECTS pt = PriceType
+    PROPERTIES name(pt) READONLY, set(t, pt)
+    
+    EDIT PrintPricelistType OBJECT t
+;
+
+FORM printPricelistTypes 'Типы прайс-листа'
+    OBJECTS t = PrintPricelistType
+    PROPERTIES READONLY name(t)
+    PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
+    
+    LIST PrintPricelistType OBJECT t
+;
+
+DESIGN printPricelistType {
+    OBJECTS {
+        NEW header {
+            NEW general {
+                alignment = STRETCH;
+                type = CONTAINERH;
+                MOVE PROPERTY(name(t));
+                MOVE PROPERTY(nameCompany(t));
+            }
+            NEW format {
+                alignment = STRETCH;
+                type = CONTAINERH;
+                MOVE PROPERTY(template(t));
+                MOVE PROPERTY(nameFormat(t));
+            }
+        }
+        NEW details {
+            fill = 1;
+            type = CONTAINERH;
+            MOVE BOX(TREE categories);
+            MOVE BOX(pt);
+        }
+    }
+}
+
+// add to pricelists form
+EXTEND FORM pricelists
+    OBJECTS pp = PrintPricelistType
+    
+    PROPERTIES READONLY name(pp)
+    PROPERTIES(pp) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN pricelists {
+    OBJECTS {
+        fill = 1;
+        type = TABBED;
+        NEW lists {
+            caption = 'Прайс-листы';
+            MOVE BOX(p);
+        }
+        NEW print {
+            caption = 'Печать';
+            MOVE BOX(pp);
+        }
+    }
+}
+

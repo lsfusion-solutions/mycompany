@@ -1,82 +1,8 @@
 MODULE SalesPricelistPrint;
 
-REQUIRE SalesPricelistValue;
+REQUIRE SalesPricelistPrintType, SalesPricelistValue;
 
 NAMESPACE Sales;
-
-CLASS PrintPricelistType 'Тип прайс-листа';
-
-name 'Наименование' = DATA STRING[50] (PrintPricelistType);
-template 'Шаблон для заголовка' = DATA STRING (PrintPricelistType) CHARWIDTH 50;
-
-company = DATA Company (PrintPricelistType);
-nameCompany 'Компания' (PrintPricelistType t) = name(company(t)); 
-
-set 'Вкл' = DATA BOOLEAN (PrintPricelistType, Category);
-set 'Вкл' = DATA BOOLEAN (PrintPricelistType, PriceType);
-
-FORM printPricelistType 'Тип прайс-листа'
-    OBJECTS t = PrintPricelistType PANEL
-    PROPERTIES(t) name, nameCompany, template
-    
-    TREE categories cat = Category PARENT parent(cat) 
-    PROPERTIES name(cat) READONLY, set(t, cat) BACKGROUND (GROUP LAST set(t, Category cc) ORDER level(cc, cat))
-    ORDER name(cat)
-    
-    OBJECTS pt = PriceType
-    PROPERTIES name(pt) READONLY, set(t, pt)
-    
-    EDIT PrintPricelistType OBJECT t
-;
-
-FORM printPricelistTypes 'Типы прайс-листа'
-    OBJECTS t = PrintPricelistType
-    PROPERTIES READONLY name(t)
-    PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
-    
-    LIST PrintPricelistType OBJECT t
-;
-
-DESIGN printPricelistType {
-    OBJECTS {
-        NEW header {
-            alignment = STRETCH;
-            type = CONTAINERH;
-            MOVE PROPERTY(name(t));
-            MOVE PROPERTY(nameCompany(t));
-            MOVE PROPERTY(template(t));
-        }
-        NEW details {
-            fill = 1;
-            type = CONTAINERH;
-            MOVE BOX(TREE categories);
-            MOVE BOX(pt);
-        }
-    }
-}
-
-// add to pricelists form
-EXTEND FORM pricelists
-    OBJECTS pp = PrintPricelistType
-    
-    PROPERTIES READONLY name(pp)
-    PROPERTIES(pp) NEWSESSION NEW, EDIT, DELETE
-;
-
-DESIGN pricelists {
-    OBJECTS {
-        fill = 1;
-        type = TABBED;
-        NEW lists {
-            caption = 'Прайс-листы';
-            MOVE BOX(p);
-        }
-        NEW print {
-            caption = 'Печать';
-            MOVE BOX(pp);
-        }
-    }
-}
 
 // print
 addressCompany (PrintPricelistType t) = linesAddress(company(t));
@@ -84,9 +10,9 @@ phoneCompany (PrintPricelistType t) = phone(company(t));
 emailCompany (PrintPricelistType t) = email(company(t));
 websiteCompany (PrintPricelistType t) = website(company(t));
 
+price = DATA LOCAL NUMERIC[10,2] (PriceType, Item); 
+
 FORM printPricelist 'Текущие цены'
-    OBJECTS dt = DATETIME PANEL
-    
     OBJECTS pt = PrintPricelistType PANEL
     PROPERTIES(pt) name, nameCompany, phoneCompany, emailCompany, websiteCompany
     REPORT template(pt)
@@ -96,32 +22,44 @@ FORM printPricelist 'Текущие цены'
 
     OBJECTS c = Category
     PROPERTIES(c) name
-    FILTERS GROUP LAST set(pt, Category pc) ORDER level(c, pc) 
 
     OBJECTS i = Item
-    PROPERTIES id(i), name(i), nameUom(i), price = priceB(t, i, dt) COLUMNS (t) HEADER name(t)
-    FILTERS (GROUP SUM 1 IF priceB(PriceType type, i, dt) AND set(pt, type)), category(i) = c, canBeSold(i) 
+    PROPERTIES id(i), name(i), nameUom(i), price = price(t, i) COLUMNS (t) HEADER name(t)
+    FILTERS category(i) = c, GROUP SUM 1 IF price(PriceType ppt, i)
 ;
 
-printPriceList 'Сформировать' (PrintPricelistType pt) {
-    PRINT printPricelist OBJECTS dt = currentDateTime(), pt = pt;
+print (PrintPricelistType pt) {
+    CASE EXCLUSIVE
+        WHEN format(pt) = TemplateFormat.pdf THEN
+            PRINT printPricelist OBJECTS pt = pt PDF;
+        WHEN format(pt) = TemplateFormat.docx THEN
+            PRINT printPricelist OBJECTS pt = pt DOCX;
+        WHEN format(pt) = TemplateFormat.xlsx THEN
+            PRINT printPricelist OBJECTS pt = pt XLSX;
+        WHEN format(pt) = TemplateFormat.rtf THEN
+            PRINT printPricelist OBJECTS pt = pt RTF;
+        WHEN format(pt) = TemplateFormat.html THEN
+            PRINT printPricelist OBJECTS pt = pt HTML;
+        ELSE
+            PRINT printPricelist OBJECTS pt = pt;
 }
 
-printPriceListXls 'Сформировать (xls)' (PrintPricelistType pt) {
-    PRINT printPricelist OBJECTS dt = currentDateTime(), pt = pt XLS;
+printAll 'Сформировать' (PrintPricelistType t) {
+    price(PriceType pt, Item i) <- priceB(pt, i, currentDateTime()) WHERE 
+        set(t, pt) AND GROUP LAST set(t, Category pc) ORDER level(category(i), pc) AND canBeSold(i);
+        
+    print(t);
 }
 
 EXTEND FORM pricelists
-    PROPERTIES(pp) printPriceList, printPriceListXls
+    PROPERTIES(pp) printAll SHOWIF template(pp)
 ;
 
 DESIGN pricelists {
     print {
         NEW actions FIRST {
             type = CONTAINERH;
-            MOVE PROPERTY(printPriceList(pp));
-            MOVE PROPERTY(printPriceListXls(pp));  
+            MOVE PROPERTY(printAll(pp));
         }
     }
 }
-
