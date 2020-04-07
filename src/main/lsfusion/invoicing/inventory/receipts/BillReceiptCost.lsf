@@ -4,7 +4,7 @@ REQUIRE BillReceipt, ReceiptCost, CreditNote;
 
 NAMESPACE Invoicing;
 
-costBillLine = ABSTRACT NUMERIC[14,2] (BillLine);
+extraCost = ABSTRACT NUMERIC[14,2] (ReceiptLine);
 
 cost (ReceiptLine l) += WHEN billLine(l) AND NOT isCreditNote(bill(billLine(l))) THEN
-    NUMERIC[14,2](price(billLine(l)) * done(l)) (+) NUMERIC[14,2](costBillLine(billLine(l)));
+    NUMERIC[14,2](price(billLine(l)) * done(l)) (+) NUMERIC[14,2](extraCost(l));
