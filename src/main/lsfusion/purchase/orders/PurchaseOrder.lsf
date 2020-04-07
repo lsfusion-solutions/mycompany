@@ -1,6 +1,6 @@
 MODULE PurchaseOrder;
 
-REQUIRE Time, MetaNumerator, Individual, Company,
+REQUIRE Time, MetaNumerator, Employee, Company,
         MetaTax, TaxItem, BarCode, PurchaseOrderType,
         PurchaseSettings, PartnerPurchase, ItemSales,
         PaymentTermsPurchase, Doc, PurchasePricelistValue,
@@ -53,10 +53,10 @@ location = DATA Location (Order);
 nameLocation 'Место хранения' (Order o) = name(location(o));
 
 // Purchase information
-representative 'Наш представитель' = DATA Individual (Order);
-nameRepresentative 'Наш представитель' (Order o)= name(representative(o));
+representative 'Наш представитель' = DATA Employee (Order);
+nameRepresentative 'Наш представитель' (Order o) = MasterData.name(representative(o));
 
-CONSTRAINT representative(Order o) AND NOT type(legalEntity(representative(o))) = PartnerType.company 
+CONSTRAINT representative(Order o) AND NOT legalEntity(representative(o)) = company(o) 
     CHECKED BY representative MESSAGE 'Должен быть наш работник';
 
 vendorReference 'Входящий номер поставщика' = DATA STRING[30] (Order);
