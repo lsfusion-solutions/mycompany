@@ -4,7 +4,7 @@ REQUIRE InvoicingSettings, TaxItem, BankAccount,
         MetaTax, PaymentTermsPurchase, 
         ItemPurchase, PartnerPurchase, Company,
         BarCode, MetaNumerator, Doc,
-        BillType, Product;
+        BillType, Product, ServiceP;
 
 NAMESPACE Invoicing;
 
@@ -84,6 +84,7 @@ idBarCodeItem 'Штрихкод' (BillLine l) = idBarCode(item(l));
 idItem 'Код' (BillLine l) = id(item(l));
 
 countProductLines 'Кол-во строк с товарами' (Bill b) = GROUP SUM 1 IF bill(BillLine l) = b AND item(l) IS Product;
+countServiceLine 'Кол-во строк с услугами' (Bill b) = GROUP SUM 1 IF b = bill(BillLine bl) AND item(bl) IS Service;
 
 CONSTRAINT item(BillLine l) AND NOT canBePurchased(item(l))
             CHECKED BY item 
