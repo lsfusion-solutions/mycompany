@@ -20,39 +20,39 @@ CLASS InCostLedger 'Входящая проводка' : CostLedger;
 
 quantity 'Количество' = ABSTRACT NUMERIC[16,3] (InCostLedger);
 
-dataSum 'Сумма (первичная)' = DATA NUMERIC[16,3] (InCostLedger);
-calcSum 'Сумма (расчетная)' = ABSTRACT NUMERIC[16,3] (InCostLedger);
-sum 'Сумма' (InCostLedger l) = OVERRIDE dataSum(l), calcSum(l); 
+dataAmount 'Сумма (первичная)' = DATA NUMERIC[16,3] (InCostLedger);
+calcAmount 'Сумма (расчетная)' = ABSTRACT NUMERIC[16,3] (InCostLedger);
+amount 'Сумма' (InCostLedger l) = OVERRIDE dataAmount(l), calcAmount(l); 
 
-price 'Цена' (InCostLedger il) = sum(il) / quantity(il);
+price 'Цена' (InCostLedger il) = amount(il) / quantity(il);
 
 CLASS OutCostLedger 'Исходящая проводка' : CostLedger;
 
 quantity 'Количество' = ABSTRACT NUMERIC[16,3] (OutCostLedger);
 negQuantity (OutCostLedger l) = -quantity(l); 
 
-sum 'Сумма' = DATA NUMERIC[16,3] (OutCostLedger);
-price 'Цена' (OutCostLedger il) = sum(il) / quantity(il);
+amount 'Сумма' = DATA NUMERIC[16,3] (OutCostLedger);
+price 'Цена' (OutCostLedger il) = amount(il) / quantity(il);
 
 // Проводки с учетом знака
 signedQuantity 'Количество' (CostLedger l) = MULTI quantity[InCostLedger](l), -quantity[OutCostLedger](l) MATERIALIZED;
-signedSum 'Сумма' (CostLedger l) = MULTI sum[InCostLedger](l), -sum[OutCostLedger](l) MATERIALIZED;
+signedAmount 'Сумма' (CostLedger l) = MULTI amount[InCostLedger](l), -amount[OutCostLedger](l) MATERIALIZED;
 
 costQuantity 'Количество' (Location l, Product p) = 
     GROUP SUM signedQuantity(CostLedger cl) IF location(cl) = l AND product(cl) = p MATERIALIZED;
-costSum 'Себестоимость' (Location l, Product p) = 
-    GROUP SUM signedSum(CostLedger cl) IF location(cl) = l AND product(cl) = p MATERIALIZED;
-costPrice 'Себестоимость за единицу' (Location l, Product p) = costSum(l, p) / costQuantity(l, p);
+costAmount 'Себестоимость' (Location l, Product p) = 
+    GROUP SUM signedAmount(CostLedger cl) IF location(cl) = l AND product(cl) = p MATERIALIZED;
+costPrice 'Себестоимость за единицу' (Location l, Product p) = costAmount(l, p) / costQuantity(l, p);
 
 costQuantity 'Количество' (Location l, Product p, DATETIME dt) = 
     costQuantity(l, p) (-) (GROUP SUM signedQuantity(CostLedger cl) IF location(cl) = l AND product(cl) = p AND dateTime(cl) >= dt);
-costSum 'Себестоимость' (Location l, Product p, DATETIME dt) = 
-    costSum(l, p) (-) (GROUP SUM signedSum(CostLedger cl) IF location(cl) = l AND product(cl) = p AND dateTime(cl) >= dt);
-costPrice 'Себестоимость за единицу' (Location l, Product p, DATETIME dt) = costSum(l, p, dt) / costQuantity(l, p, dt); 
+costAmount 'Себестоимость' (Location l, Product p, DATETIME dt) = 
+    costAmount(l, p) (-) (GROUP SUM signedAmount(CostLedger cl) IF location(cl) = l AND product(cl) = p AND dateTime(cl) >= dt);
+costPrice 'Себестоимость за единицу' (Location l, Product p, DATETIME dt) = costAmount(l, p, dt) / costQuantity(l, p, dt); 
 
 costQuantity 'Количество' (Product p) = GROUP SUM costQuantity(Location l, p);
-costSum 'Себестоимость' (Product p) = GROUP SUM costSum(Location l, p);
-costPrice 'Себестоимость за единицу' (Product p) = costSum(p) / costQuantity(p);
+costAmount 'Себестоимость' (Product p) = GROUP SUM costAmount(Location l, p);
+costPrice 'Себестоимость за единицу' (Product p) = costAmount(p) / costQuantity(p);
 
 overCost 'Себестоимость' (Item i) = OVERRIDE costPrice(i), cost(i);
 // Связываем OutCostLedger и InCostLedger
@@ -67,10 +67,10 @@ calcCost = DATA LOCAL NESTED BOOLEAN (CostLedger);
 
 calculateCost () {
     // расчет по стандартной цене
-    sum (OutCostLedger ol) <- NUMERIC[14,2](quantity(ol) * cost(product(ol))) 
+    amount (OutCostLedger ol) <- NUMERIC[14,2](quantity(ol) * cost(product(ol))) 
         WHERE calcCost(ol) AND costingMethod(product(ol)) = CostingMethod.standardPrice;
 
-    dataSum (InCostLedger il) <- NUMERIC[14,2](quantity(il) * cost(product(il))) IF costingMethod(product(il)) = CostingMethod.standardPrice
+    dataAmount (InCostLedger il) <- NUMERIC[14,2](quantity(il) * cost(product(il))) IF costingMethod(product(il)) = CostingMethod.standardPrice
         WHERE calcCost(il);
 
     // расчет по fifo и среднему
@@ -101,11 +101,11 @@ calculateCost () {
                                                                    BY ol)
                                                        WHERE iteration(ol) AND quantity(ol) < 0;
 
-        sum (OutCostLedger ol) <- NUMERIC[14,2](quantity(ol) * costPrice(location(ol), product(ol), dateTime(ol)))
+        amount (OutCostLedger ol) <- NUMERIC[14,2](quantity(ol) * costPrice(location(ol), product(ol), dateTime(ol)))
             WHERE iteration(ol) AND costingMethod(product(ol)) = CostingMethod.avco;
     }
     
-    sum (OutCostLedger ol) <- NUMERIC[14,2](GROUP SUM quantity(ol, InCostLedger il) * price(il)) 
+    amount (OutCostLedger ol) <- NUMERIC[14,2](GROUP SUM quantity(ol, InCostLedger il) * price(il)) 
         WHERE calcCost(ol) AND costingMethod(product(ol)) = CostingMethod.fifo;
 }
 

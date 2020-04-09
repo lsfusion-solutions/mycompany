@@ -15,7 +15,7 @@ priceType = ABSTRACT PriceType (SalesDiscountLine);
 
 quantity = ABSTRACT NUMERIC[16,3] (SalesDiscountLine);
 price = ABSTRACT NUMERIC[10,2] (SalesDiscountLine);
-totalAmount = ABSTRACT NUMERIC[14,2] (SalesDiscountLine);
+amount = ABSTRACT NUMERIC[14,2] (SalesDiscountLine);
 
 matches (Discount d, SalesDiscountLine l) =
     set(d, item(l)) AND
@@ -24,7 +24,7 @@ matches (Discount d, SalesDiscountLine l) =
     NOT startDateTime(d) > dateTime(l) AND
     NOT endDateTime(d) < dateTime(l) AND
     NOT fromQuantity(d) > quantity(l) AND
-    NOT fromAmount(d) > totalAmount(l) AND
+    NOT fromAmount(d) > amount(l) AND
     NOT fromAccumulated(d) >= (OVERRIDE prevSoldAmount(customer(l)), 0.0) AND
     NOT fromAccumulatedPreviousMonth(d) >= (OVERRIDE prevSoldAmountPreviousMonth(customer(l)), 0.0) COMPLEX;
 
@@ -58,11 +58,11 @@ META defineDocSalesDiscountLine (doc, caption, NS)
     price(###doc##Line l) += NS.price(l);
     
     fullAmount (###doc o) = GROUP SUM NUMERIC[14,2](quantity(###doc##Line l) * price(l) *
-                                                    (IF taxIncluded(l) THEN 1.0 ELSE (100.0 (+) percentTax(l)) / 100.0)) 
+                                                    (IF taxIncluded(l) THEN 1.0 ELSE (100.0 (+) taxPercent(l)) / 100.0)) 
                                       IF doc(l) = o;
-    discountAmount (###doc o) = fullAmount(o) (-) totalAmount(o);
+    discountAmount (###doc o) = fullAmount(o) (-) amount(o);
     
-    totalAmount(###doc##Line l) += fullAmount(doc(l));
+    amount(###doc##Line l) += fullAmount(doc(l));
     
     recalcDiscountAuto###doc 'Автоматически рассчитывать скидки в '##caption = DATA BOOLEAN () PREREAD;
     EXTEND FORM options PROPERTIES() recalcDiscountAuto###doc;

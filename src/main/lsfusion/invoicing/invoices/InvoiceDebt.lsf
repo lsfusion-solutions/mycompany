@@ -14,7 +14,7 @@ dueDateTime (Invoice i) += dueDateTime(i);
 partner (Invoice i) += customer(i);
 company (Invoice i) += company(i);
 
-amount (Invoice i) += totalAmount(i);
+amount (Invoice i) += amount(i);
 
 // pay
 pay 'Разнести' (IncomingDebt d, Invoice i) {
@@ -53,5 +53,5 @@ EXTEND FORM invoices
 ;
 
 // auto set done
-WHEN SET(totalAmount(Invoice i) = paid(i)) DO done(i) <- TRUE;
-WHEN DROPPED(totalAmount(Invoice i) = paid(i)) DO done(i) <- NULL;
+WHEN SET(amount(Invoice i) = paid(i)) DO done(i) <- TRUE;
+WHEN DROPPED(amount(Invoice i) = paid(i)) DO done(i) <- NULL;

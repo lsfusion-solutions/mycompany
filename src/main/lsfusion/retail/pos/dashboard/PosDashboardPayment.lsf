@@ -8,17 +8,17 @@ amount 'Сумма' = DATA LOCAL NUMERIC[14,2] (PaymentMethod);
 paymentAmount() = GROUP SUM amount(PaymentMethod pm); 
 notCashPaymentAmount() = GROUP SUM amount(PaymentMethod pm) IF NOT isCash(pm); 
 
-change (Invoice i) = paymentAmount() (-) totalAmount(i); 
+change (Invoice i) = paymentAmount() (-) amount(i); 
 
 FORM posPayment 'Оплата'
     OBJECTS i = Invoice PANEL
-    PROPERTIES nameCustomer(i), totalAmount(i), change 'Сдача' = change(i) IF change(i) > 0
+    PROPERTIES nameCustomer(i), amount(i), change 'Сдача' = change(i) IF change(i) > 0
     
     OBJECTS pm = PaymentMethod
     PROPERTIES(pm) name READONLY, amount 
     FILTERS NOT disabled(pos(session(i)), pm)
     
-    PROPERTIES overFormOk = formOk() READONLYIF change(i) < 0 OR notCashPaymentAmount() > totalAmount(i) 
+    PROPERTIES overFormOk = formOk() READONLYIF change(i) < 0 OR notCashPaymentAmount() > amount(i) 
 ;
 
 DESIGN posPayment {
@@ -26,7 +26,7 @@ DESIGN posPayment {
         NEW top {
             alignment = STRETCH;
             MOVE PROPERTY(nameCustomer(i)) { fontSize = 24; alignment = STRETCH; changeKey = 'F5'; }
-            MOVE PROPERTY(totalAmount(i)) { fontSize = 24; alignment = STRETCH; }
+            MOVE PROPERTY(amount(i)) { fontSize = 24; alignment = STRETCH; }
         }
         NEW center {
             fill = 1;
@@ -87,7 +87,7 @@ posPayment 'Оплата' (Session s, Invoice i) {
 } CHANGEKEY 'ctrl ENTER';
 
 EXTEND FORM posDashboard
-    PROPERTIES(s, i) posPayment READONLYIF NOT totalAmount(i)
+    PROPERTIES(s, i) posPayment READONLYIF NOT amount(i)
 ;
 
 DESIGN posDashboard {

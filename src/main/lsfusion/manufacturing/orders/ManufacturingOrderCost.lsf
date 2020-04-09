@@ -30,8 +30,8 @@ location(ConsumedInCostLedger l) += costLocation(productsLocation(manufacturingO
 product(ConsumedInCostLedger l) += item(line(l)) AS Product;
 quantity(ConsumedInCostLedger l) += produced(line(l));
 
-cost (ManufacturingOrder o) = GROUP SUM sum(ConsumedOutCostLedger l) IF manufacturingOrder(line(l)) = o;
+cost (ManufacturingOrder o) = GROUP SUM amount(ConsumedOutCostLedger l) IF manufacturingOrder(line(l)) = o;
 
-calcSum (ConsumedInCostLedger l) += NUMERIC[16,3](cost(manufacturingOrder(line(l))) * normalizedCostRatio(line(l)));
+calcAmount (ConsumedInCostLedger l) += NUMERIC[16,3](cost(manufacturingOrder(line(l))) * normalizedCostRatio(line(l)));
 
 edit(ConsumedInCostLedger l) + { edit(line(l)); }

@@ -24,7 +24,7 @@ WHEN LOCAL SET(session(Invoice i)) AND NOT CHANGED(company(i)) DO
 EXTEND FORM session
     OBJECTS i = Invoice
     PROPERTIES(i) READONLY nameStatus BACKGROUND colorStatus(i), dateTime, number, nameCustomer, 
-                           'Итого' = fullAmount, 'Скидка' = discountAmount, 'К оплате' = totalAmount
+                           'Итого' = fullAmount, 'Скидка' = discountAmount, 'К оплате' = amount
     PROPERTIES(i) NEWSESSION EDIT
     FILTERS session(i) = s
 ;
@@ -55,7 +55,7 @@ numberSession 'Смена' (Bill i) = number(session(i));
 EXTEND FORM session
     OBJECTS b = Bill
     PROPERTIES(b) READONLY nameStatus BACKGROUND colorStatus(i), dateTime, number, nameVendor, 
-                           'К оплате' = totalAmount
+                           'К оплате' = amount
     PROPERTIES(b) NEWSESSION EDIT
     FILTERS session(b) = s
 ;
@@ -66,18 +66,18 @@ DESIGN session {
     }
 }
 
-totalAmountInvoice 'Продано' (Session s) = GROUP SUM totalAmount(Invoice i) IF session(i) = s MATERIALIZED ; 
+totalAmountInvoice 'Продано' (Session s) = GROUP SUM amount(Invoice i) IF session(i) = s MATERIALIZED ; 
 countInvoices 'Продаж' (Session s) = GROUP SUM 1 IF session(Invoice i) = s MATERIALIZED;
 
-totalAmountBill 'Возвращено' (Session s) = GROUP SUM totalAmount(Bill b) IF session(b) = s MATERIALIZED;
+totalAmountBill 'Возвращено' (Session s) = GROUP SUM amount(Bill b) IF session(b) = s MATERIALIZED;
 countBills 'Возвратов' (Session s) = GROUP SUM 1 IF  session(Bill b) = s MATERIALIZED;
 
-totalAmount 'Итого' (Session s) = totalAmountInvoice(s) (-) totalAmountBill(s) MATERIALIZED;
+amount 'Итого' (Session s) = totalAmountInvoice(s) (-) totalAmountBill(s) MATERIALIZED;
 
 EXTEND FORM sessions
     PROPERTIES(o) countInvoices, totalAmountInvoice,
                   countBills, totalAmountBill,
-                  totalAmount
+                  amount
 ;
 
 EXTEND FORM bill

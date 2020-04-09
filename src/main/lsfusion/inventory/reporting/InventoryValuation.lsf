@@ -6,17 +6,17 @@ NAMESPACE Inventory;
 
 FORM inventoryValuation 'Себестоимость остатков'
     OBJECTS lp = (l = Location, p = Product)
-    PROPERTIES READONLY 'Склад' = canonicalName(l), 'Товар' = name(p), costQuantity(l, p), costPrice(l, p), costSum(l, p)
+    PROPERTIES READONLY 'Склад' = canonicalName(l), 'Товар' = name(p), costQuantity(l, p), costPrice(l, p), costAmount(l, p)
     PROPERTIES recalculateCost() DRAW lp TOOLBAR
     FILTERS costQuantity(l, p)
         
     OBJECTS ol = OutCostLedger
-    PROPERTIES(ol) READONLY type, dateTime, number, nameLocation, nameProduct, quantity, costed, price, sum
+    PROPERTIES(ol) READONLY type, dateTime, number, nameLocation, nameProduct, quantity, costed, price, amount
     PROPERTIES(ol) EDIT
     FILTERS location(ol) = l, product(ol) = p
     
     OBJECTS il = InCostLedger
-    PROPERTIES(il) READONLY type, dateTime, number, nameLocation, nameProduct, quantity, costed, price, sum
+    PROPERTIES(il) READONLY type, dateTime, number, nameLocation, nameProduct, quantity, costed, price, amount
     PROPERTIES(il) EDIT
     PROPERTIES READONLY quantity(ol, il)
     FILTERS location(il) = l, product(il) = p
@@ -24,7 +24,7 @@ FORM inventoryValuation 'Себестоимость остатков'
     OBJECTS locProd = (location = Location, product = Product)
     PROPERTIES READONLY 'Склад' = canonicalName(location), 'Товар' = name(product), 
         level1(product), level2(product), level3(product), level4(product), 'Группа полная' = canonicalNameCategory(product),
-        costQuantity(location, product), costPrice(location, product), costSum(location, product)
+        costQuantity(location, product), costPrice(location, product), costAmount(location, product)
     FILTERS costQuantity(location, product)
     
     FILTERGROUP filterIn

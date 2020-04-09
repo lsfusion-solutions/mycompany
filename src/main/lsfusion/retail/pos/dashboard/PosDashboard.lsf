@@ -17,7 +17,7 @@ FORM posDashboard 'POS'
     FILTERS s = openedSession(p)
     
     OBJECTS i = Invoice PANEL
-    PROPERTIES(i) 'Итого' = fullAmount, 'Скидка' = discountAmount, 'К оплате' = totalAmount, 
+    PROPERTIES(i) 'Итого' = fullAmount, 'Скидка' = discountAmount, 'К оплате' = amount, 
                   nameCustomer
     FILTERS session(i) = s
     
@@ -29,11 +29,11 @@ FORM posDashboard 'POS'
     FILTERS invoice(l) = i
 
     // session results
-    PROPERTIES openSession(p) SHOWIF NOT s, close(s) READONLYIF totalAmount(i)
-    PROPERTIES(s) READONLY openingDateTime, totalAmount
+    PROPERTIES openSession(p) SHOWIF NOT s, close(s) READONLYIF amount(i)
+    PROPERTIES(s) READONLY openingDateTime, amount
     
     OBJECTS si = Invoice
-    PROPERTIES(si) READONLY dateTime, number, nameCustomer, 'Итого' = fullAmount, 'Скидка' = discountAmount, 'К оплате' = totalAmount
+    PROPERTIES(si) READONLY dateTime, number, nameCustomer, 'Итого' = fullAmount, 'Скидка' = discountAmount, 'К оплате' = amount
     PROPERTIES(si) NEWSESSION EDIT
     FILTERGROUP invoices
         FILTER 'По смене' PREV(session(si)) = s DEFAULT
@@ -84,7 +84,7 @@ DESIGN posDashboard {
                                 alignment = STRETCH;
                                 MOVE PROPERTY(fullAmount(i)) { charWidth = 8; panelCaptionAbove = TRUE; fontSize = 24; focusable = FALSE; }
                                 MOVE PROPERTY(discountAmount(i)) { charWidth = 8; panelCaptionAbove = TRUE; fontSize = 24; focusable = FALSE; }
-                                MOVE PROPERTY(totalAmount(i)) { charWidth = 8; panelCaptionAbove = TRUE; fontSize = 24; focusable = FALSE; }
+                                MOVE PROPERTY(amount(i)) { charWidth = 8; panelCaptionAbove = TRUE; fontSize = 24; focusable = FALSE; }
                             }
                         }
                         NEW actions {
@@ -116,7 +116,7 @@ DESIGN posDashboard {
                     NEW sessionTotal {
                         type = CONTAINERH;
                         alignment = STRETCH;
-                        MOVE PROPERTY(totalAmount(s));
+                        MOVE PROPERTY(amount(s));
                     }
                     
                     NEW sessionDetails {

@@ -48,7 +48,7 @@ WHEN LOCAL CHANGED(item(BillLine bsl)) DO costAllocationBase(bsl) <- costAllocat
 allocationBase (bl, bsl) = ABSTRACT CASE NUMERIC[14,3] (BillLine, CostAllocationBase);
 
 allocationBase (BillLine bl, CostAllocationBase b) += 
-    WHEN item(bl) IS Product AND b = CostAllocationBase.ammount THEN NUMERIC[14,3](subtotal(bl));  
+    WHEN item(bl) IS Product AND b = CostAllocationBase.ammount THEN NUMERIC[14,3](untaxedAmount(bl));  
 allocationBase (BillLine bl, CostAllocationBase b) += 
     WHEN item(bl) IS Product AND b = CostAllocationBase.cost THEN NUMERIC[14,3](cost(item(bl)) * quantity(bl)); 
 allocationBase (BillLine bl, CostAllocationBase b) += 
@@ -67,10 +67,10 @@ costAllocated 'Распределено' = DATA NUMERIC[14,2] (BillLine, BillLin
 
 costAllocated 'Распределено' (BillLine bsl) = GROUP SUM costAllocated(BillLine bl, bsl) IF serviceLine(bl, bsl);
 
-CONSTRAINT costAllocated(BillLine bsl) AND NOT costAllocated(bsl) <= subtotal(bsl)
+CONSTRAINT costAllocated(BillLine bsl) AND NOT costAllocated(bsl) <= untaxedAmount(bsl)
     MESSAGE 'Распределенная сумма не может превышать стоимость услуги';  
 
-calcCostAllocated 'Распределено' (BillLine bl, BillLine bsl) = PARTITION UNGROUP subtotal
+calcCostAllocated 'Распределено' (BillLine bl, BillLine bsl) = PARTITION UNGROUP untaxedAmount
     PROPORTION STRICT ROUND(2) allocationBase(bl, bsl) IF serviceLine(bl, bsl)
     ORDER bl BY bsl;
 
@@ -90,20 +90,20 @@ checkBill (Bill b, BillLine bsl) {
 
 EXTEND FORM bill
     OBJECTS bsl = BillLine
-    PROPERTIES(bsl) READONLY index, nameItem, nameUom, idBarCodeItem, idItem, subtotal, costAllocated
+    PROPERTIES(bsl) READONLY index, nameItem, nameUom, idBarCodeItem, idItem, untaxedAmount, costAllocated
     PROPERTIES(bsl) nameCostAllocationBase
     FILTERS b = bill(bsl),
             item(bsl) IS Service
 
     OBJECTS bc = Bill
-    PROPERTIES(bc) READONLY nameType, dateTime, nameStatus, number, nameVendor, nameCompany, totalAmount
+    PROPERTIES(bc) READONLY nameType, dateTime, nameStatus, number, nameVendor, nameCompany, amount
     PROPERTIES service(bc, bsl) ON CHANGE checkBill(bc, bsl)
     PROPERTIES allocate(bsl) TOOLBAR DRAW bc
     PROPERTIES(bc) EDIT
     
     OBJECTS bl = BillLine
     PROPERTIES(bl) READONLY numberDate SHOWIF (GROUP SUM 1 IF service(Bill bb, bsl)) > 1 
-    PROPERTIES(bl) READONLY index, nameItem, nameUom, idBarCodeItem, idItem, quantity, price, taxes, subtotal
+    PROPERTIES(bl) READONLY index, nameItem, nameUom, idBarCodeItem, idItem, quantity, price, taxes, untaxedAmount
     PROPERTIES nameCostingMethod 'Метод расчета себестоимости' = nameCostingMethod(item(bl))
     PROPERTIES(bl, bsl) READONLY allocationBase
     PROPERTIES(bl, bsl) costAllocated, serviceLine

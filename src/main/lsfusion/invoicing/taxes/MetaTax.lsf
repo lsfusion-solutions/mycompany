@@ -1,52 +1,50 @@
 MODULE MetaTax;
 
 META defineTaxCalc(doc, let, prefix, price)
-    subtotal 'Сумма'  = DATA NUMERIC[14,2] (###doc##Line);
+    untaxedAmount 'Сумма'  = DATA NUMERIC[14,2] (###doc##Line);
     
     WHEN LOCAL CHANGED(quantity(###doc##Line l)) OR CHANGED(price(l)) DO {
-        subtotal(l) <- NUMERIC[14,2](quantity(l) * price(l));
+        untaxedAmount(l) <- NUMERIC[14,2](quantity(l) * price(l));
     }
     
+    // taxes for line
     in 'Вкл' = DATA BOOLEAN (###doc##Line, Tax);
     WHEN LOCAL CHANGED(item(###doc##Line l)) DO
         in(l, Tax t) <- prefix##In(item(l), t);
-     
-    
-    taxAmount 'Сумма налога (строка)' (Tax t, ###doc##Line l) = DATA NUMERIC[14,2] (Tax, ###doc##Line);
-    
-    taxIncluded = ABSTRACT BOOLEAN (###doc##Line);
-    WHEN LOCAL CHANGED(subtotal(###doc##Line l) IF in(l, Tax t)) DO
-        taxAmount (t, l) <- NUMERIC[14,2] (value(t) / (100 (+) (value(t) IF taxIncluded(l))) * subtotal(l));
-    
-    CONSTRAINT (DROPPED(Tax t IS Tax) AND PREV(taxAmount(t, ###doc##Line l))) 
-                                                            MESSAGE 'Нельзя удалять налог, участвующий в расчетах';
-    
-    totalTax 'Налог' (###doc##Line l) = GROUP SUM taxAmount(Tax t, l) IF in(l, t);
-    percentTax 'Налоги, %' (###doc##Line l) = GROUP SUM value(Tax t) IF in(l, t);
 
-    totalAmount 'Итоговая сумма' (###doc##Line l) = subtotal(l) (+) (totalTax(l) IF NOT taxIncluded(l));
-
-    taxAmount 'Сумма налога (общая)' (Tax t, ###doc let) = 
-        GROUP SUM taxAmount(t, ###doc##Line l) IF doc(l) = let AND in(l, t);
-    
-    totalTax 'Налог' (###doc let) = GROUP SUM taxAmount(Tax t, let);
-    
-    untaxedAmount 'Сумма' (###doc let) = GROUP SUM subtotal(###doc##Line l) IF doc(l) = let;
-
-    totalAmount 'Итоговая сумма' (###doc let) = GROUP SUM totalAmount(###doc##Line l) IF doc(l) = let;
-    
-    countLine (###doc let, Tax t) = GROUP SUM 1 IF in( ###doc##Line l, t) AND doc(l) = let;
-    
-    taxes 'Налоги' (###doc##Line l) = GROUP CONCAT name(Tax t) IF in(l, t), ', ' ORDER t CHARWIDTH 8;
-    
-    taxLine 'Сумма налогов' (###doc##Line l) = GROUP SUM taxAmount(Tax t, l) IF in(l, t);
-    
-    changeTax ( ###doc##Line l) {
+    changeTax (###doc##Line l) {
         REQUEST {
             setTax (Tax t) <- in(l, t);
             DIALOG changeTax; 
         } DO in(l, Tax t) <- setTax(t);
     } 
+     
+    // amount    
+    taxAmount 'Налоги' (Tax t, ###doc##Line l) = DATA NUMERIC[14,2] (Tax, ###doc##Line);
+    
+    taxIncluded = ABSTRACT BOOLEAN (###doc##Line);
+    WHEN LOCAL CHANGED(untaxedAmount(###doc##Line l) IF in(l, Tax t)) DO
+        taxAmount (t, l) <- NUMERIC[14,2] (value(t) / (100 (+) (value(t) IF taxIncluded(l))) * untaxedAmount(l));
+    
+    CONSTRAINT (DROPPED(Tax t IS Tax) AND PREV(taxAmount(t, ###doc##Line l))) 
+                                                            MESSAGE 'Нельзя удалять налог, участвующий в расчетах';
+    
+    taxAmount 'Налоги' (###doc##Line l) = GROUP SUM taxAmount(Tax t, l) IF in(l, t);
+    taxPercent 'Налоги, %' (###doc##Line l) = GROUP SUM value(Tax t) IF in(l, t);
+    taxes 'Налоги' (###doc##Line l) = GROUP CONCAT name(Tax t) IF in(l, t), ', ' ORDER t CHARWIDTH 8;
+
+    amount 'Итоговая сумма' (###doc##Line l) = untaxedAmount(l) (+) (taxAmount(l) IF NOT taxIncluded(l));
+    
+    // taxes for document
+    taxCount (###doc let, Tax t) = GROUP SUM 1 IF in(###doc##Line l, t) AND doc(l) = let;
+    taxAmount 'Налог' (Tax t, ###doc let) = 
+        GROUP SUM taxAmount(t, ###doc##Line l) IF doc(l) = let AND in(l, t);
+    
+    untaxedAmount 'Сумма' (###doc let) = GROUP SUM untaxedAmount(###doc##Line l) IF doc(l) = let;
+
+    taxAmount 'Налог' (###doc let) = GROUP SUM taxAmount(Tax t, let);
+
+    amount 'Итоговая сумма' (###doc let) = GROUP SUM amount(###doc##Line l) IF doc(l) = let;
 END
 
 META defineTaxCalc(doc, let, prefix)
@@ -55,13 +53,13 @@ END
 
 META defineTaxForm(doc, let)
     EXTEND FORM doc  
-        PROPERTIES(l) subtotal
+        PROPERTIES(l) untaxedAmount
             
         OBJECTS t = Tax
         PROPERTIES name(t) READONLY, taxAmount(t, let) READONLY, taxAmount(t, l)
-        FILTERS countLine(let, t)
+        FILTERS taxCount(let, t)
                 
-        PROPERTIES(let) untaxedAmount, totalTax, totalAmount
+        PROPERTIES(let) untaxedAmount, taxAmount, amount
     ;
         
     DESIGN doc {
@@ -77,14 +75,14 @@ META defineTaxForm(doc, let)
             NEW total {
                 caption = 'Итого по документу';
                 MOVE PROPERTY(untaxedAmount(let));                
-                MOVE PROPERTY(totalTax(let));                
-                MOVE PROPERTY(totalAmount(let));                
+                MOVE PROPERTY(taxAmount(let));                
+                MOVE PROPERTY(amount(let));                
             }
         }
     }
         
     EXTEND FORM doc##s 
-        PROPERTIES(let) READONLY untaxedAmount, totalTax, totalAmount     
+        PROPERTIES(let) READONLY untaxedAmount, taxAmount, amount     
     ;
 END
 

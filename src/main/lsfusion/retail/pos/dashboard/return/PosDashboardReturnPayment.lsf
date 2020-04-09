@@ -9,14 +9,14 @@ invalidAmount(Bill b, PaymentMethod pm) = amount(pm) > OVERRIDE invoicePaid(b, p
 
 FORM posPaymentReturn 'Оплата'
     OBJECTS b = Bill PANEL
-    PROPERTIES nameVendor(b), totalAmount(b)
+    PROPERTIES nameVendor(b), amount(b)
     
     OBJECTS pm = PaymentMethod
     PROPERTIES name(pm) READONLY, invoicePaid(b, pm), amount(pm) BACKGROUND invalidAmount(b, pm)
     FILTERS NOT disabled(pos(session(b)), pm)
     
     PROPERTIES overFormOk = formOk() 
-        READONLYIF NOT paymentAmount() = totalAmount(b) OR GROUP SUM 1 IF invalidAmount(b, PaymentMethod ppm) 
+        READONLYIF NOT paymentAmount() = amount(b) OR GROUP SUM 1 IF invalidAmount(b, PaymentMethod ppm) 
 ;
 
 DESIGN posPaymentReturn {
@@ -24,7 +24,7 @@ DESIGN posPaymentReturn {
         NEW top {
             alignment = STRETCH;
             MOVE PROPERTY(nameVendor(b)) { fontSize = 24; alignment = STRETCH; changeKey = 'F5'; }
-            MOVE PROPERTY(totalAmount(b)) { fontSize = 24; alignment = STRETCH; }
+            MOVE PROPERTY(amount(b)) { fontSize = 24; alignment = STRETCH; }
         }
         NEW center {
             fill = 1;
@@ -79,7 +79,7 @@ posPayment 'Оплата' (Session s, Bill b) {
 } CHANGEKEY 'ctrl ENTER';
 
 EXTEND FORM posDashboard
-    PROPERTIES(s, b) posPayment READONLYIF NOT totalAmount(i)
+    PROPERTIES(s, b) posPayment READONLYIF NOT amount(i)
 ;
 
 DESIGN posDashboard {

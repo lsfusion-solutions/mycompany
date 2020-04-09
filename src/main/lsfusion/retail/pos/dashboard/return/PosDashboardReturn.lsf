@@ -6,7 +6,7 @@ NAMESPACE Retail;
 
 EXTEND FORM posDashboard
     OBJECTS b = Bill PANEL
-    PROPERTIES(b) 'К оплате' = totalAmount, nameVendor
+    PROPERTIES(b) 'К оплате' = amount, nameVendor
     FILTERS session(b) = s
     
     OBJECTS bl = BillLine
@@ -17,7 +17,7 @@ EXTEND FORM posDashboard
     PROPERTIES returnNewReceipt = newReceipt(s)
 
     OBJECTS sb = Bill
-    PROPERTIES(sb) READONLY dateTime, number, nameVendor, 'К оплате' = totalAmount
+    PROPERTIES(sb) READONLY dateTime, number, nameVendor, 'К оплате' = amount
     PROPERTIES(sb) NEWSESSION EDIT
     FILTERS PREV(session(sb)) = s
 ;
@@ -39,7 +39,7 @@ DESIGN posDashboard {
             NEW billLinesFooter {
                 type = CONTAINERH;
                 alignment = STRETCH;
-                MOVE PROPERTY(totalAmount(b)) { charWidth = 8; panelCaptionAbove = TRUE; fontSize = 24; focusable = FALSE; }
+                MOVE PROPERTY(amount(b)) { charWidth = 8; panelCaptionAbove = TRUE; fontSize = 24; focusable = FALSE; }
                 NEW billActions {
                     alignment = STRETCH;
                     type = CONTAINERH;
