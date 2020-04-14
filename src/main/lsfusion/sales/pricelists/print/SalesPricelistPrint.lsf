@@ -1,6 +1,6 @@
 MODULE SalesPricelistPrint;
 
-REQUIRE SalesPricelistPrintType, SalesPricelistValue;
+REQUIRE SalesPricelistPrintType, SalesPricelistValue, ItemImage;
 
 NAMESPACE Sales;
 
@@ -14,7 +14,7 @@ price = DATA LOCAL NUMERIC[10,2] (PriceType, Item);
 
 FORM printPricelist 'Текущие цены'
     OBJECTS pt = PrintPricelistType PANEL
-    PROPERTIES(pt) name, nameCompany, phoneCompany, emailCompany, websiteCompany
+    PROPERTIES(pt) name, nameCompany, addressCompany, phoneCompany, emailCompany, websiteCompany
     REPORT template(pt)
 
     OBJECTS t = PriceType
@@ -25,7 +25,8 @@ FORM printPricelist 'Текущие цены'
     FILTERS c IS Category AND pt IS PrintPricelistType
 
     OBJECTS i = Item
-    PROPERTIES id(i), name(i), nameUom(i), price = price(t, i) COLUMNS (t) HEADER name(t)
+    PROPERTIES image(i), id(i), name(i), nameUom(i), price = price(t, i) COLUMNS (t) HEADER name(t)
+    PROPERTIES currentDate()
     FILTERS category(i) = c, GROUP SUM 1 IF price(PriceType ppt, i)
 ;
 
