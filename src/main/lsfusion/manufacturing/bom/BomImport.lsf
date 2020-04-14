@@ -64,11 +64,10 @@ bomImport 'Импорт спецификаций' () {
     LOCAL idItem = STRING[50] (INTEGER);
     LOCAL quantity = NUMERIC[16,3] (INTEGER);
     LOCAL idUom = STRING[50] (INTEGER);
-    LOCAL sequence = INTEGER (INTEGER);
     
     INPUT f = EXCELFILE DO {
         NEWSESSION {
-            IMPORT XLS HEADER FROM f TO number, idItem, quantity, idUom, sequence;
+            IMPORT XLS HEADER FROM f TO number, idItem, quantity, idUom;
             
             FOR [GROUP SUM 1 BY idItem(INTEGER i)](num) AND NOT item[STRING](num) DO {
                 MESSAGE 'Отсутствует товар в базе данных с кодом ' + num + '. Импорт отменен';
