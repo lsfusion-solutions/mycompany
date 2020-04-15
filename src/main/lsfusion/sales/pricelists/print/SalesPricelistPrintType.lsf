@@ -17,7 +17,11 @@ format = DATA TemplateFormat (PrintPricelistType);
 nameFormat 'Формат' (PrintPricelistType t) = name(format(t));
 
 set 'Вкл' = DATA BOOLEAN (PrintPricelistType, Category);
+
 set 'Вкл' = DATA BOOLEAN (PrintPricelistType, PriceType);
+
+index 'Порядок' (PrintPricelistType t, PriceType pt) = PARTITION SUM 1 IF set(t, pt) ORDER pt BY t MATERIALIZED; 
+priceType (PrintPricelistType t, INTEGER i) = GROUP MAX PriceType pt IF index(t, pt) = i; 
 
 FORM printPricelistType 'Тип прайс-листа'
     OBJECTS t = PrintPricelistType PANEL
@@ -29,7 +33,7 @@ FORM printPricelistType 'Тип прайс-листа'
     ORDER name(cat)
     
     OBJECTS pt = PriceType
-    PROPERTIES name(pt) READONLY, set(t, pt)
+    PROPERTIES name(pt) READONLY, set(t, pt), index(t, pt) READONLY
     
     EDIT PrintPricelistType OBJECT t
 ;
