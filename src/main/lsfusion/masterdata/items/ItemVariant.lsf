@@ -4,8 +4,10 @@ REQUIRE ItemAttribute, BarCode, Product, ServiceP;
 
 NAMESPACE MasterData;
 
-variantOf 'Основная номенклатура' = DATA Item (Item);
+variantOf 'Основная номенклатура' = DATA Item (Item) INDEXED;
 nameVariantOf 'Основная номенклатура' (Item i) = name(variantOf(i));
+
+primary (Item i) = OVERRIDE variantOf(i), (i AS Item) MATERIALIZED INDEXED;
 
 copy(Item n, Item o) + {
      variantOf(n) <- variantOf(o);
