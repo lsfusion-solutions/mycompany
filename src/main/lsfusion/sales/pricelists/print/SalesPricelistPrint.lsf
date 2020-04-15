@@ -12,6 +12,8 @@ websiteCompany (PrintPricelistType t) = website(company(t));
 
 price = DATA LOCAL NUMERIC[10,2] (PriceType, Item); 
 
+labelPrice (Item i, PrintPricelistType pt) = price(labelPriceType(pt), i);
+
 FORM printPricelist 'Текущие цены'
     OBJECTS pt = PrintPricelistType PANEL
     PROPERTIES(pt) name, nameCompany, addressCompany, phoneCompany, emailCompany, websiteCompany
@@ -25,7 +27,8 @@ FORM printPricelist 'Текущие цены'
     FILTERS c IS Category AND pt IS PrintPricelistType
 
     OBJECTS i = Item
-    PROPERTIES image(i), id(i), name(i), nameUom(i), price = price(t, i) COLUMNS (t) HEADER name(t)
+    PROPERTIES image(i), id(i), name(i), nameUom(i), price = price(t, i) COLUMNS (t) HEADER name(t),
+        labelPrice(i, pt)
     PROPERTIES currentDate()
     FILTERS category(i) = c, GROUP SUM 1 IF price(PriceType ppt, i)
 ;
