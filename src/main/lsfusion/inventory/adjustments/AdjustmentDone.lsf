@@ -35,15 +35,15 @@ DESIGN adjustment {
 }
 
 // inv adjustment
-difference (AdjustmentLine l) = theoreticalQuantity(l) - realQuantity(l);
+difference (AdjustmentLine l) = theoreticalQuantity(l) (-) realQuantity(l);
 
 CLASS InvAdjustment 'Инвентаризация';
 
 CLASS InAdjustment : InvAdjustment;
-inAdjustment = AGGR InAdjustment WHERE difference(AdjustmentLine line) < 0 AND done(adjustment(line));
+inAdjustment = AGGR InAdjustment WHERE difference(AdjustmentLine line) < 0.0 AND done(adjustment(line));
 
 CLASS OutAdjustment : InvAdjustment;
-outAdjustment = AGGR OutAdjustment WHERE difference(AdjustmentLine line) > 0 AND done(adjustment(line));
+outAdjustment = AGGR OutAdjustment WHERE difference(AdjustmentLine line) > 0.0 AND done(adjustment(line));
 
 line (InvAdjustment a) = MULTI line[InAdjustment](a), line[OutAdjustment](a) MATERIALIZED INDEXED;
 adjustment (InvAdjustment a) = adjustment(line(a)) MATERIALIZED INDEXED;

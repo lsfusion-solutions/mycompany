@@ -1,6 +1,6 @@
 MODULE SalesPriceTypeMarkup;
 
-REQUIRE SalesPriceType;
+REQUIRE SalesPriceType, BarCode;
 
 NAMESPACE Sales;
 
@@ -16,7 +16,9 @@ EXTEND FORM priceType
     PROPERTIES name(c) READONLY, markup(pt, c), parentMarkup(pt, c) READONLY
 
     OBJECTS i = Item
-    PROPERTIES name(i) READONLY, dataMarkup(pt, i), markup(pt, i) READONLY
+    PROPERTIES(i) READONLY name, nameUom, idBarCode, id
+    PROPERTIES             dataMarkup(pt, i), markup(pt, i) READONLY
+    ORDER name(i)
     FILTERS level(category(i), c)
 ;
 
