@@ -48,6 +48,8 @@ index '№' = PARTITION SUM 1 ORDER PricelistLine l BY pricelist(l) IN id MATERI
 
 item 'Номенклатура' = DATA Item (PricelistLine);
 nameItem 'Номенклатура' (PricelistLine prl) = name(item(prl));
+idBarCodeItem 'Штрихкод' (PricelistLine l) = idBarCode(item(l));
+idItem 'Код' (PricelistLine l) = id(item(l));
 
 uom = DATA Uom (PricelistLine);
 nameUom 'Ед. изм.' (PricelistLine l) = name(uom(l)); 
@@ -98,8 +100,8 @@ FORM pricelist 'Прайс-лист'
     FILTERS editIn(p, t) 
    
     OBJECTS l = PricelistLine
-    PROPERTIES(l) index READONLY, nameItem, nameUom READONLY, costPrice SHOWIF showCost(type(p)) READONLY
-    PROPERTIES    markup(l, t) COLUMNS 'p' (t) HEADER name(t) + ' (надбавка)' SHOWIF showMarkup(type(p)) ON CHANGE changeMarkup(l, t)
+    PROPERTIES(l) index READONLY, nameItem, nameUom, idBarCodeItem, idItem, costPrice SHOWIF showCost(type(p)) READONLY
+    PROPERTIES    markup(l, t) COLUMNS 'p' (t) HEADER name(t) + ', %' SHOWIF showMarkup(type(p)) ON CHANGE changeMarkup(l, t)
     PROPERTIES    price(l, t) COLUMNS 'p' (t) HEADER name(t) 
     PROPERTIES(l) NEW, DELETE 
     FILTERS pricelist(l) = p 

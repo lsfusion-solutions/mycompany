@@ -22,7 +22,7 @@ changeIn(Item item, Pricelist pricelist)  {
                 }
 }
 
-markup 'Текущая надбавка' (Item i, PriceType t, DATETIME dt) = 
+markup 'Текущая надбавка' (PriceType t, Item i, DATETIME dt) = 
     round2(priceB(t, i, dt) / (OVERRIDE 100.0 / (100.0 + salesTax(i)) IF taxIncluded(t), 1.0) * 100.0 / overCost(i)) - 100.0;
 
 EXTEND FORM pricelist
@@ -34,9 +34,9 @@ EXTEND FORM pricelist
     FILTERS dt = startDateTime(p)
     
     OBJECTS i = Item
-    PROPERTIES READONLY name(i),
+    PROPERTIES READONLY name(i), nameUom(i), idBarCode(i), id(i), 
                         overCost(i) SHOWIF showCost(type(p)),
-                        markup(i, t, dt) COLUMNS 'p' (t) HEADER name(t) + ', %' SHOWIF showMarkup(type(p)),
+                        markup(t, i, dt) COLUMNS 'p' (t) HEADER name(t) + ', %' SHOWIF showMarkup(type(p)),
                         priceB(t, i, dt) COLUMNS 'p' (t) HEADER name(t)
     FILTERS level(category(i), c), canBeSold(i)
     
@@ -54,8 +54,8 @@ DESIGN pricelist {
             MOVE BOX(i) { 
                 fill = 2;
             }
-            MOVE PROPERTY(overCost(i));
-            MOVE PROPERTY(markup(i, t, dt));
+            PROPERTY(markup(t, i, dt)) { background = RGB(212,242,252); }
+            PROPERTY(priceB(t, i, dt)) { background = RGB(198,230,247); }
         }       
     }
 }
