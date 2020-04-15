@@ -17,6 +17,7 @@ format = DATA TemplateFormat (PrintPricelistType);
 nameFormat 'Формат' (PrintPricelistType t) = name(format(t));
 
 set 'Вкл' = DATA BOOLEAN (PrintPricelistType, Category);
+set 'Вкл' (PrintPricelistType t, Item i) = GROUP LAST set(t, Category pc) ORDER level(category(i), pc);
 
 set 'Вкл' = DATA BOOLEAN (PrintPricelistType, PriceType);
 
@@ -94,19 +95,4 @@ DESIGN pricelists {
     }
 }
 
-labelPriceType = DATA PriceType (PrintPricelistType);
-nameLabelPriceType 'Вид цены для ценника' (PrintPricelistType t) = name(labelPriceType(t));
-
-CONSTRAINT SETCHANGED(labelPriceType(PrintPricelistType t)) AND NOT set(t, labelPriceType(t))
-    CHECKED BY labelPriceType
-    MESSAGE 'Тип цены должен быть включен в тип прайс-листа';
-
-EXTEND FORM printPricelistType
-    PROPERTIES(t) nameLabelPriceType
-;
-
-DESIGN printPricelistType {
-    header {
-        MOVE PROPERTY(nameLabelPriceType(t));
-    }
-}
+countPrintPricelistTypes 'Кол-во типов' () = GROUP SUM 1 IF r IS PrintPricelistType; 
