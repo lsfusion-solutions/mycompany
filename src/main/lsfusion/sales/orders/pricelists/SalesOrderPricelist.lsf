@@ -29,7 +29,7 @@ CONSTRAINT type(Order i) AND priceType(i) AND NOT taxValid(type(i), priceType(i)
            CHECKED BY priceType[Order]
            MESSAGE 'Для реализации выбран недопустимый для типа вид цены, (не)включающий налоги'; 
 
-WHEN LOCAL CHANGED(customer(Order o)) DO 
+WHEN LOCAL CHANGED(customer(Order o)) OR CHANGED(type(o)) DO 
     priceType(o) <- OVERRIDE priceType(customer(o)), priceType(type(o));
 
 WHEN LOCAL (SETCHANGED(item(OrderLine ol)) OR SETCHANGED(priceType(order(ol))) OR 
