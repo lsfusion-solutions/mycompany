@@ -99,7 +99,10 @@ description 'Описание' = DATA STRING (BillLine);
 quantity 'Кол-во' = DATA NUMERIC[16,3] (BillLine) NONULL;
 price 'Цена' = DATA NUMERIC[10,2] (BillLine) NONULL;
 
-WHEN LOCAL SETCHANGED(item(BillLine l)) AND NOT CHANGED(price(l)) DO price(l) <- cost(item(l));
+defaultPrice = ABSTRACT CASE NUMERIC[10,2] (BillLine);
+WHEN LOCAL SETCHANGED(item(BillLine l)) AND NOT CHANGED(price(l)) DO price(l) <- defaultPrice(l);
+
+defaultPrice (BillLine l) += WHEN cost(item(l)) THEN cost(item(l)); 
 
 // taxes
 @defineTaxCalc(bill, b, purchase);

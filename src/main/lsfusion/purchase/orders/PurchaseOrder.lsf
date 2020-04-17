@@ -3,7 +3,7 @@ MODULE PurchaseOrder;
 REQUIRE Time, MetaNumerator, Employee, Company,
         MetaTax, TaxItem, BarCode, PurchaseOrderType,
         PurchaseSettings, PartnerPurchase, ItemSales,
-        PaymentTermsPurchase, Doc, PurchasePricelistValue,
+        PaymentTermsPurchase, Doc,
         DebtPartner, Location;  
 
 NAMESPACE Purchase;
@@ -83,16 +83,18 @@ nameUom 'Ед. изм.' (OrderLine l) = name(uom(l));
 WHEN LOCAL CHANGED(item(OrderLine l)) DO uom(l) <- uom(item(l));
 
 quantity 'Количество' = DATA NUMERIC[16,3] (OrderLine);
+
 price 'Цена' = DATA NUMERIC[10,2] (OrderLine);
+
+defaultPrice = ABSTRACT CASE NUMERIC[10,2] (OrderLine);
+WHEN LOCAL SETCHANGED(item(OrderLine l)) AND NOT CHANGED(price(l)) DO price(l) <- defaultPrice(l);
+
+defaultPrice (OrderLine l) += WHEN cost(item(l)) THEN cost(item(l)); 
 
 @defineTaxCalc(order, o, purchase);
 taxIncluded (OrderLine l) += taxIncluded(type(order(l)));
 
 WHEN LOCAL CHANGED (item(OrderLine ol)) DO {
-    description(ol) <- nameItemVendor(pricelistLineA(vendor(order(ol)), item(ol), dateTime(order(ol)))); 
-    price(ol) <- OVERRIDE price(pricelistLineA(vendor(order(ol)), item(ol), dateTime(order(ol)))), 
-                              cost(item(ol));
-    uom(ol) <- uom(item(ol));
     in(ol, Tax t) <- purchaseIn(item(ol),t); 
 }
 

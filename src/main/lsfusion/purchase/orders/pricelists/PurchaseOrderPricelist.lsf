@@ -1,0 +1,33 @@
+MODULE PurchaseOrderPricelist;
+
+REQUIRE PurchaseOrderSearch, PurchasePricelistValue;
+
+NAMESPACE Purchase;
+
+// price
+listPrice (OrderLine l) = overPriceA(vendor(order(l)), item(l), dateTime(order(l)));  
+defaultPrice (OrderLine l) += WHEN listPrice(l) THEN listPrice(l);
+                                    
+WHEN LOCAL (SETCHANGED(vendor(order(OrderLine l))) OR
+            (SETCHANGED(dateTime(order(l))) AND status(order(l)) = OrderStatus.draft)) 
+            AND NOT CHANGED(price(l)) DO {
+    price(l) <- defaultPrice(l); 
+}
+
+// description
+WHEN LOCAL (SETCHANGED(vendor(order(OrderLine l))) OR SETCHANGED(item(l)) OR
+            (SETCHANGED(dateTime(order(l))) AND status(order(l)) = OrderStatus.draft)) 
+            AND NOT CHANGED(description(l)) DO {
+    description(l) <- nameItemVendor(pricelistLineA(vendor(order(l)), item(l), dateTime(order(l)))); 
+}
+
+// search
+listPrice 'Цена' (Order o, Item i) = priceA(vendor(o), i, dateTime(o));
+overListPrice 'Цена' (Order o, Item i) = overPriceA(vendor(o), i, dateTime(o));
+
+EXTEND FORM order
+    PROPERTIES(o, itm) READONLY overListPrice
+
+    FILTERGROUP pricelist
+        FILTER 'В прайс-листе' listPrice(o, itm)
+;

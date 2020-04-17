@@ -32,12 +32,6 @@ CONSTRAINT type(Order i) AND priceType(i) AND NOT taxValid(type(i), priceType(i)
 WHEN LOCAL CHANGED(customer(Order o)) OR CHANGED(type(o)) DO 
     priceType(o) <- OVERRIDE priceType(customer(o)), priceType(type(o));
 
-WHEN LOCAL (SETCHANGED(item(OrderLine ol)) OR SETCHANGED(priceType(order(ol))) OR 
-            (SETCHANGED(dateTime(order(ol))) AND status(order(ol)) = OrderStatus.draft)) 
-            AND NOT CHANGED(price(ol)) DO {
-    price(ol) <- overPriceA(priceType(order(ol)), item(ol), dateTime(order(ol))); 
-}
-
 EXTEND FORM order
     PROPERTIES(o) namePriceType
 ;
@@ -46,6 +40,16 @@ DESIGN order {
     headerRight {
         MOVE PROPERTY(namePriceType(o)); 
     }
+}
+
+// price
+listPrice (OrderLine l) = overPriceA(priceType(order(l)), item(l), dateTime(order(l)));  
+defaultPrice (OrderLine l) += WHEN listPrice(l) THEN listPrice(l);
+                                    
+WHEN LOCAL (SETCHANGED(priceType(order(OrderLine l))) OR
+            (SETCHANGED(dateTime(order(l))) AND status(order(l)) = OrderStatus.draft)) 
+            AND NOT CHANGED(price(l)) DO {
+    price(l) <- defaultPrice(l); 
 }
 
 // search

@@ -100,7 +100,11 @@ quantity 'Кол-во' = DATA NUMERIC[16,3] (InvoiceLine) NONULL CHARWIDTH 7;
 weight 'Вес' (InvoiceLine l) = NUMERIC[16,3](quantity(l) * weight(item(l)));
 
 price 'Цена' = DATA NUMERIC[10,2] (InvoiceLine) NONULL;
-WHEN LOCAL SETCHANGED(item(InvoiceLine l)) AND NOT CHANGED(price(l)) DO price(l) <- salesPrice(item(l));
+
+defaultPrice = ABSTRACT CASE NUMERIC[10,2] (InvoiceLine);
+WHEN LOCAL SETCHANGED(item(InvoiceLine l)) AND NOT CHANGED(price(l)) DO price(l) <- defaultPrice(l);
+
+defaultPrice (InvoiceLine l) += WHEN salesPrice(item(l)) THEN salesPrice(item(l)); 
 
 @defineDocDiscount(invoice);
 

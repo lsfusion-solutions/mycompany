@@ -1,0 +1,25 @@
+MODULE PurchaseBillPricelist;
+
+REQUIRE Bill, PurchasePricelistValue;
+
+NAMESPACE Purchase;
+
+// price
+listPrice (BillLine l) = overPriceA(vendor(bill(l)), item(l), dateTime(bill(l)));  
+defaultPrice (BillLine l) += WHEN listPrice(l) THEN listPrice(l);
+                                    
+WHEN LOCAL (SETCHANGED(vendor(bill(BillLine l))) OR
+            (SETCHANGED(dateTime(bill(l))) AND status(bill(l)) = BillStatus.draft)) 
+            AND NOT CHANGED(price(l)) DO {
+    price(l) <- defaultPrice(l); 
+}
+
+// search
+overListPrice 'Цена' (Bill o, Item i) = overPriceA(vendor(o), i, dateTime(o));
+
+EXTEND FORM bill
+    PROPERTIES(b, itm) READONLY overListPrice
+
+    FILTERGROUP pricelist
+        FILTER 'С ценой' overListPrice(b, itm)
+;
