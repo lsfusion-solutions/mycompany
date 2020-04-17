@@ -11,14 +11,20 @@ name 'Наименование' = DATA STRING[50] (PrintPricelistType);
 company = DATA Company (PrintPricelistType);
 nameCompany 'Компания' (PrintPricelistType t) = name(company(t)); 
 
+WHEN LOCAL SET(PrintPricelistType t IS PrintPricelistType) AND NOT CHANGED(company(t)) DO company(t) <- defaultCompany();
+
 template 'Шаблон для заголовка' = DATA STRING (PrintPricelistType) CHARWIDTH 50;
 
 format = DATA TemplateFormat (PrintPricelistType);
 nameFormat 'Формат' (PrintPricelistType t) = name(format(t));
 
+// category
 set 'Вкл' = DATA BOOLEAN (PrintPricelistType, Category);
-set 'Вкл' (PrintPricelistType t, Item i) = GROUP LAST set(t, Category pc) ORDER level(category(i), pc);
 
+countCategories (PrintPricelistType t) = GROUP SUM 1 IF set(t, Category c) MATERIALIZED;
+set 'Вкл' (PrintPricelistType t, Item i) = (GROUP LAST set(t, Category pc) ORDER level(category(i), pc)) OR NOT countCategories(t);
+
+// pricetype
 set 'Вкл' = DATA BOOLEAN (PrintPricelistType, PriceType);
 
 index 'Порядок' (PrintPricelistType t, PriceType pt) = PARTITION SUM 1 IF set(t, pt) ORDER pt BY t MATERIALIZED; 

@@ -1,0 +1,18 @@
+MODULE SalesPricelistPrintInitialRu;
+
+REQUIRE SalesPricelistPrint;
+
+NAMESPACE Sales;
+
+loadInitialData () + {
+    NEW tm = PrintPricelistType {
+        name(tm) <- 'Прайс';
+        template(tm) <- 'PricelistRu.jrxml';
+        set(tm, PriceType t) <- TRUE WHERE id(t) = 'wholesale';
+    }
+    NEW tm = PrintPricelistType {
+        name(tm) <- 'Ценник';
+        template(tm) <- 'LabelRu.jrxml';
+        set(tm, PriceType t) <- TRUE WHERE id(t) = 'retail';
+    }
+}
