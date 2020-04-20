@@ -64,12 +64,12 @@ META defineDocSalesDiscountLine (doc, caption, NS)
     
     amount(###doc##Line l) += fullAmount(doc(l));
     
-    recalcDiscountAuto###doc 'Автоматически рассчитывать скидки в '##caption = DATA BOOLEAN () PREREAD;
-    EXTEND FORM options PROPERTIES() recalcDiscountAuto###doc;
+    noRecalcDiscountAuto###doc 'Не рассчитывать автоматически скидки в '##caption = DATA BOOLEAN () PREREAD;
+    EXTEND FORM options PROPERTIES() noRecalcDiscountAuto###doc;
     
     WHEN LOCAL (CHANGED(dateTime(###doc##Line l)) OR CHANGED(quantity(l)) OR CHANGED(fullAmount(doc(l))) OR 
                 CHANGED(customer(l)) OR CHANGED(item(l)) OR CHANGED(price(l)) OR CHANGED(type(l))) AND 
-                recalcDiscountAuto###doc() AND NOT manual(salesDiscount(l)) DO
+                NOT noRecalcDiscountAuto###doc() AND NOT manual(salesDiscount(l)) DO
         salesDiscount(l) <- minSalesDiscountAuto(l);
     
     recalcDiscountAuto 'Рассчитать скидки' (###doc d) {
