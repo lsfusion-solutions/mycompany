@@ -1,6 +1,6 @@
 MODULE Adjustment;
 
-REQUIRE InventorySettings, Location, Product, InvLedger, Company, BarCode, Doc;
+REQUIRE InventorySettings, LocationValuate, Product, InvLedger, Company, BarCode, Doc;
                                   
 NAMESPACE Inventory;
 
@@ -66,7 +66,11 @@ WHEN LOCAL CHANGED(product(AdjustmentLine l)) DO uom(l) <- uom(product(l));
 location 'Место хранения' = DATA Location (AdjustmentLine);
 nameLocation 'Место хранения' (AdjustmentLine l) = canonicalName(location(l));
 
+price 'Цена' (AdjustmentLine l) = price(location(adjustment(l)), product(l), dateTime(adjustment(l))); 
+
 theoreticalQuantity 'Теоретическое кол-во' = DATA NUMERIC[16,3] (AdjustmentLine);
+theoreticalAmmount 'Теоретическая стоимость' (AdjustmentLine l) = round2(price(l) * theoreticalQuantity(l));
+
 WHEN LOCAL (SETCHANGED (location(AdjustmentLine l)) OR SETCHANGED(product(l))) AND q = onHand(location(l), product(l)) 
            AND NOT CHANGED(theoreticalQuantity(l)) DO 
     theoreticalQuantity(l) <- q;
@@ -80,8 +84,8 @@ FORM adjustment 'Инвентаризация'
     OBJECTS l = AdjustmentLine
     PROPERTIES(l) index READONLY, 
                   nameProduct, nameUom, idBarCodeProduct, idProduct,
-                  nameLocation, 
-                  theoreticalQuantity
+                  nameLocation 
+    PROPERTIES(l) READONLY theoreticalQuantity, theoreticalAmmount SHOWIF valuateLocation(location(a))
     PROPERTIES(l) NEW, DELETE
     FILTERS adjustment(l) = a
     

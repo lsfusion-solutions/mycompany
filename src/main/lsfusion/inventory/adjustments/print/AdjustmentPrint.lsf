@@ -1,6 +1,6 @@
 MODULE AdjustmentPrint;
 
-REQUIRE AdjustmentCanceled;
+REQUIRE AdjustmentCanceled, LocationValuate, DocTemplate;
 
 NAMESPACE Inventory;
 
@@ -13,24 +13,61 @@ companyEmail 'Электронная почта' (Adjustment a) = email(company(
 companyWebsite 'Веб сайт' (Adjustment a) = website(company(a));
 
 FORM printAdjustment 'Результат инвентаризации'
-    OBJECTS a = Adjustment PANEL 
-    PROPERTIES(a) nameStatus, dateTime, nameType, nameCompany, companyAddress, companyPhone, companyEmail, companyWebsite
+    OBJECTS o = Adjustment PANEL 
+    PROPERTIES(o) nameStatus, dateTime, nameType, nameCompany, companyAddress, companyPhone, companyEmail, companyWebsite
     
     OBJECTS l = AdjustmentLine
-    PROPERTIES(l) nameLocation, nameProduct, realQuantity
-    FILTERS adjustment(l) = a
+    PROPERTIES(l) nameLocation, nameProduct, realQuantity, theoreticalQuantity, realAmmount, theoreticalAmmount
+    FILTERS adjustment(l) = o
 ;
 
-print(Adjustment a) {
-    PRINT printAdjustment OBJECTS a = a; 
-}
+CLASS AdjustmentTemplate 'Шаблон инвентаризации';
+name 'Название' = DATA ISTRING[100] (AdjustmentTemplate) CHARWIDTH 15;
+template 'Имя файла шаблона' = DATA STRING (AdjustmentTemplate) CHARWIDTH 50;
 
-EXTEND FORM adjustment
-    PROPERTIES(a) print
+format = DATA TemplateFormat (AdjustmentTemplate);
+nameFormat 'Формат' (AdjustmentTemplate t) = name(format(t));
+
+// types
+in 'Вкл' = DATA BOOLEAN (AdjustmentTemplate, AdjustmentType);
+countAdjustmentTemplate (AdjustmentType tp) = GROUP SUM 1 IF in(AdjustmentTemplate tm, tp);
+
+FORM adjustmentTemplate 'Шаблон инвентаризации'
+    OBJECTS o = AdjustmentTemplate PANEL
+    PROPERTIES(o) name, template, nameFormat
+    
+    OBJECTS t = AdjustmentType
+    PROPERTIES             in(o, t)
+    PROPERTIES(t) READONLY name
+    
+    EDIT AdjustmentTemplate OBJECT o
 ;
 
-DESIGN adjustment {
-    secondaryActions {
-        MOVE PROPERTY(print(a)) { caption = 'Печать'; charWidth = 10; }
+FORM adjustmentTemplates 'Шаблон инвентаризации'
+    OBJECTS o = AdjustmentTemplate
+    PROPERTIES(o) READONLY name
+    
+    LIST AdjustmentTemplate OBJECT o
+;
+
+FORM dialogTemplatesAdjustment 'Шаблон инвентаризации'
+    OBJECTS itp = AdjustmentType
+    
+    OBJECTS itm = AdjustmentTemplate
+    PROPERTIES(itm) READONLY name
+    FILTERS in(itm, itp)
+;
+
+EXTEND FORM options
+    OBJECTS tmAdjustment = AdjustmentTemplate
+    PROPERTIES(tmAdjustment) READONLY name, template, nameFormat
+    PROPERTIES(tmAdjustment) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(tmAdjustment);
     }
 }
+
+@defineDocTemplateForm(adjustment, a);

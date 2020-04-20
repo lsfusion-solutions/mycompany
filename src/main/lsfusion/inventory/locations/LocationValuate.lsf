@@ -1,0 +1,67 @@
+MODULE LocationValuate;
+
+REQUIRE CostLocation, SalesPricelistValue;
+
+NAMESPACE Inventory;
+
+CLASS ValuateType 'Способ оценки';
+TABLE ValuateType (ValuateType);
+
+name 'Наименование' (ValuateType o) = staticCaption(o) IF o IS ValuateType CHARWIDTH 15;
+
+FORM dialogValuateType 'База распределения'
+    OBJECTS o = ValuateType
+    PROPERTIES(o) READONLY name
+
+    LIST ValuateType OBJECT o
+;
+
+EXTEND CLASS ValuateType {
+    cost 'По себестоимости',
+    salesPrice 'По цене продажи',
+    priceType 'По виду цены'
+}
+
+dataValuateType 'Способ оценки' = DATA ValuateType (Location);
+nameDataValuateType 'Способ оценки' (Location l) = name(dataValuateType(l)); 
+
+dataPriceType 'Вид цены' = DATA PriceType (Location); 
+nameDataPriceType 'Вид цены' (Location l) = name(dataPriceType(l)); 
+
+CONSTRAINT NOT calcCost(Location l) AND dataValuateType(l) = ValuateType.cost
+    CHECKED BY dataValuateType
+    MESSAGE 'Для склада отключен расчет себестоимости';
+
+valuateLevel (Location l) = GROUP MIN level(l, Location p) IF dataValuateType(p);
+valuateLocation (Location l) = parent(l, valuateLevel(l)) MATERIALIZED;
+
+valuateType 'Способ оценки' (Location l) = dataValuateType(valuateLocation(l));
+nameValuateType 'Способ оценки' (Location l) = name(valuateType(l)); 
+
+priceType 'Вид цены' (Location l) = dataPriceType(valuateLocation(l));
+
+EXTEND FORM location
+    PROPERTIES(l) nameDataValuateType, nameDataPriceType SHOWIF dataValuateType(l) = ValuateType.priceType
+;
+
+EXTEND FORM locations PROPERTIES nameValuateType(l);
+
+DESIGN location {
+    tabbedPane {
+        NEW locationValuate {
+            caption = 'Оценка склада';
+            MOVE PROPERTY(nameDataValuateType(l));
+            MOVE PROPERTY(nameDataPriceType(l));
+        }
+    }
+}
+
+price 'Цена' (l, p, dt) = ABSTRACT CASE NUMERIC[10,2](Location, Product, DATETIME);
+
+price(l, p, dt) += WHEN p IS Product AND dt IS DATETIME AND valuateType(l) = ValuateType.cost THEN
+    NUMERIC[10,2](costPrice(l, p, dt));
+price(l, p, dt) += WHEN p IS Product AND dt IS DATETIME AND valuateType(l) = ValuateType.salesPrice THEN
+    salesPrice(p);
+price(l, p, dt) += WHEN p IS Product AND dt IS DATETIME AND valuateType(l) = ValuateType.priceType THEN
+    priceB(priceType(l), p, dt);
+    

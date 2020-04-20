@@ -13,6 +13,7 @@ status(Adjustment a) += WHEN inProgress(a) THEN AdjustmentStatus.inProgress;
 colorStatus(Adjustment a) += WHEN status(a) == AdjustmentStatus.inProgress THEN RGB(252,247,149);
 
 realQuantity 'Фактическое кол-во' = DATA NUMERIC[16,3] (AdjustmentLine);
+realAmmount 'Фактическая стоимость' (AdjustmentLine l) = round2(price(l) * realQuantity(l));
 
 WHEN LOCAL CHANGED(theoreticalQuantity(AdjustmentLine l)) AND NOT CHANGED(realQuantity(l)) DO 
     realQuantity(l) <- theoreticalQuantity(l);
@@ -34,6 +35,7 @@ EXTEND FORM adjustment
     PROPERTIES(a) markAsToDo SHOWIF status(a) = AdjustmentStatus.draft, inProgress
     
     PROPERTIES(l) realQuantity READONLYIF NOT status(adjustment(l)) = AdjustmentStatus.inProgress BACKGROUND background(l)
+    PROPERTIES(l) READONLY realAmmount BACKGROUND background(l) SHOWIF valuateLocation(location(a))
     
     FILTERGROUP adjustment
         FILTER 'Расхождения' NOT theoreticalQuantity(l) = realQuantity(l) 'F10'
