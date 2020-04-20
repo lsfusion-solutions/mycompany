@@ -5,11 +5,13 @@ REQUIRE Numerator;
 NAMESPACE MasterData;
 
 loadInitialData ABSTRACT LIST ();
+failedLoadInitialData = DATA LOCAL BOOLEAN ();
 
 createInitialData 'Загрузить начальные настройки' {
     NEWSESSION {
         loadInitialData();
-        APPLY;
+        IF NOT failedLoadInitialData() THEN
+            APPLY;
     }
 }
 

@@ -13,6 +13,7 @@ name 'Наименование' = DATA ISTRING[100] (Pos) NONULL CHARWIDTH 15;
 
 company 'Компания' = DATA Company (Pos);
 nameCompany 'Компания' (Pos p) = name(company(p));
+WHEN LOCAL SET(Pos p IS Pos) AND NOT CHANGED(company(p)) DO company(p) <- defaultCompany();
 
 in 'Вкл' = DATA BOOLEAN (Pos, Computer);
 countPos (Computer c) = GROUP SUM 1 IF in(Pos p, c) MATERIALIZED;
