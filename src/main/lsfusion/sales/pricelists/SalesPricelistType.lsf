@@ -13,20 +13,21 @@ priceListType (STRING[20] id) = GROUP AGGR PricelistType t BY id(t);
 numerator 'Нумератор' = DATA Numerator (PricelistType);
 nameNumerator 'Нумератор' (PricelistType o) = name(numerator(o));
 
-showCurrentPrice 'Действующие цены' = DATA BOOLEAN (PricelistType);
-showMarkup 'Надбавки' = DATA BOOLEAN (PricelistType);
-showCost 'Себестоимость' = DATA BOOLEAN (PricelistType);
+showCost 'Показывать себестоимость' = DATA BOOLEAN (PricelistType);
 
 in 'Вкл.' = DATA BOOLEAN (PricelistType, PriceType);
 
+showCurrentPrice 'Показывать действующие цены' = DATA BOOLEAN (PricelistType, PriceType);
+showMarkup 'Показывать надбавки' = DATA BOOLEAN (PricelistType, PriceType);
+
 FORM pricelistType 'Тип прайс-листа'
     OBJECTS t = PricelistType PANEL
-    PROPERTIES(t) name, id, nameNumerator,
-                  showCurrentPrice, showMarkup, showCost
+    PROPERTIES(t) name, id, nameNumerator, showCost
                   
     OBJECTS p = PriceType
-    PROPERTIES in(t ,p)
-    PROPERTIES READONLY name(p)   
+    PROPERTIES in(t, p) 
+    PROPERTIES READONLY name(p)
+    PROPERTIES(t, p) showMarkup, showCurrentPrice
     
     EDIT PricelistType OBJECT t
 ;
@@ -39,14 +40,14 @@ DESIGN pricelistType {
             MOVE PROPERTY(id(t));
             MOVE PROPERTY(nameNumerator(t));
         }
-        NEW show {
-            caption = 'Показывать';
+        NEW params {
             type = CONTAINERH;
-            MOVE PROPERTY(showCurrentPrice(t));
-            MOVE PROPERTY(showMarkup(t));
             MOVE PROPERTY(showCost(t));
         }
-        MOVE BOX(p);
+        MOVE BOX(p) {
+            PROPERTY(showMarkup(t, p)) { valueWidth = 120; }
+            PROPERTY(showCurrentPrice(t, p)) { valueWidth = 120; }
+        }
     }
 }
 

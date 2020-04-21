@@ -10,9 +10,9 @@ loadInitialData () + {
         id(t) <- 'wholesale';
         in(t, PriceType pt) <- TRUE WHERE id(pt) = 'wholesale';
         
-        showCurrentPrice(t) <- TRUE;
-        showMarkup(t) <- TRUE;
         showCost(t) <- TRUE;
+        showCurrentPrice(t, PriceType pt) <- TRUE WHERE in(t, pt);
+        showMarkup(t, PriceType pt) <- TRUE WHERE in(t, pt);
 
         NEW n = Numerator {
             name(n) <- 'Оптовый прайс';
@@ -28,9 +28,9 @@ loadInitialData () + {
         id(t) <- 'retail';
         in(t, PriceType pt) <- TRUE WHERE id(pt) = 'retail';
 
-        showCurrentPrice(t) <- TRUE;
-        showMarkup(t) <- TRUE;
         showCost(t) <- TRUE;
+        showCurrentPrice(t, PriceType pt) <- TRUE WHERE in(t, pt);
+        showMarkup(t, PriceType pt) <- TRUE WHERE in(t, pt);
 
         NEW n = Numerator {
             name(n) <- 'Розничный прайс';
@@ -46,9 +46,9 @@ loadInitialData () + {
         id(t) <- 'promotion';
         in(t, PriceType pt) <- TRUE WHERE id(pt) = 'retail' OR id(pt) = 'promotion';
 
-        showCurrentPrice(t) <- TRUE;
-        showMarkup(t) <- TRUE;
         showCost(t) <- TRUE;
+        showCurrentPrice(t, PriceType pt) <- TRUE WHERE id(pt) = 'retail';
+        showMarkup(t, PriceType pt) <- TRUE WHERE in(t, pt);
 
         NEW n = Numerator {
             name(n) <- 'Акционный прайс';
