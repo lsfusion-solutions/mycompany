@@ -1,0 +1,13 @@
+MODULE IncomingPaymentPrintInitialRu;
+
+REQUIRE IncomingPaymentPrintRu;
+
+NAMESPACE Invoicing;
+
+loadInitialData () + {
+    NEW tm = IncomingPaymentTemplate {
+        name(tm) <- 'Приходный кассовый ордер';
+        template(tm) <- 'IncomingCashRu.jrxml';
+        in(tm, IncomingPaymentType t) <- TRUE WHERE cash(t);
+    }
+}

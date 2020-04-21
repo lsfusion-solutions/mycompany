@@ -1,0 +1,13 @@
+MODULE OutgoingPaymentPrintInitialRu;
+
+REQUIRE OutgoingPaymentPrintRu;
+
+NAMESPACE Invoicing;
+
+loadInitialData () + {
+    NEW tm = OutgoingPaymentTemplate {
+        name(tm) <- 'Расходный кассовый ордер';
+        template(tm) <- 'OutgoingCashRu.jrxml';
+        in(tm, OutgoingPaymentType t) <- TRUE WHERE cash(t);
+    }
+}
