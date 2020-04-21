@@ -11,7 +11,7 @@ CLASS ChangePriceType 'Вид изменения цен' {
     pricePriceList 'Установить цены из предыдущих прайсов'
 }
 
-name 'Наименование' (ChangePriceType o) = staticCaption(o) IF o IS ChangePriceType CHARWIDTH 15;
+name 'Наименование' (ChangePriceType o) = staticCaption(o) IF o IS ChangePriceType CHARWIDTH 50;
 
 FORM dialogChangePriceTypes 'Вид изменения цен'
     OBJECTS o = ChangePriceType
@@ -29,6 +29,17 @@ FORM changePrices 'Изменение цен'
     PROPERTIES() nameChangePriceType, 
                  change SHOWIF changePriceType() = ChangePriceType.pricePriceList 
 ;
+
+DESIGN changePrices {
+    height = 100;
+    OBJECTS {
+        NEW params {
+            alignment = STRETCH;
+            MOVE PROPERTY(nameChangePriceType()) { alignment = STRETCH; }
+            MOVE PROPERTY(change()) { alignment = STRETCH; }
+        }
+    }
+}
 
 changePrices 'Изменить цены' (Pricelist p) {
     DIALOG changePrices DO {
@@ -48,7 +59,7 @@ changePrices 'Изменить цены' (Pricelist p) {
             }
             WHEN changePriceType() = ChangePriceType.pricePriceList THEN
                 price(PricelistLine l, PriceType t) <- 
-                    NUMERIC[10,2](priceB(t, item(l), startDateTime(p)) * (100.0 (+) change()) / 100.0)
+                    NUMERIC[10,2](priceB(t, item(l), startDateTime(p)) * OVERRIDE (100.0 (+) change()) / 100.0, 1.0)
                     WHERE pricelist(l) = p AND editIn(p, t); 
     }
 }
