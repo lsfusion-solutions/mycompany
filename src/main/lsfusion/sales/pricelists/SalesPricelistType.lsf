@@ -20,6 +20,9 @@ in 'Вкл.' = DATA BOOLEAN (PricelistType, PriceType);
 showCurrentPrice 'Показывать действующие цены' = DATA BOOLEAN (PricelistType, PriceType);
 showMarkup 'Показывать надбавки' = DATA BOOLEAN (PricelistType, PriceType);
 
+basePriceType = DATA PriceType (PricelistType, PriceType);
+nameBasePriceType 'Считать надбавку от' (PricelistType t, PriceType pt) = name(basePriceType(t, pt));
+
 FORM pricelistType 'Тип прайс-листа'
     OBJECTS t = PricelistType PANEL
     PROPERTIES(t) name, id, nameNumerator, showCost
@@ -27,7 +30,7 @@ FORM pricelistType 'Тип прайс-листа'
     OBJECTS p = PriceType
     PROPERTIES in(t, p) 
     PROPERTIES READONLY name(p)
-    PROPERTIES(t, p) showMarkup, showCurrentPrice
+    PROPERTIES(t, p) showMarkup, showCurrentPrice, nameBasePriceType
     
     EDIT PricelistType OBJECT t
 ;

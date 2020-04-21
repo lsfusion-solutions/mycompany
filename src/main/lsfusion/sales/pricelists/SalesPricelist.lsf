@@ -50,6 +50,7 @@ item 'Номенклатура' = DATA Item (PricelistLine);
 nameItem 'Номенклатура' (PricelistLine prl) = name(item(prl));
 idBarCodeItem 'Штрихкод' (PricelistLine l) = idBarCode(item(l));
 idItem 'Код' (PricelistLine l) = id(item(l));
+nameSalesTax 'Налоги' (PricelistLine l) = nameSalesTax(item(l));
 
 uom = DATA Uom (PricelistLine);
 nameUom 'Ед. изм.' (PricelistLine l) = name(uom(l)); 
@@ -64,17 +65,27 @@ price 'Цена' = DATA NUMERIC[10,2] (PricelistLine, PriceType);
 CONSTRAINT DROPPED(PriceType t IS PriceType) AND PREV(price(PricelistLine l, t))
     MESSAGE 'Запрещено удалять виды цен, по которым есть прайсы';
 
-// events
-noTaxPrice (PricelistLine l, PriceType t) = 
-    price(l, t) / (OVERRIDE (100.0 + salesTax(item(l))) / 100.0 IF taxIncluded(t), 1.0);
+editIn (PricelistLine pl, PriceType priceType) = editIn(pricelist(pl), priceType);
 
-WHEN LOCAL (SETCHANGED(costPrice(PricelistLine l)) OR SETCHANGED(price(l, PriceType t))) AND NOT CHANGED(markup(l, t)) DO
-    markup(l, t) <- round2((noTaxPrice(l, t) * 100.0 / costPrice(l)) - 100.0);
+// events
+basePriceType (PricelistLine l, PriceType t) = basePriceType(type(pricelist(l)), t); 
+basePrice (PricelistLine l, PriceType t) = 
+    IF basePriceType(l, t) THEN price(l, basePriceType(l, t)) ELSE (costPrice(l) IF editIn(l, t));
+
+taxCoeff (PricelistLine l, PriceType t) = 
+    (100.0 + salesTax(item(l))) / 100.0 IF taxIncluded(t) AND NOT taxIncluded(basePriceType(l, t));
+    
+noTaxPrice (PricelistLine l, PriceType t) = 
+    price(l, t) / (OVERRIDE taxCoeff(l, t), 1.0);
+
+WHEN LOCAL (SETCHANGED(basePrice(PricelistLine l, PriceType t)) OR SETCHANGED(price(l, t))) 
+            AND editIn(l, t) AND NOT CHANGED(markup(l, t)) DO
+    markup(l, t) <- round2((noTaxPrice(l, t) * 100.0 / basePrice(l, t)) - 100.0);
 
 calcPrice(PricelistLine l, PriceType t) = 
-    NUMERIC[10,2](costPrice(l) * 
+    NUMERIC[10,2](basePrice(l, t) * 
                   (markup(l, t) + 100.0) / 100.0 * 
-                  (OVERRIDE (100.0 + salesTax(item(l))) / 100.0 IF taxIncluded(t), 1.0));
+                  (OVERRIDE taxCoeff(l, t), 1.0));
 
 changeMarkup (PricelistLine l, PriceType t) {
     INPUT val = markup(l, t) CHANGE DO {
@@ -89,8 +100,6 @@ startDateTime 'Начало действия' (PricelistLine prl) = startDateTim
 endDateTime 'Окончание действия' (PricelistLine prl) = endDateTime(pricelist(prl));
 note 'Примечание' (PricelistLine prl) = note(pricelist(prl));
 
-editIn (PricelistLine pl, PriceType priceType) = editIn(pricelist(pl), priceType);
-
 FORM pricelist 'Прайс-лист'
     OBJECTS p = Pricelist PANEL
     PROPERTIES(p) nameType, number, startDateTime, endDateTime, note,
@@ -100,7 +109,7 @@ FORM pricelist 'Прайс-лист'
     FILTERS editIn(p, t) 
    
     OBJECTS l = PricelistLine
-    PROPERTIES(l) index READONLY, nameItem, nameUom, idBarCodeItem, idItem, costPrice SHOWIF showCost(type(p)) READONLY
+    PROPERTIES(l) index READONLY, nameItem, nameUom, idBarCodeItem, idItem, nameSalesTax, costPrice SHOWIF showCost(type(p)) READONLY
     PROPERTIES    markup(l, t) COLUMNS 'p' (t) HEADER name(t) + ', %' SHOWIF showMarkup(type(p), t) ON CHANGE changeMarkup(l, t)
     PROPERTIES    price(l, t) COLUMNS 'p' (t) HEADER name(t) 
     PROPERTIES(l) NEW, DELETE 
