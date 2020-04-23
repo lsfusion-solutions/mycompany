@@ -1,7 +1,7 @@
 MODULE InvoicePrintRu;
 
 REQUIRE InvoicePrint, InvoicePrintShipment, LegalEntityRu, UomRu,
-        Individual, LocationEmployee;
+        Individual, LocationEmployee, BillCustomsDeclaration;
 
 NAMESPACE Invoicing;
 
@@ -13,10 +13,12 @@ okpoCustomer (Invoice i) = okpo(customer(i));
 
 legalCodeUom (InvoiceLine l) = legalCode(uom(l));
 
+idCustomsDeclaration(InvoiceLine l) = id(customsDeclaration(item(l), company(invoice(l)), dateTime(invoice(l))));
+
 EXTEND FORM printInvoice
     PROPERTIES(o) innCustomer, okpoCustomer, innCompany
     
-    PROPERTIES(l) legalCodeUom
+    PROPERTIES(l) legalCodeUom, idCustomsDeclaration
 ;
 
 // invoice

@@ -1,6 +1,6 @@
 MODULE BillServiceCost;
 
-REQUIRE MasterData, BillReceiptCost, BarCode, Utils;
+REQUIRE MasterData, Bill, BarCode, Utils;
 
 NAMESPACE Invoicing;
 
@@ -78,8 +78,6 @@ allocate 'Распределить' (BillLine bsl) {
     costAllocated (BillLine bl, bsl) <- calcCostAllocated(bl, bsl);
 }
 
-extraCost (ReceiptLine rl) += GROUP SUM costAllocated(billLine(rl), BillLine bsl) IF serviceLine(billLine(rl), bsl);
-
 service 'Распределять' (Bill b, BillLine bsl) = GROUP MAX serviceLine(BillLine bl, bsl) IF bill(bl) = b;
 checkBill (Bill b, BillLine bsl) {
     LOCAL checked = BOOLEAN ();
@@ -104,7 +102,6 @@ EXTEND FORM bill
     OBJECTS bl = BillLine
     PROPERTIES(bl) READONLY numberDate SHOWIF (GROUP SUM 1 IF service(Bill bb, bsl)) > 1 
     PROPERTIES(bl) READONLY index, nameItem, nameUom, idBarCodeItem, idItem, quantity, price, taxes, untaxedAmount
-    PROPERTIES nameCostingMethod 'Метод расчета себестоимости' = nameCostingMethod(item(bl))
     PROPERTIES(bl, bsl) READONLY allocationBase
     PROPERTIES(bl, bsl) costAllocated, serviceLine
     FILTERS service(bill(bl), bsl),

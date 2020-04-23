@@ -1,0 +1,11 @@
+MODULE BillReceiptCostService;
+
+REQUIRE BillReceiptCost, BillServiceCost;
+
+NAMESPACE Bill;
+
+extraCost (ReceiptLine rl) += GROUP SUM costAllocated(billLine(rl), BillLine bsl) IF serviceLine(billLine(rl), bsl);
+
+EXTEND FORM bill
+    PROPERTIES nameCostingMethod 'Метод расчета себестоимости' = nameCostingMethod(item(bl))
+;

@@ -1,0 +1,65 @@
+MODULE SalesBillPricelist;
+
+REQUIRE BillReady, SalesPricelistDone;
+
+NAMESPACE Sales;
+
+pricelistType = DATA PricelistType (BillType);
+namePricelistType 'Тип прайс-листа' (BillType t) = name(pricelistType(t));
+
+setPriceToCost 'Установить в себестоимость цену' = DATA BOOLEAN (BillType);
+
+EXTEND FORM billType PROPERTIES namePricelistType(o), setPriceToCost(o) SHOWIF pricelistType(o);
+
+// lines
+@defineDocLineRelation(bill, pricelist, 'Приобретения', 'Прайс-листы', b, p);
+
+fill ABSTRACT LIST (PricelistLine, BillLine);
+billPricelistCreated = DATA LOCAL Pricelist ();
+newPricelist (Bill b) {
+    NEW r = Pricelist { 
+        type(r) <- pricelistType(type(b));
+
+        done(r) <- TRUE;    
+    
+        FOR bill(BillLine l) = b AND item(l) IS Product INLINE NEW pl = PricelistLine DO {            
+            pricelist(pl) <- r;
+            item(pl) <- item(l);
+            billLine(pl) <- l;
+            cost(pl) <- price(l) IF setPriceToCost(type(b));
+            fill(pl, l);
+        }
+        
+        billPricelistCreated() <- r;
+    }
+}
+
+createPricelist 'Расценить' (Bill b) {
+    APPLY;
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {
+        newPricelist(b);
+        SHOW pricelist OBJECTS p = billPricelistCreated() DOCKED;
+    }
+} 
+
+EXTEND FORM bill
+    PROPERTIES(b) createPricelist SHOWIF ready(b) AND pricelistType(type(b)) AND NOT countPricelistLine(b) 
+
+    OBJECTS p = Pricelist
+    PROPERTIES(p) READONLY nameStatus BACKGROUND colorStatus(p), number, startDateTime, endDateTime
+    PROPERTIES(p) NEWSESSION EDIT GRID   
+    FILTERS in(b, p)
+;
+
+DESIGN bill {
+    primaryActions {
+        MOVE PROPERTY(createPricelist(b)) { fontStyle = 'bold'; }
+    }
+    relatedDoc {
+        MOVE BOX(p);
+        REMOVE TOOLBARSYSTEM(p);
+    }
+}
+
