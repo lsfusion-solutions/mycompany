@@ -25,7 +25,9 @@ orderLine = DATA OrderLine (ManufacturingOrder) INDEXED;
 numberDateOrder 'Заказ' (ManufacturingOrder mo) = numberDate(order(orderLine(mo)));
 
 manufacturingOrder (OrderLine l) = GROUP AGGR ManufacturingOrder mo BY orderLine(mo);
+
 countFreeBomLines (Order o)= GROUP SUM 1 IF order(OrderLine l) == o AND bom(l) AND NOT manufacturingOrder(l);
+countManufacturingOrders (Order o) = GROUP SUM 1 IF order(orderLine(ManufacturingOrder mo)) == o;
 
 CONSTRAINT DROPPED(OrderLine l IS OrderLine) AND PREV(manufacturingOrder(l))
     MESSAGE 'Нельзя удалить строку на основании которой создан производственный заказ';
@@ -84,6 +86,19 @@ EXTEND FORM order
     FILTERS order(orderLine(mo)) = o
 ;
 
+DESIGN order {
+    relatedDoc  {
+        MOVE BOX(mo) {
+            caption = CONCAT ' ', 'Производственные заказы', '(' + countManufacturingOrders(o) + ')';
+            GRID(mo) { headerHeight = 24; }
+        }
+        REMOVE TOOLBARSYSTEM(mo);
+    }
+    primaryActions {
+        MOVE PROPERTY(createManufacturingOrders(o)) { fontStyle = 'bold'; };
+    }
+}
+
 autoCreateManufacturingOrder 'Автоматически создавать производственный заказ' = DATA BOOLEAN (OrderType);
 EXTEND FORM orderType PROPERTIES autoCreateManufacturingOrder(o) SHOWIF manufacturingOrderType(o);
 
@@ -103,8 +118,8 @@ WHEN CHANGED(bom(OrderLine l)) AND autoCreateManufacturingOrder(type(order(l))) 
     fillByQuantity(manufacturingOrder(l), quantity(l));    
 }    
 
-countManufacturingOrders (Order o) = GROUP SUM 1 IF order(orderLine(ManufacturingOrder mo)) == o AND started(mo);
-CONSTRAINT SET(canceled(Order o)) AND PREV(countManufacturingOrders(o))
+countStartedManufacturingOrders (Order o) = GROUP SUM 1 IF order(orderLine(ManufacturingOrder mo)) == o AND started(mo);
+CONSTRAINT SET(canceled(Order o)) AND PREV(countStartedManufacturingOrders(o))
     MESSAGE 'Нельзя отменить заказ, к которому существуют действующие производственные заказы';
 CONSTRAINT CHANGED(quantity(OrderLine l)) AND manufacturingOrder(l) AND started(manufacturingOrder(l))
     MESSAGE 'Нельзя изменить количество в строке, к которой существует действующий производственный заказ';
@@ -112,16 +127,3 @@ CONSTRAINT CHANGED(item(OrderLine l)) AND manufacturingOrder(l) AND started(manu
     MESSAGE 'Нельзя изменить номенклатуру в строке, к которой существует действующий производственный заказ';
 CONSTRAINT CHANGED(bom(OrderLine l)) AND manufacturingOrder(l) AND started(manufacturingOrder(l))
     MESSAGE 'Нельзя изменить спецификацию в строке, к которой существует действующий производственный заказ';
-
-DESIGN order {
-    relatedDoc  {
-        MOVE BOX(mo) {
-            caption = CONCAT ' ', 'Производственные заказы', '(' + countManufacturingOrders(o) + ')';
-            GRID(mo) { headerHeight = 24; }
-        }
-        REMOVE TOOLBARSYSTEM(mo);
-    }
-    primaryActions {
-        MOVE PROPERTY(createManufacturingOrders(o)) { fontStyle = 'bold'; };
-    }
-}
