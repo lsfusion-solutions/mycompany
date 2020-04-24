@@ -84,18 +84,6 @@ EXTEND FORM order
     FILTERS order(orderLine(mo)) = o
 ;
 
-DESIGN order {
-    relatedDoc  {
-        MOVE BOX(mo) {
-             GRID(mo) { headerHeight = 24; }
-        }
-        REMOVE TOOLBARSYSTEM(mo);
-    }
-    primaryActions {
-        MOVE PROPERTY(createManufacturingOrders(o)) { fontStyle = 'bold'; };
-    }
-}
-
 autoCreateManufacturingOrder 'Автоматически создавать производственный заказ' = DATA BOOLEAN (OrderType);
 EXTEND FORM orderType PROPERTIES autoCreateManufacturingOrder(o) SHOWIF manufacturingOrderType(o);
 
@@ -124,3 +112,16 @@ CONSTRAINT CHANGED(item(OrderLine l)) AND manufacturingOrder(l) AND started(manu
     MESSAGE 'Нельзя изменить номенклатуру в строке, к которой существует действующий производственный заказ';
 CONSTRAINT CHANGED(bom(OrderLine l)) AND manufacturingOrder(l) AND started(manufacturingOrder(l))
     MESSAGE 'Нельзя изменить спецификацию в строке, к которой существует действующий производственный заказ';
+
+DESIGN order {
+    relatedDoc  {
+        MOVE BOX(mo) {
+            caption = CONCAT ' ', 'Производственные заказы', '(' + countManufacturingOrders(o) + ')';
+            GRID(mo) { headerHeight = 24; }
+        }
+        REMOVE TOOLBARSYSTEM(mo);
+    }
+    primaryActions {
+        MOVE PROPERTY(createManufacturingOrders(o)) { fontStyle = 'bold'; };
+    }
+}
