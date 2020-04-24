@@ -62,7 +62,7 @@ quantity 'Кол-во' = DATA NUMERIC[16,3] (ComponentLine);
 
 costRatio 'Доля стоимости' = DATA NUMERIC[5,2] (ComponentLine);
 
-countComponentLines 'Компонентов' (Bom b) = GROUP SUM 1 IF bom(ComponentLine l) = b MATERIALIZED;
+countComponentLine 'Компонентов' (Bom b) = GROUP SUM 1 IF bom(ComponentLine l) = b MATERIALIZED;
 
 // byproduct
 CLASS ByproductLine 'Строка производных номенклатур';
@@ -81,7 +81,7 @@ nameUom 'Ед. изм.' (ByproductLine l) = name(uom(l));
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (ByproductLine);
 
-countByproductLines 'Отходов' (Bom b) = GROUP SUM 1 IF bom(ByproductLine l) = b MATERIALIZED;
+countByproductLine 'Отходов' (Bom b) = GROUP SUM 1 IF bom(ByproductLine l) = b MATERIALIZED;
 
 WHEN LOCAL SETCHANGED (item(ComponentLine c)) DO {
     uom(c) <- uom(item(c));
@@ -150,7 +150,7 @@ DESIGN bom {
 
 FORM boms 'Спецификации'
     OBJECTS b = Bom
-    PROPERTIES(b) READONLY number, nameItem, quantity, nameUom, name, archived, countComponentLines, countByproductLines
+    PROPERTIES(b) READONLY number, nameItem, quantity, nameUom, name, archived, countComponentLine, countByproductLine
     PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE
     
     FILTERGROUP active

@@ -26,8 +26,8 @@ numberDateOrder 'Заказ' (ManufacturingOrder mo) = numberDate(order(orderLin
 
 manufacturingOrder (OrderLine l) = GROUP AGGR ManufacturingOrder mo BY orderLine(mo);
 
-countFreeBomLines (Order o)= GROUP SUM 1 IF order(OrderLine l) == o AND bom(l) AND NOT manufacturingOrder(l);
-countManufacturingOrders (Order o) = GROUP SUM 1 IF order(orderLine(ManufacturingOrder mo)) == o;
+countFreeBomLine (Order o)= GROUP SUM 1 IF order(OrderLine l) == o AND bom(l) AND NOT manufacturingOrder(l);
+countManufacturingOrder (Order o) = GROUP SUM 1 IF order(orderLine(ManufacturingOrder mo)) == o;
 
 CONSTRAINT DROPPED(OrderLine l IS OrderLine) AND PREV(manufacturingOrder(l))
     MESSAGE 'Нельзя удалить строку на основании которой создан производственный заказ';
@@ -66,7 +66,7 @@ newManufacturingOrder (OrderLine l) {
 }
 
 // sales order
-needManufacturingOrders (Order o) = manufacturingOrderType(type(o)) AND countFreeBomLines(o) AND confirmed(o);
+needManufacturingOrders (Order o) = manufacturingOrderType(type(o)) AND countFreeBomLine(o) AND confirmed(o);
 
 createManufacturingOrders 'Производственные заказы' (Order o) {
     IF needManufacturingOrders(o) THEN {
@@ -89,7 +89,7 @@ EXTEND FORM order
 DESIGN order {
     relatedDoc  {
         MOVE BOX(mo) {
-            caption = CONCAT ' ', 'Производственные заказы', '(' + countManufacturingOrders(o) + ')';
+            caption = CONCAT ' ', 'Производственные заказы', '(' + countManufacturingOrder(o) + ')';
             GRID(mo) { headerHeight = 24; }
         }
         REMOVE TOOLBARSYSTEM(mo);

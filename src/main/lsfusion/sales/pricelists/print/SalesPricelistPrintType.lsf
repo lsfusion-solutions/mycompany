@@ -21,8 +21,8 @@ nameFormat 'Формат' (PrintPricelistType t) = name(format(t));
 // category
 set 'Вкл' = DATA BOOLEAN (PrintPricelistType, Category);
 
-countCategories (PrintPricelistType t) = GROUP SUM 1 IF set(t, Category c) MATERIALIZED;
-set 'Вкл' (PrintPricelistType t, Item i) = (GROUP LAST set(t, Category pc) ORDER level(category(i), pc)) OR NOT countCategories(t);
+countCategory (PrintPricelistType t) = GROUP SUM 1 IF set(t, Category c) MATERIALIZED;
+set 'Вкл' (PrintPricelistType t, Item i) = (GROUP LAST set(t, Category pc) ORDER level(category(i), pc)) OR NOT countCategory(t);
 
 // pricetype
 set 'Вкл' = DATA BOOLEAN (PrintPricelistType, PriceType);

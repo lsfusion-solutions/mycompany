@@ -53,7 +53,7 @@ CLASS ConsumedLine 'Материалы';
 
 manufacturingOrder = DATA ManufacturingOrder (ConsumedLine) NONULL DELETE;
 
-countConsumedLines 'Строк материалов' (ManufacturingOrder m) = GROUP SUM 1 IF manufacturingOrder(ConsumedLine l) = m MATERIALIZED;
+countConsumedLine 'Строк материалов' (ManufacturingOrder m) = GROUP SUM 1 IF manufacturingOrder(ConsumedLine l) = m MATERIALIZED;
 index '№' = PARTITION SUM 1 ORDER ConsumedLine l BY manufacturingOrder(l) IN id MATERIALIZED CHARWIDTH 3;
 
 item 'Номенклатура' = DATA Item (ConsumedLine);
@@ -74,7 +74,7 @@ CLASS FinishedLine 'Продукция';
 
 manufacturingOrder = DATA ManufacturingOrder (FinishedLine) NONULL DELETE;
 
-countFinishedLines 'Строк продукции' (ManufacturingOrder m) = GROUP SUM 1 IF manufacturingOrder(ConsumedLine l) = m MATERIALIZED;
+countFinishedLine 'Строк продукции' (ManufacturingOrder m) = GROUP SUM 1 IF manufacturingOrder(ConsumedLine l) = m MATERIALIZED;
 index '№' = PARTITION SUM 1 ORDER FinishedLine l BY manufacturingOrder(l) IN id MATERIALIZED CHARWIDTH 3;
 
 item 'Номенклатура' = DATA Item (FinishedLine);
@@ -172,7 +172,7 @@ FORM manufacturingOrders 'Производственные заказы'
                            toManufacture, nameUom, 
                            descriptionBom, 
                            nameMaterialsLocation,
-                           countConsumedLines, countFinishedLines
+                           countConsumedLine, countFinishedLine
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
     
     LIST ManufacturingOrder OBJECT o
