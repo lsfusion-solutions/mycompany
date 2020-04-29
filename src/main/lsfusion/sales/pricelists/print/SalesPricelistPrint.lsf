@@ -1,6 +1,6 @@
 MODULE SalesPricelistPrint;
 
-REQUIRE SalesPricelistPrintType, SalesPricelistValue, ItemImage;
+REQUIRE Utils, SalesPricelistPrintType, SalesPricelistValue, ItemImage;
 
 NAMESPACE Sales;
 
@@ -21,7 +21,7 @@ price3 (PrintPricelistType pt, Item it) = price(pt, it, 3);
 FORM printPricelist 'Прайс-лист'
     OBJECTS pt = PrintPricelistType PANEL
     PROPERTIES(pt) name, nameCompany, addressCompany, phoneCompany, emailCompany, websiteCompany
-    REPORT template(pt)
+    REPORT OVERRIDE file(pt), setExtension(RAWFILE(template(pt)), 'path')
 
     OBJECTS t = PriceType
     FILTERS set(pt, t)
@@ -62,7 +62,7 @@ printAll 'Сформировать' (PrintPricelistType t) {
 }
 
 EXTEND FORM pricelists
-    PROPERTIES(pp) printAll SHOWIF template(pp)
+    PROPERTIES(pp) printAll SHOWIF hasTemplate(pp)
 ;
 
 DESIGN pricelists {

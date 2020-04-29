@@ -24,7 +24,17 @@ FORM dialogTemplateFormats 'Формат шаблона'
 META defineDocTemplate(doc, caption)
     CLASS ###doc##Template 'Шаблон '##caption;
     name 'Название' = DATA ISTRING[100] (###doc##Template) CHARWIDTH 15;
+    
     template 'Имя файла шаблона' = DATA STRING (###doc##Template) CHARWIDTH 50;
+
+    file = DATA FILE (###doc##Template);
+    hasFile (###doc##Template t) = TRUE IF file(t);
+    
+    hasTemplate (###doc##Template t) = template(t) OR hasFile(t);
+    
+    openFile 'Открыть' (###doc##Template t) { open(file(t)); }
+    loadFile 'Загрузить' (###doc##Template t) { INPUT = file(t) CHANGE; }
+    dropFile 'Сбросить' (###doc##Template t) { file(t) <- NULL; } 
     
     format = DATA TemplateFormat (###doc##Template);
     nameFormat 'Формат' (###doc##Template t) = name(format(t));
@@ -35,7 +45,10 @@ META defineDocTemplate(doc, caption)
     
     FORM doc##Template 'Шаблон '##caption
         OBJECTS o = ###doc##Template PANEL
-        PROPERTIES(o) name, template, nameFormat
+        PROPERTIES(o) name, 
+                      template SHOWIF NOT hasFile(o), loadFile,
+                      openFile SHOWIF hasFile(o), dropFile SHOWIF hasFile(o),
+                      nameFormat
         
         OBJECTS t = ###doc##Type
         PROPERTIES             in(o, t)
@@ -43,6 +56,28 @@ META defineDocTemplate(doc, caption)
         
         EDIT ###doc##Template OBJECT o
     ;
+    
+    DESIGN doc##Template {
+        OBJECTS {
+            NEW header {
+                NEW general {
+                    alignment = STRETCH;
+                    type = CONTAINERH;
+                    MOVE PROPERTY(name(o));
+                }
+                NEW format {
+                    alignment = STRETCH;
+                    type = CONTAINERH;
+                    MOVE PROPERTY(template(o));
+                    MOVE PROPERTY(loadFile(o));
+                    MOVE PROPERTY(openFile(o));
+                    MOVE PROPERTY(dropFile(o));
+                    MOVE PROPERTY(nameFormat(o));
+                }
+            }
+            MOVE BOX(t);
+        }
+    }
     
     FORM doc##Templates 'Шаблон '##caption
         OBJECTS o = ###doc##Template
@@ -83,7 +118,7 @@ END
 META defineDocTemplateForm(doc, obj)
     doc##Template = DATA LOCAL ###doc##Template();
     EXTEND FORM print###doc
-        REPORT template(doc##Template())
+        REPORT OVERRIDE file(doc##Template()), setExtension(RAWFILE(template(doc##Template())), 'path')
     ;
 
     print 'Печать' (###doc o) {

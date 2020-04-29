@@ -13,7 +13,16 @@ nameCompany 'Компания' (PrintPricelistType t) = name(company(t));
 
 WHEN LOCAL SET(PrintPricelistType t IS PrintPricelistType) AND NOT CHANGED(company(t)) DO company(t) <- defaultCompany();
 
-template 'Шаблон для заголовка' = DATA STRING (PrintPricelistType) CHARWIDTH 50;
+template 'Шаблон' = DATA STRING (PrintPricelistType) CHARWIDTH 50;
+
+file = DATA FILE (PrintPricelistType);
+hasFile (PrintPricelistType t) = TRUE IF file(t);
+
+hasTemplate (PrintPricelistType t) = template(t) OR hasFile(t);
+
+openFile 'Открыть' (PrintPricelistType t) { open(file(t)); }
+loadFile 'Загрузить' (PrintPricelistType t) { INPUT = file(t) CHANGE; }
+dropFile 'Сбросить' (PrintPricelistType t) { file(t) <- NULL; } 
 
 format = DATA TemplateFormat (PrintPricelistType);
 nameFormat 'Формат' (PrintPricelistType t) = name(format(t));
@@ -33,7 +42,9 @@ priceType (PrintPricelistType t, INTEGER i) = GROUP MAX PriceType pt IF index(t,
 FORM printPricelistType 'Тип прайс-листа'
     OBJECTS t = PrintPricelistType PANEL
     PROPERTIES(t) name, nameCompany, 
-                  template, nameFormat
+                  template SHOWIF NOT hasFile(t), loadFile, 
+                  openFile SHOWIF hasFile(t), dropFile SHOWIF hasFile(t), 
+                  nameFormat
     
     TREE categories cat = Category PARENT parent(cat) 
     PROPERTIES name(cat) READONLY, set(t, cat) BACKGROUND (GROUP LAST set(t, Category cc) ORDER level(cc, cat))
@@ -66,6 +77,9 @@ DESIGN printPricelistType {
                 alignment = STRETCH;
                 type = CONTAINERH;
                 MOVE PROPERTY(template(t));
+                MOVE PROPERTY(loadFile(t));
+                MOVE PROPERTY(openFile(t));
+                MOVE PROPERTY(dropFile(t));
                 MOVE PROPERTY(nameFormat(t));
             }
         }
