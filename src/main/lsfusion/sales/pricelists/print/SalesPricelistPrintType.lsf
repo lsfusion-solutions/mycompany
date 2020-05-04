@@ -4,7 +4,7 @@ REQUIRE SalesPricelist, DocTemplate;
 
 NAMESPACE Sales;
 
-CLASS PrintPricelistType 'Тип прайс-листа';
+CLASS PrintPricelistType 'Шаблон прайс-листа';
 
 name 'Наименование' = DATA STRING[50] (PrintPricelistType);
 
@@ -39,7 +39,7 @@ set 'Вкл' = DATA BOOLEAN (PrintPricelistType, PriceType);
 index 'Порядок' (PrintPricelistType t, PriceType pt) = PARTITION SUM 1 IF set(t, pt) ORDER pt BY t MATERIALIZED; 
 priceType (PrintPricelistType t, INTEGER i) = GROUP MAX PriceType pt IF index(t, pt) = i; 
 
-FORM printPricelistType 'Тип прайс-листа'
+FORM printPricelistType 'Шаблон прайс-листа'
     OBJECTS t = PrintPricelistType PANEL
     PROPERTIES(t) name, nameCompany, 
                   template SHOWIF NOT hasFile(t), loadFile, 
@@ -54,14 +54,6 @@ FORM printPricelistType 'Тип прайс-листа'
     PROPERTIES name(pt) READONLY, set(t, pt), index(t, pt) READONLY
     
     EDIT PrintPricelistType OBJECT t
-;
-
-FORM printPricelistTypes 'Типы прайс-листа'
-    OBJECTS t = PrintPricelistType
-    PROPERTIES READONLY name(t)
-    PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
-    
-    LIST PrintPricelistType OBJECT t
 ;
 
 DESIGN printPricelistType {
@@ -92,27 +84,46 @@ DESIGN printPricelistType {
     }
 }
 
-// add to pricelists form
-EXTEND FORM pricelists
+FORM printPricelistTypes 'Шаблоны прайс-листа'
+    OBJECTS t = PrintPricelistType
+    PROPERTIES READONLY name(t)
+    
+    LIST PrintPricelistType OBJECT t
+;
+
+EXTEND FORM options
     OBJECTS pp = PrintPricelistType
     
     PROPERTIES READONLY name(pp)
     PROPERTIES(pp) NEWSESSION NEW, EDIT, DELETE
 ;
 
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(pp);
+    }
+}
+
+// add to pricelists form
+EXTEND FORM pricelists
+    OBJECTS pp = PrintPricelistType
+
+    PROPERTIES READONLY name(pp)
+;
+
 DESIGN pricelists {
     OBJECTS {
         fill = 1;
         type = TABBED;
-        NEW lists {
-            caption = 'Прайс-листы';
-            MOVE BOX(p);
-        }
         NEW print {
             caption = 'Печать';
             MOVE BOX(pp);
         }
+        NEW lists {
+            caption = 'Прайс-листы';
+            MOVE BOX(p);
+        }
     }
 }
 
-countPrintPricelistTypes 'Кол-во типов' () = GROUP SUM 1 IF r IS PrintPricelistType; 
+countPrintPricelistTypes 'Кол-во шаблонов' () = GROUP SUM 1 IF r IS PrintPricelistType; 
