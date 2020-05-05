@@ -28,13 +28,28 @@ openedSession (Pos p) = GROUP AGGR Session s WHERE opened(s) BY pos(s);
 
 FORM session 'Смена'
     OBJECTS s = Session PANEL
-    PROPERTIES(s) openingDateTime, closingDateTime, number, namePos
+    PROPERTIES(s) namePos, number, 
+                  openingDateTime, closingDateTime
     
     EDIT Session OBJECT s
 ;
 
 DESIGN session {
     OBJECTS {
+        NEW header {
+            NEW title {
+                type = CONTAINERH;
+                alignment = STRETCH;
+                MOVE PROPERTY(namePos(s));
+                MOVE PROPERTY(number(s));
+            }
+            NEW period {
+                type = CONTAINERH;
+                alignment = STRETCH;
+                MOVE PROPERTY(openingDateTime(s));
+                MOVE PROPERTY(closingDateTime(s));
+            }
+        }
         NEW tabPane {
             fill = 1;
             type = TABBED;

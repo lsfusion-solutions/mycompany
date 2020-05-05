@@ -52,7 +52,7 @@ afterWithdraw(Pos p, OutgoingPayment o) + {
 fiscalOpenSession 'Фискальный' = DATA BOOLEAN (Session);
 fiscalCloseSession 'Фискальный' = DATA BOOLEAN (Session);
 
-refiscalSession (Session s) {
+refiscalSession 'Фискализация' (Session s) {
     IF fiscalOpenSession(s) AND NOT fiscalCloseSession(s) AND closingDateTime(s) THEN
         closeShift(s);
     ELSE
@@ -67,13 +67,13 @@ EXTEND FORM session
 ;
 
 DESIGN session {
-    GROUP (,s) {
-        type = CONTAINERH;
-        MOVE PROPERTY(fiscalOpenSession(s)) AFTER PROPERTY(namePos(s));
-        MOVE PROPERTY(fiscalCloseSession(s)) AFTER PROPERTY(namePos(s));
-    }
-    TOOLBARRIGHT {
-        MOVE PROPERTY(refiscalSession(s)) AFTER PROPERTY(formRefresh()) { caption = 'Фискализация'; };
+    header {
+        NEW fiscal {
+            type = CONTAINERH;
+            MOVE PROPERTY(fiscalOpenSession(s));
+            MOVE PROPERTY(fiscalCloseSession(s));
+            MOVE PROPERTY(refiscalSession(s));
+        }
     }
 }
 
