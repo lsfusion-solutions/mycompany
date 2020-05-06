@@ -15,6 +15,8 @@ endDateTime 'Окончание действия' = DATA DATETIME (Pricelist);
 
 @defineNumber(pricelist, 'Прайс-листы поставщиков', 'ПП');
 
+numberDate 'Описание' (Pricelist p) = number(p) + ' от ' + startDateTime(p) IN id;
+
 note 'Примечание' = DATA STRING[50] (Pricelist);
 
 vendor 'Поставщик ' = DATA Partner (Pricelist);
@@ -44,6 +46,7 @@ price 'Цена' = DATA NUMERIC[10,2] (PricelistLine);
 // Line properties
 nameStatus 'Статус' (PricelistLine prl) = nameStatus(pricelist(prl));
 number 'Номер' (PricelistLine prl) = number(pricelist(prl));
+numberDate 'Описание' (PricelistLine l) = numberDate(pricelist(l));
 startDateTime 'Начало действия' (PricelistLine prl) = startDateTime(pricelist(prl));
 endDateTime 'Окончание действия' (PricelistLine prl) = endDateTime(pricelist(prl));
 nameVendor 'Поставщик' (PricelistLine prl) = nameVendor(pricelist(prl));
@@ -66,20 +69,33 @@ DESIGN pricelist {
     caption = (CONCAT ' ', 'Прайс-лист поставщика', '№' + number(p), 'от ' + startDateTime(p));
     OBJECTS {
         NEW header {
-            MOVE PROPERTY(number(p));
-            NEW period {
-                alignment = STRETCH;
-                type = CONTAINERH;
-                MOVE PROPERTY(startDateTime(p)) { caption = 'Действует с'; }
-                MOVE PROPERTY(endDateTime(p)) { caption = 'по '; }                
+            type = CONTAINERH;
+            alignment = STRETCH;
+            NEW headerLeft {
+                MOVE PROPERTY(number(p));
+                NEW period {
+                    alignment = STRETCH;
+                    type = CONTAINERH;
+                    MOVE PROPERTY(startDateTime(p)) { caption = 'Действует с'; }
+                    MOVE PROPERTY(endDateTime(p)) { caption = 'по '; }                
+                }
+                MOVE PROPERTY(nameVendor(p));
+                MOVE PROPERTY(note(p));
             }
-            MOVE PROPERTY(nameVendor(p));
-            MOVE PROPERTY(note(p));
+            NEW relatedDoc {
+                fill = 1;
+                type = TABBED;
+            }
         }
         NEW details {
             fill = 1;
             type = TABBED;
             MOVE BOX(l);
+        }
+    }
+    TOOLBARBOX {
+        NEW footer FIRST {
+            type = CONTAINERH;
         }
     }
 }
