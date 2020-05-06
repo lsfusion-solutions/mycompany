@@ -1,0 +1,23 @@
+MODULE SalesPricelistPrintInventory;
+
+REQUIRE SalesPricelistPrintAll, InvLedger;
+
+NAMESPACE Sales;
+
+printLocation = DATA LOCAL Location ();
+namePrintLocation 'Место хранения' () = name(printLocation());
+
+onHandRec 'Остаток' (Product p) = onHandRec(printLocation(), p); 
+
+EXTEND FORM printAllParams
+    PROPERTIES() namePrintLocation
+    
+    PROPERTIES(i) onHandRec GRID SHOWIF printLocation()
+    FILTERS onHandRec(i) OR NOT printLocation()
+;
+
+DESIGN printAllParams {
+    itemHeader {
+        MOVE PROPERTY(namePrintLocation());
+    }
+} 

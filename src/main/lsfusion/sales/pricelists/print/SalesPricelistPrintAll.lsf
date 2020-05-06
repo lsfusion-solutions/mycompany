@@ -1,0 +1,101 @@
+MODULE SalesPricelistPrintAll;
+
+REQUIRE SalesPricelistPrint, SalesPricelistValue;
+
+NAMESPACE Sales;
+
+changedPrice 'Изменившиеся' = DATA LOCAL BOOLEAN(); 
+toPrintData 'Вкл' = DATA LOCAL BOOLEAN (Category);
+toPrintData 'Вкл' = DATA LOCAL BOOLEAN (Item);
+
+toPrint 'Вкл' (Item i) = OVERRIDE toPrintData(i), GROUP LAST toPrintData(Category c) ORDER level(category(i), c);  
+
+FORM printAllParams 'Параметры печати'
+    OBJECTS t = PrintPricelistType PANEL
+
+    OBJECTS date = DATETIME PANEL
+    PROPERTIES(date) date 'На дату' = VALUE
+    
+    PROPERTIES() changedPrice
+
+    TREE categories c = Category PARENT parent(c) 
+    PROPERTIES name(c) READONLY, toPrintData(c) BACKGROUND (GROUP LAST toPrintData(Category cc) ORDER level(cc, c))
+    ORDER name(c)
+    
+    OBJECTS pt = PriceType
+    FILTERS set(t, pt)
+    
+    OBJECTS i = Item
+    PROPERTIES(i) READONLY name, nameUom, idBarCode, id
+    PROPERTIES READONLY    priceA(pt, i, date) COLUMNS (pt) HEADER name(pt)
+    PROPERTIES toPrint(i)
+    ORDER name(i)
+    FILTERGROUP inItem
+        FILTER 'Включенные' toPrint(i) 
+    FILTERS level(category(i), c), canBeSold(i)
+
+    EVENTS ON INIT { 
+        FOR toPrintData(Category cc) DO 
+            EXPAND UP printAllParams.c OBJECTS c = cc; 
+    }
+;
+
+DESIGN printAllParams {
+    OBJECTS {
+        NEW header {
+            type = CONTAINERH;
+            MOVE PROPERTY(date);
+            MOVE PROPERTY(changedPrice());
+        }
+        NEW items {
+            fill = 1;
+            type = SPLITH;
+            MOVE BOX(TREE categories);
+            NEW itemPane {
+                fill = 1;
+                NEW itemHeader {
+                    type = CONTAINERH;
+                    alignment = STRETCH;
+                }
+                MOVE BOX(i);
+            }
+        }
+    }
+}
+
+// actions
+dropPrint 'Сбросить' () {
+    toPrintData (Category c) <- NULL;
+    toPrintData (Item i) <- NULL;
+}
+selectPrint 'Отметить все' () {
+    toPrintData (Item i) <- TRUE WHERE [FILTER printAllParams.i](i);
+}
+
+EXTEND FORM printAllParams
+    PROPERTIES() DRAW i TOOLBAR dropPrint, selectPrint
+;
+
+// print
+printAll 'Сформировать' (PrintPricelistType t) {
+    toPrintData (Category c) <- set(t, c);
+    DIALOG printAllParams OBJECTS t = t, date INPUT DOCKED DO {
+        price(PriceType pt, Item i) <- priceA(pt, i, date) IF (toPrint(i) OR NOT GROUP SUM 1 IF toPrint(Item j)) AND
+            set(t, pt) AND canBeSold(i) AND (NOT changedPrice() OR startDateTimeA(pt, i, date) = date);
+            
+        print(t);
+    }
+} CHANGEMOUSE 'DBLCLK';
+
+EXTEND FORM pricelists
+    PROPERTIES(pp) printAll SHOWIF hasTemplate(pp)
+;
+
+DESIGN pricelists {
+    print {
+        NEW actions FIRST {
+            type = CONTAINERH;
+            MOVE PROPERTY(printAll(pp));
+        }
+    }
+}
