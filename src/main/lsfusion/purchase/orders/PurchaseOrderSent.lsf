@@ -59,8 +59,6 @@ send 'Отправить' (Order o) {
     orderTemplate() <- defaultMailTemplate(type(o));
     IF defaultMailTemplate(type(o)) THEN {
         CASE EXCLUSIVE
-            WHEN format(orderTemplate()) = TemplateFormat.pdf THEN
-                PRINT printOrder OBJECTS o = o PDF TO attachFile;
             WHEN format(orderTemplate()) = TemplateFormat.docx THEN
                 PRINT printOrder OBJECTS o = o DOCX TO attachFile;
             WHEN format(orderTemplate()) = TemplateFormat.xlsx THEN
@@ -70,7 +68,7 @@ send 'Отправить' (Order o) {
             WHEN format(orderTemplate()) = TemplateFormat.html THEN
                 PRINT printOrder OBJECTS o = o HTML TO attachFile;
             ELSE
-                RETURN;
+                PRINT printOrder OBJECTS o = o PDF TO attachFile;
 
         EMAIL
             SUBJECT mailSubject(type(o))

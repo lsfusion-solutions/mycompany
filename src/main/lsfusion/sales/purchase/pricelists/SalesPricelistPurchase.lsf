@@ -82,20 +82,25 @@ createPricelist 'Расценить' (Purchase.Pricelist b) {
 } 
 
 EXTEND FORM Purchase.pricelist
-    PROPERTIES(p) createPricelist SHOWIF done(p) AND pricelistType() AND NOT countPricelistLine(p) 
+    PROPERTIES(p) createPricelistPrimary = createPricelist SHOWIF done(p) AND pricelistType() AND NOT countPricelistLine(p),
+                  createPricelistSecondary = createPricelist SHOWIF done(p) AND pricelistType() AND countPricelistLine(p)
 
     OBJECTS sp = Pricelist
-    PROPERTIES(sp) READONLY nameStatus BACKGROUND colorStatus(sp), number, startDateTime, endDateTime
+    PROPERTIES(sp) READONLY nameType, startDateTime, endDateTime, nameStatus BACKGROUND colorStatus(sp), number
     PROPERTIES(sp) NEWSESSION EDIT GRID   
     FILTERS in(p, sp)
 ;
 
 DESIGN Purchase.pricelist {
     primaryActions {
-        MOVE PROPERTY(createPricelist(p)) { fontStyle = 'bold'; }
+        MOVE PROPERTY(createPricelistPrimary) { fontStyle = 'bold'; }
+    }
+    secondaryActions {
+        MOVE PROPERTY(createPricelistSecondary);
     }
     relatedDoc {
         MOVE BOX(sp) {
+            showIf = pricelistType();
             caption = CONCAT ' ', 'Прайс-листы', '(' + countPricelists(p) + ')';
         }
         REMOVE TOOLBARSYSTEM(sp);

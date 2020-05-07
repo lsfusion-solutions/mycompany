@@ -9,7 +9,8 @@ CLASS TemplateFormat 'Формат шаблона' {
     docx 'DOCX',
     xlsx 'XLSX',
     rtf 'RTF',
-    html 'HTML'
+    html 'HTML',
+    noPreview 'Принтер'
 }
 
 name 'Наименование' (TemplateFormat o) = staticCaption(o) IF o IS TemplateFormat CHARWIDTH 15;
@@ -141,6 +142,8 @@ META defineDocTemplateForm(doc, obj)
                     PRINT print###doc OBJECTS o = o RTF;
                 WHEN format(doc##Template()) = TemplateFormat.html THEN
                     PRINT print###doc OBJECTS o = o HTML;
+                WHEN format(doc##Template()) = TemplateFormat.noPreview THEN
+                    PRINT print###doc OBJECTS o = o NOPREVIEW;
                 ELSE
                     PRINT print###doc OBJECTS o = o;
         }
