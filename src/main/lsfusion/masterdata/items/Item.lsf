@@ -5,7 +5,7 @@ REQUIRE MasterDataSettings, Category, Tax, Uom, MetaNumerator;
 NAMESPACE MasterData;
 
 CLASS ABSTRACT Item 'Номенклатура';
-type 'Тип' (Item i) = objectClassName(i) IF i IS Item CHARWIDTH 6;
+class 'Вид' (Item i) = objectClassName(i) IF i IS Item CHARWIDTH 6;
 
 @defineID(item, 'Номенклатуры', 'НМ');
 
@@ -56,7 +56,7 @@ copy (Item n, Item o) + {
 
 FORM item 'Номенклатура'
     OBJECTS i = Item PANEL
-    PROPERTIES(i) dataName READONLYIF readonly(i), type READONLY, 
+    PROPERTIES(i) dataName READONLYIF readonly(i), class READONLY, 
                   name READONLY, id, canonicalNameCategory READONLYIF readonly(i), nameUom READONLYIF readonly(i),
                   archived READONLYIF readonly(i), cost
       
@@ -70,7 +70,7 @@ DESIGN item {
                 type = CONTAINERH;
                 alignment = STRETCH;
                 MOVE PROPERTY(dataName(i));
-                MOVE PROPERTY(type(i));
+                MOVE PROPERTY(class(i));
             }
             MOVE PROPERTY(name(i)) { alignment = STRETCH; }                   
             NEW pane {
@@ -109,7 +109,7 @@ FORM items 'Номенклатура'
     ORDER name(c)
 
     OBJECTS i = Item
-    PROPERTIES(i) READONLYIF isReadonly() name, id, nameCategory, nameUom, type READONLY
+    PROPERTIES(i) READONLYIF isReadonly() name, id, nameCategory, nameUom, class READONLY
     PROPERTIES(i) SHOWIF isReadonly() NEWSESSION EDIT, DELETE
     ORDER name(i) 
     FILTERS level(category(i), c)
