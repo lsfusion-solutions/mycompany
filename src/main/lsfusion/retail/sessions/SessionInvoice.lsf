@@ -5,12 +5,15 @@ REQUIRE Session, SalesDiscountInvoice, Bill;
 NAMESPACE Retail;
 
 // invoice
-invoiceType = DATA InvoiceType (Pos);
+invoiceType = DATA InvoiceType (Pos) NONULL;
 nameInvoiceType 'Тип реализации' (Pos p) = name(invoiceType(p));
 
 EXTEND FORM pos
     PROPERTIES(p) nameInvoiceType
 ;
+DESIGN pos {
+    PROPERTY(nameInvoiceType(p)) { notNull = TRUE; } 
+}
 
 session = DATA Session (Invoice);
 numberSession 'Смена' (Invoice i) = number(session(i));
