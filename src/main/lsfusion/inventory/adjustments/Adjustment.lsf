@@ -1,12 +1,12 @@
 MODULE Adjustment;
 
-REQUIRE InventorySettings, Location, Product, InvLedger, Company, BarCode, Doc;
+REQUIRE InventorySettings, LocationEmployee, Product, InvLedger, Company, BarCode, Doc;
                                   
 NAMESPACE Inventory;
 
 CLASS Adjustment 'Инвентаризация';
 
-@defineStatus(adjustment, 'инвентаризации');
+@defineDocStatus(adjustment, 'инвентаризации');
 
 dateTime 'Дата' = DATA DATETIME (Adjustment);
 WHEN LOCAL SET(Adjustment a IS Adjustment) AND NOT CHANGED(dateTime(a)) DO dateTime(a) <- currentDateTime();
@@ -131,8 +131,9 @@ FORM adjustments 'Инвентаризации'
     LIST Adjustment OBJECT a
 ;
 
-@defineStatusForm(adjustment, a);
+@defineDocStatusForm(adjustment, a);
 @defineDocLinesCount(adjustment, a);
+@defineDocLocationAccess(adjustment, a);
 
 NAVIGATOR {
     operations {

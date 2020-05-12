@@ -1,0 +1,47 @@
+MODULE LocationEmployee;
+
+REQUIRE Location, Employee;
+
+NAMESPACE Inventory;
+
+hasAccess 'Доступен' = DATA BOOLEAN (Employee, Location); 
+
+hasParentAccess (Employee e, Location l) = GROUP LAST hasAccess(e, Location pl) ORDER DESC level(l, pl); 
+
+countLocationAccess (Employee e) = GROUP SUM 1 IF hasAccess(e, Location l) MATERIALIZED PREREAD;
+
+accessGranted (Employee e, Location l) = hasParentAccess(e, l) OR NOT countLocationAccess(e);
+
+accessGranted (Location l) = accessGranted(currentUser(), l);
+accessDenied (Location l) = currentUser() IS Employee AND NOT accessGranted(l);
+
+EXTEND FORM employee
+    TREE locations lt = Location PARENT parent(lt)
+    PROPERTIES(lt) READONLY name, id
+    PROPERTIES hasAccess(e, lt) BACKGROUND (GROUP SUM 1 IF hasAccess(e, Location cl) AND level(cl, lt)) 
+    ORDER name(lt)
+;
+
+DESIGN employee {
+    details {
+        MOVE BOX(TREE locations) {
+            caption = 'Места хранения';
+            PROPERTY(hasAccess(e, lt)) {
+                width = 40;
+            }
+        }
+    }
+}
+
+META defineDocLocationAccess(doc, let, prefix)
+    CONSTRAINT SETCHANGED(prefix###location(###doc o)) AND accessDenied(prefix###location(o)) CHECKED BY prefix###location[###doc]
+               MESSAGE 'У текущего пользователя нет прав доступа к выбранному месту хранения';
+               
+    EXTEND FORM doc##s
+        FILTERS accessGranted(prefix###location(let)) OR NOT prefix###location(let) 
+    ; 
+END
+
+META defineDocLocationAccess(doc, let)
+    @defineDocLocationAccess(doc, let, );
+END

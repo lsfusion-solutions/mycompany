@@ -4,13 +4,13 @@ REQUIRE Time, MetaNumerator, Employee, Company,
         MetaTax, TaxItem, BarCode, PurchaseOrderType,
         PurchaseSettings, PartnerPurchase, ItemSales,
         PaymentTermsPurchase, Doc,
-        DebtPartner, Location;  
+        DebtPartner, LocationEmployee;  
 
 NAMESPACE Purchase;
 
 CLASS Order 'Заказ поставщику';
 
-@defineStatus(order, 'заказа поставщику');
+@defineDocStatus(order, 'заказа поставщику');
 
 // type
 type 'Тип' = DATA OrderType (Order) NONULL;
@@ -198,8 +198,10 @@ FORM orders 'Заказы поставщикам'
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
 ;
 
-@defineStatusForm(order, o);
+@defineDocStatusForm(order, o);
 @defineDocLinesCount(order, o);
+@defineDocLocationAccess(order, o);
+
 
 NAVIGATOR {
     operations {

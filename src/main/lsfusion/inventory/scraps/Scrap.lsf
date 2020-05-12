@@ -1,12 +1,12 @@
 MODULE Scrap;
 
-REQUIRE InventorySettings, Product, Location, InvLedger, BarCode, Doc, ScrapType;
+REQUIRE InventorySettings, Product, LocationEmployee, InvLedger, BarCode, Doc, ScrapType;
 
 NAMESPACE Inventory;
 
 CLASS Scrap 'Списание';
 
-@defineStatus(scrap, 'списания');
+@defineDocStatus(scrap, 'списания');
 
 // type
 type 'Тип' = DATA ScrapType (Scrap) NONULL;
@@ -78,8 +78,9 @@ FORM scraps 'Списания'
     LIST Scrap OBJECT s
 ;
 
-@defineStatusForm(scrap, s);
+@defineDocStatusForm(scrap, s);
 @defineDocLinesCount(scrap, s);
+@defineDocLocationAccess(scrap, s);
 
 NAVIGATOR {
     operations {

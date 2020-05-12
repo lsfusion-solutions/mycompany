@@ -1,7 +1,7 @@
 MODULE SalesOrder;
 
 REQUIRE Time, MetaNumerator, Employee, Company,
-        MetaTax, TaxItem, BarCode,
+        MetaTax, TaxItem, BarCode, LocationEmployee,
         SalesSettings, PartnerSales, ItemSales, SalesOrderType,
         PaymentTermsSales, SalesPricelistValue, Doc;  
 
@@ -9,7 +9,7 @@ NAMESPACE Sales;
 
 CLASS Order 'Заказ покупателя';
 
-@defineStatus(order, 'заказа покупателя');
+@defineDocStatus(order, 'заказа покупателя');
 
 // type
 type 'Тип' = DATA OrderType (Order) NONULL;
@@ -222,8 +222,9 @@ FORM orders 'Заказы покупателей'
      PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
 ;
 
-@defineStatusForm(order, o);
+@defineDocStatusForm(order, o);
 @defineDocLinesCount(order, o);
+@defineDocLocationAccess(order, o);
 
 NAVIGATOR {
     operations {

@@ -1,14 +1,14 @@
 MODULE Receipt;
 
 REQUIRE System, Time,
-        InventorySettings, Location, Partner, Product,
+        InventorySettings, Location, Partner, Product, LocationEmployee,
         ReceiptType, ItemPurchase, PartnerPurchase, BarCode, Doc, ResLedger;
 
 NAMESPACE Inventory;
 
 CLASS Receipt 'Поступление';
 
-@defineStatus(receipt, 'поступления');
+@defineDocStatus(receipt, 'поступления');
 
 immediate 'Незапланированное' = DATA BOOLEAN (Receipt);
 
@@ -144,7 +144,8 @@ FORM receipts 'Поступления'
     PROPERTIES(r) NEWSESSION NEW, EDIT, DELETE
 ;
 
-@defineStatusForm(receipt, r);
+@defineDocStatusForm(receipt, r);
+@defineDocLocationAccess(receipt, r);
 
 NAVIGATOR {
     operations {

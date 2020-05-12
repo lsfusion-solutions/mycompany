@@ -1,6 +1,6 @@
 MODULE InventoryValuation;
 
-REQUIRE CostLedger;
+REQUIRE CostLedger, LocationEmployee;
 
 NAMESPACE Inventory;
 
@@ -9,7 +9,8 @@ FORM inventoryValuation 'Себестоимость остатков'
     PROPERTIES READONLY 'Склад' = canonicalName(l), 'Товар' = name(p), costQuantity(l, p), costPrice(l, p), costAmount(l, p)
     PROPERTIES(p) EDIT
     PROPERTIES recalculateCost() DRAW lp TOOLBAR
-    FILTERS costQuantity(l, p)
+    FILTERS costQuantity(l, p),
+            accessGranted(l)
         
     OBJECTS ol = OutCostLedger
     PROPERTIES(ol) READONLY class, dateTime, number, nameLocation, nameProduct, quantity, costed, price, amount

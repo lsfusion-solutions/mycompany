@@ -1,6 +1,6 @@
 MODULE InventoryReport;
 
-REQUIRE InvLedger, ResLedger, ItemImage, ItemAttribute;
+REQUIRE InvLedger, ResLedger, ItemImage, ItemAttribute, LocationEmployee;
 
 NAMESPACE Inventory;
 
@@ -30,7 +30,8 @@ FORM inventoryReport 'Текущие остатки'
     FILTERS IF singleLocation() THEN l = lt ELSE isChild(l, lt),
             level(category(p), c),
             IF selectedDateTime() THEN onHandDateTime(l, p) ELSE 
-                (IF singleLocation() THEN onHandRec(l, p) ELSE onHand(l, p))
+                (IF singleLocation() THEN onHandRec(l, p) ELSE onHand(l, p)),
+            accessGranted(l)
                 
     OBJECTS il = InvLedger
     PROPERTIES(il) READONLY class, dateTime, number, 
@@ -59,7 +60,8 @@ FORM inventoryReport 'Текущие остатки'
     PROPERTIES READONLY 'Склад' = canonicalName(ll), 'Товар' = name(rp), value(rp, a) COLUMNS (a) HEADER name(a),
                     level1(rp), level2(rp), level3(rp), level4(rp), 'Группа полная' = canonicalNameCategory(rp)
     PROPERTIES(ll, rp) READONLY reserved, available, onHandDateTime, dateReceived, dateShipped
-    FILTERS IF selectedDateTime() THEN onHandDateTime(ll, rp) ELSE onHand(ll, rp)
+    FILTERS IF selectedDateTime() THEN onHandDateTime(ll, rp) ELSE onHand(ll, rp),
+            accessGranted(ll)
 ;
 
 DESIGN inventoryReport {

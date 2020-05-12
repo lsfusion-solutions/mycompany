@@ -21,12 +21,9 @@ CONSTRAINT Employee e IS Employee AND NOT legalEntity(e) IS Company
 
 FORM employee 'Сотрудник'
     OBJECTS e = Employee PANEL
-    PROPERTIES(e) id, login, sha256Password ON CHANGE changeSHA256Password(e), isLocked, archived,
-                  firstName, middleName, lastName, nameMainRole,  email, phone, address, city, state, zip, birthday, nameLegalEntity,
-                  useClientLocale, userLanguage SHOWIF NOT useClientLocale(e), userCountry SHOWIF NOT useClientLocale(e), 
-                  userTimeZone, userTwoDigitYearStart,
-                  useBusyDialogCustom, useRequestTimeout, devMode, allowExcessAllocatedBytes, 
-                  fontSize
+    PROPERTIES(e) id, login, sha256Password ON CHANGE changeSHA256Password(e), isLocked, archived, 
+                  nameLegalEntity, lastName, firstName, middleName, email, phone, address, city, state, zip, birthday,
+                  nameMainRole
     
     OBJECTS ur=UserRole
     PROPERTIES(ur) READONLY name, sid
@@ -50,11 +47,11 @@ DESIGN employee {
                     MOVE PROPERTY(sha256Password(e));
                     MOVE PROPERTY(isLocked(e));
                     MOVE PROPERTY(archived(e));
-                    MOVE PROPERTY(nameLegalEntity(e));  
                 }
                 NEW info {
                     alignment = STRETCH;
                     caption = '{authentication.custom.user.info}';
+                    MOVE PROPERTY(nameLegalEntity(e)) { notNull = TRUE; }  
                     MOVE PROPERTY(lastName(e));
                     MOVE PROPERTY(firstName(e));
                     MOVE PROPERTY(middleName(e));
@@ -66,33 +63,6 @@ DESIGN employee {
                     MOVE PROPERTY(zip(e));
                     MOVE PROPERTY(birthday(e));
                 }
-                NEW locale {
-                    alignment = STRETCH;
-                    caption = '{authentication.custom.user.locale}';
-                    MOVE PROPERTY(useClientLocale(e));
-                    MOVE PROPERTY(userLanguage(e));
-                    MOVE PROPERTY(userCountry(e));
-                    MOVE PROPERTY(userTimeZone(e));
-                    MOVE PROPERTY(userTwoDigitYearStart(e));
-                }
-                NEW system {
-                    alignment = STRETCH;
-                    caption = '{authentication.custom.user.system}';
-                    MOVE PROPERTY(useBusyDialogCustom(e));
-                    MOVE PROPERTY(useRequestTimeout(e));
-                    MOVE PROPERTY(devMode(e));
-                    MOVE PROPERTY(allowExcessAllocatedBytes(e));
-                }
-                NEW GUI {
-                    alignment = STRETCH;
-                    caption = '{authentication.custom.user.gui}';
-                    MOVE PROPERTY(fontSize(e));
-                }
-                NEW security {
-                    alignment = STRETCH;
-                    caption = '{authentication.custom.user.security}';
-                }
-                MOVE BOX(e);
             }
             NEW details {
                 type = TABBED;

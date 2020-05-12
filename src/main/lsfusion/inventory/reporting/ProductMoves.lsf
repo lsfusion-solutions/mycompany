@@ -1,6 +1,6 @@
 MODULE ProductMoves;
 
-REQUIRE InvLedger;
+REQUIRE InvLedger, LocationEmployee;
 
 NAMESPACE Inventory;
 
@@ -10,6 +10,7 @@ FORM productMoves 'Движение товара'
     PROPERTIES(il) NEWSESSION EDIT 
     FILTERGROUP active
         FILTER 'Активный' active(il) DEFAULT
+    FILTERS accessGranted(fromLocation(il)) OR accessGranted(toLocation(il))
 
     LIST InvLedger OBJECT il
 ;

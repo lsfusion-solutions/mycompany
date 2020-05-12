@@ -1,6 +1,6 @@
 MODULE InvoiceShipment;
 
-REQUIRE InvoiceCanceled, InvoiceReady, ShipmentCanceled;
+REQUIRE InvoiceCanceled, InvoiceReady, ShipmentCanceled, LocationEmployee;
 
 NAMESPACE Invoicing;
 
@@ -22,6 +22,12 @@ DESIGN invoice {
         MOVE PROPERTY(nameLocation(i));
     }
 }
+
+EXTEND FORM invoices
+    PROPERTIES(i) READONLY nameLocation
+;
+
+@defineDocLocationAccess(invoice, i);
 
 // lines
 @defineDocLineRelation(invoice, shipment, 'Реализации', 'Отгрузки', i, s);

@@ -1,14 +1,14 @@
 MODULE Shipment;
 
 REQUIRE System, Time,
-        InventorySettings, Location, Partner, Product,
+        InventorySettings, LocationEmployee, Partner, Product,
         ShipmentType, ItemSales, PartnerSales, BarCode, Doc, ResLedger;
 
 NAMESPACE Inventory;
 
 CLASS Shipment 'Отгрузка';
 
-@defineStatus(shipment, 'отгрузки');
+@defineDocStatus(shipment, 'отгрузки');
 
 immediate 'Незапланированная' = DATA BOOLEAN (Shipment);
 
@@ -164,7 +164,8 @@ FORM shipments 'Отгрузки'
     PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
 ;
 
-@defineStatusForm(shipment, s);
+@defineDocStatusForm(shipment, s);
+@defineDocLocationAccess(shipment, s);
 
 NAVIGATOR {
     operations {
