@@ -18,7 +18,7 @@ name 'Название' = DATA ISTRING[50] (ItemAttribute) IN id NONULL;
 set 'Вкл.' = DATA BOOLEAN (ItemAttribute, Category);
 
 // с учетом групп
-valid (ItemAttribute a, Category c) = GROUP LAST set(a, Category cc) ORDER level(c, cc); 
+valid (ItemAttribute a, Category c) = GROUP LAST set(a, Category cc) ORDER DESC level(c, cc); 
 
 // список возможных значений для атрибута
 CLASS ItemAttributeValue 'Значение';
@@ -46,7 +46,7 @@ newValue 'Значение' (ItemAttribute a) {
 
 // задание доступных категорий для конкретных значений
 set 'Вкл.' = DATA BOOLEAN (ItemAttributeValue, Category);
-valid (ItemAttributeValue v, Category c) = GROUP LAST set(v, Category cc) ORDER level(c, cc); 
+valid (ItemAttributeValue v, Category c) = GROUP LAST set(v, Category cc) ORDER DESC level(c, cc); 
 
 countCategory 'Кол-во заданных категорий' (ItemAttributeValue v) = GROUP SUM 1 IF set(v, Category c) MATERIALIZED;
 
@@ -73,7 +73,7 @@ FORM childValues 'Значения'
     PROPERTIES newValue(a) DRAW v TOOLBAR 
     PROPERTIES(v) NEWSESSION EDIT, DELETE
     FILTERS itemAttribute(v) = a,
-            valid(v, c) OR (GROUP LAST set(v, Category cc) ORDER level(cc, c)) OR NOT countCategory(v)
+            valid(v, c) OR (GROUP SUM 1 IF set(v, Category cc) AND level(cc, c)) OR NOT countCategory(v)
 ;
 
 // формы ввода атрибутов
@@ -90,7 +90,7 @@ FORM attribute 'Атрибут'
     PROPERTIES(a) name, id, nonull
     
     TREE categories c = Category PARENT parent(c) 
-    PROPERTIES name(c) READONLY, set(a, c) BACKGROUND (GROUP LAST set(a, Category cc) ORDER level(cc, c))
+    PROPERTIES name(c) READONLY, set(a, c) BACKGROUND (GROUP SUM 1 IF set(a, Category cc) AND level(cc, c))
     ORDER name(c)
            
     OBJECTS v = ItemAttributeValue
@@ -98,8 +98,8 @@ FORM attribute 'Атрибут'
     FILTERS itemAttribute(v) = a
     
     TREE cat cc = Category PARENT parent(cc)
-    PROPERTIES name(cc) READONLY, set(v, cc) BACKGROUND (GROUP LAST set(v, Category ccc) ORDER level(ccc, cc))
-    FILTERS (GROUP LAST set(a, Category pcc) ORDER level(cc, pcc)) OR (GROUP LAST set(a, Category ccc) ORDER level(ccc, cc)) 
+    PROPERTIES name(cc) READONLY, set(v, cc) BACKGROUND (GROUP SUM 1 IF set(v, Category ccc) AND level(ccc, cc))
+    FILTERS (GROUP LAST set(a, Category pcc) ORDER level(cc, pcc)) OR (GROUP SUM 1 IF set(a, Category ccc) AND level(ccc, cc)) 
     ORDER name(cc)
     
     EDIT ItemAttribute OBJECT a
