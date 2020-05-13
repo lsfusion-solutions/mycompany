@@ -60,8 +60,11 @@ productImport 'Импорт товаров' () {
                 RETURN;
             }  
             
-            FOR imported(INTEGER i) DO NEW p = Product {
+            FOR id(INTEGER i) AND NOT item(id(i)) DO NEW p = Product {
                 id(p) <- id(i);
+            }
+            
+            FOR id(Product p) = id(INTEGER i) DO {
                 dataName(p) <- name(i);
                 category(p) <- category(idCategory(i));
                 uom(p) <- uom(idUom(i));
