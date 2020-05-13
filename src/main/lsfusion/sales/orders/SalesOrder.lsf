@@ -64,6 +64,8 @@ nameLocation 'Место хранения' (Order o) = name(location(o));
 representative 'Наш представитель' = DATA Employee (Order);
 nameRepresentative 'Наш представитель' (Order o)= MasterData.name(representative(o));
 
+representative(Order o) <- currentUser() IF currentUser() IS Employee WHEN SET(o IS Order);
+
 CONSTRAINT representative(Order o) AND NOT legalEntity(representative(o)) = company(o) 
     CHECKED BY representative MESSAGE 'Должен быть наш работник';
 
