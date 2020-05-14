@@ -11,7 +11,7 @@ matches (PricelistLine l, PrintPricelistType t) =
 matches (Pricelist p, PrintPricelistType t) = GROUP SUM 1 IF pricelist(PricelistLine l) = p AND matches(l, t);
 countPrintType (Pricelist p) = GROUP SUM 1 IF matches(p, PrintPricelistType t); 
 
-FORM dialogPricelistTypes 'Выбор типа прайс-листа'
+FORM dialogPricelistTypesList 'Выбор типа прайс-листа'
     OBJECTS p = Pricelist PANEL
     
     OBJECTS t = PrintPricelistType
@@ -25,7 +25,7 @@ print 'Печать' (Pricelist p) {
     IF countPrintType(p) = 1 THEN
         printType() <- GROUP MAX PrintPricelistType it IF matches(p, it);
     ELSE
-        DIALOG dialogPricelistTypes OBJECTS p = p, t INPUT DO {
+        DIALOG dialogPricelistTypesList OBJECTS p = p, t INPUT DO {
             printType() <- t;
         }
     FOR PrintPricelistType t = printType() DO {
@@ -36,7 +36,7 @@ print 'Печать' (Pricelist p) {
 }
 
 EXTEND FORM pricelist
-    PROPERTIES(p) print SHOWIF countPrintPricelistTypes()
+    PROPERTIES(p) print SHOWIF countPrintType(p)
 ;
 
 DESIGN pricelist {
