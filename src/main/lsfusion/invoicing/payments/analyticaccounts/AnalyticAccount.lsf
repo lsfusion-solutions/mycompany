@@ -89,8 +89,9 @@ META definePaymentTypeAnalytic(pay)
         PROPERTIES in(o, aa)
     ;
     DESIGN ##pay###PaymentType {
-        OBJECTS {
-            NEW tabbedPane {
+        tabbedPane {
+            NEW analyticAccount {
+                caption = 'Статьи ДДС';
                 type = TABBED;
                 fill = 1;
                 NEW list {
@@ -113,7 +114,7 @@ META definePaymentAnalytic(pay)
     WHEN LOCAL CHANGED(type(###pay###Payment p)) AND countAnalyticAccount(type(p)) == 1 DO
         analyticAccount(p) <- analiticAccount(type(p)); 
 
-    EXTEND FORM ##pay###Payment PROPERTIES(p) nameAnalyticAccount READONLYIF  countAnalyticAccount(type(p)) == 1;
+    EXTEND FORM ##pay###Payment PROPERTIES(p) nameAnalyticAccount READONLYIF countAnalyticAccount(type(p)) == 1;
 
     CONSTRAINT type(###pay###Payment p) AND analyticAccount(p) AND NOT in(type(p), analyticAccount(p)) AND countAnalyticAccount(type(p))
         CHECKED MESSAGE 'Статья ДДС должна соответствовать типу платежа';
