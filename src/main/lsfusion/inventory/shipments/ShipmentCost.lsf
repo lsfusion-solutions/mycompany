@@ -17,6 +17,8 @@ quantity(ShipmentOutCostLedger l) += done(line(l));
 
 edit(ShipmentOutCostLedger l) + { edit(line(l)); }
 
+type(ShipmentOutCostLedger l) += nameType(shipment(line(l)));
+
 // приходная проводка
 CLASS ShipmentInCostLedger 'Перемещение' : InCostLedger;
 inCostLedger = AGGR ShipmentInCostLedger WHERE done(ShipmentLine line) AND active(shipment(line)) 
@@ -34,3 +36,5 @@ quantity(ShipmentInCostLedger l) += done(line(l));
 calcAmount (ShipmentInCostLedger l) += amount(outCostLedger(line(l)));
 
 edit(ShipmentInCostLedger l) + { edit(line(l)); }
+
+type(ShipmentInCostLedger l) += nameType(shipment(line(l)));

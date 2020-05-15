@@ -16,6 +16,8 @@ company (Bill b) += company(b);
 
 amount (Bill b) += amount(b);
 
+type[Debt] (Bill l) += nameType(l);
+
 // pay
 pay 'Разнести' (Bill b, OutgoingDebt d) {
     paid(b, d) <- left(b, d) (+) paid(b, d);
@@ -25,12 +27,11 @@ EXTEND FORM bill
     PROPERTIES(b) paid
     
     OBJECTS d = OutgoingDebt
-    PROPERTIES(d) READONLY dateTime, number, class
-    PROPERTIES paid(b, d)
+    PROPERTIES(d) READONLY dateTime, number, class, type[Debt]
     FILTERS paid(b, d), active(d)
     
     OBJECTS dd = OutgoingDebt
-    PROPERTIES(dd) READONLY dateTime, number, class, left
+    PROPERTIES(dd) READONLY dateTime, number, class, type[Debt], left
     PROPERTIES pay(b, dd) TOOLBAR
     FILTERS canBePaid(b, dd), active(dd)   
 ;

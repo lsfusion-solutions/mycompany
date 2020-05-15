@@ -18,6 +18,8 @@ quantity(ConsumedOutCostLedger l) += consumed(line(l));
 
 edit(ConsumedOutCostLedger l) + { edit(line(l)); }
 
+type(ConsumedOutCostLedger l) += nameType(manufacturingOrder(line(l)));
+
 // приходная проводка
 CLASS ConsumedInCostLedger 'Производство' : InCostLedger;
 inCostLedger = AGGR ConsumedInCostLedger WHERE produced(FinishedLine line) AND active(manufacturingOrder(line)) AND item(line) IS Product;
@@ -35,3 +37,5 @@ cost (ManufacturingOrder o) = GROUP SUM amount(ConsumedOutCostLedger l) IF manuf
 calcAmount (ConsumedInCostLedger l) += NUMERIC[16,3](cost(manufacturingOrder(line(l))) * normalizedCostRatio(line(l)));
 
 edit(ConsumedInCostLedger l) + { edit(line(l)); }
+
+type(ConsumedInCostLedger l) += nameType(manufacturingOrder(line(l)));
