@@ -14,8 +14,6 @@ dueDateTime 'Оплатить до' = ABSTRACT DATETIME(Debt) MATERIALIZED;
 partner = ABSTRACT Partner (Debt) MATERIALIZED;
 namePartner 'Контрагент' (Debt d) = name(partner(d));
 
-type 'Тип' = ABSTRACT ISTRING[100] (Debt) MATERIALIZED;
-
 INDEX partner(Debt d), dateTime(d), d;
 
 company = ABSTRACT Company (Debt) MATERIALIZED;
@@ -24,6 +22,8 @@ nameCompany 'Компания' (Debt d) = name(company(d));
 amount 'Сумма' = ABSTRACT NUMERIC[14,2] (Debt) MATERIALIZED;
 
 class 'Вид' (Debt d) = objectClassName(d) IF d IS Debt CHARWIDTH 15;
+
+type 'Тип' = ABSTRACT ISTRING[100] (Debt) MATERIALIZED;
 
 // incoming
 CLASS ABSTRACT IncomingDebt 'Входящая задолженность' : Debt;

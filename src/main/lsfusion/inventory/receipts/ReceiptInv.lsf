@@ -10,6 +10,8 @@ toDo (ReceiptLine l) = done(l) (-) ledgerDone(l);
 CLASS ReceiptInvLedger 'Поступление' : InvLedger;
 invLedger = AGGR ReceiptInvLedger WHERE toDo(ReceiptLine line) > 0; 
 
+type(ReceiptInvLedger l) += nameType(receipt(line(l)));
+
 active(ReceiptInvLedger l) += active(receipt(line(l)));
 dateTime(ReceiptInvLedger l) += executionDateTime(receipt(line(l)));
 number(ReceiptInvLedger l) += number(receipt(line(l)));
@@ -21,5 +23,3 @@ product(ReceiptInvLedger l) += product(line(l));
 quantity(ReceiptInvLedger l) += toDo(line(l));
 
 edit (ReceiptInvLedger l) + { edit(receipt(line(l))); } 
-
-type(ReceiptInvLedger l) += nameType(receipt(line(l)));

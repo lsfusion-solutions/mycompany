@@ -9,6 +9,8 @@ CLASS ShipmentOutCostLedger 'Отгрузка' : OutCostLedger;
 outCostLedger = AGGR ShipmentOutCostLedger WHERE done(ShipmentLine line) AND active(shipment(line))
                                              AND NOT costLocation(location(shipment(line))) = costLocation(toLocation(shipment(line)));
 
+type(ShipmentOutCostLedger l) += nameType(shipment(line(l)));
+
 dateTime(ShipmentOutCostLedger l) += executionDateTime(shipment(line(l)));
 location(ShipmentOutCostLedger l) += costLocation(location(shipment(line(l))));
 
@@ -17,13 +19,13 @@ quantity(ShipmentOutCostLedger l) += done(line(l));
 
 edit(ShipmentOutCostLedger l) + { edit(line(l)); }
 
-type(ShipmentOutCostLedger l) += nameType(shipment(line(l)));
-
 // приходная проводка
 CLASS ShipmentInCostLedger 'Перемещение' : InCostLedger;
 inCostLedger = AGGR ShipmentInCostLedger WHERE done(ShipmentLine line) AND active(shipment(line)) 
                             AND toLocation(shipment(line))
                             AND NOT costLocation(location(shipment(line))) = costLocation(toLocation(shipment(line))); 
+
+type(ShipmentInCostLedger l) += nameType(shipment(line(l)));
 
 dateTime(ShipmentInCostLedger l) += executionDateTime(shipment(line(l)));
 number(ShipmentInCostLedger l) += number(shipment(line(l)));
@@ -36,5 +38,3 @@ quantity(ShipmentInCostLedger l) += done(line(l));
 calcAmount (ShipmentInCostLedger l) += amount(outCostLedger(line(l)));
 
 edit(ShipmentInCostLedger l) + { edit(line(l)); }
-
-type(ShipmentInCostLedger l) += nameType(shipment(line(l)));

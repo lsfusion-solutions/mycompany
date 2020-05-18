@@ -10,6 +10,8 @@ manLedger = AGGR ManufacturingOrderResLedger WHERE reserved(ConsumedLine line) A
      status(manufacturingOrder(line)) = ManufacturingOrderStatus.ready OR 
      status(manufacturingOrder(line)) = ManufacturingOrderStatus.inProgress);
 
+type(ManufacturingOrderResLedger r) += nameType(manufacturingOrder(line(r)));
+
 dateTime(ManufacturingOrderResLedger r) += scheduledDateTime(line(r));
 
 partner(ManufacturingOrderResLedger r) += company(manufacturingOrder(line(r)));
@@ -21,5 +23,3 @@ reserved(ManufacturingOrderResLedger r) += reserved(line(r));
 number(ManufacturingOrderResLedger r) += number(manufacturingOrder(line(r)));
 
 edit (ManufacturingOrderResLedger r) + { edit(manufacturingOrder(line(r))); }
-
-type(ManufacturingOrderResLedger r) += nameType(manufacturingOrder(line(r)));

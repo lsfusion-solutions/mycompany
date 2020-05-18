@@ -7,6 +7,8 @@ NAMESPACE Sales;
 CLASS ABSTRACT SalesLedger 'Регистр продаж';
 class 'Вид' (SalesLedger l) = objectClassName(l) IF l IS SalesLedger CHARWIDTH 15;
 
+type 'Тип' = ABSTRACT ISTRING[100] (SalesLedger) MATERIALIZED;
+
 active 'Активный' = ABSTRACT BOOLEAN (SalesLedger) MATERIALIZED;
 dateTime 'Время' = ABSTRACT DATETIME (SalesLedger) MATERIALIZED;
 
@@ -26,5 +28,3 @@ untaxedAmount 'Сумма без налогов' = ABSTRACT NUMERIC[14,2] (Sales
 taxes 'Налоги' = ABSTRACT NUMERIC[14,2] (SalesLedger) MATERIALIZED;
 
 amount 'Сумма' (SalesLedger l) = untaxedAmount(l) (+) taxes(l);
-
-type 'Тип' = ABSTRACT ISTRING[100] (SalesLedger) MATERIALIZED;

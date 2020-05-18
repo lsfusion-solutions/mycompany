@@ -6,6 +6,8 @@ NAMESPACE Invoicing;
 
 // extend
 EXTEND CLASS IncomingPayment : IncomingDebt;
+type (IncomingPayment p) += nameType(p);
+
 active (IncomingPayment p) += active(p);
 number (IncomingPayment p) += number(p);
 dateTime (IncomingPayment p) += dateTime(p);
@@ -14,8 +16,6 @@ partner (IncomingPayment p) += partner(p);
 company (IncomingPayment p) += company(p);
 
 amount (IncomingPayment p) += amount(p);
-
-type[Debt] (IncomingPayment p) += nameType(p);
 
 // pay
 pay 'Разнести' (IncomingPayment p, OutgoingDebt d) {
@@ -30,12 +30,12 @@ pay 'Разнести' (IncomingPayment p, OutgoingDebt d) {
 
 EXTEND FORM incomingPayment
     OBJECTS d = OutgoingDebt
-    PROPERTIES(d) READONLY dateTime, number, class, type[Debt]
+    PROPERTIES(d) READONLY dateTime, number, class, type
     PROPERTIES paid(p, d)
     FILTERS paid(p, d), active(d)
     
     OBJECTS dd = OutgoingDebt
-    PROPERTIES(dd) READONLY dateTime, number, class, type[Debt], left
+    PROPERTIES(dd) READONLY dateTime, number, class, type, left
     PROPERTIES pay(p, dd) TOOLBAR
     FILTERS canBePaid(p, dd), active(dd)   
 ;

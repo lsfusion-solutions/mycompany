@@ -9,6 +9,8 @@ cost 'Себестоимость' = ABSTRACT CASE NUMERIC[14,2] (ReceiptLine);
 CLASS ReceiptCostLedger 'Поступление' : InCostLedger;
 costLedger = AGGR ReceiptCostLedger WHERE done(ReceiptLine line) AND active(receipt(line));
 
+type(ReceiptCostLedger l) += nameType(receipt(line(l)));
+
 dateTime(ReceiptCostLedger l) += executionDateTime(receipt(line(l)));
 number(ReceiptCostLedger l) += number(receipt(line(l)));
 
@@ -20,8 +22,6 @@ quantity(ReceiptCostLedger l) += done(line(l));
 calcAmount (ReceiptCostLedger l) += cost(line(l));
 
 edit(ReceiptCostLedger l) + { edit(line(l)); }
-
-type(ReceiptCostLedger l) += nameType(receipt(line(l)));
 
 // data cost
 showCost 'Показывать себестоимость' = DATA BOOLEAN (ReceiptType);

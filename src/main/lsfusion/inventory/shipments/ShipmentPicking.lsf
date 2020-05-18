@@ -84,6 +84,8 @@ CLASS ShipmentPickingRes 'Отгрузка' : ResLedger;
 
 pickingLedger = AGGR ShipmentPickingRes WHERE reserved(ShipmentLine l, Location loc) AND toReserve(shipment(l));
 
+type(ShipmentPickingRes r) += nameType(shipment(l(r)));
+
 dateTime(ShipmentPickingRes r) += executionDateTime(shipment(l(r)));
 number(ShipmentPickingRes r) += number(shipment(l(r)));
 
@@ -93,12 +95,12 @@ location(ShipmentPickingRes r) += loc(r);
 product(ShipmentPickingRes r) += product(l(r));
 reserved(ShipmentPickingRes r) += reserved(l(r),loc(r));
 
-type(ShipmentPickingRes r) += nameType(shipment(l(r)));
-
 // invledger
 CLASS ShipmentPickingInv 'Отгрузка' : InvLedger;
 
 invLedger = AGGR ShipmentPickingInv WHERE done(ShipmentLine l, Location loc);
+
+type(ShipmentPickingInv p) += nameType(shipment(l(p)));
 
 active(ShipmentPickingInv p) += active(shipment(l(p)));
 
@@ -114,5 +116,3 @@ product(ShipmentPickingInv p) += product(l(p));
 quantity(ShipmentPickingInv p) += done(l(p), loc(p));
 
 edit (ShipmentPickingInv p) + { edit(shipment(l(p))); } 
-
-type(ShipmentPickingInv p) += nameType(shipment(l(p)));
