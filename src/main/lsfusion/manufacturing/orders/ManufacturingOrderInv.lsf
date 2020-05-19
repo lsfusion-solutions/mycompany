@@ -5,6 +5,8 @@ REQUIRE ManufacturingOrderCanceled, InvLedger;
 CLASS ManufacturingOrderInv 'Производство' : InvLedger;
 manILedger = AGGR ManufacturingOrderInv WHERE produced(FinishedLine line) AND item(line) IS Product;
 
+type(ManufacturingOrderInv l) += nameType(manufacturingOrder(line(l)));
+
 active(ManufacturingOrderInv l) += active(manufacturingOrder(line(l)));
 dateTime(ManufacturingOrderInv l) += executionDateTime(manufacturingOrder(line(l)));
 toLocation(ManufacturingOrderInv l) += productsLocation(manufacturingOrder(line(l)));
@@ -18,6 +20,8 @@ edit (ManufacturingOrderInv l) + { edit(manufacturingOrder(line(l))); }
 
 CLASS ManufacturingOrderInvLedger 'Списание сырья' : InvLedger;
 manInvLedger = AGGR ManufacturingOrderInvLedger WHERE consumed(ConsumedLine line) AND item(line) IS Product;
+
+type(ManufacturingOrderInvLedger l) += nameType(manufacturingOrder(line(l)));
 
 active(ManufacturingOrderInvLedger l) += active(manufacturingOrder(line(l)));
 dateTime(ManufacturingOrderInvLedger l) += executionDateTime(manufacturingOrder(line(l)));

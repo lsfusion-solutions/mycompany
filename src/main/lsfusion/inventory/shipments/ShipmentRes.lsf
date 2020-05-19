@@ -10,6 +10,8 @@ toReserve (ShipmentLine l) = reserved(l) (-) ledgerReserved(l);
 CLASS ShipmentResLedger 'Отгрузка' : ResLedger;
 resLedger = AGGR ShipmentResLedger WHERE toReserve(ShipmentLine line) > 0 AND toReserve(shipment(line));
 
+type(ShipmentResLedger l) += nameType(shipment(line(l)));
+
 dateTime(ShipmentResLedger r) += executionDateTime(shipment(line(r)));
 number(ShipmentResLedger r) += number(shipment(line(r)));
 
