@@ -1,0 +1,45 @@
+MODULE SalesPricelistPrintReceipt;
+
+REQUIRE Receipt, SalesPricelistValue, SalesPricelistPrint;
+
+NAMESPACE Sales;
+
+matches (ReceiptLine rl, PrintPricelistType t) =
+    set(t, product(rl)) AND (GROUP SUM 1 IF priceB(PriceType pt, product(rl), scheduledDateTime(receipt(rl))) AND set(t, pt));
+
+matches (Receipt r, PrintPricelistType t) = GROUP SUM 1 IF receipt(ReceiptLine rl) = r AND matches(rl, t);
+countPrintType (Receipt r) = GROUP SUM 1 IF matches(r, PrintPricelistType t); 
+
+FORM dialogPricelistTypesReceipt 'Выбор типа прайс-листа'
+    OBJECTS r = Receipt PANEL
+    
+    OBJECTS t = PrintPricelistType
+    PROPERTIES(t) READONLY name
+    FILTERS matches(r, t)
+; 
+    
+printPricelist 'Прайс-лист' (Receipt r) {
+    LOCAL printType = PrintPricelistType();
+    printType() <- NULL;
+    IF countPrintType(r) = 1 THEN
+        printType() <- GROUP MAX PrintPricelistType it IF matches(r, it);
+    ELSE
+        DIALOG dialogPricelistTypesReceipt OBJECTS r = r, t INPUT DO {
+            printType() <- t;
+        }
+    FOR PrintPricelistType t = printType() DO {
+        price(PriceType pt, Item i) <- GROUP MAX priceB(pt, i, scheduledDateTime(receipt(ReceiptLine rl))) IF receipt(rl) = r AND product(rl) = i AND 
+                                                 set(t, i) AND set(t, pt);
+        print(t);
+    }    
+}
+
+EXTEND FORM receipt
+    PROPERTIES(r) printPricelist SHOWIF countPrintPricelistTypes()
+;
+
+DESIGN receipt {
+    secondaryActions {
+        MOVE PROPERTY(printPricelist(r));
+    }
+}
