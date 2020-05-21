@@ -61,9 +61,9 @@ dateShipped 'Дата последней отгрузки' (Location l, Product 
     GROUP LAST dateTime(InvLedger il) ORDER dateTime(il) WHERE fromLocation(il) = l AND product(il) = p;
 
 // constraint
-positiveOnHand 'Только положительное кол-во товаров' = DATA BOOLEAN (Location) CHARWIDTH 15;
+positiveOnHand 'Запрет отрицательных остатков' = DATA BOOLEAN (Location) CHARWIDTH 15;
             
-recPositiveOnHand 'Только положительное кол-во товаров' (Location child) = 
+recPositiveOnHand 'Запрет отрицательных остатков' (Location child) = 
     GROUP LAST positiveOnHand(Location parent) ORDER DESC level(child, parent) 
     WHERE positiveOnHand(parent) MATERIALIZED CHARWIDTH 15;
                                                       
