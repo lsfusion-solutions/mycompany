@@ -1,0 +1,35 @@
+MODULE SalesPriceTypeItem;
+
+REQUIRE SalesPricelistValue;
+
+NAMESPACE Sales;
+
+pricePriceTypeColor (PricelistLine p, DATETIME d) = 
+    IF startDateTime(p) > d 
+        THEN RGB(187,242,210);
+EXTEND FORM item 
+    OBJECTS date = DATETIME PANEL
+    PROPERTIES(date) date 'На дату' = VALUE
+    OBJECTS pt = PriceType
+    PROPERTIES (pt) name
+    PROPERTIES(pt, i, date) priceB
+    
+    OBJECTS pll = PricelistLine 
+        PROPERTIES(pll) READONLY nameStatus, number, startDateTime BACKGROUND pricePriceTypeColor(pll,date), endDateTime, note
+        FILTERS item(pll) = i, editIn(pll, pt)              
+        PROPERTIES(pll, pt) price HEADER name(pt) BACKGROUND pricePriceTypeColor(pll,date);
+
+DESIGN item {
+    tabs {
+        NEW pricetypes {
+            caption = 'Виды цен';
+            MOVE PROPERTY(date);
+            NEW typesAndPrises {
+                type = CONTAINERH;
+                fill = 1;
+                MOVE BOX(pt);
+                MOVE BOX(pll) {caption = 'Прайс-листы';}
+                }
+        }
+    }
+}
