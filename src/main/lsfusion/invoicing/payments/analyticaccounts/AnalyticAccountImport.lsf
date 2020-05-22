@@ -1,6 +1,6 @@
 MODULE AnalyticAccountImport;
 
-REQUIRE AnalyticAccount, MasterDataSettings;
+REQUIRE AnalyticAccount;
 
 analyticAccountExport 'Экспорт статей ДДС' () {
     NEWSESSION {
@@ -30,12 +30,12 @@ analyticAccountImport 'Импорт статей ДДС' () {
     }
 }    
 
-EXTEND FORM MasterData.options 
+EXTEND FORM migrationData 
     PROPERTIES analyticAccountExport(), analyticAccountImport()
 ;
 
-DESIGN MasterData.options {
-    import {
+DESIGN migrationData {
+    commons {
         NEW bank {
             type = CONTAINERH;
             caption = 'Статьи ДДС';
