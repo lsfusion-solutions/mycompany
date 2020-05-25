@@ -59,6 +59,16 @@ prevDateReceived (Location l, Product p) = PREV(dateReceived(l, p));
     
 dateShipped 'Дата последней отгрузки' (Location l, Product p) = 
     GROUP LAST dateTime(InvLedger il) ORDER dateTime(il) WHERE fromLocation(il) = l AND product(il) = p;
+    
+datePrevOperation(Location l, Product p, DATETIME dt) = 
+    GROUP LAST dateTime(InvLedger il) ORDER dateTime(il) 
+    WHERE (fromLocation(il) = l OR toLocation(il) = l) AND product(il) = p AND dateTime(il) < dt AND active(il);
+
+onHandLast 'Остаток на время операции' (InvLedger il, Location ll) = 
+    onHand(ll, product(il), datePrevOperation(ll, product(il), dateTime(il))) MATERIALIZED;
+
+onHandLastFromLoc 'Остаток на время операции (откуда)' (InvLedger inv)= onHandLast(inv, fromLocation(inv));
+onHandLastToLoc 'Остаток на время операции (куда)' (InvLedger inv)= onHandLast(inv, toLocation(inv));                                               
 
 // constraint
 positiveOnHand 'Запрет отрицательных остатков' = DATA BOOLEAN (Location) CHARWIDTH 15;
