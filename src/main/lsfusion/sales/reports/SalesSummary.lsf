@@ -1,5 +1,46 @@
 MODULE SalesSummary;
 
+REQUIRE SalesSettings, SalesLedger;
+
 NAMESPACE Sales;
 
+FORM salesSummary 'Сводка по продажам'
+    OBJECTS sw 'Продажи по неделям' = SalesLedger PIVOT 'Line Chart' NOSETTINGS
+    PROPERTIES(sw) READONLY year, week, amount MEASURE
+    PIVOT ROWS (year(sw), week(sw))
 
+    OBJECTS sc 'Продажи по покупателям' = SalesLedger PIVOT 'Bar Chart' NOSETTINGS
+    PROPERTIES(sc) READONLY nameCustomer ROW, amount MEASURE
+
+    OBJECTS sl 'Продажи по местам хранения' = SalesLedger PIVOT 'Line Chart' NOSETTINGS
+    PROPERTIES(sl) READONLY year, week, nameLocation COLUMN, amount MEASURE
+    PIVOT ROWS (year(sl), week(sl))
+
+    OBJECTS si 'Продажи по категориям' = SalesLedger PIVOT 'Multiple Pie Chart' NOSETTINGS
+    PROPERTIES(si) READONLY level2 COLUMN, amount MEASURE
+;
+
+DESIGN salesSummary {
+    OBJECTS {
+        NEW chartPane {
+            fill = 1;
+            type = SPLITV;
+            NEW chartRow1 {
+                type = SPLITH;
+                MOVE BOX(sw);
+                MOVE BOX(sc);
+            }
+            NEW charRow2 {
+                type = SPLITH;
+                MOVE BOX(sl);
+                MOVE BOX(si);
+            }
+        }
+    }
+}
+
+NAVIGATOR {
+    reporting {
+        NEW salesSummary;        
+    }
+}

@@ -1,6 +1,6 @@
 MODULE SalesLedger;
 
-REQUIRE Item, Partner, DateUtils;
+REQUIRE Item, Partner, DateUtils, Location;
 
 NAMESPACE Sales;
 
@@ -16,8 +16,13 @@ dateTime 'Время' = ABSTRACT DATETIME (SalesLedger) MATERIALIZED;
 
 number 'Номер' = ABSTRACT STRING[31] (SalesLedger) MATERIALIZED;
 
+location = ABSTRACT Location (SalesLedger) MATERIALIZED;
+nameLocation 'Место хранения' (SalesLedger l) = name(location(l));
+
 item 'Номенклатура' = ABSTRACT Item (SalesLedger) MATERIALIZED;
 nameItem 'Номенклатура' (SalesLedger l) = name(item(l));
+
+level2 'Группа 2' (SalesLedger l) = level2(item(l));
 
 customer = ABSTRACT Partner (SalesLedger) MATERIALIZED;
 nameCustomer 'Контрагент' (SalesLedger l) = name(customer(l));
