@@ -1,0 +1,50 @@
+MODULE DateUtils;
+
+NAMESPACE Utils;
+
+META defineDateAggregation(cls, prefix, caption)
+    prefix###nameDOW 'День недели'##caption (cls o) = extractDOWName(prefix###date(o));
+    prefix###week 'Неделя'##caption (cls o) = extractWeek(prefix###date(o));
+    
+    prefix###numberMonth '№ месяца'##caption (cls o) = extractMonthNumber(prefix###date(o));
+    prefix###nameMonth 'Месяц'##caption (cls o) = extractMonthName(prefix###date(o));
+    prefix###year 'Год'##caption (cls o) = extractYear(prefix###date(o));
+END
+
+META defineDateAggregation(obj)
+    @defineDateAggregation(obj, , );
+END
+
+META defineDateTimeAggregation(cls, prefix, caption)
+    prefix###date 'Дата'##caption (cls o) = DATE(prefix###dateTime(o));
+    
+    @defineDateAggregation(cls, prefix, caption);
+
+    prefix###minute 'Минута'##caption (cls o) = extractMinute(prefix###dateTime(o));
+    prefix###hour 'Час'##caption (cls o) = extractHour(prefix###dateTime(o));
+END
+
+META defineDateTimeAggregation(obj)
+    @defineDateTimeAggregation(obj, , );
+END
+
+META defineDateAggregationForm(form, let, prefix)
+    EXTEND FORM form
+        PROPERTIES(let) READONLY AFTER prefix###date(let) prefix###nameDOW, prefix###week, prefix###numberMonth, prefix###nameMonth, prefix###year
+    ;
+END
+
+META defineDateAggregationForm(form, let)
+    @defineDateAggregationForm(form, let, );
+END
+
+META defineDateTimeAggregationForm(form, let, prefix)
+    EXTEND FORM form
+        PROPERTIES(let) READONLY AFTER prefix###dateTime(let) prefix###minute, prefix###hour, prefix###date
+    ;
+    @defineDateAggregationForm(form, let, prefix);
+END
+
+META defineDateTimeAggregationForm(form, let)
+    @defineDateTimeAggregationForm(form, let, );
+END

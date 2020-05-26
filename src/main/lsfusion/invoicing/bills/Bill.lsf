@@ -1,7 +1,7 @@
 MODULE Bill;
 
 REQUIRE InvoicingSettings, TaxItem, BankAccount, 
-        MetaTax, PaymentTermsPurchase, 
+        MetaTax, PaymentTermsPurchase, DateUtils, 
         ItemPurchase, PartnerPurchase, Company,
         BarCode, MetaNumerator, Doc, LocationEmployee,
         BillType, Product, ServiceP;
@@ -21,6 +21,7 @@ WHEN LOCAL SET(Bill s IS Bill) AND NOT CHANGED(type(s)) DO type(s) <- defaultBil
 // dateTime
 dateTime 'Дата' = DATA DATETIME (Bill) NONULL IN id;
 WHEN LOCAL SET (Bill b IS Bill) DO dateTime(b) <- currentDateTime();
+@defineDateTimeAggregation(Bill);
 
 @defineNumberType(bill);
 

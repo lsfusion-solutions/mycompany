@@ -1,7 +1,7 @@
 MODULE Invoice;
 
 REQUIRE InvoicingSettings, TaxItem, BankAccount, 
-        MetaTax, PaymentTermsSales,  
+        MetaTax, PaymentTermsSales, DateUtils,
         ItemSales, PartnerSales, Company, 
         BarCode, MetaNumerator, Doc,
         InvoiceType, Product;
@@ -21,6 +21,7 @@ WHEN LOCAL SET(Invoice s IS Invoice) AND NOT CHANGED(type(s)) DO type(s) <- defa
 // dateTime
 dateTime 'Дата' = DATA DATETIME (Invoice) NONULL IN id;
 WHEN LOCAL SET (Invoice b IS Invoice) DO dateTime(b) <- currentDateTime();
+@defineDateTimeAggregation(Invoice);
 
 @defineNumberType(invoice);
 

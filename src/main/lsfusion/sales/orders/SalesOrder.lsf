@@ -1,6 +1,6 @@
 MODULE SalesOrder;
 
-REQUIRE Time, MetaNumerator, Employee, Company,
+REQUIRE Time, MetaNumerator, Employee, Company, DateUtils,
         MetaTax, TaxItem, BarCode, LocationEmployee,
         SalesSettings, PartnerSales, ItemSales, SalesOrderType,
         PaymentTermsSales, SalesPricelistValue, Doc;  
@@ -19,6 +19,7 @@ WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(type(o)) DO type(o) <- defaultO
 
 dateTime 'Дата' = DATA DATETIME (Order);
 dateTime(Order o) <- currentDateTime() WHEN SET(o IS Order);
+@defineDateTimeAggregation(Order);
 
 @defineNumberType(order);
 

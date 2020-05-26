@@ -3,7 +3,7 @@ MODULE PurchaseOrder;
 REQUIRE Time, MetaNumerator, Employee, Company,
         MetaTax, TaxItem, BarCode, PurchaseOrderType,
         PurchaseSettings, PartnerPurchase, ItemSales,
-        PaymentTermsPurchase, Doc,
+        PaymentTermsPurchase, Doc, DateUtils,
         DebtPartner, LocationEmployee;  
 
 NAMESPACE Purchase;
@@ -20,6 +20,7 @@ WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(type(o)) DO type(o) <- defaultO
 
 dateTime 'Дата'  = DATA DATETIME (Order);
 WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(dateTime(o)) DO { dateTime(o) <- currentDateTime();}
+@defineDateTimeAggregation(Order);
 
 @defineNumberType(order);
 
