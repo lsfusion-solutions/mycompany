@@ -1,6 +1,6 @@
 MODULE SalesPricelistItem;
 
-REQUIRE SalesPricelist, Item;
+REQUIRE SalesPricelist, SalesPricelistValue, Item;
 
 NAMESPACE Sales;
 
@@ -8,15 +8,46 @@ EXTEND FORM item
     OBJECTS prls = PricelistLine 
     PROPERTIES(prls) READONLY nameStatus, number, startDateTime, endDateTime, note
     FILTERS item(prls) = i
-    
+
     OBJECTS tc = PriceType GRID
     FILTERS editIn(prls, tc) 
     
     PROPERTIES(prls, tc) price COLUMNS (tc) HEADER name(tc)
+    
+    OBJECTS date = DATETIME PANEL
+    PROPERTIES(date) date 'На дату' = VALUE
+    
+    OBJECTS pt = PriceType
+    PROPERTIES (pt) name
+    PROPERTIES(pt, i, date) priceB HEADER 'Цена'
+
+    OBJECTS pll = PricelistLine 
+        PROPERTIES(pll) READONLY nameStatus, number, startDateTime BACKGROUND RGB(187,242,210) IF startDateTime(pll) > date, 
+                                 endDateTime, note                    
+        FILTERS item(pll) = i, editIn(pll, pt)
+        PROPERTIES(pll, pt) price HEADER name(pt) BACKGROUND RGB(187,242,210) IF startDateTime(pll) > date
 ;
 
 DESIGN item {
     sale {
-        MOVE BOX(prls);
-    }
+        salesTabs {
+            sales {
+                MOVE BOX(prls);
+            }
+            NEW priceTypes {
+                caption = 'Виды цен';
+                NEW typesAndPrises {
+                    type = CONTAINERH;
+                    fill = 1;
+                    NEW types {
+                        type = CONTAINERV;
+                        fill = 1;
+                        MOVE PROPERTY(date);
+                        MOVE BOX(pt);
+                    }
+                    MOVE BOX(pll) { caption = 'Прайс-листы'; }
+                }
+            }            
+        }
+    }    
 }
