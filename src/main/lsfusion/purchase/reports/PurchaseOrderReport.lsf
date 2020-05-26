@@ -1,4 +1,4 @@
-MODULE PurchaseReport;
+MODULE PurchaseOrderReport;
 
 REQUIRE PurchaseOrder, ItemAttribute;
 
@@ -6,7 +6,7 @@ NAMESPACE Purchase;
 
 attribute(OrderLine l, ItemAttribute a) = value(attribute(item(l), a));
 
-FORM purchaseReport 'Отчет по заказам'
+FORM purchaseOrderReport 'Отчет по заказам'
     OBJECTS a = ItemAttribute
 
     OBJECTS report = (o = Order, l = OrderLine) PIVOT
@@ -23,11 +23,11 @@ FORM purchaseReport 'Отчет по заказам'
             accessGranted(location(o)) OR NOT location(o)
 ;
 
-@defineDateTimeAggregationForm(purchaseReport, o);
-@defineDateFilterForm(purchaseReport, o);
+@defineDateTimeAggregationForm(purchaseOrderReport, o);
+@defineDateFilterForm(purchaseOrderReport, o);
 
 NAVIGATOR {
     reporting {
-        NEW purchaseReport;        
+        NEW purchaseOrderReport;        
     }
 }
