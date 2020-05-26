@@ -6,7 +6,7 @@ NAMESPACE Sales;
 
 attribute(OrderLine l, ItemAttribute a) = value(attribute(item(l), a));
 
-FORM reportSalesOrders 'Отчет по заказам'
+FORM salesReport 'Отчет по заказам'
     OBJECTS a = ItemAttribute
 
     OBJECTS report = (o = Order, l = OrderLine) PIVOT
@@ -21,12 +21,10 @@ FORM reportSalesOrders 'Отчет по заказам'
             accessGranted(location(o)) OR NOT location(o)
 ;
 
-@defineDateTimeAggregationForm(reportSalesOrders, o);
+@defineDateTimeAggregationForm(salesReport, o);
 
 NAVIGATOR {
-    sales {
-        reports {
-            NEW reportSalesOrders;        
-        }
+    reporting {
+        NEW salesReport;        
     }
 }
