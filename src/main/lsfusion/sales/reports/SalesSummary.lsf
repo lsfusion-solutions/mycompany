@@ -11,13 +11,16 @@ FORM salesSummary 'Сводка по продажам'
 
     OBJECTS sc 'Продажи по покупателям' = SalesLedger PIVOT 'Bar Chart' NOSETTINGS
     PROPERTIES(sc) READONLY nameCustomer ROW, amount MEASURE
+    FILTERS NOT date(sc) < filterDateFrom(), NOT date(sc) > filterDateTo() 
 
     OBJECTS sl 'Продажи по местам хранения' = SalesLedger PIVOT 'Line Chart' NOSETTINGS
     PROPERTIES(sl) READONLY year, week, nameLocation COLUMN, amount MEASURE
     PIVOT ROWS (year(sl), week(sl))
+    FILTERS NOT date(sl) < filterDateFrom(), NOT date(sl) > filterDateTo() 
 
     OBJECTS si 'Продажи по категориям' = SalesLedger PIVOT 'Multiple Pie Chart' NOSETTINGS
     PROPERTIES(si) READONLY level2 COLUMN, amount MEASURE
+    FILTERS NOT date(si) < filterDateFrom(), NOT date(si) > filterDateTo() 
 ;
 
 DESIGN salesSummary {
@@ -38,6 +41,8 @@ DESIGN salesSummary {
         }
     }
 }
+
+@defineDateFilterForm(salesSummary, sw);
 
 NAVIGATOR {
     reporting {

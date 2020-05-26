@@ -1,6 +1,53 @@
 MODULE DateUtils;
 
+REQUIRE Time;
+
 NAMESPACE Utils;
+
+// filters
+
+GROUP filterDates 'Интервал дат';
+
+filterDateFrom 'Дата с' = DATA LOCAL NESTED DATE() IN filterDates;
+filterDateTo 'по' = DATA LOCAL NESTED DATE() IN filterDates;
+
+setFilterLast7Days '7 дней' () {
+    filterDateFrom() <- subtract(currentDate(), 7); 
+    filterDateTo() <- subtract(currentDate(), 1);
+} IN filterDates;
+
+setFilterLast30Days '30 дней' () {
+    filterDateFrom() <- subtract(currentDate(), 30); 
+    filterDateTo() <- subtract(currentDate(), 1);
+} IN filterDates;
+
+setFilterLastCurrentMonth 'Этот месяц' () {
+    filterDateFrom() <- firstDayOfMonth(currentDate()); 
+    filterDateTo() <- currentDate();
+} IN filterDates;
+
+setFilterLastCurrentYear 'Этот год' () {
+    filterDateFrom() <- toDateFormat('' + currentYear() + '0101', 'YYYYMMDD'); 
+    filterDateTo() <- currentDate();
+} IN filterDates;
+
+META defineDateFilterForm(form, let, prefix)
+    EXTEND FORM form
+        PROPERTIES() filterDateFrom, filterDateTo, setFilterLast7Days, setFilterLast30Days, setFilterLastCurrentMonth, setFilterLastCurrentYear 
+
+        FILTERS NOT prefix###date(let) < filterDateFrom(), NOT prefix###date(let) > filterDateTo() 
+    ;
+    
+    DESIGN form {
+        GROUP (filterDates) { type = CONTAINERH; }
+    }
+END
+
+META defineDateFilterForm(form, let)
+    @defineDateFilterForm(form, let, );
+END
+
+// aggregations
 
 META defineDateAggregation(cls, prefix, caption)
     prefix###nameDOW 'День недели'##caption (cls o) = extractDOWName(prefix###date(o));
