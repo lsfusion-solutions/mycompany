@@ -59,8 +59,9 @@ FORM inventoryReport 'Текущие остатки'
     OBJECTS a = ItemAttribute
     OBJECTS rlp = (ll = Location, rp = Product) PIVOT
     PROPERTIES READONLY 'Склад' = canonicalName(ll), 'Товар' = name(rp), value(rp, a) COLUMNS (a) HEADER name(a),
-                    level1(rp), level2(rp), level3(rp), level4(rp), 'Группа полная' = canonicalNameCategory(rp)
-    PROPERTIES(ll, rp) READONLY reserved, available, onHandDateTime, dateReceived, dateShipped
+                        level1(rp), level2(rp), level3(rp), level4(rp), 'Группа полная' = canonicalNameCategory(rp)
+    PROPERTIES(ll, rp) READONLY dateReceived, dateShipped
+    PROPERTIES READONLY MEASURE reserved(ll, rp), available(ll, rp), onHand 'Остаток' = IF selectedDateTime() THEN onHandDateTime(ll, rp) ELSE onHand(ll, rp)
     FILTERS IF selectedDateTime() THEN onHandDateTime(ll, rp) ELSE onHand(ll, rp),
             accessGranted(ll)
 ;
