@@ -22,17 +22,17 @@ META defineDocStatus (doc, title)
 END
 
 META defineDocStatusForm (doc, let)
-   EXTEND FORM ##doc##s
+   EXTEND FORM doc##s
        PROPERTIES(##let) READONLY nameStatus BACKGROUND colorStatus(##let) BEFORE number(##let)
        FILTERGROUP status
            FILTER 'Черновик' status(##let) = ###doc##Status.draft
    ;
    
-   EXTEND FORM ##doc
+   EXTEND FORM doc
        PROPERTIES(##let) nameStatus BACKGROUND colorStatus(##let)
    ;
    
-   DESIGN ##doc {
+   DESIGN doc {
        NEW statusPane FIRST {
            caption = 'Статусы';
            type = CONTAINERH;
@@ -143,12 +143,12 @@ DESIGN System.options {
 
 META defineDocHistory(doc, let, class, fun)
 
-    @defineDocHistoryHead(##doc, ##let);
+    @defineDocHistoryHead(doc, ##let);
     
-    WHEN SETCHANGED(###doc##Line l IS ###doc##Line) AND ##doc(l) = ###doc ##let 
+    WHEN SETCHANGED(###doc##Line l IS ###doc##Line) AND doc(l) = ###doc ##let 
                         AND NOT status(##let) = ###doc##Status.draft AND NOT disableHistory() DO {     
         NEW h = ###doc##History {
-            ##doc(h) <- ##let;
+            doc(h) <- ##let;
             dateTime(h) <- currentDateTime();
             user(h) <- currentUser();
             type(h) <- 'Добавлена строка';
@@ -156,10 +156,10 @@ META defineDocHistory(doc, let, class, fun)
         }
     }
     
-    WHEN DROPPED(###doc##Line l IS ###doc##Line) AND PREV(##doc(l)) = ###doc ##let 
+    WHEN DROPPED(###doc##Line l IS ###doc##Line) AND PREV(doc(l)) = ###doc ##let 
                         AND NOT status(##let) = ###doc##Status.draft AND NOT disableHistory() DO {     
         NEW h = ###doc##History {
-            ##doc(h) <- ##let;
+            doc(h) <- ##let;
             dateTime(h) <- currentDateTime();
             user(h) <- currentUser();
             type(h) <- 'Удалена строка';
@@ -167,10 +167,10 @@ META defineDocHistory(doc, let, class, fun)
         }
     }
     
-    WHEN CHANGED(##fun(###doc##Line l)) AND ##doc(l) = ###doc ##let 
+    WHEN CHANGED(##fun(###doc##Line l)) AND doc(l) = ###doc ##let 
                         AND NOT status(##let) = ###doc##Status.draft AND NOT disableHistory() DO {     
         NEW h = ###doc##History {
-            ##doc(h) <- ##let;
+            doc(h) <- ##let;
             dateTime(h) <- currentDateTime();
             user(h) <- currentUser();
             type(h) <- 'Изменено исходное кол-во';
@@ -178,10 +178,10 @@ META defineDocHistory(doc, let, class, fun)
         }
     }
     
-    WHEN CHANGED(class(###doc##Line l)) AND ##doc(l) = ###doc ##let 
+    WHEN CHANGED(class(###doc##Line l)) AND doc(l) = ###doc ##let 
                         AND NOT status(##let) = ###doc##Status.draft AND NOT disableHistory() DO {     
         NEW h = ###doc##History {
-            ##doc(h) <- ##let;
+            doc(h) <- ##let;
             dateTime(h) <- currentDateTime();
             user(h) <- currentUser();
             type(h) <- 'Изменен продукт';
@@ -193,7 +193,7 @@ END
 META defineDocHistoryHead(doc, let)
     CLASS ###doc##History 'История изменений';
     
-    ##doc = DATA ###doc (###doc##History);
+    doc = DATA ###doc (###doc##History);
 
     dateTime 'Дата' = DATA DATETIME (###doc##History);
     user 'Пользователь' = DATA User (###doc##History) CHARWIDTH 15;
@@ -203,7 +203,7 @@ META defineDocHistoryHead(doc, let)
      
     WHEN SETCHANGED(status(###doc let)) AND NOT disableHistory() DO {     
         NEW l = ###doc##History {
-            ##doc(l) <- let;
+            doc(l) <- let;
             dateTime(l) <- currentDateTime();
             user(l) <- currentUser();
             type(l) <- 'Изменен статус';
@@ -214,7 +214,7 @@ META defineDocHistoryHead(doc, let)
     EXTEND FORM doc
         OBJECTS doc##l = ###doc##History
         PROPERTIES(doc##l) READONLY dateTime, nameUser, type, description, pdescription = description PANEL
-        FILTERS ##doc(doc##l) = let
+        FILTERS doc(doc##l) = let
     ;
     
     DESIGN doc {
@@ -318,7 +318,7 @@ META defineDocDiscountForm (doc)
 END
 
 META defineDocLinesCount(doc, d) 
-    count###doc###Line 'Кол-во строк' (###doc d) = GROUP SUM 1 IF ##doc(###doc###Line l) = d MATERIALIZED;
+    count###doc###Line 'Кол-во строк' (###doc d) = GROUP SUM 1 IF doc(###doc###Line l) = d MATERIALIZED;
     
-    EXTEND FORM ##doc##s PROPERTIES(d) READONLY count###doc###Line;
+    EXTEND FORM doc##s PROPERTIES(d) READONLY count###doc###Line;
 END
