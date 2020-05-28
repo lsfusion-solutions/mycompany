@@ -1,7 +1,9 @@
 MODULE SalesLedgerBillReceipt;
 
-REQUIRE SalesLedgerBill, BillReceipt;
+REQUIRE SalesLedgerBill, BillReceipt, ReceiptCost;
 
 NAMESPACE Sales;
 
 location(BillSalesLedger l) += location(bill(line(l)));
+
+costAmount(BillSalesLedger l) += GROUP SUM amount(costLedger(ReceiptLine rl)) IF billLine(rl) = line(l);

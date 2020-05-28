@@ -22,8 +22,8 @@ CLASS InCostLedger 'Входящая проводка' : CostLedger;
 
 quantity 'Количество' = ABSTRACT NUMERIC[16,3] (InCostLedger);
 
-dataAmount 'Сумма (первичная)' = DATA NUMERIC[16,3] (InCostLedger);
-calcAmount 'Сумма (расчетная)' = ABSTRACT NUMERIC[16,3] (InCostLedger);
+dataAmount 'Сумма (первичная)' = DATA NUMERIC[14,2] (InCostLedger);
+calcAmount 'Сумма (расчетная)' = ABSTRACT NUMERIC[14,2] (InCostLedger);
 amount 'Сумма' (InCostLedger l) = OVERRIDE dataAmount(l), calcAmount(l); 
 
 price 'Цена' (InCostLedger il) = amount(il) / quantity(il);
@@ -33,7 +33,7 @@ CLASS OutCostLedger 'Исходящая проводка' : CostLedger;
 quantity 'Количество' = ABSTRACT NUMERIC[16,3] (OutCostLedger);
 negQuantity (OutCostLedger l) = -quantity(l); 
 
-amount 'Сумма' = DATA NUMERIC[16,3] (OutCostLedger);
+amount 'Сумма' = DATA NUMERIC[14,2] (OutCostLedger);
 price 'Цена' (OutCostLedger il) = amount(il) / quantity(il);
 
 // Проводки с учетом знака
