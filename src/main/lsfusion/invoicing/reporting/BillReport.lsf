@@ -4,8 +4,6 @@ REQUIRE CreditNote, BillDebt, ItemAttribute;
 
 NAMESPACE Invoicing;
 
-nameItemCategory 'Категория номенклатуры' (BillLine l) = name(category(item(l)));
-
 attribute(BillLine l, ItemAttribute a) = value(attribute(item(l), a));
 
 FORM billReport 'Отчет по приобретениям'
@@ -15,7 +13,9 @@ FORM billReport 'Отчет по приобретениям'
     PROPERTIES(i) READONLY nameType, dateTime, nameStatus, number, 
                            nameVendor, nameVendorAccount, nameCompany, nameCompanyAccount, 
                            namePaymentTerms, dueDateTime, note
-    PROPERTIES(l) READONLY nameItem, idItem, nameItemCategory 
+    PROPERTIES(l) READONLY nameItem, idItem 
+    PROPERTIES READONLY 'Группа 1' = level1(item(l)), 'Группа 2' = level2(item(l)), 'Группа 3' = level3(item(l)), 'Группа 4' = level4(item(l)), 
+                        'Группа полная' = canonicalNameCategory(item(l)) 
     PROPERTIES READONLY attribute(l, a) COLUMNS (a) HEADER name(a)
     PROPERTIES(l) READONLY quantity, price, taxes 
     PROPERTIES(l) READONLY MEASURE
