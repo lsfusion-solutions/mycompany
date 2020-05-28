@@ -1,6 +1,6 @@
 MODULE BillServiceCost;
 
-REQUIRE MasterData, Bill, BarCode, Utils;
+REQUIRE MasterData, Bill, BarCode, Utils, ItemCost;
 
 NAMESPACE Invoicing;
 
@@ -50,7 +50,7 @@ allocationBase (bl, bsl) = ABSTRACT CASE NUMERIC[14,3] (BillLine, CostAllocation
 allocationBase (BillLine bl, CostAllocationBase b) += 
     WHEN item(bl) IS Product AND b = CostAllocationBase.ammount THEN NUMERIC[14,3](untaxedAmount(bl));  
 allocationBase (BillLine bl, CostAllocationBase b) += 
-    WHEN item(bl) IS Product AND b = CostAllocationBase.cost THEN NUMERIC[14,3](cost(item(bl)) * quantity(bl)); 
+    WHEN item(bl) IS Product AND b = CostAllocationBase.cost THEN NUMERIC[14,3](cost(item(bl), DATE(dateTime(bl))) * quantity(bl)); 
 allocationBase (BillLine bl, CostAllocationBase b) += 
     WHEN item(bl) IS Product AND b = CostAllocationBase.salesPrice THEN NUMERIC[14,3](salesPrice(item(bl)) * quantity(bl));
 allocationBase (BillLine bl, CostAllocationBase b) += 

@@ -2,7 +2,8 @@ MODULE PurchaseOrder;
 
 REQUIRE Time, MetaNumerator, Employee, Company,
         MetaTax, TaxItem, BarCode, PurchaseOrderType,
-        PurchaseSettings, PartnerPurchase, ItemSales,
+        PurchaseSettings, PartnerPurchase, 
+        ItemSales, ItemCost,
         PaymentTermsPurchase, Doc, DateUtils,
         DebtPartner, LocationEmployee;  
 
@@ -92,7 +93,7 @@ price 'Цена' = DATA NUMERIC[10,2] (OrderLine);
 defaultPrice = ABSTRACT CASE NUMERIC[10,2] (OrderLine);
 WHEN LOCAL SETCHANGED(item(OrderLine l)) AND NOT CHANGED(price(l)) DO price(l) <- defaultPrice(l);
 
-defaultPrice (OrderLine l) += WHEN cost(item(l)) THEN cost(item(l)); 
+defaultPrice (OrderLine l) += WHEN cost(item(l), DATE(dateTime(order(l)))) THEN cost(item(l)); 
 
 @defineTaxCalc(order, o, purchase);
 taxIncluded (OrderLine l) += taxIncluded(type(order(l)));

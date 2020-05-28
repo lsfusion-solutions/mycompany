@@ -35,8 +35,6 @@ DESIGN category { default { MOVE PROPERTY(nameDataDefaultUom(c)); } }
 defaultUom (Category c) = GROUP LAST dataDefaultUom(Category parent) ORDER DESC level(c, parent);
 WHEN LOCAL SETCHANGED(category(Item i)) AND NOT CHANGED(uom(i)) DO uom(i) <- defaultUom(category(i));
 
-cost 'Плановая себестоимость' = DATA NUMERIC[10,2] (Item) CHARWIDTH 15 NOFLEX;
-
 archived 'Неактивный' = DATA BOOLEAN (Item) CHARWIDTH 10;
 active 'Активный' (Item i) = NOT archived(i) CHARWIDTH 10;
 
@@ -53,14 +51,13 @@ copy (Item n, Item o) + {
     category(n) <- category(o);
     uom(n) <- uom(o);
     archived(n) <- archived(o);
-    cost(n) <- cost(o);
 }
 
 FORM item 'Номенклатура'
     OBJECTS i = Item PANEL
     PROPERTIES(i) dataName READONLYIF readonly(i), class READONLY, 
                   name READONLY, id, canonicalNameCategory READONLYIF readonly(i), nameUom READONLYIF readonly(i),
-                  archived READONLYIF readonly(i), cost
+                  archived READONLYIF readonly(i)
       
     EDIT Item OBJECT i
 ;
@@ -84,7 +81,6 @@ DESIGN item {
                 }        
                 NEW column2 {
                     MOVE PROPERTY(nameUom(i));
-                    MOVE PROPERTY(cost(i));
                 }        
                 NEW column3 {
                     MOVE PROPERTY(archived(i));
