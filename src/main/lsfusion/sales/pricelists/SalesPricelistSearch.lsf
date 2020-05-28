@@ -23,7 +23,7 @@ changeIn(Item item, Pricelist pricelist)  {
 }
 
 markup 'Текущая надбавка' (PriceType t, Item i, DATETIME dt) = 
-    round2(priceB(t, i, dt) / (OVERRIDE 100.0 / (100.0 + salesTax(i)) IF taxIncluded(t), 1.0) * 100.0 / overCost(i)) - 100.0;
+    round2(priceB(t, i, dt) / (OVERRIDE 100.0 / (100.0 + salesTax(i)) IF taxIncluded(t), 1.0) * 100.0 / overCost(i, dt)) - 100.0;
 
 EXTEND FORM pricelist
     TREE categories c = Category PARENT parent(c)
@@ -35,7 +35,7 @@ EXTEND FORM pricelist
     
     OBJECTS i = Item
     PROPERTIES READONLY name(i), nameUom(i), idBarCode(i), id(i), 
-                        overCost(i) SHOWIF showCost(type(p)),
+                        overCost(i, dt) SHOWIF showCost(type(p)),
                         markup(t, i, dt) COLUMNS 'p' (t) HEADER name(t) + ', %' SHOWIF showMarkup(type(p), t),
                         priceB(t, i, dt) COLUMNS 'p' (t) HEADER name(t)
     ORDERS name(i)

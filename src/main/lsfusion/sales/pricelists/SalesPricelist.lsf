@@ -58,8 +58,8 @@ uom = DATA Uom (PricelistLine);
 nameUom 'Ед. изм.' (PricelistLine l) = name(uom(l)); 
 WHEN LOCAL CHANGED(item(PricelistLine l)) DO uom(l) <- uom(item(l));
 
-cost 'Себестоимость' = DATA NUMERIC[32,16] (PricelistLine);
-WHEN LOCAL SETCHANGED(item(PricelistLine l)) AND NOT CHANGED(cost(l)) DO cost(l) <- overCost(item(l));
+cost 'Себестоимость' = DATA NUMERIC[14,2] (PricelistLine);
+WHEN LOCAL SETCHANGED(item(PricelistLine l)) AND NOT CHANGED(cost(l)) DO cost(l) <- overCost(item(l), startDateTime(pricelist(l)));
 
 markup 'Надбавка' = DATA NUMERIC[10,2] (PricelistLine, PriceType);
 price 'Цена' = DATA NUMERIC[10,2] (PricelistLine, PriceType);

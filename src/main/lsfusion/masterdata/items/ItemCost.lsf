@@ -1,0 +1,70 @@
+MODULE ItemCost;
+
+REQUIRE Item;
+
+NAMESPACE MasterData;
+
+dataCost 'Плановая себестоимость' = DATA NUMERIC[10,2] (Item, DATE);
+
+cost 'Плановая себестоимость' (Item i, DATE d) = GROUP LAST dataCost(i, DATE di) ORDER di WHERE dataCost(i, di) AND di <= d; 
+
+cost 'Плановая себестоимость' (Item i) = cost(i, currentDate()) CHARWIDTH 15 MATERIALIZED;
+
+changeCost (Item i, DATE d) {
+    INPUT c = NUMERIC[10,2] DO {
+        dataCost(i, d) <- c;  
+    } 
+}
+changeCost (Item i) { changeCost(i, currentDate()); }
+
+// history
+
+FORM addCost 'Ввод себестоимости'
+    OBJECTS d 'Начало действия' = DATE PANEL
+    PROPERTIES(d) date 'Введите дату :' = VALUE
+    
+    OBJECTS c 'Себестоимость' = NUMERIC[10,2] PANEL
+    PROPERTIES(c) cost 'Введите себестоимость :' = VALUE
+;
+
+DESIGN addCost {
+    PROPERTY(date) { fontSize = 16; }
+    PROPERTY(cost) { fontSize = 16; }
+}
+
+addCost 'Добавить' (Item i) {
+    DIALOG addCost OBJECTS d INPUT, c INPUT DO {
+        dataCost(i, d) <- c;
+    }
+} IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+
+FORM itemCostHistory 'История изменения себестоимости'
+    OBJECTS i = Item PANEL
+    
+    OBJECTS d = DATE
+    PROPERTIES date 'Дата' = VALUE(d), dataCost(i, d), addCost(i) DRAW d TOOLBAR
+    FILTERS dataCost(i, d)
+    ORDERS date DESC
+;
+
+showCostHistory 'История' (Item i) {
+    SHOW itemCostHistory OBJECTS i = i; 
+}
+
+copy (Item n, Item o) + {
+    dataCost(n, DATE d) <- dataCost(o, d);
+}
+
+EXTEND FORM item
+    PROPERTIES(i) cost ON CHANGE changeCost(i), showCostHistory
+;
+
+DESIGN item {
+    column2 {
+        NEW cost {
+            type = CONTAINERH;
+            MOVE PROPERTY(cost(i));
+            MOVE PROPERTY(showCostHistory(i));
+        }
+    }
+}

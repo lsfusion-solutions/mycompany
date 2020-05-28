@@ -2,7 +2,7 @@ MODULE Bill;
 
 REQUIRE InvoicingSettings, TaxItem, BankAccount, 
         MetaTax, PaymentTermsPurchase, DateUtils, 
-        ItemPurchase, PartnerPurchase, Company,
+        ItemPurchase, ItemCost, PartnerPurchase, Company,
         BarCode, MetaNumerator, Doc, LocationEmployee,
         BillType, Product, ServiceP;
 
@@ -103,7 +103,7 @@ price 'Цена' = DATA NUMERIC[10,2] (BillLine) NONULL;
 defaultPrice = ABSTRACT CASE NUMERIC[10,2] (BillLine);
 WHEN LOCAL SETCHANGED(item(BillLine l)) AND NOT CHANGED(price(l)) DO price(l) <- defaultPrice(l);
 
-defaultPrice (BillLine l) += WHEN cost(item(l)) THEN cost(item(l)); 
+defaultPrice (BillLine l) += WHEN cost(item(l), DATE(dateTime(bill(l)))) THEN cost(item(l)); 
 
 // taxes
 @defineTaxCalc(bill, b, purchase);

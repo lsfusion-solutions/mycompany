@@ -1,6 +1,6 @@
 MODULE SalesLedger;
 
-REQUIRE Item, Partner, DateUtils, Location;
+REQUIRE ItemCost, Partner, DateUtils, Location;
 
 NAMESPACE Sales;
 
@@ -32,7 +32,7 @@ quantity 'Кол-во' = ABSTRACT NUMERIC[16,3] (SalesLedger) MATERIALIZED;
 price 'Цена' = ABSTRACT NUMERIC[10,2] (SalesLedger) MATERIALIZED ;
 
 costAmount 'Себестоимость' (SalesLedger l) = ABSTRACT VALUE NUMERIC[14,2] (SalesLedger) MATERIALIZED;
-costAmount (SalesLedger l) += NUMERIC[14,2] (quantity(l) * cost(item(l)));
+costAmount (SalesLedger l) += NUMERIC[14,2] (quantity(l) * cost(item(l), date(l)));
 
 untaxedAmount 'Сумма без налогов' = ABSTRACT NUMERIC[14,2] (SalesLedger) MATERIALIZED;
 

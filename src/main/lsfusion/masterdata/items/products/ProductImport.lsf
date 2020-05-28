@@ -1,7 +1,7 @@
 MODULE ProductImport;
 
 REQUIRE Product, BarCode, System, 
-        ItemPurchase, ItemSales;
+        ItemPurchase, ItemSales, ItemCost;
 
 NAMESPACE MasterData;
 
@@ -16,7 +16,7 @@ productExport 'Экспорт товаров' () {
                 weight(p) <- 0.415;
                 volume(p) <- 1.5;
                 
-                cost(p) <- 3.45;
+                dataCost(p, DATE d) <- 3.45 WHERE d = 2000_01_01;
                 salesPrice(p) <- 6.14;
             }
         }
@@ -70,7 +70,7 @@ productImport 'Импорт товаров' () {
                 uom(p) <- uom(idUom(i));
                 weight(p) <- weight(i);
                 volume(p) <- volume(i);
-                cost(p) <- cost(i);
+                dataCost(p, DATE d) <- cost(i) WHERE d = 2000_01_01;
                 salesPrice(p) <- salesPrice(i);
                 countryOrigin(p) <- country(idCountryOrigin(i));
             }
