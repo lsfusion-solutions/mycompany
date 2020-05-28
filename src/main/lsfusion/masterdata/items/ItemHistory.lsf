@@ -1,0 +1,133 @@
+MODULE ItemHistory;
+
+REQUIRE Authentication, Time;
+
+NAMESPACE MasterData;
+
+META defineItemBarCodeHistory(item, bar)
+    
+    WHEN SETCHANGED(id(###bar l)) AND PREV(item(l)) DO {     
+        NEW h = ###item##History {
+            item(h) <- item(l);
+            dateTime(h) <- currentDateTime();
+            user(h) <- currentUser();
+            type(h) <- 'Изменен штрихкод';
+            description (h) <- 'Штрихкод изменен на ' + id(l);
+        }
+    }
+       
+    WHEN SET(###bar l IS ###bar) DO {     
+        NEW h = ###item##History {
+            item(h) <- item(l);
+            dateTime(h) <- currentDateTime();
+            user(h) <- currentUser();
+            type(h) <- 'Добавлен штрихкод';
+            description (h) <- 'Добавлен штрихкод ' + id(l);
+        }
+    }
+
+    WHEN DROPPED(###bar l IS ###bar) DO {     
+        NEW h = ###item##History {
+            item(h) <- PREV(item(l));
+            dateTime(h) <- currentDateTime();
+            user(h) <- currentUser();
+            type(h) <- 'Удален штрихкод';
+            description (h) <- 'Удален штрихкод ' + OVERRIDE PREV(id(l)), '' ;
+        }
+    }    
+    
+END
+
+META defineItemHistory(item, let)
+
+    @defineItemHistoryHead(item, let);
+   
+    WHEN DROPPED(###item let IS ###item) DO {     
+        NEW h = ###item##History {
+         item(h) <- let;
+         dateTime(h) <- currentDateTime();
+         user(h) <- currentUser();
+         type(h) <- 'Удалена номенклатура';
+         description (h) <- 'Удалена номенклатура ' + OVERRIDE PREV(name(let)), '';
+        }
+    }     
+    
+    WHEN SET(###item let IS ###item)  DO {     
+        NEW h = ###item##History {
+            item(h) <- let;
+            dateTime(h) <- currentDateTime();
+            user(h) <- currentUser();
+            type(h) <- 'Добавлена номенклатура';
+            description (h) <- 'Добавлена номенклатура ' + name(let);
+        }
+    }    
+    
+    //наименование
+    WHEN SETCHANGED(name(###item let)) AND PREV(name(let)) DO {     
+        NEW l = ###item##History {
+            item(l) <- let;
+            dateTime(l) <- currentDateTime();
+            user(l) <- currentUser();
+            type(l) <- 'Изменено полное наименование';
+            description (l) <- 'Изменено полное наименование на ' + name(let);
+        }
+    }
+    
+    //ед изм
+    WHEN SETCHANGED(uom(###item let)) DO {     
+        NEW l = ###item##History {
+            item(l) <- let;
+            dateTime(l) <- currentDateTime();
+            user(l) <- currentUser();
+            type(l) <- 'Изменена единица измерения';
+            description (l) <- 'Изменена единица измерения на ' + nameUom(let);
+        }
+    }
+    
+    //категория
+    WHEN SETCHANGED(category(###item let)) DO {     
+        NEW l = ###item##History {
+            item(l) <- let;
+            dateTime(l) <- currentDateTime();
+            user(l) <- currentUser();
+            type(l) <- 'Изменена категория';
+            description (l) <- 'Изменена категория на ' + canonicalNameCategory(let);
+        }
+    }  
+    
+END
+
+META defineItemHistoryHead(item, let)
+    
+    CLASS ###item##History 'История изменений';
+    
+    item = DATA ###item (###item##History);
+
+    dateTime 'Дата' = DATA DATETIME (###item##History);
+    user 'Пользователь' = DATA User (###item##History) CHARWIDTH 15;
+    nameUser 'Пользователь' (###item##History l) = name(user(l));
+    type 'Тип' = DATA ISTRING[100] (###item##History);
+    description 'Описание' = DATA TEXT (###item##History);
+     
+    EXTEND FORM item
+        OBJECTS item##l = ###item##History
+        PROPERTIES(item##l) READONLY dateTime, nameUser, type, description, pdescription = description PANEL
+        FILTERS item(item##l) = let
+    ;
+    
+    DESIGN item {
+        tabs {
+            NEW history {
+                caption = 'История';
+                fill = 1;
+                type = SPLITH;
+                MOVE BOX(item##l) { 
+                    fill = 2;
+                    PROPERTY(description(item##l)) { valueHeight = 18; }
+                }
+                MOVE PROPERTY(pdescription) { panelCaptionAbove = TRUE; fill = 1; }
+            }
+        }
+    }   
+    
+END
