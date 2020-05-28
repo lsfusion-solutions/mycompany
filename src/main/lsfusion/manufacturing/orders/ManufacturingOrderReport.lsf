@@ -13,6 +13,8 @@ FORM manufacturingOrderReport 'Отчет по заказам'
     PROPERTIES(o) READONLY nameType, scheduledDateTime, executionDateTime, nameStatus, number, 
                            nameCompany, nameMaterialsLocation, nameProductsLocation, 
                            nameItem, nameUom, descriptionBom
+    PROPERTIES READONLY 'Группа 1' = level1(item(o)), 'Группа 2' = level2(item(o)), 'Группа 3' = level3(item(o)), 'Группа 4' = level4(item(o)), 
+                        'Группа полная' = canonicalNameCategory(item(o)) 
     PROPERTIES READONLY attribute(o, a) COLUMNS (a) HEADER name(a)
     PROPERTIES(o) READONLY MEASURE toManufacture, manufactured
     FILTERS accessGranted(materialsLocation(o)) OR accessGranted(productsLocation(o)) 
