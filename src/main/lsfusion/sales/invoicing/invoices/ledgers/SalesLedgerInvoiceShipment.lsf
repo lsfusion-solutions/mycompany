@@ -1,7 +1,9 @@
 MODULE SalesLedgerInvoiceShipment;
 
-REQUIRE SalesLedgerInvoice, InvoiceShipment;
+REQUIRE SalesLedgerInvoice, InvoiceShipment, ShipmentCost;
 
 NAMESPACE Sales;
 
 location(InvoiceSalesLedger l) += location(invoice(line(l)));
+
+costAmount(InvoiceSalesLedger l) += GROUP SUM amount(outCostLedger(ShipmentLine sl)) IF invoiceLine(sl) = line(l);

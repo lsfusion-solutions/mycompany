@@ -31,7 +31,14 @@ quantity 'Кол-во' = ABSTRACT NUMERIC[16,3] (SalesLedger) MATERIALIZED;
 
 price 'Цена' = ABSTRACT NUMERIC[10,2] (SalesLedger) MATERIALIZED ;
 
-untaxedAmount 'Сумма без налогов' = ABSTRACT NUMERIC[14,2] (SalesLedger) MATERIALIZED;
-taxes 'Налоги' = ABSTRACT NUMERIC[14,2] (SalesLedger) MATERIALIZED;
+costAmount 'Себестоимость' (SalesLedger l) = ABSTRACT VALUE NUMERIC[14,2] (SalesLedger) MATERIALIZED;
+costAmount (SalesLedger l) += NUMERIC[14,2] (quantity(l) * cost(item(l)));
 
-amount 'Сумма' (SalesLedger l) = untaxedAmount(l) (+) taxes(l);
+untaxedAmount 'Сумма без налогов' = ABSTRACT NUMERIC[14,2] (SalesLedger) MATERIALIZED;
+
+markupAmount 'Надбавка' (SalesLedger l) = untaxedAmount(l) (-) costAmount(l); 
+markup 'Надбавка, %' (SalesLedger l) = NUMERIC[10,2] (100.0 * markupAmount(l) / costAmount(l));
+
+taxAmount 'Налоги' = ABSTRACT NUMERIC[14,2] (SalesLedger) MATERIALIZED;
+
+amount 'Сумма' (SalesLedger l) = untaxedAmount(l) (+) taxAmount(l);

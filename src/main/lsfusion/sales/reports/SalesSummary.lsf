@@ -6,20 +6,20 @@ NAMESPACE Sales;
 
 FORM salesSummary 'Сводка по продажам'
     OBJECTS sw 'Продажи по неделям' = SalesLedger PIVOT 'Line Chart' NOSETTINGS
-    PROPERTIES(sw) READONLY year, week, amount MEASURE
+    PROPERTIES(sw) READONLY year, week, markupAmount MEASURE, amount MEASURE
     PIVOT ROWS (year(sw), week(sw))
 
     OBJECTS sc 'Продажи по покупателям' = SalesLedger PIVOT 'Bar Chart' NOSETTINGS
-    PROPERTIES(sc) READONLY nameCustomer ROW, amount MEASURE
+    PROPERTIES(sc) READONLY nameCustomer ROW, markupAmount MEASURE, amount MEASURE
     FILTERS NOT date(sc) < filterDateFrom(), NOT date(sc) > filterDateTo() 
 
     OBJECTS sl 'Продажи по местам хранения' = SalesLedger PIVOT 'Line Chart' NOSETTINGS
-    PROPERTIES(sl) READONLY year, week, nameLocation COLUMN, amount MEASURE
+    PROPERTIES(sl) READONLY year, week, nameLocation COLUMN, markupAmount MEASURE, amount MEASURE
     PIVOT ROWS (year(sl), week(sl))
     FILTERS NOT date(sl) < filterDateFrom(), NOT date(sl) > filterDateTo() 
 
     OBJECTS si 'Продажи по категориям' = SalesLedger PIVOT 'Multiple Pie Chart' NOSETTINGS
-    PROPERTIES(si) READONLY level2 COLUMN, amount MEASURE
+    PROPERTIES(si) READONLY level2 COLUMN, markupAmount MEASURE, amount MEASURE
     FILTERS NOT date(si) < filterDateFrom(), NOT date(si) > filterDateTo() 
 ;
 
