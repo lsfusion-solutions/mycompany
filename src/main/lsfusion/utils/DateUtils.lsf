@@ -11,6 +11,16 @@ GROUP filterDates 'Интервал дат';
 filterDateFrom 'Дата с' = DATA LOCAL NESTED DATE() IN filterDates;
 filterDateTo 'по' = DATA LOCAL NESTED DATE() IN filterDates;
 
+setFilterToday 'Сегодня' () {
+    filterDateFrom() <- currentDate(); 
+    filterDateTo() <- currentDate();
+} IN filterDates;
+
+setFilterYesterday 'Вчера' () {
+    filterDateFrom() <- subtract(currentDate(), 1); 
+    filterDateTo() <- subtract(currentDate(), 1);
+} IN filterDates;
+
 setFilterLast7Days '7 дней' () {
     filterDateFrom() <- subtract(currentDate(), 7); 
     filterDateTo() <- subtract(currentDate(), 1);
@@ -33,7 +43,7 @@ setFilterLastCurrentYear 'Этот год' () {
 
 META defineDateFilterForm(form, let, prefix)
     EXTEND FORM form
-        PROPERTIES() filterDateFrom, filterDateTo, setFilterLast7Days, setFilterLast30Days, setFilterLastCurrentMonth, setFilterLastCurrentYear 
+        PROPERTIES() filterDateFrom, filterDateTo, setFilterToday, setFilterYesterday, setFilterLast7Days, setFilterLast30Days, setFilterLastCurrentMonth, setFilterLastCurrentYear 
 
         FILTERS NOT prefix###date(let) < filterDateFrom(), NOT prefix###date(let) > filterDateTo() 
     ;
