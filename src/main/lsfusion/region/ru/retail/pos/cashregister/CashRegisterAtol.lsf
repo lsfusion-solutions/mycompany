@@ -16,15 +16,15 @@ idPaymentAtol 'Код платежа Атол' (PaymentMethod p) = OVERRIDE data
 
 EXTEND FORM paymentMethod PROPERTIES dataIdPaymentAtol(pm); 
 
-uid = FORMULA STRING[32] 'md5(random()::text)::text';
 GROUP request;
 
 // report X
 FORM reportX
-    PROPERTIES uuid = uid()
+    PROPERTIES uuid = generatedUUID()
     PROPERTIES IN request type = 'reportX'
 ;
 reportX(Pos p) {
+    generateUUID();
     EXPORT reportX JSON CHARSET 'UTF-8';
     TRY {
         EXTERNAL HTTP CLIENT 'http://' + hostname(p) + ':16732/requests' PARAMS exportFile();
@@ -42,10 +42,11 @@ reportX(Pos p) + WHEN driver(p) = CashDriver.atol10 THEN {reportX(p);}
 
 // continue print
 FORM continuePrint
-    PROPERTIES uuid = uid()
+    PROPERTIES uuid = generatedUUID()
     PROPERTIES IN request type = 'continuePrint'
 ;
 continuePrint(Pos p) {
+    generateUUID();
     EXPORT reportX JSON CHARSET 'UTF-8';
     TRY {
         EXTERNAL HTTP CLIENT 'http://' + hostname(p) + ':16732/requests' PARAMS exportFile();
@@ -63,10 +64,11 @@ continuePrint(Pos p) + WHEN driver(p) = CashDriver.atol10 THEN {continuePrint(p)
 
 // open shift
 FORM openShift
-    PROPERTIES uuid = uid()
+    PROPERTIES uuid = generatedUUID()
     PROPERTIES IN request type = 'openShift'
 ;
 openShift(Session s) {
+    generateUUID();
     EXPORT openShift JSON CHARSET 'UTF-8';
     TRY {
         EXTERNAL HTTP CLIENT 'http://' + hostname(pos(s)) + ':16732/requests' PARAMS exportFile();
@@ -85,10 +87,11 @@ openShift(Session s) + WHEN driver(pos(s)) = CashDriver.atol10 THEN {openShift(s
 
 // close shift
 FORM closeShift
-    PROPERTIES uuid = uid()
+    PROPERTIES uuid = generatedUUID()
     PROPERTIES IN request type = 'closeShift'
 ;
 closeShift(Session s) {
+    generateUUID();
     EXPORT closeShift JSON CHARSET 'UTF-8';
     TRY {
         EXTERNAL HTTP CLIENT 'http://' + hostname(pos(s)) + ':16732/requests' PARAMS exportFile();
@@ -108,13 +111,14 @@ closeShift(Session s) + WHEN driver(pos(s)) = CashDriver.atol10 THEN {closeShift
 
 // cash in
 FORM cashIn
-    PROPERTIES uuid = uid()
+    PROPERTIES uuid = generatedUUID()
     
     OBJECTS i = IncomingPayment  
     PROPERTIES IN request type = 'cashIn'
     PROPERTIES IN request cashSum = amount(i)
 ;
 cashIn(IncomingPayment i) {
+    generateUUID();
     EXPORT cashIn OBJECTS i = i JSON CHARSET 'UTF-8';
     TRY {
         EXTERNAL HTTP CLIENT 'http://' + hostname(pos(session(i))) + ':16732/requests' PARAMS exportFile();
@@ -133,13 +137,14 @@ cashIn(IncomingPayment i) + WHEN driver(pos(session(i))) == CashDriver.atol10 AN
 
 // cash out
 FORM cashOut
-    PROPERTIES uuid = uid()
+    PROPERTIES uuid = generatedUUID()
     
     OBJECTS o = OutgoingPayment  
     PROPERTIES IN request type = 'cashOut'
     PROPERTIES IN request cashSum = amount(o)
 ;
 cashOut(OutgoingPayment o) {
+    generateUUID();
     EXPORT cashOut OBJECTS o = o JSON CHARSET 'UTF-8';
     TRY {
         EXTERNAL HTTP CLIENT 'http://' + hostname(pos(session(o))) + ':16732/requests' PARAMS exportFile();
@@ -167,7 +172,7 @@ paymentObject (InvoiceLine l) += WHEN item(l) IS Service THEN 'service';
 paymentType (IncomingPayment p, Invoice i) = idPaymentAtol(paymentMethod(p, i));
  
 FORM buy
-    PROPERTIES uuid = uid()
+    PROPERTIES uuid = generatedUUID()
     
     OBJECTS i = Invoice
     PROPERTIES IN request type = 'buy' 
@@ -183,6 +188,7 @@ FORM buy
     FILTERS paid(d, i), active(d)
 ;
 buy(Invoice i) {
+    generateUUID();
     EXPORT buy OBJECTS i = i JSON CHARSET 'UTF-8';
     TRY {
         EXTERNAL HTTP CLIENT 'http://' + hostname(pos(session(i))) + ':16732/requests' PARAMS exportFile();
