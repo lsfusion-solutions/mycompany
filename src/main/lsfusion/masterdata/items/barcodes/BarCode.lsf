@@ -67,7 +67,39 @@ EXTEND FORM items
 
 barCode 'Штрихкод' = DATA LOCAL STRING[20] () CHANGEKEY 'F4';
 
-@defineItemBarCodeHistory(item, barCode);
+WHEN SETCHANGED(id(BarCode l)) DO {     
+    NEW h = ItemHistory {
+        item(h) <- item(l);
+        dateTime(h) <- currentDateTime();
+        user(h) <- currentUser();
+        type(h) <- 'Изменен штрихкод';
+        description (h) <- 'Изменен штрихкод на ' + id(l);
+    }
+}
+    
+WHEN SET(BarCode l IS BarCode) DO {     
+    NEW h = ItemHistory {
+        item(h) <- item(l);
+        dateTime(h) <- currentDateTime();
+        user(h) <- currentUser();
+        type(h) <- 'Добавлен штрихкод';
+        description (h) <- 'Добавлен штрихкод ' + id(l);
+    }
+}
+
+WHEN DROPPED(BarCode l IS BarCode) DO {     
+    NEW h = ItemHistory {
+        item(h) <- PREV(item(l));
+        dateTime(h) <- currentDateTime();
+        user(h) <- currentUser();
+        type(h) <- 'Удален штрихкод';
+        description (h) <- 'Удален штрихкод ' + OVERRIDE PREV(id(l)), '' ;
+    }
+}  
+@defineItemHistoryFilter('изменен штрихкод');
+@defineItemHistoryFilter('добавлен штрихкод');
+@defineItemHistoryFilter('удален штрихкод');
+
 
 META defineBarCodeSearch(doc, let, itm, quantity)
     scanBarCode (###doc d) {
