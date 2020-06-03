@@ -1,6 +1,6 @@
 MODULE BarCode;
 
-REQUIRE MasterData, Item;
+REQUIRE MasterData, Item, ItemHistory;
 
 NAMESPACE MasterData;
 
@@ -73,7 +73,7 @@ WHEN SETCHANGED(id(BarCode l)) DO {
         dateTime(h) <- currentDateTime();
         user(h) <- currentUser();
         type(h) <- 'Изменен штрихкод';
-        description (h) <- 'Изменен штрихкод на ' + id(l);
+        description (h) <- CONCAT ' ', 'Изменен штрихкод на', id(l);
     }
 }
     
@@ -83,7 +83,7 @@ WHEN SET(BarCode l IS BarCode) DO {
         dateTime(h) <- currentDateTime();
         user(h) <- currentUser();
         type(h) <- 'Добавлен штрихкод';
-        description (h) <- 'Добавлен штрихкод ' + id(l);
+        description (h) <- CONCAT ' ', 'Добавлен штрихкод', id(l);
     }
 }
 
@@ -93,13 +93,13 @@ WHEN DROPPED(BarCode l IS BarCode) DO {
         dateTime(h) <- currentDateTime();
         user(h) <- currentUser();
         type(h) <- 'Удален штрихкод';
-        description (h) <- 'Удален штрихкод ' + OVERRIDE PREV(id(l)), '' ;
+        description (h) <- CONCAT ' ', 'Удален штрихкод', PREV(id(l));
     }
 }  
-@defineItemHistoryFilter('изменен штрихкод');
-@defineItemHistoryFilter('добавлен штрихкод');
-@defineItemHistoryFilter('удален штрихкод');
 
+@defineItemHistoryFilter('Добавлен штрихкод');
+@defineItemHistoryFilter('Изменен штрихкод');
+@defineItemHistoryFilter('Удален штрихкод');
 
 META defineBarCodeSearch(doc, let, itm, quantity)
     scanBarCode (###doc d) {
