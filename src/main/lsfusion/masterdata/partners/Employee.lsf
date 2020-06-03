@@ -22,10 +22,10 @@ CONSTRAINT Employee e IS Employee AND NOT legalEntity(e) IS Company
 FORM employee 'Сотрудник'
     OBJECTS e = Employee PANEL
     PROPERTIES(e) id, login, sha256Password ON CHANGE changeSHA256Password(e), isLocked, archived, 
-                  nameLegalEntity, lastName, firstName, middleName, email, phone, address, city, state, zip, birthday,
-                  nameMainRole
+                  nameLegalEntity, lastName, firstName, middleName, namePosition, email, phone, address, city, state,
+                  zip, birthday, nameMainRole
     
-    OBJECTS ur=UserRole
+    OBJECTS ur = UserRole
     PROPERTIES(ur) READONLY name, sid
     PROPERTIES(e,ur) in
 
@@ -55,6 +55,7 @@ DESIGN employee {
                     MOVE PROPERTY(lastName(e));
                     MOVE PROPERTY(firstName(e));
                     MOVE PROPERTY(middleName(e));
+                    MOVE PROPERTY(namePosition(e));
                     MOVE PROPERTY(email(e));
                     MOVE PROPERTY(phone(e));
                     MOVE PROPERTY(address(e));
