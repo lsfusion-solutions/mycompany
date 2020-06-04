@@ -1,0 +1,114 @@
+MODULE ItemHistory;
+
+REQUIRE Authentication, Time, Item;
+
+NAMESPACE MasterData;
+
+CLASS ItemHistory 'История изменений';
+
+item = DATA Item (ItemHistory);
+
+dateTime 'Дата' = DATA DATETIME (ItemHistory);
+user 'Пользователь' = DATA User (ItemHistory) CHARWIDTH 15;
+nameUser 'Пользователь' (ItemHistory l) = name(user(l));
+type 'Тип' = DATA ISTRING[100] (ItemHistory);
+description 'Описание' = DATA TEXT (ItemHistory);
+
+WHEN SET(Item it IS Item)  DO {     
+    NEW h = ItemHistory {
+        item(h) <- it;
+        dateTime(h) <- currentDateTime();
+        user(h) <- currentUser();
+        type(h) <- 'Добавлена номенклатура';
+        description (h) <- CONCAT ' ', 'Добавлена номенклатура', name(it);
+    }
+}
+
+WHEN DROPPED(Item it IS Item) DO {     
+    NEW h = ItemHistory {
+        dateTime(h) <- currentDateTime();
+        user(h) <- currentUser();
+        type(h) <- 'Удалена номенклатура';
+        description (h) <- CONCAT ' ', 'Удалена номенклатура', PREV(name(it));
+    }
+}
+ 
+FORM itemHistory 'История'
+    OBJECTS h = ItemHistory
+    PROPERTIES(h) READONLY dateTime, nameUser, type, description, pdescription = description PANEL
+    ORDERS dateTime(h)
+    FILTERGROUP itemType
+        FILTER 'Добавлена номенклатура' type(h) = 'Добавлена номенклатура'
+        FILTER 'Удалена номенклатура' type(h) = 'Удалена номенклатура'
+;
+
+showHistory 'История' () {
+    SHOW itemHistory DOCKED;        
+}
+
+EXTEND FORM item
+    OBJECTS h = ItemHistory
+    PROPERTIES(h) READONLY dateTime, nameUser, type, description, pdescription = description PANEL
+    FILTERS item(h) = i
+    ORDERS dateTime(h)
+;
+
+EXTEND FORM items
+    PROPERTIES showHistory() TOOLBAR
+; 
+
+DESIGN item {
+    tabs {
+        NEW history {
+            caption = 'История';
+            fill = 1;
+            type = SPLITH;
+            MOVE BOX(h) { 
+                fill = 2;
+                PROPERTY(description(h)) { valueHeight = 18; }
+            }
+            MOVE PROPERTY(pdescription) { panelCaptionAbove = TRUE; fill = 1; }
+        }
+    }
+}  
+ 
+DESIGN itemHistory {
+    OBJECTS {
+        NEW pane {
+            fill = 1;
+            type = SPLITH;
+            MOVE BOX(h) {
+                fill = 2;
+                PROPERTY(description(h)) { valueHeight = 18; }
+            }            
+            MOVE PROPERTY(pdescription) { panelCaptionAbove = TRUE; fill = 1; }
+        }
+    }
+}
+
+META defineItemHistoryFilter(t)
+    EXTEND FORM itemHistory
+        EXTEND FILTERGROUP itemType
+            FILTER t type(h) = t
+    ;
+END
+
+META defineItemHistoryAttr(attr, caption)
+
+    WHEN SETCHANGED(attr(Item item)) DO {     
+        NEW l = ItemHistory {
+            item(l) <- item;
+            dateTime(l) <- currentDateTime();
+            user(l) <- currentUser();
+            type(l) <- caption;
+            description (l) <- CONCAT ' ', caption, 'на', attr(item);
+        }
+    }
+    
+    @defineItemHistoryFilter(caption);
+    
+END
+  
+@defineItemHistoryAttr(name, 'Изменено полное наименование');
+@defineItemHistoryAttr(uom, 'Изменена единица измерения');
+@defineItemHistoryAttr(canonicalNameCategory, 'Изменена категория');
