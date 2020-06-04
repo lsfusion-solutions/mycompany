@@ -26,10 +26,10 @@ WHEN SET(Item it IS Item)  DO {
 
 WHEN DROPPED(Item it IS Item) DO {     
     NEW h = ItemHistory {
-     dateTime(h) <- currentDateTime();
-     user(h) <- currentUser();
-     type(h) <- 'Удалена номенклатура';
-     description (h) <- CONCAT ' ', 'Удалена номенклатура', PREV(name(it));
+        dateTime(h) <- currentDateTime();
+        user(h) <- currentUser();
+        type(h) <- 'Удалена номенклатура';
+        description (h) <- CONCAT ' ', 'Удалена номенклатура', PREV(name(it));
     }
 }
  
@@ -38,8 +38,8 @@ FORM itemHistory 'История'
     PROPERTIES(h) READONLY dateTime, nameUser, type, description, pdescription = description PANEL
     ORDERS dateTime(h)
     FILTERGROUP itemType
-       FILTER 'Добавлена номенклатура' type(h) = 'Добавлена номенклатура'
-       FILTER 'Удалена номенклатура' type(h) = 'Удалена номенклатура'
+        FILTER 'Добавлена номенклатура' type(h) = 'Добавлена номенклатура'
+        FILTER 'Удалена номенклатура' type(h) = 'Удалена номенклатура'
 ;
 
 showHistory 'История' () {
@@ -89,7 +89,7 @@ DESIGN itemHistory {
 META defineItemHistoryFilter(t)
     EXTEND FORM itemHistory
         EXTEND FILTERGROUP itemType
-           FILTER t type(h) = t
+            FILTER t type(h) = t
     ;
 END
 
