@@ -1,0 +1,39 @@
+MODULE BarcodeHistory;
+
+REQUIRE BarCode, ItemHistory;
+
+NAMESPACE MasterData;
+
+WHEN SETCHANGED(id(BarCode l)) DO {     
+    NEW h = ItemHistory {
+        item(h) <- item(l);
+        dateTime(h) <- currentDateTime();
+        user(h) <- currentUser();
+        type(h) <- 'Изменен штрихкод';
+        description (h) <- CONCAT ' ', 'Изменен штрихкод на', id(l);
+    }
+}
+    
+WHEN SET(BarCode l IS BarCode) DO {     
+    NEW h = ItemHistory {
+        item(h) <- item(l);
+        dateTime(h) <- currentDateTime();
+        user(h) <- currentUser();
+        type(h) <- 'Добавлен штрихкод';
+        description (h) <- CONCAT ' ', 'Добавлен штрихкод', id(l);
+    }
+}
+
+WHEN DROPPED(BarCode l IS BarCode) DO {     
+    NEW h = ItemHistory {
+        item(h) <- PREV(item(l));
+        dateTime(h) <- currentDateTime();
+        user(h) <- currentUser();
+        type(h) <- 'Удален штрихкод';
+        description (h) <- CONCAT ' ', 'Удален штрихкод', PREV(id(l));
+    }
+}  
+
+@defineItemHistoryFilter('Добавлен штрихкод');
+@defineItemHistoryFilter('Изменен штрихкод');
+@defineItemHistoryFilter('Удален штрихкод');
