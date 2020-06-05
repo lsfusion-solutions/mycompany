@@ -13,13 +13,22 @@ EXTEND FORM item
     FILTERGROUP active
         FILTER 'Активный' active(inv) DEFAULT
     FILTERS product(inv) = i
+    
+    OBJECTS l = Location
+    PROPERTIES(l) READONLY canonicalName
+    PROPERTIES(l, i) READONLY onHand, dateReceived, dateShipped
+    FILTERS onHand(l, i)
 ;
 
 DESIGN item {
     operations {
         NEW invledger {
+            showIf = i IS Product;
             caption = 'Движения';
             MOVE BOX(inv);
+        }
+        inventory {
+            MOVE BOX(l);
         }
     }
 }
