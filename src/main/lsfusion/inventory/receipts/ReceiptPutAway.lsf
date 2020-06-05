@@ -60,7 +60,7 @@ CONSTRAINT put(ReceiptLine l) > done(l) MESSAGE 'Размещенное коли
 
 EXTEND FORM receipt  
     OBJECTS p = ReceiptPutAway
-    PROPERTIES(p) nameLocation, quantity, DELETE
+    PROPERTIES(p) nameLocation, quantity, DELETE GRID
     FILTERS receiptLine(p) = l
 ;
 
@@ -76,7 +76,7 @@ DESIGN putAwayLoc {
     PROPERTY(formOk()) { changeKey = 'ENTER'; }
 }
 
-newPutAway 'Разместить' (ReceiptLine ln) {
+newPutAway 'Разместить (+)' (ReceiptLine ln) {
     DIALOG putAwayLoc OBJECTS l INPUT, loc = location(receipt(ln)) DO {
         DIALOG dialogQuantity OBJECTS q = done(ln) (-) put(ln) INPUT DO {
             IF q > 0 THEN {
@@ -89,7 +89,7 @@ newPutAway 'Разместить' (ReceiptLine ln) {
             } 
         }
     }
-} CHANGEKEY 'ADD';
+} CHANGEKEY 'ADD' HIDE;
 
 toPutAway (Receipt r) = putAway(type(r)) AND (ready(r) OR done(r));
 
