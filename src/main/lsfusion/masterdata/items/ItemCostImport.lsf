@@ -1,0 +1,58 @@
+MODULE ItemCostImport;
+
+REQUIRE ItemCost; 
+
+NAMESPACE MasterData;
+
+dataCostExport 'Экспорт себестоимостей' () {
+    NEWSESSION {
+        IF NOT (GROUP SUM 1 IF Item p IS Item) THEN {
+            NEW p = Item {
+                id(p) <- '123';
+                dataName(p) <- 'Мой продукт';
+                category(p) <- GROUP LAST Category c ORDER c WHERE c IS Category;
+                               
+                dataCost(p, DATE d) <- 3.45 WHERE d = 2000_01_01;
+            }
+        }
+        
+        LOCAL f = EXCELFILE ();
+        EXPORT XLSX HEADER FROM 'Код товара' = id(Item p), 'Плановая себестоимость' = dataCost(p, DATE di), 'Дата' = di 
+                                    WHERE p IS Item AND dataCost(p, di) TO f;   
+        open(f());
+    }
+}
+
+dataCostImport 'Импорт себестоимостей' () {
+    LOCAL id = STRING[50] (INTEGER);
+    LOCAL cost1 = NUMERIC[10,2] (INTEGER);
+    LOCAL di = DATE (INTEGER);
+    INPUT f = EXCELFILE DO {
+        NEWSESSION {
+            IMPORT XLS HEADER FROM f TO id, cost1, di;
+            
+            FOR id(Item p) == id(INTEGER j) DO {
+                dataCost(p, DATE d) <- cost1(j) WHERE d = di(j);
+            }            
+
+            APPLY;
+            MESSAGE 'Импорт завершен';
+        }
+    }    
+}
+
+EXTEND FORM migrationData 
+    PROPERTIES dataCostExport(), dataCostImport()
+;
+
+DESIGN migrationData {
+    commons {
+        NEW dataCostExport {
+            type = CONTAINERH;
+            caption = 'Себестоимости номенклатуры';
+            MOVE PROPERTY(dataCostImport());
+            MOVE PROPERTY(dataCostExport());
+        }
+    }
+}
+

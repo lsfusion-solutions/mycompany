@@ -1,7 +1,7 @@
 MODULE ProductImport;
 
 REQUIRE Product, BarCode, System, 
-        ItemPurchase, ItemSales, ItemCost;
+        ItemPurchase, ItemSales;
 
 NAMESPACE MasterData;
 
@@ -16,7 +16,6 @@ productExport 'Экспорт товаров' () {
                 weight(p) <- 0.415;
                 volume(p) <- 1.5;
                 
-                dataCost(p, DATE d) <- 3.45 WHERE d = 2000_01_01;
                 salesPrice(p) <- 6.14;
             }
         }
@@ -24,7 +23,7 @@ productExport 'Экспорт товаров' () {
         LOCAL f = EXCELFILE ();
         EXPORT XLSX HEADER FROM 'Код товара' = id(Product p), 'Наименование' = dataName(p), 'Код категории' = idCategory(p), 
                                 'Код единицы измерения' = idUom(p), 'Вес единицы, кг' = weight(p), 'Объем единицы, м3' = volume(p),
-                                'Плановая себестоимость' = cost(p), 'Цена продажи' = salesPrice(p), 'Код страны происхождения' = id(countryOrigin(p)) WHERE p IS Product TO f;   
+                                'Цена продажи' = salesPrice(p), 'Код страны происхождения' = id(countryOrigin(p)) WHERE p IS Product TO f;   
         open(f());
     }
 }
@@ -36,14 +35,13 @@ productImport 'Импорт товаров' () {
     LOCAL idUom = ISTRING[50] (INTEGER);
     LOCAL weight = NUMERIC[11,3] (INTEGER);
     LOCAL volume = NUMERIC[11,3] (INTEGER);
-    LOCAL cost = NUMERIC[10,2] (INTEGER);
     LOCAL salesPrice = NUMERIC[10,2] (INTEGER);
     LOCAL idCountryOrigin = STRING[3] (INTEGER);
        
     INPUT f = EXCELFILE DO {
         NEWSESSION {
             IMPORT XLS HEADER FROM f TO id = A, name = B, idCategory = C, idUom = D, weight = E,
-                                        volume = F, cost = G, salesPrice = H, idCountryOrigin = I; 
+                                        volume = F, salesPrice = H, idCountryOrigin = I; 
             
             FOR [GROUP SUM 1 BY idCategory(INTEGER i)](STRING num) AND NOT category(num) DO {
                 MESSAGE 'Отсутствует категория в базе данных с кодом ' + num + '. Импорт отменен';
@@ -70,7 +68,6 @@ productImport 'Импорт товаров' () {
                 uom(p) <- uom(idUom(i));
                 weight(p) <- weight(i);
                 volume(p) <- volume(i);
-                dataCost(p, DATE d) <- cost(i) WHERE d = 2000_01_01;
                 salesPrice(p) <- salesPrice(i);
                 countryOrigin(p) <- country(idCountryOrigin(i));
             }
