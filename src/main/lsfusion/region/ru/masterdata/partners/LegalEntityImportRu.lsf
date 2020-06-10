@@ -1,0 +1,54 @@
+MODULE LegalEntityImportRu;
+
+REQUIRE LegalEntityRu, PartnerPurchase, PartnerSales;
+
+NAMESPACE MasterData;
+
+legalEntityExportRu 'Экспорт ИНН и ОКПО' () {
+    NEWSESSION {
+        IF NOT (GROUP SUM 1 IF LegalEntity l IS LegalEntity) THEN {
+            NEW l = LegalEntity {
+                id(l) <- '123';
+                name(l) <- 'Организация';
+            }
+        }
+            
+        LOCAL f = EXCELFILE ();
+        EXPORT XLSX HEADER FROM 'Код' = id(LegalEntity l), 'ИНН' = inn(l), 'ОКПО' = okpo(l) WHERE l IS LegalEntity TO f;   
+        open(f());
+    }
+}
+
+legalEntityImportRu 'Импорт ИНН и ОКПО' () {
+    LOCAL id = STRING[50] (INTEGER);
+    LOCAL inn = ISTRING[10] (INTEGER);
+    LOCAL okpo = ISTRING[8] (INTEGER);
+           
+    INPUT f = EXCELFILE DO {
+        NEWSESSION {
+            IMPORT XLS HEADER FROM f TO id, inn, okpo;
+            FOR id(LegalEntity l) == id((INTEGER j)) DO {
+                inn(l) <- inn(j);
+                okpo(l) <- okpo(j);
+            }            
+            
+            APPLY;
+            MESSAGE 'Импорт завершен';
+        }
+    }    
+}
+
+EXTEND FORM migrationData 
+    PROPERTIES legalEntityImportRu(), legalEntityExportRu()
+;
+
+DESIGN migrationData {
+    commons {
+        NEW legalEntityRu {
+            type = CONTAINERH;
+            caption = 'ИНН и ОКПО организаций';
+            MOVE PROPERTY(legalEntityImportRu());
+            MOVE PROPERTY(legalEntityExportRu());
+        }
+    }
+}
