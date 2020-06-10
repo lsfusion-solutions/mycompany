@@ -4,7 +4,7 @@ REQUIRE ItemCost;
 
 NAMESPACE MasterData;
 
-dataCostExport 'Экспорт себестоимостей' () {
+itemCostExport 'Экспорт себестоимостей' () {
     NEWSESSION {
         IF NOT (GROUP SUM 1 IF Item p IS Item) THEN {
             NEW p = Item {
@@ -23,16 +23,16 @@ dataCostExport 'Экспорт себестоимостей' () {
     }
 }
 
-dataCostImport 'Импорт себестоимостей' () {
+itemCostImport 'Импорт себестоимостей' () {
     LOCAL id = STRING[50] (INTEGER);
-    LOCAL cost1 = NUMERIC[10,2] (INTEGER);
+    LOCAL cost = NUMERIC[10,2] (INTEGER);
     LOCAL di = DATE (INTEGER);
     INPUT f = EXCELFILE DO {
         NEWSESSION {
-            IMPORT XLS HEADER FROM f TO id, cost1, di;
+            IMPORT XLS HEADER FROM f TO id, cost, di;
             
             FOR id(Item p) == id(INTEGER j) DO {
-                dataCost(p, DATE d) <- cost1(j) WHERE d = di(j);
+                dataCost(p, DATE d) <- cost(j) WHERE d = di(j);
             }            
 
             APPLY;
@@ -42,16 +42,16 @@ dataCostImport 'Импорт себестоимостей' () {
 }
 
 EXTEND FORM migrationData 
-    PROPERTIES dataCostExport(), dataCostImport()
+    PROPERTIES itemCostImport(), itemCostExport()
 ;
 
 DESIGN migrationData {
     commons {
-        NEW dataCostExport {
+        NEW itemCost {
             type = CONTAINERH;
             caption = 'Себестоимости номенклатуры';
-            MOVE PROPERTY(dataCostImport());
-            MOVE PROPERTY(dataCostExport());
+            MOVE PROPERTY(itemCostImport());
+            MOVE PROPERTY(itemCostExport());
         }
     }
 }
