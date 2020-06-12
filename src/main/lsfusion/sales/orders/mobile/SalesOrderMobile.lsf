@@ -1,0 +1,127 @@
+MODULE SalesOrderMobile;
+
+REQUIRE Input, SalesOrder, SalesOrderDiscount,
+        PartnerMobile, ItemMobile, CategoryMobile;
+
+NAMESPACE Sales;
+
+// order
+@defineChangeInput(customer, Order, Partner, dialogPartnersMobile, p);
+@defineChangeInput(location, Order, Location, locations, l);
+@defineChangeInput(item, OrderLine, Item, dialogItemsMobile, i);
+
+FORM orderMobile 'Заказ мобильный'
+    OBJECTS o = Order PANEL
+    PROPERTIES(o) nameType, dateTime, number, 
+                  nameCustomer ON CHANGE changeCustomer(o), 
+                  nameLocation ON CHANGE changeLocation(o),
+                  untaxedAmount, amount 
+    
+    OBJECTS l = OrderLine
+    PROPERTIES(l) nameItem ON CHANGE changeItem(l), 'Кол-во' = quantity, price, NEW, DELETE
+    PROPERTIES(l) PANEL nameSalesDiscount, '' = discount, '' = discountPrice
+    PROPERTIES(l) PANEL READONLY idItem, idBarCodeItem,
+                                 nameUom, taxes, 'Сумма' = amount
+    FILTERS order(l) = o
+;
+
+DESIGN orderMobile {
+    caption = (CONCAT ' ', 'Заказ', '№' + number(o));
+    
+    OBJECTS {
+        NEW pane {
+            type = TABBED;
+            fill = 1;
+            NEW params {
+                caption = 'Параметры';
+                MOVE PROPERTY(nameType(o)) { alignment = STRETCH; }
+                NEW id {
+                    type = CONTAINERH;
+                    alignment = STRETCH;
+                    MOVE PROPERTY(dateTime(o));
+                    MOVE PROPERTY(number(o));
+                }
+                MOVE PROPERTY(nameCustomer(o)) { alignment = STRETCH; }
+                MOVE PROPERTY(nameLocation(o)) { alignment = STRETCH; }
+                
+                NEW amount {
+                    flex = 1;
+                    type = CONTAINERH;
+                    alignment = STRETCH;
+                    MOVE PROPERTY(untaxedAmount(o));
+                    MOVE PROPERTY(amount(o));
+                }
+                
+                MOVE TOOLBARBOX;
+            }
+            NEW lines {
+                caption = 'Строки';
+                MOVE GRID(l) {
+                    headerHeight = 24;
+                    PROPERTY(quantity(l)) { charWidth = 5; }
+                }
+                MOVE TOOLBARBOX(l);
+                NEW discount {
+                    type = CONTAINERH;
+                    alignment = STRETCH;
+                    MOVE PROPERTY(nameSalesDiscount(l));
+                    MOVE PROPERTY(discount(l));
+                    MOVE PROPERTY(discountPrice(l));
+                }
+                NEW item {
+                    type = CONTAINERH;
+                    alignment = STRETCH;
+                    MOVE PROPERTY(idItem(l));
+                    MOVE PROPERTY(idBarCodeItem(l));
+                }
+                NEW misc {
+                    type = CONTAINERH;
+                    alignment = STRETCH;
+                    MOVE PROPERTY(nameUom(l));
+                    MOVE PROPERTY(taxes(l));
+                    MOVE PROPERTY(amount(l));
+                }
+                REMOVE TOOLBARSYSTEM(l);
+            }
+        }
+    }
+    PROPERTY(formApply()) { caption = ''; }
+    PROPERTY(formCancel()) { caption = ''; }
+}
+
+// orders
+
+newMobile 'Добавить' () {
+    NEWSESSION {
+        NEW o = Order {
+            SHOW orderMobile OBJECTS o = o DOCKED;
+        }
+    }
+} IMAGE 'add.png';
+
+editMobile 'Редактировать' (Order o) {
+    NEWSESSION {
+        SHOW orderMobile OBJECTS o = o DOCKED;
+    }
+} IMAGE 'edit.png' CHANGEMOUSE 'DBLCLK';
+
+FORM ordersMobile 'Мобильный заказ'
+    OBJECTS o = Order
+    PROPERTIES(o) READONLY date, nameStatus BACKGROUND colorStatus(o), number, nameCustomer
+    PROPERTIES newMobile() DRAW o TOOLBAR, editMobile(o) TOOLBAR, DELETE(o) NEWSESSION
+;
+
+DESIGN ordersMobile {
+    OBJECTS {
+        MOVE GRID(o);
+        MOVE TOOLBARSYSTEM(o);
+        MOVE TOOLBAR(o);
+    }
+    REMOVE TOOLBARBOX;
+}
+
+NAVIGATOR {
+    operations {
+        NEW ordersMobile;
+    }
+}

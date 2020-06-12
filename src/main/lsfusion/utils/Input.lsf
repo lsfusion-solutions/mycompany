@@ -11,3 +11,39 @@ DESIGN dialogQuantity {
     PROPERTY(quantity) { fontSize = 16; }
     PROPERTY(formOk()) { changeKey = 'ENTER'; }
 }
+
+META defineChangeInput (property, cls, type, form, object)
+    change###property (cls o) {
+        INPUT s = STRING DO 
+            IF (GROUP SUM 1 IF isISubstring(name(type p), s)) = 1 THEN
+                property(o) <- GROUP MIN type p IF isISubstring(name(p), s);
+            ELSE
+                DIALOG form OBJECTS object INPUT FILTERS isISubstring(name(object), s) OR NOT s DO
+                    property(o) <- object;
+    }
+END
+
+META defineKeyboardButtonForm(form, cls, obj, container, action, number)
+    form##Press##number ''##number (cls o) {
+        action(o, number);
+    }
+    EXTEND FORM form PROPERTIES form##Press##number(obj);
+    DESIGN form {
+        container {
+            MOVE PROPERTY(form##Press##number(obj)) { fill = 1; focusable = FALSE; }
+        }
+    }
+END
+
+META defineKeyboardButtonForm(form, cls, obj, container, action)
+    @defineKeyboardButtonForm(form, cls, obj, container, action, 0);
+    @defineKeyboardButtonForm(form, cls, obj, container, action, 1);
+    @defineKeyboardButtonForm(form, cls, obj, container, action, 2);
+    @defineKeyboardButtonForm(form, cls, obj, container, action, 3);
+    @defineKeyboardButtonForm(form, cls, obj, container, action, 4);
+    @defineKeyboardButtonForm(form, cls, obj, container, action, 5);
+    @defineKeyboardButtonForm(form, cls, obj, container, action, 6);
+    @defineKeyboardButtonForm(form, cls, obj, container, action, 7);
+    @defineKeyboardButtonForm(form, cls, obj, container, action, 8);
+    @defineKeyboardButtonForm(form, cls, obj, container, action, 9);
+END

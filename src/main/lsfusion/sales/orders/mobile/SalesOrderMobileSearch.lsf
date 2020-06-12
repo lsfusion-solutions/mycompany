@@ -1,0 +1,118 @@
+MODULE SalesOrderMobileSearch;
+
+REQUIRE SalesOrderMobile, SalesOrderSearch, BarCode;
+
+NAMESPACE Sales;
+
+nameFilter 'Наименование' = DATA LOCAL ISTRING ();
+clearNameFilter '' () { nameFilter() <- NULL; } IMAGE 'delete.png';
+
+categoryFilter = DATA LOCAL Category ();
+nameCategoryFilter 'Категория' = name(categoryFilter());    
+changeCategoryFilter () {
+    INPUT s = STRING DO 
+        IF (GROUP SUM 1 IF isISubstring(name(Category p), s)) = 1 THEN
+            categoryFilter() <- GROUP MIN Category c IF isISubstring(name(c), s);
+        ELSE
+            DIALOG dialogCategoriesMobile OBJECTS c INPUT FILTERS isISubstring(name(c), s) OR NOT s DO
+                categoryFilter() <- c;
+}
+clearCategoryFilter '' () { categoryFilter() <- NULL; } IMAGE 'delete.png';
+
+EXTEND FORM orderMobile
+    OBJECTS i = Item
+    PROPERTIES(i) READONLY 'Имя' = name
+    PROPERTIES READONLY overListPrice(o, i), available(o, i) 
+    PROPERTIES(o, i) quantity ON CHANGE changeQuantity(o, i)
+    PROPERTIES(i) READONLY PANEL pName '' = name, '' = id, '' = idBarCode, '' = nameUom
+    ORDERS name(i)
+    
+    FILTERGROUP available
+        FILTER 'Доступно' available(o, i) > 0 OR NOT i IS Product DEFAULT
+
+    FILTERGROUP order
+        FILTER 'Заказано' quantity(o, i)
+
+    PROPERTIES() nameFilter, clearNameFilter
+    FILTERS isISubstring(name(i), nameFilter()) OR NOT nameFilter()
+
+    PROPERTIES() nameCategoryFilter ON CHANGE changeCategoryFilter(), clearCategoryFilter
+    FILTERS level(category(i), categoryFilter()) OR NOT categoryFilter()
+;
+
+DESIGN orderMobile {
+    pane {
+        NEW search {
+            caption = 'Подбор';
+            NEW nameFilter {
+                type = CONTAINERH;
+                alignment = STRETCH;
+                MOVE PROPERTY(nameFilter()) { alignment = STRETCH; }
+                MOVE PROPERTY(clearNameFilter());
+            }
+            NEW categoryFilter {
+                type = CONTAINERH;
+                alignment = STRETCH;
+                MOVE PROPERTY(nameCategoryFilter()) { alignment = STRETCH; }                    
+                MOVE PROPERTY(clearCategoryFilter());
+            }
+            NEW groupFilter {
+                type = CONTAINERH;
+                alignment = STRETCH;
+                MOVE FILTERGROUPS(i);
+            }
+            MOVE GRID(i) {
+                headerHeight = 24;
+                PROPERTY(name(i)) { charWidth = 25; fontSize = 10; }
+                PROPERTY(overListPrice(o, i)) { charWidth = 4; }
+                PROPERTY(available(o, i)) { charWidth = 4; }
+                PROPERTY(quantity(o, i)) { charWidth = 4; }
+            }
+            MOVE PROPERTY(pName) { alignment = STRETCH; }
+            NEW panelRow1 {
+                type = CONTAINERH;
+                alignment = STRETCH;
+                MOVE PROPERTY(id(i));
+                MOVE PROPERTY(idBarCode(i));
+                MOVE PROPERTY(nameUom(i));
+            }
+            REMOVE TOOLBARSYSTEM(i);
+        }
+    }
+}
+
+setQuantity(Item i, INTEGER n) {
+    FOR [VIEW orderMobile.o](Order o) DO {
+        setQuantity(o, i, n);
+    }
+}
+
+increaseQuantity '+' (Order o, Item i) {
+    setQuantity(o, i, quantity(o, i) (+) 1);
+}
+
+decreaseQuantity '-' (Order o, Item i) {
+    setQuantity(o, i, quantity(o, i) (-) 1);
+}
+
+EXTEND FORM orderMobile
+    PROPERTIES(o, i) increaseQuantity, decreaseQuantity
+;
+
+DESIGN orderMobile {
+    search {
+        NEW searchActions {
+            type = CONTAINERH;
+            alignment = STRETCH;
+            NEW searchKeyboard {
+                fill = 1;
+                type = COLUMNS;
+                columns = 5;
+            }
+            MOVE PROPERTY(increaseQuantity(o, i)) { fill = 1; focusable = FALSE; }
+            MOVE PROPERTY(decreaseQuantity(o, i)) { fill = 1; focusable = FALSE; }
+        }
+    }
+}
+
+@defineKeyboardButtonForm(orderMobile, Item, i, searchKeyboard, setQuantity);
