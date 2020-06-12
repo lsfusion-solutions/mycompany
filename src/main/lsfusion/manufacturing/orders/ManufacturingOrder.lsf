@@ -43,7 +43,7 @@ company = DATA Company (ManufacturingOrder);
 nameCompany 'Компания' (ManufacturingOrder m) = name(company(m));
 WHEN LOCAL SET(ManufacturingOrder o IS ManufacturingOrder) AND NOT CHANGED(company(o)) DO company(o) <- defaultCompany(); 
 
-materialsLocation 'Списать из' = DATA Location (ManufacturingOrder) NONULL;
+materialsLocation 'Списать из' = DATA Location (ManufacturingOrder);
 nameMaterialsLocation 'Списать из' (ManufacturingOrder m) = name(materialsLocation(m));
 WHEN LOCAL SETCHANGED(type(ManufacturingOrder mo)) AND NOT materialsLocation(mo) DO materialsLocation(mo) <- materialsLocation(type(mo));
 
@@ -151,7 +151,7 @@ DESIGN manufacturingOrder {
             type = TABBED;
             NEW consumed {
                 caption = 'Материалы';
-                MOVE PROPERTY(nameMaterialsLocation(o)) { notNull = TRUE; }
+                MOVE PROPERTY(nameMaterialsLocation(o));
                 MOVE BOX(c);
             }
             NEW finished {
@@ -163,6 +163,11 @@ DESIGN manufacturingOrder {
                 MOVE BOX(l);
             }
         }   
+    }
+    TOOLBARBOX {
+        NEW footer FIRST {
+            type = CONTAINERH;
+        }
     }
 }
 

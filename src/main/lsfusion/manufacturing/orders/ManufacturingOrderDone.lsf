@@ -26,6 +26,7 @@ markAsDone 'Завершить' (ManufacturingOrder m) {
         IF NOT produced(m) THEN
             setManufactured(m, toManufacture(m));
         
+        ready(m) <- TRUE;
         inProgress(m) <- TRUE;
         done(m) <- TRUE;
         APPLY;
@@ -73,5 +74,4 @@ extraCopy (ManufacturingOrder o, ManufacturingOrder m) + {
 
 // constraint
 CONSTRAINT done(ManufacturingOrder o) AND NOT productsLocation(o)
-    MESSAGE 'Не выбрано место хранения в завершенном производственном заказе'; 
-
+    MESSAGE 'Не выбрано место хранения получателя в завершенном производственном заказе'; 

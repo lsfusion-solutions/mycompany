@@ -1,7 +1,7 @@
 MODULE SalesOrderManufacturing;
 
 REQUIRE SalesOrder, SalesOrderType, SalesOrderConfirmed, SalesOrderCanceled,
-        ManufacturingOrder, ManufacturingOrderDone, ManufacturingOrderCanceled;
+        ManufacturingOrder, ManufacturingOrderCanceled;
 
 NAMESPACE Sales;
 
@@ -26,7 +26,7 @@ numberDateOrder 'Заказ' (ManufacturingOrder mo) = numberDate(order(orderLin
 
 manufacturingOrder (OrderLine l) = GROUP AGGR ManufacturingOrder mo BY orderLine(mo);
 
-countFreeBomLine (Order o)= GROUP SUM 1 IF order(OrderLine l) == o AND bom(l) AND NOT manufacturingOrder(l);
+countFreeBomLine (Order o) = GROUP SUM 1 IF order(OrderLine l) == o AND bom(l) AND NOT manufacturingOrder(l);
 countManufacturingOrder (Order o) = GROUP SUM 1 IF order(orderLine(ManufacturingOrder mo)) == o;
 
 CONSTRAINT DROPPED(OrderLine l IS OrderLine) AND PREV(manufacturingOrder(l))
@@ -37,12 +37,12 @@ openOrder (ManufacturingOrder mo) {
 }
 
 EXTEND FORM manufacturingOrder
-    PROPERTIES(o) numberDateOrder ON CHANGE openOrder(o) SHOWIF order(orderLine(o))
+    PROPERTIES(o) numberDateOrder ON CHANGE openOrder(o) SHOWIF orderLine(o)
 ;
 
 DESIGN manufacturingOrder {
-    headerRight {
-        MOVE PROPERTY(numberDateOrder(o)) BEFORE PROPERTY (nameItem(o));
+    footer {
+        MOVE PROPERTY(numberDateOrder(o));
     }
 }
 
@@ -53,14 +53,17 @@ EXTEND FORM manufacturingOrders
 newManufacturingOrder (OrderLine l) {
     NEW o = ManufacturingOrder { 
         orderLine(o) <- l;
+        waiting(o) <- TRUE;
+
         type(o) <- manufacturingOrderType(type(order(l)));
-        materialsLocation(o) <-materialsLocation(manufacturingOrderType(type(order(l))));
         scheduledDateTime(o) <- scheduledDateTime(order(l));
+
         productsLocation(o) <- location(order(l));
-        company(o) <- defaultCompany();
+        
         item(o) <- item(l);
         uom(o) <- uom(l);
         bom(o) <- bom(l);
+        
         fillByQuantity(o, quantity(l));
     }
 }
@@ -82,7 +85,7 @@ EXTEND FORM order
     
     OBJECTS mo = ManufacturingOrder
     PROPERTIES(mo) READONLY nameType, scheduledDateTime, nameStatus BACKGROUND colorStatus(mo), number
-    PROPERTIES(mo) EDIT
+    PROPERTIES(mo) NEWSESSION EDIT GRID
     FILTERS order(orderLine(mo)) = o
 ;
 
