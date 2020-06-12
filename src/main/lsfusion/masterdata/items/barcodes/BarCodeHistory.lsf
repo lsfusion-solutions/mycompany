@@ -9,6 +9,7 @@ WHEN SETCHANGED(id(BarCode l)) DO {
         item(h) <- item(l);
         dateTime(h) <- currentDateTime();
         user(h) <- currentUser();
+        computer(h) <- currentComputer();
         type(h) <- 'Изменен штрихкод';
         description (h) <- CONCAT ' ', 'Изменен штрихкод на', id(l);
     }
@@ -19,6 +20,7 @@ WHEN SET(BarCode l IS BarCode) DO {
         item(h) <- item(l);
         dateTime(h) <- currentDateTime();
         user(h) <- currentUser();
+        computer(h) <- currentComputer();
         type(h) <- 'Добавлен штрихкод';
         description (h) <- CONCAT ' ', 'Добавлен штрихкод', id(l);
     }
@@ -29,6 +31,7 @@ WHEN DROPPED(BarCode l IS BarCode) DO {
         item(h) <- PREV(item(l));
         dateTime(h) <- currentDateTime();
         user(h) <- currentUser();
+        computer(h) <- currentComputer();
         type(h) <- 'Удален штрихкод';
         description (h) <- CONCAT ' ', 'Удален штрихкод', PREV(id(l));
     }

@@ -151,6 +151,7 @@ META defineDocHistory(doc, let, class, fun)
             doc(h) <- ##let;
             dateTime(h) <- currentDateTime();
             user(h) <- currentUser();
+            computer(h) <- currentComputer();
             type(h) <- 'Добавлена строка';
             description (h) <- 'Добавлена строка с индексом ' + index(l);
         }
@@ -162,6 +163,7 @@ META defineDocHistory(doc, let, class, fun)
             doc(h) <- ##let;
             dateTime(h) <- currentDateTime();
             user(h) <- currentUser();
+            computer(h) <- currentComputer();
             type(h) <- 'Удалена строка';
             description (h) <- 'Удалена строка с индексом ' + PREV(index(l));
         }
@@ -184,6 +186,7 @@ META defineDocHistory(doc, let, class, fun)
             doc(h) <- ##let;
             dateTime(h) <- currentDateTime();
             user(h) <- currentUser();
+            computer(h) <- currentComputer();
             type(h) <- 'Изменен продукт';
             description (h) <- 'Изменен продукт в строке ' + index(l) + ' на ' + name###class(l);
         }
@@ -196,8 +199,13 @@ META defineDocHistoryHead(doc, let)
     doc = DATA ###doc (###doc##History);
 
     dateTime 'Дата' = DATA DATETIME (###doc##History);
-    user 'Пользователь' = DATA User (###doc##History) CHARWIDTH 15;
+    
+    user = DATA User (###doc##History);
     nameUser 'Пользователь' (###doc##History l) = name(user(l));
+    
+    computer = DATA Computer (###doc##History);
+    hostnameComputer 'Компьютер' (###doc##History l) = hostname(computer(l));
+    
     type 'Тип' = DATA ISTRING[100] (###doc##History);
     description 'Описание' = DATA TEXT (###doc##History);
      
@@ -206,6 +214,7 @@ META defineDocHistoryHead(doc, let)
             doc(l) <- let;
             dateTime(l) <- currentDateTime();
             user(l) <- currentUser();
+            computer(l) <- currentComputer();
             type(l) <- 'Изменен статус';
             description (l) <- 'Изменен статус на ' + staticCaption(status(let));
         }
@@ -213,7 +222,7 @@ META defineDocHistoryHead(doc, let)
 
     EXTEND FORM doc
         OBJECTS doc##l = ###doc##History
-        PROPERTIES(doc##l) READONLY dateTime, nameUser, type, description, pdescription = description PANEL
+        PROPERTIES(doc##l) READONLY dateTime, nameUser, hostnameComputer, type, description, pdescription = description PANEL
         FILTERS doc(doc##l) = let
     ;
     

@@ -9,8 +9,13 @@ CLASS ItemHistory 'История изменений';
 item = DATA Item (ItemHistory);
 
 dateTime 'Дата' = DATA DATETIME (ItemHistory);
-user 'Пользователь' = DATA User (ItemHistory) CHARWIDTH 15;
+
+user 'Пользователь' = DATA User (ItemHistory);
 nameUser 'Пользователь' (ItemHistory l) = name(user(l));
+
+computer = DATA Computer (ItemHistory);
+hostnameComputer 'Компьютер' (ItemHistory l) = hostname(computer(l));
+
 type 'Тип' = DATA ISTRING[100] (ItemHistory);
 description 'Описание' = DATA TEXT (ItemHistory);
 
@@ -19,6 +24,7 @@ WHEN SET(Item it IS Item)  DO {
         item(h) <- it;
         dateTime(h) <- currentDateTime();
         user(h) <- currentUser();
+        computer(h) <- currentComputer();
         type(h) <- 'Добавлена номенклатура';
         description (h) <- CONCAT ' ', 'Добавлена номенклатура', name(it);
     }
@@ -28,6 +34,7 @@ WHEN DROPPED(Item it IS Item) DO {
     NEW h = ItemHistory {
         dateTime(h) <- currentDateTime();
         user(h) <- currentUser();
+        computer(h) <- currentComputer();
         type(h) <- 'Удалена номенклатура';
         description (h) <- CONCAT ' ', 'Удалена номенклатура', PREV(name(it));
     }
@@ -48,7 +55,7 @@ showHistory 'История' () {
 
 EXTEND FORM item
     OBJECTS h = ItemHistory
-    PROPERTIES(h) READONLY dateTime, nameUser, type, description, pdescription = description PANEL
+    PROPERTIES(h) READONLY dateTime, nameUser, hostnameComputer, type, description, pdescription = description PANEL
     FILTERS item(h) = i
     ORDERS dateTime(h)
 ;
@@ -100,6 +107,7 @@ META defineItemHistoryAttr(attr, caption)
             item(l) <- item;
             dateTime(l) <- currentDateTime();
             user(l) <- currentUser();
+            computer(l) <- currentComputer();
             type(l) <- caption;
             description (l) <- CONCAT ' ', caption, 'на', attr(item);
         }
