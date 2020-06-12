@@ -1,6 +1,6 @@
 MODULE SalesOrderMobile;
 
-REQUIRE Input, SalesOrder, SalesOrderDiscount,
+REQUIRE Input, SalesOrderLocked, SalesOrderDiscount,
         PartnerMobile, ItemMobile, CategoryMobile;
 
 NAMESPACE Sales;
@@ -109,15 +109,22 @@ FORM ordersMobile 'Мобильный заказ'
     OBJECTS o = Order
     PROPERTIES(o) READONLY date, nameStatus BACKGROUND colorStatus(o), number, nameCustomer
     PROPERTIES newMobile() DRAW o TOOLBAR, editMobile(o) TOOLBAR, DELETE(o) NEWSESSION
+
+    FILTERGROUP unlocked
+        FILTER 'Открыт' NOT locked(o) DEFAULT    
 ;
 
 DESIGN ordersMobile {
     OBJECTS {
+        NEW filters {
+            type = CONTAINERH;
+            MOVE PROPERTY(formRefresh());
+            MOVE FILTERGROUPS(o);
+        }
         MOVE GRID(o);
         MOVE TOOLBARSYSTEM(o);
-        MOVE TOOLBAR(o) {
-            MOVE PROPERTY(formRefresh());
-        }
+        MOVE TOOLBAR(o);
+        REMOVE TOOLBARBOX;
     }
 }
 
