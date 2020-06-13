@@ -1,7 +1,9 @@
 # mycompany
 Решение для управления небольшой компанией
 
-В разработке. Демо-версия находится по адресу https://demo.lsfusion.org/mycompany
+Сайт : https://mycompany.lsfusion.org
+
+Демо-версия находится по адресу https://demo.lsfusion.org/mycompany
 
 ### Реализованные модули
 
