@@ -1,6 +1,8 @@
 MODULE Adjustment;
 
-REQUIRE InventorySettings, LocationEmployee, Product, InvLedger, Company, BarCode, Doc;
+REQUIRE InventorySettings, LocationEmployee, 
+        Product, InvLedger, DateUtils,
+        Company, BarCode, Doc;
                                   
 NAMESPACE Inventory;
 
@@ -10,6 +12,7 @@ CLASS Adjustment 'Инвентаризация';
 
 dateTime 'Дата' = DATA DATETIME (Adjustment);
 WHEN LOCAL SET(Adjustment a IS Adjustment) AND NOT CHANGED(dateTime(a)) DO dateTime(a) <- currentDateTime();
+@defineDateTimeAggregation(Adjustment);
 
 @defineNumber(adjustment, 'Инвентаризации', 'ИН');
 
@@ -178,3 +181,5 @@ newAdjustment 'Инвентаризация' () {
 EXTEND FORM adjustments
     PROPERTIES newAdjustment() DRAW a TOOLBAR 
 ;
+
+@defineDateFilterForm(adjustments, a);

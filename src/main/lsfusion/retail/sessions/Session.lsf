@@ -1,6 +1,6 @@
 MODULE Session;
 
-REQUIRE MetaNumerator, Time, 
+REQUIRE MetaNumerator, Time, DateUtils, 
         RetailSettings, Pos;
 
 NAMESPACE Retail;
@@ -9,6 +9,7 @@ CLASS Session 'Смена';
 
 openingDateTime 'Открыта' = DATA DATETIME (Session) NONULL;
 openingDateTime(Session s) <- currentDateTime() WHEN SET(s IS Session);
+@defineDateTimeAggregation(Session, opening, ' открытия');
 
 closingDateTime 'Закрыта' = DATA DATETIME (Session);
 CONSTRAINT closingDateTime(Session s) < openingDateTime(s)
@@ -64,6 +65,8 @@ FORM sessions 'Смены'
     
     LIST Session OBJECT o
 ;
+
+@defineDateFilterForm(sessions, o, opening);
 
 NAVIGATOR {
     operations {

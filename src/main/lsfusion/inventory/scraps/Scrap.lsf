@@ -1,6 +1,8 @@
 MODULE Scrap;
 
-REQUIRE InventorySettings, Product, LocationEmployee, InvLedger, BarCode, Doc, ScrapType;
+REQUIRE InventorySettings, Product, DateUtils, 
+        LocationEmployee, InvLedger, 
+        BarCode, Doc, ScrapType;
 
 NAMESPACE Inventory;
 
@@ -16,6 +18,7 @@ WHEN LOCAL SET(Scrap r IS Scrap) AND NOT CHANGED(type(r)) DO type(r) <- defaultS
 
 dateTime 'Дата' = DATA DATETIME (Scrap) NONULL;
 dateTime(Scrap s) <- currentDateTime() WHEN SET(s IS Scrap);
+@defineDateTimeAggregation(Scrap);
 
 @defineNumberType(scrap);
 
@@ -81,6 +84,7 @@ FORM scraps 'Списания'
 @defineDocStatusForm(scrap, s);
 @defineDocLinesCount(scrap, s);
 @defineDocLocationAccess(scrap, s);
+@defineDateFilterForm(scraps, s);
 
 NAVIGATOR {
     operations {

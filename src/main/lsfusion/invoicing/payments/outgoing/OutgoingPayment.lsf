@@ -1,6 +1,6 @@
 MODULE OutgoingPayment;
 
-REQUIRE Time, MetaNumerator, Doc,
+REQUIRE Time, MetaNumerator, Doc, DateUtils,
         Partner, Company,
         Account, BankAccount, CashAccount,
         OutgoingPaymentType;
@@ -17,6 +17,7 @@ nameType 'Тип' (OutgoingPayment s) = name(type(s));
 
 dateTime 'Дата' = DATA DATETIME (OutgoingPayment) NONULL;
 dateTime(OutgoingPayment p) <- currentDateTime() WHEN SET(p IS OutgoingPayment);
+@defineDateTimeAggregation(OutgoingPayment);
 
 @defineNumberType(outgoingPayment);
 
@@ -154,6 +155,7 @@ FORM outgoingPayments 'Исходящие платежи'
 ;
 
 @defineDocStatusForm(outgoingPayment, p);
+@defineDateFilterForm(outgoingPayments, p);
 
 NAVIGATOR {
     invoicing {

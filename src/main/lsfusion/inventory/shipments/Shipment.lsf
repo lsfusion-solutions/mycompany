@@ -1,6 +1,6 @@
 MODULE Shipment;
 
-REQUIRE System, Time,
+REQUIRE System, Time, DateUtils,
         InventorySettings, LocationEmployee, Partner, Product,
         ShipmentType, ItemSales, PartnerSales, BarCode, Doc, ResLedger;
 
@@ -20,6 +20,7 @@ WHEN LOCAL SET(Shipment s IS Shipment) AND NOT CHANGED(type(s)) DO type(s) <- de
 
 scheduledDateTime 'Планируемая дата' = DATA DATETIME (Shipment) NONULL IN id;
 scheduledDateTime(Shipment s) <- currentDateTime() WHEN SET(s IS Shipment);
+@defineDateTimeAggregation(Shipment, scheduled, ' планируемая');
 
 @defineNumberType(shipment);
 
@@ -166,6 +167,7 @@ FORM shipments 'Отгрузки'
 
 @defineDocStatusForm(shipment, s);
 @defineDocLocationAccess(shipment, s);
+@defineDateFilterForm(shipments, s, scheduled);
 
 NAVIGATOR {
     operations {

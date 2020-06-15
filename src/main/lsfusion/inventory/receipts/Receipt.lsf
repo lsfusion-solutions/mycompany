@@ -1,6 +1,6 @@
 MODULE Receipt;
 
-REQUIRE System, Time,
+REQUIRE System, Time, DateUtils,
         InventorySettings, Location, Partner, Product, LocationEmployee,
         ReceiptType, ItemPurchase, PartnerPurchase, BarCode, Doc, ResLedger;
 
@@ -20,6 +20,7 @@ WHEN LOCAL SET(Receipt r IS Receipt) AND NOT CHANGED(type(r)) DO type(r) <- defa
 
 scheduledDateTime 'Планируемая дата' = DATA DATETIME (Receipt) NONULL IN id;
 scheduledDateTime(Receipt r) <- currentDateTime() WHEN (r IS Receipt); 
+@defineDateTimeAggregation(Receipt, scheduled, ' планируемая');
 
 @defineNumberType(receipt);
 receipt (STRING[31] number) = GROUP LAST Receipt r ORDER r BY number(r);
@@ -146,6 +147,7 @@ FORM receipts 'Поступления'
 
 @defineDocStatusForm(receipt, r);
 @defineDocLocationAccess(receipt, r);
+@defineDateFilterForm(receipts, r, scheduled);
 
 NAVIGATOR {
     operations {

@@ -1,6 +1,6 @@
 MODULE IncomingPayment;
 
-REQUIRE Time, MetaNumerator, Doc,
+REQUIRE Time, MetaNumerator, Doc, DateUtils,
         Partner, Company, 
         Account, BankAccount, CashAccount,
         IncomingPaymentType;
@@ -17,6 +17,7 @@ nameType 'Тип' (IncomingPayment s) = name(type(s));
 
 dateTime 'Дата' = DATA DATETIME (IncomingPayment) NONULL;
 dateTime(IncomingPayment p) <- currentDateTime() WHEN SET(p IS IncomingPayment);
+@defineDateTimeAggregation(IncomingPayment);
 
 @defineNumberType(incomingPayment);
 
@@ -155,6 +156,7 @@ FORM incomingPayments 'Входящие платежи'
 ;
 
 @defineDocStatusForm(incomingPayment, p);
+@defineDateFilterForm(incomingPayments, p);
 
 NAVIGATOR {
     invoicing {
