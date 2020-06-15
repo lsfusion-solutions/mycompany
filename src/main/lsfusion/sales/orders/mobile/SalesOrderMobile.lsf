@@ -15,7 +15,9 @@ FORM orderMobile 'Заказ мобильный'
     PROPERTIES(o) nameType, dateTime, number, 
                   nameCustomer ON CHANGE changeCustomer(o), 
                   nameLocation ON CHANGE changeLocation(o),
-                  untaxedAmount, amount 
+                  untaxedAmount, amount
+
+    PROPERTIES(o) confirm SHOWIF (status(o) = OrderStatus.sent OR status(o) = OrderStatus.draft), confirmed 
     
     OBJECTS l = OrderLine
     PROPERTIES(l) nameItem ON CHANGE changeItem(l), 'Кол-во' = quantity, price, NEW, DELETE
@@ -52,10 +54,18 @@ DESIGN orderMobile {
                     MOVE PROPERTY(amount(o));
                 }
                 
+                NEW actions {
+                    type = CONTAINERH;
+                    alignment = STRETCH;
+                    
+                    MOVE PROPERTY(confirm(o));
+                    MOVE PROPERTY(confirmed(o));
+                }
+                
                 MOVE TOOLBARBOX;
             }
             NEW lines {
-                caption = 'Строки';
+                caption = CONCAT ' ', 'Строки', '(' + countOrderLine(o) + ')';
                 MOVE GRID(l) {
                     headerHeight = 24;
                     PROPERTY(quantity(l)) { charWidth = 5; }
