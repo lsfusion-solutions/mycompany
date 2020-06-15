@@ -1,6 +1,6 @@
 MODULE Partner;
 
-REQUIRE Utils, MetaNumerator;
+REQUIRE Utils, MetaNumerator, Input;
 
 NAMESPACE MasterData;
 
@@ -109,10 +109,17 @@ DESIGN partners {
 
 FORM dialogPartners 'Выбор контрагента'
     OBJECTS p = Partner
-    PROPERTIES(p) READONLY name, id, nameType 
+    PROPERTIES(p) READONLY name, id, nameType
+    ORDERS name(p)
+     
     FILTERGROUP active
         FILTER 'Активный' active(p) 'F10' DEFAULT
         FILTER 'Неактивный' archived(p) 'F9'
+
+    PROPERTIES() nameFilter, clearNameFilter
+    FILTERS isISubstring(name(p), nameFilter()) OR NOT nameFilter()
+    
+    EVENTS ON INIT { nameFilter() <- NULL; }
     
     LIST Partner OBJECT p
 ;

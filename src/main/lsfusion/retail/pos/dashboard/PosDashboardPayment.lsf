@@ -18,7 +18,7 @@ FORM posPayment 'Оплата'
     PROPERTIES(pm) name READONLY, amount 
     FILTERS NOT disabled(pos(session(i)), pm)
     
-    PROPERTIES overFormOk = formOk() READONLYIF change(i) < 0 OR notCashPaymentAmount() > amount(i) 
+    PROPERTIES overFormOk = formOk() READONLYIF (change(i) < 0 OR notCashPaymentAmount() > amount(i)) AND paymentAmount() 
 ;
 
 DESIGN posPayment {
@@ -61,15 +61,16 @@ afterPosPayment ABSTRACT LIST (Invoice);
 
 posPayment 'Оплата' (Session s, Invoice i) {
     amount(PaymentMethod pm) <- NULL;
-    DIALOG posPayment OBJECTS i = i NOMANAGESESSION DO {
-        FOR am = (amount(PaymentMethod pm) (-) (change(i) IF isCash(pm))) DO NEW p = IncomingPayment {
+    DIALOG posPayment OBJECTS i = i, pm INPUT NOMANAGESESSION DO {
+        IF NOT paymentAmount() THEN amount(pm) <- amount(i);
+        FOR am = (amount(PaymentMethod ppm) (-) (change(i) IF isCash(ppm))) DO NEW p = IncomingPayment {
             done(p) <- TRUE;
             
-            paymentMethod(p, i) <- pm;
-            type(p) <- incomingPaymentType(pm);
+            paymentMethod(p, i) <- ppm;
+            type(p) <- incomingPaymentType(ppm);
             
             company(p) <- company(pos(session(i)));
-            companyAccount(p) <- account(pos(session(i)), pm);
+            companyAccount(p) <- account(pos(session(i)), ppm);
             
             partner(p) <- customer(i);
             

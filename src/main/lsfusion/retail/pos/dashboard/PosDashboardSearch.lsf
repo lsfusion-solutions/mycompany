@@ -8,10 +8,18 @@ NAMESPACE Retail;
 filterName 'Наименование' = DATA LOCAL ISTRING (); 
 filterPrice 'Цена' = DATA LOCAL NUMERIC[14,2] ();
 
+selectPosSearch 'Выбрать' (Invoice i, Item it) {
+    setQuantity(i, it, 1);
+    SEEK posDashboard.l = lastInvoiceLine(i, it);
+} CHANGEMOUSE 'DBLCLK';
+
 EXTEND FORM posDashboard
     OBJECTS it = Item
     PROPERTIES(it) READONLY name, idBarCode, id
-    PROPERTIES(i, it) quantity ON CHANGE changeQuantity(i, it)
+    PROPERTIES(i, it) quantity ON CHANGE { changeQuantity(i, it); 
+                                           IF lastInvoiceLine(i, it) THEN 
+                                                SEEK posDashboard.l = lastInvoiceLine(i, it); }, 
+                      selectPosSearch TOOLBAR
     PROPERTIES READONLY overListPrice(i, it)
     ORDERS name(it)
 
@@ -51,7 +59,7 @@ DESIGN posDashboard {
 
 // barcode add
 processBarcode (Invoice i, STRING[20] b) + {
-    FOR Item it = itemBarCode(b) DO {
+    FOR Item it = itemBarCode(b) OR it = item(b) DO {
         setQuantity(i, it, quantity(i, it) (+) 1);
         SEEK posDashboard.l = lastInvoiceLine(i, it);
         consumedBarcode() <- TRUE;

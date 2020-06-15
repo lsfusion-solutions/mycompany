@@ -1,6 +1,6 @@
 MODULE PosDashboard;
 
-REQUIRE Pos, Session,
+REQUIRE Pos, Session, Input,
         InvoiceReady, SessionInvoice, SalesDiscountInvoice;
 
 NAMESPACE Retail;
@@ -46,6 +46,7 @@ DESIGN posDashboard {
             fill = 1;
             type = SPLITH;
             NEW leftPane {
+                width = 1;
                 NEW invoicePane {
                     fill = 1;
                     showIf = openedSession(p) AND NOT hideInvoice();
@@ -55,15 +56,20 @@ DESIGN posDashboard {
                         MOVE PROPERTY(nameCustomer(i)) { changeKey = 'F5'; }
                     }
                     REMOVE BOX(l);
+                    REMOVE TOOLBARBOX(l);
                     MOVE GRID(l) {
-                        PROPERTY(nameItem(l)) { charWidth = 10; }
+                        PROPERTY(index(l)) { charWidth = 1; }
+                        PROPERTY(nameItem(l)) { charWidth = 30; }
+                        PROPERTY(quantity(l)) { charWidth = 5; }
+                        PROPERTY(price(l)) { charWidth = 6; }
+                        PROPERTY(nameSalesDiscount(l)) { charWidth = 8; }
+                        PROPERTY(discountPrice(l)) { charWidth = 6; }
                     }
                     NEW linesFooter {
                         type = CONTAINERH;
                         alignment = STRETCH;
                         NEW info {
                             fill = 1;
-                            MOVE TOOLBARBOX(l);
                             NEW itemDetails {
                                 alignment = STRETCH;
                                 NEW itemDetails1 {
@@ -94,7 +100,8 @@ DESIGN posDashboard {
                 }
             }
             NEW tabPane {
-                fill = 2;
+                width = 1;
+                fill = 1;
                 type = TABBED;
                 
                 NEW session {
@@ -134,6 +141,24 @@ DESIGN posDashboard {
     
     REMOVE TOOLBARBOX;
 }
+
+setQuantity(InvoiceLine l, INTEGER n) {
+    IF n = 0 THEN
+        DELETE l;
+    ELSE
+        quantity(l) <- n;
+}
+
+DESIGN posDashboard {
+    info {
+        NEW invoiceKeyboard FIRST {
+            type = CONTAINERH;
+            alignment = STRETCH;
+        }
+    }
+}
+
+@defineKeyboardButtonForm(posDashboard, InvoiceLine, l, invoiceKeyboard, setQuantity);
 
 createInvoice (Session s) {
     IF s THEN
