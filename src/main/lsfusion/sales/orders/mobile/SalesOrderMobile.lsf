@@ -115,6 +115,11 @@ editMobile 'Редактировать' (Order o) {
     }
 } IMAGE 'edit.png' CHANGEMOUSE 'DBLCLK';
 
+customerFilter = DATA LOCAL Partner ();
+nameCustomerFilter 'Заказчик' = name(customerFilter());
+@defineChangeInput(customerFilter, Partner, dialogPartnersMobile, p);    
+clearCustomerFilter '' () { customerFilter() <- NULL; } IMAGE 'delete.png';
+
 FORM ordersMobile 'Мобильный заказ'
     OBJECTS o = Order
     PROPERTIES(o) READONLY date, nameStatus BACKGROUND colorStatus(o), number, nameCustomer
@@ -122,14 +127,19 @@ FORM ordersMobile 'Мобильный заказ'
 
     FILTERGROUP unlocked
         FILTER 'Открыт' NOT locked(o) DEFAULT    
+
+    PROPERTIES() nameCustomerFilter ON CHANGE changeCustomerFilter(), clearCustomerFilter
+    FILTERS customer(o) = customerFilter() OR NOT customerFilter()
 ;
 
 DESIGN ordersMobile {
     OBJECTS {
         NEW filters {
             type = CONTAINERH;
-            MOVE PROPERTY(formRefresh());
+            MOVE PROPERTY(nameCustomerFilter());
+            MOVE PROPERTY(clearCustomerFilter());
             MOVE FILTERGROUPS(o);
+            MOVE PROPERTY(formRefresh());
         }
         MOVE GRID(o);
         MOVE TOOLBARSYSTEM(o);

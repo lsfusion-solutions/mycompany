@@ -8,15 +8,8 @@ nameFilter 'Наименование' = DATA LOCAL ISTRING ();
 clearNameFilter '' () { nameFilter() <- NULL; } IMAGE 'delete.png';
 
 categoryFilter = DATA LOCAL Category ();
-nameCategoryFilter 'Категория' = name(categoryFilter());    
-changeCategoryFilter () {
-    INPUT s = STRING DO IF s THEN 
-        IF (GROUP SUM 1 IF isISubstring(name(Category p), s)) = 1 THEN
-            categoryFilter() <- GROUP MIN Category c IF isISubstring(name(c), s);
-        ELSE
-            DIALOG dialogCategoriesMobile OBJECTS c INPUT FILTERS isISubstring(name(c), s) OR NOT s DO
-                categoryFilter() <- c;
-}
+nameCategoryFilter 'Категория' = name(categoryFilter());
+@defineChangeInput(categoryFilter, Category, dialogCategoriesMobile, c);    
 clearCategoryFilter '' () { categoryFilter() <- NULL; } IMAGE 'delete.png';
 
 EXTEND FORM orderMobile

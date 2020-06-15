@@ -12,9 +12,20 @@ DESIGN dialogQuantity {
     PROPERTY(formOk()) { changeKey = 'ENTER'; }
 }
 
+META defineChangeInput (property, type, form, object)
+    change###property () {
+        INPUT s = STRING DO IF s THEN 
+            IF (GROUP SUM 1 IF isISubstring(name(type p), s)) = 1 THEN
+                property() <- GROUP MIN type p IF isISubstring(name(p), s);
+            ELSE
+                DIALOG form OBJECTS object INPUT NULL FILTERS isISubstring(name(object), s) OR NOT s DO
+                    property() <- object;
+    }
+END
+
 META defineChangeInput (property, cls, type, form, object)
     change###property (cls o) {
-        INPUT s = STRING DO 
+        INPUT s = STRING DO IF s THEN
             IF (GROUP SUM 1 IF isISubstring(name(type p), s)) = 1 THEN
                 property(o) <- GROUP MIN type p IF isISubstring(name(p), s);
             ELSE
