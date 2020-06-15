@@ -17,6 +17,8 @@ executionDateTime 'Дата отгрузки' (ShipmentLine l) = executionDateTi
 
 done 'Отгружено' = DATA NUMERIC[16,3] (ShipmentLine);
 
+weightDone 'Вес' (ShipmentLine l) = NUMERIC[16,3](done(l) * weight(product(l)));
+
 CONSTRAINT done(ShipmentLine l) < 0 OR done(l) > initialDemand(l) 
     MESSAGE 'Отгруженое количество должно быть от 0 до исходного';
 

@@ -1,6 +1,6 @@
 MODULE ShipmentPrint;
 
-REQUIRE ShipmentDone, DocTemplate;
+REQUIRE ShipmentDone, ShipmentCost, DocTemplate;
 
 NAMESPACE Inventory;
 
@@ -12,6 +12,9 @@ addressToLocation 'Адрес' (Shipment s)  = linesAddress(toLocation(s));
 
 note 'Примечание' = ABSTRACT TEXT (ShipmentLine);
 
+costPrice (ShipmentLine l) = price(outCostLedger(l));
+costAmount (ShipmentLine l) = amount(outCostLedger(l));
+
 FORM printShipment 'Задание на отгрузку'
     OBJECTS o = Shipment PANEL 
     PROPERTIES(o) scheduledDateTime, executionDateTime, number,
@@ -20,7 +23,10 @@ FORM printShipment 'Задание на отгрузку'
                   nameToLocation, addressToLocation
     
     OBJECTS l = ShipmentLine
-    PROPERTIES(l) index, nameProduct, initialDemand, done, note
+    PROPERTIES(l) index, nameProduct, initialDemand, 
+                  done, weightDone,
+                  costPrice, costAmount, 
+                  note
     FILTERS shipment(l) = o
 ;
 
