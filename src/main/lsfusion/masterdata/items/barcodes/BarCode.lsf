@@ -10,7 +10,7 @@ item 'Номенклатура' = DATA Item (BarCode) NONULL DELETE;
 idItem 'Код номенклатуры' (BarCode b) = id(item(b));
 nameItem 'Номенклатура' (BarCode b) = name(item(b));
 
-id 'Штрихкод' = DATA STRING[20] (BarCode);
+id 'Штрихкод' = DATA STRING (BarCode);
 barCode (STRING[50] id) = GROUP AGGR BarCode b BY id(b);
 itemBarCode (STRING[50] id) = item(barCode(id));
 
@@ -32,7 +32,7 @@ changeDefault (BarCode b) {
 }
 
 setBarCode(Item i) {
-    INPUT id = STRING[20] DO {
+    INPUT id = STRING DO {
         IF NOT barCode(i) THEN NEW b = BarCode {
             item(b) <- i;
         }
@@ -66,12 +66,12 @@ EXTEND FORM items
 ;
 
 consumedBarcode = DATA LOCAL BOOLEAN ();
-barCode 'Штрихкод' = DATA LOCAL STRING[20] () CHANGEKEY 'F4';
+barCode 'Штрихкод' = DATA LOCAL STRING () CHANGEKEY 'F4';
 
 META defineBarCodeSearch(doc, let, line, itm, quantity)
-    processBarCode ABSTRACT (###doc, STRING[20]);
+    processBarCode ABSTRACT (###doc, STRING);
     scanBarCode (###doc d) {
-        INPUT id = STRING[20] DO {
+        INPUT id = STRING DO {
             IF itemBarCode(id) THEN {
                 set###quantity(d, itemBarCode(id), quantity(d, itemBarCode(id)) (+) 1);
                 SEEK ##doc.line = last###doc##Line(d, itemBarCode(id));
