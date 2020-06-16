@@ -1,0 +1,25 @@
+MODULE SalesDiscountItem;
+
+REQUIRE SalesDiscount;
+
+EXTEND FORM item
+    OBJECTS d = Discount
+    PROPERTIES(d, i) in
+    PROPERTIES(d) READONLY name,
+                           startDateTime, endDateTime,
+                           fromAmount, fromQuantity,
+                           fromAccumulatedPreviousMonth, fromAccumulated,
+                           discount, namePriceType, categories
+    ORDERS startDateTime(d) DESC 
+    FILTERGROUP inItem
+        FILTER 'Включенные' set(d, i)
+;
+
+DESIGN item {
+    tabs {
+        NEW salesDiscount {
+            caption = 'Скидки';
+            MOVE BOX(d);    
+        }
+    }
+} 
