@@ -65,15 +65,21 @@ EXTEND FORM items
     PROPERTIES(i) READONLYIF isReadonly() idBarCode AFTER name(i)
 ;
 
+consumedBarcode = DATA LOCAL BOOLEAN ();
 barCode 'Штрихкод' = DATA LOCAL STRING[20] () CHANGEKEY 'F4';
 
-META defineBarCodeSearch(doc, let, itm, quantity)
+META defineBarCodeSearch(doc, let, line, itm, quantity)
+    processBarCode ABSTRACT (###doc, STRING[20]);
     scanBarCode (###doc d) {
         INPUT id = STRING[20] DO {
-            IF itemBarCode(id) THEN
+            IF itemBarCode(id) THEN {
                 set###quantity(d, itemBarCode(id), quantity(d, itemBarCode(id)) (+) 1);
-            ELSE 
-                MESSAGE 'Штрихкод не найден';
+                SEEK ##doc.line = last###doc##Line(d, itemBarCode(id));
+            } ELSE {
+                processBarCode(d, id);
+                IF NOT consumedBarcode() THEN
+                    MESSAGE 'Штрихкод не найден';
+            }
         }
     }
     
