@@ -1,0 +1,32 @@
+MODULE PosDashboardHotKey;
+
+REQUIRE PosDashboardSearch;
+
+NAMESPACE Retail;
+
+hotKeyName 'Быстрый товар (название)' = DATA ISTRING[30] (Item);
+
+EXTEND FORM item
+    PROPERTIES(i) hotKeyName
+;
+
+DESIGN item {
+    sales {
+        MOVE PROPERTY(hotKeyName(i)) AFTER PROPERTY(salesPrice(i));
+    }
+}
+
+EXTEND FORM posDashboard
+    OBJECTS hi = Item
+    PROPERTIES selectPosSearch(i, hi) COLUMNS (hi) HEADER hotKeyName(hi)   
+    FILTERS hotKeyName(hi) 
+;
+
+DESIGN posDashboard {
+    OBJECTS {
+        NEW hotKeys {
+            type = CONTAINERH;
+            MOVE PROPERTY(selectPosSearch(i, hi)) { fontSize = 16; };
+        }
+    }
+}
