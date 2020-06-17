@@ -34,30 +34,80 @@ META defineChangeInput (property, cls, type, form, object)
     }
 END
 
-META defineKeyboardButtonForm(form, cls, obj, container, action, number)
+// keyboard
+META defineKeyboard(form, cls, obj, container, size, action, number)
     form##Press##number ''##number (cls o) {
         action(o, number);
     }
     EXTEND FORM form PROPERTIES form##Press##number(obj);
     DESIGN form {
         container {
-            MOVE PROPERTY(form##Press##number(obj)) { fill = 1; focusable = FALSE; }
+            MOVE PROPERTY(form##Press##number(obj)) { fill = 1; fontSize = ''##size; focusable = FALSE; }
         }
     }
 END
 
-META defineKeyboardButtonForm(form, cls, obj, container, action)
-    @defineKeyboardButtonForm(form, cls, obj, container, action, 0);
-    @defineKeyboardButtonForm(form, cls, obj, container, action, 1);
-    @defineKeyboardButtonForm(form, cls, obj, container, action, 2);
-    @defineKeyboardButtonForm(form, cls, obj, container, action, 3);
-    @defineKeyboardButtonForm(form, cls, obj, container, action, 4);
-    @defineKeyboardButtonForm(form, cls, obj, container, action, 5);
-    @defineKeyboardButtonForm(form, cls, obj, container, action, 6);
-    @defineKeyboardButtonForm(form, cls, obj, container, action, 7);
-    @defineKeyboardButtonForm(form, cls, obj, container, action, 8);
-    @defineKeyboardButtonForm(form, cls, obj, container, action, 9);
+META defineKeyboard(form, cls, obj, container, size, action)
+    @defineKeyboard(form, cls, obj, container, size, action, 0);
+    @defineKeyboard(form, cls, obj, container, size, action, 1);
+    @defineKeyboard(form, cls, obj, container, size, action, 2);
+    @defineKeyboard(form, cls, obj, container, size, action, 3);
+    @defineKeyboard(form, cls, obj, container, size, action, 4);
+    @defineKeyboard(form, cls, obj, container, size, action, 5);
+    @defineKeyboard(form, cls, obj, container, size, action, 6);
+    @defineKeyboard(form, cls, obj, container, size, action, 7);
+    @defineKeyboard(form, cls, obj, container, size, action, 8);
+    @defineKeyboard(form, cls, obj, container, size, action, 9);
 END
 
 nameFilter 'Наименование' = DATA LOCAL ISTRING () CHARWIDTH 20;
 clearNameFilter '' () { nameFilter() <- NULL; } IMAGE 'delete.png';
+
+// keyboard decimal
+
+keyboardDecimalInput = DATA LOCAL STRING();
+
+META defineKeyboardDecimal (property, form, cls, obj, container, size)
+
+    set###form###property (cls o, INTEGER i) {
+        IF NOT amount(o) = NUMERIC(keyboardDecimalInput()) THEN keyboardDecimalInput() <- NULL;
+        keyboardDecimalInput() <- CONCAT '', keyboardDecimalInput(), STRING(i);
+        property(o) <- NUMERIC(keyboardDecimalInput());
+    }
+    
+    DESIGN form {
+        right {
+            NEW keyboard {
+                fill = 1;
+                type = COLUMNS;
+                columns = 3;
+            }
+        }
+    }
+    
+    @defineKeyboard(form, cls, obj, container, size, set###form###property);
+    
+    form##PressD '.' (cls o) {
+        IF NOT isSubstring(keyboardDecimalInput(), '.') THEN
+            keyboardDecimalInput() <- keyboardDecimalInput() + '.'; 
+    }
+    
+    form##PressC 'C' (cls o) {
+        amount(o) <- NULL;
+    }
+    
+    EXTEND FORM form
+        PROPERTIES(obj) form##PressD, form##PressC
+    
+        EVENTS ON CHANGE obj { keyboardDecimalInput() <- NULL; }
+    ;
+    
+    DESIGN form {
+        container {
+            MOVE PROPERTY(form##PressD(obj)) { fill = 1; fontSize = size; focusable = FALSE; };
+            MOVE PROPERTY(form##Press0(obj));
+            MOVE PROPERTY(form##PressC(obj)) { fill = 1; fontSize = size; focusable = FALSE; };
+        }
+    }
+
+END
