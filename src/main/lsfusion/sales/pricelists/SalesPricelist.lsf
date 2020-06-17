@@ -54,9 +54,8 @@ idBarCodeItem 'Штрихкод' (PricelistLine l) = idBarCode(item(l));
 idItem 'Код' (PricelistLine l) = id(item(l));
 nameSalesTax 'Налоги' (PricelistLine l) = nameSalesTax(item(l));
 
-uom = DATA Uom (PricelistLine);
+uom (PricelistLine l) = uom(item(l));
 nameUom 'Ед. изм.' (PricelistLine l) = name(uom(l)); 
-WHEN LOCAL CHANGED(item(PricelistLine l)) DO uom(l) <- uom(item(l));
 
 cost 'Себестоимость' = DATA NUMERIC[14,2] (PricelistLine);
 WHEN LOCAL SETCHANGED(item(PricelistLine l)) AND NOT CHANGED(cost(l)) DO cost(l) <- overCost(item(l), startDateTime(pricelist(l)));

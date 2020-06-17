@@ -34,14 +34,13 @@ scrap 'Списание' = DATA Scrap (ScrapLine) NONULL DELETE;
 
 index '№' = PARTITION SUM 1 ORDER ScrapLine l BY scrap(l) IN id MATERIALIZED CHARWIDTH 3;
 
-product 'Продукт' = DATA Product(ScrapLine);
+product 'Продукт' = DATA Product (ScrapLine);
 nameProduct 'Продукт' (ScrapLine l) = name(product(l));
 idBarCodeProduct 'Штрихкод' (ScrapLine l) = idBarCode(product(l));
 idProduct 'Код' (ScrapLine l) = id(product(l));
 
-uom = DATA Uom (ScrapLine);
+uom (ScrapLine l) = uom(product(l));
 nameUom 'Ед. изм.' (ScrapLine l) = name(uom(l));
-WHEN LOCAL CHANGED(product(ScrapLine l)) DO uom(l) <- uom(product(l)); 
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (ScrapLine);
 

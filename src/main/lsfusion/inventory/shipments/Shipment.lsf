@@ -70,9 +70,8 @@ CONSTRAINT product(ShipmentLine l) AND NOT canBeSold(product(l))
             CHECKED BY product[ShipmentLine] 
             MESSAGE 'Товар не предназначен для продажи';
 
-uom = DATA Uom (ShipmentLine);
+uom (ShipmentLine l) = uom(product(l));
 nameUom 'Ед. изм.' (ShipmentLine l) = name(uom(l));
-WHEN LOCAL CHANGED(product(ShipmentLine l)) DO uom(l) <- uom(product(l)); 
 
 initialDemand 'Планируемое количество' = DATA NUMERIC[16,3] (ShipmentLine);
 

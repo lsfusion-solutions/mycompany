@@ -25,9 +25,8 @@ numberDate 'Описание' (ManufacturingOrder o) = number(o) + ' от ' + sc
 item 'Номенклатура' = DATA Item (ManufacturingOrder) NONULL;
 nameItem 'Номенклатура' (ManufacturingOrder m) = name(item(m));
 
-uom = DATA Uom (ManufacturingOrder);
+uom (ManufacturingOrder o) = uom(item(o));
 nameUom 'Ед .изм.' (ManufacturingOrder m) = name(uom(m));
-WHEN LOCAL CHANGED(item(ManufacturingOrder m)) DO uom(m) <- uom(item(m)); 
 
 // bom
 bom 'Спецификация' = DATA Bom (ManufacturingOrder) NONULL;
@@ -62,9 +61,8 @@ nameItem 'Номенклатура' (ConsumedLine l) = name(item(l));
 idBarCodeItem 'Штрихкод' (ConsumedLine l) = idBarCode(item(l));
 idItem 'Код' (ConsumedLine l) = id(item(l));
 
-uom = DATA Uom (ConsumedLine);
+uom (ConsumedLine l) = uom(item(l));
 nameUom 'Ед. изм.' (ConsumedLine l) = name(uom(l));
-WHEN LOCAL CHANGED(item(ConsumedLine l)) DO uom(l) <- uom(item(l));
 
 toConsume 'Израсходовать' = DATA NUMERIC[16,3] (ConsumedLine);
 

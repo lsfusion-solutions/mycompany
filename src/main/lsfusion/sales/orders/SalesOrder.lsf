@@ -90,9 +90,8 @@ CONSTRAINT item(OrderLine l) AND NOT canBeSold(item(l))
 
 description 'Описание' = DATA ISTRING (OrderLine) CHARWIDTH 20;
 
-uom = DATA Uom (OrderLine);
+uom (OrderLine l) = uom(item(l));
 nameUom 'Ед. изм.' (OrderLine l) = name(uom(l));
-WHEN LOCAL CHANGED(item(OrderLine l)) DO uom(l) <- uom(item(l));
 
 quantity 'Количество' = DATA NUMERIC[16,3] (OrderLine);
 

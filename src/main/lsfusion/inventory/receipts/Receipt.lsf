@@ -59,9 +59,8 @@ CONSTRAINT product(ReceiptLine l) AND NOT canBePurchased(product(l))
             CHECKED BY product[ReceiptLine]
             MESSAGE 'Товар не предназначен для закупки';
 
-uom = DATA Uom (ReceiptLine);
+uom (ReceiptLine l) = uom(product(l));
 nameUom 'Ед. изм.' (ReceiptLine l) = name(uom(l));
-WHEN LOCAL CHANGED(product(ReceiptLine l)) DO uom(l) <- uom(product(l)); 
 
 initialDemand 'Планируемое количество' = DATA NUMERIC[16,3] (ReceiptLine);
 

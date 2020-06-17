@@ -20,9 +20,8 @@ nameItem 'Номенклатура' (Bom b) = name(item(b));
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (Bom) NONULL;
 
-uom = DATA Uom (Bom);
+uom (Bom b) = uom(item(b));
 nameUom 'Ед. изм.' (Bom b) = name(uom(b));
-WHEN LOCAL CHANGED(item(Bom m)) DO uom(m) <- uom(item(m)); 
 
 // default
 dataDefaultBom = DATA Bom (Item);
@@ -54,9 +53,8 @@ nameItem 'Номенклатура' (ComponentLine l) = name(item(l));
 idBarCodeItem 'Штрихкод' (ComponentLine l) = idBarCode(item(l));
 idItem 'Код' (ComponentLine l) = id(item(l));
 
-uom = DATA Uom (ComponentLine);
+uom (ComponentLine l) = uom(item(l));
 nameUom 'Ед. изм.' (ComponentLine l) = name(uom(l));
-WHEN LOCAL CHANGED(item(ComponentLine l)) DO uom(l) <- uom(item(l));
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (ComponentLine);
 
@@ -71,25 +69,17 @@ bom 'Спецификация' = DATA Bom (ByproductLine) NONULL DELETE;
 
 index '№' = PARTITION SUM 1 ORDER ByproductLine l BY bom(l) IN id MATERIALIZED CHARWIDTH 3;
 
-product 'Товар' = DATA Item (ByproductLine);
+product 'Товар' = DATA Product (ByproductLine);
 nameProduct 'Товар' (ByproductLine l) = name(product(l));
 idBarCodeProduct 'Штрихкод' (ByproductLine l) = idBarCode(product(l));
 idProduct 'Код' (ByproductLine l) = id(product(l));
 
-uom = DATA Uom (ByproductLine);
+uom (ByproductLine l) = uom(product(l));
 nameUom 'Ед. изм.' (ByproductLine l) = name(uom(l));
 
 quantity 'Кол-во' = DATA NUMERIC[16,3] (ByproductLine);
 
 countByproductLine 'Отходов' (Bom b) = GROUP SUM 1 IF bom(ByproductLine l) = b MATERIALIZED;
-
-WHEN LOCAL SETCHANGED (item(ComponentLine c)) DO {
-    uom(c) <- uom(item(c));
-}
-
-WHEN LOCAL SETCHANGED (product(ByproductLine l)) DO {
-    uom(l) <- uom(product(l));
-}
 
 FORM bom 'Спецификация'
     OBJECTS b = Bom PANEL 
@@ -175,12 +165,10 @@ copy 'Копировать' (Bom b) {
             name(nb) <- name(b);
             item(nb) <- item(b);
             quantity(nb) <- quantity(b);
-            uom(nb) <- uom(b);
             
             FOR bom(ComponentLine l) = b DO NEW nl = ComponentLine {
                 bom(nl) <- nb;
                 item(nl) <- item(l);
-                uom(nl) <- uom(l);
                 quantity(nl) <- quantity(l);
                 costRatio(nl) <- costRatio(l);
                 
@@ -190,7 +178,6 @@ copy 'Копировать' (Bom b) {
             FOR bom(ByproductLine l) = b DO NEW nl = ByproductLine {
                 bom(nl) <- nb;
                 product(nl) <- product(l);
-                uom(nl) <- uom(l);
                 quantity(nl) <- quantity(l);
             }
             
