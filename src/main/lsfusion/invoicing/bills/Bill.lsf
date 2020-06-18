@@ -91,9 +91,8 @@ CONSTRAINT item(BillLine l) AND NOT canBePurchased(item(l))
             CHECKED BY item 
             MESSAGE 'Номенклатура не предназначена для закупки';
 
-uom = DATA Uom (BillLine);
+uom (BillLine l) = uom(item(l));
 nameUom 'Ед. изм.' (BillLine l) = name(uom(l));
-WHEN LOCAL CHANGED(item(BillLine l)) DO uom(l) <- uom(item(l)); 
 
 description 'Описание' = DATA STRING (BillLine); 
 

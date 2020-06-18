@@ -5,7 +5,8 @@ REQUIRE PurchaseOrderSearch, PurchasePricelistValue;
 NAMESPACE Purchase;
 
 // price
-listPrice (OrderLine l) = overPriceA(vendor(order(l)), item(l), dateTime(order(l)));  
+listPriceRatio = ABSTRACT NUMERIC[20,10] (OrderLine); 
+listPrice (OrderLine l) = NUMERIC[10,2](overPriceA(vendor(order(l)), item(l), dateTime(order(l))) / OVERRIDE listPriceRatio(l), 1.0);  
 defaultPrice (OrderLine l) += WHEN listPrice(l) THEN listPrice(l);
                                     
 WHEN LOCAL (SETCHANGED(vendor(order(OrderLine l))) OR

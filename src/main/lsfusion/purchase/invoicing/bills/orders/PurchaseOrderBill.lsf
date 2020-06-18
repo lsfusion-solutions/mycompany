@@ -36,6 +36,7 @@ toBillOrdered (Order o) = GROUP SUM toBillOrdered(OrderLine ol) IF order(ol) = o
 toBill = ABSTRACT VALUE BOOLEAN (Order);
 toBill (Order o) += toBillOrdered(o) > 0;
 
+fill ABSTRACT LIST (BillLine, OrderLine);
 fill ABSTRACT LIST (Bill, Order);
 createBill 'Приобрести' (Order o) {
     APPLY;
@@ -58,6 +59,8 @@ createBill 'Приобрести' (Order o) {
                 quantity(bl) <- toBillOrdered(ol);
                 price(bl) <- price(ol);
                 orderLine(bl) <- ol;
+
+                fill(bl, ol);
             }                            
             
             fill(nb, o);

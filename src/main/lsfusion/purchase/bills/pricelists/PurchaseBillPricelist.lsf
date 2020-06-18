@@ -5,7 +5,8 @@ REQUIRE Bill, PurchasePricelistValue;
 NAMESPACE Purchase;
 
 // price
-listPrice (BillLine l) = overPriceA(vendor(bill(l)), item(l), dateTime(bill(l)));  
+listPriceRatio = ABSTRACT NUMERIC[20,10] (BillLine); 
+listPrice (BillLine l) = NUMERIC[10,2](overPriceA(vendor(bill(l)), item(l), dateTime(bill(l))) / OVERRIDE listPriceRatio(l), 1.0);  
 defaultPrice (BillLine l) += WHEN listPrice(l) THEN listPrice(l);
                                     
 WHEN LOCAL (SETCHANGED(vendor(bill(BillLine l))) OR
@@ -15,11 +16,12 @@ WHEN LOCAL (SETCHANGED(vendor(bill(BillLine l))) OR
 }
 
 // search
+listPrice 'Цена' (Bill o, Item i) = priceA(vendor(o), i, dateTime(o));
 overListPrice 'Цена' (Bill o, Item i) = overPriceA(vendor(o), i, dateTime(o));
 
 EXTEND FORM bill
     PROPERTIES(b, itm) READONLY overListPrice
 
     FILTERGROUP pricelist
-        FILTER 'С ценой' overListPrice(b, itm)
+        FILTER 'В прайс-листе' listPrice(b, itm)
 ;
