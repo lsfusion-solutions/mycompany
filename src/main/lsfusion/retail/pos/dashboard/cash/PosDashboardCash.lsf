@@ -7,15 +7,17 @@ REQUIRE PosDashboard, PosPaymentMethod,
 NAMESPACE Retail;
 
 FORM inputMoney 'Внесение/изъятие денег'
-    OBJECTS a = NUMERIC[14,2] PANEL
-    PROPERTIES(a) amount 'Сумма' = VALUE
+    PROPERTIES() READONLY keyboardDecimalInput
 ;
 DESIGN inputMoney {
-    BOX(a) {
-        caption = '';
-        PROPERTY(amount) { fontSize = 24; }
+    OBJECTS {
+        MOVE PROPERTY(keyboardDecimalInput()) { alignment = STRETCH; caption = 'Сумма'; fontSize = 24; }
+        NEW bottom {
+            alignment = STRETCH;
+        }
     }
 }
+@defineKeyboardDecimal(inputMoney, bottom, 24);
 
 // deposit
 depositPaymentType = DATA IncomingPaymentType ();
@@ -29,26 +31,27 @@ DESIGN options {
 
 afterDeposit ABSTRACT LIST (Pos, IncomingPayment); 
 deposit 'Внесение денег' (Pos p) {
-    DIALOG inputMoney OBJECTS a INPUT DO {
-        NEWSESSION {
-            NEW ip = IncomingPayment {
-                done(ip) <- TRUE;
-                
-                type(ip) <- depositPaymentType();
-                
-                partner(ip) <- company(p);
-                partnerAccount(ip) <- account(p);
-                
-                company(ip) <- company(p);
-                companyAccount(ip) <- cashAccount(p);
-                
-                amount(ip) <- a;
-                
-                APPLY;
-                IF NOT canceled() THEN
-                    afterDeposit(p, ip);
+    DIALOG inputMoney DO {
+        FOR NUMERIC[14,2] a = NUMERIC[14,2] (keyboardDecimalInput()) IF a > 0 DO 
+            NEWSESSION {
+                NEW ip = IncomingPayment {
+                    done(ip) <- TRUE;
+                    
+                    type(ip) <- depositPaymentType();
+                    
+                    partner(ip) <- company(p);
+                    partnerAccount(ip) <- account(p);
+                    
+                    company(ip) <- company(p);
+                    companyAccount(ip) <- cashAccount(p);
+                    
+                    amount(ip) <- a;
+                    
+                    APPLY;
+                    IF NOT canceled() THEN
+                        afterDeposit(p, ip);
+                }
             }
-        }
     } 
 }
 
@@ -64,26 +67,27 @@ DESIGN options {
 // withdraw
 afterWithdraw ABSTRACT LIST (Pos, OutgoingPayment);
 withdraw 'Выемка денег' (Pos p) {
-    DIALOG inputMoney OBJECTS a INPUT DO {
-        NEWSESSION {
-            NEW op = OutgoingPayment {
-                done(op) <- TRUE;
-                
-                type(op) <- withdrawPaymentType();
-                
-                partner(op) <- company(p);
-                partnerAccount(op) <- account(p);
-
-                company(op) <- company(p);
-                companyAccount(op) <- cashAccount(p);
-                
-                amount(op) <- a;
-                
-                APPLY;
-                IF NOT canceled() THEN 
-                    afterWithdraw(p, op);
+    DIALOG inputMoney DO {
+        FOR NUMERIC[14,2] a = NUMERIC[14,2] (keyboardDecimalInput()) IF a > 0 DO 
+            NEWSESSION {
+                NEW op = OutgoingPayment {
+                    done(op) <- TRUE;
+                    
+                    type(op) <- withdrawPaymentType();
+                    
+                    partner(op) <- company(p);
+                    partnerAccount(op) <- account(p);
+    
+                    company(op) <- company(p);
+                    companyAccount(op) <- cashAccount(p);
+                    
+                    amount(op) <- a;
+                    
+                    APPLY;
+                    IF NOT canceled() THEN 
+                        afterWithdraw(p, op);
+                }
             }
-        }
     } 
 }
 

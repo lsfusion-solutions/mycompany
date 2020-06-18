@@ -50,6 +50,10 @@ DESIGN posDashboard {
                 NEW invoicePane {
                     fill = 1;
                     showIf = openedSession(p) AND NOT hideInvoice();
+                    NEW invoiceHeader {
+                        alignment = STRETCH;
+                        type = CONTAINERH;
+                    }
                     NEW invoice {
                         alignment = STRETCH;
                         type = CONTAINERH;
@@ -119,7 +123,10 @@ DESIGN posDashboard {
                         MOVE PROPERTY(openingDateTime(s)) { caption = 'Смена открыта'; focusable = FALSE; }
                         MOVE PROPERTY(close(s)) { fontStyle = 'bold'; caption = 'Закрыть смену'; }
                     }
-                    
+                    NEW cashRegister {
+                        type = CONTAINERH;
+                        alignment = STRETCH;
+                    }
                     NEW sessionTotal {
                         type = CONTAINERH;
                         alignment = STRETCH;
@@ -158,7 +165,9 @@ DESIGN posDashboard {
     }
 }
 
-@defineKeyboard(posDashboard, InvoiceLine, l, invoiceKeyboard, 16, setQuantity);
+@defineKeyboard(posDashboard, InvoiceLine, l, invoiceKeyboard, 14, setQuantity);
+
+DESIGN posDashboard { REMOVE PROPERTY(posDashboardPress0(l)); }
 
 createInvoice (Session s) {
     IF s THEN
@@ -214,7 +223,7 @@ EXTEND FORM posDashboard
 ;
 
 DESIGN posDashboard {
-    invoicePane {
+    invoiceHeader {
         MOVE PROPERTY(barCode()) FIRST;
     }
 }

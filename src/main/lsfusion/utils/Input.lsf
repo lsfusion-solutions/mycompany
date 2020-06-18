@@ -34,7 +34,14 @@ META defineChangeInput (property, cls, type, form, object)
     }
 END
 
+// filter
+
+nameFilter 'Наименование' = DATA LOCAL ISTRING () CHARWIDTH 20;
+clearNameFilter '' () { nameFilter() <- NULL; } IMAGE 'delete.png';
+
 // keyboard
+
+// single object
 META defineKeyboard(form, cls, obj, container, size, action, number)
     form##Press##number ''##number (cls o) {
         action(o, number);
@@ -60,9 +67,6 @@ META defineKeyboard(form, cls, obj, container, size, action)
     @defineKeyboard(form, cls, obj, container, size, action, 9);
 END
 
-nameFilter 'Наименование' = DATA LOCAL ISTRING () CHARWIDTH 20;
-clearNameFilter '' () { nameFilter() <- NULL; } IMAGE 'delete.png';
-
 // keyboard decimal
 
 keyboardDecimalInput = DATA LOCAL STRING();
@@ -70,13 +74,13 @@ keyboardDecimalInput = DATA LOCAL STRING();
 META defineKeyboardDecimal (property, form, cls, obj, container, size)
 
     set###form###property (cls o, INTEGER i) {
-        IF NOT amount(o) = NUMERIC(keyboardDecimalInput()) THEN keyboardDecimalInput() <- NULL;
+        IF NOT property(o) = NUMERIC(keyboardDecimalInput()) THEN keyboardDecimalInput() <- NULL;
         keyboardDecimalInput() <- CONCAT '', keyboardDecimalInput(), STRING(i);
         property(o) <- NUMERIC(keyboardDecimalInput());
     }
     
     DESIGN form {
-        right {
+        container {
             NEW keyboard {
                 fill = 1;
                 type = COLUMNS;
@@ -85,7 +89,7 @@ META defineKeyboardDecimal (property, form, cls, obj, container, size)
         }
     }
     
-    @defineKeyboard(form, cls, obj, container, size, set###form###property);
+    @defineKeyboard(form, cls, obj, keyboard, size, set###form###property);
     
     form##PressD '.' (cls o) {
         IF NOT isSubstring(keyboardDecimalInput(), '.') THEN
@@ -93,7 +97,8 @@ META defineKeyboardDecimal (property, form, cls, obj, container, size)
     }
     
     form##PressC 'C' (cls o) {
-        amount(o) <- NULL;
+        keyboardDecimalInput() <- NULL;
+        property(o) <- NULL;
     }
     
     EXTEND FORM form
@@ -103,10 +108,76 @@ META defineKeyboardDecimal (property, form, cls, obj, container, size)
     ;
     
     DESIGN form {
-        container {
+        keyboard {
             MOVE PROPERTY(form##PressD(obj)) { fill = 1; fontSize = size; focusable = FALSE; };
             MOVE PROPERTY(form##Press0(obj));
             MOVE PROPERTY(form##PressC(obj)) { fill = 1; fontSize = size; focusable = FALSE; };
+        }
+    }
+
+END
+
+// no object
+
+META defineKeyboard(form, container, size, number)
+    form##Press##number ''##number () {
+        keyboardDecimalInput() <- CONCAT '', keyboardDecimalInput(), ''##number;
+    } CHANGEKEY 'NUMPAD'##number HIDE;
+    EXTEND FORM form PROPERTIES form##Press##number();
+    DESIGN form {
+        container {
+            MOVE PROPERTY(form##Press##number()) { fill = 1; fontSize = ''##size; focusable = FALSE; }
+        }
+    }
+END
+
+META defineKeyboard(form, container, size)
+    @defineKeyboard(form, container, size, 0);
+    @defineKeyboard(form, container, size, 1);
+    @defineKeyboard(form, container, size, 2);
+    @defineKeyboard(form, container, size, 3);
+    @defineKeyboard(form, container, size, 4);
+    @defineKeyboard(form, container, size, 5);
+    @defineKeyboard(form, container, size, 6);
+    @defineKeyboard(form, container, size, 7);
+    @defineKeyboard(form, container, size, 8);
+    @defineKeyboard(form, container, size, 9);
+END
+
+META defineKeyboardDecimal (form, container, size)
+
+    DESIGN form {
+        container {
+            NEW keyboard {
+                fill = 1;
+                type = COLUMNS;
+                columns = 3;
+            }
+        }
+    }
+    
+    @defineKeyboard(form, keyboard, size);
+    
+    form##PressD '.' () {
+        IF NOT isSubstring(keyboardDecimalInput(), '.') THEN
+            keyboardDecimalInput() <- keyboardDecimalInput() + '.'; 
+    } CHANGEKEY 'DECIMAL' HIDE;
+    
+    form##PressC 'C' () {
+        keyboardDecimalInput() <- NULL;
+    } CHANGEKEY 'DELETE' HIDE;
+    
+    EXTEND FORM form
+        PROPERTIES() form##PressD, form##PressC
+    
+        EVENTS ON INIT { keyboardDecimalInput() <- NULL; }
+    ;
+    
+    DESIGN form {
+        keyboard {
+            MOVE PROPERTY(form##PressD()) { fill = 1; fontSize = size; focusable = FALSE; };
+            MOVE PROPERTY(form##Press0());
+            MOVE PROPERTY(form##PressC()) { fill = 1; fontSize = size; focusable = FALSE; };
         }
     }
 
