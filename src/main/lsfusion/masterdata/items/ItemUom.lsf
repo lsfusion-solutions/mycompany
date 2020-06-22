@@ -25,38 +25,38 @@ DESIGN item {
     }
 }
 
-// vendor
-META defineDocumentVendorUom(doc)
-    vendorUom = DATA Uom (doc##Line);
-    nameVendorUom 'Ед. изм. поставщика' (doc##Line l) = name(vendorUom(l));
+// partner
+META defineDocumentPartnerUom(doc)
+    partnerUom = DATA Uom (doc##Line);
+    namePartnerUom 'Ед. изм. контрагента' (doc##Line l) = name(partnerUom(l));
 
-    WHEN LOCAL CHANGED(item(doc##Line l)) AND NOT ratio(item(l), vendorUom(l)) DO 
-        vendorUom(l) <- NULL;
+    WHEN LOCAL CHANGED(item(doc##Line l)) AND NOT ratio(item(l), partnerUom(l)) DO 
+        partnerUom(l) <- NULL;
         
-    CONSTRAINT vendorUom(doc##Line l) AND NOT ratio(item(l), vendorUom(l)) CHECKED BY vendorUom[doc##Line]
-        MESSAGE 'Выбрана единица измерения поставщика, для которой не задано соотношение';
+    CONSTRAINT partnerUom(doc##Line l) AND NOT ratio(item(l), partnerUom(l)) CHECKED BY partnerUom[doc##Line]
+        MESSAGE 'Выбрана единица измерения контрагента, для которой не задано соотношение';
 END
 
-META defineDocumentVendorQuantity(doc)
-    vendorQuantity 'Кол-во поставщика' = DATA NUMERIC[16,3] (doc##Line);
-    WHEN LOCAL (CHANGED(quantity(doc##Line l)) OR CHANGED(vendorUom(l))) AND NOT CHANGED(vendorQuantity(l)) DO
-        vendorQuantity(l) <- NUMERIC[16,3](quantity(l) / ratio(item(l), vendorUom(l)));
+META defineDocumentPartnerQuantity(doc)
+    partnerQuantity 'Кол-во контрагента' = DATA NUMERIC[16,3] (doc##Line);
+    WHEN LOCAL (CHANGED(quantity(doc##Line l)) OR CHANGED(partnerUom(l))) AND NOT CHANGED(partnerQuantity(l)) DO
+        partnerQuantity(l) <- NUMERIC[16,3](quantity(l) / ratio(item(l), partnerUom(l)));
     
-    changeVendorQuantity (doc##Line l) {
-        INPUT n = vendorQuantity(l) CHANGE DO {
-            quantity(l) <- NUMERIC[16,3](vendorQuantity(l) * ratio(item(l), vendorUom(l)));
+    changePartnerQuantity (doc##Line l) {
+        INPUT n = partnerQuantity(l) CHANGE DO {
+            quantity(l) <- NUMERIC[16,3](partnerQuantity(l) * ratio(item(l), partnerUom(l)));
         }
     }
 END
 
-META defineDocumentVendorPrice(doc)
-    vendorPrice 'Цена поставщика' = DATA NUMERIC[10,2] (doc##Line);
-    WHEN LOCAL (CHANGED(price(doc##Line l)) OR CHANGED(vendorUom(l))) AND NOT CHANGED(vendorPrice(l)) DO
-        vendorPrice(l) <- NUMERIC[10,2](price(l) * ratio(item(l), vendorUom(l)));
+META defineDocumentPartnerPrice(doc)
+    partnerPrice 'Цена контрагента' = DATA NUMERIC[10,2] (doc##Line);
+    WHEN LOCAL (CHANGED(price(doc##Line l)) OR CHANGED(partnerUom(l))) AND NOT CHANGED(partnerPrice(l)) DO
+        partnerPrice(l) <- NUMERIC[10,2](price(l) * ratio(item(l), partnerUom(l)));
     
-    changeVendorPrice (doc##Line l) {
-        INPUT n = vendorPrice(l) CHANGE DO {
-            price(l) <- NUMERIC[10,2](vendorPrice(l) / ratio(item(l), vendorUom(l)));
+    changePartnerPrice (doc##Line l) {
+        INPUT n = partnerPrice(l) CHANGE DO {
+            price(l) <- NUMERIC[10,2](partnerPrice(l) / ratio(item(l), partnerUom(l)));
         }
     }
 END

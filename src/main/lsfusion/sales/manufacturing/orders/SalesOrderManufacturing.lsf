@@ -61,7 +61,6 @@ newManufacturingOrder (OrderLine l) {
         productsLocation(o) <- location(order(l));
         
         item(o) <- item(l);
-        uom(o) <- uom(l);
         bom(o) <- bom(l);
         
         fillByQuantity(o, quantity(l));
@@ -113,7 +112,6 @@ WHEN CHANGED(quantity(OrderLine l)) AND autoCreateManufacturingOrder(type(order(
     fillByQuantity(manufacturingOrder(l), quantity(l));
 WHEN CHANGED(item(OrderLine l)) AND autoCreateManufacturingOrder(type(order(l))) AND manufacturingOrder(l) DO {
     item(manufacturingOrder(l)) <- item(l);
-    uom(manufacturingOrder(l)) <- uom(l);
     fillByQuantity(manufacturingOrder(l), quantity(l));
 }
 WHEN CHANGED(bom(OrderLine l)) AND autoCreateManufacturingOrder(type(order(l))) AND manufacturingOrder(l) DO {

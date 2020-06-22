@@ -198,7 +198,6 @@ copy 'Копировать' (ManufacturingOrder m) {
     NEWSESSION {
         NEW o = ManufacturingOrder {
             item(o) <- item(m);
-            uom(o) <- uom(m);
             bom(o) <- bom(m);
             company(o) <- company(m);
             materialsLocation(o) <- materialsLocation(m);
@@ -206,7 +205,6 @@ copy 'Копировать' (ManufacturingOrder m) {
             FOR manufacturingOrder(ConsumedLine ml) = m NEW ol = ConsumedLine DO {
                 manufacturingOrder(ol) <- o;
                 item(ol) <- item(ml);
-                uom(ol) <- uom(ml);
                 toConsume(ol) <- toConsume(ml);
             }
 
@@ -252,21 +250,18 @@ fillByQuantity (ManufacturingOrder o, NUMERIC[16,3] q) {
         NEW l = ConsumedLine {
             manufacturingOrder(l) <- o;
             item(l) <- item(o);
-            uom(l) <- uom(o);
             toConsume(l) <- q;
         }
                 
         FOR bom(ByproductLine bl) = bom(o) DO NEW l = ConsumedLine {
             manufacturingOrder(l) <- o;
             item(l) <- product(bl);
-            uom(l) <- uom(bl);
             toConsume(l) <- NUMERIC[16,3](quantity(bl) * q / quantity(bom(o)));
         }
     } ELSE {
         FOR intermediateBom(bom(o), ComponentLine cl, TEXT path) AND NOT intermediate(nestedBom(cl)) DO NEW l = ConsumedLine {
             manufacturingOrder(l) <- o;
             item(l) <- item(cl);
-            uom(l) <- uom(cl);
             toConsume(l) <- NUMERIC[16,3](quantity(bom(o), cl, path) * q / quantity(bom(o)));
         }
                 

@@ -108,7 +108,6 @@ defaultPrice (OrderLine l) += WHEN salesPrice(item(l)) THEN salesPrice(item(l));
 taxIncluded (OrderLine l) += taxIncluded(type(order(l)));
 
 WHEN LOCAL CHANGED(item(OrderLine ol)) DO {
-    uom(ol) <- uom(item(ol));
     in(ol, Tax t) <- salesIn(item(ol), t); 
 }
 
@@ -248,7 +247,6 @@ copyOrder 'Копировать' (Order o)  {
                 order(nl) <- no;
                 item(nl) <- item(l);
                 description(nl) <- description(l);
-                uom(nl) <- uom(l); 
                 
                 quantity(nl) <- quantity(l);
                 

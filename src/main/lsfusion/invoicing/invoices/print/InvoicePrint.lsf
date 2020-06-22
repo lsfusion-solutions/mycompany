@@ -15,6 +15,16 @@ phoneCustomer (Invoice i) = phone(customer(i));
 nameCountryOrigin (InvoiceLine l) = nameCountryOrigin(item(l));
 idCountryOrigin (InvoiceLine l) = id(countryOrigin(item(l)));
 
+printUom = ABSTRACT VALUE Uom (InvoiceLine);
+namePrintUom (InvoiceLine l) = name(printUom(l));
+printUom(InvoiceLine l) += uom(l);
+
+printQuantity = ABSTRACT VALUE NUMERIC[16,3] (InvoiceLine);
+printQuantity(InvoiceLine l) += quantity(l);  
+
+printPrice = ABSTRACT VALUE NUMERIC[16,3] (InvoiceLine);
+printPrice(InvoiceLine l) += price(l);  
+
 FORM printInvoice 'Реализация'
     OBJECTS o = Invoice PANEL 
     PROPERTIES(o) dateTime, dueDateTime, number,
@@ -22,8 +32,8 @@ FORM printInvoice 'Реализация'
                   nameCustomer, addressCustomer, phoneCustomer
     
     OBJECTS l = InvoiceLine
-    PROPERTIES(l) nameItem, idItem, nameUom,
-                  quantity, price, untaxedAmount,
+    PROPERTIES(l) nameItem, idItem, nameUom = namePrintUom,
+                  quantity = printQuantity, price = printPrice, untaxedAmount,
                   taxPercent, taxAmount, taxes, 
                   amount, nameCountryOrigin, idCountryOrigin,
                   weight

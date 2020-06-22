@@ -1,0 +1,16 @@
+MODULE InvoiceUom;
+
+REQUIRE Invoice, PartnerUom, ItemUom;
+
+NAMESPACE Invoicing;
+
+@defineDocumentPartnerUom(Invoice);
+@defineDocumentPartnerQuantity(Invoice);
+@defineDocumentPartnerPrice(Invoice);
+
+EXTEND FORM invoice
+    PROPERTIES(l) SHOWIF otherUom(customer(i)) BEFORE quantity(l) BACKGROUND RGB(255,212,255)
+                  namePartnerUom, 
+                  partnerQuantity ON CHANGE changePartnerQuantity(l),
+                  partnerPrice ON CHANGE changePartnerPrice(l)
+;

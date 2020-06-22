@@ -4,19 +4,19 @@ REQUIRE BillUom, PurchaseBillPricelist, PurchasePricelistUom;
 
 NAMESPACE Purchase;
 
-listPriceRatio (BillLine l) += ratio(item(l), vendorUom(pricelistLineA(vendor(bill(l)), item(l), dateTime(bill(l)))));
+listPriceRatio (BillLine l) += ratio(item(l), partnerUom(pricelistLineA(vendor(bill(l)), item(l), dateTime(bill(l)))));
 
 WHEN LOCAL (SETCHANGED(vendor(bill(BillLine l))) OR
             SETCHANGED(item(l)) OR
             (SETCHANGED(dateTime(bill(l))) AND status(bill(l)) = BillStatus.draft)) 
-            AND NOT CHANGED(vendorUom(l)) DO {
-    vendorUom(l) <- vendorUom(pricelistLineA(vendor(bill(l)), item(l), dateTime(bill(l))));
+            AND NOT CHANGED(partnerUom(l)) DO {
+    partnerUom(l) <- partnerUom(pricelistLineA(vendor(bill(l)), item(l), dateTime(bill(l))));
 }
 
 // search
-nameVendorUom 'Ед. изм. поставщика' (Bill o, Item i) = nameVendorUom(pricelistLineA(vendor(o), i, dateTime(o)));
+namePartnerUom 'Ед. изм. контрагента' (Bill o, Item i) = namePartnerUom(pricelistLineA(vendor(o), i, dateTime(o)));
 
 EXTEND FORM bill
     PROPERTIES(b, itm) READONLY SHOWIF otherUom(vendor(b)) BEFORE overListPrice(b, itm) BACKGROUND RGB(255,212,255) 
-                       nameVendorUom 
+                       namePartnerUom 
 ;
