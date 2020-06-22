@@ -69,14 +69,14 @@ consumedBarcode = DATA LOCAL BOOLEAN ();
 barCode 'Штрихкод' = DATA LOCAL STRING () CHANGEKEY 'F4';
 
 META defineBarCodeSearch(doc, let, line, itm, quantity)
-    processBarCode ABSTRACT (###doc, STRING);
-    scanBarCode (###doc d) {
+    processBarCode ABSTRACT (###doc, ###doc##Line, STRING);
+    scanBarCode (###doc d, ###doc##Line l) {
         INPUT id = STRING DO {
             IF itemBarCode(id) THEN {
                 set###quantity(d, itemBarCode(id), quantity(d, itemBarCode(id)) (+) 1);
                 SEEK ##doc.line = last###doc##Line(d, itemBarCode(id));
             } ELSE {
-                processBarCode(d, id);
+                processBarCode(d, l, id);
                 IF NOT consumedBarcode() THEN
                     MESSAGE 'Штрихкод не найден';
             }
@@ -84,6 +84,6 @@ META defineBarCodeSearch(doc, let, line, itm, quantity)
     }
     
     EXTEND FORM ##doc
-        PROPERTIES() barCode DRAW l TOOLBAR ON CHANGE scanBarCode(##let)
+        PROPERTIES() barCode DRAW l TOOLBAR ON CHANGE scanBarCode(##let, l)
     ;
 END
