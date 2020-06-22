@@ -10,7 +10,6 @@ bomExport 'Экспорт спецификаций' () {
             NEW b = Bom {
                 item(b) <- GROUP LAST Item i IF i IS Item;
                 quantity(b) <- 1;
-                uom(b) <- GROUP LAST Uom m IF m IS Uom;
             }
         }
         LOCAL f = EXCELFILE ();
@@ -28,7 +27,6 @@ componentLineExport 'Экспорт строк спецификаций' () {
                 bom(l) <- GROUP LAST Bom b IF b IS Bom;
                 item(l) <- GROUP LAST Item i IF  i IS Item AND NOT i = item(bom(l));
                 quantity(l) <- 1;
-                uom(l) <- GROUP LAST Uom m IF m IS Uom;
             }
         }
     
@@ -47,7 +45,6 @@ byProductLineExport 'Экспорт производных номенклату�
                 bom(l) <- GROUP LAST Bom b IF b IS Bom;
                 product(l) <- GROUP LAST Item i IF i IS Item AND NOT i = item(bom(l));
                 quantity(l) <- 1;
-                uom(l) <- GROUP LAST Uom m IF m IS Uom;
             }
         }
     
@@ -78,7 +75,6 @@ bomImport 'Импорт спецификаций' () {
                 number(b) <- number(i);
                 item(b) <- item(idItem(i));
                 quantity(b) <- quantity(i);
-                uom(b) <- uom(idUom(i));
             }
             
             APPLY;
@@ -106,7 +102,6 @@ componentLineImport 'Импорт строк спецификаций' () {
                 bom(l) <- GROUP LAST Bom b IF number(b) = id(i);
                 item(l) <- item(idItem(i));
                 quantity(l) <- quantity(i);
-                uom(l) <- uom(idUom(i));  
             }
             
             APPLY;
@@ -134,7 +129,6 @@ byProductLineImport 'Импорт производных номенклатур'
                 bom(l) <- GROUP LAST Bom b IF number(b) = id(i);
                 product(l) <- item(idItem(i));
                 quantity(l) <- quantity(i);
-                uom(l) <- uom(idUom(i));  
             }
             
             APPLY;
