@@ -33,7 +33,14 @@ META defineDocTemplate(doc, caption)
     
     hasTemplate (###doc##Template t) = template(t) OR hasFile(t);
     
-    openFile 'Открыть' (###doc##Template t) { open(file(t)); }
+    openFile 'Открыть' (###doc##Template t) {
+        IF hasFile(t) THEN {
+            open(file(t));
+        } ELSE IF template(t) THEN {
+            readResource(template(t));
+            open(resourceFile());
+        } 
+    }
     loadFile 'Загрузить' (###doc##Template t) { INPUT = file(t) CHANGE; }
     dropFile 'Сбросить' (###doc##Template t) { file(t) <- NULL; } 
     
@@ -47,8 +54,8 @@ META defineDocTemplate(doc, caption)
     FORM doc##Template 'Шаблон '##caption
         OBJECTS o = ###doc##Template PANEL
         PROPERTIES(o) name, 
-                      template SHOWIF NOT hasFile(o), loadFile,
-                      openFile SHOWIF hasFile(o), dropFile SHOWIF hasFile(o),
+                      template SHOWIF NOT hasFile(o), openFile,
+                      loadFile, dropFile SHOWIF hasFile(o),
                       nameFormat
         
         OBJECTS t = ###doc##Type

@@ -20,7 +20,14 @@ hasFile (PrintPricelistType t) = TRUE IF file(t);
 
 hasTemplate (PrintPricelistType t) = template(t) OR hasFile(t);
 
-openFile 'Открыть' (PrintPricelistType t) { open(file(t)); }
+openFile 'Открыть' (PrintPricelistType t) { 
+    IF hasFile(t) THEN {
+        open(file(t));
+    } ELSE IF template(t) THEN {
+        readResource(template(t));
+        open(resourceFile());
+    } 
+}
 loadFile 'Загрузить' (PrintPricelistType t) { INPUT = file(t) CHANGE; }
 dropFile 'Сбросить' (PrintPricelistType t) { file(t) <- NULL; } 
 
