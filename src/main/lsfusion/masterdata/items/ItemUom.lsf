@@ -26,7 +26,7 @@ DESIGN item {
 }
 
 // partner
-META defineDocumentPartnerUom(doc)
+META defineDocPartnerUom(doc)
     partnerUom = DATA Uom (doc##Line);
     namePartnerUom 'Ед. изм. контрагента' (doc##Line l) = name(partnerUom(l));
 
@@ -37,7 +37,7 @@ META defineDocumentPartnerUom(doc)
         MESSAGE 'Выбрана единица измерения контрагента, для которой не задано соотношение';
 END
 
-META defineDocumentPartnerQuantity(doc)
+META defineDocPartnerQuantity(doc)
     partnerQuantity 'Кол-во контрагента' = DATA NUMERIC[16,3] (doc##Line);
     WHEN LOCAL (CHANGED(quantity(doc##Line l)) OR CHANGED(partnerUom(l))) AND NOT CHANGED(partnerQuantity(l)) DO
         partnerQuantity(l) <- NUMERIC[16,3](quantity(l) / ratio(item(l), partnerUom(l)));
@@ -49,7 +49,7 @@ META defineDocumentPartnerQuantity(doc)
     }
 END
 
-META defineDocumentPartnerPrice(doc)
+META defineDocPartnerPrice(doc)
     partnerPrice 'Цена контрагента' = DATA NUMERIC[10,2] (doc##Line);
     WHEN LOCAL (CHANGED(price(doc##Line l)) OR CHANGED(partnerUom(l))) AND NOT CHANGED(partnerPrice(l)) DO
         partnerPrice(l) <- NUMERIC[10,2](price(l) * ratio(item(l), partnerUom(l)));

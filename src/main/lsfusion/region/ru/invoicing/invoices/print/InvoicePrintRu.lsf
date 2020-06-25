@@ -1,6 +1,6 @@
 MODULE InvoicePrintRu;
 
-REQUIRE InvoicePrint, InvoicePrintShipment, LegalEntityRu, UomRu,
+REQUIRE InvoicePrint, InvoicePrintShipment, InvoicePack, LegalEntityRu, UomRu,
         Individual, LocationEmployeeRu, BillCustomsDeclaration;
 
 NAMESPACE Invoicing;
@@ -19,6 +19,7 @@ EXTEND FORM printInvoice
     PROPERTIES(o) innCustomer, okpoCustomer, innCompany
     
     PROPERTIES(l) legalCodeUom, idCustomsDeclaration
+    PROPERTIES nameSalesUom = nameSalesUom(l) IF packQuantity(l), packQuantity(l), packRatio = NUMERIC[16,3](quantity(l) / packQuantity(l))
 ;
 
 // invoice

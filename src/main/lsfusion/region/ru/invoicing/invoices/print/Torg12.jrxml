@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<!-- Created with Jaspersoft Studio version 6.12.2.final using JasperReports Library version 6.12.2-75c5e90a222ab406e416cbf590a5397028a52de3  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Реализация" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" isFloatColumnFooter="true" uuid="a3483978-f1f9-4419-97ee-5e21965d14b5">
 	<property name="net.sf.jasperreports.export.xls.print.page.width" value="842"/>
 	<property name="net.sf.jasperreports.export.xls.print.page.height" value="595"/>
@@ -61,39 +61,48 @@
 	<field name="amount(l)" class="java.math.BigDecimal"/>
 	<field name="weight(l)" class="java.math.BigDecimal"/>
 	<field name="legalCodeUom(l)" class="java.lang.String"/>
+	<field name="nameSalesUom" class="java.lang.String"/>
+	<field name="packQuantity(l)" class="java.math.BigDecimal"/>
+	<field name="packRatio" class="java.math.BigDecimal"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[0]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer(1)]]></initialValueExpression>
 	</variable>
-	<variable name="sumWeight" class="java.math.BigDecimal" resetType="Page" calculation="Sum">
+	<variable name="weightPage" class="java.math.BigDecimal" resetType="Page" calculation="Sum">
 		<variableExpression><![CDATA[$F{weight(l)}]]></variableExpression>
 	</variable>
-	<variable name="sumQuan" class="java.math.BigDecimal" resetType="Page" calculation="Sum">
+	<variable name="quantityPage" class="java.math.BigDecimal" resetType="Page" calculation="Sum">
 		<variableExpression><![CDATA[$F{quantity}]]></variableExpression>
 	</variable>
-	<variable name="sumSubtot" class="java.math.BigDecimal" resetType="Page" calculation="Sum">
+	<variable name="untaxedAmountPage" class="java.math.BigDecimal" resetType="Page" calculation="Sum">
 		<variableExpression><![CDATA[$F{untaxedAmount(l)}]]></variableExpression>
 	</variable>
-	<variable name="sumTax" class="java.math.BigDecimal" resetType="Page" calculation="Sum">
+	<variable name="taxAmountPage" class="java.math.BigDecimal" resetType="Page" calculation="Sum">
 		<variableExpression><![CDATA[$F{taxAmount(l)}]]></variableExpression>
 	</variable>
-	<variable name="sumTotal" class="java.math.BigDecimal" resetType="Page" calculation="Sum">
+	<variable name="amountPage" class="java.math.BigDecimal" resetType="Page" calculation="Sum">
 		<variableExpression><![CDATA[$F{amount(l)}]]></variableExpression>
 	</variable>
-	<variable name="sumWeightTot" class="java.math.BigDecimal" calculation="Sum">
+	<variable name="weightTotal" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{weight(l)}]]></variableExpression>
 	</variable>
-	<variable name="sumQuanTot" class="java.math.BigDecimal" calculation="Sum">
+	<variable name="quantityTotal" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{quantity}]]></variableExpression>
 	</variable>
-	<variable name="sumSubtotTot" class="java.math.BigDecimal" calculation="Sum">
+	<variable name="untaxedAmountTotal" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{untaxedAmount(l)}]]></variableExpression>
 	</variable>
-	<variable name="sumTaxTot" class="java.math.BigDecimal" calculation="Sum">
+	<variable name="taxAmountTotal" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{taxAmount(l)}]]></variableExpression>
 	</variable>
-	<variable name="sumTotalTot" class="java.math.BigDecimal" calculation="Sum">
+	<variable name="amountTotal" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{amount(l)}]]></variableExpression>
+	</variable>
+	<variable name="packQuantityPage" class="java.math.BigDecimal" resetType="Page" calculation="Sum">
+		<variableExpression><![CDATA[$F{packQuantity(l)}]]></variableExpression>
+	</variable>
+	<variable name="packQuantityTotal" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{packQuantity(l)}]]></variableExpression>
 	</variable>
 	<variable name="totalPages" class="java.math.BigDecimal" resetType="None" incrementType="Report">
 		<variableExpression><![CDATA[$V{PAGE_NUMBER}]]></variableExpression>
@@ -697,84 +706,84 @@
 	</title>
 	<pageHeader>
 		<band height="72">
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="30" y="12" width="197" height="12" uuid="5ed8528e-3f8b-4836-91f5-2808d3f8d7cc"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Номенклатура"]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="190" y="24" width="37" height="36" uuid="a62ec84b-af2c-4cc9-9ae6-e48d6420cb64"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Код"]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="227" y="12" width="87" height="12" uuid="8f0fe12d-8fb0-452b-9537-c00c14d9f570"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Единица измерения"]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="314" y="12" width="32" height="48" uuid="a06ac6d0-187d-4e06-8dc4-222df0f9c01b"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Вид упаковки"]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="508" y="12" width="51" height="48" uuid="efb5b4f7-ef11-4c73-8eab-8ac6283365ec"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Цена руб. коп."]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="559" y="12" width="64" height="48" uuid="5de921e2-b985-4f23-9057-866c7ebab235"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Сумма без учета НДС руб. коп."]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="457" y="12" width="51" height="48" uuid="d0d3703c-1057-4a84-9852-a2478d2f3d3e"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Количество"]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="623" y="12" width="115" height="12" uuid="d2cc49a7-4cfc-4b69-9311-9b4a4b446fa3"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA["НДС"]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="623" y="24" width="45" height="36" uuid="325b467c-8de9-4897-a1e0-f8ef1e6ec37c"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Ставка, %"]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="668" y="24" width="70" height="36" uuid="c7a5d3a8-e9bc-4287-b93c-185a73612a2d"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Сумма руб. коп."]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="410" y="12" width="47" height="48" uuid="8ed39f81-7eef-4675-81a5-a8f7633f41de"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Масса брутто"]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="227" y="24" width="52" height="36" uuid="c21a118a-b56b-4a76-8838-d9e2f0571ae0"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
@@ -795,35 +804,35 @@
 				</textElement>
 				<textFieldExpression><![CDATA["наименование, характеристика, сорт, артикул товара"]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="279" y="24" width="35" height="36" uuid="c82b59e5-cc41-41c4-b2ce-a7b289e23dd4"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA["код по ОКЕИ"]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="346" y="12" width="64" height="12" uuid="43cad27f-ea6b-40b9-9e43-11b3ebf50e6b"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Количество"]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="346" y="24" width="32" height="36" uuid="c3d474a8-2887-414d-8ed1-31e90e9d16e2"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA["В одном месте"]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="378" y="24" width="32" height="36" uuid="f283120e-9d42-49d2-8058-356032749f65"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA["мест, штук"]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="738" y="12" width="64" height="48" uuid="7daac8e2-bbab-4533-bcbf-7e2ba92c1d25"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
@@ -952,77 +961,77 @@
 	</pageHeader>
 	<detail>
 		<band height="18">
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="30" y="0" width="160" height="18" uuid="fd593d48-ea65-4a89-9180-2ffb8f4468ca"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression><![CDATA[$F{nameItem(l)}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="190" y="0" width="37" height="18" uuid="b151bdcc-c527-41cb-ab28-7810a20683ea"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression><![CDATA[$F{idItem(l)}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="227" y="0" width="52" height="18" uuid="518b1482-07c6-45d1-9969-bfd84282618e"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression><![CDATA[$F{nameUom}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="457" y="0" width="51" height="18" uuid="0abdc5ce-cd16-450d-9656-d7ce096c807a"/>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression><![CDATA[$F{quantity}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="508" y="0" width="51" height="18" uuid="c2a60934-fd8b-4c4d-9ddf-e5eebaa7d586"/>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression><![CDATA[$F{price}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="559" y="0" width="64" height="18" uuid="263c28e7-e2a2-49f0-9b30-bf7b968a29b5"/>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression><![CDATA[$F{untaxedAmount(l)}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="623" y="0" width="45" height="18" uuid="3616594f-598b-4d2a-bac0-3accee7992cd"/>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression><![CDATA[$F{taxPercent(l)}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="668" y="0" width="70" height="18" uuid="008561dd-c8be-49d8-adc1-7d8d50dd3159"/>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression><![CDATA[$F{taxAmount(l)}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="738" y="0" width="64" height="18" uuid="cb770d12-4fd8-45b6-98ff-81616aeec1ad"/>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression><![CDATA[$F{amount(l)}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="410" y="0" width="47" height="18" uuid="836a4cec-15e2-4de5-988a-63c916c3761a"/>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression><![CDATA[$F{weight(l)}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="279" y="0" width="35" height="18" uuid="14ef48c1-bed2-4a80-8829-c860c677558f"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression><![CDATA[$F{legalCodeUom(l)}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="314" y="0" width="32" height="18" uuid="547d68e3-a2ca-4373-a124-e9a8389251fa"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression><![CDATA[""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameSalesUom}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="346" y="0" width="32" height="18" uuid="91255e24-fbf0-48a7-b224-e1bc64abb185"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression><![CDATA[""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{packRatio}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="378" y="0" width="32" height="18" uuid="2b143e65-29f4-4a1f-bd57-4298cc398c90"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression><![CDATA[""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{packQuantity(l)}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="30" height="18" uuid="6b51d6ed-2fae-4320-a49c-8f3143034e9b"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression><![CDATA[$V{npp}]]></textFieldExpression>
@@ -1044,26 +1053,26 @@
 				</textElement>
 				<textFieldExpression><![CDATA["Итого"]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="378" y="0" width="32" height="12" uuid="4089d5c0-8d9e-4e39-be31-ea95d9489b53"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{packQuantityPage}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="410" y="0" width="47" height="12" uuid="57fc549b-28ca-4298-89de-9f94899a385f"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{sumWeight}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{weightPage}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="457" y="0" width="51" height="12" uuid="0e23f1a2-93d5-4651-85f9-06ef64bd639e"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{sumQuan}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{quantityPage}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="508" y="0" width="51" height="12" uuid="6a137466-26de-4dc5-a7a7-7e4a39f42d2f"/>
@@ -1077,7 +1086,7 @@
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{sumSubtot}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{untaxedAmountPage}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="623" y="0" width="45" height="12" uuid="f0c4e2d8-50ea-48fa-ae99-23efc5acef2d"/>
@@ -1091,14 +1100,14 @@
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{sumTax}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{taxAmountPage}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="738" y="0" width="64" height="12" uuid="1130cb29-110c-4832-810a-ba97498d61de"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{sumTotal}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{amountPage}]]></textFieldExpression>
 			</textField>
 		</band>
 	</columnFooter>
@@ -1219,7 +1228,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Bottom">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.Words.toString($V{packQuantityTotal})]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement positionType="Float" x="346" y="48" width="111" height="12" uuid="f4019dc7-397e-492e-b879-8c3b92506d5d"/>
@@ -1245,7 +1254,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Bottom">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[lsfusion.base.Words.toString($V{sumQuanTot})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.Words.toString($V{quantityTotal})]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="508" y="60" width="115" height="11" uuid="1faa45f3-305a-4c25-8729-13fc2691d4a5"/>
@@ -1284,7 +1293,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Bottom">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[lsfusion.base.Words.toString($V{sumWeightTot}) + " кг"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.Words.toString($V{weightTotal}) + " кг"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="508" y="83" width="115" height="11" uuid="c0c7289a-c61b-4096-94b1-7de513934261"/>
@@ -1389,7 +1398,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Bottom">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[lsfusion.base.Words.toString($V{sumTotalTot},"RUB")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[lsfusion.base.Words.toString($V{amountTotal},"RUB")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="227" y="141" width="119" height="11" uuid="0dce3753-e16e-4f25-b779-45ed85e8bf67"/>
@@ -1947,26 +1956,26 @@
 				</textElement>
 				<textFieldExpression><![CDATA["Всего по накладной"]]></textFieldExpression>
 			</textField>
-			<textField evaluationTime="Report">
+			<textField evaluationTime="Report" isBlankWhenNull="true">
 				<reportElement x="378" y="0" width="32" height="12" uuid="5590fc4e-c402-4795-80f2-017f56c83a53"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{packQuantityTotal}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" isBlankWhenNull="true">
 				<reportElement x="410" y="0" width="47" height="12" uuid="c5d595e1-44fa-4aa7-b46e-4c37af6cf6d8"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{sumWeightTot}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{weightTotal}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" isBlankWhenNull="true">
 				<reportElement x="457" y="0" width="51" height="12" uuid="be28d9d9-423a-4fe7-a9c3-54e9f7f6bc6c"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{sumQuanTot}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{quantityTotal}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report">
 				<reportElement x="508" y="0" width="51" height="12" uuid="154f5462-0d82-492e-9a31-be783c054d07"/>
@@ -1980,7 +1989,7 @@
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{sumSubtotTot}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{untaxedAmountTotal}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report">
 				<reportElement x="623" y="0" width="45" height="12" uuid="d395b5ea-d2f7-4749-ac52-b2dbf3ef8144"/>
@@ -1994,14 +2003,14 @@
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{sumTaxTot}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{taxAmountTotal}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" isBlankWhenNull="true">
 				<reportElement x="738" y="0" width="64" height="12" uuid="f01f8d33-3d5c-4536-956d-dba3801e27f3"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{sumTotalTot}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{amountTotal}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="346" y="129" width="32" height="35" uuid="ee8b0ef8-9521-4d09-bde8-41392d7ae284"/>
