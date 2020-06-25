@@ -4,11 +4,11 @@ REQUIRE ItemUom;
 
 NAMESPACE MasterData;
 
-META defineItemPack(prefix)
+META defineItemPack(prefix, caption)
 
     // category
     prefix##Uom = DATA Uom (Category);
-    name###prefix##Uom 'Единица измерения для закупки' (Category c) = name(prefix##Uom(c));
+    name###prefix##Uom 'Единица измерения для '##caption (Category c) = name(prefix##Uom(c));
     
     parent###prefix##Uom (Category child) =
        GROUP LAST prefix##Uom(Category parent) ORDER DESC level(child, parent) WHERE prefix##Uom(parent);
@@ -26,7 +26,7 @@ META defineItemPack(prefix)
     // item   
     data###prefix##Uom = DATA Uom (Item);
     prefix##Uom 'Надбавка, %' (Item i) = OVERRIDE data###prefix##Uom(i), parent###prefix##Uom(category(i)) MATERIALIZED;
-    name###prefix##Uom 'Единица измерения для закупки' (Item i) = name(prefix##Uom(i));
+    name###prefix##Uom 'Единица измерения '##caption (Item i) = name(prefix##Uom(i));
     
     EXTEND FORM item
         PROPERTIES(i) name###prefix##Uom
