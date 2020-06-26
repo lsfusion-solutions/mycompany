@@ -68,23 +68,33 @@ nameUom 'Ед. изм.' (AdjustmentLine l) = name(uom(l));
 location 'Место хранения' = DATA Location (AdjustmentLine);
 nameLocation 'Место хранения' (AdjustmentLine l) = canonicalName(location(l));
 
+lastAdjustmentLine (Adjustment a, Product p, Location l) = 
+    GROUP LAST AdjustmentLine al ORDER al BY adjustment(al), product(al), location(al);
+
 theoreticalQuantity 'Теоретическое кол-во' = DATA NUMERIC[16,3] (AdjustmentLine);
-WHEN LOCAL (SETCHANGED (location(AdjustmentLine l)) OR SETCHANGED(product(l))) AND q = onHand(location(l), product(l)) 
-           AND NOT CHANGED(theoreticalQuantity(l)) DO 
-    theoreticalQuantity(l) <- q;
+
+fillTheoreticalQuantity ABSTRACT (AdjustmentLine);
+fillTheoreticalQuantity(AdjustmentLine l) + {
+    theoreticalQuantity(l) <- prevOnHandB(location(l), product(l), dateTime(adjustment(l)));
+}
+WHEN LOCAL (SETCHANGED (location(AdjustmentLine l)) OR SETCHANGED(product(l))) 
+           AND NOT CHANGED(theoreticalQuantity(l)) DO
+    fillTheoreticalQuantity(l); 
 
 FORM adjustment 'Инвентаризация'
     OBJECTS a = Adjustment PANEL 
-    PROPERTIES(a) dateTime, number 
-    PROPERTIES(a) nameLocation, nameType, nameCategory SHOWIF type(a) = AdjustmentType.category
+    PROPERTIES(a) READONLYIF readonly(a)
+                  dateTime, number, 
+                  nameLocation, nameType, nameCategory SHOWIF type(a) = AdjustmentType.category
     PROPERTIES(a) note 
     
     OBJECTS l = AdjustmentLine
-    PROPERTIES(l) index READONLY, 
+    PROPERTIES(l) READONLYIF readonly(a) 
+                  index READONLY, 
                   nameProduct, nameUom, idBarCodeProduct, idProduct,
                   nameLocation, 
-                  theoreticalQuantity
-    PROPERTIES(l) NEW, DELETE
+                  theoreticalQuantity,
+                  NEW, DELETE
     FILTERS adjustment(l) = a
     
     EDIT Adjustment OBJECT a
@@ -128,7 +138,7 @@ DESIGN adjustment {
 FORM adjustments 'Инвентаризации'
     OBJECTS a = Adjustment
     PROPERTIES(a) READONLY dateTime, number, nameType, nameLocation, nameCategory, note
-    PROPERTIES(a) NEWSESSION EDIT, DELETE 
+    PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE 
     
     LIST Adjustment OBJECT a
 ;
@@ -137,48 +147,34 @@ FORM adjustments 'Инвентаризации'
 @defineDocLinesCount(adjustment, a);
 @defineDocLocationAccess(adjustment, a);
 
+@defineDateFilterForm(adjustments, a);
+
 NAVIGATOR {
     operations {
         NEW adjustments;
     }
 }
 
-// new
-FORM adjustmentType 'Создать инвентаризацию'
-    OBJECTS a = Adjustment PANEL 
-    PROPERTIES(a) nameLocation, nameType,
-                  nameCategory SHOWIF type(a) = AdjustmentType.category    
-;
+// fill
+fill 'Заполнить' (Adjustment a) {
+    FOR adjustment(AdjustmentLine l) = a DO
+        fillTheoreticalQuantity(l);
 
-DESIGN adjustmentType {
-    width = 700;
-    OBJECTS {
-        MOVE BOX(a) {
-            PROPERTY(nameLocation(a)) { notNull = TRUE; }
-            PROPERTY(nameType(a)) { notNull = TRUE; }
-        }
-    }
+    FOR (level(Location loc, location(a)) AND onHand(loc, Product p)) AND 
+        (level(category(p), category(a)) OR NOT type(a) = AdjustmentType.category) AND 
+        NOT type(a) = AdjustmentType.manual AND NOT lastAdjustmentLine(a, p, loc) ORDER name(p), p DO NEW l = AdjustmentLine {
+            adjustment(l) <- a;
+            product(l) <- p;
+            location(l) <- loc;
+    }     
 }
 
-newAdjustment 'Инвентаризация' () {
-    NEWSESSION {
-        NEW na = Adjustment {
-            DIALOG adjustmentType OBJECTS a = na NOMANAGESESSION DO { 
-                FOR (level(Location loc, location(na)) AND onHand(loc, Product p)) AND 
-                    (level(category(p), category(na)) OR NOT type(na) = AdjustmentType.category) AND 
-                    NOT type(na) = AdjustmentType.manual ORDER name(p), p DO NEW l = AdjustmentLine {
-                        adjustment(l) <- na;
-                        product(l) <- p;
-                        location(l) <- loc;
-                }     
-                SHOW adjustment OBJECTS a = na;                
-            }
-        }
-    }
-} IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
-
-EXTEND FORM adjustments
-    PROPERTIES newAdjustment() DRAW a TOOLBAR 
+EXTEND FORM adjustment
+    PROPERTIES(a) fill SHOWIF location(a) AND NOT readonly(a)
 ;
 
-@defineDateFilterForm(adjustments, a);
+DESIGN adjustment {
+    secondaryActions {
+        MOVE PROPERTY(fill(a));
+    }
+}

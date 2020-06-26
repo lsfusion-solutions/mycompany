@@ -35,19 +35,31 @@ namePartner 'Контрагент' (InvLedger l) = name(partner(l));
 inQuantity 'Кол-во поступившее' (Location ll, Product p) = GROUP SUM quantity(InvLedger l) 
                                                     IF active(l) AND toLocation(l) = ll AND product(l) = p MATERIALIZED;
                                                     
-inQuantity 'Кол-во поступившее'(Location ll, Product p, DATETIME dt) = inQuantity(ll, p) (-)
+inQuantityA (Location ll, Product p, DATETIME dt) = inQuantity(ll, p) (-)
     GROUP SUM quantity(InvLedger l)  IF active(l) AND toLocation(l) = ll AND product(l) = p AND dateTime(l) > dt;
+
+inQuantityB (Location ll, Product p, DATETIME dt) = inQuantity(ll, p) (-)
+    GROUP SUM quantity(InvLedger l)  IF active(l) AND toLocation(l) = ll AND product(l) = p AND dateTime(l) >= dt;
                                    
 outQuantity 'Кол-во отправленное' (Location ll, Product p) = GROUP SUM quantity(InvLedger l) 
                                                     IF active(l) AND fromLocation(l) = ll AND product(l) = p MATERIALIZED;
 
-outQuantity 'Кол-во отправленное' (Location ll, Product p, DATETIME dt) = outQuantity(ll, p) (-)
+outQuantityA 'Кол-во отправленное' (Location ll, Product p, DATETIME dt) = outQuantity(ll, p) (-)
+    GROUP SUM quantity(InvLedger l) IF active(l) AND  fromLocation(l) = ll AND product(l) = p AND dateTime(l) > dt;
+
+outQuantityB 'Кол-во отправленное' (Location ll, Product p, DATETIME dt) = outQuantity(ll, p) (-)
     GROUP SUM quantity(InvLedger l) IF active(l) AND  fromLocation(l) = ll AND product(l) = p AND dateTime(l) > dt;
 
 onHand 'Текущий остаток' (Location ll, Product p) = inQuantity(ll, p) (-) outQuantity(ll, p) MATERIALIZED;
+prevOnHand (Location ll, Product p) = PREV(onHand(ll, p));
 
-onHand 'Текущий остаток' (Location ll, Product p, DATETIME dt) = 
-                                                            inQuantity(ll, p, dt) (-) outQuantity(ll, p, dt) IF dt;
+onHandA 'Остаток' (Location ll, Product p, DATETIME dt) = 
+                                                            inQuantityA(ll, p, dt) (-) outQuantityA(ll, p, dt) IF dt;
+prevOnHandA (Location ll, Product p, DATETIME dt) = PREV(onHandA(ll, p, dt));
+
+onHandB 'Остаток' (Location ll, Product p, DATETIME dt) = 
+                                                            inQuantityB(ll, p, dt) (-) outQuantityB(ll, p, dt) IF dt;
+prevOnHandB (Location ll, Product p, DATETIME dt) = PREV(onHandB(ll, p, dt));
 
 onHandRec 'Текущий остаток (с учетом вложенности)' (Location l, Product p) = 
     GROUP SUM onHand(Location child, p) IF level(child, l) MATERIALIZED;
@@ -64,8 +76,8 @@ datePrevOperation(Location l, Product p, DATETIME dt) =
     GROUP LAST dateTime(InvLedger il) ORDER dateTime(il) 
     WHERE (fromLocation(il) = l OR toLocation(il) = l) AND product(il) = p AND dateTime(il) < dt AND active(il);
 
-onHandFromLocation 'Остаток после операции (откуда)' (InvLedger inv) = onHand(fromLocation(inv), product(inv), dateTime(inv));
-onHandToLocation 'Остаток после операции (куда)' (InvLedger inv)= onHand(toLocation(inv), product(inv), dateTime(inv));                                               
+onHandFromLocation 'Остаток после операции (откуда)' (InvLedger inv) = onHandA(fromLocation(inv), product(inv), dateTime(inv));
+onHandToLocation 'Остаток после операции (куда)' (InvLedger inv)= onHandA(toLocation(inv), product(inv), dateTime(inv));                                               
 
 // constraint
 positiveOnHand 'Запрет отрицательных остатков' = DATA BOOLEAN (Location) CHARWIDTH 15;

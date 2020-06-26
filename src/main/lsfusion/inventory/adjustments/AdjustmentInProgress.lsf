@@ -14,7 +14,7 @@ colorStatus(Adjustment a) += WHEN status(a) == AdjustmentStatus.inProgress THEN 
 
 realQuantity 'Фактическое кол-во' = DATA NUMERIC[16,3] (AdjustmentLine);
 
-WHEN LOCAL CHANGED(theoreticalQuantity(AdjustmentLine l)) AND NOT CHANGED(realQuantity(l)) DO 
+WHEN LOCAL CHANGED(theoreticalQuantity(AdjustmentLine l)) AND NOT CHANGED(realQuantity(l)) AND status(adjustment(l)) = AdjustmentStatus.draft  DO 
     realQuantity(l) <- theoreticalQuantity(l);
 
 markAsToDo 'Начать' (Adjustment a) {

@@ -5,54 +5,54 @@ REQUIRE Authentication, Time, BarCode;
 NAMESPACE Utils;
 
 META defineDocStatus (doc, title)
-   CLASS ###doc##Status 'Статус '##title {
-       draft 'Черновик'
-   }
-   
-   name 'Имя' (###doc##Status s) = staticCaption(s) IF s IS ###doc##Status CHARWIDTH 12;
-   
-   status 'Статус' = ABSTRACT CASE ###doc##Status (###doc);
-   nameStatus 'Статус' (###doc d) = name(status(d));
-   colorStatus 'Цвет' = ABSTRACT CASE COLOR (###doc);
-   
-   status(###doc d) += WHEN d IS ###doc THEN ###doc##Status.draft;
-   colorStatus(###doc d) += WHEN status(d) == ###doc##Status.draft THEN RGB(187,242,210);
-
-   isDraft (###doc d) = status(d) = ###doc##Status.draft;
+    CLASS ###doc##Status 'Статус '##title {
+        draft 'Черновик'
+    }
+    
+    name 'Имя' (###doc##Status s) = staticCaption(s) IF s IS ###doc##Status CHARWIDTH 12;
+    
+    status 'Статус' = ABSTRACT CASE ###doc##Status (###doc);
+    nameStatus 'Статус' (###doc d) = name(status(d));
+    colorStatus 'Цвет' = ABSTRACT CASE COLOR (###doc);
+    
+    status(###doc d) += WHEN d IS ###doc THEN ###doc##Status.draft;
+    colorStatus(###doc d) += WHEN status(d) == ###doc##Status.draft THEN RGB(187,242,210);
+    
+    readonly = ABSTRACT CASE BOOLEAN (###doc);
 END
 
 META defineDocStatusForm (doc, let)
-   EXTEND FORM doc##s
-       PROPERTIES(##let) READONLY nameStatus BACKGROUND colorStatus(##let) BEFORE number(##let)
-       FILTERGROUP status
-           FILTER 'Черновик' status(##let) = ###doc##Status.draft
-   ;
-   
-   EXTEND FORM doc
-       PROPERTIES(##let) nameStatus BACKGROUND colorStatus(##let)
-   ;
-   
-   DESIGN doc {
-       NEW statusPane FIRST {
-           caption = 'Статусы';
-           type = CONTAINERH;
-           alignment = STRETCH;                          
-           NEW statusActions {
-               type = CONTAINERH;                    
-               flex = 1; 
-               NEW primaryActions {
-                   type = CONTAINERH;
-               }
-               NEW secondaryActions {
-                   type = CONTAINERH;
-               }           
-           }
-           NEW status {
-               type = CONTAINERH;
-               MOVE PROPERTY(nameStatus(##let));
-           }
-       }    
-   } 
+    EXTEND FORM doc##s
+        PROPERTIES(##let) READONLY nameStatus BACKGROUND colorStatus(##let) BEFORE number(##let)
+        FILTERGROUP status
+            FILTER 'Черновик' status(##let) = ###doc##Status.draft
+    ;
+    
+    EXTEND FORM doc
+        PROPERTIES(##let) nameStatus BACKGROUND colorStatus(##let)
+    ;
+    
+    DESIGN doc {
+        NEW statusPane FIRST {
+            caption = 'Статусы';
+            type = CONTAINERH;
+            alignment = STRETCH;                          
+            NEW statusActions {
+                type = CONTAINERH;                    
+                flex = 1; 
+                NEW primaryActions {
+                    type = CONTAINERH;
+                }
+                NEW secondaryActions {
+                    type = CONTAINERH;
+                }           
+            }
+            NEW status {
+                type = CONTAINERH;
+                MOVE PROPERTY(nameStatus(##let));
+            }
+        }    
+    } 
 END
 
 META defineDocSearchAction (doc, it, fun, capt)
