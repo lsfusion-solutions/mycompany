@@ -1,0 +1,20 @@
+MODULE ScrapLot;
+
+REQUIRE ProductLot, ScrapSearch, ScrapInv, InvLedgerLot;
+
+NAMESPACE Inventory;
+
+@defineDocLot (scrap, quantity, '');
+
+@defineDocBarCodeLot (scrap, quantity);
+
+@defineDocDesignLot(scrap, quantity);
+
+EXTEND FORM scrap 
+    PROPERTIES (lot) DELETE GRID
+;
+
+@defineLotCodeSearch(scrap, quantity);
+
+//ledger
+quantity(ScrapLine rl, Lot l) += quantity(rl, l);

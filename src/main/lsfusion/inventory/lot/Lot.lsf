@@ -1,0 +1,129 @@
+MODULE Lot;
+
+REQUIRE InventorySettings, Product;
+
+NAMESPACE Inventory;
+
+CLASS Lot 'Партия';
+
+id 'Код' = DATA STRING[100] (Lot);
+lot (STRING[100] id) = GROUP AGGR Lot o BY id(o);
+
+product 'Товар' = DATA Product (Lot) NONULL INDEXED;
+nameProduct 'Товар' (Lot l) = name(product(l)) IN id;
+
+useLot 'Партийный учет' = DATA BOOLEAN ();
+
+EXTEND FORM options 
+    PROPERTIES useLot()
+;
+
+DESIGN options {
+    commons {
+        MOVE PROPERTY(useLot()) FIRST;
+    }
+} 
+
+META defineDocLot (doc, quantity, caption)
+    quantity 'Кол-во'##caption = DATA NUMERIC[16,3] (###doc##Line, Lot);
+    
+    quantity##Lot 'Кол-во партии'##caption (###doc##Line rl) = GROUP SUM quantity(rl, Lot l);
+       
+    WHEN LOCAL CHANGED(quantity##Lot(###doc##Line rl)) AND NOT done(doc(rl)) DO {
+        quantity(rl) <- quantity##Lot(rl);
+    }
+    
+    CONSTRAINT quantity(###doc##Line rl, Lot l) AND product(rl) != product(l)
+                    MESSAGE 'Строка для партии должна относится к тому же продукту, что и партия';
+    CONSTRAINT useLot(product(###doc##Line rl)) AND (quantity(rl) (-) quantity##Lot(rl) < 0) AND done(doc(rl))
+                    MESSAGE 'Несовпадение количества с количеством в партиях'##caption;                   
+END 
+
+META defineDocBarCodeLot (doc, quantity)
+    
+    processBarCode ABSTRACT (###doc, STRING);
+       
+    processBarCode(###doc r, ###doc##Line rl, STRING s) + {
+        IF lot(s) OR useLot(product(rl)) THEN {
+            processBarCode(r, s);
+            
+            IF NOT lot(s) THEN
+                RETURN;
+                 
+            IF NOT product(lot(s)) THEN {
+                product(lot(s)) <- product(rl);
+            }
+        
+            LOCAL line = ###doc##Line();
+            
+            IF product(lot(s)) != product(rl) THEN {
+                IF NOT last###doc##Line(doc(rl), product(lot(s))) THEN {
+                    NEW l = ###doc##Line {
+                        doc(l) <- r;
+                        product(l) <- product(lot(s));
+                    }
+                }                
+                line() <- last###doc##Line(doc(rl), product(lot(s)));
+                SEEK doc.l = line();            
+            } ELSE
+                line() <- rl;                      
+                
+            quantity(line(), lot(s)) <- quantity(line(), lot(s)) (+) 1;
+                    
+            ACTIVATE PROPERTY doc.quantity(l); 
+            
+            consumedBarcode() <- TRUE;
+        }
+    }
+END
+
+META defineDocDesignLot(doc, quantity)
+    EXTEND FORM doc
+        PROPERTIES(l) AFTER quantity(l) SHOWIF useLot() BACKGROUND RGB(198,230,247) IF(useLot(product(l)))  quantity##Lot 
+        
+        OBJECTS lot = Lot
+        PROPERTIES (lot) id READONLY
+        PROPERTIES (l, lot) quantity READONLYIF NOT useLot(product(lot))
+        FILTERS quantity(l, lot)   
+    ;
+    
+    DESIGN doc {
+        linesTab {
+            NEW lots {
+                caption = 'Партии';
+                MOVE BOX(lot){
+                    showIf = useLot();
+                }
+            }
+        }
+    }    
+END
+
+META defineLotCodeSearch(doc, quantity)
+    ##doc##LotCode 'Партия' = DATA LOCAL STRING ();
+    
+    processLotCode ABSTRACT (###doc, STRING);
+    
+    searchLotCode(###doc##Line rl) {
+        INPUT id = STRING DO {
+            IF lot(id) OR useLot(product(rl)) THEN {        
+                processLotCode (doc(rl), id);
+                            
+                IF NOT product(lot(id)) THEN {
+                    product(lot(id)) <- product(rl);
+                }
+                
+                IF product(lot(id)) != product(rl) THEN {
+                    MESSAGE 'Партия относится к другому продукту (' + name(product(lot(id))) +')';
+                } ELSE {                
+                    quantity(rl, lot(id)) <- quantity(rl, lot(id)) (+) 1;
+                    SEEK doc.lot = lot(id);
+                    ACTIVATE PROPERTY doc.quantity(l, lot);                 
+                }          
+            }
+        }
+    }
+    
+    EXTEND FORM doc
+        PROPERTIES() ##doc##LotCode DRAW lot TOOLBAR ON CHANGE searchLotCode(l) READONLYIF NOT useLot(product(l));
+END

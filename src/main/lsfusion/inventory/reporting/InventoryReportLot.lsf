@@ -1,0 +1,23 @@
+MODULE InventoryReportLot;
+
+REQUIRE InventoryReport, InvLedgerLot, Lot, ProductLot;
+
+NAMESPACE Inventory;
+
+onHandDateTime 'Остаток на дату' (Location ll, Lot l) = onHandA(ll, l, selectedDateTime());
+
+EXTEND FORM inventoryReport   
+    OBJECTS lotH = Lot
+    PROPERTIES(lotH) READONLY id
+    PROPERTIES(l, lotH) READONLY SHOWIF NOT selectedDateTime() onHand
+    PROPERTIES(l, lotH) READONLY SHOWIF selectedDateTime() onHandDateTime
+    
+    FILTERS product(lotH) = p AND IF selectedDateTime() THEN onHandDateTime(l, lotH) ELSE 
+                    onHand(l, lotH)    
+;
+
+DESIGN inventoryReport {
+    tabs {
+        MOVE BOX(lotH);            
+    }
+}

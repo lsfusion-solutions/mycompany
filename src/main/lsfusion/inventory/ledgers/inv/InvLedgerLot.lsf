@@ -1,0 +1,97 @@
+MODULE InvLedgerLot;
+
+REQUIRE InvLedger, InvLedgerItem, ProductLot;
+
+NAMESPACE Inventory;
+                                                                                        
+quantity 'Кол-во' = ABSTRACT NUMERIC[16,3] (InvLedger, Lot) MATERIALIZED;
+quantityLot 'Кол-во партии' (InvLedger rl) = GROUP SUM quantity(rl, Lot l);
+
+inQuantity 'Кол-во поступившее' (Location ll, Lot l) = GROUP SUM quantity(InvLedger il, Lot lt) 
+                                                    IF active(il) AND toLocation(il) = ll AND lt = l MATERIALIZED;
+                                                    
+inQuantity 'Кол-во поступившее'(Location ll, Lot l, DATETIME dt) = inQuantity(ll, l) (-)
+    GROUP SUM quantity(InvLedger il, Lot lt)  IF active(il) AND toLocation(il) = ll AND lt = l AND dateTime(il) > dt;
+    
+inQuantityA (Location ll, Lot l, DATETIME dt) = inQuantity(ll, l) (-)
+    GROUP SUM quantity(InvLedger il, Lot lt)  IF active(il) AND toLocation(il) = ll AND lt = l AND dateTime(il) > dt;
+    
+inQuantityB (Location ll, Lot l, DATETIME dt) = inQuantity(ll, l) (-)
+    GROUP SUM quantity(InvLedger il, Lot lt)  IF active(il) AND toLocation(il) = ll AND lt = l AND dateTime(il) >= dt;
+                                   
+outQuantity 'Кол-во отправленное' (Location ll, Lot l) = GROUP SUM quantity(InvLedger il, Lot lt) 
+                                                    IF active(il) AND fromLocation(il) = ll AND lt = l MATERIALIZED;
+
+outQuantity 'Кол-во отправленное' (Location ll, Lot l, DATETIME dt) = outQuantity(ll, l) (-)
+    GROUP SUM quantity(InvLedger il, Lot lt) IF active(il) AND  fromLocation(il) = ll AND lt = l AND dateTime(il) > dt;
+
+outQuantityA 'Кол-во отправленное' (Location ll, Lot l, DATETIME dt) = outQuantity(ll, l) (-)
+    GROUP SUM quantity(InvLedger il, Lot lt) IF active(il) AND  fromLocation(il) = ll AND lt = l AND dateTime(il) > dt;
+    
+outQuantityB 'Кол-во отправленное' (Location ll, Lot l, DATETIME dt) = outQuantity(ll, l) (-)
+    GROUP SUM quantity(InvLedger il, Lot lt) IF active(il) AND  fromLocation(il) = ll AND lt = l AND dateTime(il) >= dt;
+
+onHand 'Текущий остаток' (Location ll, Lot l) = inQuantity(ll, l) (-) outQuantity(ll, l) MATERIALIZED;
+prevOnHand (Location ll, Lot l) = PREV(onHand(ll, l));
+
+onHandLot 'Текущий остаток (партии)' (Location ll) = GROUP SUM onHand(ll, Lot l);
+
+onHand 'Текущий остаток' (Location ll, Lot l, DATETIME dt) = 
+                                                            inQuantity(ll, l, dt) (-) outQuantity(ll, l, dt) IF dt;
+onHandLot 'Текущий остаток (партии)' (Location ll, DATETIME dt) = GROUP SUM onHand(ll, Lot l, dt);                                                            
+
+onHandA 'Остаток' (Location ll, Lot l, DATETIME dt) = 
+                                                            inQuantityA(ll, l, dt) (-) outQuantityA(ll, l, dt) IF dt;
+prevOnHandA (Location ll, Lot l, DATETIME dt) = PREV(onHandA(ll, l, dt));
+
+onHandB 'Остаток' (Location ll, Lot l, DATETIME dt) = 
+                                                            inQuantityB(ll, l, dt) (-) outQuantityB(ll, l, dt) IF dt;
+prevOnHandB (Location ll, Lot l, DATETIME dt) = PREV(onHandB(ll, l, dt));
+
+FORM invLedgerItemLot 'Партии'
+    OBJECTS r = InvLedger
+    PROPERTIES (r) READONLY nameProduct PANEL 
+        
+    OBJECTS lot = Lot  
+    PROPERTIES (lot) id
+    PROPERTIES (r, lot) READONLY quantity
+
+    FILTERS quantity(r, lot)
+;
+
+
+changelots(InvLedger rl) { 
+    IF useLot(product(rl)) THEN 
+        DIALOG invLedgerItemLot OBJECTS r = rl;
+}
+
+EXTEND FORM item
+    PROPERTIES(inv) AFTER quantity(inv) SHOWIF useLot(product(inv))  quantityLot     
+    
+    OBJECTS lotI = Lot  
+    PROPERTIES (lotI) READONLY id 
+    PROPERTIES (inv, lotI) READONLY quantity
+    FILTERS quantity(inv, lotI)
+    
+    PROPERTIES(l) AFTER onHand(l, i) SHOWIF i IS Product AND useLot(i) onHandLot     
+
+    OBJECTS lotH = Lot
+    PROPERTIES(lotH) READONLY id
+    PROPERTIES(l, lotH) READONLY onHand
+    FILTERS onHand(l, lotH) AND product(lotH) = i
+;
+
+DESIGN item {
+    invledger {
+        MOVE BOX (lotI) { 
+        fill = 0.1; 
+        showIf = i IS Product AND useLot(i);
+        }
+    }
+    lines {
+        MOVE BOX(lotH){
+            fill = 0.1; 
+            showIf = i IS Product AND useLot(i);
+        }
+    }
+}

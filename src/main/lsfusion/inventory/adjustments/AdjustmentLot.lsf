@@ -1,0 +1,58 @@
+MODULE AdjustmentLot;
+
+REQUIRE Adjustment, ProductLot, AdjustmentSearch, AdjustmentInv, InvLedgerLot;
+
+NAMESPACE Inventory;
+
+@defineDocLot (adjustment, theoreticalQuantity, ' (теоретическое)');
+
+@defineDocLot (adjustment, realQuantity, ' (фактическое)');
+
+fillTheoreticalQuantity(AdjustmentLine al) + {
+    theoreticalQuantity(al, Lot l) <- prevOnHandB(location(al), l, dateTime(adjustment(al))) IF product(l) = product(al);
+}
+WHEN LOCAL (SETCHANGED (location(AdjustmentLine al)) OR SETCHANGED(product(al))) 
+           AND NOT CHANGED(theoreticalQuantity(al)) DO
+    fillTheoreticalQuantity(al); 
+
+WHEN LOCAL CHANGED(theoreticalQuantity(AdjustmentLine al, Lot l)) AND NOT CHANGED(realQuantity(al, l)) DO 
+    realQuantity(al, l) <- theoreticalQuantity(al, l);
+        
+background (AdjustmentLine al, Lot l) = CASE WHEN theoreticalQuantity(al, l) < realQuantity(al, l) THEN RGB(152,251,152)
+                                              WHEN theoreticalQuantity(al, l) > realQuantity(al, l) THEN RGB(252,184,205);
+
+EXTEND FORM adjustment
+    PROPERTIES(l) AFTER theoreticalQuantity(l) SHOWIF useLot() BACKGROUND RGB(198,230,247) IF(useLot(product(l))) theoreticalQuantityLot
+    PROPERTIES(l) AFTER realQuantity(l) SHOWIF useLot() BACKGROUND RGB(198,230,247) IF(useLot(product(l))) realQuantityLot
+    
+    OBJECTS lot = Lot
+    PROPERTIES (lot) id READONLY
+    PROPERTIES (l, lot) theoreticalQuantity, realQuantity READONLYIF NOT status(adjustment(l)) = AdjustmentStatus.inProgress BACKGROUND background(l)
+    PROPERTIES (lot) DELETE GRID
+    FILTERS realQuantity(l, lot) OR theoreticalQuantity(l, lot)
+;
+
+DESIGN adjustment {
+    linesTab {
+        NEW lots {
+            caption = 'Партии';
+            MOVE BOX(lot){
+                showIf = useLot();
+            }
+        }
+    }
+}
+
+@defineLotCodeSearch(adjustment, theoreticalQuantity);
+
+processLotCode(Adjustment r, STRING s) + {
+    IF NOT lot(s) THEN {
+        NEW l = Lot {
+            id(l) <- STRING[100](s);
+        }
+    }
+}
+
+
+difference (AdjustmentLine al, Lot l) = theoreticalQuantity(al, l) (-) realQuantity(al, l);
+quantity (InvAdjustment a, Lot l) += difference(line(a), l);
