@@ -1,12 +1,14 @@
 MODULE InventoryValuation;
 
-REQUIRE CostLedger, LocationEmployee;
+REQUIRE CostLedger, LocationEmployee, BarCode;
 
 NAMESPACE Inventory;
 
 FORM inventoryValuation 'Себестоимость остатков'
     OBJECTS lp = (l = Location, p = Product)
-    PROPERTIES READONLY nameCostingMethod(p), 'Склад' = canonicalName(l), 'Товар' = name(p), costQuantity(l, p), costPrice(l, p), costAmount(l, p)
+    PROPERTIES READONLY       nameCostingMethod(p), 'Склад' = canonicalName(l)
+    PROPERTIES(p) READONLY    'Товар' = name, nameUom, idBarCode, id
+    PROPERTIES(l, p) READONLY costQuantity, costPrice, costAmount
     PROPERTIES(p) EDIT
     PROPERTIES recalculateCost() DRAW lp TOOLBAR
     FILTERS costQuantity(l, p),

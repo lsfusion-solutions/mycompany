@@ -1,6 +1,6 @@
 MODULE InventoryReport;
 
-REQUIRE InvLedger, ResLedger, ItemImage, ItemAttribute, LocationEmployee;
+REQUIRE InvLedger, ResLedger, ItemImage, ItemAttribute, LocationEmployee, BarCode;
 
 NAMESPACE Inventory;
 
@@ -20,7 +20,8 @@ FORM inventoryReport 'Текущие остатки'
     ORDERS name(c)
     
     OBJECTS lp = (l = Location, p = Product)
-    PROPERTIES READONLY 'Склад' = canonicalName(l) SHOWIF NOT singleLocation(), 'Товар' = name(p)
+    PROPERTIES READONLY 'Склад' = canonicalName(l) SHOWIF NOT singleLocation() 
+    PROPERTIES(p) READONLY    'Товар' = name, nameUom, idBarCode, id
     PROPERTIES(l, p) READONLY reserved, available
     PROPERTIES(l, p) READONLY SHOWIF NOT selectedDateTime() onHand, onHandRec
     PROPERTIES(l, p) READONLY SHOWIF selectedDateTime() onHandDateTime 
