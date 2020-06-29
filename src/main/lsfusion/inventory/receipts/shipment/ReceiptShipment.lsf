@@ -1,0 +1,83 @@
+MODULE ReceiptShipment;
+
+REQUIRE ReceiptCanceled, ShipmentCanceled;
+
+NAMESPACE Inventory;
+
+// types
+isReturn 'Возврат' = DATA BOOLEAN (ShipmentType);
+EXTEND FORM shipmentType PROPERTIES(o) isReturn;
+
+isReturn (Shipment s) = isReturn(type(s));
+
+shipmentType = DATA ShipmentType (ReceiptType);
+nameShipmentType 'Тип возврата' (ReceiptType t) = name(shipmentType(t));
+EXTEND FORM receiptType PROPERTIES(o) nameShipmentType;
+
+// line
+@defineDocLineRelation (receipt, shipment, 'Поступление', 'Отгрузка', r, s);
+
+CONSTRAINT receiptLine(ShipmentLine l) AND NOT 
+                (vendor(receiptLine(l)) = customer(l) AND 
+                 product(receiptLine(l)) = product(l))
+    CHECKED BY receiptLine
+    MESSAGE 'Контрагент и товар поступления должны совпадать с контрагентом и товаром возврата';
+    
+EXTEND FORM shipment
+    PROPERTIES(l) numberDateReceiptLine SHOWIF isReturn(s)
+;
+
+// Shipment
+return 'Вернуть' (Receipt r) {    
+    NEWSESSION {
+        NEW ns = Shipment {
+            type(ns) <- shipmentType(type(r));
+        
+            location(ns) <- location(r);
+            customer(ns) <- vendor(r);
+            FOR receipt(ReceiptLine l) = r INLINE NEW nl = ShipmentLine DO {
+                receiptLine(nl) <- l;
+                shipment(nl) <- ns;
+                product(nl) <- product(l);
+                initialDemand(nl) <- done(l);
+            }
+            SHOW shipment OBJECTS s = ns DOCKED;
+        }
+    }
+}
+
+EXTEND FORM receipt
+    PROPERTIES(r) return SHOWIF active(r)
+;
+
+DESIGN receipt {
+    secondaryActions {
+        MOVE PROPERTY(return(r));
+    }             
+}
+
+// auto set
+WHEN LOCAL (SETCHANGED(product(ShipmentLine l)) OR SETCHANGED(customer(l))) AND isReturn(shipment(l)) AND product(l) AND customer(l) DO {
+    receiptLine(l) <- GROUP LAST ReceiptLine rl IF 
+                                    vendor(rl) = customer(l) AND 
+                                    product(rl) = product(l) AND 
+                                    active(receipt(rl)) 
+                             ORDER executionDateTime(receipt(rl)), rl;
+}
+
+// returned quantity
+returned 'Возвращено' (ReceiptLine rl) = 
+    GROUP SUM done(ShipmentLine sl) IF receiptLine(sl) = rl AND active(shipment(sl));
+
+FORM receiptShipmentShow 'Возвраты'
+    OBJECTS rl = ReceiptLine
+
+    OBJECTS sl = ShipmentLine
+    PROPERTIES(sl) READONLY nameStatus, number, executionDateTime, done
+    FILTERS receiptLine(sl) = rl,
+            active(shipment(sl))
+;
+
+EXTEND FORM receipt
+    PROPERTIES(l) returned ON CHANGE { SHOW receiptShipmentShow OBJECTS rl = l; } SHOWIF countShipmentLine(r)
+;

@@ -70,10 +70,18 @@ CONSTRAINT initialDemand(ReceiptLine l) < 0 OR initialDemand(l) > maxQuantity(ty
 // Line properties
 nameStatus 'Статус' (ReceiptLine l) = nameStatus(receipt(l));
 number 'Номер' (ReceiptLine l) = number(receipt(l));
+numberDate 'Описание' (ReceiptLine l) = numberDate(receipt(l));
 scheduledDateTime 'Планируемая дата' (ReceiptLine l) = scheduledDateTime(receipt(l));
 vendor (ReceiptLine l) = vendor(receipt(l));
 nameVendor 'Поставщик' (ReceiptLine l) = nameVendor(receipt(l));
 nameLocation 'Место хранения' (ReceiptLine l) = nameLocation(receipt(l));
+
+FORM receiptLines 'Строки поступлений'
+    OBJECTS l = ReceiptLine
+    PROPERTIES(l) READONLY scheduledDateTime, number, index, nameProduct
+
+    LIST ReceiptLine OBJECT l
+;
 
 edit (ReceiptLine l) + { edit(receipt(l)); } 
            
