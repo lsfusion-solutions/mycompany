@@ -1,0 +1,19 @@
+MODULE ProductLot;
+
+REQUIRE Product, CategoryLot;
+
+NAMESPACE MasterData;
+
+dataUseLot 'Необходимость партионного учета' = DATA BOOLEAN (Product);
+useLot 'Необходимость партионного учета' (Product i) = useLot() AND OVERRIDE dataUseLot(i), useLot(category(i));
+
+EXTEND FORM item
+    PROPERTIES (i) dataUseLot SHOWIF i IS Product AND useLot();
+    
+DESIGN item {
+    tabs {
+        inventory {
+            MOVE PROPERTY(dataUseLot(i));
+        }
+    }
+} 
