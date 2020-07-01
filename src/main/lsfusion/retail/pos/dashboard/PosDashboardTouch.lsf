@@ -1,0 +1,111 @@
+MODULE PosDashboardTouch;
+
+REQUIRE PosDashboardSearch, Utils;
+
+NAMESPACE Retail;
+
+hideTouch 'Спрятать' = DATA BOOLEAN (Category);
+hideTouch 'Спрятать' = DATA BOOLEAN (Item);
+
+EXTEND FORM options
+    TREE categories c = Category PARENT parent(c)
+    PROPERTIES READONLY name(c)
+    PROPERTIES hideTouch(c)
+    ORDERS name(c)
+    
+    OBJECTS itm = Item
+    PROPERTIES(itm) READONLY name, nameUom, idBarCode, id
+    PROPERTIES hideTouch(itm)
+    ORDERS name(itm)
+    FILTERS level(category(itm), c)
+    FILTERGROUP active
+        FILTER 'Активный' active(itm) 'F10' DEFAULT  
+;
+
+DESIGN options {
+    tabbedPane {
+        NEW touch {
+            caption = 'Выбор';
+            type = SPLITH;
+            MOVE BOX(TREE categories);
+            MOVE BOX(itm);
+        }
+    }
+}
+
+CLASS ABSTRACT TouchNode;
+
+EXTEND CLASS Category : TouchNode;
+EXTEND CLASS Item : TouchNode;
+
+name (TouchNode n) = MULTI name[Category](n), name[Item](n);
+parent (TouchNode n) = MULTI parent[Category](n), category[Item](n);
+hide (TouchNode n) = MULTI hideTouch[Category](n), hideTouch[Item](n);
+
+canonicalName 'Каноническое имя' (TouchNode n) =
+   GROUP CONCAT name(TouchNode parent), ' / ' ORDER DESC level(n, parent) CHARWIDTH 50 IN id;
+
+index (TouchNode n) = PARTITION SUM 1 IF NOT hide(n) ORDER name(n), n BY parent(n);
+
+EXTEND FORM posDashboard
+    OBJECTS tn = TouchNode PANEL
+    PROPERTIES(tn) READONLY '' = canonicalName
+;
+
+back 'Назад' (TouchNode tn) {
+    SEEK posDashboard.tn = parent(tn);
+}
+
+drop 'Сбросить' () {
+    SEEK posDashboard.tn = GROUP LAST Category c WHERE c IS Category AND NOT parent(c);
+}
+EXTEND FORM posDashboard 
+    PROPERTIES drop(), back(tn)
+    EVENTS ON INIT drop()
+;
+
+select (Invoice i, TouchNode tn) {
+    IF tn IS Category THEN
+        SEEK posDashboard.tn = tn;
+    ELSE
+        selectPosSearch(i, tn);
+}
+
+EXTEND FORM posDashboard
+    OBJECTS tn1 = TouchNode
+    FILTERS parent(tn1) = tn, mod(index(tn1),3) = 1, NOT hide(tn1)
+    PROPERTIES select(i, tn1) COLUMNS (tn1) HEADER name(tn1)
+    
+    OBJECTS tn2 = TouchNode
+    FILTERS parent(tn2) = tn, mod(index(tn2),3) = 2, NOT hide(tn2)
+    PROPERTIES select(i, tn2) COLUMNS (tn2) HEADER name(tn2)
+    
+    OBJECTS tn3 = TouchNode
+    FILTERS parent(tn3) = tn, mod(index(tn3),3) = 0, NOT hide(tn3)
+    PROPERTIES select(i, tn3) COLUMNS (tn3) HEADER name(tn3)
+;
+
+DESIGN posDashboard {
+    tabPane {
+        NEW touch BEFORE search {
+            caption = 'Выбор';
+            NEW current {
+                alignment = STRETCH;
+                type = CONTAINERH;
+                MOVE PROPERTY(canonicalName(tn)) { fill = 1; }
+                MOVE PROPERTY(drop()) { fontSize = 16; }
+                MOVE PROPERTY(back(tn)) { fontSize = 16; }
+            }
+            NEW touchPane {
+                fill = 1;
+                type = SCROLL;
+                NEW touchColumns {
+                    type = CONTAINERH;
+                    MOVE PROPERTY(select(i, tn1)) { fill = 1; columnKeysVertical = TRUE; }
+                    MOVE PROPERTY(select(i, tn2)) { fill = 1; columnKeysVertical = TRUE; }
+                    MOVE PROPERTY(select(i, tn3)) { fill = 1; columnKeysVertical = TRUE; }
+                }
+            }
+        }
+    }
+}
