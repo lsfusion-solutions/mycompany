@@ -16,7 +16,7 @@ META defineDocStatus (doc, title)
     colorStatus 'Цвет' = ABSTRACT CASE COLOR (###doc);
     
     status(###doc d) += WHEN d IS ###doc THEN ###doc##Status.draft;
-    colorStatus(###doc d) += WHEN status(d) == ###doc##Status.draft THEN RGB(187,242,210);
+    colorStatus(###doc d) += WHEN status(d) = ###doc##Status.draft THEN RGB(187,242,210);
     
     readonly = ABSTRACT CASE BOOLEAN (###doc);
 END
@@ -65,7 +65,7 @@ META defineDocSearchAction (doc, it, fun, capt)
                 fun(###doc##Line l) <- q IF l = last###doc##Line(i, p)
                     WHERE doc(l) = i AND it(l) = p;
             ELSE
-                DELETE ###doc##Line l WHERE doc(l) = i AND it(l) == p;
+                DELETE ###doc##Line l WHERE doc(l) = i AND it(l) = p;
         } ELSE
             IF q THEN
                 NEW l = ###doc##Line{

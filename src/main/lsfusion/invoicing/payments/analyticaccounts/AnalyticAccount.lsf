@@ -12,8 +12,8 @@ name 'Наименование' = DATA ISTRING[50] (AnalyticAccount) NONULL;
 parent 'Родитель' = DATA AnalyticAccount (AnalyticAccount);
 parent 'Родитель' (STRING[20] s) = GROUP AGGR AnalyticAccount a BY id(a);
 
-level 'Уровень' (AnalyticAccount p, AnalyticAccount c) = RECURSION 1l IF c IS AnalyticAccount AND p == c
-    STEP 2l IF p == parent($p) MATERIALIZED ;
+level 'Уровень' (AnalyticAccount p, AnalyticAccount c) = RECURSION 1l IF c IS AnalyticAccount AND p = c
+    STEP 2l IF p = parent($p) MATERIALIZED ;
 
 canonicalName 'Каноническое имя' (AnalyticAccount a) = GROUP CONCAT name(AnalyticAccount p), '/' ORDER DESC level(a, p) IN id;
 canonicalNameParent 'Родитель' (AnalyticAccount a) = canonicalName(parent(a));
@@ -111,10 +111,10 @@ META definePaymentAnalytic(pay)
     analiticAccount (###pay###PaymentType t) = GROUP MAX AnalyticAccount a IF in(t, a);
     countAnalyticAccount (###pay###PaymentType t) = GROUP SUM 1 IF in(t, a);
 
-    WHEN LOCAL CHANGED(type(###pay###Payment p)) AND countAnalyticAccount(type(p)) == 1 DO
+    WHEN LOCAL CHANGED(type(###pay###Payment p)) AND countAnalyticAccount(type(p)) = 1 DO
         analyticAccount(p) <- analiticAccount(type(p)); 
 
-    EXTEND FORM ##pay###Payment PROPERTIES(p) nameAnalyticAccount READONLYIF countAnalyticAccount(type(p)) == 1;
+    EXTEND FORM ##pay###Payment PROPERTIES(p) nameAnalyticAccount READONLYIF countAnalyticAccount(type(p)) = 1;
 
     CONSTRAINT type(###pay###Payment p) AND analyticAccount(p) AND NOT in(type(p), analyticAccount(p)) AND countAnalyticAccount(type(p))
         CHECKED MESSAGE 'Статья ДДС должна соответствовать типу платежа';

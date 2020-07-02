@@ -26,8 +26,8 @@ numberDateOrder 'Заказ' (ManufacturingOrder mo) = numberDate(order(orderLin
 
 manufacturingOrder (OrderLine l) = GROUP AGGR ManufacturingOrder mo BY orderLine(mo);
 
-countFreeBomLine (Order o) = GROUP SUM 1 IF order(OrderLine l) == o AND bom(l) AND NOT manufacturingOrder(l);
-countManufacturingOrder (Order o) = GROUP SUM 1 IF order(orderLine(ManufacturingOrder mo)) == o;
+countFreeBomLine (Order o) = GROUP SUM 1 IF order(OrderLine l) = o AND bom(l) AND NOT manufacturingOrder(l);
+countManufacturingOrder (Order o) = GROUP SUM 1 IF order(orderLine(ManufacturingOrder mo)) = o;
 
 CONSTRAINT DROPPED(OrderLine l IS OrderLine) AND PREV(manufacturingOrder(l))
     MESSAGE 'Нельзя удалить строку на основании которой создан производственный заказ';
@@ -119,7 +119,7 @@ WHEN CHANGED(bom(OrderLine l)) AND autoCreateManufacturingOrder(type(order(l))) 
     fillByQuantity(manufacturingOrder(l), quantity(l));    
 }    
 
-countStartedManufacturingOrders (Order o) = GROUP SUM 1 IF order(orderLine(ManufacturingOrder mo)) == o AND started(mo);
+countStartedManufacturingOrders (Order o) = GROUP SUM 1 IF order(orderLine(ManufacturingOrder mo)) = o AND started(mo);
 CONSTRAINT SET(canceled(Order o)) AND PREV(countStartedManufacturingOrders(o))
     MESSAGE 'Нельзя отменить заказ, к которому существуют действующие производственные заказы';
 CONSTRAINT CHANGED(quantity(OrderLine l)) AND manufacturingOrder(l) AND started(manufacturingOrder(l))

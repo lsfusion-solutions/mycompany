@@ -19,8 +19,8 @@ CONSTRAINT DROPPED(Location l IS Location) AND PREV(parent(Location cl) = l)
         MESSAGE 'Нельзя удалить место хранения имеющее подчиненные склады';
 
 level 'Уровень' (Location child, Location parent) =
-   RECURSION 1l IF child IS Location AND parent == child
-        STEP 2l IF parent == parent($parent) MATERIALIZED;
+   RECURSION 1l IF child IS Location AND parent = child
+        STEP 2l IF parent = parent($parent) MATERIALIZED;
 
 isChild (Location child, Location parent) = TRUE IF level(child, parent);
 
