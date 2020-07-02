@@ -54,7 +54,7 @@ DESIGN item {
         MOVE PROPERTY(idBarCode(i));
     }
     tabs {
-        NEW barcodes {
+        NEW barCodes {
             caption = 'Штрихкоды';
             MOVE BOX(b);        
         }
@@ -65,7 +65,7 @@ EXTEND FORM items
     PROPERTIES(i) READONLYIF isReadonly() idBarCode AFTER name(i)
 ;
 
-consumedBarcode = DATA LOCAL BOOLEAN ();
+consumedBarCode = DATA LOCAL BOOLEAN ();
 barCode 'Штрихкод' = DATA LOCAL STRING () CHANGEKEY 'F4';
 
 META defineBarCodeSearch(doc, let, line, itm, quantity)
@@ -77,9 +77,9 @@ META defineBarCodeSearch(doc, let, line, itm, quantity)
                 SEEK ##doc.line = last###doc##Line(d, itemBarCode(id));
                 ACTIVATE PROPERTY ##doc.quantity(l); 
             } ELSE {
-                consumedBarcode() <- NULL;
+                consumedBarCode() <- NULL;
                 processBarCode(d, l, id);
-                IF NOT consumedBarcode() THEN
+                IF NOT consumedBarCode() THEN
                     MESSAGE 'Штрихкод не найден';
             }
         }

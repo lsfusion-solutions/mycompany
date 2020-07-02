@@ -205,21 +205,21 @@ DESIGN posDashboard {
 }
 
 // barcode handling
-processBarcode ABSTRACT LIST (Invoice, STRING);
-changeBarcode (Invoice i) {
+processBarCode ABSTRACT LIST (Invoice, STRING);
+changeBarCode (Invoice i) {
     INPUT b = STRING DO {
         IF b THEN {
-            consumedBarcode() <- NULL;
-            processBarcode(i, b);
+            consumedBarCode() <- NULL;
+            processBarCode(i, b);
             
-            IF NOT consumedBarcode() THEN
+            IF NOT consumedBarCode() THEN
                 MESSAGE 'Штрих-код не найден';
         } 
     }
 }
 
 EXTEND FORM posDashboard
-    PROPERTIES() barCode ON CHANGE changeBarcode(i)
+    PROPERTIES() barCode ON CHANGE changeBarCode(i)
 ;
 
 DESIGN posDashboard {

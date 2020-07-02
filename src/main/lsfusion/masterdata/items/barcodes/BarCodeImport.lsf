@@ -4,7 +4,7 @@ REQUIRE BarCode;
 
 NAMESPACE MasterData;
 
-barcodeExport 'Экспорт штрихкодов' () {
+barCodeExport 'Экспорт штрихкодов' () {
     NEWSESSION {
         IF NOT (GROUP SUM 1 IF BarCode b AND b IS BarCode) THEN {
             NEW b = BarCode {
@@ -19,7 +19,7 @@ barcodeExport 'Экспорт штрихкодов' () {
     }
 }
 
-barcodeImport 'Импорт штрихкодов' () {
+barCodeImport 'Импорт штрихкодов' () {
     LOCAL id = STRING (INTEGER);
     LOCAL idItem = ISTRING[50] (INTEGER);
 
@@ -44,16 +44,16 @@ barcodeImport 'Импорт штрихкодов' () {
 }
 
 EXTEND FORM migrationData 
-    PROPERTIES barcodeExport(), barcodeImport()
+    PROPERTIES barCodeExport(), barCodeImport()
 ;
 
 DESIGN migrationData {
     commons {
-        NEW barcode {
+        NEW barCode {
             type = CONTAINERH;
             caption = 'Штрихкоды';
-            MOVE PROPERTY(barcodeImport());
-            MOVE PROPERTY(barcodeExport());
+            MOVE PROPERTY(barCodeImport());
+            MOVE PROPERTY(barCodeExport());
         }
     }
 }
