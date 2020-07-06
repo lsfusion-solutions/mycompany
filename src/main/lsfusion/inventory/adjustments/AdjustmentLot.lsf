@@ -34,18 +34,16 @@ EXTEND FORM adjustment
 
 DESIGN adjustment {
     linesTab {
-        NEW lots {
+        MOVE BOX(lot){
             caption = 'Партии';
-            MOVE BOX(lot){
-                showIf = useLot();
-            }
+            showIf = useLot();
         }
     }
 }
 
-@defineLotCodeSearch(adjustment, theoreticalQuantity);
+@defineDocBarCodeLot (adjustment, realQuantity);
 
-processLotCode(Adjustment r, STRING s) + {
+processBarCode(Adjustment r, STRING s) + {
     IF NOT lot(s) THEN {
         NEW l = Lot {
             id(l) <- STRING[100](s);
@@ -55,4 +53,8 @@ processLotCode(Adjustment r, STRING s) + {
 
 
 difference (AdjustmentLine al, Lot l) = theoreticalQuantity(al, l) (-) realQuantity(al, l);
+
+countDifferenceLot (AdjustmentLine al) = GROUP SUM 1 IF difference(al, Lot l); 
+createInAdjustment (AdjustmentLine al) += TRUE IF countDifferenceLot(al); 
+
 quantity (InvAdjustment a, Lot l) += difference(line(a), l);

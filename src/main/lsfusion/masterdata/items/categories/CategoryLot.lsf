@@ -5,8 +5,8 @@ REQUIRE Category, Lot;
 NAMESPACE MasterData;
 
 //category
-dataUseLot 'Необходимость парционного учета' = DATA BOOLEAN (Category);
-useLot (Category c) = useLot() AND OVERRIDE dataUseLot(c), GROUP LAST dataUseLot(Category cp) ORDER level(c, cp);
+dataUseLot 'Партионный учет' = DATA BOOLEAN (Category);
+useLot (Category c) = useLot() AND (GROUP LAST dataUseLot(Category cp) ORDER level(c, cp)) MATERIALIZED;
 
 EXTEND FORM category
     PROPERTIES (c) dataUseLot SHOWIF useLot();

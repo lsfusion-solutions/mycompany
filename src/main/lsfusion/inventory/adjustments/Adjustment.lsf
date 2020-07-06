@@ -81,6 +81,13 @@ WHEN LOCAL (SETCHANGED (location(AdjustmentLine l)) OR SETCHANGED(product(l)))
            AND NOT CHANGED(theoreticalQuantity(l)) DO
     fillTheoreticalQuantity(l); 
 
+// line properties
+nameStatus 'Статус' (AdjustmentLine l) = nameStatus(adjustment(l)) IN id;
+dateTime 'Дата' (AdjustmentLine l) = dateTime(adjustment(l)) IN id;
+number 'Номер' (AdjustmentLine l) = number(adjustment(l)) IN id;
+
+edit (AdjustmentLine l) + { edit(adjustment(l)); } 
+
 FORM adjustment 'Инвентаризация'
     OBJECTS a = Adjustment PANEL 
     PROPERTIES(a) READONLYIF readonly(a)

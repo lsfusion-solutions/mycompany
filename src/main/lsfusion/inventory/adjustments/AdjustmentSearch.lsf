@@ -6,22 +6,27 @@ NAMESPACE Inventory;
 
 realQuantity 'Фактическое кол-во' (Adjustment, Product, Location) = 
     GROUP SUM realQuantity(AdjustmentLine l) BY adjustment(l), product(l), location(l);
-    
-addAdjustmentLine(Adjustment a, Product p, Location loc) {
-    INPUT q = NUMERIC[16,3] DO {
-        IF q THEN {
-            FOR product(AdjustmentLine line) = p AND location(line) = loc AND adjustment(line) = a DO {
-                realQuantity(line) <- q;
-                RETURN;
-            }
+
+setRealQuantity(Adjustment a, Product p, Location loc, NUMERIC[16,3] q) {
+    IF lastAdjustmentLine(a, p, loc) THEN {
+        IF q THEN
+            realQuantity(AdjustmentLine l) <- q IF l = lastAdjustmentLine(a, p, loc)
+                WHERE adjustment(l) = a AND product(l) = p AND location(l) = loc;
+        ELSE
+            DELETE AdjustmentLine l WHERE adjustment(l) = a AND product(l) = p AND location(l) = loc;
+    } ELSE
+        IF q THEN
             NEW l = AdjustmentLine {
                 adjustment(l) <- a;
                 product(l) <- p;
                 location(l) <- loc;
-                theoreticalQuantity(l) <- onHand(loc, p);
                 realQuantity(l) <- q;
             }
-        }
+}
+    
+changeRealQuantity(Adjustment a, Product p, Location loc) {
+    INPUT q = NUMERIC[16,3] DO {
+        setRealQuantity(a, p, loc, q);
     }
 }
 
@@ -31,10 +36,12 @@ EXTEND FORM adjustment
     ORDERS name(lt)
         
     OBJECTS lp = (loc = Location, p = Product)
-    PROPERTIES READONLY 'Склад' = canonicalName(loc), 'Товар' = name(p) 
-    PROPERTIES(loc,p) READONLY onHand
-    PROPERTIES realQuantity(a, p, loc) ON CHANGE addAdjustmentLine(a, p, loc)
+    PROPERTIES READONLY    'Склад' = canonicalName(loc)
+    PROPERTIES(p) READONLY 'Товар' = name, nameUom, idBarCode, id  
+    PROPERTIES(loc, p) READONLY      onHand
+    PROPERTIES realQuantity(a, p, loc) ON CHANGE changeRealQuantity(a, p, loc)
     FILTERS level(loc, lt), onHand(loc, p)
+    ORDERS name(p)
 ;
 
 DESIGN adjustment {
@@ -49,3 +56,10 @@ DESIGN adjustment {
         }
     }
 }
+
+// barcode
+setRealQuantity(Adjustment a, Product p, NUMERIC[16,3] q) { setRealQuantity(a, p, location(a), q); }
+realQuantity(Adjustment a, Product p) = realQuantity(a, p, location(a));
+lastAdjustmentLine(Adjustment a, Product p) = lastAdjustmentLine(a, p, location(a));
+
+@defineBarCodeSearch(adjustment, a, l, product, realQuantity);

@@ -34,11 +34,12 @@ outQuantityB 'Кол-во отправленное' (Location ll, Lot l, DATETIM
 onHand 'Текущий остаток' (Location ll, Lot l) = inQuantity(ll, l) (-) outQuantity(ll, l) MATERIALIZED;
 prevOnHand (Location ll, Lot l) = PREV(onHand(ll, l));
 
-onHandLot 'Текущий остаток (партии)' (Location ll) = GROUP SUM onHand(ll, Lot l);
+onHandLot 'Текущий остаток (партии)' (Location ll, Product p) = GROUP SUM onHand(ll, Lot l) IF product(l) = p;
 
 onHand 'Текущий остаток' (Location ll, Lot l, DATETIME dt) = 
                                                             inQuantity(ll, l, dt) (-) outQuantity(ll, l, dt) IF dt;
-onHandLot 'Текущий остаток (партии)' (Location ll, DATETIME dt) = GROUP SUM onHand(ll, Lot l, dt);                                                            
+
+onHandLot 'Текущий остаток (партии)' (Location ll, Product p, DATETIME dt) = GROUP SUM onHand(ll, Lot l, dt) IF product(l) = p;                                                            
 
 onHandA 'Остаток' (Location ll, Lot l, DATETIME dt) = 
                                                             inQuantityA(ll, l, dt) (-) outQuantityA(ll, l, dt) IF dt;
@@ -73,7 +74,7 @@ EXTEND FORM item
     PROPERTIES (inv, lotI) READONLY quantity
     FILTERS quantity(inv, lotI)
     
-    PROPERTIES(l) AFTER onHand(l, i) SHOWIF i IS Product AND useLot(i) onHandLot     
+    PROPERTIES AFTER onHand(l, i) SHOWIF useLot(i) onHandLot(l, i)     
 
     OBJECTS lotH = Lot
     PROPERTIES(lotH) READONLY id
@@ -85,13 +86,13 @@ DESIGN item {
     invledger {
         MOVE BOX (lotI) { 
         fill = 0.1; 
-        showIf = i IS Product AND useLot(i);
+        showIf = useLot(i);
         }
     }
     lines {
         MOVE BOX(lotH){
             fill = 0.1; 
-            showIf = i IS Product AND useLot(i);
+            showIf = useLot(i);
         }
     }
 }

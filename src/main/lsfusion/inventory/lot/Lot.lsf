@@ -6,13 +6,13 @@ NAMESPACE Inventory;
 
 CLASS Lot 'Партия';
 
-id 'Код' = DATA STRING[100] (Lot);
+id 'Код' = DATA STRING[100] (Lot) CHARWIDTH 15;
 lot (STRING[100] id) = GROUP AGGR Lot o BY id(o);
 
 product 'Товар' = DATA Product (Lot) NONULL INDEXED;
 nameProduct 'Товар' (Lot l) = name(product(l)) IN id;
 
-useLot 'Партийный учет' = DATA BOOLEAN ();
+useLot 'Партионный учет' = DATA BOOLEAN ();
 
 EXTEND FORM options 
     PROPERTIES useLot()
@@ -20,7 +20,7 @@ EXTEND FORM options
 
 DESIGN options {
     commons {
-        MOVE PROPERTY(useLot()) FIRST;
+        MOVE PROPERTY(useLot());
     }
 } 
 
@@ -35,7 +35,7 @@ META defineDocLot (doc, quantity, caption)
     
     CONSTRAINT quantity(###doc##Line rl, Lot l) AND product(rl) != product(l)
                     MESSAGE 'Строка для партии должна относится к тому же продукту, что и партия';
-    CONSTRAINT useLot(product(###doc##Line rl)) AND (quantity(rl) (-) quantity##Lot(rl) < 0) AND done(doc(rl))
+    CONSTRAINT useLot(product(###doc##Line rl)) AND ((OVERRIDE quantity(rl), 0.0) - quantity##Lot(rl) < 0) AND done(doc(rl))
                     MESSAGE 'Несовпадение количества с количеством в партиях'##caption;                   
 END 
 
@@ -70,7 +70,9 @@ META defineDocBarCodeLot (doc, quantity)
                 
             quantity(line(), lot(s)) <- quantity(line(), lot(s)) (+) 1;
                     
-            ACTIVATE PROPERTY doc.quantity(l); 
+            SEEK doc.lot = lot(s);
+            ACTIVATE TAB doc.BOX(lot);
+            ACTIVATE PROPERTY doc.quantity(l, lot); 
             
             consumedBarCode() <- TRUE;
         }
@@ -89,11 +91,9 @@ META defineDocDesignLot(doc, quantity)
     
     DESIGN doc {
         linesTab {
-            NEW lots {
+            MOVE BOX(lot) {
                 caption = 'Партии';
-                MOVE BOX(lot){
-                    showIf = useLot();
-                }
+                showIf = useLot();
             }
         }
     }    
