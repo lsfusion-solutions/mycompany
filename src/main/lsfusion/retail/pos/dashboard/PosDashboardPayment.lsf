@@ -80,8 +80,10 @@ posPayment 'Оплата' (Session s, Invoice i) {
             amount(p) <- am;
             paid(p, i) <- am;
         }
+        ready(i) <- TRUE;
         APPLY;
         IF canceled() THEN {
+            ready(i) <- NULL;
             DELETE IncomingPayment p WHERE SET(p IS IncomingPayment);
         } ELSE {
             createInvoice(s);

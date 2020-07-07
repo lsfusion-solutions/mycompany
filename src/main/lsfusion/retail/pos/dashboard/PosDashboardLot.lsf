@@ -1,0 +1,37 @@
+MODULE PosDashboardLot;
+
+REQUIRE PosDashboard, InvoiceShipmentLot;
+
+NAMESPACE Retail;
+
+EXTEND FORM posDashboard
+    PROPERTIES(l) READONLY SHOWIF useLot(item(l)) BACKGROUND RGB(198,230,247) IF NOT quantityLot(l) = quantity(l)
+                  lotsQuantity PANEL
+;
+
+DESIGN posDashboard {
+    info {
+        MOVE PROPERTY(lotsQuantity(l)) FIRST { alignment = STRETCH; }
+    }
+}
+
+processBarCode(Invoice i, InvoiceLine l, STRING s) + {
+    IF product(lot(s)) THEN {
+        LOCAL line = InvoiceLine();
+        
+        IF NOT product(lot(s)) = item(l) THEN {
+            IF NOT lastInvoiceLine(i, product(lot(s))) THEN {
+                NEW il = InvoiceLine {
+                    invoice(il) <- i;
+                    item(il) <- product(lot(s));
+                }
+            }                
+            line() <- lastInvoiceLine(i, product(lot(s)));
+            SEEK posDashboard.l = line();            
+        } ELSE
+            line() <- l;                      
+            
+        quantity(line(), lot(s)) <- quantity(line(), lot(s)) (+) 1;
+        consumedBarCode() <- TRUE;
+    }
+}

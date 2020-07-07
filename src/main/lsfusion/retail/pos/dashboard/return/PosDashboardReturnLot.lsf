@@ -1,0 +1,20 @@
+MODULE PosDashboardReturnLot;
+
+REQUIRE PosDashboardReturn, BillReceiptLot, CreditNoteLot;
+
+NAMESPACE Retail;
+
+EXTEND FORM posDashboard
+    OBJECTS blot = Lot
+    PROPERTIES SHOWIF useLot(item(bl)) id(blot) READONLY, quantity(bl, blot)
+    FILTERS quantity(bl, blot)
+;
+
+DESIGN posDashboard {
+    billInfo {
+        REMOVE BOX(blot);
+        MOVE GRID(blot) FIRST {
+            headerHeight = 24;
+        }
+    }
+}

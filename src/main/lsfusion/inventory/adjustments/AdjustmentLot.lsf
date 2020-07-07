@@ -4,9 +4,9 @@ REQUIRE Adjustment, ProductLot, AdjustmentSearch, AdjustmentInv, InvLedgerLot;
 
 NAMESPACE Inventory;
 
-@defineDocLot (adjustment, theoreticalQuantity, ' (теоретическое)');
+@defineDocLot (adjustment, product, theoreticalQuantity, done, ' (теоретическое)');
 
-@defineDocLot (adjustment, realQuantity, ' (фактическое)');
+@defineDocLot (adjustment, product, realQuantity, done, ' (фактическое)');
 
 fillTheoreticalQuantity(AdjustmentLine al) + {
     theoreticalQuantity(al, Lot l) <- prevOnHandB(location(al), l, dateTime(adjustment(al))) IF product(l) = product(al);
@@ -21,6 +21,17 @@ WHEN LOCAL CHANGED(theoreticalQuantity(AdjustmentLine al, Lot l)) AND NOT CHANGE
 background (AdjustmentLine al, Lot l) = CASE WHEN theoreticalQuantity(al, l) < realQuantity(al, l) THEN RGB(152,251,152)
                                               WHEN theoreticalQuantity(al, l) > realQuantity(al, l) THEN RGB(252,184,205);
 
+@defineDocBarCodeLot (adjustment, product, realQuantity);
+
+beforeProcessLotBarCode(Adjustment a, STRING s) + {
+    IF NOT lot(s) THEN {
+        NEW l = Lot {
+            id(l) <- STRING[100](s);
+        }
+    }
+}
+
+// design
 EXTEND FORM adjustment
     PROPERTIES(l) AFTER theoreticalQuantity(l) SHOWIF useLot() BACKGROUND RGB(198,230,247) IF(useLot(product(l))) theoreticalQuantityLot
     PROPERTIES(l) AFTER realQuantity(l) SHOWIF useLot() BACKGROUND RGB(198,230,247) IF(useLot(product(l))) realQuantityLot
@@ -41,17 +52,12 @@ DESIGN adjustment {
     }
 }
 
-@defineDocBarCodeLot (adjustment, realQuantity);
-
-processBarCode(Adjustment r, STRING s) + {
-    IF NOT lot(s) THEN {
-        NEW l = Lot {
-            id(l) <- STRING[100](s);
-        }
-    }
+afterProcessLotBarCode(Adjustment a, STRING s) + {
+    SEEK adjustment.lot = lot(s);
+    ACTIVATE PROPERTY adjustment.realQuantity(l, lot); 
 }
 
-
+// ledgers
 difference (AdjustmentLine al, Lot l) = theoreticalQuantity(al, l) (-) realQuantity(al, l);
 
 countDifferenceLot (AdjustmentLine al) = GROUP SUM 1 IF difference(al, Lot l); 

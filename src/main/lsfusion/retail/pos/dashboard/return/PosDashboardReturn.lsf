@@ -39,7 +39,10 @@ DESIGN posDashboard {
             NEW billLinesFooter {
                 type = CONTAINERH;
                 alignment = STRETCH;
-                MOVE PROPERTY(amount(b)) { charWidth = 8; panelCaptionAbove = TRUE; fontSize = 24; focusable = FALSE; }
+                NEW billInfo {
+                    fill = 1;
+                    MOVE PROPERTY(amount(b)) { charWidth = 8; panelCaptionAbove = TRUE; fontSize = 24; focusable = FALSE; }
+                }
                 NEW billActions {
                     alignment = STRETCH;
                     type = CONTAINERH;
@@ -62,7 +65,6 @@ return 'Оформить возврат' (Session s, Invoice i) {
         
         hideInvoice() <- TRUE;
         NEW b = Bill {
-            ready(b) <- TRUE;
             session(b) <- s;
             
             create(b, i);

@@ -172,7 +172,6 @@ DESIGN posDashboard { REMOVE PROPERTY(posDashboardPress0(l)); }
 createInvoice (Session s) {
     IF s THEN
         NEW i = Invoice {
-            ready(i) <- TRUE;
             session(i) <- s;
             SEEK posDashboard.i = i;
         }
@@ -205,12 +204,12 @@ DESIGN posDashboard {
 }
 
 // barcode handling
-processBarCode ABSTRACT LIST (Invoice, STRING);
-changeBarCode (Invoice i) {
+processBarCode ABSTRACT LIST (Invoice, InvoiceLine, STRING);
+changeBarCode (Invoice i, InvoiceLine l) {
     INPUT b = STRING DO {
         IF b THEN {
             consumedBarCode() <- NULL;
-            processBarCode(i, b);
+            processBarCode(i, l, b);
             
             IF NOT consumedBarCode() THEN
                 MESSAGE 'Штрих-код не найден';
@@ -219,7 +218,7 @@ changeBarCode (Invoice i) {
 }
 
 EXTEND FORM posDashboard
-    PROPERTIES() barCode ON CHANGE changeBarCode(i)
+    PROPERTIES() barCode ON CHANGE changeBarCode(i, l)
 ;
 
 DESIGN posDashboard {

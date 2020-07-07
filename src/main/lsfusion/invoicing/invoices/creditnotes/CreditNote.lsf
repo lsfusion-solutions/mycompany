@@ -39,8 +39,9 @@ EXTEND FORM bill
 ;
 
 // add
-fill ABSTRACT (Bill, Invoice); 
-
+fill ABSTRACT (BillLine, InvoiceLine);
+fill ABSTRACT (Bill, Invoice);
+ 
 create (Bill b, Invoice i) {
     type(b) <- billType(type(i));
         
@@ -59,6 +60,8 @@ create (Bill b, Invoice i) {
         item(bl) <- item(l);
 
         quantity(bl) <- quantity(l);
+        
+        fill(bl, l);
     }
     
     fill(b, i);
