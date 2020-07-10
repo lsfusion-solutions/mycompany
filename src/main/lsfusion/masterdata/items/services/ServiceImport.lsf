@@ -11,12 +11,15 @@ serviceExport 'Экспорт услуг' () {
                 id(s) <- '123';
                 dataName(s) <- 'Моя услуга';
                 category(s) <- GROUP LAST Category c ORDER DESC c WHERE c IS Category;
+
+                description(s) <- 'Описание';
+                archived(s) <- TRUE;
             }
         }
     
         LOCAL f = EXCELFILE ();
         EXPORT XLSX HEADER FROM 'Код услуги' = id(Service s), 'Наименование' = dataName(s), 'Код категории' = idCategory(s), 
-            'Штрихкод' = idBarCode(s), 'Код учетной единицы' = idUom(s) WHERE s IS Service TO f;   
+            'Штрихкод' = idBarCode(s), 'Код учетной единицы' = idUom(s), 'Описание' = description(s), 'Неактивный' = archived(s) WHERE s IS Service TO f;   
         open(f());
     }
 }
@@ -27,10 +30,12 @@ serviceImport 'Импорт услуг' () {
     LOCAL idCategory = ISTRING[50] (INTEGER);
     LOCAL barCode = STRING (INTEGER);
     LOCAL idUnitM = ISTRING[50] (INTEGER);
+    LOCAL description = TEXT (INTEGER);
+    LOCAL archived = BOOLEAN (INTEGER);
        
     INPUT f = EXCELFILE DO {
         NEWSESSION {
-            IMPORT XLS HEADER FROM f TO id = A, name = B, idCategory = C, barCode = D, idUnitM = E; 
+            IMPORT XLS HEADER FROM f TO id = A, name = B, idCategory = C, barCode = D, idUnitM = E, description = F, archived = G; 
             
             FOR [GROUP SUM 1 BY idCategory(INTEGER i)](num) AND NOT category[STRING](num) DO {
                 MESSAGE 'Отсутствует категория в базе данных с кодом ' + num + '. Импорт отменен';;
@@ -46,6 +51,8 @@ serviceImport 'Импорт услуг' () {
                     id(b) <- barCode(i);
                 }
                 uom(s) <- uom(idUnitM(i));
+                description(s) <- description(i);
+                archived(s) <- archived(i);
             }
             APPLY;
             MESSAGE 'Импорт завершен';

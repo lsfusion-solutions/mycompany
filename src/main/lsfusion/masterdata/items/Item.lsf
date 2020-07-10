@@ -17,6 +17,8 @@ suffixName 'Суффикс' = ABSTRACT STRING (Item);
 
 name 'Наименование (полное)' (Item i) = CONCAT ' ', prefixName(i), dataName(i), suffixName(i) CHARWIDTH 30 MATERIALIZED INDEXED;
 
+description 'Описание' = DATA TEXT (Item);
+
 category 'Категория' = DATA Category (Item) NONULL INDEXED;
 idCategory 'Код категории' (Item i) = id(category(i));
 nameCategory 'Категория' (Item i) = name(category(i));
@@ -59,7 +61,8 @@ FORM item 'Номенклатура'
     OBJECTS i = Item PANEL
     PROPERTIES(i) dataName READONLYIF readonly(i), class READONLY, 
                   name READONLY, id, canonicalNameCategory READONLYIF readonly(i), nameUom READONLYIF readonly(i),
-                  archived READONLYIF readonly(i)
+                  archived READONLYIF readonly(i),
+                  '' = description READONLYIF readonly(i)
       
     EDIT Item OBJECT i
 ;
@@ -92,12 +95,13 @@ DESIGN item {
         NEW tabs {
             type = TABBED;
             fill = 1;
-            NEW image {
-                caption = 'Изображение';
-            }
             NEW operations {
                 type = TABBED;
                 caption = 'Документы';
+            }
+            NEW description {
+                caption = 'Описание';
+                MOVE PROPERTY(description(i)) { fill = 1; };
             }
         }
     }  
