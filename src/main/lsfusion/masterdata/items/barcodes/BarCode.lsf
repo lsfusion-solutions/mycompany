@@ -10,8 +10,7 @@ item 'Номенклатура' = DATA Item (BarCode) NONULL DELETE;
 idItem 'Код номенклатуры' (BarCode b) = id(item(b));
 nameItem 'Номенклатура' (BarCode b) = name(item(b));
 
-id 'Штрихкод' = DATA STRING (BarCode);
-barCode (STRING[50] id) = GROUP AGGR BarCode b BY id(b);
+@defineID(barCode, 'Штрихкоды', '');
 itemBarCode (STRING[50] id) = item(barCode(id));
 
 dataDefaultBarCode = DATA BarCode (Item);
@@ -89,3 +88,39 @@ META defineBarCodeSearch(doc, let, line, itm, quantity)
         PROPERTIES() barCode DRAW l TOOLBAR ON CHANGE scanBarCode(##let, l)
     ;
 END
+
+// add barcode item form
+changeBarCode (Item i) {
+    INPUT s = STRING DO {
+        IF s THEN {
+            IF barCode(s) THEN
+                MESSAGE 'Штрихкод уже присутствует в базе данных.';
+            ELSE NEW b = BarCode {
+                item(b) <- i;
+                id(b) <- s;
+            }
+        } 
+    }
+}
+
+EXTEND FORM item
+    PROPERTIES() barCode DRAW b TOOLBAR ON CHANGE changeBarCode(i)
+;
+
+// auto create
+dataAutoCreateBarCode 'Автоматически генерировать штрихкод' = DATA BOOLEAN (Category);
+autoCreateBarCode (Category c) = GROUP LAST dataAutoCreateBarCode(Category cp) ORDER level(c, cp);
+
+EXTEND FORM category
+    PROPERTIES(c) dataAutoCreateBarCode
+;
+
+DESIGN category {
+    params {
+        MOVE PROPERTY(dataAutoCreateBarCode(c));
+    }
+}
+
+WHEN SET(Item i IS Item) AND autoCreateBarCode(category(i)) AND NOT defaultBarCode(i) DO NEW b = BarCode {
+    item(b) <- i;
+}
