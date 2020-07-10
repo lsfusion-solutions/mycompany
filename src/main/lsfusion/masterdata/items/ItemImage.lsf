@@ -7,13 +7,14 @@ NAMESPACE MasterData;
 image 'Изображение' = DATA IMAGEFILE (Item);
 loadImage 'Загрузить' (Item i)  { INPUT = image(i) CHANGE; }
 openImage 'Открыть' (Item i)  { open(image(i)); }
+dropImage 'Сбросить' (Item i) { image(i) <- NULL; }
 
 copy(Item n, Item o) + {
     image(n) <- image(o);
 }
 
 EXTEND FORM item
-    PROPERTIES(i) image , loadImage, openImage
+    PROPERTIES(i) image , loadImage, openImage, dropImage SHOWIF TRUE IF image(i) 
 ;
 
 DESIGN item {

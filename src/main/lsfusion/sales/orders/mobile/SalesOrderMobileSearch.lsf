@@ -4,11 +4,6 @@ REQUIRE SalesOrderMobile, SalesOrderSearch, BarCode;
 
 NAMESPACE Sales;
 
-categoryFilter = DATA LOCAL Category ();
-nameCategoryFilter 'Категория' = name(categoryFilter());
-@defineChangeInput(categoryFilter, Category, dialogCategoriesMobile, c);    
-clearCategoryFilter '' () { categoryFilter() <- NULL; } IMAGE 'delete.png';
-
 EXTEND FORM orderMobile
     OBJECTS i = Item
     PROPERTIES(i) READONLY 'Имя' = name
@@ -23,33 +18,19 @@ EXTEND FORM orderMobile
     FILTERGROUP order
         FILTER 'Заказано' quantity(o, i)
 
-    PROPERTIES() nameFilter, clearNameFilter
-    FILTERS isISubstring(name(i), nameFilter()) OR NOT nameFilter()
-
-    PROPERTIES() nameCategoryFilter ON CHANGE changeCategoryFilter(), clearCategoryFilter
-    FILTERS level(category(i), categoryFilter()) OR NOT categoryFilter()
 ;
 
 DESIGN orderMobile {
     pane {
         NEW search {
             caption = 'Подбор';
-            NEW nameFilter {
-                type = CONTAINERH;
+            NEW filters {
                 alignment = STRETCH;
-                MOVE PROPERTY(nameFilter()) { alignment = STRETCH; }
-                MOVE PROPERTY(clearNameFilter());
-            }
-            NEW categoryFilter {
-                type = CONTAINERH;
-                alignment = STRETCH;
-                MOVE PROPERTY(nameCategoryFilter()) { alignment = STRETCH; }                    
-                MOVE PROPERTY(clearCategoryFilter());
-            }
-            NEW groupFilter {
-                type = CONTAINERH;
-                alignment = STRETCH;
-                MOVE FILTERGROUPS(i);
+                NEW groupFilter {
+                    type = CONTAINERH;
+                    alignment = STRETCH;
+                    MOVE FILTERGROUPS(i);
+                }
             }
             MOVE GRID(i) {
                 headerHeight = 24;
@@ -70,6 +51,9 @@ DESIGN orderMobile {
         }
     }
 }
+
+@defineNameFilter(orderMobile, i, filters);
+@defineCategoryFilter(orderMobile, i, filters);
 
 setQuantity(Item i, INTEGER n) {
     FOR [VIEW orderMobile.o](Order o) DO {

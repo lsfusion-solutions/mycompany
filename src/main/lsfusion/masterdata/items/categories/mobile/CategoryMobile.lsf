@@ -1,6 +1,6 @@
 MODULE CategoryMobile;
 
-REQUIRE Category;
+REQUIRE Category, Utils, Input;
 
 NAMESPACE MasterData;
 
@@ -16,3 +16,27 @@ DESIGN dialogCategoriesMobile {
         REMOVE TOOLBARBOX(c);
     }
 }
+
+// filter
+categoryFilter = DATA LOCAL Category ();
+nameCategoryFilter 'Категория' = name(categoryFilter());
+@defineChangeInput(categoryFilter, Category, dialogCategoriesMobile, c);    
+clearCategoryFilter '' () { categoryFilter() <- NULL; } IMAGE 'delete.png';
+
+META defineCategoryFilter(form, obj, container)
+    EXTEND FORM form
+        PROPERTIES() nameCategoryFilter ON CHANGE changeCategoryFilter(), clearCategoryFilter
+        FILTERS level(category(obj), categoryFilter()) OR NOT categoryFilter()
+    ;
+    DESIGN form {
+        container {
+            NEW categoryFilter {
+                type = CONTAINERH;
+                alignment = STRETCH;
+                MOVE PROPERTY(nameCategoryFilter()) { alignment = STRETCH; }                    
+                MOVE PROPERTY(clearCategoryFilter());
+            }
+        }
+    }
+
+END

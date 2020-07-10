@@ -39,6 +39,23 @@ END
 nameFilter 'Наименование' = DATA LOCAL ISTRING () CHARWIDTH 20;
 clearNameFilter '' () { nameFilter() <- NULL; } IMAGE 'delete.png';
 
+META defineNameFilter(form, obj, container)
+    EXTEND FORM form
+        PROPERTIES() nameFilter, clearNameFilter
+        FILTERS isISubstring(name(obj), nameFilter()) OR NOT nameFilter()
+    ;
+    DESIGN form {
+        container {
+            NEW nameFilter {
+                type = CONTAINERH;
+                alignment = STRETCH;
+                MOVE PROPERTY(nameFilter()) { alignment = STRETCH; }
+                MOVE PROPERTY(clearNameFilter());
+            }
+        }
+    }
+END
+
 // keyboard
 
 // single object
