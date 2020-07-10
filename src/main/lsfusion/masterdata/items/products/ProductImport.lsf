@@ -17,7 +17,8 @@ productExport 'Экспорт товаров' () {
                 volume(p) <- 1.5;
                 
                 salesPrice(p) <- 6.14;
-                description(p) <- 'Описание';
+                reference(p) <- 'ABC4251';
+                description(p) <- 'Самый лучший продукт';
                 archived(p) <- TRUE;
             }
         }
@@ -26,7 +27,7 @@ productExport 'Экспорт товаров' () {
         EXPORT XLSX HEADER FROM 'Код товара' = id(Product p), 'Наименование' = dataName(p), 'Код категории' = idCategory(p), 
                                 'Код единицы измерения' = idUom(p), 'Вес единицы, кг' = weight(p), 'Объем единицы, м3' = volume(p),
                                 'Цена продажи' = salesPrice(p), 'Код страны происхождения' = id(countryOrigin(p)), 
-                                'Описание' = description(p), 'Неактивный' = archived(p)  
+                                'Артикул' = reference(p), 'Описание' = description(p), 'Неактивный' = archived(p)  
                                 WHERE p IS Product TO f;   
         open(f());
     }
@@ -41,13 +42,14 @@ productImport 'Импорт товаров' () {
     LOCAL volume = NUMERIC[11,3] (INTEGER);
     LOCAL salesPrice = NUMERIC[10,2] (INTEGER);
     LOCAL idCountryOrigin = STRING[3] (INTEGER);
+    LOCAL reference = STRING[50] (INTEGER);
     LOCAL description = TEXT (INTEGER);
     LOCAL archived = BOOLEAN (INTEGER);
        
     INPUT f = EXCELFILE DO {
         NEWSESSION {
             IMPORT XLS HEADER FROM f TO id = A, name = B, idCategory = C, idUom = D, weight = E,
-                                        volume = F, salesPrice = G, idCountryOrigin = H, description = I, archived = J; 
+                                        volume = F, salesPrice = G, idCountryOrigin = H, reference = I, description = J, archived = K; 
             
             FOR [GROUP SUM 1 BY idCategory(INTEGER i)](STRING num) AND NOT category(num) DO {
                 MESSAGE 'Отсутствует категория в базе данных с кодом ' + num + '. Импорт отменен';
@@ -76,6 +78,7 @@ productImport 'Импорт товаров' () {
                 volume(p) <- volume(i);
                 salesPrice(p) <- salesPrice(i);
                 countryOrigin(p) <- country(idCountryOrigin(i));
+                reference(p) <- reference(i);
                 description(p) <- description(i);
                 archived(p) <- archived(i);
             }
