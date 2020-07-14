@@ -5,6 +5,8 @@
 
 Демо-версия находится по адресу https://demo.lsfusion.org/mycompany
 
+Обсуждение : https://slack.lsfusion.org/
+
 ### Реализованные модули
 
 * Расчеты с контрагентами
