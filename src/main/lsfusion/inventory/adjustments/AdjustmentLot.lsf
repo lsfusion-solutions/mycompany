@@ -58,9 +58,9 @@ afterProcessLotBarCode(Adjustment a, STRING s) + {
 }
 
 // ledgers
-difference (AdjustmentLine al, Lot l) = theoreticalQuantity(al, l) (-) realQuantity(al, l);
+difference (AdjustmentLine al, Lot l) = realQuantity(al, l) (-) theoreticalQuantity(al, l);
 
 countDifferenceLot (AdjustmentLine al) = GROUP SUM 1 IF difference(al, Lot l); 
 createInAdjustment (AdjustmentLine al) += TRUE IF countDifferenceLot(al); 
 
-quantity (InvAdjustment a, Lot l) += difference(line(a), l);
+quantity (InvAdjustment a, Lot l) += IF difference(line(a)) < 0 THEN -difference(line(a), l) ELSE difference(line(a), l);
