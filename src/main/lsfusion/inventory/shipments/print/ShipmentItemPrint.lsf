@@ -1,0 +1,20 @@
+MODULE ShipmentItemPrint;
+
+REQUIRE ShipmentDone, ItemPrint;
+
+NAMESPACE Inventory;
+
+printItem 'Этикетки' (Shipment s) {
+    count(Item i) <- GROUP SUM done(ShipmentLine l) IF shipment(l) = s AND product(l) = i;
+    printItem();  
+}
+
+EXTEND FORM shipment
+    PROPERTIES(s) printItem SHOWIF countPrintItemTypes()
+;
+
+DESIGN shipment {
+    secondaryActions {
+        MOVE PROPERTY(printItem(s));
+    }
+}

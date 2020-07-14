@@ -1,0 +1,102 @@
+MODULE ItemPrintType;
+
+REQUIRE Item, Company, DocTemplate;
+
+NAMESPACE MasterData;
+
+CLASS PrintItemType 'Шаблон этикетки';
+
+name 'Наименование' = DATA STRING[50] (PrintItemType);
+
+company = DATA Company (PrintItemType);
+nameCompany 'Компания' (PrintItemType t) = name(company(t)); 
+
+WHEN LOCAL SET(PrintItemType t IS PrintItemType) AND NOT CHANGED(company(t)) DO company(t) <- defaultCompany();
+
+template 'Шаблон' = DATA STRING (PrintItemType) CHARWIDTH 50;
+
+file = DATA FILE (PrintItemType);
+hasFile (PrintItemType t) = TRUE IF file(t);
+
+hasTemplate (PrintItemType t) = template(t) OR hasFile(t);
+
+openFile 'Открыть' (PrintItemType t) { 
+    IF hasFile(t) THEN {
+        open(file(t));
+    } ELSE IF template(t) THEN {
+        readResource(template(t));
+        open(resourceFile());
+    } 
+}
+loadFile 'Загрузить' (PrintItemType t) { INPUT = file(t) CHANGE; }
+dropFile 'Сбросить' (PrintItemType t) { file(t) <- NULL; } 
+
+format = DATA TemplateFormat (PrintItemType);
+nameFormat 'Формат' (PrintItemType t) = name(format(t));
+
+// category
+set 'Вкл' = DATA BOOLEAN (PrintItemType, Category);
+
+countCategory (PrintItemType t) = GROUP SUM 1 IF set(t, Category c) MATERIALIZED;
+set 'Вкл' (PrintItemType t, Item i) = (GROUP LAST set(t, Category pc) ORDER level(category(i), pc)) OR (i IS Item AND t IS PrintItemType AND NOT countCategory(t));
+
+countPrintType 'Кол-во шаблонов' (Item i) = GROUP SUM 1 IF set(PrintItemType pt, i); 
+
+FORM printItemType 'Шаблон этикетки'
+    OBJECTS t = PrintItemType PANEL
+    PROPERTIES(t) name, nameCompany, 
+                  template SHOWIF NOT hasFile(t), loadFile, 
+                  openFile SHOWIF hasFile(t), dropFile SHOWIF hasFile(t), 
+                  nameFormat
+    
+    TREE categories cat = Category PARENT parent(cat) 
+    PROPERTIES name(cat) READONLY, set(t, cat) BACKGROUND (GROUP SUM 1 IF set(t, Category cc) AND level(cc, cat))
+    ORDERS name(cat)
+    
+    EDIT PrintItemType OBJECT t
+;
+
+DESIGN printItemType {
+    OBJECTS {
+        NEW header {
+            NEW general {
+                alignment = STRETCH;
+                type = CONTAINERH;
+                MOVE PROPERTY(name(t));
+                MOVE PROPERTY(nameCompany(t));
+            }
+            NEW format {
+                alignment = STRETCH;
+                type = CONTAINERH;
+                MOVE PROPERTY(template(t));
+                MOVE PROPERTY(loadFile(t));
+                MOVE PROPERTY(openFile(t));
+                MOVE PROPERTY(dropFile(t));
+                MOVE PROPERTY(nameFormat(t));
+            }
+        }
+        MOVE BOX(TREE categories);
+    }
+}
+
+FORM printItemTypes 'Шаблоны этикетки'
+    OBJECTS t = PrintItemType
+    PROPERTIES READONLY name(t)
+    
+    LIST PrintItemType OBJECT t
+;
+
+EXTEND FORM options
+    OBJECTS pp = PrintItemType
+    
+    PROPERTIES READONLY name(pp)
+    PROPERTIES(pp) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    pane {
+        MOVE BOX(pp);
+    }
+}
+
+countPrintItemTypes 'Кол-во шаблонов' () = GROUP SUM 1 IF r IS PrintItemType; 

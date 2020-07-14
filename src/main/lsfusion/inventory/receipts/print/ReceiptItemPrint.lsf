@@ -1,0 +1,20 @@
+MODULE ReceiptItemPrint;
+
+REQUIRE ReceiptDone, ItemPrint;
+
+NAMESPACE Inventory;
+
+printItem 'Этикетки' (Receipt s) {
+    count(Item i) <- GROUP SUM done(ReceiptLine l) IF receipt(l) = s AND product(l) = i;
+    printItem();  
+}
+
+EXTEND FORM receipt
+    PROPERTIES(r) printItem SHOWIF countPrintItemTypes()
+;
+
+DESIGN receipt {
+    secondaryActions {
+        MOVE PROPERTY(printItem(r));
+    }
+}
