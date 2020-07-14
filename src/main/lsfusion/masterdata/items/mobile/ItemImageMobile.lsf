@@ -1,6 +1,6 @@
 MODULE ItemImageMobile;
 
-REQUIRE Input, Utils,
+REQUIRE Input, Utils, Reflection, Security, Authentication,
         MasterDataSettings, ItemImage, 
         CategoryMobile, Mobile;
 
@@ -54,4 +54,7 @@ NAVIGATOR {
     }
 }
 
-showMobileForms() + { SHOW itemImageLoad NOWAIT; }
+showMobileForms() + { 
+    IF permit(currentUser(), navigatorElementCanonicalName('MasterData.itemImageLoad')) THEN
+        SHOW itemImageLoad NOWAIT; 
+}

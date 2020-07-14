@@ -1,6 +1,6 @@
 MODULE SalesOrderMobile;
 
-REQUIRE Input, SalesOrderLocked, SalesOrderDiscount,
+REQUIRE Input, Reflection, SalesOrderLocked, SalesOrderDiscount,
         Mobile, PartnerMobile, ItemMobile, CategoryMobile;
 
 NAMESPACE Sales;
@@ -154,4 +154,7 @@ NAVIGATOR {
     }
 }
 
-showMobileForms() + { SHOW ordersMobile NOWAIT; }
+showMobileForms() + { 
+    IF permit(currentUser(), navigatorElementCanonicalName('Sales.ordersMobile')) THEN
+        SHOW ordersMobile NOWAIT; 
+}
