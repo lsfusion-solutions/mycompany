@@ -33,8 +33,13 @@ beforeProcessLotBarCode(Adjustment a, STRING s) + {
 
 // design
 EXTEND FORM adjustment
-    PROPERTIES(l) AFTER theoreticalQuantity(l) SHOWIF useLot() BACKGROUND RGB(198,230,247) IF(useLot(product(l))) theoreticalQuantityLot
-    PROPERTIES(l) AFTER realQuantity(l) SHOWIF useLot() BACKGROUND RGB(198,230,247) IF(useLot(product(l))) realQuantityLot
+    PROPERTIES(l) AFTER theoreticalQuantity(l) SHOWIF useLot() 
+                  BACKGROUND RGB(198,230,247) IF useLot(product(l))
+                  theoreticalQuantityLot
+    PROPERTIES(l) AFTER realQuantity(l) SHOWIF useLot() 
+                  BACKGROUND RGB(198,230,247) IF useLot(product(l)) 
+                  READONLYIF (NOT status(adjustment(l)) = AdjustmentStatus.inProgress)
+                  realQuantityLot
     
     OBJECTS lot = Lot
     PROPERTIES (lot) id READONLY
@@ -63,4 +68,4 @@ difference (AdjustmentLine al, Lot l) = realQuantity(al, l) (-) theoreticalQuant
 countDifferenceLot (AdjustmentLine al) = GROUP SUM 1 IF difference(al, Lot l); 
 createInAdjustment (AdjustmentLine al) += TRUE IF countDifferenceLot(al); 
 
-quantity (InvAdjustment a, Lot l) += IF difference(line(a)) < 0 THEN -difference(line(a), l) ELSE difference(line(a), l);
+quantity (InvAdjustment a, Lot l) += IF NOT difference(line(a)) > 0 THEN -difference(line(a), l) ELSE difference(line(a), l);
