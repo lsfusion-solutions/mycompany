@@ -9,6 +9,9 @@ CLASS ItemAttribute 'Атрибут';
 id 'Код' = DATA STRING[50] (ItemAttribute) IN id CHARWIDTH 8;
 itemAttribute (STRING[50] id) = GROUP AGGR ItemAttribute i BY id(i);
 
+index '№' (ItemAttribute a) = PARTITION SUM 1 ORDER a AS ItemAttribute MATERIALIZED CHARWIDTH 2;
+itemAttribute (INTEGER i) = GROUP LAST ItemAttribute a ORDER a BY index(a);  
+
 //обязателен для заполнения
 nonull 'Обязателен для заполнения' = DATA BOOLEAN (ItemAttribute);
 
@@ -79,7 +82,7 @@ FORM childValues 'Значения'
 // формы ввода атрибутов
 FORM attributes 'Атрибуты'
     OBJECTS a = ItemAttribute
-    PROPERTIES(a) READONLY id, name, nonull
+    PROPERTIES(a) READONLY index, id, name, nonull
     PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE 
     
     LIST ItemAttribute OBJECT a
@@ -236,3 +239,24 @@ copy(Item n, Item o) + {
        attribute(n, a) <- attribute(o, a);
    }
 }
+
+// index values
+
+value (Item i, INTEGER index) = value(i, itemAttribute(index));
+
+attribute1(Item i) = value(i, 1);
+attribute2(Item i) = value(i, 2);
+attribute3(Item i) = value(i, 3);
+attribute4(Item i) = value(i, 4);
+attribute5(Item i) = value(i, 5);
+attribute6(Item i) = value(i, 6);
+attribute7(Item i) = value(i, 7);
+attribute8(Item i) = value(i, 8);
+attribute9(Item i) = value(i, 9);
+
+META defineAttributeForm (form, obj)
+    EXTEND FORM form
+        PROPERTIES(obj) READONLY attribute1, attribute2, attribute3, attribute4, attribute5, attribute6, attribute7, attribute8, attribute9   
+    ;
+END
+ 
