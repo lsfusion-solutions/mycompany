@@ -9,19 +9,19 @@ FORM inventoryValuation 'Себестоимость остатков'
     PROPERTIES READONLY       nameCostingMethod(p), 'Склад' = canonicalName(l)
     PROPERTIES(p) READONLY    'Товар' = name, nameUom, idBarCode, id
     PROPERTIES(l, p) READONLY costQuantity, costPrice, costAmount
-    PROPERTIES(p) EDIT
+    PROPERTIES(p) NEWSESSION EDIT
     PROPERTIES recalculateCost() DRAW lp TOOLBAR
     FILTERS costQuantity(l, p),
             accessGranted(l)
         
     OBJECTS ol = OutCostLedger
     PROPERTIES(ol) READONLY class, type, dateTime, number, nameLocation, nameProduct, quantity, costed, price, amount
-    PROPERTIES(ol) EDIT
+    PROPERTIES(ol) NEWSESSION EDIT
     FILTERS location(ol) = l, product(ol) = p
     
     OBJECTS il = InCostLedger
     PROPERTIES(il) READONLY class, type, dateTime, number, nameLocation, nameProduct, quantity, costed, price, amount
-    PROPERTIES(il) EDIT
+    PROPERTIES(il) NEWSESSION EDIT
     PROPERTIES READONLY quantity(ol, il)
     FILTERS location(il) = l, product(il) = p
     FILTERGROUP filterIn

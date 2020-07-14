@@ -36,18 +36,13 @@ DESIGN adjustment {
 }
 
 // inv adjustment
-difference (AdjustmentLine l) = theoreticalQuantity(l) (-) realQuantity(l);
+difference (AdjustmentLine l) = realQuantity(l) (-) theoreticalQuantity(l);
 createInAdjustment = ABSTRACT VALUE BOOLEAN (AdjustmentLine); 
 
 CLASS InvAdjustment 'Инвентаризация';
 
-CLASS InAdjustment 'Излишек по инвентаризации' : InvAdjustment;
-inAdjustment = AGGR InAdjustment WHERE (difference(AdjustmentLine line) < 0.0 OR createInAdjustment(line)) AND done(adjustment(line));
+invAdjustment = AGGR InvAdjustment WHERE (difference(AdjustmentLine line) OR createInAdjustment(line)) AND done(adjustment(line)) MATERIALIZED INDEXED;
 
-CLASS OutAdjustment 'Недостача по инвентаризации' : InvAdjustment;
-outAdjustment = AGGR OutAdjustment WHERE difference(AdjustmentLine line) > 0.0 AND done(adjustment(line));
-
-line (InvAdjustment a) = MULTI line[InAdjustment](a), line[OutAdjustment](a) MATERIALIZED INDEXED;
 adjustment (InvAdjustment a) = adjustment(line(a)) MATERIALIZED INDEXED;
 
 quantity 'Количество' (InvAdjustment a) = difference(line(a));
@@ -62,7 +57,7 @@ edit (InvAdjustment a) + { edit(adjustment(a)); }
 
 EXTEND FORM adjustment
     OBJECTS i = InvAdjustment
-    PROPERTIES(i) nameProduct, nameLocation, quantity
+    PROPERTIES(i) READONLY nameProduct, nameLocation, quantity
     FILTERS adjustment(i) = a
 ;
 
