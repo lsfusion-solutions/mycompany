@@ -27,7 +27,7 @@ FORM inventoryReport 'Текущие остатки'
     PROPERTIES(l, p) READONLY SHOWIF selectedDateTime() onHandDateTime 
     PROPERTIES(l, p) READONLY dateReceived, dateShipped
     PROPERTIES(p) READONLY image PANEL
-    PROPERTIES(p) EDIT
+    PROPERTIES(p) NEWSESSION EDIT
     FILTERS IF singleLocation() THEN l = lt ELSE isChild(l, lt),
             level(category(p), c),
             IF selectedDateTime() THEN onHandDateTime(l, p) ELSE 
@@ -39,7 +39,7 @@ FORM inventoryReport 'Текущие остатки'
                             nameFromLocation, onHandFromLocation, 
                             nameToLocation, onHandToLocation,
                             quantity
-    PROPERTIES(il) EDIT
+    PROPERTIES(il) NEWSESSION EDIT
     FILTERGROUP activeInv
         FILTER 'Активный' active(il) DEFAULT
     FILTERS product(il) = p,
@@ -51,7 +51,7 @@ FORM inventoryReport 'Текущие остатки'
     PROPERTIES(rl) READONLY class, type, dateTime, number, 
                             namePartner, nameLocation, 
                             reserved
-    PROPERTIES(rl) EDIT
+    PROPERTIES(rl) NEWSESSION EDIT
     FILTERS product(rl) = p,
             IF singleLocation() THEN (TRUE IF level(location(rl), l))
                                 ELSE location(rl) = l,
