@@ -1,6 +1,6 @@
 MODULE PurchaseOrderSearch;
 
-REQUIRE PurchaseOrder, ResLedger;
+REQUIRE PurchaseOrderCanceled, ResLedger;
 
 NAMESPACE Purchase;
 
@@ -11,6 +11,26 @@ available 'Доступно' (Order o, Product p) = prevAvailableRec(location(o)
 
 EXTEND FORM order
     PROPERTIES(o, itm) READONLY available
+;
+
+// last
+lastOrderLine (Partner p, Location l, Item i) = GROUP LAST OrderLine ol ORDER dateTime(ol), ol WHERE NOT canceled(order(ol)) BY vendor(ol), location(ol), item(ol);
+lastQuantityOrderLine (Partner p, Location l, Item i) = quantity(lastOrderLine(p, l, i));
+prevLastQuantityOrderLine (Partner p, Location l, Item i) = PREV(lastQuantityOrderLine(p, l, i));
+
+lastOrderLine (Partner p, Item i) = GROUP LAST OrderLine ol ORDER dateTime(ol), ol WHERE NOT canceled(order(ol)) BY vendor(ol), item(ol);
+lastQuantityOrderLine (Partner p, Item i) = quantity(lastOrderLine(p, i));
+prevLastQuantityOrderLine (Partner p, Item i) = PREV(lastQuantityOrderLine(p, i));
+
+prevLastQuantityLocation 'Предыдущий заказ' (Order o, Item i) = prevLastQuantityOrderLine(vendor(o), location(o), i); 
+prevLastQuantity 'Предыдущий заказ' (Order o, Item i) = prevLastQuantityOrderLine(vendor(o), i); 
+
+EXTEND FORM order
+    PROPERTIES 'Предыдущий заказ' = prevLastQuantity(o, itm) 
+
+    FILTERGROUP line
+        FILTER 'Был заказ на МХ' prevLastQuantityLocation(o, itm)
+        FILTER 'Был заказ' prevLastQuantity(o, itm)
 ;
 
 // barcode

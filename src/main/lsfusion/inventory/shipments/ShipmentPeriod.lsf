@@ -9,10 +9,16 @@ nonperiodic 'Непериодичная' = DATA BOOLEAN (ShipmentType);
 nonperiodic 'Непериодичная' (Shipment s) = nonperiodic(type(s));
 nonperiodic 'Непериодичная' (ShipmentLine l) = nonperiodic(shipment(l));
 
-demandPeriodic 'Отгружено (за период)' (Location l, Product p, DATE dFrom, DATE dTo) = 
-    GROUP SUM initialDemand(ShipmentLine sl) IF active(shipment(sl)) AND NOT nonperiodic(sl) AND 
+demandedPeriodic 'Планировалось (за период)' (Location l, Product p, DATE dFrom, DATE dTo) = 
+    GROUP SUM (OVERRIDE initialDemand(ShipmentLine sl), done(sl)) IF active(shipment(sl)) AND NOT nonperiodic(sl) AND 
               location(sl) = l AND product(sl) = p AND executionDate(sl) >= dFrom AND executionDate(sl) <= dTo;  
+
+demandedPeriodicRec 'Планировалось (за период)' (Location l, Product p, DATE dFrom, DATE dTo) =
+    GROUP SUM demandedPeriodic(Location child, p, dFrom, dTo) IF level(child, l);
 
 shippedPeriodic 'Отгружено (за период)' (Location l, Product p, DATE dFrom, DATE dTo) = 
     GROUP SUM done(ShipmentLine sl) IF active(shipment(sl)) AND NOT nonperiodic(sl) AND 
               location(sl) = l AND product(sl) = p AND executionDate(sl) >= dFrom AND executionDate(sl) <= dTo;  
+
+shippedPeriodicRec 'Планировалось (за период)' (Location l, Product p, DATE dFrom, DATE dTo) =
+    GROUP SUM shippedPeriodic(Location child, p, dFrom, dTo) IF level(child, l);

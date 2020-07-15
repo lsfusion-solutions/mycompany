@@ -1,0 +1,60 @@
+MODULE PurchaseOrderShipmentAuto;
+
+REQUIRE PartnerPurchase, PurchaseOrderSearch, ShipmentPeriod, PurchaseOrderPack;
+
+NAMESPACE Purchase;
+
+purchasePeriod 'Период заказа' = DATA INTEGER (Partner);
+
+EXTEND FORM partner
+    PROPERTIES(p) purchasePeriod
+;
+
+DESIGN partner {
+    vendor {
+        MOVE PROPERTY(purchasePeriod(p));
+    }
+}
+
+purchasePeriodFrom = DATA DATE (Order);
+purchasePeriodTo = DATA DATE (Order);
+
+WHEN LOCAL CHANGED(vendor(Order o)) DO {
+    purchasePeriodFrom(o) <- subtract(date(o), OVERRIDE purchasePeriod(vendor(o)), 7);
+    purchasePeriodTo(o) <- subtract(date(o), 1);
+}
+
+waitingRec 'Ожидает отгрузку' (Order o, Item itm) = waitingRec(location(o), itm);
+
+demandedPeriodic 'Планировалось' (Order o, Item itm) = demandedPeriodicRec(location(o), itm, purchasePeriodFrom(o), purchasePeriodTo(o));
+shippedPeriodic 'Отгружено' (Order o, Item itm) = shippedPeriodicRec(location(o), itm, purchasePeriodFrom(o), purchasePeriodTo(o));
+
+forecastPeriodic (Order o, Item itm) = max(prevAvailableRec(location(o), itm), 0) (-) waitingRec(location(o), itm) (-) demandedPeriodic(o, itm);
+toOrderPeriodic 'Автозаказ' (Order o, Item itm) = ceil(- forecastPeriodic(o, itm) IF forecastPeriodic(o, itm) < 0
+                                                      , OVERRIDE purchasePackRatio(itm), 1);
+
+fillAuto 'Автозаказ' (Order o) {
+    FOR [FILTER order.itm](Item itm) AND q = toOrderPeriodic(o, itm) AND NOT quantity(o, itm) NEW l = OrderLine DO {
+        order(l) <- o;
+        item(l) <- itm;
+        quantity(l) <- q;
+    }
+}
+
+EXTEND FORM order
+    PROPERTIES(o) 'Дата с' = purchasePeriodFrom, 'по' = purchasePeriodTo
+    
+    PROPERTIES(o, itm) READONLY demandedPeriodic, shippedPeriodic, waitingRec, toOrderPeriodic
+    
+    PROPERTIES(o) fillAuto DRAW itm TOOLBAR
+;
+
+DESIGN order {
+    BOX(itm) {
+        NEW period FIRST {
+            type = CONTAINERH;
+            MOVE PROPERTY(purchasePeriodFrom(o));
+            MOVE PROPERTY(purchasePeriodTo(o));
+        }
+    }
+}

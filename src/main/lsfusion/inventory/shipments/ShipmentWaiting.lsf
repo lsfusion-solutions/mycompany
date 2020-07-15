@@ -39,3 +39,11 @@ EXTEND FORM shipments
     EXTEND FILTERGROUP status
         FILTER 'В ожидании' status(s) = ShipmentStatus.waiting    
 ;
+
+// total
+waiting 'Ожидает отгрузку' (Location l, Product p) = 
+    GROUP SUM initialDemand(ShipmentLine sl) IF status(shipment(sl)) = ShipmentStatus.waiting AND 
+              location(sl) = l AND product(sl) = p;
+
+waitingRec 'Ожидает отгрузку' (Location l, Product p) =
+    GROUP SUM waiting(Location child, p) IF level(child, l);

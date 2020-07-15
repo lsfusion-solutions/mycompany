@@ -66,14 +66,14 @@ onHandRec 'Текущий остаток (с учетом вложенности
 
 // dates
 dateReceived 'Дата последнего прихода' (Location l, Product p) = 
-    GROUP LAST dateTime(InvLedger il) ORDER dateTime(il) WHERE toLocation(il) = l AND product(il) = p;
+    GROUP LAST dateTime(InvLedger il) ORDER dateTime(il), il WHERE toLocation(il) = l AND product(il) = p;
 prevDateReceived (Location l, Product p) = PREV(dateReceived(l, p));
     
 dateShipped 'Дата последней отгрузки' (Location l, Product p) = 
-    GROUP LAST dateTime(InvLedger il) ORDER dateTime(il) WHERE fromLocation(il) = l AND product(il) = p;
+    GROUP LAST dateTime(InvLedger il) ORDER dateTime(il), il WHERE fromLocation(il) = l AND product(il) = p;
     
 datePrevOperation(Location l, Product p, DATETIME dt) = 
-    GROUP LAST dateTime(InvLedger il) ORDER dateTime(il) 
+    GROUP LAST dateTime(InvLedger il) ORDER dateTime(il), il 
     WHERE (fromLocation(il) = l OR toLocation(il) = l) AND product(il) = p AND dateTime(il) < dt AND active(il);
 
 onHandFromLocation 'Остаток после операции (откуда)' (InvLedger inv) = onHandA(fromLocation(inv), product(inv), dateTime(inv));
