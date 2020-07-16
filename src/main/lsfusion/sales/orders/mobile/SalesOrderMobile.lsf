@@ -1,7 +1,7 @@
 MODULE SalesOrderMobile;
 
 REQUIRE Input, Reflection, SalesOrderLocked, SalesOrderDiscount,
-        Mobile, PartnerMobile, ItemMobile, CategoryMobile;
+        Mobile, PartnerMobile, ItemMobile, CategoryMobile, SalesOrderPack;
 
 NAMESPACE Sales;
 
@@ -20,7 +20,11 @@ FORM orderMobile 'Заказ мобильный'
     PROPERTIES(o) confirm SHOWIF (status(o) = OrderStatus.sent OR status(o) = OrderStatus.draft), confirmed 
     
     OBJECTS l = OrderLine
-    PROPERTIES(l) nameItem ON CHANGE changeItem(l), 'Кол-во' = quantity, price, NEW, DELETE
+    PROPERTIES(l) nameItem ON CHANGE changeItem(l) 
+    PROPERTIES(l) 'Кол-во' = quantity, price, NEW, DELETE
+    PROPERTIES(l) PANEL SHOWIF pack(type(o))
+                  'Мест' = packQuantity ON CHANGE changePackQuantity(l),
+                  'В месте' = packRatio READONLY
     PROPERTIES(l) PANEL nameSalesDiscount, '' = discount, '' = discountPrice
     PROPERTIES(l) PANEL READONLY idItem, idBarCodeItem,
                                  nameUom, taxes, 'Сумма' = amount
@@ -71,6 +75,12 @@ DESIGN orderMobile {
                     PROPERTY(quantity(l)) { charWidth = 5; }
                 }
                 MOVE TOOLBARBOX(l);
+                NEW pack {
+                    type = CONTAINERH;
+                    alignment = STRETCH;
+                    MOVE PROPERTY(packQuantity(l));
+                    MOVE PROPERTY(packRatio(l));
+                }
                 NEW discount {
                     type = CONTAINERH;
                     alignment = STRETCH;

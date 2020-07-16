@@ -7,7 +7,8 @@ NAMESPACE Sales;
 EXTEND FORM orderMobile
     OBJECTS i = Item
     PROPERTIES(i) READONLY 'Имя' = name
-    PROPERTIES READONLY overListPrice(o, i), available(o, i) 
+    PROPERTIES READONLY overListPrice(o, i), available(o, i), 
+                        'В месте' = salesPackRatio(i) SHOWIF pack(type(o)) 
     PROPERTIES(o, i) quantity ON CHANGE changeQuantity(o, i)
     PROPERTIES(i) READONLY PANEL pName '' = name, '' = id, '' = idBarCode, '' = nameUom
     ORDERS name(i)
@@ -33,10 +34,10 @@ DESIGN orderMobile {
                 }
             }
             MOVE GRID(i) {
-                headerHeight = 24;
                 PROPERTY(name(i)) { charWidth = 25; fontSize = 10; }
                 PROPERTY(overListPrice(o, i)) { charWidth = 4; }
                 PROPERTY(available(o, i)) { charWidth = 4; }
+                PROPERTY(salesPackRatio(i)) { charWidth = 4; }
                 PROPERTY(quantity(o, i)) { charWidth = 4; }
             }
             MOVE PROPERTY(pName) { alignment = STRETCH; }
@@ -57,16 +58,16 @@ DESIGN orderMobile {
 
 setQuantity(Item i, INTEGER n) {
     FOR [VIEW orderMobile.o](Order o) DO {
-        setQuantity(o, i, n);
+        setQuantity(o, i, n * OVERRIDE salesPackRatio(i), 1);
     }
 }
 
 increaseQuantity '+' (Order o, Item i) {
-    setQuantity(o, i, quantity(o, i) (+) 1);
+    setQuantity(o, i, quantity(o, i) (+) OVERRIDE salesPackRatio(i), 1);
 }
 
 decreaseQuantity '-' (Order o, Item i) {
-    setQuantity(o, i, quantity(o, i) (-) 1);
+    setQuantity(o, i, quantity(o, i) (-) OVERRIDE salesPackRatio(i), 1);
 }
 
 EXTEND FORM orderMobile
