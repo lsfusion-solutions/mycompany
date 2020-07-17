@@ -34,6 +34,21 @@ META defineChangeInput (property, cls, type, form, object)
     }
 END
 
+META defineChangeInputObject (type, form, object, dialog)
+    change##type () {
+        INPUT s = STRING DO IF s THEN
+            IF (GROUP SUM 1 IF isISubstring(name(type p), s)) = 1 THEN
+                SEEK form.object = GROUP MIN type p IF isISubstring(name(p), s);
+            ELSE
+                DIALOG dialog OBJECTS l INPUT NULL FILTERS isISubstring(name(l), s) OR NOT s DO
+                    SEEK form.object = l;
+    }
+    
+    EXTEND FORM form
+        PROPERTIES(object) name ON CHANGE change##type()
+    ;
+END
+
 // filter
 
 nameFilter 'Наименование' = DATA LOCAL ISTRING () CHARWIDTH 20;
