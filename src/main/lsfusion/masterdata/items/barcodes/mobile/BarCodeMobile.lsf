@@ -1,0 +1,25 @@
+MODULE BarCodeMobile;
+
+REQUIRE BarCode;
+
+NAMESPACE MasterData;
+
+barCodeFilter 'Штрихкод' = DATA LOCAL STRING[50] () CHARWIDTH 13;
+clearBarCodeFilter '' () { barCodeFilter() <- NULL; } IMAGE 'delete.png';
+
+META defineBarCodeFilter(form, obj, container)
+    EXTEND FORM form
+        PROPERTIES() barCodeFilter, clearBarCodeFilter
+        FILTERS (GROUP SUM 1 IF endsWith(id(BarCode b), barCodeFilter()) AND item(b) = obj) OR NOT barCodeFilter()
+    ;
+    DESIGN form {
+        container {
+            NEW barCodeFilter {
+                type = CONTAINERH;
+                alignment = STRETCH;
+                MOVE PROPERTY(barCodeFilter()) { alignment = STRETCH; }
+                MOVE PROPERTY(clearBarCodeFilter());
+            }
+        }
+    }
+END

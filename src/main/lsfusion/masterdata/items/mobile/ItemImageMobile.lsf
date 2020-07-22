@@ -2,7 +2,7 @@ MODULE ItemImageMobile;
 
 REQUIRE Input, Utils, Reflection, Security, Authentication,
         MasterDataSettings, ItemImage, 
-        CategoryMobile, Mobile;
+        CategoryMobile, BarCodeMobile, Mobile;
 
 NAMESPACE MasterData;
 
@@ -12,6 +12,7 @@ dropImageApply 'Сбросить' (Item i) { NEWSESSION { APPLY { image(i) <- NU
 FORM itemImageLoad 'Загрузка изображений'
     OBJECTS i = Item
     PROPERTIES(i) READONLY 'Имя' = name, id
+    PROPERTIES(i) READONLY PANEL pName '' = name, '' = idBarCode, '' = nameUom 
     PROPERTIES(i) '' = image READONLY PANEL
     PROPERTIES(i) loadImageApply, dropImageApply
     ORDERS name(i)
@@ -31,8 +32,17 @@ DESIGN itemImageLoad {
                 MOVE FILTERGROUPS(i);
             }
         }
-        MOVE GRID(i);
+        MOVE GRID(i) {
+            headerHeight = 24; 
+        }
         REMOVE TOOLBARBOX(i);
+        MOVE PROPERTY(pName) { alignment = STRETCH; }
+        NEW details {
+            type = CONTAINERH;
+            alignment = STRETCH;
+            MOVE PROPERTY(idBarCode(i));
+            MOVE PROPERTY(nameUom(i));
+        }
         NEW image {
             fill = 0.5;
             type = CONTAINERH;
@@ -48,6 +58,7 @@ DESIGN itemImageLoad {
 }
 
 @defineNameFilter(itemImageLoad, i, filters);
+@defineBarCodeFilter(itemImageLoad, i, filters);
 @defineCategoryFilter(itemImageLoad, i, filters);
 
 NAVIGATOR {
