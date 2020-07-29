@@ -1,16 +1,14 @@
 MODULE CompanyInitial;
 
-REQUIRE Company;
+REQUIRE Company, Initial;
 
 NAMESPACE MasterData;
+
+skipInitial () += TRUE IF GROUP SUM 1 IF l IS LegalEntity;
 
 loadDefaultData() + {
     NEW c = Company {
         id(c) <- 'myc';
-    
-        failedLoadDefaultData() <- TRUE;
-        DIALOG partner OBJECTS p = c DO {
-            failedLoadDefaultData() <- NULL;
-        }
+        name(c) <- 'Моя компания';    
     }
 }

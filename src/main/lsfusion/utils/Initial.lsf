@@ -1,0 +1,16 @@
+MODULE Initial;
+
+REQUIRE DefaultData, SystemEvents;
+
+NAMESPACE Utils;
+
+initialized = DATA BOOLEAN ();
+
+skipInitial = ABSTRACT VALUE BOOLEAN ();
+
+onStarted() + {
+    IF NOT initialized() AND NOT skipInitial() THEN {
+        fillDefaultData();
+        NEWSESSION { APPLY { initialized() <- TRUE; } }
+    }          
+}
