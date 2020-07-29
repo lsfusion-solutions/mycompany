@@ -27,6 +27,8 @@ numberDate 'Описание' (Scrap s) = number(s) + ' от ' + dateTime(s) IN 
 location 'Место хранения' = DATA Location (Scrap) NONULL;
 nameLocation 'Место хранения' (Scrap s) = name(location(s));
 
+note 'Примечание' = DATA ISTRING (Scrap) CHARWIDTH 30;
+
 // lines
 CLASS ScrapLine 'Строка списания';
 
@@ -46,7 +48,7 @@ quantity 'Кол-во' = DATA NUMERIC[16,3] (ScrapLine);
 
 FORM scrap 'Списание'
     OBJECTS s = Scrap PANEL 
-    PROPERTIES(s) nameType, dateTime, number, nameLocation
+    PROPERTIES(s) nameType, dateTime, number, nameLocation, note
     
     OBJECTS l = ScrapLine
     PROPERTIES(l) index, nameProduct, nameUom, idBarCodeProduct, idProduct, quantity, NEW, DELETE
@@ -79,7 +81,7 @@ DESIGN scrap {
 
 FORM scraps 'Списания'
     OBJECTS s = Scrap 
-    PROPERTIES(s) READONLY nameType, dateTime, number, nameLocation
+    PROPERTIES(s) READONLY nameType, dateTime, number, nameLocation, note
     PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
     
     LIST Scrap OBJECT s

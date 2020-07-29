@@ -1,0 +1,20 @@
+MODULE AdjustmentItemPrint;
+
+REQUIRE AdjustmentInProgress, ItemPrint;
+
+NAMESPACE Inventory;
+
+printItem 'Этикетки' (Adjustment s) {
+    count(Item i) <- GROUP SUM (OVERRIDE realQuantity(AdjustmentLine l), theoreticalQuantity(l)) IF adjustment(l) = s AND product(l) = i;
+    printItem();  
+}
+
+EXTEND FORM adjustment
+    PROPERTIES(a) printItem SHOWIF countPrintItemTypes()
+;
+
+DESIGN adjustment {
+    secondaryActions {
+        MOVE PROPERTY(printItem(a));
+    }
+}
