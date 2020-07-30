@@ -1,0 +1,32 @@
+MODULE AdjustmentListSearch;
+
+REQUIRE AdjustmentList;
+
+NAMESPACE Inventory;
+
+realQuantity 'Фактическое кол-во' (AdjustmentList, Product, Location) = 
+    GROUP SUM realQuantity(AdjustmentListLine l) BY adjustmentList(l), product(l), location(l);
+
+setRealQuantity(AdjustmentList a, Product p, Location loc, NUMERIC[16,3] q) {
+    IF lastAdjustmentListLine(a, p, loc) THEN {
+        IF q THEN
+            realQuantity(AdjustmentListLine l) <- q IF l = lastAdjustmentListLine(a, p, loc)
+                WHERE adjustmentList(l) = a AND product(l) = p AND location(l) = loc;
+        ELSE
+            DELETE AdjustmentListLine l WHERE adjustmentList(l) = a AND product(l) = p AND location(l) = loc;
+    } ELSE
+        IF q THEN
+            NEW l = AdjustmentListLine {
+                adjustmentList(l) <- a;
+                product(l) <- p;
+                location(l) <- loc;
+                realQuantity(l) <- q;
+            }
+}
+    
+// barcode
+setRealQuantity(AdjustmentList a, Product p, NUMERIC[16,3] q) { setRealQuantity(a, p, location(a), q); }
+realQuantity(AdjustmentList a, Product p) = realQuantity(a, p, location(a));
+lastAdjustmentListLine(AdjustmentList a, Product p) = lastAdjustmentListLine(a, p, location(a));
+
+@defineBarCodeSearch(adjustmentList, a, l, product, realQuantity);

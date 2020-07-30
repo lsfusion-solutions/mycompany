@@ -1,0 +1,121 @@
+MODULE AdjustmentList;
+
+REQUIRE AdjustmentInProgress;
+
+NAMESPACE Inventory;
+
+useList 'По описям' = DATA BOOLEAN (Adjustment);
+
+EXTEND FORM adjustment
+    PROPERTIES(a) useList READONLYIF readonly(a)
+;
+
+DESIGN adjustment {
+    headerLeft {
+        MOVE PROPERTY(useList(a));
+    }
+}
+
+CLASS AdjustmentList 'Опись';
+
+adjustment 'Инвентаризация' = DATA Adjustment (AdjustmentList) NONULL DELETE INDEXED;
+
+@defineNumber(adjustmentList, 'Описи', 'ОП');
+note 'Примечание' = DATA ISTRING (AdjustmentList) CHARWIDTH 30;
+
+readonly (AdjustmentList l) = l IS AdjustmentList AND NOT status(adjustment(l)) = AdjustmentStatus.inProgress;
+location (AdjustmentList l) = location(adjustment(l));  
+
+// lines
+CLASS AdjustmentListLine 'Строка описи';
+
+adjustmentList = DATA AdjustmentList (AdjustmentListLine) NONULL DELETE INDEXED;
+
+countLines 'Кол-во строк' (AdjustmentList a) = GROUP SUM 1 IF adjustmentList(AdjustmentListLine l) = a MATERIALIZED;
+index '№' = PARTITION SUM 1 ORDER AdjustmentListLine l BY adjustmentList(l) IN id MATERIALIZED CHARWIDTH 3;
+
+product 'Товар' = DATA Product (AdjustmentListLine);
+nameProduct 'Товар' (AdjustmentListLine l) = name(product(l));
+idBarCodeProduct 'Штрихкод' (AdjustmentListLine l) = idBarCode(product(l));
+idProduct 'Код' (AdjustmentListLine l) = id(product(l));
+
+uom (AdjustmentListLine l) = uom(product(l));
+nameUom 'Ед. изм.' (AdjustmentListLine l) = name(uom(l));
+
+location 'Место хранения' = DATA Location (AdjustmentListLine);
+nameLocation 'Место хранения' (AdjustmentListLine l) = canonicalName(location(l));
+
+WHEN LOCAL SETCHANGED(location(adjustmentList(AdjustmentListLine l))) AND NOT location(l) DO location(l) <- location(adjustmentList(l));
+
+CONSTRAINT location(AdjustmentListLine l) AND NOT level(location(l), location(adjustmentList(l))) CHECKED BY location[AdjustmentListLine]
+    MESSAGE 'Место хранения строки инвентаризации не является потомком места хранения документа';
+
+lastAdjustmentListLine (AdjustmentList a, Product p, Location l) = 
+    GROUP LAST AdjustmentListLine al ORDER al BY adjustmentList(al), product(al), location(al);
+
+realQuantity 'Фактическое кол-во' = DATA NUMERIC[16,3] (AdjustmentListLine);
+
+// edit
+FORM adjustmentList 'Опись'
+    OBJECTS a = AdjustmentList PANEL
+    PROPERTIES(a) READONLYIF readonly(a) number, note
+    
+    OBJECTS l = AdjustmentListLine
+    PROPERTIES(l) READONLYIF readonly(a) 
+                  index READONLY, 
+                  nameProduct, nameUom, idBarCodeProduct, idProduct,
+                  nameLocation, 
+                  realQuantity,
+                  NEW, DELETE
+    FILTERS adjustmentList(l) = a
+    
+    EDIT AdjustmentList OBJECT a
+;
+
+DESIGN adjustmentList {
+    caption = (CONCAT ' ', 'Инвентаризация', '№' + number(a), ' (' + note(a) + ')');
+}
+
+// list
+newList 'Добавить' (Adjustment a) {
+    NEWSESSION {
+        NEW al = AdjustmentList {
+            adjustment(al) <- a;
+            SHOW adjustmentList OBJECTS a = al DOCKED;  
+        }
+    }
+} IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+
+EXTEND FORM adjustment
+    OBJECTS al = AdjustmentList
+    PROPERTIES(al) READONLY number, note, countLines
+    
+    PROPERTIES(a) newList DRAW al TOOLBAR READONLYIF NOT PREV(a IS Adjustment) OR NOT status(a) = AdjustmentStatus.inProgress 
+    PROPERTIES(al) EDIT NEWSESSION, DELETE READONLYIF NOT status(a) = AdjustmentStatus.inProgress
+;
+
+DESIGN adjustment {
+    details {
+        MOVE BOX(al) {
+            showIf = useList(a);
+            caption = 'Описи';
+        }
+    }
+}
+
+// change quantity
+aggregateRealQuantity(AdjustmentLine l) += useList(adjustment(l));
+
+listRealQuantity (Adjustment, Product, Location) = 
+    GROUP SUM realQuantity(AdjustmentListLine l) BY adjustment(adjustmentList(l)), product(l), location(l);
+    
+WHEN SETCHANGED(listRealQuantity(Adjustment a, Product p, Location l)) AND useList(a) AND NOT lastAdjustmentLine(a, p, l) DO
+    NEW al = AdjustmentLine {
+        adjustment(al) <- a;
+        product(al) <- p;
+        location(al) <- l;
+        realQuantity(al) <- listRealQuantity(a, p, l);
+    } 
+
+WHEN CHANGED(listRealQuantity(Adjustment a, Product p, Location l)) AND useList(a) AND AdjustmentLine al = lastAdjustmentLine(a, p, l) DO
+    realQuantity(al) <- listRealQuantity(a, p, l);
