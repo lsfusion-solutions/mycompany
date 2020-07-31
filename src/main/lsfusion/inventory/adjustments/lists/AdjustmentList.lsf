@@ -54,6 +54,12 @@ lastAdjustmentListLine (AdjustmentList a, Product p, Location l) =
     GROUP LAST AdjustmentListLine al ORDER al BY adjustmentList(al), product(al), location(al);
 
 realQuantity 'Фактическое кол-во' = DATA NUMERIC[16,3] (AdjustmentListLine);
+realQuantity 'Фактическое кол-во' (AdjustmentList a) = GROUP SUM realQuantity(AdjustmentListLine l) IF adjustmentList(l) = a MATERIALIZED;
+
+// line properties
+adjustment(AdjustmentListLine l) = adjustment(adjustmentList(l));
+number 'Номер' (AdjustmentListLine l) = number(adjustmentList(l));
+note 'Примечание' (AdjustmentListLine l) = note(adjustmentList(l));
 
 // edit
 FORM adjustmentList 'Опись'
@@ -73,7 +79,7 @@ FORM adjustmentList 'Опись'
 ;
 
 DESIGN adjustmentList {
-    caption = (CONCAT ' ', 'Инвентаризация', '№' + number(a), ' (' + note(a) + ')');
+    caption = (CONCAT ' ', 'Опись', '№' + number(a), ' (' + note(a) + ')');
 }
 
 // list
@@ -86,12 +92,20 @@ newList 'Добавить' (Adjustment a) {
     }
 } IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
 
+edit (AdjustmentListLine l) + { edit(adjustmentList(l)); }
+
 EXTEND FORM adjustment
     OBJECTS al = AdjustmentList
-    PROPERTIES(al) READONLY number, note, countLines
+    PROPERTIES(al) READONLY number, note, countLines, realQuantity
     
     PROPERTIES(a) newList DRAW al TOOLBAR READONLYIF NOT PREV(a IS Adjustment) OR NOT status(a) = AdjustmentStatus.inProgress 
     PROPERTIES(al) EDIT NEWSESSION, DELETE READONLYIF NOT status(a) = AdjustmentStatus.inProgress
+    
+    OBJECTS all = AdjustmentListLine
+    PROPERTIES(all) READONLY number, note, realQuantity
+    PROPERTIES(all) EDIT
+    FILTERS adjustment(all) = a,
+            product(all) = product(l)
 ;
 
 DESIGN adjustment {
@@ -99,6 +113,10 @@ DESIGN adjustment {
         MOVE BOX(al) {
             showIf = useList(a);
             caption = 'Описи';
+        }
+        linesTab {
+            showIf = useList(a);
+            MOVE BOX(all);
         }
     }
 }
