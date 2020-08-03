@@ -21,13 +21,14 @@ FORM inventoryReport 'Текущие остатки'
     
     OBJECTS lp = (l = Location, p = Product)
     PROPERTIES READONLY 'Склад' = canonicalName(l) SHOWIF NOT singleLocation() 
-    PROPERTIES(p) READONLY    'Товар' = name, nameUom, idBarCode, id
+    PROPERTIES(p) READONLY 'Товар' = name, nameUom, idBarCode, id
     PROPERTIES(l, p) READONLY reserved, available
     PROPERTIES(l, p) READONLY SHOWIF NOT selectedDateTime() onHand, onHandRec
     PROPERTIES(l, p) READONLY SHOWIF selectedDateTime() onHandDateTime 
     PROPERTIES(l, p) READONLY dateReceived, dateShipped
     PROPERTIES(p) READONLY image PANEL
     PROPERTIES(p) NEWSESSION EDIT
+    ORDERS canonicalName(l), name(p) 
     FILTERS IF singleLocation() THEN l = lt ELSE isChild(l, lt),
             level(category(p), c),
             IF selectedDateTime() THEN onHandDateTime(l, p) ELSE 
