@@ -19,6 +19,8 @@ CONSTRAINT Employee e IS Employee AND NOT legalEntity(e) IS Company
     CHECKED BY legalEntity
     MESSAGE 'Организацией сотрудника может быть только компания';
 
+WHEN LOCAL SET(Employee e IS Employee) AND NOT CHANGED(legalEntity(e)) DO legalEntity(e) <- defaultCompany(); 
+
 FORM employee 'Сотрудник'
     OBJECTS e = Employee PANEL
     PROPERTIES(e) id, login, sha256Password ON CHANGE changeSHA256Password(e), isLocked, archived, 
