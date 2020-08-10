@@ -1,0 +1,29 @@
+MODULE CategoryImage;
+
+REQUIRE Category;
+
+NAMESPACE MasterData;
+
+image 'Изображение' = DATA IMAGEFILE (Category);
+loadImage 'Загрузить' (Category c)  { INPUT = image(c) CHANGE; }
+openImage 'Открыть' (Category c)  { open(image(c)); }
+dropImage 'Сбросить' (Category c) { image(c) <- NULL; }
+
+EXTEND FORM category
+    PROPERTIES(c) image , loadImage, openImage, dropImage SHOWIF TRUE IF image(c) 
+;
+
+DESIGN category {
+    tabs {
+        NEW image {
+            caption = 'Изображение';
+            MOVE PROPERTY(image(c)) { fill = 1; caption = ''; }
+            NEW imageActions {
+                type = CONTAINERH;
+                MOVE PROPERTY(loadImage(c));
+                MOVE PROPERTY(openImage(c));
+                MOVE PROPERTY(dropImage(c));
+            }
+        }
+    }
+}
