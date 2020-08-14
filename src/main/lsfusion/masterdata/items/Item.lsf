@@ -9,7 +9,7 @@ NAMESPACE MasterData;
 CLASS ABSTRACT Item 'Номенклатура';
 class 'Вид' (Item i) = objectClassName(i) IF i IS Item CHARWIDTH 6;
 
-@defineID(item, 'Номенклатуры', 'НМ');
+@defineID(item, 'Номенклатуры', 'НМ', 6);
 
 dataName 'Наименование' = DATA ISTRING[200] (Item) IN id NONULL CHARWIDTH 20;
 prefixName 'Префикс' = ABSTRACT STRING (Item);
@@ -134,7 +134,7 @@ FORM items 'Номенклатура'
     ORDERS name(c)
 
     OBJECTS i = Item
-    PROPERTIES(i) READONLYIF isReadonly() name, id, nameCategory, nameUom, class READONLY
+    PROPERTIES(i) READONLYIF isReadonly() name, id, nameCategory, nameUom, reference, class READONLY
     PROPERTIES(i) SHOWIF isReadonly() NEWSESSION EDIT, DELETE
     ORDERS name(i) 
     FILTERS level(category(i), c)

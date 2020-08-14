@@ -217,13 +217,20 @@ value 'Значение' (ItemAttribute a) = value(attributeFilter(a));
 CONSTRAINT attributeFilter(ItemAttribute a) AND NOT itemAttribute(attributeFilter(a)) = a
     CHECKED BY attributeFilter MESSAGE '';
 
-EXTEND FORM items
-    OBJECTS ia = ItemAttribute BEFORE i
-    PROPERTIES name(ia) READONLY, value(ia) ON CHANGE { DIALOG childValues OBJECTS a = ia, c = c, v = attributeFilter(ia) CHANGE; }
-    FILTERS attributeFilter(ia) = attribute(i, ia) OR NOT attributeFilter(ia)
-    FILTERS GROUP SUM 1 IF set(ia, Category cc) AND (level(cc, c) OR level(c, cc)) 
-;
+META defineItemAttributeForm(form, obj, gobj)
+    EXTEND FORM form
+        OBJECTS ia = ItemAttribute BEFORE gobj
+        PROPERTIES name(ia) READONLY, value(ia) ON CHANGE { DIALOG childValues OBJECTS a = ia, c = c, v = attributeFilter(ia) CHANGE; }
+        FILTERS attributeFilter(ia) = attribute(obj, ia) OR NOT attributeFilter(ia)
+        FILTERS GROUP SUM 1 IF set(ia, Category cc) AND (level(cc, c) OR level(c, cc)) 
+    ;
+END
 
+META defineItemAttributeForm(form, obj)
+    @defineItemAttributeForm(form, obj, obj);
+END
+
+@defineItemAttributeForm(items, i);
 DESIGN items {
     tabs {
         NEW filters {

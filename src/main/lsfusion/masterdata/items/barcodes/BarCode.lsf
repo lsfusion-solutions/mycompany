@@ -10,7 +10,7 @@ item 'Номенклатура' = DATA Item (BarCode) NONULL DELETE;
 idItem 'Код номенклатуры' (BarCode b) = id(item(b));
 nameItem 'Номенклатура' (BarCode b) = name(item(b));
 
-@defineID(barCode, 'Штрихкоды', '');
+@defineID(barCode, 'Штрихкоды', '', 13);
 itemBarCode (STRING[50] id) = item(barCode(id));
 
 dataDefaultBarCode = DATA BarCode (Item);
@@ -91,6 +91,25 @@ META defineBarCodeSearch(doc, let, line, itm, quantity)
     EXTEND FORM ##doc
         PROPERTIES() barCode DRAW l TOOLBAR ON CHANGE scanBarCode(##let, l)
     ;
+END
+
+META defineBarCodeSeek(form, obj, gobj)
+    scanBarCode###form () {
+        INPUT id = STRING DO {
+            IF itemBarCode(id) THEN
+                SEEK form.obj = itemBarCode(id);
+            ELSE
+                MESSAGE 'Штрихкод не найден';
+        }
+    }
+    
+    EXTEND FORM form
+        PROPERTIES() barCode DRAW gobj TOOLBAR ON CHANGE scanBarCode###form()
+    ;
+END
+
+META defineBarCodeSeek(form, obj)
+    @defineBarCodeSeek(form, obj, obj);
 END
 
 // add barcode item form

@@ -21,7 +21,7 @@ FORM inventoryReport 'Текущие остатки'
     
     OBJECTS lp = (l = Location, p = Product)
     PROPERTIES READONLY 'Склад' = canonicalName(l) SHOWIF NOT singleLocation() 
-    PROPERTIES(p) READONLY 'Товар' = name, nameUom, idBarCode, id
+    PROPERTIES(p) READONLY 'Товар' = name, nameUom, idBarCode, id, reference
     PROPERTIES(l, p) READONLY reserved, available
     PROPERTIES(l, p) READONLY SHOWIF NOT selectedDateTime() onHand, onHandRec
     PROPERTIES(l, p) READONLY SHOWIF selectedDateTime() onHandDateTime 
@@ -82,14 +82,14 @@ DESIGN inventoryReport {
                 caption = 'Текущие остатки';
                 type = SPLITH;
                 fill = 1;
-                NEW pane1 {
+                NEW filterTabs {
                     fill = 1;
-                    type = SPLITV;
+                    type = TABBED;
                     MOVE BOX(TREE locations) { caption = 'Места хранения'; }
                     MOVE BOX(TREE categories) { caption = 'Категории'; }
                 }
                 NEW pane2 {
-                    fill = 2;
+                    fill = 3;
                     type = SPLITV;
                     MOVE BOX(lp);
                     NEW tabs {
@@ -105,6 +105,15 @@ DESIGN inventoryReport {
             }
             MOVE BOX (rlp) { caption = 'Отчет'; }
         }
+    }
+}
+
+@defineBarCodeSeek(inventoryReport, p, lp);
+
+@defineItemAttributeForm(inventoryReport, p, lp);
+DESIGN inventoryReport {
+    filterTabs {
+        MOVE BOX(ia) { caption = 'Атрибуты'; }
     }
 }
 
