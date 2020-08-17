@@ -1,6 +1,7 @@
 MODULE PosDashboardTouch;
 
-REQUIRE PosDashboardSearch, Utils;
+REQUIRE PosDashboardSearch, Utils, 
+        CategoryImage, ItemImage;
 
 NAMESPACE Retail;
 
@@ -40,6 +41,7 @@ EXTEND CLASS Item : TouchNode;
 
 name (TouchNode n) = MULTI name[Category](n), name[Item](n);
 parent (TouchNode n) = MULTI parent[Category](n), category[Item](n);
+image (TouchNode n) = MULTI image[Category](n), image[Item](n);
 hide (TouchNode n) = MULTI hideTouch[Category](n), hideTouch[Item](n);
 
 canonicalName 'Каноническое имя' (TouchNode n) =
@@ -74,15 +76,15 @@ select (Invoice i, TouchNode tn) {
 EXTEND FORM posDashboard
     OBJECTS tn1 = TouchNode
     FILTERS parent(tn1) = tn, mod(index(tn1),3) = 1, NOT hide(tn1)
-    PROPERTIES select(i, tn1) COLUMNS (tn1) HEADER name(tn1)
+    PROPERTIES select(i, tn1) COLUMNS (tn1) HEADER name(tn1) IMAGE image(tn1) 
     
     OBJECTS tn2 = TouchNode
     FILTERS parent(tn2) = tn, mod(index(tn2),3) = 2, NOT hide(tn2)
-    PROPERTIES select(i, tn2) COLUMNS (tn2) HEADER name(tn2)
+    PROPERTIES select(i, tn2) COLUMNS (tn2) HEADER name(tn2) IMAGE image(tn2) 
     
     OBJECTS tn3 = TouchNode
     FILTERS parent(tn3) = tn, mod(index(tn3),3) = 0, NOT hide(tn3)
-    PROPERTIES select(i, tn3) COLUMNS (tn3) HEADER name(tn3)
+    PROPERTIES select(i, tn3) COLUMNS (tn3) HEADER name(tn3) IMAGE image(tn3) 
 ;
 
 DESIGN posDashboard {
@@ -102,9 +104,9 @@ DESIGN posDashboard {
                 type = SCROLL;
                 NEW touchColumns {
                     type = CONTAINERH;
-                    MOVE PROPERTY(select(i, tn1)) { fill = 1; columnKeysVertical = TRUE; focusable = FALSE; }
-                    MOVE PROPERTY(select(i, tn2)) { fill = 1; columnKeysVertical = TRUE; focusable = FALSE; }
-                    MOVE PROPERTY(select(i, tn3)) { fill = 1; columnKeysVertical = TRUE; focusable = FALSE; }
+                    MOVE PROPERTY(select(i, tn1)) { fill = 1; columnKeysVertical = TRUE; panelCaptionAbove = TRUE; focusable = FALSE; }
+                    MOVE PROPERTY(select(i, tn2)) { fill = 1; columnKeysVertical = TRUE; panelCaptionAbove = TRUE; focusable = FALSE; }
+                    MOVE PROPERTY(select(i, tn3)) { fill = 1; columnKeysVertical = TRUE; panelCaptionAbove = TRUE; focusable = FALSE; }
                 }
             }
         }
