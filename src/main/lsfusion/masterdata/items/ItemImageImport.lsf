@@ -1,0 +1,36 @@
+MODULE ItemImageImport;
+
+REQUIRE ItemImage;
+
+NAMESPACE MasterData;
+
+itemImageImport 'Импорт изображений' () {
+    INPUT f = FILE DO {
+        NEWSESSION {
+            unzipping() <- f;
+            makeUnzipFile();
+            
+            FOR unzipped(STRING id) AND id(Item i) = id DO {
+                image(i) <- IMAGEFILE(unzipped(id));
+            }            
+
+            APPLY;
+            MESSAGE 'Импорт завершен';
+        }
+    }    
+}
+
+EXTEND FORM migrationData 
+    PROPERTIES itemImageImport()
+;
+
+DESIGN migrationData {
+    commons {
+        NEW itemImage {
+            type = CONTAINERH;
+            caption = 'Изображения';
+            MOVE PROPERTY(itemImageImport());
+        }
+    }
+}
+
