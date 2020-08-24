@@ -1,7 +1,8 @@
 MODULE ManufacturingOrder;
 
-REQUIRE ManufacturingOrderType, ManufacturingSettings, Numerator, BomNested,
-        Individual, SalesOrder, MetaNumerator, Input;
+REQUIRE Doc, MetaNumerator, Input, DateUtils, 
+        BomNested, LocationEmployee,
+        ManufacturingOrderType, ManufacturingSettings;
 
 NAMESPACE Manufacturing;
 
@@ -169,9 +170,14 @@ DESIGN manufacturingOrder {
     }
 }
 
+// selected
+selected 'Отм' = DATA LOCAL NESTED BOOLEAN (ManufacturingOrder) CHANGEMOUSE 'ctrl CLK';
+
 FORM manufacturingOrders 'Производственные заказы'
     OBJECTS o = ManufacturingOrder
-    PROPERTIES(o) READONLY nameType, scheduledDateTime, number, nameCompany, 
+    PROPERTIES(o)          selected
+    PROPERTIES(o) READONLY BACKGROUND selected(o)
+                           nameType, scheduledDateTime, number, nameCompany, 
                            nameItem, unbuild, 
                            toManufacture, nameUom, 
                            descriptionBom, 
@@ -181,6 +187,22 @@ FORM manufacturingOrders 'Производственные заказы'
     
     LIST ManufacturingOrder OBJECT o
 ;
+
+DESIGN manufacturingOrders {
+    OBJECTS {
+        NEW pane {
+            fill = 1;
+            type = CONTAINERH;
+            MOVE BOX(o);
+            NEW rightPane {
+                NEW actions {
+                    alignment = STRETCH;
+                    caption = 'Действия';
+                }
+            }
+        }
+    }
+}
 
 @defineDocStatusForm(manufacturingOrder, o);
 @defineDocLocationAccess(manufacturingOrder, o, materials);
