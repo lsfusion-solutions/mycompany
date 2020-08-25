@@ -18,6 +18,9 @@ nameProductsLocation 'Получатель' (ManufacturingOrder m) = name(produc
 
 @defineDocLocationAccess(manufacturingOrder, o, products);
 
+CONSTRAINT done(ManufacturingOrder o) AND NOT productsLocation(o)
+    MESSAGE 'Не выбрано место хранения получателя в завершенном производственном заказе'; 
+
 markAsDone 'Завершить' (ManufacturingOrder m) {
     APPLY;
     IF canceled() THEN RETURN;
@@ -65,14 +68,16 @@ DESIGN manufacturingOrder {
 }
 
 EXTEND FORM manufacturingOrders
-    PROPERTIES(o) READONLY executionDateTime AFTER scheduledDateTime(o),
+    PROPERTIES(o) READONLY BACKGROUND background(o)
+                           executionDateTime AFTER scheduledDateTime(o),
                            nameProductsLocation 
+
+    EXTEND FILTERGROUP status
+        FILTER 'Завершен' status(o) = ManufacturingOrderStatus.done    
 ;
 
 extraCopy (ManufacturingOrder o, ManufacturingOrder m) + {
     productsLocation(o) <- productsLocation(m);
 }
 
-// constraint
-CONSTRAINT done(ManufacturingOrder o) AND NOT productsLocation(o)
-    MESSAGE 'Не выбрано место хранения получателя в завершенном производственном заказе'; 
+@defineDocSelectedAction(manufacturingOrders, ManufacturingOrder, markAsDone, 'Завершить');

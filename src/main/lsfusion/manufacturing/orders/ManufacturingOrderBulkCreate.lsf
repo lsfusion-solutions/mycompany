@@ -47,6 +47,11 @@ EXTEND FORM inputProduceQuantity
 // bulk create
 
 bulkCreate 'Создать заказы' () {
+    IF NOT type() THEN {
+        MESSAGE 'Не выбран тип производственного заказа';
+        RETURN;
+    }
+    
     DIALOG inputProduceQuantity DOCKED DO {
         NEWSESSION NESTED (toProduce[Item]){
             FOR toProduce(Item i) DO NEW o = ManufacturingOrder {
@@ -63,7 +68,7 @@ bulkCreate 'Создать заказы' () {
 }
 
 EXTEND FORM manufacturingOrders
-    PROPERTIES() bulkCreate SHOWIF type()
+    PROPERTIES() bulkCreate
 ;
 
 DESIGN manufacturingOrders {

@@ -12,6 +12,9 @@ ready 'К производству' = DATA BOOLEAN (ManufacturingOrder);
 status (ManufacturingOrder s) += WHEN ready(s) THEN ManufacturingOrderStatus.ready;
 colorStatus (ManufacturingOrder s) += WHEN status(s) = ManufacturingOrderStatus.ready THEN RGB(252,247,149);
 
+CONSTRAINT ready(ManufacturingOrder o) AND NOT materialsLocation(o)
+    MESSAGE 'Не выбрано место хранения списания в производственном заказе'; 
+
 // reserved
 reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ConsumedLine);
 countReservedLines (ManufacturingOrder m) = GROUP SUM 1 IF reserved(ConsumedLine l) AND manufacturingOrder(l) = m;
@@ -65,6 +68,9 @@ DESIGN manufacturingOrder {
     }
 }
 
-// constraint
-CONSTRAINT ready(ManufacturingOrder o) AND NOT materialsLocation(o)
-    MESSAGE 'Не выбрано место хранения списания в производственном заказе'; 
+EXTEND FORM manufacturingOrders
+    EXTEND FILTERGROUP status
+        FILTER 'К производству' status(o) = ManufacturingOrderStatus.ready    
+;
+
+@defineDocSelectedAction(manufacturingOrders, ManufacturingOrder, checkAvailability, 'Зарезервировать');

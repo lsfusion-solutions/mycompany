@@ -170,13 +170,11 @@ DESIGN manufacturingOrder {
     }
 }
 
-// selected
-selected 'Отм' = DATA LOCAL NESTED BOOLEAN (ManufacturingOrder) CHANGEMOUSE 'ctrl CLK';
+background (ManufacturingOrder o) = ABSTRACT CASE COLOR (ManufacturingOrder);
 
 FORM manufacturingOrders 'Производственные заказы'
     OBJECTS o = ManufacturingOrder
-    PROPERTIES(o)          selected
-    PROPERTIES(o) READONLY BACKGROUND selected(o)
+    PROPERTIES(o) READONLY BACKGROUND background(o)
                            nameType, scheduledDateTime, number, nameCompany, 
                            nameItem, unbuild, 
                            toManufacture, nameUom, 
@@ -199,11 +197,16 @@ DESIGN manufacturingOrders {
                     alignment = STRETCH;
                     caption = 'Действия';
                 }
+                NEW statuses {
+                    alignment = STRETCH;
+                    caption = 'Статусы';
+                }
             }
         }
     }
 }
 
+@defineDocSelected(manufacturingOrders, ManufacturingOrder, o);
 @defineDocStatusForm(manufacturingOrder, o);
 @defineDocLocationAccess(manufacturingOrder, o, materials);
 @defineDateFilterForm(manufacturingOrders, o, scheduled);

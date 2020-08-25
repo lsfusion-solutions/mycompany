@@ -13,7 +13,7 @@ countLocationAccess (Employee e) = GROUP SUM 1 IF hasAccess(e, Location l) MATER
 accessGranted (Employee e, Location l) = hasParentAccess(e, l) OR NOT countLocationAccess(e);
 
 accessGranted (Location l) = accessGranted(currentUser(), l);
-accessDenied (Location l) = currentUser() IS Employee AND NOT accessGranted(l);
+accessDenied (Location l) = l IS Location AND currentUser() IS Employee AND NOT accessGranted(l);
 
 EXTEND FORM employee
     TREE locations lt = Location PARENT parent(lt)
