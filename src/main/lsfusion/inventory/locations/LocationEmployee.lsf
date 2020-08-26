@@ -12,8 +12,11 @@ countLocationAccess (Employee e) = GROUP SUM 1 IF hasAccess(e, Location l) MATER
 
 accessGranted (Employee e, Location l) = hasParentAccess(e, l) OR NOT countLocationAccess(e);
 
-accessGranted (Location l) = accessGranted(currentUser(), l);
+accessGranted (Location l) = l IS Location AND accessGranted(currentUser(), l);
 accessDenied (Location l) = l IS Location AND currentUser() IS Employee AND NOT accessGranted(l);
+
+firstLocation() = GROUP LAST Location l ORDER DESC l WHERE accessGranted(l); 
+countLocation() = GROUP SUM 1 IF accessGranted(Location l);
 
 EXTEND FORM employee
     TREE locations lt = Location PARENT parent(lt)
@@ -34,6 +37,9 @@ DESIGN employee {
 }
 
 META defineDocLocationAccess(doc, let, prefix)
+    WHEN LOCAL SET(###doc o IS ###doc) AND NOT CHANGED(prefix###location(o)) AND countLocation() = 1 DO
+        prefix###location(o) <- firstLocation();
+
     CONSTRAINT SETCHANGED(prefix###location(###doc o)) AND accessDenied(prefix###location(o)) CHECKED BY prefix###location[###doc]
                MESSAGE 'У текущего пользователя нет прав доступа к выбранному месту хранения';
                
