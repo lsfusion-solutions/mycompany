@@ -1,0 +1,54 @@
+MODULE Selection;
+
+NAMESPACE Utils;
+
+META defineSelection(form, cls, obj, container)
+    selected 'Отм' = DATA LOCAL NESTED BOOLEAN (cls);
+    countSelected##cls 'Отмечено' () = GROUP SUM 1 IF selected(cls o);
+    
+    background(cls o) += WHEN selected(o) THEN RGB(224,224,255);
+
+    select '+' (cls o) {
+        selected(o) <- NOT selected(o);
+    } CHANGEKEY 'ADD' HIDE;
+    
+    invertSelection '*' () {
+        selected(cls o) <- NOT selected(o) WHERE [FILTER form.o](o);
+    } CHANGEKEY 'ASTERISK' HIDE;
+    
+    deselectAll '-' () {
+        selected(cls o) <- NULL WHERE [FILTER form.o](o);
+    } CHANGEKEY 'MINUS' HIDE;
+    
+    EXTEND FORM form
+        PROPERTIES DRAW obj TOOLBAR select(obj), invertSelection(), deselectAll()
+    ;
+    
+    DESIGN form {
+        TOOLBARBOX(obj) {
+            NEW selection AFTER TOOLBARLEFT(obj) {
+                type = CONTAINERH;
+                MOVE PROPERTY(select(obj));
+                MOVE PROPERTY(invertSelection());
+                MOVE PROPERTY(deselectAll());
+            }
+        } 
+    }
+END
+
+META defineSelectionAction(form, cls, action, caption, container)
+    action caption () {
+        FOR selected(cls o) AND [FILTER form.o](o) DO
+            action(o);
+    }
+    
+    EXTEND FORM form
+        PROPERTIES() action SHOWIF countSelected##cls()
+    ;
+    
+    DESIGN form {
+        container {
+            MOVE PROPERTY(action()) { alignment = STRETCH; }
+        }
+    }
+END

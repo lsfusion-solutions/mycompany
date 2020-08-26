@@ -331,37 +331,3 @@ META defineDocLinesCount(doc, d)
     
     EXTEND FORM doc##s PROPERTIES(d) READONLY count###doc###Line;
 END
-
-// selected
-
-META defineDocSelected(form, cls, obj)
-    selected 'Отм' = DATA LOCAL NESTED BOOLEAN (cls) CHANGEKEY 'SPACE;group=only;showing=no' CHANGEMOUSE 'ctrl CLK;showing=no';
-    countSelected##cls 'Отмечено' () = GROUP SUM 1 IF selected(cls o);
-    
-    EXTEND FORM form
-        PROPERTIES(obj) selected
-    ;
-    
-    DESIGN form {
-        PROPERTY(selected(obj)) { hide = TRUE; }
-    }
-    
-    background(cls o) += WHEN selected(o) THEN RGB(224,224,255);
-END
-
-META defineDocSelectedAction(form, cls, action, caption)
-    action caption () {
-        FOR selected(cls o) AND [FILTER form.o](o) DO
-            action(o);
-    }
-    
-    EXTEND FORM form
-        PROPERTIES() action SHOWIF countSelected##cls()
-    ;
-    
-    DESIGN form {
-        statuses {
-            MOVE PROPERTY(action()) { alignment = STRETCH; }
-        }
-    }
-END
