@@ -42,6 +42,9 @@ price 'Цена' (OutCostLedger il) = amount(il) / quantity(il);
 signedQuantity 'Количество' (CostLedger l) = MULTI quantity[InCostLedger](l), -quantity[OutCostLedger](l) MATERIALIZED;
 signedAmount 'Сумма' (CostLedger l) = MULTI amount[InCostLedger](l), -amount[OutCostLedger](l) MATERIALIZED;
 
+countLedger (Location l, Product p) =
+    GROUP SUM 1 IF location(CostLedger cl) = l AND product(cl) = p MATERIALIZED;
+    
 costQuantity 'Количество' (Location l, Product p) = 
     GROUP SUM signedQuantity(CostLedger cl) IF location(cl) = l AND product(cl) = p MATERIALIZED;
 costAmount 'Себестоимость' (Location l, Product p) = 

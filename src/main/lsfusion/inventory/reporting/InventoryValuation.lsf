@@ -11,8 +11,10 @@ FORM inventoryValuation 'Себестоимость остатков'
     PROPERTIES(l, p) READONLY costQuantity, costPrice, costAmount
     PROPERTIES(p) NEWSESSION EDIT
     PROPERTIES recalculateCost() DRAW lp TOOLBAR
-    FILTERS costQuantity(l, p),
-            accessGranted(l)
+    FILTERS accessGranted(l)
+    FILTERGROUP rowFilter
+        FILTER 'С остатком' costQuantity(l, p)
+        FILTER 'С движением' countLedger(l, p)
         
     OBJECTS ol = OutCostLedger
     PROPERTIES(ol) READONLY class, type, dateTime, number, nameLocation, nameProduct, quantity, costed, price, amount
