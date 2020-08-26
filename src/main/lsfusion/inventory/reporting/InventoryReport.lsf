@@ -31,9 +31,13 @@ FORM inventoryReport 'Текущие остатки'
     ORDERS canonicalName(l), name(p) 
     FILTERS IF singleLocation() THEN l = lt ELSE isChild(l, lt),
             level(category(p), c),
-            IF selectedDateTime() THEN onHandDateTime(l, p) ELSE 
-                (IF singleLocation() THEN onHandRec(l, p) ELSE onHand(l, p)),
             accessGranted(l)
+
+    FILTERGROUP rowFilter
+        FILTER 'С остатком'
+            IF selectedDateTime() THEN onHandDateTime(l, p) ELSE 
+                (IF singleLocation() THEN onHandRec(l, p) ELSE onHand(l, p)) DEFAULT
+        FILTER 'С приходом' dateReceived(l, p)
                 
     OBJECTS il = InvLedger
     PROPERTIES(il) READONLY class, type, dateTime, number, namePartner,

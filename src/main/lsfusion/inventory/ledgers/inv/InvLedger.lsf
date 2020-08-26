@@ -23,8 +23,8 @@ product 'Товар' = ABSTRACT Product (InvLedger) MATERIALIZED;
 nameProduct 'Товар' (InvLedger l) = name(product(l));
 
 INDEX product(InvLedger l);
-INDEX fromLocation(InvLedger l), product(l);
-INDEX toLocation(InvLedger l), product(l);
+INDEX fromLocation(InvLedger l), product(l), dateTime(l), l;
+INDEX toLocation(InvLedger l), product(l), dateTime(l), l;
 
 quantity 'Кол-во' = ABSTRACT NUMERIC[16,3] (InvLedger) MATERIALIZED;
 
@@ -66,7 +66,7 @@ onHandRec 'Текущий остаток (с учетом вложенности
 
 // dates
 dateReceived 'Дата последнего прихода' (Location l, Product p) = 
-    GROUP LAST dateTime(InvLedger il) ORDER dateTime(il), il WHERE toLocation(il) = l AND product(il) = p;
+    GROUP LAST dateTime(InvLedger il) ORDER dateTime(il), il WHERE toLocation(il) = l AND product(il) = p MATERIALIZED;
 prevDateReceived (Location l, Product p) = PREV(dateReceived(l, p));
     
 dateShipped 'Дата последней отгрузки' (Location l, Product p) = 
