@@ -174,13 +174,13 @@ background (ManufacturingOrder o) = ABSTRACT CASE COLOR (ManufacturingOrder);
 
 FORM manufacturingOrders 'Производственные заказы'
     OBJECTS o = ManufacturingOrder
-    PROPERTIES(o) READONLY BACKGROUND background(o)
+    PROPERTIES(o) READONLYIF isReadonly() BACKGROUND background(o)
                            nameType, scheduledDateTime, number, nameCompany, 
-                           nameItem, unbuild, 
-                           toManufacture, nameUom, 
+                           nameItem, unbuild READONLY, 
+                           toManufacture READONLY, nameUom READONLY, 
                            descriptionBom, 
                            nameMaterialsLocation,
-                           countConsumedLine, countFinishedLine
+                           countConsumedLine READONLY, countFinishedLine READONLY
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
     
     LIST ManufacturingOrder OBJECT o
@@ -206,6 +206,7 @@ DESIGN manufacturingOrders {
     }
 }
 
+@extendFormEditable(manufacturingOrders);
 @defineSelection(manufacturingOrders, ManufacturingOrder, o, rightPane);
 @defineDocStatusForm(manufacturingOrder, o);
 @defineDocLocationAccess(manufacturingOrder, o, materials);
