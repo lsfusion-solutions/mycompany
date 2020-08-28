@@ -15,7 +15,7 @@ newService 'Услуга' (Category c) {
    }
 } IMAGE 'add.png';
 
-copyService 'Копировать' (Service s) {
+copy 'Копировать' (Service s) {
     NEWSESSION {
         NEW ns = Service {
             copy(ns, s);
@@ -24,8 +24,17 @@ copyService 'Копировать' (Service s) {
     }
 }
 
+EXTEND FORM item 
+    PROPERTIES copyService = copy(i)
+;
+DESIGN item {
+    secondaryActions {
+        MOVE PROPERTY(copyService);
+    }
+}
+
 EXTEND FORM items
-    PROPERTIES newService(c) DRAW i TOOLBAR, copyService(i) DRAW i TOOLBAR 
+    PROPERTIES newService(c) DRAW i TOOLBAR 
 ;
 
 

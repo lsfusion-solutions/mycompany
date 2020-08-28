@@ -11,7 +11,7 @@ volume 'Объем единицы, м3' = DATA NUMERIC[11,3] (Product);
 countryOrigin 'Страна происхождения'  = DATA Country (Product);
 nameCountryOrigin 'Страна происхождения' (Product p) = name(countryOrigin(p));
 
-copyProduct 'Копировать' (Product p) {
+copy 'Копировать' (Product p) {
     NEWSESSION {
         NEW np = Product {
             weight(np) <- weight(p);
@@ -52,8 +52,17 @@ newProduct 'Товар' (Category c) {
     }
 } IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
 
+EXTEND FORM item 
+    PROPERTIES copyProduct = copy(i)
+;
+DESIGN item {
+    secondaryActions {
+        MOVE PROPERTY(copyProduct);
+    }
+}
+
 EXTEND FORM items
-    PROPERTIES newProduct(c) DRAW i TOOLBAR, copyProduct(i) DRAW i TOOLBAR 
+    PROPERTIES newProduct(c) DRAW i TOOLBAR 
 ;
 
 // dialog product
