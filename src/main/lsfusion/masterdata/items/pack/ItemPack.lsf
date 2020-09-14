@@ -42,13 +42,21 @@ META defineItemPack(prefix, caption)
 
 END
 
-META defineDocPack(doc, prefix, let)
+META defineDocPack(doc, prefix, item, quantity, let)
 
-    name###prefix##Uom (###doc##Line l) = name###prefix##Uom(item(l));
-    packRatio 'Кол-во в месте' (###doc##Line l) = prefix##PackRatio(item(l));
+    packUom = DATA Uom (###doc##Line);
+    namePackUom 'Вид упаковки' (###doc##Line l) = name(packUom(l));
+
+    WHEN LOCAL CHANGED(item(###doc##Line l)) AND NOT CHANGED(packUom(l)) DO
+        packUom(l) <- prefix##Uom(item(l));
+
+    packRatio 'Кол-во в месте' (###doc##Line l) = ratio(item(l), packUom(l));
+    
+    CONSTRAINT packUom(###doc##Line l) AND NOT packRatio(l)
+        CHECKED BY packUom[###doc##Line] MESSAGE 'Для выбранного места не задано соотношение перевода в базовую единицу измерения'; 
     
     packQuantity 'Кол-во мест' = DATA NUMERIC[16,3] (###doc##Line);
-    WHEN LOCAL (CHANGED(quantity(###doc##Line l)) OR CHANGED(item(l))) AND packRatio(l) AND NOT CHANGED(packQuantity(l)) DO
+    WHEN LOCAL (CHANGED(quantity(###doc##Line l)) OR CHANGED(item(l)) OR CHANGED(packUom(l))) AND packRatio(l) AND NOT CHANGED(packQuantity(l)) DO
         packQuantity(l) <- NUMERIC[16,3](quantity(l) / packRatio(l));
     
     changePackQuantity (###doc##Line l) {
@@ -62,6 +70,7 @@ META defineDocPack(doc, prefix, let)
     
     EXTEND FORM doc
         PROPERTIES(l) SHOWIF pack(type(let)) BEFORE quantity(l) BACKGROUND RGB(255,255,212)
+                      namePackUom,
                       packQuantity ON CHANGE changePackQuantity(l),
                       packRatio READONLY
     ;
