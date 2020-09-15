@@ -10,8 +10,13 @@ item 'Номенклатура' = DATA Item (BarCode) NONULL DELETE;
 idItem 'Код номенклатуры' (BarCode b) = id(item(b));
 nameItem 'Номенклатура' (BarCode b) = name(item(b));
 
+multiple = ABSTRACT BOOLEAN (BarCode) MATERIALIZED;
+
 @defineID(barCode, 'Штрихкоды', '', 13);
 itemBarCode (STRING[50] id) = item(barCode(id));
+
+singleBarCode (STRING[50] id) = GROUP MAX BarCode b IF NOT multiple(b) BY id(b);
+itemSingleBarCode (STRING[50] id) = item(singleBarCode(id));
 
 dataDefaultBarCode = DATA BarCode (Item);
 calcDefaultBarCode (Item i) = GROUP LAST BarCode b ORDER DESC b WHERE item(b) = i;
@@ -72,13 +77,13 @@ consumedBarCode = DATA LOCAL BOOLEAN ();
 barCode 'Штрихкод' = DATA LOCAL STRING () CHANGEKEY 'F4';
 
 META defineBarCodeSearch(doc, let, line, itm, quantity)
-    processBarCode ABSTRACT (###doc, ###doc##Line, STRING);
+    processBarCode ABSTRACT LIST (###doc, ###doc##Line, STRING);
     scanBarCode (###doc d, ###doc##Line l) {
         INPUT id = STRING DO {
-            IF itemBarCode(id) THEN {
-                set###quantity(d, itemBarCode(id), quantity(d, itemBarCode(id)) (+) 1);
-                SEEK ##doc.line = last###doc##Line(d, itemBarCode(id));
-                ACTIVATE PROPERTY ##doc.quantity(l); 
+            IF itemSingleBarCode(id) THEN {
+                set###quantity(d, itemSingleBarCode(id), quantity(d, itemSingleBarCode(id)) (+) 1);
+                SEEK ##doc.line = last###doc##Line(d, itemSingleBarCode(id));
+                ACTIVATE PROPERTY ##doc.quantity(line); 
             } ELSE {
                 consumedBarCode() <- NULL;
                 processBarCode(d, l, id);

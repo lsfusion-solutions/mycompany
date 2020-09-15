@@ -1,0 +1,17 @@
+MODULE BarCodePack;
+
+REQUIRE BarCodeUom, ItemPack;
+
+NAMESPACE MasterData;
+
+META defineBarCodeSearchPack(doc, line, quantity)
+    processBarCode(###doc r, ###doc##Line rl, STRING id) + {
+        IF ratio(barCode(id)) THEN {
+            set###quantity(r, itemBarCode(id), quantity(r, itemBarCode(id)) (+) ratio(barCode(id)));
+            packUom(###doc##Line l) <- uom(barCode(id)) WHERE l = last###doc##Line(r, itemBarCode(id));
+            SEEK ##doc.line = last###doc##Line(r, itemBarCode(id));
+            ACTIVATE PROPERTY ##doc.packQuantity(line);
+            consumedBarCode() <- TRUE;
+        } 
+    }
+END
