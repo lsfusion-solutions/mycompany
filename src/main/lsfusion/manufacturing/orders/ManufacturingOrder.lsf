@@ -1,6 +1,6 @@
 MODULE ManufacturingOrder;
 
-REQUIRE Doc, MetaNumerator, Input, DateUtils, Selection, 
+REQUIRE Doc, MetaNumerator, Input, DateUtils, 
         BomNested, LocationEmployee,
         ManufacturingOrderType, ManufacturingSettings;
 
@@ -207,7 +207,6 @@ DESIGN manufacturingOrders {
 }
 
 @extendFormEditable(manufacturingOrders);
-@defineSelection(manufacturingOrders, ManufacturingOrder, o, rightPane);
 @defineDocStatusForm(manufacturingOrder, o);
 @defineDocLocationAccess(manufacturingOrder, o, materials);
 @defineDateFilterForm(manufacturingOrders, o, scheduled);
@@ -220,31 +219,37 @@ NAVIGATOR {
 
 // copy
 extraCopy ABSTRACT (ManufacturingOrder, ManufacturingOrder);
-copy 'Копировать' (ManufacturingOrder m) {
-    NEWSESSION {
-        NEW o = ManufacturingOrder {
-            item(o) <- item(m);
-            bom(o) <- bom(m);
-            company(o) <- company(m);
-            materialsLocation(o) <- materialsLocation(m);
-            
-            FOR manufacturingOrder(ConsumedLine ml) = m NEW ol = ConsumedLine DO {
-                manufacturingOrder(ol) <- o;
-                item(ol) <- item(ml);
-                toConsume(ol) <- toConsume(ml);
-            }
 
-            FOR manufacturingOrder(FinishedLine ml) = m NEW ol = FinishedLine DO {
-                manufacturingOrder(ol) <- o;
-                item(ol) <- item(ml);
-                uom(ol) <- uom(ml);
-                toProduce(ol) <- toProduce(ml);
-                costRatio(ol) <- costRatio(ml);
-            }
-            
-            extraCopy(o, m);
-            
-            SHOW manufacturingOrder OBJECTS o = o DOCKED;
+clone(ManufacturingOrder to, ManufacturingOrder from) {
+    type(to) <- type(from);
+
+    item(to) <- item(from);
+    bom(to) <- bom(from);
+    company(to) <- company(from);
+    materialsLocation(to) <- materialsLocation(from);
+    
+    FOR manufacturingOrder(ConsumedLine ml) = from NEW ol = ConsumedLine DO {
+        manufacturingOrder(ol) <- to;
+        item(ol) <- item(ml);
+        toConsume(ol) <- toConsume(ml);
+    }
+
+    FOR manufacturingOrder(FinishedLine ml) = from NEW ol = FinishedLine DO {
+        manufacturingOrder(ol) <- to;
+        item(ol) <- item(ml);
+        uom(ol) <- uom(ml);
+        toProduce(ol) <- toProduce(ml);
+        costRatio(ol) <- costRatio(ml);
+    }
+    
+    extraCopy(to, from);
+}
+
+copy 'Копировать' (ManufacturingOrder from) {
+    NEWSESSION {
+        NEW to = ManufacturingOrder {
+            clone(to, from);
+            SHOW manufacturingOrder OBJECTS o = to DOCKED;
         }
     }
 }

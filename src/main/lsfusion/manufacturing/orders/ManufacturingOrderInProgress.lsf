@@ -66,8 +66,8 @@ DESIGN manufacturingOrder {
 }
 
 EXTEND FORM manufacturingOrders
-    PROPERTIES(o) BACKGROUND background(o)
-                             produced AFTER toManufacture(o)
+    PROPERTIES(o) BACKGROUND background(o) READONLYIF isReadonly()
+                             manufactured AFTER toManufacture(o) ON CHANGE changeManufactured(o)
 
     EXTEND FILTERGROUP status
         FILTER 'В процессе' status(o) = ManufacturingOrderStatus.inProgress    

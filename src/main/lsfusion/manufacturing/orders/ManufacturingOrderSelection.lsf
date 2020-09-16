@@ -1,0 +1,64 @@
+MODULE ManufacturingOrderSelection;
+
+REQUIRE ManufacturingOrder, Selection; 
+
+NAMESPACE Manufacturing;
+
+@defineSelection(manufacturingOrders, ManufacturingOrder, o, rightPane);
+
+// copy
+FORM dialogScheduledDate 'Введите дату начала'
+    OBJECTS d '' = DATETIME PANEL
+    PROPERTIES dateTime '' = VALUE(d)
+;
+
+DESIGN dialogScheduledDate {
+    PROPERTY(dateTime) { fontSize = 16; }
+    PROPERTY(formOk()) { changeKey = 'ENTER'; }
+}
+
+
+copySelected 'Копировать' () {
+    DIALOG dialogScheduledDate OBJECTS d INPUT DO {
+        LOCAL NESTED selectedForm = BOOLEAN (ManufacturingOrder);
+        selectedForm(ManufacturingOrder o) <- selected(o) AND [FILTER manufacturingOrders.o](o);
+        NEWSESSION {
+            FOR selectedForm(ManufacturingOrder from) NEW to = ManufacturingOrder DO {
+                scheduledDateTime(to) <- d;
+                clone(to, from);
+            }
+            APPLY;
+        }
+    }
+}
+
+EXTEND FORM manufacturingOrders
+    PROPERTIES() copySelected SHOWIF countSelectedManufacturingOrder()
+;
+
+DESIGN manufacturingOrders {
+    actions {
+        MOVE PROPERTY(copySelected()) { alignment = STRETCH; }
+    }
+}
+
+// delete
+
+deleteSelected 'Удалить' () {
+    LOCAL NESTED selectedForm = BOOLEAN (ManufacturingOrder);
+    selectedForm(ManufacturingOrder o) <- selected(o) AND [FILTER manufacturingOrders.o](o);
+    NEWSESSION {
+        DELETE ManufacturingOrder o WHERE selectedForm(o);
+        APPLY;
+    }
+} CONFIRM;
+
+EXTEND FORM manufacturingOrders
+    PROPERTIES() deleteSelected SHOWIF countSelectedManufacturingOrder()
+;
+
+DESIGN manufacturingOrders {
+    actions {
+        MOVE PROPERTY(deleteSelected()) { alignment = STRETCH; }
+    }
+}

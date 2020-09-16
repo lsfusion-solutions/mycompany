@@ -21,6 +21,9 @@ nameProductsLocation 'Получатель' (ManufacturingOrder m) = name(produc
 CONSTRAINT done(ManufacturingOrder o) AND NOT productsLocation(o)
     MESSAGE 'Не выбрано место хранения получателя в завершенном производственном заказе'; 
 
+prevOnHandAProductsLocation 'Остаток после операции (получатель)' (ManufacturingOrder o) = 
+    prevOnHandA(productsLocation(o), item(o), executionDateTime(o));
+
 markAsDone 'Завершить' (ManufacturingOrder m) {
     APPLY;
     IF canceled() THEN RETURN;
@@ -70,7 +73,9 @@ DESIGN manufacturingOrder {
 EXTEND FORM manufacturingOrders
     PROPERTIES(o) READONLYIF isReadonly() BACKGROUND background(o)
                            executionDateTime AFTER scheduledDateTime(o),
-                           nameProductsLocation 
+                           nameProductsLocation AFTER manufactured(o)
+    PROPERTIES(o) READONLY BACKGROUND background(o)                            
+                           prevOnHandAProductsLocation READONLY AFTER nameProductsLocation(o)  
 
     EXTEND FILTERGROUP status
         FILTER 'Завершен' status(o) = ManufacturingOrderStatus.done    

@@ -4,7 +4,7 @@ NAMESPACE Utils;
 
 META defineSelection(form, cls, obj, container)
     selected 'Отм' = DATA LOCAL NESTED BOOLEAN (cls);
-    countSelected##cls 'Отмечено' () = GROUP SUM 1 IF selected(cls o);
+    countSelected##cls 'Отмечено' () = GROUP SUM 1 IF selected(cls o) AND [FILTER form.o](o);
     
     background(cls o) += WHEN selected(o) THEN RGB(224,224,255);
 
@@ -21,7 +21,7 @@ META defineSelection(form, cls, obj, container)
     } CHANGEKEY 'SUBTRACT' HIDE;
     
     EXTEND FORM form
-        PROPERTIES(obj) selected
+        PROPERTIES(obj) selected FIRST
     
         PROPERTIES DRAW obj TOOLBAR select(obj), invertSelection(), deselectAll()
         

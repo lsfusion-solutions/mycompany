@@ -21,6 +21,11 @@ setFilterYesterday 'Вчера' () {
     filterDateTo() <- subtract(currentDate(), 1);
 } IN filterDates;
 
+setFilterTomorrow 'Завтра' () {
+    filterDateFrom() <- sum(currentDate(), 1); 
+    filterDateTo() <- sum(currentDate(), 1);
+} IN filterDates;
+
 setFilterLast7Days '7 дней' () {
     filterDateFrom() <- subtract(currentDate(), 7); 
     filterDateTo() <- subtract(currentDate(), 1);
@@ -43,7 +48,7 @@ setFilterLastCurrentYear 'Этот год' () {
 
 META defineDateFilterForm(form, let, prefix)
     EXTEND FORM form
-        PROPERTIES() filterDateFrom, filterDateTo, setFilterToday, setFilterYesterday, setFilterLast7Days, setFilterLast30Days, setFilterLastCurrentMonth, setFilterLastCurrentYear 
+        PROPERTIES() filterDateFrom, filterDateTo, setFilterToday, setFilterYesterday, setFilterTomorrow, setFilterLast7Days, setFilterLast30Days, setFilterLastCurrentMonth, setFilterLastCurrentYear 
 
         FILTERS NOT prefix###date(let) < filterDateFrom(), NOT prefix###date(let) > filterDateTo() 
     ;
