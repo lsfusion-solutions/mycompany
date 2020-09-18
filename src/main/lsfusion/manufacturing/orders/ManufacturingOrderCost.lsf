@@ -20,6 +20,8 @@ quantity(ConsumedOutCostLedger l) += consumed(line(l));
 
 edit(ConsumedOutCostLedger l) + { edit(line(l)); }
 
+cost 'Себестоимость' (ConsumedLine l) = amount(outCostLedger(l));
+
 // приходная проводка
 CLASS ConsumedInCostLedger 'Производство' : InCostLedger;
 inCostLedger = AGGR ConsumedInCostLedger WHERE produced(FinishedLine line) AND active(manufacturingOrder(line)) AND item(line) IS Product;
@@ -34,8 +36,12 @@ location(ConsumedInCostLedger l) += costLocation(productsLocation(manufacturingO
 product(ConsumedInCostLedger l) += item(line(l)) AS Product;
 quantity(ConsumedInCostLedger l) += produced(line(l));
 
-cost (ManufacturingOrder o) = GROUP SUM amount(ConsumedOutCostLedger l) IF manufacturingOrder(line(l)) = o;
+cost 'Себестоимость' (ManufacturingOrder o) = GROUP SUM amount(ConsumedOutCostLedger l) IF manufacturingOrder(line(l)) = o;
 
 calcAmount (ConsumedInCostLedger l) += NUMERIC[14,2](cost(manufacturingOrder(line(l))) * normalizedCostRatio(line(l)));
 
 edit(ConsumedInCostLedger l) + { edit(line(l)); }
+
+EXTEND FORM manufacturingOrders
+    PROPERTIES(o) READONLY cost
+;

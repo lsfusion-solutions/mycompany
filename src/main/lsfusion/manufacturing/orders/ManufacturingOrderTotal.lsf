@@ -1,0 +1,37 @@
+MODULE ManufacturingOrderTotal;
+
+REQUIRE ManufacturingOrder, ManufacturingOrderSelection,
+        ManufacturingOrderInProgress, ManufacturingOrderCost;
+
+NAMESPACE Manufacturing;
+
+toConsume 'Израсходовать' (Item i) = GROUP SUM toConsume(ConsumedLine l) IF item(l) = i AND selectedForm(manufacturingOrder(l));
+consumed 'Израсходовано' (Item i) = GROUP SUM consumed(ConsumedLine l) IF item(l) = i AND selectedForm(manufacturingOrder(l));
+cost 'Себестоимость' (Item i) = GROUP SUM cost(ConsumedLine l) IF item(l) = i AND selectedForm(manufacturingOrder(l));
+
+EXTEND FORM manufacturingOrders
+    OBJECTS i = Item
+    PROPERTIES(i) READONLY name, nameUom, idBarCode, id,
+                           toConsume, consumed, cost
+    FILTERS toConsume(i) OR consumed(i)
+    ORDERS name(i)
+    
+    OBJECTS cl = ConsumedLine
+    PROPERTIES(cl) READONLY nameType, scheduledDateTime, number, descriptionBom,
+                            toConsume, consumed, cost
+    PROPERTIES(cl) NEWSESSION EDIT
+    FILTERS item(cl) = i,
+            selectedForm(manufacturingOrder(cl))
+;
+
+DESIGN manufacturingOrders {
+    tabbedPane {
+        NEW total {
+            showIf = countSelectedManufacturingOrder();
+            caption = 'Итоги';
+            type = SPLITV;
+            MOVE BOX(i);
+            MOVE BOX(cl);
+        } 
+    }
+}

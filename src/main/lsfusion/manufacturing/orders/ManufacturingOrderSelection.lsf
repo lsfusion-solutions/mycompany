@@ -20,8 +20,8 @@ DESIGN dialogScheduledDate {
 
 copySelected 'Копировать' () {
     DIALOG dialogScheduledDate OBJECTS d INPUT DO {
-        LOCAL NESTED selectedForm = BOOLEAN (ManufacturingOrder);
-        selectedForm(ManufacturingOrder o) <- selected(o) AND [FILTER manufacturingOrders.o](o);
+        LOCAL NESTED toCopy = BOOLEAN (ManufacturingOrder);
+        toCopy(ManufacturingOrder o) <- selectedForm(o);
         NEWSESSION {
             FOR selectedForm(ManufacturingOrder from) NEW to = ManufacturingOrder DO {
                 scheduledDateTime(to) <- d;
@@ -45,10 +45,10 @@ DESIGN manufacturingOrders {
 // delete
 
 deleteSelected 'Удалить' () {
-    LOCAL NESTED selectedForm = BOOLEAN (ManufacturingOrder);
-    selectedForm(ManufacturingOrder o) <- selected(o) AND [FILTER manufacturingOrders.o](o);
+    LOCAL NESTED toDelete = BOOLEAN (ManufacturingOrder);
+    toDelete(ManufacturingOrder o) <- selectedForm(o);
     NEWSESSION {
-        DELETE ManufacturingOrder o WHERE selectedForm(o);
+        DELETE ManufacturingOrder o WHERE toDelete(o);
         APPLY;
     }
 } CONFIRM;

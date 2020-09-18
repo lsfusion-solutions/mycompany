@@ -4,7 +4,8 @@ NAMESPACE Utils;
 
 META defineSelection(form, cls, obj, container)
     selected 'Отм' = DATA LOCAL NESTED BOOLEAN (cls);
-    countSelected##cls 'Отмечено' () = GROUP SUM 1 IF selected(cls o) AND [FILTER form.o](o);
+    selectedForm (cls o) = selected(o) AND [FILTER form.o](o);
+    countSelected##cls 'Отмечено' () = GROUP SUM 1 IF selectedForm(cls o);
     
     background(cls o) += WHEN selected(o) THEN RGB(224,224,255);
 
@@ -45,7 +46,7 @@ END
 
 META defineSelectionAction(form, cls, action, caption, container)
     action caption () {
-        FOR selected(cls o) AND [FILTER form.o](o) DO
+        FOR selectedForm(cls o) DO
             action(o);
     }
     

@@ -101,7 +101,12 @@ toProduce 'Произвести' (ManufacturingOrder o) = GROUP SUM toProduce(Fi
 toManufacture 'Произвести' (ManufacturingOrder o) = IF unbuild(o) THEN toConsume(o) ELSE toProduce(o) MATERIALIZED;
 
 // line properties
+nameType 'Тип' (ConsumedLine l) = nameType(manufacturingOrder(l));
 scheduledDateTime 'Дата начала' (ConsumedLine l) = scheduledDateTime(manufacturingOrder(l));
+number 'Номер' (ConsumedLine l) = number(manufacturingOrder(l));
+descriptionBom 'Спецификация' (ConsumedLine l) = descriptionBom(manufacturingOrder(l));
+
+edit (ConsumedLine l) + { edit(manufacturingOrder(l)); } 
 
 FORM manufacturingOrder 'Производственный заказ'
     OBJECTS o = ManufacturingOrder PANEL 
@@ -191,7 +196,11 @@ DESIGN manufacturingOrders {
         NEW pane {
             fill = 1;
             type = CONTAINERH;
-            MOVE BOX(o);
+            NEW tabbedPane {
+                type = TABBED;
+                fill = 1;
+                MOVE BOX(o) { caption = 'Заказы'; }
+            }
             NEW rightPane {
                 NEW actions {
                     alignment = STRETCH;
