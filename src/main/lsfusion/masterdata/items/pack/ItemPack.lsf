@@ -44,14 +44,17 @@ END
 
 META defineDocPack(doc, prefix, item, quantity, let)
 
+    pack 'Показывать количество мест' = DATA BOOLEAN (###doc##Type);
+    EXTEND FORM doc##Type PROPERTIES(o) pack;
+
     packUom = DATA Uom (###doc##Line);
     namePackUom 'Вид упаковки' (###doc##Line l) = name(packUom(l));
 
-    WHEN LOCAL CHANGED(item(###doc##Line l)) AND NOT CHANGED(packUom(l)) DO
+    packRatio 'Кол-во в месте' (###doc##Line l) = ratio(item(l), packUom(l));
+
+    WHEN LOCAL CHANGED(item(###doc##Line l)) AND pack(type(doc(l))) AND packRatio(l) AND NOT CHANGED(packUom(l)) DO
         packUom(l) <- prefix##Uom(item(l));
 
-    packRatio 'Кол-во в месте' (###doc##Line l) = ratio(item(l), packUom(l));
-    
     CONSTRAINT packUom(###doc##Line l) AND NOT packRatio(l)
         CHECKED BY packUom[###doc##Line] MESSAGE 'Для выбранного места не задано соотношение перевода в базовую единицу измерения'; 
     
@@ -64,9 +67,6 @@ META defineDocPack(doc, prefix, item, quantity, let)
             quantity(l) <- NUMERIC[16,3](packQuantity(l) * packRatio(l)) WHERE packRatio(l);
         }
     }
-    
-    pack 'Показывать количество мест' = DATA BOOLEAN (###doc##Type);
-    EXTEND FORM doc##Type PROPERTIES(o) pack;
     
     EXTEND FORM doc
         PROPERTIES(l) SHOWIF pack(type(let)) BEFORE quantity(l) BACKGROUND RGB(255,255,212)
