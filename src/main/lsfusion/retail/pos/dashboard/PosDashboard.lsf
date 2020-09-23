@@ -169,11 +169,13 @@ DESIGN posDashboard {
 
 DESIGN posDashboard { REMOVE PROPERTY(posDashboardPress0(l)); }
 
+afterCreateInvoice ABSTRACT LIST (Invoice);
 createInvoice (Session s) {
     IF s THEN
         NEW i = Invoice {
             session(i) <- s;
             SEEK posDashboard.i = i;
+            afterCreateInvoice(i);
         }
 }
 
