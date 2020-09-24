@@ -2,29 +2,31 @@ MODULE Selection;
 
 NAMESPACE Utils;
 
-META defineSelection(form, cls, obj, container)
+META defineSelection(cls)
     selected 'Отм' = DATA LOCAL NESTED BOOLEAN (cls);
-    selectedForm (cls o) = selected(o) AND [FILTER form.obj](o);
-    countSelected##cls 'Отмечено' () = GROUP SUM 1 IF selectedForm(cls o);
-    
     background(cls o) += WHEN selected(o) THEN RGB(224,224,255);
 
     select '+' (cls o) {
         selected(o) <- NOT selected(o);
     } CHANGEKEY 'ADD' HIDE;
+END
+
+META defineSelectionForm(form, cls, obj)
+    selected###form (cls o) = selected(o) AND [FILTER form.obj](o);
+    countSelected###form 'Отмечено' () = GROUP SUM 1 IF selected###form(cls o);
     
-    invertSelection '*' () {
+    invertSelection###form '*' () {
         selected(cls o) <- NOT selected(o) WHERE [FILTER form.obj](o);
     } CHANGEKEY 'MULTIPLY' HIDE;
     
-    deselectAll '-' () {
+    deselectAll###form '-' () {
         selected(cls o) <- NULL WHERE [FILTER form.obj](o);
     } CHANGEKEY 'SUBTRACT' HIDE;
     
     EXTEND FORM form
         PROPERTIES(obj) selected FIRST
     
-        PROPERTIES DRAW obj TOOLBAR select(obj), invertSelection(), deselectAll()
+        PROPERTIES DRAW obj TOOLBAR select(obj), invertSelection###form(), deselectAll###form()
         
         FILTERGROUP selected
             FILTER 'Отмеченные' selected(obj) 'ctrl O'
@@ -36,8 +38,8 @@ META defineSelection(form, cls, obj, container)
             NEW selection AFTER TOOLBARLEFT(obj) {
                 type = CONTAINERH;
                 MOVE PROPERTY(select(obj));
-                MOVE PROPERTY(invertSelection());
-                MOVE PROPERTY(deselectAll());
+                MOVE PROPERTY(invertSelection###form());
+                MOVE PROPERTY(deselectAll###form());
                 MOVE FILTERGROUP(selected);
             }
         } 
@@ -46,12 +48,12 @@ END
 
 META defineSelectionAction(form, cls, action, caption, container)
     action caption () {
-        FOR selectedForm(cls o) DO
+        FOR selected###form(cls o) DO
             action(o);
     }
     
     EXTEND FORM form
-        PROPERTIES() action SHOWIF countSelected##cls()
+        PROPERTIES() action SHOWIF countSelected###form()
     ;
     
     DESIGN form {

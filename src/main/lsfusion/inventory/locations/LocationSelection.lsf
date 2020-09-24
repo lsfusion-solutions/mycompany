@@ -1,0 +1,39 @@
+MODULE LocationSelection;
+
+REQUIRE Location, Selection;
+
+NAMESPACE Inventory;
+
+@defineSelection(Location);
+
+@defineSelectionForm(locations, Location, l);
+
+FORM dialogLocationsMulti 'Места хранения'
+    TREE locations lt = Location PARENT parent(lt)
+    PROPERTIES(lt) READONLY name, id
+    PROPERTIES(lt) NEWSESSION NEW, EDIT, DELETE
+    ORDERS name(lt)
+    
+    OBJECTS l = Location
+    PROPERTIES(l) READONLY BACKGROUND background(l)
+                        name, id, address
+    
+    FILTERGROUP tree
+        FILTER 'Листья' NOT countChildren(l) DEFAULT
+        FILTER 'Потомки' parent(l) = lt
+    
+    FILTERS isChild(l, lt)
+;
+
+DESIGN dialogLocationsMulti {
+    OBJECTS {
+        NEW pane {
+            fill = 1; 
+            type = SPLITH;
+            MOVE BOX(TREE locations);
+            MOVE BOX(l) { fill = 2; }
+        }
+    }
+}
+
+@defineSelectionForm(dialogLocationsMulti, Location, l);

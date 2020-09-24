@@ -5,9 +5,9 @@ REQUIRE ManufacturingOrder, ManufacturingOrderSelection,
 
 NAMESPACE Manufacturing;
 
-toConsume 'Израсходовать' (Item i) = GROUP SUM toConsume(ConsumedLine l) IF item(l) = i AND selectedForm(manufacturingOrder(l));
-consumed 'Израсходовано' (Item i) = GROUP SUM consumed(ConsumedLine l) IF item(l) = i AND selectedForm(manufacturingOrder(l));
-cost 'Себестоимость' (Item i) = GROUP SUM cost(ConsumedLine l) IF item(l) = i AND selectedForm(manufacturingOrder(l));
+toConsume 'Израсходовать' (Item i) = GROUP SUM toConsume(ConsumedLine l) IF item(l) = i AND selectedManufacturingOrders(manufacturingOrder(l));
+consumed 'Израсходовано' (Item i) = GROUP SUM consumed(ConsumedLine l) IF item(l) = i AND selectedManufacturingOrders(manufacturingOrder(l));
+cost 'Себестоимость' (Item i) = GROUP SUM cost(ConsumedLine l) IF item(l) = i AND selectedManufacturingOrders(manufacturingOrder(l));
 
 EXTEND FORM manufacturingOrders
     OBJECTS i = Item
@@ -21,13 +21,13 @@ EXTEND FORM manufacturingOrders
                             toConsume, consumed, cost
     PROPERTIES(cl) NEWSESSION EDIT
     FILTERS item(cl) = i,
-            selectedForm(manufacturingOrder(cl))
+            selectedManufacturingOrders(manufacturingOrder(cl))
 ;
 
 DESIGN manufacturingOrders {
     tabbedPane {
         NEW total {
-            showIf = countSelectedManufacturingOrder();
+            showIf = countSelectedManufacturingOrders();
             caption = 'Итоги';
             type = SPLITV;
             MOVE BOX(i);

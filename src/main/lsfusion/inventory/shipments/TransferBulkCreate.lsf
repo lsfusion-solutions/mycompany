@@ -1,0 +1,41 @@
+MODULE TransferBulkCreate;
+
+REQUIRE Shipment, ShipmentFilter, LocationSelection;
+
+NAMESPACE Inventory;
+
+bulkCreate 'Создать перемещения' () {
+    IF NOT type() THEN {
+        MESSAGE 'Не выбран тип отгрузки';
+        RETURN;
+    }
+    IF NOT isTransfer(type()) THEN {
+        MESSAGE 'Выбран тип отгрузки не являющийся перемещением';
+        RETURN;
+    }
+    IF NOT location() THEN {
+        MESSAGE 'Не выбрано место хранения (откуда)';
+        RETURN;
+    }
+    
+    DIALOG dialogLocationsMulti DOCKED DO {
+        NEWSESSION NESTED (selected[Location]){
+            FOR selected(Location to) DO NEW s = Shipment {
+                type(s) <- type();
+                location(s) <- location();
+                toLocation(s) <- to;
+            }
+            APPLY;
+        }
+    }
+}
+
+EXTEND FORM shipments
+    PROPERTIES() bulkCreate
+;
+
+DESIGN shipments {
+    actions {
+        MOVE PROPERTY(bulkCreate()) { alignment = STRETCH; }
+    }
+}

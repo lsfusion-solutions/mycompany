@@ -1,6 +1,6 @@
 MODULE Location;
 
-REQUIRE InventorySettings, Company, MetaNumerator;
+REQUIRE InventorySettings, Company, MetaNumerator, Selection;
 
 NAMESPACE Inventory;
 
@@ -23,6 +23,8 @@ level 'Уровень' (Location child, Location parent) =
         STEP 2l IF parent = parent($parent) MATERIALIZED;
 
 isChild (Location child, Location parent) = TRUE IF level(child, parent);
+
+countChildren (Location parent) = GROUP SUM 1 IF parent(Location child) = parent;
 
 canonicalName 'Каноническое имя' (Location l) =
    GROUP CONCAT name(Location parent), ' / ' ORDER DESC level(l, parent) CHARWIDTH 20 IN id;
@@ -88,9 +90,11 @@ DESIGN location {
     }
 }
 
+background (Location l) = ABSTRACT CASE COLOR (Location);
 FORM locations 'Места хранения'
     OBJECTS l = Location
-    PROPERTIES(l) READONLY name, id, 
+    PROPERTIES(l) READONLY BACKGROUND background(l)
+                           name, id, 
                            canonicalNameParent, nameCompany,
                            address, city, state, zip
     PROPERTIES(l) NEWSESSION NEW, EDIT, DELETE

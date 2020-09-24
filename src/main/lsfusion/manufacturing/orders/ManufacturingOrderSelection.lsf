@@ -4,7 +4,9 @@ REQUIRE ManufacturingOrder, Selection;
 
 NAMESPACE Manufacturing;
 
-@defineSelection(manufacturingOrders, ManufacturingOrder, o, rightPane);
+@defineSelection(ManufacturingOrder);
+
+@defineSelectionForm(manufacturingOrders, ManufacturingOrder, o);
 
 // copy
 FORM dialogScheduledDate 'Введите дату начала'
@@ -21,9 +23,9 @@ DESIGN dialogScheduledDate {
 copySelected 'Копировать' () {
     DIALOG dialogScheduledDate OBJECTS d INPUT DO {
         LOCAL NESTED toCopy = BOOLEAN (ManufacturingOrder);
-        toCopy(ManufacturingOrder o) <- selectedForm(o);
+        toCopy(ManufacturingOrder o) <- selectedManufacturingOrders(o);
         NEWSESSION {
-            FOR selectedForm(ManufacturingOrder from) NEW to = ManufacturingOrder DO {
+            FOR selectedManufacturingOrders(ManufacturingOrder from) NEW to = ManufacturingOrder DO {
                 scheduledDateTime(to) <- d;
                 clone(to, from);
             }
@@ -33,7 +35,7 @@ copySelected 'Копировать' () {
 }
 
 EXTEND FORM manufacturingOrders
-    PROPERTIES() copySelected SHOWIF countSelectedManufacturingOrder()
+    PROPERTIES() copySelected SHOWIF countSelectedManufacturingOrders()
 ;
 
 DESIGN manufacturingOrders {
@@ -46,7 +48,7 @@ DESIGN manufacturingOrders {
 
 deleteSelected 'Удалить' () {
     LOCAL NESTED toDelete = BOOLEAN (ManufacturingOrder);
-    toDelete(ManufacturingOrder o) <- selectedForm(o);
+    toDelete(ManufacturingOrder o) <- selectedManufacturingOrders(o);
     NEWSESSION {
         DELETE ManufacturingOrder o WHERE toDelete(o);
         APPLY;
@@ -54,7 +56,7 @@ deleteSelected 'Удалить' () {
 } CONFIRM;
 
 EXTEND FORM manufacturingOrders
-    PROPERTIES() deleteSelected SHOWIF countSelectedManufacturingOrder()
+    PROPERTIES() deleteSelected SHOWIF countSelectedManufacturingOrders()
 ;
 
 DESIGN manufacturingOrders {
