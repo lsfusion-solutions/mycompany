@@ -4,35 +4,13 @@ REQUIRE ManufacturingOrderDone;
 
 NAMESPACE Manufacturing;
 
-type = DATA LOCAL NESTED ManufacturingOrderType ();
-nameType 'Тип' = name(type());
+@defineDateFilterForm(manufacturingOrders, o, scheduled);
 
-materialsLocation = DATA LOCAL NESTED Location ();
-nameMaterialsLocation 'Списать из' = name(materialsLocation());
+// right pane
+@defineDocFilter(manufacturingOrder, ManufacturingOrderType, type, o, 'Тип');
 
+@defineDocFilter(manufacturingOrder, Location, materialsLocation, o, 'Списать из');
 CONSTRAINT accessDenied(materialsLocation()) CHECKED BY materialsLocation[] MESSAGE '';
 
-productsLocation = DATA LOCAL NESTED Location ();
-nameProductsLocation 'Получатель' = name(productsLocation());
-
+@defineDocFilter(manufacturingOrder, Location, productsLocation, o, 'Получатель');
 CONSTRAINT accessDenied(productsLocation()) CHECKED BY productsLocation[] MESSAGE '';
-
-EXTEND FORM manufacturingOrders
-    PROPERTIES() nameType, nameMaterialsLocation, nameProductsLocation
-    
-    FILTERS type(o) = type() OR NOT type(),
-            materialsLocation(o) = materialsLocation() OR NOT materialsLocation(),
-            productsLocation(o) = productsLocation() OR NOT productsLocation() 
-;
-
-DESIGN manufacturingOrders {
-    rightPane {
-        NEW filters FIRST {
-            caption = 'Фильтры';
-            alignment = STRETCH;
-            MOVE PROPERTY(nameType());
-            MOVE PROPERTY(nameMaterialsLocation());
-            MOVE PROPERTY(nameProductsLocation());
-        }
-    }
-}

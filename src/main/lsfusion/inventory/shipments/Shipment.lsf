@@ -162,17 +162,20 @@ DESIGN shipment {
 @defineDocHistory(shipment, s, product, initialDemand);
 
 // shipments
+background (Shipment s) = ABSTRACT CASE COLOR (Shipment);
+
 FORM shipments 'Отгрузки'
     OBJECTS s = Shipment
-    PROPERTIES(s) READONLY nameType, scheduledDateTime, number, 
+    PROPERTIES(s) READONLY BACKGROUND background(s)
+                           nameType, scheduledDateTime, number, 
                            nameCustomer, nameLocation, nameToLocation,
                            note, countLines
     PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
 ;
 
+@defineDocObjectsForm(shipments, s, 'Отгрузки');
 @defineDocStatusForm(shipment, s);
 @defineDocLocationAccess(shipment, s);
-@defineDateFilterForm(shipments, s, scheduled);
 
 NAVIGATOR {
     operations {

@@ -1,6 +1,6 @@
 MODULE ShipmentWaiting;
 
-REQUIRE Shipment, InvLedger;
+REQUIRE Shipment, ShipmentSelection, InvLedger;
 
 NAMESPACE Inventory;
 
@@ -39,6 +39,8 @@ EXTEND FORM shipments
     EXTEND FILTERGROUP status
         FILTER 'В ожидании' status(s) = ShipmentStatus.waiting    
 ;
+
+@defineSelectionAction(shipments, Shipment, markAsToDo, 'В работу', statuses);
 
 // total
 waiting 'Ожидает отгрузку' (Location l, Product p) = 

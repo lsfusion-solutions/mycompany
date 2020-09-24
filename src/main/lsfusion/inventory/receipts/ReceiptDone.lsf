@@ -31,7 +31,7 @@ validate 'Принят' (Receipt r) {
     NEWSESSION {
         IF NOT immediate(r) THEN {
             IF NOT GROUP SUM 1 IF done(ReceiptLine l) AND receipt(l) = r THEN
-                ASK 'Не заполены принятые количества. Проставить ожидаемыми ?' DO {
+                ASK 'Не заполены принятые количества для поступления ' + number(r) + '. Проставить ожидаемыми ?' DO {
                     done(ReceiptLine l) <- initialDemand(l) WHERE receipt(l) = r;
                 } ELSE RETURN;
         }

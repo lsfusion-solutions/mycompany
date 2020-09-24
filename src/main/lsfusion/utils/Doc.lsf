@@ -4,6 +4,36 @@ REQUIRE Authentication, Time, BarCode;
 
 NAMESPACE Utils;
 
+META defineDocObjectsForm (form, obj, title)
+    DESIGN form {
+        OBJECTS {
+            NEW pane {
+                fill = 1;
+                type = CONTAINERH;
+                NEW tabbedPane {
+                    type = TABBED;
+                    fill = 1;
+                    MOVE BOX(obj) { caption = title; }
+                }
+                NEW rightPane {
+                    NEW filters {
+                        caption = 'Фильтры';
+                        alignment = STRETCH;
+                    }
+                    NEW actions {
+                        alignment = STRETCH;
+                        caption = 'Действия';
+                    }
+                    NEW statuses {
+                        alignment = STRETCH;
+                        caption = 'Статусы';
+                    }
+                }
+            }
+        }
+    }
+END
+
 META defineDocStatus (doc, title)
     CLASS ###doc##Status 'Статус '##title {
         draft 'Черновик'
@@ -330,4 +360,22 @@ META defineDocLinesCount(doc, d)
     count###doc###Line 'Кол-во строк' (###doc d) = GROUP SUM 1 IF doc(###doc###Line l) = d MATERIALIZED;
     
     EXTEND FORM doc##s PROPERTIES(d) READONLY count###doc###Line;
+END
+
+META defineDocFilter(doc, cls, property, obj, caption)
+    property = DATA LOCAL NESTED cls ();
+    name###property caption = name(property());
+
+    EXTEND FORM doc##s 
+        PROPERTIES() name###property
+        
+        FILTERS property(obj) = property() OR NOT property()
+    ;
+    
+    DESIGN doc##s {
+        filters {
+            MOVE PROPERTY(name###property());
+        }
+    }
+
 END
