@@ -200,20 +200,24 @@ EXTEND FORM shipments
 ;
 
 // copy
-copy 'Копировать' (Shipment s)  { 
+clone(Shipment to, Shipment from) {
+    type(to) <- type(from);
+    location(to) <- location(from);
+    toLocation(to) <- toLocation(from);
+    note(to) <- note(from);
+    immediate(to) <- immediate(from);
+    FOR shipment(ShipmentLine l) = from INLINE NEW nl = ShipmentLine DO {
+        shipment(nl) <- to;
+        product(nl) <- product(l);
+        initialDemand(nl) <- initialDemand(l);
+    }
+}
+
+copy 'Копировать' (Shipment from)  { 
     NEWSESSION {
-        NEW ns = Shipment {
-            type(ns) <- type(s);
-            location(ns) <- location(s);
-            toLocation(ns) <- toLocation(s);
-            note(ns) <- note(s);
-            immediate(ns) <- immediate(s);
-            FOR shipment(ShipmentLine l) = s INLINE NEW nl = ShipmentLine DO {
-                shipment(nl) <- ns;
-                product(nl) <- product(l);
-                initialDemand(nl) <- initialDemand(l);
-            }
-            SHOW shipment OBJECTS s = ns DOCKED;
+        NEW to = Shipment {
+            clone(to, from);
+            SHOW shipment OBJECTS s = to DOCKED;
         }
     }
 }
