@@ -166,12 +166,14 @@ background (Shipment s) = ABSTRACT CASE COLOR (Shipment);
 
 FORM shipments 'Отгрузки'
     OBJECTS s = Shipment
-    PROPERTIES(s) READONLY BACKGROUND background(s)
+    PROPERTIES(s) READONLYIF isReadonly() BACKGROUND background(s)
                            nameType, scheduledDateTime, number, 
                            nameCustomer, nameLocation, nameToLocation,
                            note, countLines
     PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
 ;
+
+@extendFormEditable(shipments);
 
 @defineDocObjectsForm(shipments, s, 'Отгрузки');
 @defineDocStatusForm(shipment, s);

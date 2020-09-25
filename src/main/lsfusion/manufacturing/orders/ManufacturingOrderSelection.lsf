@@ -44,23 +44,4 @@ DESIGN manufacturingOrders {
     }
 }
 
-// delete
-
-deleteSelected 'Удалить' () {
-    LOCAL NESTED toDelete = BOOLEAN (ManufacturingOrder);
-    toDelete(ManufacturingOrder o) <- selectedManufacturingOrders(o);
-    NEWSESSION {
-        DELETE ManufacturingOrder o WHERE toDelete(o);
-        APPLY;
-    }
-} CONFIRM;
-
-EXTEND FORM manufacturingOrders
-    PROPERTIES() deleteSelected SHOWIF countSelectedManufacturingOrders()
-;
-
-DESIGN manufacturingOrders {
-    actions {
-        MOVE PROPERTY(deleteSelected()) { alignment = STRETCH; }
-    }
-}
+@defineSelectionDelete(manufacturingOrders, ManufacturingOrder);

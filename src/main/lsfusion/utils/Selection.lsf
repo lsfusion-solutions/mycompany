@@ -46,6 +46,27 @@ META defineSelectionForm(form, cls, obj)
     }
 END
 
+META defineSelectionDelete(form, cls)
+    deleteSelected###form 'Удалить' () {
+        LOCAL NESTED toDelete = BOOLEAN (cls);
+        toDelete(cls o) <- selected###form(o);
+        NEWSESSION {
+            DELETE cls o WHERE toDelete(o);
+            APPLY;
+        }
+    } CONFIRM;
+    
+    EXTEND FORM form
+        PROPERTIES() deleteSelected###form SHOWIF countSelected###form()
+    ;
+    
+    DESIGN form {
+        actions {
+            MOVE PROPERTY(deleteSelected###form()) { alignment = STRETCH; }
+        }
+    }
+END
+
 META defineSelectionAction(form, cls, action, caption, container)
     action caption () {
         FOR selected###form(cls o) DO
