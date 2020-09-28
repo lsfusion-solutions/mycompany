@@ -59,10 +59,13 @@ prevOnHandA (Location ll, Product p, DATETIME dt) = PREV(onHandA(ll, p, dt));
 
 onHandB 'Остаток' (Location ll, Product p, DATETIME dt) = 
                                                             inQuantityB(ll, p, dt) (-) outQuantityB(ll, p, dt) IF dt;
-prevOnHandB (Location ll, Product p, DATETIME dt) = PREV(onHandB(ll, p, dt));
+prevOnHandB 'Остаток' (Location ll, Product p, DATETIME dt) = PREV(onHandB(ll, p, dt));
 
 onHandRec 'Текущий остаток (с учетом вложенности)' (Location l, Product p) = 
     GROUP SUM onHand(Location child, p) IF level(child, l) MATERIALIZED;
+
+prevOnHandRec 'Текущий остаток (с учетом вложенности)' (Location l, Product p) = PREV(onHandRec(l, p)); 
+    
 
 // dates
 dateReceived 'Дата последнего прихода' (Location l, Product p) = 

@@ -1,0 +1,50 @@
+MODULE ShipmentTotal;
+
+REQUIRE Shipment, ShipmentSelection, ShipmentFilter,
+        ShipmentSearch, ShipmentWaiting;
+
+NAMESPACE Manufacturing;
+
+initialDemand 'Планируемое количество' (Product p) = GROUP SUM initialDemand(ShipmentLine l) IF product(l) = p AND selectedShipments(shipment(l));
+
+EXTEND FORM shipments
+    OBJECTS ss = Shipment
+    FILTERS selectedShipments(ss)
+
+    TREE categories c = Category PARENT parent(c)
+    PROPERTIES READONLY name(c)
+    ORDERS name(c)
+
+    OBJECTS p = Product
+    PROPERTIES(p) READONLY name, nameUom, idBarCode, id
+    PROPERTIES READONLY 'Доступно (откуда)' = prevAvailableRec(location(), p) SHOWIF location()
+
+    PROPERTIES(p) READONLY initialDemand
+                           
+    PROPERTIES initialDemand(ss, p) READONLYIF NOT (status(ss) = ShipmentStatus.draft OR status(ss) = ShipmentStatus.waiting)
+                                    BACKGROUND RGB(212,212,255) IF (status(ss) = ShipmentStatus.draft OR status(ss) = ShipmentStatus.waiting)
+                                    COLUMNS 'id' (ss) 
+                                    HEADER CONCAT ' ', 'Кол-во', nameToLocation(ss), scheduledDate(ss)
+                                    ON CHANGE changeInitialDemand(ss, p)
+    
+    PROPERTIES onHand 'Доступно' = prevAvailableRec(toLocation(ss), p) READONLY
+                                  COLUMNS 'id' (ss)
+    FILTERGROUP demand
+        FILTER 'К отгрузке' initialDemand(p) 'F9' DEFAULT
+    FILTERS level(category(p), c)
+    FILTERGROUP active
+        FILTER 'Активный' active(p) 'F10' DEFAULT  
+    ORDERS name(p)
+;
+
+DESIGN shipments {
+    tabbedPane {
+        NEW total {
+            showIf = countSelectedShipments();
+            caption = 'Итоги';
+            type = SPLITH;
+            MOVE BOX(TREE categories);
+            MOVE BOX(p) { fill = 3; }
+        } 
+    }
+}
