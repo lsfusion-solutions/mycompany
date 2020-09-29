@@ -1,7 +1,8 @@
 MODULE ShipmentTotal;
 
 REQUIRE Shipment, ShipmentSelection, ShipmentFilter,
-        ShipmentSearch, ShipmentWaiting;
+        ShipmentSearch, ShipmentWaiting,
+        ShipmentPeriod;
 
 NAMESPACE Manufacturing;
 
@@ -19,18 +20,18 @@ EXTEND FORM shipments
     PROPERTIES(p) READONLY name, nameUom, idBarCode, id
     PROPERTIES READONLY 'Доступно (откуда)' = prevAvailableRec(location(), p) SHOWIF location()
 
-    PROPERTIES(p) READONLY initialDemand
+    PROPERTIES(p) READONLY 'Итого' = initialDemand BACKGROUND RGB(255,212,212) IF initialDemand(p) > OVERRIDE prevAvailableRec(location(), p), (0 IF location()) 
                            
     PROPERTIES initialDemand(ss, p) READONLYIF NOT (status(ss) = ShipmentStatus.draft OR status(ss) = ShipmentStatus.waiting)
-                                    BACKGROUND RGB(212,212,255) IF (status(ss) = ShipmentStatus.draft OR status(ss) = ShipmentStatus.waiting)
                                     COLUMNS 'id' (ss) 
-                                    HEADER CONCAT ' ', 'Кол-во', nameToLocation(ss), scheduledDate(ss)
+                                    HEADER CONCAT ' ', nameCustomer(ss), nameToLocation(ss), [FORMULA STRING[8] 'to_char(($1),\'DD.MM\')'](scheduledDate(ss))
                                     ON CHANGE changeInitialDemand(ss, p)
     
-    PROPERTIES onHand 'Доступно' = prevAvailableRec(toLocation(ss), p) READONLY
+    PROPERTIES onHand 'Доступно' = prevAvailableRec(toLocation(ss), p) SHOWIF toLocation(ss) READONLY
                                   COLUMNS 'id' (ss)
     FILTERGROUP demand
-        FILTER 'К отгрузке' initialDemand(p) 'F9' DEFAULT
+        FILTER 'К отгрузке' initialDemand(p) DEFAULT
+        FILTER 'Доступно' prevAvailableRec(location(), p)
     FILTERS level(category(p), c)
     FILTERGROUP active
         FILTER 'Активный' active(p) 'F10' DEFAULT  
@@ -44,7 +45,37 @@ DESIGN shipments {
             caption = 'Итоги';
             type = SPLITH;
             MOVE BOX(TREE categories);
-            MOVE BOX(p) { fill = 3; }
+            NEW products {
+                fill = 3;
+                NEW productParams { type = CONTAINERH; }
+                MOVE BOX(p) {
+                    PROPERTY(initialDemand(ss, p)) { charWidth = 6; background = #EEEEFF; }
+                    PROPERTY(onHand) { charWidth = 6; }
+                }
+            }
         } 
+    }
+}
+
+// period
+
+EXTEND FORM shipments
+    OBJECTS pFrom = DATE PANEL BEFORE p, pTo = DATE PANEL BEFORE p
+    PROPERTIES pFrom 'Период с' = VALUE(pFrom), pTo 'по' = VALUE(pTo)
+    
+    PROPERTIES shipped 'Отгружено' = shippedPeriodicRec(toLocation(ss), p, pFrom, pTo) SHOWIF toLocation(ss) READONLY
+                                     COLUMNS 'id' (ss)
+    
+    EVENTS ON INIT { 
+        SEEK shipments.pFrom = subtract(currentDate(), 7);
+        SEEK shipments.pTo = subtract(currentDate(), 1); 
+    }
+;
+
+DESIGN shipments {
+    productParams {
+        MOVE PROPERTY(pFrom);
+        MOVE PROPERTY(pTo);
+        PROPERTY(shipped) { charWidth = 6; }
     }
 }
