@@ -52,7 +52,7 @@ META defineDocPack(doc, prefix, item, quantity, let)
 
     packRatio 'Кол-во в месте' (###doc##Line l) = ratio(item(l), packUom(l));
 
-    WHEN LOCAL CHANGED(item(###doc##Line l)) AND pack(type(doc(l))) AND packRatio(l) AND NOT CHANGED(packUom(l)) DO
+    WHEN LOCAL CHANGED(item(###doc##Line l)) AND pack(type(doc(l))) AND ratio(item(l), prefix##Uom(item(l))) AND NOT CHANGED(packUom(l)) DO
         packUom(l) <- prefix##Uom(item(l));
 
     CONSTRAINT packUom(###doc##Line l) AND NOT packRatio(l)
