@@ -8,5 +8,23 @@ latitude 'Широта (покупатель)' (Order o) = latitude(customer(o))
 longitude 'Долгота (покупатель)' (Order o) = longitude(customer(o));
 
 EXTEND FORM orders
-    PROPERTIES(o) READONLY latitude, longitude
+    PROPERTIES(o) READONLY name = nameCustomer, latitude, longitude, color = colorStatus 
+    
+    PROPERTIES(o) PANEL READONLY mapType = nameType, mapDateTime = dateTime, mapStatus = nameStatus, mapNumber = number, mapCustomer = nameCustomer  
 ;
+
+DESIGN orders {
+    GRID(o) {
+        PROPERTY(name) { hide = TRUE; }
+        PROPERTY(latitude(o)) { hide = TRUE; }
+        PROPERTY(longitude(o)) { hide = TRUE; }
+        PROPERTY(color) { hide = TRUE; }
+        NEW popup {
+            MOVE PROPERTY(mapType);
+            MOVE PROPERTY(mapDateTime);
+            MOVE PROPERTY(mapStatus);
+            MOVE PROPERTY(mapNumber);
+            MOVE PROPERTY(mapCustomer);
+        }
+    }
+}
