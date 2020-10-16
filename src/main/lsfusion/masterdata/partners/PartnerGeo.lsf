@@ -1,0 +1,31 @@
+MODULE PartnerGeo;
+
+REQUIRE Partner;
+
+NAMESPACE MasterData;
+
+latitude 'Широта'= DATA NUMERIC[11,6] (Partner);
+longitude 'Долгота' = DATA NUMERIC[11,6] (Partner);
+
+EXTEND FORM partner
+    PROPERTIES(p) latitude, longitude
+    
+    OBJECTS pg = Partner MAP
+    PROPERTIES(pg) READONLY name, latitude, longitude
+    FILTERS pg = p
+;
+
+DESIGN partner {
+    tabs {
+        NEW geo {
+            caption = 'Координаты';
+            NEW coordinates {
+                type = CONTAINERH;
+                MOVE PROPERTY(latitude(p));
+                MOVE PROPERTY(longitude(p));
+            }
+            MOVE BOX(pg) { caption = ''; }
+        }
+    }
+}
+
