@@ -266,7 +266,7 @@ META defineDocHistoryHead(doc, let)
                     fill = 2;
                     PROPERTY(description(doc##l)) { valueHeight = 18; }
                 }
-                MOVE PROPERTY(pdescription) { panelCaptionAbove = TRUE; fill = 1; }
+                MOVE PROPERTY(pdescription) { panelCaptionVertical = TRUE; fill = 1; }
             }
         }
     }
@@ -359,6 +359,11 @@ END
 META defineDocLinesCount(doc, d) 
     count###doc###Line 'Кол-во строк' (###doc d) = GROUP SUM 1 IF doc(###doc###Line l) = d MATERIALIZED;
     
+    DESIGN doc {
+        lines {
+            caption = (CONCAT ' ', 'Строки', '(' + count###doc##Line(d) + ')');
+        }
+    }
     EXTEND FORM doc##s PROPERTIES(d) READONLY count###doc###Line;
 END
 
