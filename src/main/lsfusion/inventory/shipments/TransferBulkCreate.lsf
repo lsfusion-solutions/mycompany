@@ -5,15 +5,15 @@ REQUIRE Shipment, ShipmentFilter, LocationSelection;
 NAMESPACE Inventory;
 
 bulkCreate 'Создать перемещения' () {
-    IF NOT type() THEN {
+    IF NOT shipmentType() THEN {
         MESSAGE 'Не выбран тип отгрузки';
         RETURN;
     }
-    IF NOT isTransfer(type()) THEN {
+    IF NOT isTransfer(shipmentType()) THEN {
         MESSAGE 'Выбран тип отгрузки не являющийся перемещением';
         RETURN;
     }
-    IF NOT location() THEN {
+    IF NOT shipmentLocation() THEN {
         MESSAGE 'Не выбрано место хранения (откуда)';
         RETURN;
     }
@@ -21,8 +21,8 @@ bulkCreate 'Создать перемещения' () {
     DIALOG dialogLocationsMulti DOCKED DO {
         NEWSESSION NESTED (selected[Location]){
             FOR selected(Location to) DO NEW s = Shipment {
-                type(s) <- type();
-                location(s) <- location();
+                type(s) <- shipmentType();
+                location(s) <- shipmentLocation();
                 toLocation(s) <- to;
             }
             APPLY;

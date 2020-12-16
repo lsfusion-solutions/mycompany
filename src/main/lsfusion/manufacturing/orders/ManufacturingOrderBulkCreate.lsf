@@ -31,23 +31,23 @@ FORM inputProduceQuantity 'Выбор продукции'
 ;
 
 // products
-onHandProducts 'Остаток' = onHand(productsLocation(), i);
+onHandProducts 'Остаток' = onHand(manufacturingOrderProductsLocation(), i);
 
 fillNegative 'Закрыть расход' () {
     toProduce(Item i) <- -onHandProducts(i) WHERE [FILTER inputProduceQuantity.i](i) AND onHandProducts(i) < 0; 
 }
 
 EXTEND FORM inputProduceQuantity
-    PROPERTIES() nameProductsLocation,
+    PROPERTIES() nameManufacturingOrderProductsLocation,
                  fillNegative DRAW i TOOLBAR 
     
-    PROPERTIES READONLY onHandProducts(i) BEFORE toProduce(i) SHOWIF productsLocation()
+    PROPERTIES READONLY onHandProducts(i) BEFORE toProduce(i) SHOWIF manufacturingOrderProductsLocation()
 ;
 
 // bulk create
 
 bulkCreate 'Создать заказы' () {
-    IF NOT type() THEN {
+    IF NOT manufacturingOrderType() THEN {
         MESSAGE 'Не выбран тип производственного заказа';
         RETURN;
     }
@@ -55,11 +55,11 @@ bulkCreate 'Создать заказы' () {
     DIALOG inputProduceQuantity DOCKED DO {
         NEWSESSION NESTED (toProduce[Item]){
             FOR toProduce(Item i) DO NEW o = ManufacturingOrder {
-                type(o) <- type();
+                type(o) <- manufacturingOrderType();
                 item(o) <- i;
                 bom(o) <- produceBom(i);
-                materialsLocation(o) <- materialsLocation();
-                productsLocation(o) <- productsLocation();
+                materialsLocation(o) <- manufacturingOrderMaterialsLocation();
+                productsLocation(o) <- manufacturingOrderProductsLocation();
                 fillByQuantity(o, toProduce(i));
             }
             APPLY;
