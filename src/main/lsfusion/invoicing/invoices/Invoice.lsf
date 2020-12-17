@@ -214,15 +214,19 @@ DESIGN invoice {
 
 @defineDocDiscountForm(invoice);
 
+background = ABSTRACT CASE COLOR (Invoice);
 FORM invoices 'Реализации'
     OBJECTS i = Invoice
-    PROPERTIES(i) READONLY nameType, dateTime, number, nameCustomer, nameCompany,
+    PROPERTIES(i) READONLYIF isReadonly() BACKGROUND background(i)
+                           nameType, dateTime, number, nameCustomer, nameCompany,
                            namePaymentTerms, dueDateTime, nameCustomerAccount, nameCompanyAccount,
                            customerReference, note         
     PROPERTIES(i) NEWSESSION NEW, EDIT, DELETE
            
     LIST Invoice OBJECT i
 ;
+
+@extendFormEditable(invoices);
 
 @defineDocObjectsForm(invoices, i, 'Реализации');
 @defineTaxForm(invoice, i);
@@ -236,22 +240,28 @@ NAVIGATOR {
 }
 
 // copy
-copy 'Копировать' (Invoice i)  { 
+clone ABSTRACT LIST (Invoice, Invoice);
+clone (Invoice to, Invoice from) + {
+    type(to) <- type(from);
+    customer(to) <- customer(from);
+    note(to) <- note(from);
+    FOR invoice(InvoiceLine l) = from INLINE NEW nl = InvoiceLine DO {
+        invoice(nl) <- to;
+        item(nl) <- item(l);
+        
+        quantity(nl) <- quantity(l);
+        
+        price(nl) <- price(l);
+        discount(nl) <- discount(l);
+        discountPrice(nl) <- discountPrice(l);
+    }
+}
+
+copy 'Копировать' (Invoice from)  { 
     NEWSESSION {
-        NEW ni = Invoice {
-            customer(ni) <- customer(i);
-            note(ni) <- note(i);
-            FOR invoice(InvoiceLine l) = i INLINE NEW nl = InvoiceLine DO {
-                invoice(nl) <- ni;
-                item(nl) <- item(l);
-                
-                quantity(nl) <- quantity(l);
-                
-                price(nl) <- price(l);
-                discount(nl) <- discount(l);
-                discountPrice(nl) <- discountPrice(l);
-            }
-            SHOW invoice OBJECTS i = ni DOCKED;
+        NEW to = Invoice {
+            clone(to, from);
+            SHOW invoice OBJECTS i = to DOCKED;
         }
     }
 }

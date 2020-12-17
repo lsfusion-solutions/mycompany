@@ -8,40 +8,6 @@ NAMESPACE Manufacturing;
 
 @defineSelectionForm(manufacturingOrders, ManufacturingOrder, o);
 
-// copy
-FORM dialogScheduledDate 'Введите дату начала'
-    OBJECTS d '' = DATETIME PANEL
-    PROPERTIES dateTime '' = VALUE(d)
-;
-
-DESIGN dialogScheduledDate {
-    PROPERTY(dateTime) { fontSize = 16; }
-    PROPERTY(formOk()) { changeKey = 'ENTER'; }
-}
-
-
-copySelected 'Копировать' () {
-    DIALOG dialogScheduledDate OBJECTS d INPUT DO {
-        LOCAL NESTED toCopy = BOOLEAN (ManufacturingOrder);
-        toCopy(ManufacturingOrder o) <- selectedManufacturingOrders(o);
-        NEWSESSION {
-            FOR toCopy(ManufacturingOrder from) NEW to = ManufacturingOrder DO {
-                scheduledDateTime(to) <- d;
-                clone(to, from);
-            }
-            APPLY;
-        }
-    }
-}
-
-EXTEND FORM manufacturingOrders
-    PROPERTIES() copySelected SHOWIF countSelectedManufacturingOrders()
-;
-
-DESIGN manufacturingOrders {
-    actions {
-        MOVE PROPERTY(copySelected()) { alignment = STRETCH; }
-    }
-}
+@defineSelectionCopyDateTime(manufacturingOrders, ManufacturingOrder, scheduledDateTime, 'начала');
 
 @defineSelectionDelete(manufacturingOrders, ManufacturingOrder);

@@ -214,9 +214,11 @@ DESIGN order {
 @defineDocHistory(order, o, item, quantity);
 @defineDocDiscountForm(order);
 
+background = ABSTRACT CASE COLOR (Order);
 FORM orders 'Заказы покупателей'
      OBJECTS o = Order
-     PROPERTIES(o) READONLY nameType, dateTime, number, nameCustomer,
+     PROPERTIES(o) READONLYIF isReadonly() BACKGROUND background(o)
+                            nameType, dateTime, number, nameCustomer,
                             validity,
                             namePaymentTerms, addressCustomer,
                             scheduledDateTime, deliveryAddress, nameLocation, 
@@ -225,6 +227,8 @@ FORM orders 'Заказы покупателей'
                             
      PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
 ;
+
+@extendFormEditable(orders);
 
 @defineDocObjectsForm(orders, o, 'Заказы покупателей');
 @defineDocStatusForm(order, o);
@@ -237,25 +241,29 @@ NAVIGATOR {
     }
 }
 
-copy 'Копировать' (Order o)  { 
+clone (Order to, Order from) {
+    type(to) <- type(from);
+    customer(to) <- customer(from);
+    paymentTerms(to) <- paymentTerms(from);
+    company(to) <- company(from);
+    location(to) <- location(from);
+    representative(to) <- representative(from); 
+    FOR order(OrderLine l) = from INLINE NEW nl = OrderLine DO {
+        order(nl) <- to;
+        item(nl) <- item(l);
+        description(nl) <- description(l);
+        
+        quantity(nl) <- quantity(l);
+        
+        price(nl) <- price(l);
+    }
+}
+
+copy 'Копировать' (Order from)  { 
     NEWSESSION {
-        NEW no = Order {
-            type(no) <- type(o);
-            customer(no) <- customer(o);
-            paymentTerms(no) <- paymentTerms(o);
-            company(no) <- company(o);
-            location(no) <- location(o);
-            representative(no) <- representative(o); 
-            FOR order(OrderLine l) = o INLINE NEW nl = OrderLine DO {
-                order(nl) <- no;
-                item(nl) <- item(l);
-                description(nl) <- description(l);
-                
-                quantity(nl) <- quantity(l);
-                
-                price(nl) <- price(l);
-            }
-            SHOW order OBJECTS o = no DOCKED;
+        NEW to = Order {
+            clone(from, to);
+            SHOW order OBJECTS o = to DOCKED;
         }
     }
 }

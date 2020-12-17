@@ -149,13 +149,18 @@ DESIGN receipt {
 @defineDocHistory(receipt, r, product, initialDemand);
 
 // receipts
+background = ABSTRACT CASE COLOR (Receipt);
+
 FORM receipts 'Поступления'
     OBJECTS r = Receipt
-    PROPERTIES(r) READONLY nameType, scheduledDateTime, number, 
+    PROPERTIES(r) READONLYIF isReadonly() BACKGROUND background(r)
+                           nameType, scheduledDateTime, number, 
                            nameVendor, nameLocation,
                            note, countLines
     PROPERTIES(r) NEWSESSION NEW, EDIT, DELETE
 ;
+
+@extendFormEditable(receipts);
 
 @defineDocObjectsForm(receipts, r, 'Поступления');
 @defineDocStatusForm(receipt, r);
@@ -182,20 +187,24 @@ EXTEND FORM receipts
 ;
 
 // copy
-copy 'Копировать' (Receipt r) { 
+clone(Receipt to, Receipt from) {
+    type(to) <- type(from);
+    location(to) <- location(from);
+    vendor(to) <- vendor(from);
+    note(to) <- note(from);
+    immediate(to) <- immediate(from);
+    FOR receipt(ReceiptLine l) = from INLINE NEW nl = ReceiptLine DO {
+        receipt(nl) <- to;
+        product(nl) <- product(l);
+        initialDemand(nl) <- initialDemand(l);
+    }
+}
+
+copy 'Копировать' (Receipt from) { 
     NEWSESSION {
-        NEW nr = Receipt {
-            type(nr) <- type(r);
-            location(nr) <- location(r);
-            vendor(nr) <- vendor(r);
-            note(nr) <- note(r);
-            immediate(nr) <- immediate(r);
-            FOR receipt(ReceiptLine l) = r INLINE NEW nl = ReceiptLine DO {
-                receipt(nl) <- nr;
-                product(nl) <- product(l);
-                initialDemand(nl) <- initialDemand(l);
-            }
-            SHOW receipt OBJECTS r = nr DOCKED;
+        NEW to = Receipt {
+            clone(to, from);
+            SHOW receipt OBJECTS r = to DOCKED;
         }
     }
 }
