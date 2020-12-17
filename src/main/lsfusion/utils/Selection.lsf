@@ -46,6 +46,48 @@ META defineSelectionForm(form, cls, obj)
     }
 END
 
+META defineSelectionCopyDateTime (form, cls, dateProp, caption)
+
+    // copy
+    FORM dialog###form###dateProp 'Введите дату '##caption
+        OBJECTS d = DATETIME PANEL
+        PROPERTIES dateTime '' = VALUE(d)
+    ;
+    
+    DESIGN dialog###form###dateProp {
+        OBJECTS {
+            MOVE PROPERTY(dateTime) { fontSize = 16; fill = 1; }
+        }
+        PROPERTY(formOk()) { changeKey = 'ENTER'; }
+    }
+    
+    
+    copy###form##Selected 'Копировать' () {
+        DIALOG dialog###form###dateProp OBJECTS d INPUT DO {
+            LOCAL NESTED toCopy = BOOLEAN (cls);
+            toCopy(cls o) <- selected###form(o);
+            NEWSESSION {
+                FOR toCopy(cls from) NEW to = cls DO {
+                    dateProp(to) <- d;
+                    clone(to, from);
+                }
+                APPLY;
+            }
+        }
+    }
+    
+    EXTEND FORM form
+        PROPERTIES() copy###form##Selected SHOWIF countSelected###form()
+    ;
+    
+    DESIGN form {
+        actions {
+            MOVE PROPERTY(copy###form##Selected()) { alignment = STRETCH; }
+        }
+    }
+
+END
+
 META defineSelectionDelete(form, cls)
     deleteSelected###form 'Удалить' () {
         LOCAL NESTED toDelete = BOOLEAN (cls);

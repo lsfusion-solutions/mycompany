@@ -1,0 +1,39 @@
+MODULE CryptoPro;
+
+REQUIRE SystemEvents, Utils;
+
+signature = DATA LOCAL RAWFILE ();
+encodedSignature = encode(signature(), 'base64');
+
+sign INTERNAL 'org.mycompany.region.ru.gov.cryptopro.SignAction' (RAWFILE, BOOLEAN, STRING, STRING, STRING, STRING);
+
+keyAlias 'Имя ключа УКЭП' = DATA STRING();
+keyPassword 'Пароль ключа УКЭП' = DATA STRING() ECHO;
+
+sign (RAWFILE f, BOOLEAN detached, STRING keyAlias, STRING keyPassword) { 
+    sign(f, detached, NULL, NULL, keyAlias, keyPassword); 
+}
+sign (RAWFILE f, BOOLEAN detached) { 
+    sign(f, detached, NULL, NULL, keyAlias(), keyPassword()); 
+}
+
+EXTEND FORM integrationData
+    PROPERTIES() keyAlias, keyPassword
+;
+
+DESIGN integrationData {
+    pane {
+        NEW cryptopro {
+            caption = 'УКЭП';
+            MOVE PROPERTY(keyAlias());            
+            MOVE PROPERTY(keyPassword());            
+        }
+    }
+}
+
+// нужно сделать так, чтобы JCP добавился как провайдер раньше чем первый раз пошло обращение к BouncyCastle.
+// раскомментировать, если BouncyCastle инициализируется раньше другими библиотеками
+//initCryptoPro INTERNAL <{ new lsfusion.erp.region.ru.utils.cryptopro.CryptoPro(); }>;
+//onStarted() + {
+//    initCryptoPro();
+//}

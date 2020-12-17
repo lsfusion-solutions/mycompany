@@ -8,40 +8,6 @@ NAMESPACE Inventory;
 
 @defineSelectionForm(shipments, Shipment, s);
 
-// copy
-FORM dialogScheduledDate 'Введите планируемую дату'
-    OBJECTS d '' = DATETIME PANEL
-    PROPERTIES dateTime '' = VALUE(d)
-;
-
-DESIGN dialogScheduledDate {
-    PROPERTY(dateTime) { fontSize = 16; }
-    PROPERTY(formOk()) { changeKey = 'ENTER'; }
-}
-
-
-copySelected 'Копировать' () {
-    DIALOG dialogScheduledDate OBJECTS d INPUT DO {
-        LOCAL NESTED toCopy = BOOLEAN (Shipment);
-        toCopy(Shipment o) <- selectedShipments(o);
-        NEWSESSION {
-            FOR toCopy(Shipment from) NEW to = Shipment DO {
-                scheduledDateTime(to) <- d;
-                clone(to, from);
-            }
-            APPLY;
-        }
-    }
-}
-
-EXTEND FORM shipments
-    PROPERTIES() copySelected SHOWIF countSelectedShipments()
-;
-
-DESIGN shipments {
-    actions {
-        MOVE PROPERTY(copySelected()) { alignment = STRETCH; }
-    }
-}
+@defineSelectionCopyDateTime(shipments, Shipment, scheduledDateTime, '(Планируемая)');
 
 @defineSelectionDelete(shipments, Shipment);
