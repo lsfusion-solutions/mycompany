@@ -99,11 +99,11 @@ DESIGN transferMobile {
 @defineKeyboard(transferMobile, Product, p, searchKeyboard, 16, setQuantity);
 
 // actions
-@defineChangeInput(toLocation, Location, dialogLocationsMobile, l);
+@defineChangeInput(shipmentToLocation, Location, dialogLocationsMobile, l);
 
 createTransfer 'Переместить' (ShipmentType t, Location from) {
     quantity(Product p) <- NULL WHERE NOT onHand(from, p) > 0;
-    ASK 'Переместить с ' + name(from) + ' на ' + nameToLocation() + ' ' + (GROUP SUM 1 IF quantity(Product p)) + ' позиций ?\n' +
+    ASK 'Переместить с ' + name(from) + ' на ' + nameShipmentToLocation() + ' ' + (GROUP SUM 1 IF quantity(Product p)) + ' позиций ?\n' +
         GROUP CONCAT name(Product p) + ' - ' + quantity(p), '\n' DO {
         NEWSESSION {
             NEW s = Shipment {
@@ -113,7 +113,7 @@ createTransfer 'Переместить' (ShipmentType t, Location from) {
                 immediate(s) <- TRUE;
                 
                 location(s) <- from;
-                toLocation(s) <- toLocation();
+                toLocation(s) <- shipmentToLocation();
                 
                 FOR quantity(Product p) NEW l = ShipmentLine DO {
                     shipment(l) <- s;
@@ -128,7 +128,7 @@ createTransfer 'Переместить' (ShipmentType t, Location from) {
 } 
 
 EXTEND FORM transferMobile
-    PROPERTIES nameToLocation() ON CHANGE changeToLocation(), createTransfer(t, l) READONLYIF NOT (GROUP SUM 1 IF quantity(Product pp)) OR NOT toLocation()
+    PROPERTIES nameShipmentToLocation() ON CHANGE changeShipmentToLocation(), createTransfer(t, l) READONLYIF NOT (GROUP SUM 1 IF quantity(Product pp)) OR NOT shipmentToLocation()
 ;
 
 DESIGN transferMobile {
@@ -136,7 +136,7 @@ DESIGN transferMobile {
         NEW transfer {
             type = CONTAINERH;
             alignment = STRETCH;
-            MOVE PROPERTY(nameToLocation()) { fill = 1; };
+            MOVE PROPERTY(nameShipmentToLocation()) { fill = 1; };
             MOVE PROPERTY(createTransfer(t, l));        
         }
     }
