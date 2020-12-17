@@ -9,7 +9,6 @@ import ru.CryptoPro.CAdES.exception.CAdESException;
 import ru.CryptoPro.Crypto.CryptoProvider;
 import ru.CryptoPro.JCP.JCP;
 import ru.CryptoPro.reprov.RevCheck;
-import sun.security.jca.Providers;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
@@ -25,16 +24,9 @@ import java.util.List;
 public class CryptoPro {
 
     static {
-        int bcindex = Providers.getFullProviderList().getIndex("BC");
-        if (bcindex == -1) {
-            Security.addProvider(new JCP()); // провайдер JCP
-            Security.addProvider(new RevCheck());
-            Security.addProvider(new CryptoProvider());// провайдер шифрования JCryptoP
-        } else {
-            Security.insertProviderAt(new JCP(), bcindex + 1); // провайдер JCP
-            Security.insertProviderAt(new RevCheck(), bcindex + 2);
-            Security.insertProviderAt(new CryptoProvider(), bcindex + 3);// провайдер шифрования JCryptoP
-        }
+        Security.addProvider(new JCP()); // провайдер JCP
+        Security.addProvider(new RevCheck());
+        Security.addProvider(new CryptoProvider());// провайдер шифрования JCryptoP
 
         System.setProperty("com.sun.security.enableCRLDP", "true");
         System.setProperty("ocsp.enable", "true");
