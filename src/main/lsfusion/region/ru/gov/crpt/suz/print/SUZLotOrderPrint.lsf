@@ -1,0 +1,20 @@
+MODULE SUZLotOrderPrint;
+
+REQUIRE SUZLotOrderDone, DocTemplate;
+
+PRIORITY Inventory;
+
+NAMESPACE SUZ;
+
+FORM printLotOrder 'Заказ КМ'
+    OBJECTS o = LotOrder PANEL 
+    
+    OBJECTS l = Lot
+    PROPERTIES(l) nameProduct, id, code
+    FILTERS lotOrder(l) = o
+    ORDERS nameProduct(l)
+;
+
+@defineDocTemplate(lotOrder, 'заказа КМ');
+
+@defineDocTemplateForm(lotOrder, o);

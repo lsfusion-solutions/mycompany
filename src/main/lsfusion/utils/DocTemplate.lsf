@@ -26,6 +26,8 @@ META defineDocTemplate(doc, caption)
     CLASS ###doc##Template 'Шаблон '##caption;
     name 'Название' = DATA ISTRING[100] (###doc##Template) CHARWIDTH 15;
     
+    count###doc##Template = GROUP SUM 1 IF ###doc##Template t IS ###doc##Template; 
+    
     template 'Имя файла шаблона' = DATA STRING (###doc##Template) CHARWIDTH 50;
 
     file = DATA FILE (###doc##Template);
@@ -47,20 +49,12 @@ META defineDocTemplate(doc, caption)
     format = DATA TemplateFormat (###doc##Template);
     nameFormat 'Формат' (###doc##Template t) = name(format(t));
     
-    // types
-    in 'Вкл' = DATA BOOLEAN (###doc##Template, ###doc##Type);
-    count###doc##Template (###doc##Type tp) = GROUP SUM 1 IF in(###doc##Template tm, tp);
-    
     FORM doc##Template 'Шаблон '##caption
         OBJECTS o = ###doc##Template PANEL
         PROPERTIES(o) name, 
                       template SHOWIF NOT hasFile(o), openFile,
                       loadFile, dropFile SHOWIF hasFile(o),
                       nameFormat
-        
-        OBJECTS t = ###doc##Type
-        PROPERTIES             in(o, t)
-        PROPERTIES(t) READONLY name
         
         EDIT ###doc##Template OBJECT o
     ;
@@ -83,7 +77,6 @@ META defineDocTemplate(doc, caption)
                     MOVE PROPERTY(nameFormat(o));
                 }
             }
-            MOVE BOX(t);
         }
     }
     
@@ -95,11 +88,8 @@ META defineDocTemplate(doc, caption)
     ;
     
     FORM dialogTemplates###doc 'Шаблон '##caption
-        OBJECTS itp = ###doc##Type
-        
         OBJECTS itm = ###doc##Template
         PROPERTIES(itm) READONLY name
-        FILTERS in(itm, itp)
     ;
     
     EXTEND FORM options
@@ -113,8 +103,26 @@ META defineDocTemplate(doc, caption)
             MOVE BOX(tm###doc);
         }
     }
+END
+
+META defineDocTemplateType(doc, caption)
+
+    @defineDocTemplate(doc, caption);
     
-    // extend type
+    in 'Вкл' = DATA BOOLEAN (###doc##Template, ###doc##Type);
+    count###doc##Template (###doc##Type tp) = GROUP SUM 1 IF in(###doc##Template tm, tp);
+    
+    EXTEND FORM doc##Template
+        OBJECTS t = ###doc##Type
+        PROPERTIES             in(o, t)
+        PROPERTIES(t) READONLY name
+    ;
+    
+    EXTEND FORM dialogTemplates###doc
+        OBJECTS itp = ###doc##Type BEFORE itm
+        FILTERS in(itm, itp)
+    ;
+    
     EXTEND FORM doc##Type
         OBJECTS tm = ###doc##Template
         PROPERTIES in(tm, o)
@@ -129,6 +137,51 @@ META defineDocTemplate(doc, caption)
 END
 
 META defineDocTemplateForm(doc, obj)
+    doc##Template = DATA LOCAL ###doc##Template();
+    EXTEND FORM print###doc
+        REPORT OVERRIDE file(doc##Template()), setExtension(RAWFILE(template(doc##Template())), 'path')
+    ;
+
+    print 'Печать' (###doc o) {
+        doc##Template() <- NULL;
+        IF count###doc##Template() = 1 THEN
+            doc##Template() <- GROUP MAX ###doc##Template it AS ###doc##Template;
+        ELSE
+            DIALOG dialogTemplates###doc OBJECTS itm INPUT DO {
+                doc##Template() <- itm;
+            }
+        IF doc##Template() THEN {
+            CASE EXCLUSIVE
+                WHEN format(doc##Template()) = TemplateFormat.pdf THEN
+                    PRINT print###doc OBJECTS o = o PDF;
+                WHEN format(doc##Template()) = TemplateFormat.docx THEN
+                    PRINT print###doc OBJECTS o = o DOCX;
+                WHEN format(doc##Template()) = TemplateFormat.xlsx THEN
+                    PRINT print###doc OBJECTS o = o XLSX;
+                WHEN format(doc##Template()) = TemplateFormat.rtf THEN
+                    PRINT print###doc OBJECTS o = o RTF;
+                WHEN format(doc##Template()) = TemplateFormat.html THEN
+                    PRINT print###doc OBJECTS o = o HTML;
+                WHEN format(doc##Template()) = TemplateFormat.noPreview THEN
+                    PRINT print###doc OBJECTS o = o NOPREVIEW;
+                ELSE
+                    PRINT print###doc OBJECTS o = o;
+        }
+             
+    }
+
+    EXTEND FORM doc
+        PROPERTIES(obj) print SHOWIF count###doc##Template()
+    ;
+    
+    DESIGN doc {
+        secondaryActions {
+            MOVE PROPERTY(print(obj));
+        }
+    }
+END
+
+META defineDocTemplateTypeForm(doc, obj)
     doc##Template = DATA LOCAL ###doc##Template();
     EXTEND FORM print###doc
         REPORT OVERRIDE file(doc##Template()), setExtension(RAWFILE(template(doc##Template())), 'path')

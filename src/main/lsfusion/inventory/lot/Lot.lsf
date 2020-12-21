@@ -10,6 +10,7 @@ id 'Код' = DATA STRING[100] (Lot) CHARWIDTH 15;
 lot (STRING[100] id) = GROUP AGGR Lot o BY id(o);
 
 product 'Товар' = DATA Product (Lot) NONULL INDEXED;
+idProduct 'Код товара' (Lot l) = id(product(l)) IN id;
 nameProduct 'Товар' (Lot l) = name(product(l)) IN id;
 
 useLot 'Партионный учет' = DATA BOOLEAN ();
@@ -44,39 +45,50 @@ META defineDocLot (doc, item, quantity, status, caption)
                     MESSAGE 'Несовпадение количества с количеством в партиях'##caption;                   
 END 
 
+barCodeToLotId = ABSTRACT CASE STRING (STRING);
+
 META defineDocBarCodeLot (doc, item, quantity)
     
     beforeProcessLotBarCode ABSTRACT (###doc, STRING);
     afterProcessLotBarCode ABSTRACT (###doc, STRING);
        
     processBarCode(###doc r, ###doc##Line rl, STRING s) + {
-        IF lot(s) OR useLot(item(rl)) THEN {
-            beforeProcessLotBarCode(r, s);
+        LOCAL lotId = STRING();
+        lotId() <- OVERRIDE barCodeToLotId(s), (s AS STRING);
+         
+        IF lot(lotId()) OR useLot(item(rl)) THEN {
+            beforeProcessLotBarCode(r, lotId());
             
-            IF NOT lot(s) THEN
+            LOCAL lot = Lot();
+            lot() <- lot(lotId());
+            
+            IF NOT lot() THEN
                 RETURN;
                  
-            IF NOT product(lot(s)) THEN {
-                product(lot(s)) <- item(rl);
+            IF NOT product(lot()) THEN {
+                product(lot()) <- item(rl);
             }
         
             LOCAL line = ###doc##Line();
             
-            IF product(lot(s)) AND NOT product(lot(s)) = item(rl) THEN {
-                IF NOT last###doc##Line(doc(rl), product(lot(s))) THEN {
+            IF product(lot()) AND NOT product(lot()) = item(rl) THEN {
+                IF NOT last###doc##Line(doc(rl), product(lot())) THEN {
                     NEW l = ###doc##Line {
                         doc(l) <- r;
-                        item(l) <- product(lot(s));
+                        item(l) <- product(lot());
+                        line() <- l;
                     }
-                }                
-                line() <- last###doc##Line(doc(rl), product(lot(s)));
+                } ELSE               
+                    line() <- last###doc##Line(doc(rl), product(lot()));
                 SEEK doc.l = line();            
             } ELSE
                 line() <- rl;                      
                 
-            quantity(line(), lot(s)) <- quantity(line(), lot(s)) (+) 1;
+            quantity(line(), lot()) <- quantity(line(), lot()) (+) 1;
+            IF quantity##Lot(line()) > OVERRIDE quantity(line()), 0 THEN
+                quantity(line()) <- quantity##Lot(line()); 
                     
-            afterProcessLotBarCode(r, s);
+            afterProcessLotBarCode(r, lotId());
             
             consumedBarCode() <- TRUE;
         }

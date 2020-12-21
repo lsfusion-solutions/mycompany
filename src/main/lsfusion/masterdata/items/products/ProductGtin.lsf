@@ -1,0 +1,23 @@
+MODULE ProductGtin;
+
+REQUIRE Product, BarCode;
+
+gtin 'GTIN' = DATA STRING[14] (Product);
+
+EXTEND FORM item
+    PROPERTIES(i) gtin
+;
+
+DESIGN item {
+    column1 {
+        MOVE PROPERTY(gtin(i));
+    }
+}
+
+EXTEND FORM items
+    PROPERTIES(i) GRID READONLYIF isReadonly() gtin
+;
+
+DESIGN items {
+    PROPERTY(gtin(i)) { hide = TRUE; }
+}
