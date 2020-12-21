@@ -1,6 +1,6 @@
 MODULE InvoiceReady;
 
-REQUIRE Invoice;
+REQUIRE Invoice, InvoiceSelection;
 
 NAMESPACE Invoicing;
 
@@ -14,12 +14,12 @@ colorStatus(Invoice i) += WHEN status(i) = InvoiceStatus.ready THEN RGB(252,247,
 
 markAsToDo 'В работу' (Invoice i) {
     APPLY; 
-        IF canceled() THEN RETURN;
-        
-        NEWSESSION {
-            ready(i) <- TRUE;
-            APPLY;
-        }
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {
+        ready(i) <- TRUE;
+        APPLY;
+    }
 }
 
 EXTEND FORM invoice
@@ -39,3 +39,5 @@ EXTEND FORM invoices
     EXTEND FILTERGROUP status
         FILTER 'К оплате' status(i) = InvoiceStatus.ready 'F8'    
 ;
+
+@defineSelectionAction(invoices, Invoice, markAsToDo, 'В работу', statuses);
