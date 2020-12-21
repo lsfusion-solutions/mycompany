@@ -87,12 +87,14 @@ DESIGN partner {
 
 FORM partners 'Контрагенты'
     OBJECTS p = Partner
-    PROPERTIES(p) READONLY name, id, nameType, csvAddress, phone, email 
+    PROPERTIES(p) READONLYIF isReadonly() name, id, nameType, csvAddress, phone, email 
     PROPERTIES(p) NEWSESSION EDIT, DELETE 
     FILTERGROUP active
         FILTER 'Активный' active(p) 'F10' DEFAULT
         FILTER 'Неактивный' archived(p) 'F9'
 ;
+
+@extendFormEditable(partners);
 
 DESIGN partners {
     OBJECTS {
