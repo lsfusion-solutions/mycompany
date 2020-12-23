@@ -11,9 +11,9 @@ done 'Принят' = DATA BOOLEAN (Receipt);
 
 status (Receipt r) += WHEN done(r) THEN ReceiptStatus.done;
 
-executionDateTime 'Дата поступления' = DATA DATETIME (Receipt);
+executionDateTime 'Дата приемки' = DATA DATETIME (Receipt);
 WHEN SET(done(Receipt r)) AND NOT CHANGED(executionDateTime(r)) DO executionDateTime(r) <- currentDateTime(); 
-executionDateTime 'Дата поступления' (ReceiptLine l) = executionDateTime(receipt(l));
+executionDateTime 'Дата приемки' (ReceiptLine l) = executionDateTime(receipt(l));
 
 done 'Принятое количество' = DATA NUMERIC[16,3] (ReceiptLine);
 
@@ -31,7 +31,7 @@ validate 'Принят' (Receipt r) {
     NEWSESSION {
         IF NOT immediate(r) THEN {
             IF NOT GROUP SUM 1 IF done(ReceiptLine l) AND receipt(l) = r THEN
-                ASK 'Не заполены принятые количества для поступления ' + number(r) + '. Проставить ожидаемыми ?' DO {
+                ASK 'Не заполены принятые количества для приемки ' + number(r) + '. Проставить ожидаемыми ?' DO {
                     done(ReceiptLine l) <- initialDemand(l) WHERE receipt(l) = r;
                 } ELSE RETURN;
         }

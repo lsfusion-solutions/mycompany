@@ -7,10 +7,10 @@ NAMESPACE Inventory;
 quantity 'Кол-во' = ABSTRACT NUMERIC[16,3] (InvLedger, Lot) MATERIALIZED;
 quantityLot 'Кол-во партий' (InvLedger rl) = GROUP SUM quantity(rl, Lot l);
 
-inQuantity 'Кол-во поступившее' (Location ll, Lot l) = GROUP SUM quantity(InvLedger il, Lot lt) 
+inQuantity 'Кол-во принятое' (Location ll, Lot l) = GROUP SUM quantity(InvLedger il, Lot lt) 
                                                     IF active(il) AND toLocation(il) = ll AND lt = l MATERIALIZED;
                                                     
-inQuantity 'Кол-во поступившее'(Location ll, Lot l, DATETIME dt) = inQuantity(ll, l) (-)
+inQuantity 'Кол-во принятое'(Location ll, Lot l, DATETIME dt) = inQuantity(ll, l) (-)
     GROUP SUM quantity(InvLedger il, Lot lt)  IF active(il) AND toLocation(il) = ll AND lt = l AND dateTime(il) > dt;
     
 inQuantityA (Location ll, Lot l, DATETIME dt) = inQuantity(ll, l) (-)

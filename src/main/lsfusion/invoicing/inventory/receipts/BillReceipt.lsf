@@ -6,7 +6,7 @@ REQUIRE BillCanceled, BillReady, ReceiptCanceled,
 NAMESPACE Invoicing;
 
 receiptType = DATA ReceiptType (BillType);
-nameReceiptType 'Тип поступления' (BillType t) = name(receiptType(t));
+nameReceiptType 'Тип приемки' (BillType t) = name(receiptType(t));
 
 EXTEND FORM billType PROPERTIES nameReceiptType(o);
 
@@ -30,7 +30,7 @@ EXTEND FORM bills
 @defineDocLocationAccess(bill, b);
 
 // lines
-@defineDocLineRelation(bill, receipt, 'Приобретения', 'Поступления', b, r);
+@defineDocLineRelation(bill, receipt, 'Поступления', 'Приемки', b, r);
 
 fill ABSTRACT LIST (ReceiptLine, BillLine);
 billReceiptCreated = DATA LOCAL Receipt ();
@@ -80,7 +80,7 @@ DESIGN bill {
     }
     relatedDoc {
         MOVE BOX(r) {
-            caption = CONCAT ' ', 'Поступления', '(' + countReceipts(b) + ')';
+            caption = CONCAT ' ', 'Приемки', '(' + countReceipts(b) + ')';
         }
         REMOVE TOOLBARSYSTEM(r);
     }
@@ -91,7 +91,7 @@ clone (Bill to, Bill from) + {
 }
 
 // auto create
-autoCreateReceipt 'Автоматически создавать поступление' = DATA BOOLEAN (BillType);
+autoCreateReceipt 'Автоматически создавать приемку' = DATA BOOLEAN (BillType);
 EXTEND FORM billType PROPERTIES autoCreateReceipt(o) SHOWIF receiptType(o);
 
 WHEN (SET(ready(Bill b)) OR SET(countProductLines(b))) AND autoCreateReceipt(type(b)) AND countProductLines(b) DO 

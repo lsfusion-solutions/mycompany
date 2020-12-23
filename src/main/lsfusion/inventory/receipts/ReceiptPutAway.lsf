@@ -42,7 +42,7 @@ DESIGN receipt {
 // put away process
 CLASS ReceiptPutAway 'Размещение';
 
-receiptLine 'Строка поступления' = DATA ReceiptLine (ReceiptPutAway) NONULL DELETE;
+receiptLine 'Строка приемки' = DATA ReceiptLine (ReceiptPutAway) NONULL DELETE;
 
 location 'Место хранения' = DATA Location (ReceiptPutAway);
 nameLocation 'Место хранения' (ReceiptPutAway p) = name(location(p));
@@ -111,7 +111,7 @@ DESIGN receipt {
 }
 
 // invledger
-CLASS ReceiptPutAwayLedger 'Поступление' : InvLedger;
+CLASS ReceiptPutAwayLedger 'Приемка' : InvLedger;
 putAwayLedger = AGGR ReceiptPutAwayLedger WHERE quantity(ReceiptPutAway line);
 
 type(ReceiptPutAwayLedger l) += nameType(receipt(receiptLine(line(l))));

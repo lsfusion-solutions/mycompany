@@ -8,7 +8,7 @@ REQUIRE InvoicingSettings, TaxItem, BankAccount,
 
 NAMESPACE Invoicing;
 
-CLASS Bill 'Приобретение';
+CLASS Bill 'Поступление';
 
 @defineDocStatus(bill, 'счета');
 
@@ -73,9 +73,9 @@ vendorReference 'Код поставщика' = DATA STRING[30] (Bill);
 note 'Примечание' = DATA ISTRING[50] (Bill);
 
 // lines
-CLASS BillLine 'Строка приобретения';
+CLASS BillLine 'Строка поступления';
 
-bill 'Приобретение' = DATA Bill (BillLine) NONULL DELETE;
+bill 'Поступление' = DATA Bill (BillLine) NONULL DELETE;
 
 index '№' = PARTITION SUM 1 ORDER BillLine l BY bill(l) IN id MATERIALIZED CHARWIDTH 3;
 
@@ -117,7 +117,7 @@ vendor (BillLine l) = vendor(bill(l));
 nameVendor 'Поставщик' (BillLine l) = nameVendor(bill(l));
 nameCompany 'Компания' (BillLine l) = nameCompany(bill(l));
 
-FORM billLines 'Строки приобретения'
+FORM billLines 'Строки поступления'
     OBJECTS l = BillLine
     PROPERTIES(l) READONLY dateTime, number, index, nameItem, quantity, price
     PROPERTIES(l) NEWSESSION EDIT
@@ -127,7 +127,7 @@ FORM billLines 'Строки приобретения'
 
 edit (BillLine l) + { edit(bill(l)); } 
 
-FORM bill 'Приобретение'
+FORM bill 'Поступление'
     OBJECTS  b = Bill PANEL 
     PROPERTIES(b) nameType, dateTime, number, 
                   nameVendor, nameCompany,
@@ -143,7 +143,7 @@ FORM bill 'Приобретение'
 ;
 
 DESIGN bill {
-    caption = (CONCAT ' ', 'Приобретение', '№' + number(b), 'от ' + dateTime(b));
+    caption = (CONCAT ' ', 'Поступление', '№' + number(b), 'от ' + dateTime(b));
     OBJECTS {
         NEW header {
             alignment = STRETCH;    
@@ -209,7 +209,7 @@ DESIGN bill {
 @defineBarCodeSearch(bill, b, l, item, quantity);
 
 background = ABSTRACT CASE COLOR (Bill);
-FORM bills 'Приобретения'
+FORM bills 'Поступления'
     OBJECTS b = Bill BACKGROUND background(b)
     PROPERTIES(b) READONLYIF isReadonly()
                            nameType, dateTime, number, 
@@ -223,7 +223,7 @@ FORM bills 'Приобретения'
 
 @extendFormEditable(bills);
 
-@defineDocObjectsForm(bills, b, 'Приобретения');
+@defineDocObjectsForm(bills, b, 'Поступления');
 @defineTaxForm(bill, b);
 @defineDocStatusForm(bill, b);
 @defineDocLinesCount(bill, b);

@@ -6,9 +6,9 @@ REQUIRE System, Time, DateUtils,
 
 NAMESPACE Inventory;
 
-CLASS Receipt 'Поступление';
+CLASS Receipt 'Приемка';
 
-@defineDocStatus(receipt, 'поступления');
+@defineDocStatus(receipt, 'приемки');
 
 immediate 'Незапланированное' = DATA BOOLEAN (Receipt);
 
@@ -43,7 +43,7 @@ CONSTRAINT vendor(Receipt r) AND NOT isVendor(vendor(r))
 note 'Примечание' = DATA ISTRING[50] (Receipt);
 
 // lines
-CLASS ReceiptLine 'Строка поступления';
+CLASS ReceiptLine 'Строка приемки';
 
 receipt 'Документ' = DATA Receipt (ReceiptLine) NONULL DELETE INDEXED;
 
@@ -76,7 +76,7 @@ vendor (ReceiptLine l) = vendor(receipt(l));
 nameVendor 'Поставщик' (ReceiptLine l) = nameVendor(receipt(l));
 nameLocation 'Место хранения' (ReceiptLine l) = nameLocation(receipt(l));
 
-FORM receiptLines 'Строки поступлений'
+FORM receiptLines 'Строки приемки'
     OBJECTS l = ReceiptLine
     PROPERTIES(l) READONLY scheduledDateTime, number, index, nameProduct
 
@@ -85,7 +85,7 @@ FORM receiptLines 'Строки поступлений'
 
 edit (ReceiptLine l) + { edit(receipt(l)); } 
            
-FORM receipt 'Поступление'
+FORM receipt 'Приемка'
     OBJECTS r = Receipt PANEL
     PROPERTIES(r) nameType, scheduledDateTime, number, 
                   nameVendor, nameLocation,
@@ -101,7 +101,7 @@ FORM receipt 'Поступление'
 ;
 
 DESIGN receipt {
-    caption = (CONCAT ' ', 'Поступление', '№' + number(r), 'от ' + scheduledDateTime(r));
+    caption = (CONCAT ' ', 'Приемка', '№' + number(r), 'от ' + scheduledDateTime(r));
     OBJECTS {       
         NEW header {
             NEW headerCenter {
@@ -151,7 +151,7 @@ DESIGN receipt {
 // receipts
 background = ABSTRACT CASE COLOR (Receipt);
 
-FORM receipts 'Поступления'
+FORM receipts 'Приемки'
     OBJECTS r = Receipt BACKGROUND background(r)
     PROPERTIES(r) READONLYIF isReadonly()
                            nameType, scheduledDateTime, number, 
@@ -162,7 +162,7 @@ FORM receipts 'Поступления'
 
 @extendFormEditable(receipts);
 
-@defineDocObjectsForm(receipts, r, 'Поступления');
+@defineDocObjectsForm(receipts, r, 'Приемки');
 @defineDocStatusForm(receipt, r);
 @defineDocLocationAccess(receipt, r);
 
@@ -173,7 +173,7 @@ NAVIGATOR {
 }
 
 // immediate
-immediateReceipt 'Незапланированное поступление' () {
+immediateReceipt 'Незапланированная приемка' () {
     NEWSESSION {
         NEW r = Receipt {
             immediate(r) <- TRUE;

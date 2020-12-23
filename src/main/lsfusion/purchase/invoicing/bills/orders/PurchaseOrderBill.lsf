@@ -7,23 +7,23 @@ NAMESPACE Purchase;
 
 // type
 billType = DATA BillType (OrderType);
-nameBillType 'Тип приобретения' (OrderType t) = name(billType(t));
+nameBillType 'Тип поступления' (OrderType t) = name(billType(t));
 EXTEND FORM orderType PROPERTIES nameBillType(o);
 
 // invoicing policy
-CLASS InvoicingPolicy 'Политика оформления приобретения' {
+CLASS InvoicingPolicy 'Политика оформления поступления' {
     ordered 'Заказанное количество'
 }
 name 'Имя' (InvoicingPolicy p) = staticCaption(p) IF p IS InvoicingPolicy CHARWIDTH 20;
 
 invoicingPolicy = DATA InvoicingPolicy (OrderType);
-nameInvoicingPolicy 'Политика оформления приобретения' (OrderType t) = name(invoicingPolicy(t)); 
+nameInvoicingPolicy 'Политика оформления поступления' (OrderType t) = name(invoicingPolicy(t)); 
 EXTEND FORM orderType PROPERTIES nameInvoicingPolicy(o);
 
 // lines
-@defineDocLineRelation(order, bill, 'Заказы', 'Приобретения', o, b);
+@defineDocLineRelation(order, bill, 'Заказы', 'Поступления', o, b);
 
-billed 'Приобретено' (OrderLine ol) = 
+billed 'Поступило' (OrderLine ol) = 
     GROUP SUM quantity(BillLine bl) IF orderLine(bl) = ol AND ready(bill(bl)) AND NOT canceled(bill(bl));
 paid 'Оплачено' (OrderLine ol) = 
     GROUP SUM quantity(BillLine bl) IF orderLine(bl) = ol AND done(bill(bl)) AND NOT canceled(bill(bl));
@@ -38,7 +38,7 @@ toBill (Order o) += toBillOrdered(o) > 0;
 
 fill ABSTRACT LIST (BillLine, OrderLine);
 fill ABSTRACT LIST (Bill, Order);
-createBill 'Приобрести' (Order o) {
+createBill 'Создать поступление' (Order o) {
     APPLY;
     IF canceled() THEN RETURN;
                
@@ -99,7 +99,7 @@ DESIGN order {
     }
     relatedDoc  {
         MOVE BOX(bi) {
-            caption = CONCAT ' ', 'Приобретения', '(' + countBills(o) + ')';
+            caption = CONCAT ' ', 'Поступления', '(' + countBills(o) + ')';
             GRID(bi) { headerHeight = 24; }
         }
         REMOVE TOOLBARBOX(bi);
@@ -108,7 +108,7 @@ DESIGN order {
 
 EXTEND FORM orders
     FILTERGROUP toBill
-        FILTER 'Приобрести' status(o) = OrderStatus.confirmed AND toBill(o)
+        FILTER 'Создать поступление' status(o) = OrderStatus.confirmed AND toBill(o)
 ;
 
 DESIGN orders {
