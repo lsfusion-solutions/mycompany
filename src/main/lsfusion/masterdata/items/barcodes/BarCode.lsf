@@ -76,13 +76,13 @@ EXTEND FORM products
 consumedBarCode = DATA LOCAL BOOLEAN ();
 barCode 'Штрихкод' = DATA LOCAL STRING () CHANGEKEY 'F4';
 
-META defineBarCodeSearch(doc, let, line, itm, quantity)
-    processBarCode ABSTRACT LIST (###doc, ###doc##Line, STRING);
-    scanBarCode (###doc d, ###doc##Line l) {
+META defineBarCodeSearch(doc, docLine, let, line, itm, quantity)
+    processBarCode ABSTRACT LIST (###doc, docLine, STRING);
+    scanBarCode (###doc d, docLine l) {
         INPUT id = STRING DO {
             IF itemSingleBarCode(id) THEN {
                 set###quantity(d, itemSingleBarCode(id), quantity(d, itemSingleBarCode(id)) (+) 1);
-                SEEK ##doc.line = last###doc##Line(d, itemSingleBarCode(id));
+                SEEK ##doc.line = last##docLine(d, itemSingleBarCode(id));
                 ACTIVATE PROPERTY ##doc.quantity(line); 
             } ELSE {
                 consumedBarCode() <- NULL;
@@ -96,6 +96,10 @@ META defineBarCodeSearch(doc, let, line, itm, quantity)
     EXTEND FORM ##doc
         PROPERTIES() barCode DRAW l TOOLBAR ON CHANGE scanBarCode(##let, l)
     ;
+END
+
+META defineBarCodeSearch(doc, let, line, itm, quantity)
+    @defineBarCodeSearch(doc, ###doc##Line, let, line, itm, quantity);
 END
 
 META defineBarCodeSeek(form, obj, gobj)

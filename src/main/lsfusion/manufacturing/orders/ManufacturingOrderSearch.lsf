@@ -1,0 +1,13 @@
+MODULE ManufacturingOrderSearch;
+
+REQUIRE ManufacturingOrderDone;
+
+NAMESPACE Manufacturing;
+
+lastFinishedLine (ManufacturingOrder o, Item i) = GROUP LAST FinishedLine l ORDER l BY manufacturingOrder(l), item(l);
+
+// done
+@defineDocSearchAction(manufacturingOrder, FinishedLine, item, produced, 'Произведено');
+
+// barcode
+@defineBarCodeSearch(manufacturingOrder, FinishedLine, o, l, product, produced);

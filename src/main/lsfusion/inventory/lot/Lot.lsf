@@ -25,34 +25,38 @@ DESIGN options {
     }
 } 
 
-META defineDocLot (doc, item, quantity, status, caption)
-    quantity 'Кол-во'##caption = DATA NUMERIC[16,3] (###doc##Line, Lot);
+META defineDocLot (doc, line, item, quantity, status, caption)
+    quantity 'Кол-во'##caption = DATA NUMERIC[16,3] (line, Lot);
     
-    lots###quantity 'Партии' (###doc##Line l) = 
+    lots###quantity 'Партии' (line l) = 
         GROUP CONCAT
             (CONCAT '', id(Lot lot) IF quantity(l, lot), '(' + (STRING(DOUBLE(quantity(l, lot))) IF (quantity(l, lot) != 1)) + ')'), 
             ',' CHARWIDTH 15; 
     
-    quantity##Lot 'Кол-во партий'##caption (###doc##Line rl) = GROUP SUM quantity(rl, Lot l);
+    quantity##Lot 'Кол-во партий'##caption (line rl) = GROUP SUM quantity(rl, Lot l);
        
-    WHEN LOCAL CHANGED(quantity##Lot(###doc##Line rl)) AND NOT status(doc(rl)) DO {
+    WHEN LOCAL CHANGED(quantity##Lot(line rl)) AND NOT status(doc(rl)) DO {
         quantity(rl) <- quantity##Lot(rl);
     }
     
-    CONSTRAINT quantity(###doc##Line rl, Lot l) AND item(rl) != product(l)
+    CONSTRAINT quantity(line rl, Lot l) AND item(rl) != product(l)
                     MESSAGE 'Строка для партии должна относится к тому же продукту, что и партия';
-    CONSTRAINT useLot(item(###doc##Line rl)) AND ((OVERRIDE quantity(rl), 0.0) - quantity##Lot(rl) < 0) AND status(doc(rl))
+    CONSTRAINT useLot(item(line rl)) AND ((OVERRIDE quantity(rl), 0.0) - quantity##Lot(rl) < 0) AND status(doc(rl))
                     MESSAGE 'Несовпадение количества с количеством в партиях'##caption;                   
 END 
 
+META defineDocLot (doc, item, quantity, status, caption)
+    @defineDocLot (doc, ###doc##Line, item, quantity, status, caption);
+END
+
 barCodeToLotId = ABSTRACT CASE STRING (STRING);
 
-META defineDocBarCodeLot (doc, item, quantity)
+META defineDocBarCodeLot (doc, docLine, item, quantity)
     
     beforeProcessLotBarCode ABSTRACT (###doc, STRING);
     afterProcessLotBarCode ABSTRACT (###doc, STRING);
        
-    processBarCode(###doc r, ###doc##Line rl, STRING s) + {
+    processBarCode(###doc r, docLine rl, STRING s) + {
         LOCAL lotId = STRING();
         lotId() <- OVERRIDE barCodeToLotId(s), (s AS STRING);
          
@@ -69,17 +73,17 @@ META defineDocBarCodeLot (doc, item, quantity)
                 product(lot()) <- item(rl);
             }
         
-            LOCAL line = ###doc##Line();
+            LOCAL line = docLine();
             
             IF product(lot()) AND NOT product(lot()) = item(rl) THEN {
-                IF NOT last###doc##Line(doc(rl), product(lot())) THEN {
-                    NEW l = ###doc##Line {
+                IF NOT last##docLine(doc(rl), product(lot())) THEN {
+                    NEW l = docLine {
                         doc(l) <- r;
                         item(l) <- product(lot());
                         line() <- l;
                     }
                 } ELSE               
-                    line() <- last###doc##Line(doc(rl), product(lot()));
+                    line() <- last##docLine(doc(rl), product(lot()));
                 SEEK doc.l = line();            
             } ELSE
                 line() <- rl;                      
@@ -95,9 +99,13 @@ META defineDocBarCodeLot (doc, item, quantity)
     }
 END
 
-META defineDocDesignLotTab(doc, quantity)
+META defineDocBarCodeLot (doc, item, quantity)
+    @defineDocBarCodeLot (doc, ###doc##Line, item, quantity);
+END
+
+META defineDocDesignLotTab(doc, quantity, item, container)
     EXTEND FORM doc
-        PROPERTIES(l) AFTER quantity(l) SHOWIF useLot() BACKGROUND RGB(198,230,247) IF useLot(product(l)) 
+        PROPERTIES(l) AFTER quantity(l) SHOWIF useLot() BACKGROUND RGB(198,230,247) IF useLot(item(l)) 
                       quantity##Lot 
         
         OBJECTS lot = Lot
@@ -107,7 +115,7 @@ META defineDocDesignLotTab(doc, quantity)
     ;
     
     DESIGN doc {
-        linesTab {
+        container {
             MOVE BOX(lot) {
                 caption = 'Партии';
                 showIf = useLot();

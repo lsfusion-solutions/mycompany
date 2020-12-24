@@ -1,0 +1,22 @@
+MODULE ManufacturingOrderLot;
+
+REQUIRE ManufacturingOrderDone, ManufacturingOrderSearch, ManufacturingOrderInv, InvLedgerLot, ProductLot;
+
+NAMESPACE Manufacturing;
+
+@defineDocLot (manufacturingOrder, FinishedLine, item, produced, done, ' (принято)');
+
+@defineDocBarCodeLot (manufacturingOrder, FinishedLine, item, produced);
+
+beforeProcessLotBarCode(ManufacturingOrder r, STRING s) + {
+    IF NOT lot(s) THEN {
+        NEW l = Lot {
+            id(l) <- STRING[100](s);
+        }
+    }
+}
+
+@defineDocDesignLotTab(manufacturingOrder, produced, item, finishedLinesTab);
+
+//ledger
+quantity(ManufacturingOrderInv i, Lot l) += produced(line(i), l);

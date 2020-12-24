@@ -10,7 +10,7 @@ NAVIGATOR {
     }
 }
 
-CLASS LotType 'Тип маркировки' {
+CLASS LotType 'Товарная группа' {
     lp 'Одежда',
     perfumery 'Парфюмерия'
 }
@@ -18,7 +18,7 @@ CLASS LotType 'Тип маркировки' {
 id 'Код' (LotType t) = getWord(staticName(t),'.',2) IF t IS LotType CHARWIDTH 20;
 name 'Наименование' (LotType t) = staticCaption(t) IF t IS LotType CHARWIDTH 20;
 
-FORM dialogLotTypes 'Выбор типа маркировки'
+FORM dialogLotTypes 'Выбор товарной группы'
     OBJECTS t = LotType
     PROPERTIES(t) READONLY name
     
@@ -31,7 +31,10 @@ dataLotType = DATA LotType (Category);
 nearestLotType (Category child) = GROUP LAST dataLotType(Category parent) ORDER DESC level(child, parent) WHERE dataLotType(parent);
 
 lotType (Category c) = OVERRIDE dataLotType(c), nearestLotType(c) MATERIALIZED;
-nameLotType 'Тип маркировки' (Category c) = name(lotType(c));
+nameLotType 'Товарная группа (маркировка)' (Category c) = name(lotType(c));
+
+lotType (Product p) = lotType(category(p)) MATERIALIZED;
+nameLotType 'Товарная группа (маркировка)' (Product p) = name(lotType(p));
 
 EXTEND FORM category
     PROPERTIES(c) nameLotType
