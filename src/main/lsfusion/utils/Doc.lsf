@@ -93,20 +93,20 @@ META defineDocStatusForm (doc, let)
     } 
 END
 
-META defineDocSearchAction (doc, it, fun, capt)
+META defineDocSearchAction (doc, docLine, it, fun, capt)
     fun capt (###doc i, ###it p) = 
-        GROUP SUM fun(###doc##Line l) BY doc(l), it(l);
+        GROUP SUM fun(docLine l) BY doc(l), it(l);
     
     set###fun (###doc i, ###it p, NUMERIC[14,3] q) {
-        IF last###doc##Line(i, p) THEN {
+        IF last##docLine(i, p) THEN {
             IF q THEN
-                fun(###doc##Line l) <- q IF l = last###doc##Line(i, p)
+                fun(docLine l) <- q IF l = last##docLine(i, p)
                     WHERE doc(l) = i AND it(l) = p;
             ELSE
-                DELETE ###doc##Line l WHERE doc(l) = i AND it(l) = p;
+                DELETE docLine l WHERE doc(l) = i AND it(l) = p;
         } ELSE
             IF q THEN
-                NEW l = ###doc##Line{
+                NEW l = docLine{
                     doc(l) <- i;
                     it(l) <- p;
                     fun(l) <- q;
@@ -118,6 +118,10 @@ META defineDocSearchAction (doc, it, fun, capt)
         INPUT q = NUMERIC[14,3] DO
             set###fun(i, p, q);
     }
+END
+
+META defineDocSearchAction (doc, it, fun, capt)
+    @defineDocSearchAction (doc, ###doc##Line, it, fun, capt);
 END
 
 META defineDocSearchTab (doc, it)
