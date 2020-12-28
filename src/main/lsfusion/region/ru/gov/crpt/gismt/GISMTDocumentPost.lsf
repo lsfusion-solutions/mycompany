@@ -22,6 +22,10 @@ export ABSTRACT LIST (Document, Source);
 send (Document d) {
     export(d, source(d));
     IF stopCreate() THEN RETURN;
+    IF NOT exportFile() THEN {
+        MESSAGE 'Выбран неправильный тип документа ГИС МТ';
+        RETURN;
+    } 
     
     fileToString(exportFile());
     request(d) <- resultString();
