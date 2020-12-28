@@ -94,7 +94,7 @@ clone (Bill to, Bill from) + {
 autoCreateReceipt 'Автоматически создавать приемку' = DATA BOOLEAN (BillType);
 EXTEND FORM billType PROPERTIES autoCreateReceipt(o) SHOWIF receiptType(o);
 
-WHEN (SET(ready(Bill b)) OR SET(countProductLines(b))) AND autoCreateReceipt(type(b)) AND countProductLines(b) DO 
+WHEN (SET(ready(Bill b)) OR SET(countProductLines(b))) AND ready(b) AND autoCreateReceipt(type(b)) AND countProductLines(b) DO 
     newReceipt(b);
 WHEN SET(canceled(Bill b)) AND in(b, Receipt r) AND countBill(r) = 1 AND autoCreateReceipt(type(b)) DO 
     canceled(r) <- TRUE; 
