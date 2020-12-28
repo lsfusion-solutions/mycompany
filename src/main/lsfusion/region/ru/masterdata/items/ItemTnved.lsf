@@ -1,0 +1,33 @@
+MODULE ItemTnved;
+
+REQUIRE Item;
+
+NAMESPACE MasterData;
+
+// category
+
+dataTnved = DATA STRING[10] (Category);
+nearestTnved (Category child) = GROUP LAST dataTnved(Category parent) ORDER DESC level(child, parent) WHERE dataTnved(parent);
+
+tnved 'ТНВЭД' (Category c) = OVERRIDE dataTnved(c), nearestTnved(c) MATERIALIZED;
+
+dataTnved = DATA STRING[10] (Item);
+tnved 'ТНВЭД' (Item i) = OVERRIDE dataTnved(i), tnved(category(i)) MATERIALIZED;
+
+EXTEND FORM category
+    PROPERTIES(c) tnved
+;
+DESIGN category {
+    params {
+        MOVE PROPERTY(tnved(c));
+    }
+}
+
+EXTEND FORM item
+    PROPERTIES(i) tnved
+;
+DESIGN item {
+    column2 {
+        MOVE PROPERTY(tnved(i));
+    }
+}

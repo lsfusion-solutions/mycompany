@@ -1,36 +1,36 @@
 MODULE CryptoPro;
 
-REQUIRE SystemEvents, Utils;
+REQUIRE Company, SystemEvents, Utils;
 
 signature = DATA LOCAL RAWFILE ();
 encodedSignature = encode(signature(), 'base64');
 
 sign INTERNAL 'org.mycompany.region.ru.gov.cryptopro.SignAction' (RAWFILE, BOOLEAN, STRING, STRING, STRING, STRING);
 
-keyAlias 'Имя ключа УКЭП' = DATA STRING();
-keyPassword 'Пароль ключа УКЭП' = DATA STRING() ECHO;
+keyAlias 'Имя ключа УКЭП' = DATA STRING(Company);
+keyPassword 'Пароль ключа УКЭП' = DATA STRING(Company) ECHO;
 
 sign (RAWFILE f, BOOLEAN detached, STRING keyAlias, STRING keyPassword) { 
     sign(f, detached, NULL, NULL, keyAlias, keyPassword); 
 }
-sign (RAWFILE f, BOOLEAN detached) { 
-    sign(f, detached, NULL, NULL, keyAlias(), keyPassword()); 
+sign (RAWFILE f, BOOLEAN detached, Company c) { 
+    sign(f, detached, NULL, NULL, keyAlias(c), keyPassword(c)); 
 }
-sign (FILE f, BOOLEAN detached) { 
-    sign(RAWFILE(f), detached); 
+sign (FILE f, BOOLEAN detached, Company c) { 
+    sign(RAWFILE(f), detached, c); 
 }
 
 
 EXTEND FORM integrationData
-    PROPERTIES() keyAlias, keyPassword
+    OBJECTS crc = Company
+    PROPERTIES(crc) name READONLY, keyAlias, keyPassword
 ;
 
 DESIGN integrationData {
     pane {
         NEW cryptopro {
             caption = 'УКЭП';
-            MOVE PROPERTY(keyAlias());            
-            MOVE PROPERTY(keyPassword());            
+            MOVE BOX(crc);
         }
     }
 }

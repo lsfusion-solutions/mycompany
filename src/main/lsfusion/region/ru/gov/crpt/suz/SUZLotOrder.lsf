@@ -90,17 +90,22 @@ NAVIGATOR {
 }
 
 // copy
-copy 'Копировать' (LotOrder s) {
+clone ABSTRACT LIST (LotOrder, LotOrder);
+clone (LotOrder to, LotOrder from) + {
+    type(to) <- type(from);
+    company(to) <- company(from);
+    FOR lotOrder(LotOrderLine l) = from INLINE NEW nl = LotOrderLine DO {
+        lotOrder(nl) <- to;
+        product(nl) <- product(l);
+        quantity(nl) <- quantity(l);
+    }
+}
+
+copy 'Копировать' (LotOrder from) {
     NEWSESSION {
-        NEW no = LotOrder {
-            type(no) <- type(s);
-            company(no) <- company(s);
-            FOR lotOrder(LotOrderLine l) = s INLINE NEW nl = LotOrderLine DO {
-                lotOrder(nl) <- no;
-                product(nl) <- product(l);
-                quantity(nl) <- quantity(l);
-            }
-            SHOW lotOrder OBJECTS o = no DOCKED;
+        NEW to = LotOrder {
+            clone(to, from);
+            SHOW lotOrder OBJECTS o = to DOCKED;
         }
     }
 }

@@ -41,7 +41,7 @@ META defineDocLot (doc, line, item, quantity, status, caption)
     
     CONSTRAINT quantity(line rl, Lot l) AND item(rl) != product(l)
                     MESSAGE 'Строка для партии должна относится к тому же продукту, что и партия';
-    CONSTRAINT useLot(item(line rl)) AND ((OVERRIDE quantity(rl), 0.0) - quantity##Lot(rl) < 0) AND status(doc(rl))
+    CONSTRAINT SET(((OVERRIDE quantity(line rl), 0.0) - quantity##Lot(rl) < 0) AND status(doc(rl))) AND useLot(item(rl))
                     MESSAGE 'Несовпадение количества с количеством в партиях'##caption;                   
 END 
 

@@ -1,0 +1,65 @@
+MODULE GISMTDocumentIncoming;
+
+REQUIRE GISMTDocument, ProductGtin;
+
+NAMESPACE GISMT;
+
+FORM getIncomingDocuments
+    OBJECTS results = INTEGER
+    PROPERTIES(results) number = number, docDate = docDate, inn = senderInn, status = status 
+;
+
+FORM dialogIncomingDocument 'Выбор документа'
+    OBJECTS di 'Документы' = INTEGER
+    PROPERTIES(di) READONLY number 'Номер' = number, docDate 'Дата' = docDate, status 'Статус' = status 
+    FILTERS number(di) 
+;
+ 
+documentIndex = DATA LOCAL INTEGER ();
+
+getIncomingDocuments 'Получить входящие документы ГИС МТ' (Company c, LegalEntity s, LotType lt, STRING status) {
+    getToken(c);
+    
+    LOCAL result = FILE();
+    TRY {
+        EXTERNAL HTTP GET url() + '/facade/doc/listV2?inputFormat=true' + 
+                                  '&participantInn=' + inn(s) + '&pg=' + id(lt) + '&status=' + status HEADERS documentHeaders TO result;
+    } CATCH {
+        fileToString(result());
+        MESSAGE 'Ошибка при оправке документа в СУЗ : \n' + (OVERRIDE messageCaughtException(), '') + '\n' + (OVERRIDE resultString(), '');
+        RETURN;
+    }
+    
+    number(INTEGER i) <- NULL;
+    IMPORT getIncomingDocuments JSON FROM result();
+    
+    documentIndex() <- NULL;
+    DIALOG dialogIncomingDocument OBJECTS di INPUT FILTERS status(di) = status DO {
+        documentIndex() <- di;
+    } 
+            
+}
+
+// get incoming document
+FORM getIncomingDocument
+    OBJECTS products = INTEGER IN body 
+    PROPERTIES(products) uit_code = uit_code
+;
+
+getIncomingDocument (Company c, STRING[100] id) {
+    getToken(c);
+    
+    LOCAL result = FILE();
+    TRY {
+        EXTERNAL HTTP GET url() + '/facade/doc/' + id + '/body' HEADERS documentHeaders TO result;
+    } CATCH {
+        fileToString(result());
+        MESSAGE 'Ошибка при оправке документа в СУЗ : \n' + (OVERRIDE messageCaughtException(), '') + '\n' + (OVERRIDE resultString(), '');
+        RETURN;
+    }
+    
+    IMPORT getIncomingDocument JSON FROM result();
+    
+    gtin (INTEGER i) <- idToGtin(uit_code(i));
+    product (INTEGER i) <- productFromGtin(gtin(i));
+}

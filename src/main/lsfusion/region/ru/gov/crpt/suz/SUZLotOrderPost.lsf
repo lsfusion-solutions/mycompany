@@ -12,6 +12,26 @@ posted 'Отправлен' = DATA BOOLEAN (LotOrder);
 status (LotOrder s) += WHEN posted(s) THEN LotOrderStatus.posted;
 colorStatus (LotOrder s) += WHEN status(s) = LotOrderStatus.posted THEN RGB(252,247,149);
 
+// release method type
+CLASS ReleaseMethodType 'Способ выпуска товаров в оборот' {
+    PRODUCTION 'Производство в РФ',
+    IMPORT_ 'Ввезен в РФ (Импорт)',
+    REMAINS 'Маркировка остатков',
+    CROSSBORDER 'Трансграничная торговля',
+    REMARK 'Перемаркировка'
+}
+id 'Код' (ReleaseMethodType o) = STRING[100](rtrim(getWord(staticName(o),'.',2),'_')) IF o IS ReleaseMethodType CHARWIDTH 10;
+name 'Наименование' (ReleaseMethodType o) = staticCaption(o) IF o IS ReleaseMethodType CHARWIDTH 15;
+    
+FORM dialogReleaseMethodTypes 'Способ выпуска товаров в оборот'
+    OBJECTS o = ReleaseMethodType
+    PROPERTIES(o) READONLY name
+        
+    LIST ReleaseMethodType OBJECT o
+;
+
+releaseMethodType 'Способ выпуска товаров в оборот' = DATA ReleaseMethodType (LotOrder) NONULL;
+nameReleaseMethodType 'Способ выпуска товаров в оборот' (LotOrder o) = name(releaseMethodType(o));
 
 lotOrderUrl (LotOrder o) = url() + '/api/v2/' + idType(o);
 
@@ -20,7 +40,7 @@ quantity (LotOrder o, STRING[14] gtin) = GROUP SUM quantity(LotOrderLine d) IF l
 FORM postLotOrder
     OBJECTS o = LotOrder PANEL
     
-    PROPERTIES contactPerson = (OVERRIDE name(currentUser()), 'Администратор'), releaseMethodType = 'REMAINS', createMethodType = 'SELF_MADE'
+    PROPERTIES contactPerson = (OVERRIDE name(currentUser()), 'Администратор'), releaseMethodType = id(releaseMethodType(o)), createMethodType = 'SELF_MADE'
     
     OBJECTS products = STRING[14]
     PROPERTIES gtin = VALUE(products), 
@@ -38,7 +58,7 @@ post 'Отправить в СУЗ' (LotOrder o) {
     NEWSESSION {
         EXPORT postLotOrder OBJECTS o = o JSON;
         
-        sign(exportFile(), TRUE);
+        sign(exportFile(), TRUE, company(o));
         
         suzToken() <- token(company(o));
         LOCAL result = FILE();
@@ -61,7 +81,9 @@ post 'Отправить в СУЗ' (LotOrder o) {
 }
 
 EXTEND FORM lotOrder
-    PROPERTIES(o) post SHOWIF status(o) = LotOrderStatus.draft, posted 
+    PROPERTIES(o) post SHOWIF status(o) = LotOrderStatus.draft, posted
+    
+    PROPERTIES(o) nameReleaseMethodType 
 ;
 
 DESIGN lotOrder {
@@ -71,6 +93,8 @@ DESIGN lotOrder {
     status {
         MOVE PROPERTY(posted(o));                               
     }
+
+    PROPERTY(nameReleaseMethodType(o)) { notNull = TRUE; }
 }
 
 EXTEND FORM lotOrders    
@@ -81,3 +105,8 @@ EXTEND FORM lotOrders
 // constraint
 CONSTRAINT (CHANGED(product(LotOrderLine l)) OR CHANGED(quantity(l))) AND (PREV(posted(lotOrder(l))) OR posted(lotOrder(l)))
     MESSAGE 'Запрещено редактировать заказы марок после их отсылки в СУЗ';
+
+// copy
+clone (LotOrder to, LotOrder from) + {
+    releaseMethodType(to) <- releaseMethodType(from);
+}

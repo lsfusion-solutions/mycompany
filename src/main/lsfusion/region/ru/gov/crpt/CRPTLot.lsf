@@ -1,6 +1,6 @@
 MODULE CRPTLot;
 
-REQUIRE Utils, Product, InventorySettings, Lot;
+REQUIRE Utils, Product, InventorySettings, CategoryLot;
 
 NAMESPACE CRPT;
 
@@ -40,7 +40,7 @@ EXTEND FORM category
     PROPERTIES(c) nameLotType
 ;
 DESIGN category {
-    params {
+    lot {
         MOVE PROPERTY(nameLotType(c));
     }
 }
@@ -53,6 +53,8 @@ code (Lot l) = CONCAT '', id(l), tail(l);
 
 barcodeToId (STRING[100] s) = STRING[100](left(s, 31));
 barcodeToTail (STRING[100] s) = STRING[100](substrFrom(s, 32)); 
+
+idToGtin (STRING[100] s) = substr(s, 3, 14);
 
 translateBarcode = FORMULA STRING 'SELECT CASE WHEN ($1) ~* \'[а-яА-Я]\' THEN translate(left(($1), 31), \'ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭ/ЯЧСМИТЬБЮ,йцукенгшщзхъфывапролджэячсмитьбю.\', \'QWERTYUIOP{}ASDFGHJKL:"|ZXCVBNM<>?qwertyuiop[]asdfghjkl;\'\'zxcvbnm,./\') ELSE left(($1), 31) END';
 
