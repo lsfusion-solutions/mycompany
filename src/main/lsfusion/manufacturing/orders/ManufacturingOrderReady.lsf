@@ -22,7 +22,7 @@ countReservedLines (ManufacturingOrder m) = GROUP SUM 1 IF reserved(ConsumedLine
 linesReserved (ManufacturingOrder m) = GROUP SUM 1 IF reserved(ConsumedLine l) = toConsume(l) AND manufacturingOrder(l) = m;
 reserved (ManufacturingOrder m) = linesReserved(m) = countReservedLines(m);
 
-available 'Доступный остаток' (ConsumedLine l) = 
+available 'Доступно' (ConsumedLine l) = 
     prevAvailable(materialsLocation(manufacturingOrder(l)), item(l) AS Product) (+) PREV(reserved(l)); 
 
 checkAvailability 'Зарезервировать' (ManufacturingOrder m) {

@@ -19,7 +19,7 @@ reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ShipmentLine);
 linesReserved (Shipment s) = GROUP SUM 1 IF reserved(ShipmentLine l) = initialDemand(l) AND shipment(l) = s;
 reserved (Shipment s) = linesReserved(s) = countLines(s);
 
-available 'Доступный остаток' (ShipmentLine l) = prevAvailableRec(location(shipment(l)), product(l)) (+) PREV(reserved(l)); 
+available 'Доступно' (ShipmentLine l) = prevAvailableRec(location(shipment(l)), product(l)) (+) PREV(reserved(l)); 
 
 extraCheckAvailability ABSTRACT (Shipment);
 precheckAvailability (Shipment s) {

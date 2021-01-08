@@ -11,12 +11,12 @@ done 'Отгружен' = DATA BOOLEAN (Shipment);
 
 status(Shipment s) += WHEN done(s) THEN ShipmentStatus.done;
 
-executionDateTime 'Дата отгрузки' = DATA DATETIME (Shipment);
+executionDateTime 'Дата выполнения' = DATA DATETIME (Shipment);
 WHEN SET(done(Shipment s)) AND NOT CHANGED(executionDateTime(s)) DO executionDateTime(s) <- currentDateTime(); 
 @defineDateTimeAggregation(Shipment, execution, ' отгрузки');
 
-executionDateTime 'Дата отгрузки' (ShipmentLine l) = executionDateTime(shipment(l));
-executionDate 'Дата отгрузки' (ShipmentLine l) = executionDate(shipment(l));
+executionDateTime 'Дата выполнения' (ShipmentLine l) = executionDateTime(shipment(l));
+executionDate 'Дата выполнения' (ShipmentLine l) = executionDate(shipment(l));
 
 done 'Отгружено' = DATA NUMERIC[16,3] (ShipmentLine);
 
