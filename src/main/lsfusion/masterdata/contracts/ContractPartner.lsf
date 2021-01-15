@@ -1,0 +1,32 @@
+MODULE ContractPartner;
+
+REQUIRE Contract;
+
+NAMESPACE MasterData;
+
+newContract 'Договор' (Partner p) {
+    NESTEDSESSION {
+        NEW c = Contract {
+            partner(c) <- p;
+            SHOW contract OBJECTS c = c;  
+        }
+    }
+} IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+
+EXTEND FORM partner
+    OBJECTS c = Contract
+    PROPERTIES(c) READONLY id, name, date, endDate, number, nameCompany
+    PROPERTIES(c) NESTEDSESSION EDIT, DELETE
+    PROPERTIES newContract(p) DRAW c TOOLBAR 
+    
+    FILTERS partner(c) = p
+;
+
+DESIGN partner {
+    tabs {
+        NEW contracts {
+            caption = 'Договоры';
+            MOVE BOX(c);
+        }
+    }
+}

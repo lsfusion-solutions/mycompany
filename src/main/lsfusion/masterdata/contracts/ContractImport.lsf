@@ -1,0 +1,69 @@
+MODULE ContractImport;
+
+REQUIRE Contract;
+
+NAMESPACE MasterData;
+
+contractExport 'Экспорт договоров' () {
+    NEWSESSION {
+        IF NOT (GROUP SUM 1 IF Contract l AND l IS Contract) THEN {
+            NEW l = Contract {
+                id(l) <- '123';
+                name(l) <- 'Мой договор';
+                date(l) <- 2021_01_01; 
+                endDate(l) <- 2021_12_31; 
+                number(l) <- '5/41'; 
+            }
+        }
+    
+        LOCAL f = EXCELFILE ();
+        EXPORT XLSX HEADER FROM 'Код' = id(Contract l), 'Название' = name(l), 'Дата' = date(l), 'Действует по' = endDate(l),
+                                'Номер' = number(l), 'Код компании' = idCompany(l), 'Код контрагента' = idPartner(l); 
+        open(f());
+    }
+}
+
+contractImport 'Импорт договоров' () {
+    LOCAL id = STRING[50] (INTEGER);
+    LOCAL name = ISTRING[30] (INTEGER);
+    LOCAL date = DATE (INTEGER);
+    LOCAL endDate = DATE (INTEGER);
+    LOCAL number = STRING[50] (INTEGER);
+    LOCAL idCompany = STRING[50] (INTEGER);
+    LOCAL idPartner = STRING[50] (INTEGER);
+    
+    INPUT f = EXCELFILE DO {
+        NEWSESSION {   
+            IMPORT XLS HEADER FROM f TO id = A, name = B, date = C, endDate = D, number = E, idCompany = F, idPartner = G;
+            
+            FOR imported(INTEGER i) DO NEW l = Contract {
+                id(l) <- id(i);
+                name(l) <- name(i);
+                date(l) <- date(i);
+                endDate(l) <- endDate(i);
+                number(l) <- number(i);
+                company(l) <- partner(idCompany(i));
+                partner(l) <- partner(idPartner(i));
+            }
+            
+            APPLY;
+            MESSAGE 'Импорт завершен';
+        }
+    }    
+}
+
+EXTEND FORM migrationData 
+    PROPERTIES contractExport(), contractImport()
+;
+
+DESIGN migrationData {
+    commons {
+        NEW contract {
+            type = CONTAINERH;
+            caption = 'Договоры';
+            MOVE PROPERTY(contractImport());
+            MOVE PROPERTY(contractExport());
+        }
+    }
+}
+
