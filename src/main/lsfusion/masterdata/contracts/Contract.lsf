@@ -40,18 +40,26 @@ DESIGN contract {
     OBJECTS {
         NEW header {
             type = CONTAINERH;
-            alignment = STRETCH;
-            MOVE PROPERTY(id(c));
-            MOVE PROPERTY(number(c));
-            MOVE PROPERTY(date(c));
-            MOVE PROPERTY(endDate(c));
-            MOVE PROPERTY(name(c));
-        }
-        NEW legal {
-            type = CONTAINERH;
-            alignment = STRETCH;
-            MOVE PROPERTY(nameCompany(c));
-            MOVE PROPERTY(namePartner(c));
+            NEW headerLeft {
+                NEW params {
+                    caption = 'Параметры';
+                    type = CONTAINERH;
+                    alignment = STRETCH;
+                    MOVE PROPERTY(id(c));
+                    MOVE PROPERTY(number(c));
+                    MOVE PROPERTY(date(c));
+                    MOVE PROPERTY(endDate(c));
+                    MOVE PROPERTY(name(c));
+                }
+                NEW legal {
+                    caption = 'Контрагенты';
+                    type = CONTAINERH;
+                    alignment = STRETCH;
+                    MOVE PROPERTY(nameCompany(c));
+                    MOVE PROPERTY(namePartner(c));
+                }
+            }
+            NEW headerRight;
         }
     }
 }
@@ -75,7 +83,7 @@ NAVIGATOR {
     }
 }
 
-META defineDocumentContract(doc, obj, property, container)
+META defineDocContract(doc, obj, property, container)
     contract 'Договор' = DATA Contract (###doc) INDEXED;
     numberDateContract (###doc i) = numberDate(contract(i));
     descriptionContract 'Договор' (###doc i) = description(contract(i));

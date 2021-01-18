@@ -9,6 +9,8 @@ namePaymentType 'Тип платежа' (BillType t) = name(paymentType(t));
 
 EXTEND FORM billType PROPERTIES namePaymentType(o);
 
+fill ABSTRACT LIST (OutgoingPayment, Bill);
+
 registerPayment 'Оплатить' (Bill b) {
     APPLY; 
     IF canceled() THEN RETURN;
@@ -27,6 +29,9 @@ registerPayment 'Оплатить' (Bill b) {
             
             amount(p) <- left(b);
             paid(b, p) <- left(b, p);
+            
+            fill(p, b);
+            
             DIALOG outgoingPayment OBJECTS p = p DOCKED NOMANAGESESSION DO {
                 IF amount(p) < paid(b, p) THEN paid(b, p) <- amount(p);
                 APPLY; 

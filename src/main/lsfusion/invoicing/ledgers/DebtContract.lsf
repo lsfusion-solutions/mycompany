@@ -1,0 +1,44 @@
+MODULE DebtContract;
+
+REQUIRE Debt, Contract;
+
+NAMESPACE Invoicing;
+
+debtContract 'Долг' (Debt d) = PARTITION SUM signedAmount(d) ORDER dateTime(d), d BY contract(d); 
+
+debt 'Долг' (Contract c) = GROUP SUM signedAmount(Debt d) IF contract(d) = c;
+
+pastDueDebt 'Просроченный долг' (Contract c) = GROUP SUM signedLeft(Debt d) IF contract(d) = c AND dueDateTime(d) < currentDateTime();
+
+FORM debtsContract 'Долги по договору'
+    OBJECTS c = Contract PANEL
+    PROPERTIES(c) READONLY name
+
+    OBJECTS d = Debt
+    PROPERTIES(d) READONLY class, type, number, dateTime, dueDateTime, nameCompany, amount, left, debtContract
+    PROPERTIES(d) NEWSESSION EDIT
+    ORDERS dateTime(d)
+    
+    FILTERGROUP pastDue
+        FILTER 'Просроченные' dueDateTime(d) < currentDateTime() AND signedLeft(d)
+    FILTERS active(d),
+            contract(d) = c
+;
+
+EXTEND FORM contract
+    PROPERTIES(c) ON CHANGE { SHOW debtsContract OBJECTS c = c DOCKED; } debt, pastDueDebt
+;
+DESIGN contract {
+    headerRight {
+        NEW debt {
+            caption = 'Долг';
+            alignment = STRETCH;
+            MOVE PROPERTY(debt(c));
+            MOVE PROPERTY(pastDueDebt(c));
+        }
+    }
+}
+
+EXTEND FORM contracts
+    PROPERTIES(c) READONLY debt, pastDueDebt
+;

@@ -51,7 +51,7 @@ getIncomingDocument (Company c, STRING[100] id) {
     
     LOCAL result = FILE();
     TRY {
-        EXTERNAL HTTP GET url() + '/facade/doc/' + id + '/body' HEADERS documentHeaders TO result;
+        EXTERNAL HTTP GET url() + '/facade/doc/' + id + '/body?limit=10000' HEADERS documentHeaders TO result;
     } CATCH {
         fileToString(result());
         MESSAGE 'Ошибка при оправке документа в СУЗ : \n' + (OVERRIDE messageCaughtException(), '') + '\n' + (OVERRIDE resultString(), '');
