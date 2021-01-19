@@ -9,14 +9,15 @@ CLASS ABSTRACT Partner 'Контрагент';
 @defineID(partner, 'Контрагенты', 'КН', 4);
 
 name 'Наименование' = ABSTRACT ISTRING[92] (Partner) IN id CHARWIDTH 15 NONULL;
+fullName 'Полное наименование' = ABSTRACT ISTRING[200] (Partner) IN id CHARWIDTH 25 NONULL;
 
-address 'Адрес' = DATA ISTRING[50] (Partner);
-city 'Город' = DATA ISTRING[30] (Partner);
-state 'Область' = DATA ISTRING[30] (Partner);
-zip 'Почтовый индекс' = DATA ISTRING[10] (Partner);
+address 'Адрес' = DATA ISTRING[100] (Partner) CHARWIDTH 30;
+city 'Город' = DATA ISTRING[50] (Partner) CHARWIDTH 12;
+state 'Область' = DATA ISTRING[50] (Partner) CHARWIDTH 12;
+zip 'Почтовый индекс' = DATA ISTRING[6] (Partner);
 
-csvAddress 'Адрес' (Partner p) = CONCAT ', ', address(p), city(p), state(p), zip(p);
-linesAddress 'Адрес' (Partner p) = CONCAT '\n ', address(p), city(p), state(p), zip(p);
+csvAddress 'Адрес' (Partner p) = CONCAT ', ', address(p), city(p), state(p) IF NOT state(p) = city(p), zip(p);
+linesAddress 'Адрес' (Partner p) = CONCAT '\n ', address(p), city(p), state(p) IF NOT state(p) = city(p), zip(p);
 
 phone 'Телефон' = DATA ISTRING[30] (Partner);
 email 'Электронная почта' = DATA ISTRING[30] (Partner);
@@ -126,6 +127,20 @@ FORM dialogPartners 'Выбор контрагента'
     
     LIST Partner OBJECT p
 ;
+
+DESIGN dialogPartners {
+    OBJECTS {
+        NEW filters FIRST {
+            alignment = STRETCH;
+            NEW nameFilter {
+                alignment = STRETCH;
+                type = CONTAINERH;
+                MOVE PROPERTY(nameFilter());
+                MOVE PROPERTY(clearNameFilter());
+            }
+        }
+    }
+}
 
 NAVIGATOR {
     masterData {

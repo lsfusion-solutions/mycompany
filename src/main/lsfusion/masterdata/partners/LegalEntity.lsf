@@ -6,13 +6,18 @@ NAMESPACE MasterData;
 
 CLASS LegalEntity 'Организация';
 
-name 'Название' = DATA ISTRING[50] (LegalEntity) CHARWIDTH 12;
+name 'Наименование' = DATA ISTRING[50] (LegalEntity) CHARWIDTH 15;
+
+dataFullName = DATA ISTRING[200] (LegalEntity) CHARWIDTH 25;
+fullName 'Полное наименование' (LegalEntity l) = OVERRIDE dataFullName(l), name(l);  
+
 website 'Веб сайт' = DATA ISTRING[30](LegalEntity);
 
 // Наследуем организацию от контрагента
 EXTEND CLASS LegalEntity : Partner;
 
 name (LegalEntity l) += name(l);
+fullName (LegalEntity l) += fullName(l);
 
 EXTEND CLASS PartnerType {
     legalEntity 'Организация'
@@ -21,12 +26,13 @@ EXTEND CLASS PartnerType {
 type (Partner p) += WHEN p IS LegalEntity THEN PartnerType.legalEntity;
 
 EXTEND FORM partner
-    PROPERTIES(p) name[LegalEntity], website
+    PROPERTIES(p) name[LegalEntity], fullName, website
 ;
 
 DESIGN partner {
     headerDetails {
         MOVE PROPERTY(name(p));
+        MOVE PROPERTY(fullName(p));
     }
     headerColumn2 {
         MOVE PROPERTY(website(p));
