@@ -4,7 +4,7 @@ REQUIRE LegalEntityRu, PartnerPurchase, PartnerSales;
 
 NAMESPACE MasterData;
 
-legalEntityExportRu 'Экспорт ИНН и ОКПО' () {
+legalEntityExportRu 'Экспорт юридических данных' () {
     NEWSESSION {
         IF NOT (GROUP SUM 1 IF LegalEntity l IS LegalEntity) THEN {
             NEW l = LegalEntity {
@@ -14,22 +14,26 @@ legalEntityExportRu 'Экспорт ИНН и ОКПО' () {
         }
             
         LOCAL f = EXCELFILE ();
-        EXPORT XLSX HEADER FROM 'Код' = id(LegalEntity l), 'ИНН' = inn(l), 'ОКПО' = okpo(l) WHERE l IS LegalEntity TO f;   
+        EXPORT XLSX HEADER FROM 'Код' = id(LegalEntity l), 'ИНН' = inn(l), 'КПП' = kpp(l), 'ОКПО' = okpo(l), 'ОГРН' = ogrn(l) WHERE l IS LegalEntity TO f;   
         open(f());
     }
 }
 
-legalEntityImportRu 'Импорт ИНН и ОКПО' () {
+legalEntityImportRu 'Импорт юридических данных' () {
     LOCAL id = STRING[50] (INTEGER);
     LOCAL inn = ISTRING[10] (INTEGER);
+    LOCAL kpp = ISTRING[9] (INTEGER);
     LOCAL okpo = ISTRING[8] (INTEGER);
+    LOCAL ogrn = ISTRING[8] (INTEGER);
            
     INPUT f = EXCELFILE DO {
         NEWSESSION {
-            IMPORT XLS HEADER FROM f TO id, inn, okpo;
+            IMPORT XLS HEADER FROM f TO id, inn, kpp, okpo, ogrn;
             FOR id(LegalEntity l) = id(INTEGER j) DO {
                 inn(l) <- inn(j);
+                kpp(l) <- kpp(j);
                 okpo(l) <- okpo(j);
+                ogrn(l) <- ogrn(j);
             }            
             
             APPLY;

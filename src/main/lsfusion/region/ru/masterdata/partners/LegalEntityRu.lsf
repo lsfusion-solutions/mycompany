@@ -7,20 +7,27 @@ NAMESPACE MasterData;
 inn 'ИНН' = DATA STRING[10] (LegalEntity);
 legalEntityInn = GROUP AGGR LegalEntity b BY inn(b);
 
+kpp 'КПП' = DATA STRING[9] (LegalEntity);
+
 okpo 'ОКПО' = DATA STRING[8] (LegalEntity);
 legalEntityOkpo = GROUP AGGR LegalEntity b BY okpo(b);
 
+ogrn 'ОГРН' = DATA STRING[13] (LegalEntity);
+legalEntityOgrn = GROUP AGGR LegalEntity b BY ogrn(b);
+
 EXTEND FORM partner
-    PROPERTIES(p) inn, okpo
+    PROPERTIES(p) inn, kpp, okpo, ogrn
 ;
 
 DESIGN partner {
     legalInfoOptions {
         MOVE PROPERTY(inn(p));
+        MOVE PROPERTY(kpp(p));
         MOVE PROPERTY(okpo(p));
+        MOVE PROPERTY(ogrn(p));
     }
 }
 
 EXTEND FORM partners
-    PROPERTIES(p) READONLYIF isReadonly() GRID inn, okpo
+    PROPERTIES(p) READONLYIF isReadonly() GRID inn, kpp, okpo, ogrn
 ;
