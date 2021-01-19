@@ -1,0 +1,106 @@
+MODULE DaDataLegalEntityFind;
+
+REQUIRE DaDataAuthentication, LegalEntityRu;
+
+NAMESPACE DaData;
+
+// https://dadata.ru/api/find-party/
+
+short = DATA LOCAL ISTRING[50] (INTEGER);  // Краткое фирменное наименование без указания ОПФ и кавычек
+full = DATA LOCAL ISTRING[200] (INTEGER);  // Полное фирменное наименование без указания ОПФ и кавычек
+short_with_opf = DATA LOCAL ISTRING[200] (INTEGER);  // Краткое фирменное наименование
+full_with_opf = DATA LOCAL ISTRING[200] (INTEGER);  // Полное фирменное наименование
+
+inn = DATA LOCAL STRING[10] (INTEGER);
+kpp = DATA LOCAL STRING[9] (INTEGER);
+okpo = DATA LOCAL STRING[8] (INTEGER); 
+ogrn_date = DATA LOCAL ISTRING (INTEGER);
+ogrn = DATA LOCAL ISTRING[13] (INTEGER);
+address = DATA LOCAL ISTRING[100] (INTEGER);
+
+director = DATA LOCAL ISTRING (INTEGER);
+
+region_with_type = DATA LOCAL ISTRING[50] (INTEGER);
+city_with_type = DATA LOCAL ISTRING[50] (INTEGER);
+postal_code = DATA LOCAL ISTRING[6] (INTEGER);
+
+GROUP data; // в этих группах выдержка из структура JSON, задокументированного по ссылке:
+GROUP management : data;  // https://dadata.ru/api/find-party/
+GROUP name : data;
+GROUP address : data;
+GROUP addressData EXTID 'data' : address;
+
+FORM daData  
+    OBJECTS i = INTEGER EXTID 'suggestions' 
+    PROPERTIES IN data        inn = inn(i), kpp = kpp(i), okpo = okpo(i), ogrn_date = ogrn_date(i), ogrn = ogrn(i) 
+    PROPERTIES IN management  name = director(i)
+    PROPERTIES IN name        short = short(i), full = full(i), 
+                              short_with_opf = short_with_opf(i), full_with_opf = full_with_opf(i)
+    PROPERTIES IN address     value = address(i)
+    PROPERTIES IN addressData region_with_type = region_with_type(i), city_with_type = city_with_type(i), postal_code = postal_code(i) 
+;
+
+findByIdParty (STRING code) {
+    LOCAL result = FILE();
+    TRY {
+        EXTERNAL HTTP POST url() + '/findById/party' HEADERS headers PARAMS JSONFILE ('\{"query": "' + code + '"\}') TO result;
+    } CATCH {
+        fileToString(result());
+        MESSAGE 'Ошибка при чтении данных контрагента из DaData : \n' + (OVERRIDE messageCaughtException(), '') + '\n' + (OVERRIDE resultString(), '');
+        RETURN;
+    }
+    IMPORT daData JSON FROM result();
+}
+
+fill (LegalEntity l, STRING[13] c) {
+    findByIdParty(c);
+    IF short(0) THEN {
+        name(l) <- short(0);
+        dataFullName(l) <- full_with_opf(0);
+        
+        inn(l) <- inn(0);
+        kpp(l) <- kpp(0);
+        okpo(l) <- okpo(0);
+        ogrn(l) <- ogrn(0);
+        
+        state(l) <- region_with_type(0);
+        city(l) <- city_with_type(0);
+        address(l) <- ISTRING[100](replace(replace(address(0), state(l) + ', ', ''), city_with_type(0) + ', ', ''));
+        zip(l) <- postal_code(0);
+    }
+}
+
+code 'ИНН/ОГРН' = DATA LOCAL STRING[13] ();
+changeCode () {
+    INPUT c = STRING[13] DO {
+        code() <- c;
+        IF c AND NOT (legalEntityInn(c) OR legalEntityOkpo(c)) AND url() AND token() THEN {
+            NEWSESSION NESTED (code[]) {
+                NEW l = LegalEntity {
+                    fill(l, c);
+                    IF inn(l) THEN
+                        SHOW partner OBJECTS p = l;
+                }
+            }
+            IF NOT (legalEntityInn(c) OR legalEntityOkpo(c)) THEN code() <- NULL;
+        }
+    }
+}
+
+EXTEND FORM dialogPartners
+    PROPERTIES code() ON CHANGE changeCode()
+    
+    FILTERS inn(p) = code() OR okpo(p) = code() OR NOT code()
+    
+    EVENTS ON INIT { code() <- NULL; }
+;
+
+DESIGN dialogPartners {
+    filters {
+        MOVE PROPERTY(code()) { changeKey = 'F4'; }
+    }
+}
+
+WHEN LOCAL FORMS partner SETCHANGED(inn(LegalEntity l)) DO {
+    fill(l, inn(l));
+}

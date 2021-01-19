@@ -1,0 +1,25 @@
+MODULE DaDataAuthentication;
+
+REQUIRE Utils;
+
+NAMESPACE DaData;
+
+url 'Url к стенду DaData' = DATA STRING ();  // http://suggestions.dadata.ru/suggestions/api/4_1/rs
+token 'Токен' = DATA STRING ();
+
+EXTEND FORM integrationData
+    PROPERTIES() daDataUrl = url, daDataToken = token
+;
+
+DESIGN integrationData {
+    pane {
+        NEW daData {
+            caption = 'DaData';
+            MOVE PROPERTY(daDataUrl);
+            MOVE PROPERTY(daDataToken);
+        }
+    }
+}
+
+headers (STRING name) = CASE
+    WHEN name = 'Authorization' THEN 'Token ' + token();  
