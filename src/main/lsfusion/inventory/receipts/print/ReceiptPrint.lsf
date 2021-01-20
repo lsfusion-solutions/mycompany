@@ -4,16 +4,18 @@ REQUIRE ReceiptDone, DocTemplate;
 
 NAMESPACE Inventory;
 
-addressVendor (Receipt r) = linesAddress(vendor(r)); 
+addressLinesVendor (Receipt r) = addressLines(vendor(r)); 
+addressCsvVendor (Receipt r) = addressCsv(vendor(r)); 
 phoneVendor (Receipt r) = phone(vendor(r));
 
-addressLocation (Receipt r)  = linesAddress(location(r));
+addressLinesLocation (Receipt r)  = addressLines(location(r));
+addressCsvLocation (Receipt r)  = addressCsv(location(r));
 
 FORM printReceipt 'Задание на приемку'
     OBJECTS o = Receipt PANEL 
     PROPERTIES(o) scheduledDateTime, number,
-                  nameVendor, addressVendor, phoneVendor,
-                  nameLocation, addressLocation 
+                  nameVendor, addressLinesVendor, addressCsvVendor, phoneVendor,
+                  nameLocation, addressLinesLocation, addressCsvLocation 
     
     OBJECTS l = ReceiptLine 
     PROPERTIES(l) index, nameProduct, idBarCodeProduct, initialDemand, done

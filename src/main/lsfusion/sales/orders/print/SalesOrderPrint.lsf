@@ -4,18 +4,24 @@ REQUIRE SalesOrder, DocTemplate;
 
 NAMESPACE Sales;
 
+addressLinesCustomer (Order o) = addressLines(customer(o));
 phoneCustomer (Order o) = phone(customer(o));
 
-addressLocation (Order o ) = linesAddress(location(o));
+addressLinesLocation (Order o) = addressLines(location(o));
+addressCsvLocation (Order o) = addressCsv(location(o));
 
-addressCompany (Order o) = csvAddress(company(o));
+addressLinesCompany (Order o) = addressLines(company(o));
+addressCsvCompany (Order o) = addressCsv(company(o));
 phoneCompany (Order o) = phone(company(o));
 
 FORM printOrder 'Заказ покупателя'   
     OBJECTS o = Order PANEL 
     PROPERTIES(o) number, dateTime, scheduledDateTime, nameRepresentative,
-                  nameCustomer, addressCustomer, phoneCustomer, deliveryAddress,   
-                  nameLocation, addressLocation, nameCompany, addressCompany, phoneCompany
+                  nameCustomer, addressLinesCustomer, addressCsvCustomer, 
+                  phoneCustomer, deliveryAddress,   
+                  nameLocation, addressLinesLocation, addressCsvLocation, 
+                  nameCompany, addressLinesCompany, addressCsvCompany, 
+                  phoneCompany
         
     OBJECTS l = OrderLine
     PROPERTIES(l) idItem, nameItem, isService, description, 

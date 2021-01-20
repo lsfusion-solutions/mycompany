@@ -55,18 +55,18 @@ findByIdParty (STRING code) {
 fill (LegalEntity l, STRING[13] c) {
     findByIdParty(c);
     IF short(0) THEN {
-        name(l) <- short(0);
-        dataFullName(l) <- full_with_opf(0);
+        name(l) <- short(0) WHERE NOT name(l);
+        dataFullName(l) <- full_with_opf(0) WHERE NOT dataFullName(l);
         
-        inn(l) <- inn(0);
-        kpp(l) <- kpp(0);
-        okpo(l) <- okpo(0);
-        ogrn(l) <- ogrn(0);
+        inn(l) <- inn(0) WHERE NOT inn(l);
+        kpp(l) <- kpp(0) WHERE NOT kpp(l);
+        okpo(l) <- okpo(0) WHERE NOT okpo(l);
+        ogrn(l) <- ogrn(0) WHERE NOT ogrn(l);
         
-        state(l) <- region_with_type(0);
-        city(l) <- city_with_type(0);
-        address(l) <- ISTRING[100](replace(replace(address(0), state(l) + ', ', ''), city_with_type(0) + ', ', ''));
-        zip(l) <- postal_code(0);
+        state(l) <- region_with_type(0) WHERE NOT state(l);
+        city(l) <- city_with_type(0) WHERE NOT city(l);
+        address(l) <- ISTRING[100](replace(replace(address(0), state(l) + ', ', ''), city_with_type(0) + ', ', '')) WHERE NOT address(l);
+        zip(l) <- postal_code(0) WHERE NOT zip(l);
     }
 }
 
@@ -75,7 +75,7 @@ changeCode () {
     INPUT c = STRING[13] DO {
         code() <- c;
         IF c AND NOT (legalEntityInn(c) OR legalEntityOkpo(c)) AND url() AND token() THEN {
-            NEWSESSION NESTED (code[]) {
+            NEWSESSION {
                 NEW l = LegalEntity {
                     fill(l, c);
                     IF inn(l) THEN

@@ -11,13 +11,13 @@ CLASS ABSTRACT Partner 'Контрагент';
 name 'Наименование' = ABSTRACT ISTRING[92] (Partner) IN id CHARWIDTH 15 NONULL;
 fullName 'Полное наименование' = ABSTRACT ISTRING[200] (Partner) IN id CHARWIDTH 25 NONULL;
 
-address 'Адрес' = DATA ISTRING[100] (Partner) CHARWIDTH 30;
+address 'Адрес' = DATA ISTRING[150] (Partner) CHARWIDTH 30;
 city 'Город' = DATA ISTRING[50] (Partner) CHARWIDTH 12;
 state 'Область' = DATA ISTRING[50] (Partner) CHARWIDTH 12;
 zip 'Почтовый индекс' = DATA ISTRING[6] (Partner);
 
-csvAddress 'Адрес' (Partner p) = CONCAT ', ', address(p), city(p), state(p) IF NOT state(p) = city(p), zip(p);
-linesAddress 'Адрес' (Partner p) = CONCAT '\n ', address(p), city(p), state(p) IF NOT state(p) = city(p), zip(p);
+addressCsv 'Адрес' (Partner p) = CONCAT ', ', address(p), city(p), state(p) IF NOT state(p) = city(p), zip(p);
+addressLines 'Адрес' (Partner p) = CONCAT '\n ', address(p), city(p), state(p) IF NOT state(p) = city(p), zip(p);
 
 phone 'Телефон' = DATA ISTRING[30] (Partner);
 email 'Электронная почта' = DATA ISTRING[30] (Partner);
@@ -88,7 +88,7 @@ DESIGN partner {
 
 FORM partners 'Контрагенты'
     OBJECTS p = Partner
-    PROPERTIES(p) READONLYIF isReadonly() name, id, nameType, csvAddress, phone, email 
+    PROPERTIES(p) READONLYIF isReadonly() name, id, nameType, addressCsv, phone, email 
     PROPERTIES(p) NEWSESSION EDIT, DELETE 
     FILTERGROUP active
         FILTER 'Активный' active(p) 'F10' DEFAULT

@@ -4,7 +4,8 @@ REQUIRE ItemPrintType, ItemAttribute, BarCode;
 
 NAMESPACE MasterData;
 
-addressCompany (PrintItemType t) = linesAddress(company(t));
+addressLinesCompany (PrintItemType t) = addressLines(company(t));
+addressCsvCompany (PrintItemType t) = addressCsv(company(t));
 phoneCompany (PrintItemType t) = phone(company(t));
 emailCompany (PrintItemType t) = email(company(t));
 websiteCompany (PrintItemType t) = website(company(t));
@@ -13,7 +14,7 @@ count 'Кол-во' = DATA LOCAL INTEGER (Item);
 
 FORM printItem 'Этикетка'
     OBJECTS pt = PrintItemType PANEL
-    PROPERTIES(pt) name, nameCompany, addressCompany, phoneCompany, emailCompany, websiteCompany
+    PROPERTIES(pt) name, nameCompany, addressLinesCompany, addressCsvCompany, phoneCompany, emailCompany, websiteCompany
     REPORT OVERRIDE file(pt), setExtension(RAWFILE(template(pt)), 'path')
 
     OBJECTS i = Item

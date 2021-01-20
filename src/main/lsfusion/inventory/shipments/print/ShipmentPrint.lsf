@@ -7,18 +7,23 @@ NAMESPACE Inventory;
 nameCompany (Shipment s) = name(company(s));
 fullNameCompany (Shipment s) = fullName(company(s));
 
-addressCompany (Shipment i) = address(company(i));
+addressLinesCompany (Shipment i) = addressLines(company(i));
+addressCsvCompany (Shipment i) = addressCsv(company(i));
 phoneCompany (Shipment i) = phone(company(i));
 emailCompany (Shipment i) = email(company(i));
 websiteCompany (Shipment i) = website(company(i));
 
 fullNameCustomer (Shipment s) = fullName(customer(s)); 
 
-addressCustomer 'Адрес' (Shipment s) = linesAddress(customer(s)); 
-phoneCustomer 'Телефон' (Shipment s) = phone(customer(s));
+addressLinesCustomer (Shipment s) = addressLines(customer(s)); 
+addressCsvCustomer (Shipment s) = addressLines(customer(s)); 
+phoneCustomer (Shipment s) = phone(customer(s));
 
-addressLocation 'Адрес' (Shipment s)  = linesAddress(location(s));
-addressToLocation 'Адрес' (Shipment s)  = linesAddress(toLocation(s));
+addressLinesLocation (Shipment s)  = addressLines(location(s));
+addressCsvLocation (Shipment s)  = addressCsv(location(s));
+
+addressLinesToLocation (Shipment s)  = addressLines(toLocation(s));
+addressCsvToLocation (Shipment s)  = addressCsv(toLocation(s));
 
 note 'Примечание' = ABSTRACT TEXT (ShipmentLine);
 
@@ -29,12 +34,12 @@ FORM printShipment 'Задание на отгрузку'
     OBJECTS o = Shipment PANEL 
     PROPERTIES(o) scheduledDateTime, executionDateTime, number,
                   nameCompany, fullNameCompany,
-                  addressCompany, phoneCompany, 
+                  addressLinesCompany, addressCsvCompany, phoneCompany, 
                   emailCompany, websiteCompany,
                   nameCustomer, fullNameCustomer,
-                  addressCustomer, phoneCustomer,
-                  nameLocation, addressLocation,
-                  nameToLocation, addressToLocation
+                  addressLinesCustomer, addressCsvCustomer, phoneCustomer,
+                  nameLocation, addressLinesLocation, addressCsvLocation,
+                  nameToLocation, addressLinesToLocation, addressCsvToLocation
     
     OBJECTS l = ShipmentLine
     PROPERTIES(l) index, nameProduct, initialDemand, 

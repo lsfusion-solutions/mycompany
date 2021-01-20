@@ -12,8 +12,8 @@ EXTEND CLASS PartnerType {
 
 type (Partner p) += WHEN p IS Employee THEN PartnerType.employee;
 
-WHEN CHANGED(address(Employee e)) AND NOT CHANGED(postAddress(e)) DO postAddress(e) <- (address(e));
-WHEN CHANGED(postAddress(Employee e)) AND NOT CHANGED(address(e)) DO address(e) <- (postAddress(e));
+WHEN CHANGED(address(Employee e)) AND NOT CHANGED(postAddress(e)) DO postAddress(e) <- address(e);
+WHEN CHANGED(postAddress(Employee e)) AND NOT CHANGED(address(e)) DO address(e) <- postAddress(e);
 
 CONSTRAINT Employee e IS Employee AND NOT legalEntity(e) IS Company
     CHECKED BY legalEntity

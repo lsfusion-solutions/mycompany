@@ -33,7 +33,7 @@ CONSTRAINT customer(Order o) AND NOT isCustomer(customer(o))
                 CHECKED BY customer[Order]
                 MESSAGE 'Контрагент заказа покупателя должен быть покупателем';
 
-addressCustomer 'Адрес получателя' (Order o) = csvAddress(customer(o));
+addressCsvCustomer 'Адрес получателя' (Order o) = addressCsv(customer(o));
 
 // Quotation
 validity 'Срок действия' = DATA DATETIME (Order);
@@ -56,7 +56,7 @@ scheduledDateTime(Order o) <- currentDateTime() WHEN SET(o IS Order);
 scheduledDate 'Дата поставки' (Order o) = DATE(scheduledDateTime(o));
 
 deliveryAddress 'Адрес доставки' = DATA STRING (Order);
-WHEN LOCAL CHANGED(customer(Order o)) DO deliveryAddress(o) <- addressCustomer(o);
+WHEN LOCAL CHANGED(customer(Order o)) DO deliveryAddress(o) <- addressCsvCustomer(o);
 
 location = DATA Location (Order) PREREAD;
 nameLocation 'Место хранения' (Order o) = name(location(o));
@@ -125,7 +125,7 @@ FORM order 'Заказ покупателя'
     OBJECTS o = Order PANEL
     PROPERTIES(o) nameType, dateTime, number, nameCustomer, nameCompany, nameLocation,
                   validity,
-                  namePaymentTerms, addressCustomer,
+                  namePaymentTerms, addressCsvCustomer,
                   scheduledDateTime, deliveryAddress, 
                   nameRepresentative, customerReference
     PROPERTIES(o) READONLY untaxedAmount, taxAmount, amount
@@ -181,7 +181,7 @@ DESIGN order {
                     caption = 'Расчеты';
                     alignment = STRETCH;
                     MOVE PROPERTY(namePaymentTerms(o));                         
-                    MOVE PROPERTY(addressCustomer(o));
+                    MOVE PROPERTY(addressCsvCustomer(o));
                 }
                 NEW shippingInformation {
                     caption = 'Поставка';
@@ -220,7 +220,7 @@ FORM orders 'Заказы покупателей'
      PROPERTIES(o) READONLYIF isReadonly()
                             nameType, dateTime, number, nameCustomer,
                             validity,
-                            namePaymentTerms, addressCustomer,
+                            namePaymentTerms, addressCsvCustomer,
                             scheduledDateTime, deliveryAddress, nameLocation, 
                             nameRepresentative, customerReference,
                             untaxedAmount, taxAmount, amount
