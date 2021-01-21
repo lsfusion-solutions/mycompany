@@ -1,7 +1,7 @@
 MODULE Shipment;
 
 REQUIRE System, Time, DateUtils,
-        InventorySettings, LocationEmployee, Partner, Product,
+        InventorySettings, LocationEmployee, Partner, Product, Department,
         ShipmentType, ItemSales, PartnerSales, BarCode, Doc, ResLedger;
 
 NAMESPACE Inventory;
@@ -48,10 +48,17 @@ CONSTRAINT isTransfer(type(Shipment s)) AND NOT toLocation(s) MESSAGE 'Не за
 // customer
 customer = DATA Partner (Shipment) INDEXED;
 nameCustomer 'Покупатель' (Shipment s) = name(customer(s));
+addressCsvCustomer 'Адрес покупателя' (Shipment s) = addressCsv(customer(s)); 
 
 CONSTRAINT customer(Shipment s) AND NOT isCustomer(customer(s)) 
                 CHECKED BY customer[Shipment]
                 MESSAGE 'Контрагент должен быть покупателем';
+
+@defineDocDepartment(shipment, customer);
+
+deliveryAddress 'Адрес доставки' = DATA STRING (Shipment) CHARWIDTH 20;
+WHEN LOCAL (CHANGED(customer(Shipment s)) OR SETCHANGED(department(s))) AND NOT CHANGED(deliveryAddress(s)) DO 
+    deliveryAddress(s) <- OVERRIDE addressCsv(department(s)), addressCsvCustomer(s);
 
 note 'Примечание' = DATA ISTRING[50] (Shipment);
 
@@ -102,8 +109,9 @@ edit (ShipmentLine l) + { edit(shipment(l)); }
 FORM shipment 'Отгрузка'
     OBJECTS s = Shipment PANEL 
     PROPERTIES(s) nameType, scheduledDateTime, number, 
-                  nameCustomer SHOWIF NOT isTransfer(type(s)), nameLocation, nameToLocation SHOWIF isTransfer(type(s)), 
-                  note
+                  nameCustomer SHOWIF NOT isTransfer(type(s)), nameDepartment SHOWIF countDepartment(customer(s)), 
+                  nameLocation, nameToLocation SHOWIF isTransfer(type(s)),
+                  deliveryAddress, note
                   
     OBJECTS l = ShipmentLine
     PROPERTIES(l) index READONLY, nameProduct, nameUom, idBarCodeProduct, idProduct, 
@@ -128,6 +136,7 @@ DESIGN shipment {
                 }
                 NEW headerRight {
                     MOVE PROPERTY(nameCustomer(s));
+                    MOVE PROPERTY(nameDepartment(s));
                     MOVE PROPERTY(nameLocation(s)) { notNull = TRUE; }           
                     MOVE PROPERTY(nameToLocation(s)) { notNull = TRUE; }           
                 }
@@ -151,6 +160,16 @@ DESIGN shipment {
                     type = TABBED;
                 }                
             }                  
+            NEW otherInformation {
+                caption = 'Прочая информация';
+                type = COLUMNS;
+                columns = 2;
+                NEW shippingInformation {
+                    caption = 'Поставка';
+                    alignment = STRETCH;
+                    MOVE PROPERTY(deliveryAddress(s));
+                }
+            }
         }
     }
     TOOLBARBOX {

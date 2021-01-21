@@ -1,0 +1,31 @@
+MODULE DepartmentPartner;
+
+REQUIRE Department;
+
+NAMESPACE MasterData;
+
+newDepartment 'Подразделение' (Partner p) {
+    NESTEDSESSION {
+        NEW d = Department {
+            partner(d) <- p;
+            SHOW department OBJECTS d = d;  
+        }
+    }
+} IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+
+EXTEND FORM partner
+    OBJECTS ad = Department
+    PROPERTIES(ad) name, address, city, state, zip
+    PROPERTIES(ad) EDIT NESTEDSESSION, DELETE
+    PROPERTIES newDepartment(p) DRAW ad TOOLBAR
+     
+    FILTERS partner(ad) = p
+;
+
+DESIGN partner {
+    tabs {
+        MOVE BOX(ad) {
+            caption = (CONCAT ' ', 'Подразделения', '(' + countDepartment(p) + ')');
+        }
+    }
+}

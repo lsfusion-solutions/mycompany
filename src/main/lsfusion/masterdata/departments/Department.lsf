@@ -1,0 +1,76 @@
+MODULE Department;
+
+REQUIRE Partner;
+
+NAMESPACE MasterData;
+
+CLASS Department 'Подразделение';
+
+@defineID(department, 'Подразделения', 'ПД', 4);
+
+partner 'Контрагент' = DATA Partner (Department) NONULL DELETE;
+
+countDepartment (Partner p) = GROUP SUM 1 IF partner(Department d) = p;  
+
+name 'Наименование' = DATA ISTRING[100] (Department) CHARWIDTH 20;
+
+address 'Адрес' = DATA ISTRING[150] (Department) CHARWIDTH 30;
+city 'Город' = DATA ISTRING[50] (Department) CHARWIDTH 12;
+state 'Область' = DATA ISTRING[50] (Department) CHARWIDTH 12;
+zip 'Почтовый индекс' = DATA ISTRING[6] (Department);
+
+addressCsv 'Адрес' (Department a) = CONCAT ', ', address(a), city(a), state(a) IF NOT state(a) = city(a), zip(a);
+addressLines 'Адрес' (Department a) = CONCAT '\n ', address(a), city(a), state(a) IF NOT state(a) = city(a), zip(a);
+
+FORM department 'Подразделение'
+    OBJECTS d = Department PANEL
+    PROPERTIES(d) id, name, address, city, state, zip 
+    
+    EDIT Department OBJECT d
+;
+
+DESIGN department {
+    OBJECTS {
+        NEW header {
+            type = CONTAINERH;
+            NEW headerLeft {
+                NEW params {
+                    caption = 'Параметры';
+                    type = CONTAINERH;
+                    alignment = STRETCH;
+                    MOVE PROPERTY(id(d));
+                    MOVE PROPERTY(name(d));
+                }
+                NEW address {
+                    caption = 'Адрес';
+                    type = CONTAINERH;
+                    alignment = STRETCH;
+                    MOVE PROPERTY(address(d));
+                    MOVE PROPERTY(city(d));
+                    MOVE PROPERTY(state(d));
+                    MOVE PROPERTY(zip(d));
+                }
+            }
+            NEW headerRight;
+        }
+    }
+}
+
+FORM dialogDepartments 'Подразделения'
+    OBJECTS d = Department
+    PROPERTIES(d) READONLY name, address, city, state, zip
+    
+    LIST Department OBJECT d
+;
+
+META defineDocDepartment (doc, property)
+    department = DATA Department (###doc) INDEXED;
+    nameDepartment 'Подразделение' (###doc i) = name(department(i));
+    
+    CONSTRAINT department(###doc i) AND NOT property(i) = partner(department(i))
+        CHECKED BY department[###doc]
+        MESSAGE 'Контрагент документа не соответствует контрагенту подразделения';
+
+    WHEN LOCAL CHANGED(property(###doc i)) AND NOT property(i) = partner(department(i)) DO
+        department(i) <- NULL;  
+END

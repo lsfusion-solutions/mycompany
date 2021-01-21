@@ -1,7 +1,7 @@
 MODULE SalesOrder;
 
 REQUIRE Time, MetaNumerator, Employee, Company, DateUtils,
-        MetaTax, TaxItem, BarCode, LocationEmployee,
+        MetaTax, TaxItem, BarCode, LocationEmployee, Department,
         SalesSettings, PartnerSales, ItemSales, SalesOrderType,
         PaymentTermsSales, SalesPricelistValue, Doc;  
 
@@ -26,14 +26,15 @@ dateTime(Order o) <- currentDateTime() WHEN SET(o IS Order);
 numberDate 'Описание' (Order o) = number(o) + ' от ' + dateTime(o) IN id;
 
 // customer
-customer 'Заказчик' = DATA Partner (Order) NONULL;
-nameCustomer 'Заказчик' (Order o) = name(customer(o));
+customer 'Покупатель' = DATA Partner (Order) NONULL;
+nameCustomer 'Покупатель' (Order o) = name(customer(o));
+addressCsvCustomer 'Адрес покупателя' (Order o) = addressCsv(customer(o));
 
 CONSTRAINT customer(Order o) AND NOT isCustomer(customer(o))
                 CHECKED BY customer[Order]
                 MESSAGE 'Контрагент заказа покупателя должен быть покупателем';
 
-addressCsvCustomer 'Адрес получателя' (Order o) = addressCsv(customer(o));
+@defineDocDepartment(order, customer);
 
 // Quotation
 validity 'Срок действия' = DATA DATETIME (Order);
@@ -55,8 +56,9 @@ scheduledDateTime(Order o) <- currentDateTime() WHEN SET(o IS Order);
 
 scheduledDate 'Дата поставки' (Order o) = DATE(scheduledDateTime(o));
 
-deliveryAddress 'Адрес доставки' = DATA STRING (Order);
-WHEN LOCAL CHANGED(customer(Order o)) DO deliveryAddress(o) <- addressCsvCustomer(o);
+deliveryAddress 'Адрес доставки' = DATA STRING (Order) CHARWIDTH 20;
+WHEN LOCAL (CHANGED(customer(Order o)) OR CHANGED(department(o))) AND NOT CHANGED(deliveryAddress(o)) DO 
+    deliveryAddress(o) <- OVERRIDE addressCsv(department(o)), addressCsvCustomer(o);
 
 location = DATA Location (Order) PREREAD;
 nameLocation 'Место хранения' (Order o) = name(location(o));
@@ -123,7 +125,9 @@ nameCustomer 'Заказчик' (OrderLine l) = nameCustomer(order(l));
 
 FORM order 'Заказ покупателя'
     OBJECTS o = Order PANEL
-    PROPERTIES(o) nameType, dateTime, number, nameCustomer, nameCompany, nameLocation,
+    PROPERTIES(o) nameType, dateTime, number, 
+                  nameCustomer, nameDepartment SHOWIF countDepartment(customer(o)), 
+                  nameCompany, nameLocation,
                   validity,
                   namePaymentTerms, addressCsvCustomer,
                   scheduledDateTime, deliveryAddress, 
@@ -151,6 +155,7 @@ DESIGN order {
             }
             NEW headerRight {
                 MOVE PROPERTY(nameCustomer(o)) { notNull = TRUE; } 
+                MOVE PROPERTY(nameDepartment(o)); 
                 MOVE PROPERTY(nameCompany(o)) { notNull = TRUE; }
                 MOVE PROPERTY(nameLocation(o));               
             }    
@@ -218,7 +223,7 @@ background = ABSTRACT CASE COLOR (Order);
 FORM orders 'Заказы покупателей'
      OBJECTS o = Order BACKGROUND background(o)
      PROPERTIES(o) READONLYIF isReadonly()
-                            nameType, dateTime, number, nameCustomer,
+                            nameType, dateTime, number, nameCustomer, nameDepartment,
                             validity,
                             namePaymentTerms, addressCsvCustomer,
                             scheduledDateTime, deliveryAddress, nameLocation, 

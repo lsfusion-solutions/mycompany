@@ -1,7 +1,7 @@
 MODULE Invoice;
 
 REQUIRE InvoicingSettings, TaxItem, BankAccount, 
-        MetaTax, PaymentTermsSales, DateUtils,
+        MetaTax, PaymentTermsSales, DateUtils, Department,
         ItemSales, PartnerSales, Company, 
         BarCode, MetaNumerator, Doc,
         InvoiceType, Product;
@@ -29,10 +29,14 @@ numberDate 'Описание' (Invoice i) = number(i) + ' от ' + dateTime(i) I
 
 // customer
 customer = DATA Partner (Invoice);
-nameCustomer 'Покупатель' (Invoice b) = name(customer(b));
+nameCustomer 'Покупатель' (Invoice i) = name(customer(i));
+addressCsvCustomer 'Адрес покупателя' (Invoice i) = addressCsv(customer(i));
+
 CONSTRAINT customer(Invoice b) AND NOT isCustomer(customer(b)) 
                 CHECKED BY customer
                 MESSAGE 'Контрагент должен быть покупателем';
+
+@defineDocDepartment(invoice, customer);
 
 // company
 company 'Компания' = DATA Company (Invoice) NONULL;
@@ -68,6 +72,10 @@ WHEN LOCAL CHANGED(company(Invoice b)) DO companyAccount(b) <- defaultAccount(co
 CONSTRAINT companyAccount(Invoice b) AND NOT company(b) = holder(companyAccount(b))
     CHECKED BY companyAccount
     MESSAGE 'Счет должен принадлежать выбранной компании';
+
+deliveryAddress 'Адрес доставки' = DATA STRING (Invoice) CHARWIDTH 20;
+WHEN LOCAL (CHANGED(customer(Invoice i)) OR CHANGED(department(i))) AND NOT CHANGED(deliveryAddress(i)) DO 
+    deliveryAddress(i) <- OVERRIDE addressCsv(department(i)), addressCsvCustomer(i);
 
 customerReference 'Код покупателя' = DATA STRING[30] (Invoice);
 note 'Примечание' = DATA ISTRING[50] (Invoice);
@@ -134,9 +142,9 @@ edit (InvoiceLine l) + { edit(invoice(l)); }
 
 FORM invoice 'Реализация'
     OBJECTS  i = Invoice PANEL 
-    PROPERTIES(i) nameType, dateTime, number, nameCustomer, nameCompany,
+    PROPERTIES(i) nameType, dateTime, number, nameCustomer, nameDepartment SHOWIF countDepartment(customer(i)), nameCompany,
                   namePaymentTerms, dueDateTime, nameCustomerAccount, nameCompanyAccount,
-                  customerReference, note
+                  deliveryAddress, customerReference, note
         
     OBJECTS l = InvoiceLine
     PROPERTIES(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, 
@@ -159,6 +167,7 @@ DESIGN invoice {
             }
             NEW headerRight {
                 MOVE PROPERTY(nameCustomer(i));
+                MOVE PROPERTY(nameDepartment(i));
                 MOVE PROPERTY(nameCompany(i)) { notNull = TRUE; }           
             }
             NEW relatedDoc {
@@ -191,6 +200,10 @@ DESIGN invoice {
                     MOVE PROPERTY(dueDateTime(i)); 
                     MOVE PROPERTY(nameCompanyAccount(i));
                     MOVE PROPERTY(nameCustomerAccount(i));              
+                }
+                NEW shippingInformation {
+                    caption = 'Доставка';
+                    MOVE PROPERTY(deliveryAddress(i));
                 }           
                 NEW invoiceInformat {
                     caption = 'Прочие';
