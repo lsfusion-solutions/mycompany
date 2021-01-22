@@ -1,10 +1,10 @@
 MODULE DaDataAuthentication;
 
-REQUIRE Utils;
+REQUIRE Utils, SystemEvents;
 
 NAMESPACE DaData;
 
-url 'Url к стенду DaData' = DATA STRING ();  // http://suggestions.dadata.ru/suggestions/api/4_1/rs
+url 'Url к стенду DaData' = DATA STRING ();
 token 'Токен' = DATA STRING ();
 
 EXTEND FORM integrationData
@@ -23,3 +23,9 @@ DESIGN integrationData {
 
 headers (STRING name) = CASE
     WHEN name = 'Authorization' THEN 'Token ' + token();  
+    
+onStarted() + {
+    IF NOT url() THEN {
+        url() <- 'http://suggestions.dadata.ru/suggestions/api/4_1/rs';
+    }
+}
