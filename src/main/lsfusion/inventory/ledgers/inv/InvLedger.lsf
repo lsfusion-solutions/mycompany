@@ -50,7 +50,7 @@ outQuantityA 'Кол-во отправленное' (Location ll, Product p, DAT
 outQuantityB 'Кол-во отправленное' (Location ll, Product p, DATETIME dt) = outQuantity(ll, p) (-)
     GROUP SUM quantity(InvLedger l) IF active(l) AND  fromLocation(l) = ll AND product(l) = p AND dateTime(l) >= dt;
 
-onHand 'Текущий остаток' (Location ll, Product p) = inQuantity(ll, p) (-) outQuantity(ll, p) MATERIALIZED;
+onHand 'Остаток' (Location ll, Product p) = inQuantity(ll, p) (-) outQuantity(ll, p) MATERIALIZED;
 prevOnHand (Location ll, Product p) = PREV(onHand(ll, p));
 
 onHandA 'Остаток' (Location ll, Product p, DATETIME dt) = 

@@ -31,15 +31,15 @@ outQuantityA 'Кол-во отправленное' (Location ll, Lot l, DATETIM
 outQuantityB 'Кол-во отправленное' (Location ll, Lot l, DATETIME dt) = outQuantity(ll, l) (-)
     GROUP SUM quantity(InvLedger il, Lot lt) IF active(il) AND  fromLocation(il) = ll AND lt = l AND dateTime(il) >= dt;
 
-onHand 'Текущий остаток' (Location ll, Lot l) = inQuantity(ll, l) (-) outQuantity(ll, l) MATERIALIZED;
+onHand 'Остаток' (Location ll, Lot l) = inQuantity(ll, l) (-) outQuantity(ll, l) MATERIALIZED;
 prevOnHand (Location ll, Lot l) = PREV(onHand(ll, l));
 
-onHandLot 'Текущий остаток (партии)' (Location ll, Product p) = GROUP SUM onHand(ll, Lot l) IF product(l) = p;
+onHandLot 'Остаток (партии)' (Location ll, Product p) = GROUP SUM onHand(ll, Lot l) IF product(l) = p;
 
-onHand 'Текущий остаток' (Location ll, Lot l, DATETIME dt) = 
+onHand 'Остаток' (Location ll, Lot l, DATETIME dt) = 
                                                             inQuantity(ll, l, dt) (-) outQuantity(ll, l, dt) IF dt;
 
-onHandLot 'Текущий остаток (партии)' (Location ll, Product p, DATETIME dt) = GROUP SUM onHand(ll, Lot l, dt) IF product(l) = p;                                                            
+onHandLot 'Остаток (партии)' (Location ll, Product p, DATETIME dt) = GROUP SUM onHand(ll, Lot l, dt) IF product(l) = p;                                                            
 
 onHandA 'Остаток' (Location ll, Lot l, DATETIME dt) = 
                                                             inQuantityA(ll, l, dt) (-) outQuantityA(ll, l, dt) IF dt;
