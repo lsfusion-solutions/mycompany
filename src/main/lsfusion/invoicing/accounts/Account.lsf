@@ -9,6 +9,8 @@ CLASS ABSTRACT Account 'Счет';
 holder 'Держатель счета' = DATA Partner (Account) NONULL;
 nameAccountHolder 'Держатель счета' (Account a) = name(holder(a)) IN id;
 
+countAccount (Partner p) = GROUP SUM 1 IF holder(Account a) = p;  
+
 dataDefaultAccount = DATA Account (Partner);
 calcDefaultAccount (Partner p) = GROUP LAST Account a ORDER DESC a WHERE holder(a) = p;
 
@@ -94,7 +96,7 @@ EXTEND FORM partner
 DESIGN partner {
     tabs {
         NEW accounts FIRST {
-            caption = 'Счета';
+            caption = (CONCAT ' ', 'Счета', '(' + countAccount(p) + ')');
             MOVE BOX(a);
         }
     }

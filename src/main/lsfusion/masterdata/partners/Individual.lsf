@@ -14,6 +14,8 @@ legalEntity = DATA LegalEntity (Individual) NONULL;
 idLegalEntity 'Организация' (Individual i) = id(legalEntity(i));
 nameLegalEntity 'Организация' (Individual i) = name(legalEntity(i));
 
+countIndividual (Partner p) = GROUP SUM 1 IF legalEntity(Individual i) = p;  
+
 position = DATA Position (Individual);
 namePosition 'Должность' (Individual i) = name(position(i));
 
@@ -89,7 +91,7 @@ DESIGN partner {
     tabs {
         NEW contacts {
             showIf = p IS LegalEntity;
-            caption = 'Контакты';
+            caption = (CONCAT ' ', 'Контакты', '(' + countIndividual(p) + ')');
             MOVE BOX(em);           
         }
     }
