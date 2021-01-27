@@ -37,8 +37,8 @@ idItem 'Код' (PricelistLine l) = id(item(l));
 uom (PricelistLine l) = uom(item(l));
 nameUom 'Ед. изм.' (PricelistLine l) = name(uom(l)); 
 
-nameItemVendor 'Наименование у поставщика' = DATA STRING[200] (PricelistLine);
-codeItemVendor 'Код у поставщика' = DATA STRING[20] (PricelistLine);
+vendorName 'Наименование поставщика' = DATA STRING[200] (PricelistLine);
+vendorReference 'Код поставщика' = DATA STRING[20] (PricelistLine);
 
 price 'Цена' = DATA NUMERIC[10,2] (PricelistLine);
 
@@ -56,7 +56,7 @@ FORM pricelist 'Прайс-лист поставщика'
     PROPERTIES(p) number, startDateTime, endDateTime, nameVendor, note
     
     OBJECTS l = PricelistLine
-    PROPERTIES(l) index READONLY, nameItem, nameUom READONLY, nameItemVendor, codeItemVendor,
+    PROPERTIES(l) index READONLY, nameItem, nameUom READONLY, vendorName, vendorReference,
                   idBarCodeItem, idItem, price
     PROPERTIES(l) NEW, DELETE 
     FILTERS pricelist(l) = p
@@ -133,8 +133,8 @@ copy 'Копировать' (Pricelist pl) {
                 pricelist(nl) <- p;
                 item(nl) <- item(l);
                 price(nl) <- price(l);
-                nameItemVendor(nl) <- nameItemVendor(l);
-                codeItemVendor(nl) <- codeItemVendor(l);
+                vendorName(nl) <- vendorName(l);
+                vendorReference(nl) <- vendorReference(l);
             }
             SHOW pricelist OBJECTS p = p;
         }
