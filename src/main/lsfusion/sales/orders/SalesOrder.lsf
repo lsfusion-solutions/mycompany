@@ -51,7 +51,7 @@ nameCompany 'Компания' (Order o) = name(company(o));
 WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(company(o)) DO company(o) <- defaultCompany();
 
 // Shipping information
-scheduledDateTime 'Срок поставки' = DATA DATETIME (Order);
+scheduledDateTime 'Планируемая дата' = DATA DATETIME (Order);
 scheduledDateTime(Order o) <- currentDateTime() WHEN SET(o IS Order);
 
 scheduledDate 'Дата поставки' (Order o) = DATE(scheduledDateTime(o));
@@ -72,7 +72,7 @@ representative(Order o) <- currentUser() IF currentUser() IS Employee WHEN SET(o
 CONSTRAINT representative(Order o) AND NOT legalEntity(representative(o)) = company(o) 
     CHECKED BY representative MESSAGE 'Должен быть наш работник';
 
-customerReference 'Входящий номер заказчика' = DATA STRING[30] (Order);
+customerReference 'Код покупателя' = DATA STRING[30] (Order);
 
 // Lines
 CLASS OrderLine 'Спецификация';

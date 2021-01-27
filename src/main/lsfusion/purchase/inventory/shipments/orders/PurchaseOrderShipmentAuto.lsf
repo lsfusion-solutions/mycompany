@@ -27,7 +27,7 @@ WHEN LOCAL CHANGED(vendor(Order o)) DO {
 waitingRec 'Ожидает отгрузку' (Order o, Item itm) = waitingRec(location(o), itm);
 
 demandedPeriodic 'Планировалось' (Order o, Item itm) = demandedPeriodicRec(location(o), itm, purchasePeriodFrom(o), purchasePeriodTo(o));
-shippedPeriodic 'Отгружено' (Order o, Item itm) = shippedPeriodicRec(location(o), itm, purchasePeriodFrom(o), purchasePeriodTo(o));
+shippedPeriodic 'Отгружалось' (Order o, Item itm) = shippedPeriodicRec(location(o), itm, purchasePeriodFrom(o), purchasePeriodTo(o));
 
 forecastPeriodic (Order o, Item itm) = max(prevAvailableRec(location(o), itm), 0) (-) waitingRec(location(o), itm) (-) demandedPeriodic(o, itm);
 toOrderPeriodic 'Автозаказ' (Order o, Item itm) = ceil(- forecastPeriodic(o, itm) IF forecastPeriodic(o, itm) < 0

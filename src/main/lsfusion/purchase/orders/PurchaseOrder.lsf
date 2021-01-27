@@ -43,7 +43,7 @@ namePaymentTerms 'Условия оплаты' (Order o) = name(paymentTerms(o))
 WHEN LOCAL CHANGED(vendor(Order o)) AND NOT CHANGED(paymentTerms(o)) DO paymentTerms(o) <- vendorPaymentTerms(vendor(o)); 
 
 // Shipping information
-scheduledDateTime 'Срок поставки' = DATA DATETIME (Order);
+scheduledDateTime 'Планируемая дата' = DATA DATETIME (Order);
 scheduledDateTime(Order o) <- currentDateTime() WHEN SET(o IS Order);   
 
 // company
@@ -63,7 +63,7 @@ representative(Order o) <- currentUser() IF currentUser() IS Employee WHEN SET(o
 CONSTRAINT representative(Order o) AND NOT legalEntity(representative(o)) = company(o) 
     CHECKED BY representative MESSAGE 'Должен быть наш работник';
 
-vendorReference 'Входящий номер поставщика' = DATA STRING[30] (Order);
+vendorReference 'Код поставщика' = DATA STRING[30] (Order);
 
 // Lines
 CLASS OrderLine 'Спецификация';
