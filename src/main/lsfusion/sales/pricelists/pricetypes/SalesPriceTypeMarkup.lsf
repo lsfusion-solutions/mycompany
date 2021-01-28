@@ -4,12 +4,12 @@ REQUIRE SalesPriceType, BarCode;
 
 NAMESPACE Sales;
 
-markup 'Надбавка по категории, %' = DATA NUMERIC[10,2] (PriceType, Category);
-parentMarkup 'Надбавка (от верхней группы), %' (PriceType t, Category child) =
+markup 'Надбавка, %' = DATA NUMERIC[10,2] (PriceType, Category);
+parentMarkup 'Надбавка (итоговая), %' (PriceType t, Category child) =
    GROUP LAST markup(t, Category parent) ORDER DESC level(child, parent) WHERE markup(t, parent);
    
-dataMarkup 'Надбавка по товару, %' = DATA NUMERIC[10,2] (PriceType, Item);
-markup 'Надбавка, %' (PriceType t, Item i) = OVERRIDE dataMarkup(t, i), parentMarkup(t, category(i));   
+dataMarkup 'Надбавка, %' = DATA NUMERIC[10,2] (PriceType, Item);
+markup 'Надбавка (итоговая), %' (PriceType t, Item i) = OVERRIDE dataMarkup(t, i), parentMarkup(t, category(i));   
 
 EXTEND FORM priceType
     TREE categories c = Category PARENT parent(c)
