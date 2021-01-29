@@ -5,9 +5,9 @@ REQUIRE Utils, ShipmentWaiting, ResLedger;
 NAMESPACE Inventory;
 
 EXTEND CLASS ShipmentStatus {
-    ready 'К отгрузке'
+    ready 'В работу'
 }
-ready 'К отгрузке' = DATA BOOLEAN (Shipment);
+ready 'В работу' = DATA BOOLEAN (Shipment);
 
 status (Shipment s) += WHEN ready(s) THEN ShipmentStatus.ready;
 colorStatus (Shipment s) += WHEN status(s) = ShipmentStatus.ready THEN RGB(252,247,149);
@@ -70,7 +70,7 @@ DESIGN shipment {
 
 EXTEND FORM shipments    
     EXTEND FILTERGROUP status
-        FILTER 'К отгрузке' status(s) = ShipmentStatus.ready    
+        FILTER 'В работу' status(s) = ShipmentStatus.ready    
 ;
 
 @defineSelectionAction(shipments, Shipment, checkAvailability, 'Зарезервировать', statuses);

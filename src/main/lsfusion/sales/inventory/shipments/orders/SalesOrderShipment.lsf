@@ -18,10 +18,10 @@ reserved 'Зарезервировано' (OrderLine ol) =
 
 done 'Отгружено' (OrderLine ol) = 
     GROUP SUM done(ShipmentLine rl) IF orderLine(rl) = ol AND active(shipment(rl));
-toShip 'К отгрузке' (OrderLine ol) = 
+toShip 'В работу' (OrderLine ol) = 
     max(quantity(ol) (-) done(ol), 0) IF item(ol) IS Product MATERIALIZED;
 
-toShip 'К отгрузке' (Order o) = GROUP SUM toShip(OrderLine ol) IF order(ol) = o;
+toShip 'В работу' (Order o) = GROUP SUM toShip(OrderLine ol) IF order(ol) = o;
 
 CONSTRAINT (quantity(OrderLine ol) (-) done(ol)) < 0 AND confirmed(order(ol)) 
     MESSAGE 'По товару отгрузка превышает количество в заказе';
