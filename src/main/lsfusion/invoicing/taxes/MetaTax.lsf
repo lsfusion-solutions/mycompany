@@ -1,7 +1,7 @@
 MODULE MetaTax;
 
 META defineTaxCalc(doc, let, prefix, price)
-    untaxedAmount 'Сумма'  = DATA NUMERIC[14,2] (###doc##Line);
+    untaxedAmount '{Amount}'  = DATA NUMERIC[14,2] (###doc##Line);
     
     WHEN LOCAL CHANGED(quantity(###doc##Line l)) OR CHANGED(price(l)) DO {
         untaxedAmount(l) <- NUMERIC[14,2](quantity(l) * price(l));
@@ -40,7 +40,7 @@ META defineTaxCalc(doc, let, prefix, price)
     taxAmount 'Налог' (Tax t, ###doc let) = 
         GROUP SUM taxAmount(t, ###doc##Line l) IF doc(l) = let AND in(l, t);
     
-    untaxedAmount 'Сумма' (###doc let) = GROUP SUM untaxedAmount(###doc##Line l) IF doc(l) = let;
+    untaxedAmount '{Amount}' (###doc let) = GROUP SUM untaxedAmount(###doc##Line l) IF doc(l) = let;
 
     taxAmount 'Налог' (###doc let) = GROUP SUM taxAmount(Tax t, let);
 

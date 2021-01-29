@@ -4,7 +4,7 @@ REQUIRE BomNested, ItemCost;
 
 NAMESPACE Manufacturing;
 
-nameProductIndent 'Номенклатура' (ComponentLine l, TEXT path) = 
+nameItemIndent '{Items}' (ComponentLine l, TEXT path) = 
     STRING(CONCAT '', repeat('    ', wordCount(path, '/') - 1), nameItem(l));
 
 // cost
@@ -25,7 +25,7 @@ FORM structureAndCost 'Структура и стоимость'
     PROPERTIES(b) READONLY number, cost, componentsCost
        
     OBJECTS (l = ComponentLine, path = TEXT)
-    PROPERTIES READONLY nameProductIndent(l, path), descriptionNestedBom(l), 
+    PROPERTIES READONLY nameItemIndent(l, path), descriptionNestedBom(l), 
                         quantity(b, l, path), cost(b, l, path), componentsCost(b, path)
     PROPERTIES path = VALUE(path) SHOWIF NULL
     FILTERS level(b, l, path)   
@@ -52,7 +52,7 @@ FORM printStructureAndCost 'Структура и стоимость'
     PROPERTIES(b) READONLY nameItem, componentsCost
        
     OBJECTS (l = ComponentLine, path = TEXT)
-    PROPERTIES nameProductIndent(l, path), nameUom(l), descriptionNestedBom(l), 
+    PROPERTIES nameItemIndent(l, path), nameUom(l), descriptionNestedBom(l), 
                quantity(b, l, path), cost(b, l, path), componentsCost(b, path)
     PROPERTIES path = VALUE(path)
     FILTERS level(b, l, path)   

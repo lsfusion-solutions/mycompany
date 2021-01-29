@@ -42,14 +42,14 @@ FORM chooseTypes 'Выбор видов цен'
 ;
 
 // lines
-CLASS PricelistLine 'Номенклатура';
+CLASS PricelistLine 'Строка прайс-листа';
 
 pricelist 'Прайс-лист' = DATA Pricelist (PricelistLine) NONULL DELETE;
 
 index '№' = PARTITION SUM 1 ORDER PricelistLine l BY pricelist(l) IN id MATERIALIZED CHARWIDTH 3;
 
-item 'Номенклатура' = DATA Item (PricelistLine);
-nameItem 'Номенклатура' (PricelistLine prl) = name(item(prl));
+item '{Item}' = DATA Item (PricelistLine);
+nameItem '{Item}' (PricelistLine prl) = name(item(prl));
 idBarCodeItem 'Штрихкод' (PricelistLine l) = idBarCode(item(l));
 idItem 'Код' (PricelistLine l) = id(item(l));
 nameSalesTax 'Налоги' (PricelistLine l) = nameSalesTax(item(l));

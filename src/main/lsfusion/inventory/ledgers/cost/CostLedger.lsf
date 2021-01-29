@@ -22,46 +22,46 @@ nameProduct 'Товар' (CostLedger l) = name(product(l));
 
 CLASS InCostLedger 'Входящая проводка' : CostLedger;
 
-quantity 'Количество' = ABSTRACT NUMERIC[16,3] (InCostLedger);
+quantity '{Quantity}' = ABSTRACT NUMERIC[16,3] (InCostLedger);
 
 dataAmount 'Сумма (первичная)' = DATA NUMERIC[14,2] (InCostLedger);
 calcAmount 'Сумма (расчетная)' = ABSTRACT NUMERIC[14,2] (InCostLedger);
-amount 'Сумма' (InCostLedger l) = OVERRIDE dataAmount(l), calcAmount(l); 
+amount '{Amount}' (InCostLedger l) = OVERRIDE dataAmount(l), calcAmount(l); 
 
 price 'Цена' (InCostLedger il) = amount(il) / quantity(il);
 
 CLASS OutCostLedger 'Исходящая проводка' : CostLedger;
 
-quantity 'Количество' = ABSTRACT NUMERIC[16,3] (OutCostLedger);
+quantity '{Quantity}' = ABSTRACT NUMERIC[16,3] (OutCostLedger);
 negQuantity (OutCostLedger l) = -quantity(l); 
 
-amount 'Сумма' = DATA NUMERIC[14,2] (OutCostLedger);
+amount '{Amount}' = DATA NUMERIC[14,2] (OutCostLedger);
 price 'Цена' (OutCostLedger il) = amount(il) / quantity(il);
 
 // Проводки с учетом знака
-signedQuantity 'Количество' (CostLedger l) = MULTI quantity[InCostLedger](l), -quantity[OutCostLedger](l) MATERIALIZED;
-signedAmount 'Сумма' (CostLedger l) = MULTI amount[InCostLedger](l), -amount[OutCostLedger](l) MATERIALIZED;
+signedQuantity '{Quantity}' (CostLedger l) = MULTI quantity[InCostLedger](l), -quantity[OutCostLedger](l) MATERIALIZED;
+signedAmount '{Amount}' (CostLedger l) = MULTI amount[InCostLedger](l), -amount[OutCostLedger](l) MATERIALIZED;
 
 countLedger (Location l, Product p) =
     GROUP SUM 1 IF location(CostLedger cl) = l AND product(cl) = p MATERIALIZED;
     
-costQuantity 'Количество' (Location l, Product p) = 
+costQuantity '{Quantity}' (Location l, Product p) = 
     GROUP SUM signedQuantity(CostLedger cl) IF location(cl) = l AND product(cl) = p MATERIALIZED;
 costAmount 'Себестоимость' (Location l, Product p) = 
     GROUP SUM signedAmount(CostLedger cl) IF location(cl) = l AND product(cl) = p MATERIALIZED;
 costPrice 'Себестоимость за единицу' (Location l, Product p) = costAmount(l, p) / costQuantity(l, p);
 
-costQuantity 'Количество' (Location l, Product p, DATETIME dt) = 
+costQuantity '{Quantity}' (Location l, Product p, DATETIME dt) = 
     costQuantity(l, p) (-) (GROUP SUM signedQuantity(CostLedger cl) IF location(cl) = l AND product(cl) = p AND dateTime(cl) >= dt);
 costAmount 'Себестоимость' (Location l, Product p, DATETIME dt) = 
     costAmount(l, p) (-) (GROUP SUM signedAmount(CostLedger cl) IF location(cl) = l AND product(cl) = p AND dateTime(cl) >= dt);
 costPrice 'Себестоимость за единицу' (Location l, Product p, DATETIME dt) = costAmount(l, p, dt) / costQuantity(l, p, dt); 
 
-costQuantity 'Количество' (Product p) = GROUP SUM costQuantity(Location l, p);
+costQuantity '{Quantity}' (Product p) = GROUP SUM costQuantity(Location l, p);
 costAmount 'Себестоимость' (Product p) = GROUP SUM costAmount(Location l, p);
 costPrice 'Себестоимость за единицу' (Product p) = costAmount(p) / costQuantity(p);
 
-costQuantity 'Количество' (Product p, DATETIME dt) = GROUP SUM costQuantity(Location l, p, dt);
+costQuantity '{Quantity}' (Product p, DATETIME dt) = GROUP SUM costQuantity(Location l, p, dt);
 costAmount 'Себестоимость' (Product p, DATETIME dt) = GROUP SUM costAmount(Location l, p, dt);
 costPrice 'Себестоимость за единицу' (Product p, DATETIME dt) = costAmount(p, dt) / costQuantity(p, dt);
 

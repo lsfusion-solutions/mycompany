@@ -6,10 +6,10 @@ PRIORITY System;
 
 NAMESPACE MasterData;
 
-CLASS ABSTRACT Item 'Номенклатура';
+CLASS ABSTRACT Item '{Item}';
 class 'Вид' (Item i) = objectClassName(i) IF i IS Item CHARWIDTH 6;
 
-@defineID(item, 'Номенклатура', 'НМ', 6);
+@defineID(item, '{Items}', 'НМ', 6);
 
 dataName 'Наименование' = DATA ISTRING[200] (Item) IN id NONULL CHARWIDTH 20;
 prefixName 'Префикс' = ABSTRACT STRING (Item);
@@ -59,7 +59,7 @@ copy (Item n, Item o) + {
     archived(n) <- archived(o);
 }
 
-FORM item 'Номенклатура'
+FORM item '{Item}'
     OBJECTS i = Item PANEL
     PROPERTIES(i) dataName READONLYIF readonly(i), class READONLY, 
                   name READONLY, id, canonicalNameCategory READONLYIF readonly(i), nameUom READONLYIF readonly(i),
@@ -129,7 +129,7 @@ DESIGN item {
     }  
 }
 
-FORM items 'Номенклатура'
+FORM items '{Items}'
     TREE categories c = Category PARENT parent(c)
     PROPERTIES READONLY name(c)
     ORDERS name(c)

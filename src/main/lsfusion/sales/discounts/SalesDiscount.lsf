@@ -33,7 +33,7 @@ categories 'Категории' (Discount d) = GROUP CONCAT name(Category c) IF 
 
 in 'Вкл' = DATA BOOLEAN (Discount, Item);
 set (Discount d, Item i) = in(d, i) OR set(d, category(i));
-items 'Номенклатура' (Discount d) = GROUP CONCAT name(Item i) IF in(d, i), ',' ORDER name(i), i CHARWIDTH 30;
+items '{Items}' (Discount d) = GROUP CONCAT name(Item i) IF in(d, i), ',' ORDER name(i), i CHARWIDTH 30;
 
 // pricetype
 in 'Вкл' = DATA BOOLEAN (Discount, PriceType);
@@ -114,7 +114,7 @@ DESIGN discount {
             type = TABBED;
             fill = 1;
             NEW items {
-                caption = 'Номенклатура';
+                caption = '{Items}';
                 type = SPLITH;
                 MOVE BOX(TREE categories);
                 MOVE BOX(i) { fill = 2; }

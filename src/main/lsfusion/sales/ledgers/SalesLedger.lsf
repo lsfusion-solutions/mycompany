@@ -19,8 +19,8 @@ number 'Номер' = ABSTRACT STRING[31] (SalesLedger) MATERIALIZED;
 location = ABSTRACT Location (SalesLedger) MATERIALIZED;
 nameLocation 'Место хранения' (SalesLedger l) = name(location(l));
 
-item 'Номенклатура' = ABSTRACT Item (SalesLedger) MATERIALIZED;
-nameItem 'Номенклатура' (SalesLedger l) = name(item(l));
+item '{Item}' = ABSTRACT Item (SalesLedger) MATERIALIZED;
+nameItem '{Item}' (SalesLedger l) = name(item(l));
 
 level2 'Категория 2' (SalesLedger l) = level2(item(l));
 
@@ -34,7 +34,7 @@ price 'Цена' = ABSTRACT NUMERIC[10,2] (SalesLedger) MATERIALIZED;
 costAmount 'Себестоимость' (SalesLedger l) = ABSTRACT VALUE NUMERIC[14,2] (SalesLedger) MATERIALIZED;
 costAmount (SalesLedger l) += NUMERIC[14,2] (quantity(l) * cost(item(l), date(l)));
 
-untaxedAmount 'Сумма' = ABSTRACT NUMERIC[14,2] (SalesLedger) MATERIALIZED;
+untaxedAmount '{Amount}' = ABSTRACT NUMERIC[14,2] (SalesLedger) MATERIALIZED;
 
 markupAmount 'Надбавка' (SalesLedger l) = untaxedAmount(l) (-) costAmount(l); 
 markup 'Надбавка, %' (SalesLedger l) = NUMERIC[10,2] (100.0 * markupAmount(l) / costAmount(l));

@@ -23,14 +23,14 @@ vendor 'Поставщик ' = DATA Partner (Pricelist);
 nameVendor 'Поставщик '(Pricelist p) = name(vendor(p));
 
 // lines
-CLASS PricelistLine 'Номенклатура';
+CLASS PricelistLine 'Строка прайс-листа поставщика';
 
 pricelist 'Прайс-лист' = DATA Pricelist (PricelistLine) NONULL DELETE;
 
 index '№' = PARTITION SUM 1 ORDER PricelistLine l BY pricelist(l) IN id MATERIALIZED CHARWIDTH 3;
 
-item 'Номенклатура' = DATA Item (PricelistLine);
-nameItem 'Номенклатура' (PricelistLine l) = name(item(l));
+item '{Item}' = DATA Item (PricelistLine);
+nameItem '{Item}' (PricelistLine l) = name(item(l));
 idBarCodeItem 'Штрихкод' (PricelistLine l) = idBarCode(item(l)); 
 idItem 'Код' (PricelistLine l) = id(item(l)); 
 

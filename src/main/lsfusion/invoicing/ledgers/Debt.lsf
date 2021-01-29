@@ -21,7 +21,7 @@ nameCompany 'Компания' (Debt d) = name(company(d));
 
 contract = ABSTRACT Contract (Debt) MATERIALIZED; 
 
-amount 'Сумма' = ABSTRACT NUMERIC[14,2] (Debt) MATERIALIZED;
+amount '{Amount}' = ABSTRACT NUMERIC[14,2] (Debt) MATERIALIZED;
 
 class 'Вид' (Debt d) = objectClassName(d) IF d IS Debt CHARWIDTH 15;
 
@@ -33,7 +33,7 @@ CLASS ABSTRACT IncomingDebt 'Входящая задолженность' : Debt
 // outgoing
 CLASS ABSTRACT OutgoingDebt 'Исходящая задолженность' : Debt;
 
-signedAmount 'Сумма' (Debt d) = IF d IS OutgoingDebt THEN amount(d) ELSE -amount(d) MATERIALIZED;
+signedAmount '{Amount}' (Debt d) = IF d IS OutgoingDebt THEN amount(d) ELSE -amount(d) MATERIALIZED;
 
 // match
 paid 'Оплачено' = DATA NUMERIC[14,2] (IncomingDebt, OutgoingDebt);
