@@ -22,8 +22,8 @@ getIncomingDocuments 'Получить входящие документы ГИ�
     
     LOCAL result = FILE();
     TRY {
-        EXTERNAL HTTP GET url() + '/facade/doc/listV2?inputFormat=true' + 
-                                  '&participantInn=' + inn(s) + '&pg=' + id(lt) + '&status=' + status HEADERS documentHeaders TO result;
+        EXTERNAL HTTP GET url() + '/facade/doc/listV2?inputFormat=true&limit=1000' + 
+                                  '&participantInn=' + inn(s) + '&pg=' + id(lt) + '&documentStatus=' + status HEADERS documentHeaders TO result;
     } CATCH {
         fileToString(result());
         MESSAGE 'Ошибка при оправке документа в СУЗ : \n' + (OVERRIDE messageCaughtException(), '') + '\n' + (OVERRIDE resultString(), '');
