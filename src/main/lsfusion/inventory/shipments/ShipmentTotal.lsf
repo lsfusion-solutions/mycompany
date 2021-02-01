@@ -30,7 +30,7 @@ EXTEND FORM shipments
     PROPERTIES onHand 'Доступно' = prevAvailableRec(toLocation(ss), p) SHOWIF toLocation(ss) READONLY
                                   COLUMNS 'id' (ss)
     FILTERGROUP demand
-        FILTER 'В работу' initialDemand(p) DEFAULT
+        FILTER 'Планируемое кол-во' initialDemand(p) DEFAULT
         FILTER 'Доступно' prevAvailableRec(shipmentLocation(), p)
     FILTERS level(category(p), c)
     FILTERGROUP active
@@ -42,7 +42,7 @@ DESIGN shipments {
     tabbedPane {
         NEW total {
             showIf = countSelectedShipments();
-            caption = 'Итоги';
+            caption = 'Итого';
             type = SPLITH;
             MOVE BOX(TREE categories);
             NEW products {
