@@ -9,14 +9,14 @@ individualExport 'Экспорт физических лиц' () {
         IF NOT (GROUP SUM 1 IF Individual i IS Individual) THEN {
             NEW i = Individual {
                 id(i) <- '123';
-                firstName(i) <- 'Имя';
+                firstName(i) <- '{First_name}';
                 lastName(i) <- 'Фамилия';
                 middleName(i) <- 'Отчество';
             }
         }
     
         LOCAL f = EXCELFILE ();
-        EXPORT XLSX HEADER FROM 'Код' = id(Individual p), 'Имя' = firstName(p), 'Фамилия' = lastName(p), 
+        EXPORT XLSX HEADER FROM 'Код' = id(Individual p), '{First_name}' = firstName(p), 'Фамилия' = lastName(p), 
             'Отчество' = middleName(p), 'Код организации' = idLegalEntity(p), 'Адрес' = address(p), 'Город' = city(p), 
             'Область' = state(p), 'Почтовый индекс' = zip(p), 'Телефон' = phone(p), 'Электронная почта' = email(p) WHERE p IS Individual TO f;   
         open(f());
