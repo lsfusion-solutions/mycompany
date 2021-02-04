@@ -1,9 +1,9 @@
-# MyCompany
+# English
 Site : https://mycompany.lsfusion.org/en
 
 Demo : https://demo.lsfusion.org/mycompany
 
-# MyCompany (Russian)
+# Russian
 Site : https://mycompany.lsfusion.org
 
 Demo : https://demo.lsfusion.org/mycompany-ru
