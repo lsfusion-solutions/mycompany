@@ -1,8 +1,11 @@
 # MyCompany
-Site : https://mycompany.lsfusion.org
+Site : https://mycompany.lsfusion.org/en
 
 Demo : https://demo.lsfusion.org/mycompany
-or
-https://demo.lsfusion.org/mycompany-ru (Русский язык)
+
+# MyCompany (Russian)
+Site : https://mycompany.lsfusion.org
+
+Demo : https://demo.lsfusion.org/mycompany-ru
 
 Discussion : https://slack.lsfusion.org/
