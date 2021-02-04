@@ -5,9 +5,9 @@ REQUIRE ManufacturingOrderWaiting, ResLedger;
 NAMESPACE Manufacturing;
 
 EXTEND CLASS ManufacturingOrderStatus {
-    ready 'В работу'
+    ready 'В работе'
 }
-ready 'В работу' = DATA BOOLEAN (ManufacturingOrder);
+ready 'В работе' = DATA BOOLEAN (ManufacturingOrder);
 
 status (ManufacturingOrder s) += WHEN ready(s) THEN ManufacturingOrderStatus.ready;
 colorStatus (ManufacturingOrder s) += WHEN status(s) = ManufacturingOrderStatus.ready THEN RGB(252,247,149);
@@ -70,7 +70,7 @@ DESIGN manufacturingOrder {
 
 EXTEND FORM manufacturingOrders
     EXTEND FILTERGROUP status
-        FILTER 'В работу' status(o) = ManufacturingOrderStatus.ready    
+        FILTER 'В работе' status(o) = ManufacturingOrderStatus.ready    
 ;
 
 @defineSelectionAction(manufacturingOrders, ManufacturingOrder, checkAvailability, 'Зарезервировать', statuses);
