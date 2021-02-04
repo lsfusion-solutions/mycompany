@@ -1,4 +1,4 @@
-# mycompany
+# MyCompany
 Site : https://mycompany.lsfusion.org
 
 Demo : 
