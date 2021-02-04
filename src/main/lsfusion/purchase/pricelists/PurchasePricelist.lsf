@@ -22,6 +22,10 @@ note 'Примечание' = DATA STRING[50] (Pricelist);
 vendor 'Поставщик ' = DATA Partner (Pricelist);
 nameVendor 'Поставщик '(Pricelist p) = name(vendor(p));
 
+CONSTRAINT vendor(Pricelist o) AND NOT isVendor(vendor(o))
+                CHECKED BY vendor[Pricelist]
+                MESSAGE 'Контрагент прайс-листа поставщика должен быть поставщиком';
+
 // lines
 CLASS PricelistLine 'Строка прайс-листа поставщика';
 
