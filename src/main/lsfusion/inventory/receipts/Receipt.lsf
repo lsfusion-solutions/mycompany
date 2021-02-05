@@ -38,7 +38,9 @@ company 'Компания' (Receipt r) = company(location(r));
 vendor = DATA Partner (Receipt) INDEXED;
 nameVendor 'Поставщик' (Receipt r) = name(vendor(r));
 
-CONSTRAINT vendor(Receipt r) AND NOT isVendor(vendor(r)) 
+isVendor = ABSTRACT VALUE BOOLEAN (Receipt);
+isVendor(Receipt r) += isVendor(vendor(r));
+CONSTRAINT vendor(Receipt r) AND NOT isVendor(r) 
                 CHECKED BY vendor[Receipt]
                 MESSAGE 'Контрагент должен быть поставщиком';
 

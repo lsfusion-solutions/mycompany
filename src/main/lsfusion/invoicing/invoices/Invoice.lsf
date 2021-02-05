@@ -32,7 +32,9 @@ customer = DATA Partner (Invoice);
 nameCustomer 'Покупатель' (Invoice i) = name(customer(i));
 addressCsvCustomer 'Адрес покупателя' (Invoice i) = addressCsv(customer(i));
 
-CONSTRAINT customer(Invoice b) AND NOT isCustomer(customer(b)) 
+isCustomer = ABSTRACT VALUE BOOLEAN (Invoice);
+isCustomer(Invoice i) += isCustomer(customer(i));
+CONSTRAINT customer(Invoice i) AND NOT isCustomer(i) 
                 CHECKED BY customer
                 MESSAGE 'Контрагент должен быть покупателем';
 

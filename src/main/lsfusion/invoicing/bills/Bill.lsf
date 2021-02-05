@@ -30,7 +30,10 @@ numberDate 'Описание' (Bill b) = number(b) + ' от ' + dateTime(b) IN i
 // vendor
 vendor 'Поставщик' = DATA Partner (Bill);
 nameVendor 'Поставщик' (Bill b) = name(vendor(b));
-CONSTRAINT vendor(Bill b) AND NOT isVendor(vendor(b)) 
+
+isVendor = ABSTRACT VALUE BOOLEAN (Bill);
+isVendor(Bill b) += isVendor(vendor(b));
+CONSTRAINT vendor(Bill b) AND NOT isVendor(b) 
                 CHECKED BY vendor
                 MESSAGE 'Контрагент должен быть поставщиком';
 

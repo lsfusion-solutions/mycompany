@@ -50,7 +50,9 @@ customer = DATA Partner (Shipment) INDEXED;
 nameCustomer 'Покупатель' (Shipment s) = name(customer(s));
 addressCsvCustomer 'Адрес покупателя' (Shipment s) = addressCsv(customer(s)); 
 
-CONSTRAINT customer(Shipment s) AND NOT isCustomer(customer(s)) 
+isCustomer = ABSTRACT VALUE BOOLEAN (Shipment);
+isCustomer(Shipment s) += isCustomer(customer(s));
+CONSTRAINT customer(Shipment s) AND NOT isCustomer(s) 
                 CHECKED BY customer[Shipment]
                 MESSAGE 'Контрагент должен быть покупателем';
 
