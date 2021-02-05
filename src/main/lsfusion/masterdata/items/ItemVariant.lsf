@@ -40,18 +40,17 @@ EXTEND FORM item
     PROPERTIES(i) nameVariantOf
 ;
 
-addVariant 'Разновидность' (Item ii) {
+addVariant 'Разновидность' (Item i) {
     NEWSESSION {
-        IF ii IS Product THEN NEW p = Product {
-                variantOf(p) <- ii;
-                SHOW item OBJECTS i = p;
-            }
-        ELSE NEW s = Service {
-            variantOf(s) <- ii;
-            SHOW item OBJECTS i = s;
+        IF i IS Product THEN NEW p = Product {
+            variantOf(p) <- i;
+            DIALOG item OBJECTS i = p DOCKED DO seek(i);
+        } ELSE NEW s = Service {
+            variantOf(s) <- i;
+            DIALOG item OBJECTS i = s DOCKED DO seek(s);
         }
     }
-}IMAGE 'add.png';
+} IMAGE 'add.png';
 
 EXTEND FORM item 
     OBJECTS ii = Item
