@@ -57,18 +57,11 @@ DESIGN shipment {
     }             
 }
 
-// auto set
-WHEN LOCAL (SETCHANGED(product(ReceiptLine l)) OR SETCHANGED(vendor(l))) AND isReturn(receipt(l)) AND product(l) AND vendor(l) DO {
-    shipmentLine(l) <- GROUP LAST ShipmentLine sl IF 
-                                    customer(sl) = vendor(l) AND 
-                                    product(sl) = product(l) AND 
-                                    active(shipment(sl)) 
-                             ORDER executionDateTime(shipment(sl)), sl;
-}
-
 // returned quantity
 returned 'Возвращено' (ShipmentLine sl) = 
-    GROUP SUM done(ReceiptLine rl) IF shipmentLine(rl) = sl AND active(receipt(rl));
+    GROUP SUM done(ReceiptLine rl) IF shipmentLine(rl) = sl AND active(receipt(rl)) MATERIALIZED;
+
+toReturn (ShipmentLine sl) = done(sl) - OVERRIDE returned(sl), 0;
 
 FORM shipmentReceiptShow 'Возвраты'
     OBJECTS sl = ShipmentLine
@@ -82,3 +75,18 @@ FORM shipmentReceiptShow 'Возвраты'
 EXTEND FORM shipment
     PROPERTIES(l) returned ON CHANGE { SHOW shipmentReceiptShow OBJECTS sl = l; } SHOWIF countReceiptLine(s)
 ;
+
+// auto set
+setShipmentLine (ReceiptLine l) {
+    shipmentLine(l) <- GROUP LAST ShipmentLine sl IF 
+                                    customer(sl) = vendor(l) AND 
+                                    product(sl) = product(l) AND 
+                                    active(shipment(sl)) AND
+                                    done(l) <= toReturn(sl) 
+                             ORDER executionDateTime(shipment(sl)), sl;
+}
+WHEN LOCAL (SETCHANGED(product(ReceiptLine l)) OR SETCHANGED(vendor(l))) AND isReturn(receipt(l)) AND product(l) AND vendor(l) DO
+    setShipmentLine(l);
+
+WHEN (SET(product(ReceiptLine l)) OR SET(vendor(l))) AND isReturn(receipt(l)) AND NOT shipmentLine(l) DO
+    setShipmentLine(l);
