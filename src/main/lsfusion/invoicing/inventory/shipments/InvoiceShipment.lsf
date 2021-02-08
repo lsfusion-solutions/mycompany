@@ -102,6 +102,8 @@ WHEN (SET(ready(Invoice i)) OR SET(countProductLines(i))) AND ready(i) AND autoC
     newShipment(i);
 WHEN SET(canceled(Invoice i)) AND in(i, Shipment s) AND countInvoice(s) = 1 AND autoCreateShipment(type(i)) DO 
     canceled(s) <- TRUE; 
+WHEN CHANGED(customer(Invoice i)) AND in(i, Shipment s) AND countInvoice(s) = 1 AND autoCreateShipment(type(i)) DO 
+    customer(s) <- customer(i); 
 WHEN CHANGED(quantity(invoiceLine(ShipmentLine l))) AND autoCreateShipment(type(invoice(invoiceLine(l)))) DO 
     done(l) <- quantity(invoiceLine(l));
 WHEN CHANGED(item(invoiceLine(ShipmentLine l))) AND autoCreateShipment(type(invoice(invoiceLine(l)))) DO 

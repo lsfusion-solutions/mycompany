@@ -98,6 +98,8 @@ WHEN (SET(ready(Bill b)) OR SET(countProductLines(b))) AND ready(b) AND autoCrea
     newReceipt(b);
 WHEN SET(canceled(Bill b)) AND in(b, Receipt r) AND countBill(r) = 1 AND autoCreateReceipt(type(b)) DO 
     canceled(r) <- TRUE; 
+WHEN CHANGED(vendor(Bill b)) AND in(b, Receipt r) AND countBill(r) = 1 AND autoCreateReceipt(type(b)) DO 
+    vendor(r) <- vendor(b); 
 WHEN CHANGED(quantity(billLine(ReceiptLine l))) AND autoCreateReceipt(type(bill(billLine(l)))) DO 
     done(l) <- quantity(billLine(l));
 WHEN CHANGED(item(billLine(ReceiptLine l))) AND autoCreateReceipt(type(bill(billLine(l)))) DO 
