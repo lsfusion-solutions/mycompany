@@ -31,6 +31,8 @@ numberDate 'Описание' (Bill b) = number(b) + ' от ' + dateTime(b) IN i
 vendor 'Поставщик' = DATA Partner (Bill);
 nameVendor 'Поставщик' (Bill b) = name(vendor(b));
 
+WHEN LOCAL SETCHANGED(type(Bill b)) AND defaultVendor(type(b)) AND NOT CHANGED(vendor(b)) DO vendor(b) <- defaultVendor(type(b));  
+
 isVendor = ABSTRACT VALUE BOOLEAN (Bill);
 isVendor(Bill b) += isVendor(vendor(b));
 CONSTRAINT vendor(Bill b) AND NOT isVendor(b) 

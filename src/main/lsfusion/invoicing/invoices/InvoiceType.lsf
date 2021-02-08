@@ -1,6 +1,6 @@
 MODULE InvoiceType;
 
-REQUIRE Numerator, InvoicingSettings;
+REQUIRE Partner, Numerator, InvoicingSettings;
 
 NAMESPACE Invoicing;
 
@@ -13,11 +13,14 @@ invoiceType = GROUP AGGR InvoiceType t BY id(t);
 numerator 'Нумератор' = DATA Numerator (InvoiceType);
 nameNumerator 'Нумератор' (InvoiceType o) = name(numerator(o));
 
+defaultCustomer = DATA Partner (InvoiceType);
+nameDefaultCustomer 'Покупатель' (InvoiceType o) = name(defaultCustomer(o));
+
 taxIncluded 'Цена включает налоги' = DATA BOOLEAN (InvoiceType);
 
 FORM invoiceType 'Тип реализации'
     OBJECTS o = InvoiceType PANEL 
-    PROPERTIES(o) name, id, nameNumerator, taxIncluded
+    PROPERTIES(o) name, id, nameNumerator, nameDefaultCustomer, taxIncluded
      
     EDIT InvoiceType OBJECT o;
 ;

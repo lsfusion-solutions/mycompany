@@ -32,6 +32,8 @@ customer = DATA Partner (Invoice);
 nameCustomer 'Покупатель' (Invoice i) = name(customer(i));
 addressCsvCustomer 'Адрес покупателя' (Invoice i) = addressCsv(customer(i));
 
+WHEN LOCAL SETCHANGED(type(Invoice i)) AND defaultCustomer(type(i)) AND NOT CHANGED(customer(i)) DO customer(i) <- defaultCustomer(type(i));  
+
 isCustomer = ABSTRACT VALUE BOOLEAN (Invoice);
 isCustomer(Invoice i) += isCustomer(customer(i));
 CONSTRAINT customer(Invoice i) AND NOT isCustomer(i) 
