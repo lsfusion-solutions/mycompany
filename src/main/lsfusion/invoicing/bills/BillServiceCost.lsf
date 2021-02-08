@@ -18,7 +18,7 @@ FORM dialogCostAllocationBases 'База распределения'
 ;
 
 EXTEND CLASS CostAllocationBase {
-    ammount 'Стоимость поступления',
+    amount 'Стоимость поступления',
     cost 'Плановая себестоимость',
     salesPrice 'Сумма по ценам продажи',
     weight 'Масса',
@@ -48,7 +48,7 @@ WHEN LOCAL CHANGED(item(BillLine bsl)) DO costAllocationBase(bsl) <- costAllocat
 allocationBase (bl, bsl) = ABSTRACT CASE NUMERIC[14,3] (BillLine, CostAllocationBase);
 
 allocationBase (BillLine bl, CostAllocationBase b) += 
-    WHEN item(bl) IS Product AND b = CostAllocationBase.ammount THEN NUMERIC[14,3](untaxedAmount(bl));  
+    WHEN item(bl) IS Product AND b = CostAllocationBase.amount THEN NUMERIC[14,3](untaxedAmount(bl));  
 allocationBase (BillLine bl, CostAllocationBase b) += 
     WHEN item(bl) IS Product AND b = CostAllocationBase.cost THEN NUMERIC[14,3](cost(item(bl), DATE(dateTime(bl))) * quantity(bl)); 
 allocationBase (BillLine bl, CostAllocationBase b) += 
