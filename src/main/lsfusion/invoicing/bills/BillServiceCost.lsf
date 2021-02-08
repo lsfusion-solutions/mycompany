@@ -18,12 +18,12 @@ FORM dialogCostAllocationBases 'База распределения'
 ;
 
 EXTEND CLASS CostAllocationBase {
-    amount 'Стоимость поступления',
+    amount 'Сумма',
     cost 'Плановая себестоимость',
-    salesPrice 'Сумма по ценам продажи',
+    salesPrice 'Сумма продажи',
     weight 'Масса',
     volume 'Объем',
-    volumetric 'Габаритный вес'
+    overallWeight 'Габаритный вес'
 }
 
 // item form
@@ -58,7 +58,7 @@ allocationBase (BillLine bl, CostAllocationBase b) +=
 allocationBase (BillLine bl, CostAllocationBase b) += 
     WHEN item(bl) IS Product AND b = CostAllocationBase.volume THEN NUMERIC[14,3](volume(item(bl)) * quantity(bl));
 allocationBase (BillLine bl, CostAllocationBase b) += 
-    WHEN item(bl) IS Product AND b = CostAllocationBase.volumetric THEN NUMERIC[14,3](max(volume(item(bl)) * 200, weight(item(bl))) * quantity(bl));
+    WHEN item(bl) IS Product AND b = CostAllocationBase.overallWeight THEN NUMERIC[14,3](max(volume(item(bl)) * 200, weight(item(bl))) * quantity(bl));
 
 allocationBase 'База распределения' (BillLine bl, BillLine bsl) = allocationBase(bl, costAllocationBase(bsl));
 
