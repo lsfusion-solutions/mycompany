@@ -16,7 +16,7 @@ fill (Bill b, Order o) + {
     location(b) <- location(o);
 
     IF invoicingPolicy(type(o)) = InvoicingPolicy.delivered THEN {
-        FOR order(orderLine(ReceiptLine sl)) = o AND active(receipt(sl)) AND NOT billLine(sl) INLINE 
+        FOR order(orderLine(ReceiptLine sl)) = o AND active(receipt(sl)) AND NOT billLine(sl) AND done(sl) > 0 INLINE 
             NEW il = BillLine DO {
             bill(il) <- b;
             orderLine(il) <- orderLine(sl);

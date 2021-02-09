@@ -17,7 +17,7 @@ fill (Invoice i, Order o) + {
 
     IF invoicingPolicy(type(o)) = InvoicingPolicy.delivered THEN {
        
-        FOR order(orderLine(ShipmentLine sl)) = o AND active(shipment(sl)) AND NOT invoiceLine(sl) INLINE 
+        FOR order(orderLine(ShipmentLine sl)) = o AND active(shipment(sl)) AND NOT invoiceLine(sl) AND done(sl) > 0 INLINE 
             NEW il = InvoiceLine DO {
             invoice(il) <- i;
             orderLine(il) <- orderLine(sl);
