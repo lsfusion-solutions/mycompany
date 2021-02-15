@@ -1,6 +1,6 @@
 MODULE InvoiceReport;
 
-REQUIRE CreditNote, InvoiceDebt, ItemAttribute;
+REQUIRE CreditNote, InvoiceDebt, InvoiceCurrency, ItemAttribute;
 
 NAMESPACE Invoicing;
 
@@ -11,7 +11,7 @@ FORM invoiceReport 'Отчет по реализациям'
 
     OBJECTS report = (i = Invoice, l = InvoiceLine) PIVOT
     PROPERTIES(i) READONLY nameType, dateTime, nameStatus, number, 
-                           nameCustomer, nameDepartment, nameCustomerAccount, nameCompany, nameCompanyAccount, 
+                           nameCustomer, nameDepartment, nameCustomerAccount, nameCompany, nameCompanyAccount, nameCurrency, 
                            namePaymentTerms, dueDateTime, note
     PROPERTIES(l) READONLY nameItem, idItem
     PROPERTIES READONLY 'Категория 1' = level1(item(l)), 'Категория 2' = level2(item(l)), 'Категория 3' = level3(item(l)), 'Категория 4' = level4(item(l)), 
@@ -19,7 +19,7 @@ FORM invoiceReport 'Отчет по реализациям'
     PROPERTIES READONLY attribute(l, a) COLUMNS (a) HEADER name(a)
     PROPERTIES(l) READONLY quantity, price, taxes
     PROPERTIES(l) READONLY MEASURE
-                           untaxedAmount, taxAmount, amount
+                           untaxedAmount, taxAmount, amount, currencyAmount
     FILTERS invoice(l) = i
 ;
 

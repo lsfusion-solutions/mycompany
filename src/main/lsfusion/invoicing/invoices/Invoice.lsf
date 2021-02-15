@@ -81,12 +81,6 @@ deliveryAddress 'Адрес доставки' = DATA STRING (Invoice) CHARWIDTH 
 WHEN LOCAL (CHANGED(customer(Invoice i)) OR CHANGED(department(i))) AND NOT CHANGED(deliveryAddress(i)) DO 
     deliveryAddress(i) <- OVERRIDE addressCsv(department(i)), addressCsvCustomer(i);
 
-// currency
-currency = DATA Currency (Invoice);
-nameCurrency 'Валюта' (Invoice i) = name(currency(i));
-
-WHEN LOCAL SETCHANGED(type(Invoice i)) AND currency(type(i)) AND NOT CHANGED(currency(i)) DO currency(i) <- currency(type(i));  
-
 customerReference 'Код покупателя' = DATA STRING[30] (Invoice);
 note 'Примечание' = DATA ISTRING[50] (Invoice);
 
@@ -153,7 +147,7 @@ edit (InvoiceLine l) + { edit(invoice(l)); }
 FORM invoice 'Реализация'
     OBJECTS  i = Invoice PANEL 
     PROPERTIES(i) nameType, dateTime, number, 
-                  nameCustomer, nameDepartment SHOWIF countDepartment(customer(i)), nameCompany, nameCurrency,
+                  nameCustomer, nameDepartment SHOWIF countDepartment(customer(i)), nameCompany,
                   namePaymentTerms, dueDateTime, nameCustomerAccount, nameCompanyAccount,
                   deliveryAddress, customerReference, note
         
@@ -180,7 +174,6 @@ DESIGN invoice {
                 MOVE PROPERTY(nameCustomer(i));
                 MOVE PROPERTY(nameDepartment(i));
                 MOVE PROPERTY(nameCompany(i)) { notNull = TRUE; }           
-                MOVE PROPERTY(nameCurrency(i));           
             }
             NEW relatedDoc {
                 fill = 1;
@@ -269,7 +262,6 @@ clone ABSTRACT LIST (Invoice, Invoice);
 clone (Invoice to, Invoice from) + {
     type(to) <- type(from);
     customer(to) <- customer(from);
-    currency(to) <- currency(from);
     note(to) <- note(from);
     FOR invoice(InvoiceLine l) = from INLINE NEW nl = InvoiceLine DO {
         invoice(nl) <- to;

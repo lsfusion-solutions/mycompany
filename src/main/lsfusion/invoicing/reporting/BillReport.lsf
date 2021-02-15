@@ -1,6 +1,6 @@
 MODULE BillReport;
 
-REQUIRE CreditNote, BillDebt, ItemAttribute;
+REQUIRE CreditNote, BillDebt, BillCurrency, ItemAttribute;
 
 NAMESPACE Invoicing;
 
@@ -11,7 +11,7 @@ FORM billReport 'Отчет по поступлениям'
 
     OBJECTS report = (i = Bill, l = BillLine) PIVOT
     PROPERTIES(i) READONLY nameType, dateTime, nameStatus, number, 
-                           nameVendor, nameVendorAccount, nameCompany, nameCompanyAccount, 
+                           nameVendor, nameVendorAccount, nameCompany, nameCompanyAccount, nameCurrency, 
                            namePaymentTerms, dueDateTime, note
     PROPERTIES(l) READONLY nameItem, idItem 
     PROPERTIES READONLY 'Категория 1' = level1(item(l)), 'Категория 2' = level2(item(l)), 'Категория 3' = level3(item(l)), 'Категория 4' = level4(item(l)), 
@@ -19,7 +19,7 @@ FORM billReport 'Отчет по поступлениям'
     PROPERTIES READONLY attribute(l, a) COLUMNS (a) HEADER name(a)
     PROPERTIES(l) READONLY quantity, price, taxes 
     PROPERTIES(l) READONLY MEASURE
-                           untaxedAmount, taxAmount, amount
+                           untaxedAmount, taxAmount, amount, currencyAmount
     FILTERS bill(l) = i
 ;
 

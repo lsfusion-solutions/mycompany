@@ -1,0 +1,45 @@
+MODULE InvoiceCurrency;
+
+REQUIRE Invoice, Currency, ExchangeRate;
+
+NAMESPACE Invoicing;
+
+currency = DATA Currency (InvoiceType);
+nameCurrency 'Валюта' (InvoiceType o) = name(currency(o));
+
+EXTEND FORM invoiceType
+    PROPERTIES(o) nameCurrency
+;
+
+currency = DATA Currency (Invoice);
+nameCurrency 'Валюта' (Invoice b) = name(currency(b));
+
+WHEN LOCAL SETCHANGED(type(Invoice b)) AND currency(type(b)) AND NOT CHANGED(currency(b)) DO currency(b) <- currency(type(b));  
+
+currency (InvoiceLine l) = currency(invoice(l));
+nameCurrency 'Валюта' (InvoiceLine l) = nameCurrency(invoice(l));
+
+EXTEND FORM invoice
+    PROPERTIES(i) nameCurrency
+;
+
+DESIGN invoice {
+    headerRight {
+        MOVE PROPERTY(nameCurrency(i));
+    }           
+}
+
+EXTEND FORM invoices
+    PROPERTIES(i) READONLY nameCurrency
+;
+
+clone (Invoice to, Invoice from) + {
+    currency(to) <- currency(from);
+}
+
+// exchange rate
+
+rate1 (Invoice b) = rate1(currency(b), date(b));
+rate1 (InvoiceLine l) = rate1(invoice(l));
+
+currencyAmount 'Сумма в базовой валюте' (InvoiceLine l) = NUMERIC[14,2](amount(l) * rate1(l));

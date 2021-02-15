@@ -1,6 +1,6 @@
 MODULE InvoiceType;
 
-REQUIRE Partner, Numerator, Currency, InvoicingSettings;
+REQUIRE Partner, Numerator, InvoicingSettings;
 
 NAMESPACE Invoicing;
 
@@ -16,14 +16,11 @@ nameNumerator 'Нумератор' (InvoiceType o) = name(numerator(o));
 customer = DATA Partner (InvoiceType);
 nameCustomer 'Покупатель' (InvoiceType o) = name(customer(o));
 
-currency = DATA Currency (InvoiceType);
-nameCurrency 'Валюта' (InvoiceType o) = name(currency(o));
-
 taxIncluded 'Цена включает налоги' = DATA BOOLEAN (InvoiceType);
 
 FORM invoiceType 'Тип реализации'
     OBJECTS o = InvoiceType PANEL 
-    PROPERTIES(o) name, id, nameNumerator, nameCustomer, nameCurrency, taxIncluded
+    PROPERTIES(o) name, id, nameNumerator, nameCustomer, taxIncluded
      
     EDIT InvoiceType OBJECT o;
 ;

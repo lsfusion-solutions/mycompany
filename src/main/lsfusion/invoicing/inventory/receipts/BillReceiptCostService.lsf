@@ -4,7 +4,9 @@ REQUIRE BillReceiptCost, BillServiceCost;
 
 NAMESPACE Bill;
 
-extraCost (ReceiptLine rl) += GROUP SUM costAllocated(billLine(rl), BillLine bsl) IF serviceLine(billLine(rl), bsl);
+costAllocated (BillLine bl) = GROUP SUM costAllocated(bl, BillLine bsl) IF serviceLine(bl, bsl) MATERIALIZED;
+
+extraCost (ReceiptLine rl) += NUMERIC[14,2](costAllocated(billLine(rl)) * rate1(billLine(rl)));
 
 EXTEND FORM bill
     PROPERTIES nameCostingMethod 'Метод расчета себестоимости' = nameCostingMethod(item(bl))

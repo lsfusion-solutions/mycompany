@@ -1,0 +1,45 @@
+MODULE BillCurrency;
+
+REQUIRE Bill, Currency, ExchangeRate;
+
+NAMESPACE Invoicing;
+
+currency = DATA Currency (BillType);
+nameCurrency 'Валюта' (BillType o) = name(currency(o));
+
+EXTEND FORM billType
+    PROPERTIES(o) nameCurrency
+;
+
+currency = DATA Currency (Bill);
+nameCurrency 'Валюта' (Bill b) = name(currency(b));
+
+WHEN LOCAL SETCHANGED(type(Bill b)) AND currency(type(b)) AND NOT CHANGED(currency(b)) DO currency(b) <- currency(type(b));  
+
+currency (BillLine l) = currency(bill(l));
+nameCurrency 'Валюта' (BillLine l) = nameCurrency(bill(l));
+
+EXTEND FORM bill
+    PROPERTIES(b) nameCurrency
+;
+
+DESIGN bill {
+    headerRight {
+        MOVE PROPERTY(nameCurrency(b));
+    }           
+}
+
+EXTEND FORM bills
+    PROPERTIES(b) READONLY nameCurrency
+;
+
+clone (Bill to, Bill from) + {
+    currency(to) <- currency(from);
+}
+
+// exchange rate
+
+rate1 (Bill b) = rate1(currency(b), date(b));
+rate1 (BillLine l) = rate1(bill(l));
+
+currencyAmount 'Сумма в базовой валюте' (BillLine l) = NUMERIC[14,2](amount(l) * rate1(l));
