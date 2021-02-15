@@ -1,0 +1,40 @@
+MODULE Currency;
+
+REQUIRE MasterData;
+
+NAMESPACE MasterData;
+
+CLASS Currency 'Валюта';
+TABLE currency (Currency);
+
+name 'Наименование' = DATA ISTRING[30] (Currency) CHARWIDTH 10;
+currency (ISTRING[30] name) = GROUP AGGR Currency c BY name(c);
+
+defaultCurrency = DATA Currency();
+default 'По умолчанию' (Currency c) = defaultCurrency() = c; 
+
+FORM currency 'Валюта'
+    OBJECTS o = Currency PANEL
+    PROPERTIES(o) name, default
+    
+    EDIT Currency OBJECT o
+;
+
+FORM currencies 'Валюты'
+    OBJECTS o = Currency
+    PROPERTIES(o) READONLY name, default
+    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+;
+
+FORM dialogCurrencies 'Валюты'
+    OBJECTS o = Currency
+    PROPERTIES(o) READONLY name
+    
+    LIST Currency OBJECT o
+;
+
+NAVIGATOR {
+    masterData {
+        NEW currencies;
+    }
+}
