@@ -4,7 +4,7 @@ REQUIRE InvoicingSettings, TaxItem, BankAccount,
         MetaTax, PaymentTermsPurchase, DateUtils, 
         ItemPurchase, ItemCost, PartnerPurchase, Company,
         BarCode, MetaNumerator, Doc, LocationEmployee,
-        BillType, Product, ServiceP;
+        BillType, Product, ServiceP, Currency;
 
 NAMESPACE Invoicing;
 
@@ -31,12 +31,12 @@ numberDate 'Описание' (Bill b) = number(b) + ' от ' + dateTime(b) IN i
 vendor 'Поставщик' = DATA Partner (Bill);
 nameVendor 'Поставщик' (Bill b) = name(vendor(b));
 
-WHEN LOCAL SETCHANGED(type(Bill b)) AND defaultVendor(type(b)) AND NOT CHANGED(vendor(b)) DO vendor(b) <- defaultVendor(type(b));  
+WHEN LOCAL SETCHANGED(type(Bill b)) AND vendor(type(b)) AND NOT CHANGED(vendor(b)) DO vendor(b) <- vendor(type(b));  
 
 isVendor = ABSTRACT VALUE BOOLEAN (Bill);
 isVendor(Bill b) += isVendor(vendor(b));
 CONSTRAINT vendor(Bill b) AND NOT isVendor(b) 
-                CHECKED BY vendor
+                CHECKED BY vendor[Bill]
                 MESSAGE 'Контрагент должен быть поставщиком';
 
 // company
@@ -73,6 +73,12 @@ WHEN LOCAL CHANGED(company(Bill b)) DO companyAccount(b) <- defaultAccount(compa
 CONSTRAINT companyAccount(Bill b) AND NOT company(b) = holder(companyAccount(b))
     CHECKED BY companyAccount
     MESSAGE 'Счет должен принадлежать выбранной компании';
+
+// currency
+currency = DATA Currency (Bill);
+nameCurrency 'Валюта' (Bill b) = name(currency(b));
+
+WHEN LOCAL SETCHANGED(type(Bill b)) AND currency(type(b)) AND NOT CHANGED(currency(b)) DO currency(b) <- currency(type(b));  
 
 vendorReference 'Код поставщика' = DATA STRING[30] (Bill);
 note 'Примечание' = DATA ISTRING[50] (Bill);
@@ -121,6 +127,8 @@ numberDate 'Описание' (BillLine l) = numberDate(bill(l));
 vendor (BillLine l) = vendor(bill(l));
 nameVendor 'Поставщик' (BillLine l) = nameVendor(bill(l));
 nameCompany 'Компания' (BillLine l) = nameCompany(bill(l));
+currency (BillLine l) = currency(bill(l));
+nameCurrency 'Валюта' (BillLine l) = nameCurrency(bill(l));
 
 FORM billLines 'Строки поступления'
     OBJECTS l = BillLine
@@ -135,7 +143,7 @@ edit (BillLine l) + { edit(bill(l)); }
 FORM bill 'Поступление'
     OBJECTS  b = Bill PANEL 
     PROPERTIES(b) nameType, dateTime, number, 
-                  nameVendor, nameCompany,
+                  nameVendor, nameCompany, nameCurrency,
                   namePaymentTerms, dueDateTime, nameVendorAccount, nameCompanyAccount,
                   vendorReference, note
         
@@ -160,7 +168,8 @@ DESIGN bill {
             }
             NEW headerRight {
                 MOVE PROPERTY(nameVendor(b));
-                MOVE PROPERTY(nameCompany(b)) { notNull = TRUE; }           
+                MOVE PROPERTY(nameCompany(b)) { notNull = TRUE; }
+                MOVE PROPERTY(nameCurrency(b));           
             }
             NEW relatedDoc {
                 fill = 1;
@@ -244,6 +253,7 @@ clone ABSTRACT LIST (Bill, Bill);
 clone (Bill to, Bill from) + {
     type(to) <- type(from);
     vendor(to) <- vendor(from);
+    currency(to) <- currency(from);
     note(to) <- note(from);
     FOR bill(BillLine l) = from INLINE NEW nl = BillLine DO {
         bill(nl) <- to;

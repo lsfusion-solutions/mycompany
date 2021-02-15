@@ -60,8 +60,15 @@ deliveryAddress 'Адрес доставки' = DATA STRING (Order) CHARWIDTH 20
 WHEN LOCAL (CHANGED(customer(Order o)) OR CHANGED(department(o))) AND NOT CHANGED(deliveryAddress(o)) DO 
     deliveryAddress(o) <- OVERRIDE addressCsv(department(o)), addressCsvCustomer(o);
 
+// location
 location = DATA Location (Order) PREREAD;
 nameLocation 'Место хранения' (Order o) = name(location(o));
+
+// currency
+currency = DATA Currency (Order);
+nameCurrency 'Валюта' (Order o) = name(currency(o));
+
+WHEN LOCAL SETCHANGED(type(Order o)) AND currency(type(o)) AND NOT CHANGED(currency(o)) DO currency(o) <- currency(type(o));  
 
 // Sales information
 representative 'Наш представитель' = DATA Employee (Order);
@@ -127,7 +134,7 @@ FORM order 'Заказ покупателя'
     OBJECTS o = Order PANEL
     PROPERTIES(o) nameType, dateTime, number, 
                   nameCustomer, nameDepartment SHOWIF countDepartment(customer(o)), 
-                  nameCompany, nameLocation,
+                  nameCompany, nameLocation, nameCurrency,
                   validity,
                   namePaymentTerms, addressCsvCustomer,
                   scheduledDateTime, deliveryAddress, 
@@ -158,6 +165,7 @@ DESIGN order {
                 MOVE PROPERTY(nameDepartment(o)); 
                 MOVE PROPERTY(nameCompany(o)) { notNull = TRUE; }
                 MOVE PROPERTY(nameLocation(o));               
+                MOVE PROPERTY(nameCurrency(o));
             }    
             NEW relatedDoc {
                 type = TABBED;
@@ -252,6 +260,7 @@ clone (Order to, Order from) {
     paymentTerms(to) <- paymentTerms(from);
     company(to) <- company(from);
     location(to) <- location(from);
+    currency(to) <- currency(from);
     representative(to) <- representative(from); 
     FOR order(OrderLine l) = from INLINE NEW nl = OrderLine DO {
         order(nl) <- to;

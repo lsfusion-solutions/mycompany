@@ -1,6 +1,6 @@
 MODULE PurchaseOrder;
 
-REQUIRE Time, MetaNumerator, Employee, Company,
+REQUIRE Time, MetaNumerator, Employee, Company, Currency,
         MetaTax, TaxItem, BarCode, PurchaseOrderType,
         PurchaseSettings, PartnerPurchase, 
         ItemSales, ItemCost,
@@ -51,8 +51,15 @@ company 'Компания' = DATA Company (Order) NONULL;
 nameCompany 'Компания' (Order o) = name(company(o));
 WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(company(o)) DO company(o) <- defaultCompany();
 
+// location
 location = DATA Location (Order);
 nameLocation 'Место хранения' (Order o) = name(location(o));
+
+// currency
+currency = DATA Currency (Order);
+nameCurrency 'Валюта' (Order o) = name(currency(o));
+
+WHEN LOCAL SETCHANGED(type(Order o)) AND currency(type(o)) AND NOT CHANGED(currency(o)) DO currency(o) <- currency(type(o));  
 
 // Purchase information
 representative 'Наш представитель' = DATA Employee (Order);
@@ -119,7 +126,8 @@ edit (OrderLine l) + { edit(order(l)); }
 
 FORM order 'Заказ поставщику'
     OBJECTS o = Order PANEL
-    PROPERTIES(o) nameType, dateTime, number, nameVendor, nameCompany, nameLocation,
+    PROPERTIES(o) nameType, dateTime, number, 
+                  nameVendor, nameCompany, nameLocation, nameCurrency,
                   namePaymentTerms,
                   scheduledDateTime,
                   nameRepresentative, vendorReference
@@ -148,6 +156,7 @@ DESIGN order {
                 MOVE PROPERTY(nameVendor(o)) { notNull = TRUE; } 
                 MOVE PROPERTY(nameCompany(o)) { notNull = TRUE; }
                 MOVE PROPERTY(nameLocation(o));
+                MOVE PROPERTY(nameCurrency(o));
             }
             NEW relatedDoc {
                 fill = 1;
@@ -230,6 +239,7 @@ clone (Order to, Order from) {
     paymentTerms(to) <- paymentTerms(from);
     company(to) <- company(from);
     location(to) <- location(from);
+    currency(to) <- currency(from);
     representative(to) <- representative(from); 
     FOR order(OrderLine l) = from INLINE NEW nl = OrderLine DO {
         order(nl) <- to;

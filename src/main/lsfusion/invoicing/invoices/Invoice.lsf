@@ -32,12 +32,12 @@ customer = DATA Partner (Invoice);
 nameCustomer 'Покупатель' (Invoice i) = name(customer(i));
 addressCsvCustomer 'Адрес покупателя' (Invoice i) = addressCsv(customer(i));
 
-WHEN LOCAL SETCHANGED(type(Invoice i)) AND defaultCustomer(type(i)) AND NOT CHANGED(customer(i)) DO customer(i) <- defaultCustomer(type(i));  
+WHEN LOCAL SETCHANGED(type(Invoice i)) AND customer(type(i)) AND NOT CHANGED(customer(i)) DO customer(i) <- customer(type(i));  
 
 isCustomer = ABSTRACT VALUE BOOLEAN (Invoice);
 isCustomer(Invoice i) += isCustomer(customer(i));
 CONSTRAINT customer(Invoice i) AND NOT isCustomer(i) 
-                CHECKED BY customer
+                CHECKED BY customer[Invoice]
                 MESSAGE 'Контрагент должен быть покупателем';
 
 @defineDocDepartment(invoice, customer);
@@ -80,6 +80,12 @@ CONSTRAINT companyAccount(Invoice b) AND NOT company(b) = holder(companyAccount(
 deliveryAddress 'Адрес доставки' = DATA STRING (Invoice) CHARWIDTH 20;
 WHEN LOCAL (CHANGED(customer(Invoice i)) OR CHANGED(department(i))) AND NOT CHANGED(deliveryAddress(i)) DO 
     deliveryAddress(i) <- OVERRIDE addressCsv(department(i)), addressCsvCustomer(i);
+
+// currency
+currency = DATA Currency (Invoice);
+nameCurrency 'Валюта' (Invoice i) = name(currency(i));
+
+WHEN LOCAL SETCHANGED(type(Invoice i)) AND currency(type(i)) AND NOT CHANGED(currency(i)) DO currency(i) <- currency(type(i));  
 
 customerReference 'Код покупателя' = DATA STRING[30] (Invoice);
 note 'Примечание' = DATA ISTRING[50] (Invoice);
@@ -146,7 +152,8 @@ edit (InvoiceLine l) + { edit(invoice(l)); }
 
 FORM invoice 'Реализация'
     OBJECTS  i = Invoice PANEL 
-    PROPERTIES(i) nameType, dateTime, number, nameCustomer, nameDepartment SHOWIF countDepartment(customer(i)), nameCompany,
+    PROPERTIES(i) nameType, dateTime, number, 
+                  nameCustomer, nameDepartment SHOWIF countDepartment(customer(i)), nameCompany, nameCurrency,
                   namePaymentTerms, dueDateTime, nameCustomerAccount, nameCompanyAccount,
                   deliveryAddress, customerReference, note
         
@@ -173,6 +180,7 @@ DESIGN invoice {
                 MOVE PROPERTY(nameCustomer(i));
                 MOVE PROPERTY(nameDepartment(i));
                 MOVE PROPERTY(nameCompany(i)) { notNull = TRUE; }           
+                MOVE PROPERTY(nameCurrency(i));           
             }
             NEW relatedDoc {
                 fill = 1;
@@ -261,6 +269,7 @@ clone ABSTRACT LIST (Invoice, Invoice);
 clone (Invoice to, Invoice from) + {
     type(to) <- type(from);
     customer(to) <- customer(from);
+    currency(to) <- currency(from);
     note(to) <- note(from);
     FOR invoice(InvoiceLine l) = from INLINE NEW nl = InvoiceLine DO {
         invoice(nl) <- to;

@@ -1,6 +1,6 @@
 MODULE SalesOrderType;
 
-REQUIRE Numerator, SalesSettings;
+REQUIRE Numerator, Currency, SalesSettings;
 
 NAMESPACE Sales;
 
@@ -13,11 +13,14 @@ orderType = GROUP AGGR OrderType t BY id(t);
 numerator 'Нумератор' = DATA Numerator (OrderType);
 nameNumerator 'Нумератор' (OrderType o) = name(numerator(o));
 
+currency = DATA Currency (OrderType);
+nameCurrency 'Валюта' (OrderType o) = name(currency(o));
+
 taxIncluded 'Цена включает налоги' = DATA BOOLEAN (OrderType);
 
 FORM orderType 'Тип заказа'
     OBJECTS o = OrderType PANEL 
-    PROPERTIES(o) name, id, nameNumerator, taxIncluded
+    PROPERTIES(o) name, id, nameNumerator, nameCurrency, taxIncluded
      
     EDIT OrderType OBJECT o;
 ;
