@@ -6,7 +6,9 @@ NAMESPACE MasterData;
 
 CLASS ItemHistory 'История изменений';
 
-item = DATA Item (ItemHistory);
+item = DATA Item (ItemHistory) INDEXED;
+nameItem '{Item}' (ItemHistory l) = name(item(l));
+idItem 'Код' (ItemHistory l) = id(item(l));
 
 dateTime 'Дата' = DATA DATETIME (ItemHistory);
 
@@ -42,7 +44,7 @@ WHEN DROPPED(Item it IS Item) DO {
  
 FORM itemHistory 'История'
     OBJECTS h = ItemHistory
-    PROPERTIES(h) READONLY dateTime, nameUser, type, description, pdescription = description PANEL
+    PROPERTIES(h) READONLY dateTime, nameUser, type, nameItem, idItem, description, pdescription = description PANEL
     ORDERS dateTime(h)
     FILTERGROUP itemType
         FILTER 'Добавлена номенклатура' type(h) = 'Добавлена номенклатура'
