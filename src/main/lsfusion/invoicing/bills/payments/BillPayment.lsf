@@ -1,6 +1,6 @@
 MODULE BillPayment;
 
-REQUIRE BillDone, BillDebt, OutgoingPaymentDebt;
+REQUIRE BillDone, BillDebt, OutgoingPaymentDebt, OutgoingPaymentCurrency;
 
 NAMESPACE Invoicing;
 
@@ -27,13 +27,15 @@ registerPayment 'Оплатить' (Bill b) {
             
             ready(p) <- TRUE;
             
-            amount(p) <- left(b);
+            fill(p, b);
+
+            executeLocalEvents();
+            
+            amount(p) <- sourceLeft(b);
             paid(b, p) <- left(b, p);
             
-            fill(p, b);
-            
             DIALOG outgoingPayment OBJECTS p = p DOCKED NOMANAGESESSION DO {
-                IF amount(p) < paid(b, p) THEN paid(b, p) <- amount(p);
+                IF amount[Debt](p) < paid(b, p) THEN paid(b, p) <- amount[Debt](p);
                 APPLY; 
             }
        } 

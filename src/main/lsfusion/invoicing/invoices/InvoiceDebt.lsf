@@ -1,6 +1,6 @@
 MODULE InvoiceDebt;
 
-REQUIRE InvoiceDone, InvoiceCanceled, InvoiceContract, Debt;
+REQUIRE InvoiceDone, InvoiceCanceled, InvoiceContract, InvoiceCurrency, Debt;
 
 NAMESPACE Invoicing;
 
@@ -18,7 +18,8 @@ company (Invoice i) += company(i);
 
 contract (Invoice i) += contract(i);
 
-amount (Invoice i) += amount(i);
+sourceCurrency (Invoice i) += currency(i);
+sourceAmount (Invoice i) += amount(i);
 
 // pay
 pay 'Разнести' (IncomingDebt d, Invoice i) {
@@ -57,5 +58,5 @@ EXTEND FORM invoices
 ;
 
 // auto set done
-WHEN SET(amount(Invoice i) = paid(i)) DO done(i) <- TRUE;
-WHEN DROPPED(amount(Invoice i) = paid(i)) DO done(i) <- NULL;
+WHEN SET(amount[Debt](Invoice i) = paid(i)) DO done(i) <- TRUE;
+WHEN DROPPED(amount[Debt](Invoice i) = paid(i)) DO done(i) <- NULL;

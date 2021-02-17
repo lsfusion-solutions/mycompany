@@ -76,5 +76,7 @@ rate (ExchangeRate r, Currency from, DATE d) =
           WHERE exchangeRate(rl) = r AND currency(rl) = from AND date(rl) <= d; 
 
 rate (Currency to, Currency from, DATE d) = rate(defaultExchangeRate(to), from, d);
+rate1 (Currency to, Currency from, DATE d) = OVERRIDE rate(to, from, d), 1.0000000000;
+
 rate (Currency from, DATE d) = rate(defaultCurrency(), from, d);
-rate1 (Currency from, DATE d) = OVERRIDE rate(from, d), 1.0000000000; 
+rate1 (Currency from, DATE d) = rate1(defaultCurrency(), from, d); 

@@ -1,6 +1,6 @@
 MODULE Debt;
 
-REQUIRE Partner, Company, Contract;
+REQUIRE Partner, Company, Contract, Currency, ExchangeRate, DateUtils;
 
 NAMESPACE Invoicing;
 
@@ -9,6 +9,8 @@ active 'Активен' = ABSTRACT BOOLEAN (Debt) MATERIALIZED;
 number 'Номер' = ABSTRACT STRING[31] (Debt) MATERIALIZED;
 
 dateTime 'Дата' = ABSTRACT DATETIME (Debt) MATERIALIZED;
+@defineDateTimeAggregation(Debt);
+
 dueDateTime 'Оплатить до' = ABSTRACT DATETIME(Debt) MATERIALIZED;
 
 partner = ABSTRACT Partner (Debt) MATERIALIZED;
@@ -21,7 +23,19 @@ nameCompany 'Компания' (Debt d) = name(company(d));
 
 contract = ABSTRACT Contract (Debt) MATERIALIZED; 
 
-amount '{Amount}' = ABSTRACT NUMERIC[14,2] (Debt) MATERIALIZED;
+sourceCurrency = ABSTRACT Currency (Debt) MATERIALIZED;
+nameSourceCurrency 'Исходная валюта' (Debt d) = name(sourceCurrency(d));
+
+sourceAmount 'Исходная сумма' = ABSTRACT NUMERIC[14,2] (Debt) MATERIALIZED;
+
+currency = ABSTRACT VALUE Currency (Debt) MATERIALIZED;
+currency (Debt d) += defaultCurrency() IF d IS Debt;
+
+rate1 (Debt d, DATE dt) = rate1(currency(d), (OVERRIDE sourceCurrency(d), defaultCurrency()), dt);
+rate1 'Курс' (Debt d) = rate1(d, date(d));
+currentRate1 (Debt d) = rate1(d, currentDate());
+
+amount '{Amount}' (Debt d) = NUMERIC[14,2](sourceAmount(d) * rate1(d)) MATERIALIZED;
 
 class 'Вид' (Debt d) = objectClassName(d) IF d IS Debt CHARWIDTH 15;
 
@@ -57,6 +71,9 @@ left 'Осталось' (Debt d) = MULTI left[IncomingDebt](d), left[OutgoingDeb
 signedLeft 'Осталось' (Debt d) = IF d IS OutgoingDebt THEN left(d) ELSE -left(d);
 
 left 'Осталось' (IncomingDebt id, OutgoingDebt od) = min(left(id), left(od));
+
+sourceLeft (IncomingDebt id) = NUMERIC[14,2] (left(id) / currentRate1(id)); 
+sourceLeft (OutgoingDebt od) = NUMERIC[14,2] (left(od) / currentRate1(od)); 
 
 canBePaid (IncomingDebt id, OutgoingDebt od) = canBeMatched(id, od) AND left(id, od) > 0 AND active(id) AND active(od);
 

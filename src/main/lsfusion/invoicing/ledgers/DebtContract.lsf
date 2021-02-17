@@ -1,8 +1,12 @@
 MODULE DebtContract;
 
-REQUIRE Debt, Contract;
+REQUIRE DebtPartner, Contract;
 
 NAMESPACE Invoicing;
+
+currency = DATA Currency (Contract);
+nameCurrency 'Валюта' (Contract c) = name(currency(c));
+currency (Debt d) += currency(contract(d));
 
 debtContract 'Долг' (Debt d) = PARTITION SUM signedAmount(d) ORDER dateTime(d), d BY contract(d); 
 
@@ -15,7 +19,8 @@ FORM debtsContract 'Долги по договору'
     PROPERTIES(c) READONLY name
 
     OBJECTS d = Debt
-    PROPERTIES(d) READONLY class, type, number, dateTime, dueDateTime, nameCompany, amount, left, debtContract
+    PROPERTIES(d) READONLY class, type, number, dateTime, dueDateTime, nameCompany, 
+                           sourceAmount, nameSourceCurrency, rate1, amount, left, debtContract
     PROPERTIES(d) NEWSESSION EDIT
     ORDERS dateTime(d)
     
@@ -26,6 +31,7 @@ FORM debtsContract 'Долги по договору'
 ;
 
 EXTEND FORM contract
+    PROPERTIES(c) nameCurrency
     PROPERTIES(c) ON CHANGE { SHOW debtsContract OBJECTS c = c DOCKED; } debt, pastDueDebt
 ;
 DESIGN contract {
@@ -33,6 +39,7 @@ DESIGN contract {
         NEW debt {
             caption = 'Долг';
             alignment = STRETCH;
+            MOVE PROPERTY(nameCurrency(c));
             MOVE PROPERTY(debt(c));
             MOVE PROPERTY(pastDueDebt(c));
         }
@@ -40,5 +47,5 @@ DESIGN contract {
 }
 
 EXTEND FORM contracts
-    PROPERTIES(c) READONLY debt, pastDueDebt
+    PROPERTIES(c) READONLY nameCurrency, debt, pastDueDebt
 ;

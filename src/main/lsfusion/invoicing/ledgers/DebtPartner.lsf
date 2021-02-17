@@ -4,6 +4,10 @@ REQUIRE Debt, Partner;
 
 NAMESPACE Invoicing;
 
+currency = DATA Currency (Partner);
+nameCurrency 'Валюта' (Partner p) = name(currency(p));
+currency (Debt d) += currency(partner(d));
+
 debt 'Долг' (Debt d) = PARTITION SUM signedAmount(d) ORDER dateTime(d), d BY partner(d); 
 
 debt 'Долг' (Partner p) = GROUP SUM signedAmount(Debt d) IF partner(d) = p;
@@ -15,7 +19,8 @@ FORM debts 'Долги по контрагенту'
     PROPERTIES(p) READONLY name
 
     OBJECTS d = Debt
-    PROPERTIES(d) READONLY class, type, number, dateTime, dueDateTime, nameCompany, amount, left, debt
+    PROPERTIES(d) READONLY class, type, number, dateTime, dueDateTime, nameCompany, 
+                           sourceAmount, nameSourceCurrency, rate1, amount, left, debt
     PROPERTIES(d) NEWSESSION EDIT
     ORDERS dateTime(d)
     
@@ -26,15 +31,17 @@ FORM debts 'Долги по контрагенту'
 ;
 
 EXTEND FORM partner
+    PROPERTIES(p) nameCurrency
     PROPERTIES(p) ON CHANGE { SHOW debts OBJECTS p = p DOCKED; } debt, pastDueDebt
 ;
 DESIGN partner {
     headerRight {
+        MOVE PROPERTY(nameCurrency(p));
         MOVE PROPERTY(debt(p));
         MOVE PROPERTY(pastDueDebt(p));
     }
 }
 
 EXTEND FORM partners
-    PROPERTIES(p) READONLY debt, pastDueDebt
+    PROPERTIES(p) READONLY nameCurrency, debt, pastDueDebt
 ;

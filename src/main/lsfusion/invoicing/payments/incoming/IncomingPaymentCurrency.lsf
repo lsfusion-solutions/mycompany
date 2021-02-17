@@ -1,0 +1,39 @@
+MODULE IncomingPaymentCurrency;
+
+REQUIRE IncomingPayment, ExchangeRate;
+
+NAMESPACE Invoicing;
+
+currency = DATA Currency (IncomingPaymentType);
+nameCurrency 'Валюта' (IncomingPaymentType o) = name(currency(o));
+
+EXTEND FORM incomingPaymentType
+    PROPERTIES(o) nameCurrency
+;
+
+currency = DATA Currency (IncomingPayment);
+nameCurrency 'Валюта' (IncomingPayment b) = name(currency(b));
+
+WHEN LOCAL (SETCHANGED(type(IncomingPayment p)) OR SETCHANGED(companyAccount(p))) AND (currency(type(p)) OR currency(companyAccount(p))) 
+           AND NOT CHANGED(currency(p)) 
+    DO currency(p) <- OVERRIDE currency(companyAccount(p)), currency(type(p));  
+
+EXTEND FORM incomingPayment
+    PROPERTIES(p) nameCurrency
+;
+
+DESIGN incomingPayment {
+    params {
+        MOVE PROPERTY(nameCurrency(p));
+    }           
+}
+
+EXTEND FORM incomingPayments
+    PROPERTIES(p) READONLY nameCurrency
+;
+
+// exchange rate
+
+rate1 (IncomingPayment b) = rate1(currency(b), date(b));
+
+currencyAmount 'Сумма в базовой валюте' (IncomingPayment p) = NUMERIC[14,2](amount(p) * rate1(p));
