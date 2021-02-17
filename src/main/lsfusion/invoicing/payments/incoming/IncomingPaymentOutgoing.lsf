@@ -1,6 +1,7 @@
 MODULE IncomingPaymentOutgoing;
 
-REQUIRE IncomingPaymentCanceled, OutgoingPaymentCanceled;
+REQUIRE IncomingPaymentCanceled, OutgoingPaymentCanceled, 
+        ExchangeRate, OutgoingPaymentCurrency, IncomingPaymentCurrency;
 
 NAMESPACE Invoicing;
 
@@ -14,6 +15,8 @@ EXTEND FORM outgoingPaymentType
 
 // outgoing
 @defineDocRelation(outgoingPayment, incomingPayment, 'Исходящий платеж', 'Входящий платеж', p, p);
+
+rate1 (IncomingPayment ip, OutgoingPayment op) = rate1(currency(op), currency(ip), date(op));
 
 incomingPaymentCreated = DATA LOCAL IncomingPayment ();
 newIncomingPayment (OutgoingPayment op) {
@@ -30,7 +33,7 @@ newIncomingPayment (OutgoingPayment op) {
         partnerAccount(ip) <- companyAccount(op);
         companyAccount(ip) <- partnerAccount(op);
         
-        amount(ip) <- amount(op);
+        amount(ip) <- NUMERIC[14,2](amount(op) / rate1(ip, op));
 
         note(ip) <- note(op);
         reference(ip) <- reference(op);
@@ -87,7 +90,7 @@ WHEN CHANGED(partnerAccount(outgoingPayment(IncomingPayment ip))) AND autoCreate
     companyAccount(ip) <- partnerAccount(outgoingPayment(ip));
     
 WHEN CHANGED(amount(outgoingPayment(IncomingPayment ip))) AND autoCreateIncomingPayment(type(outgoingPayment(ip))) DO 
-    amount(ip) <- amount(outgoingPayment(ip));
+    amount(ip) <- NUMERIC[14,2](amount(outgoingPayment(ip)) / rate1(ip, outgoingPayment(ip)));
 
 WHEN CHANGED(note(outgoingPayment(IncomingPayment ip))) AND autoCreateIncomingPayment(type(outgoingPayment(ip))) DO 
     note(ip) <- note(outgoingPayment(ip));

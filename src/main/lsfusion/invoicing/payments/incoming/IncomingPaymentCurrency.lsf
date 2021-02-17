@@ -14,9 +14,7 @@ EXTEND FORM incomingPaymentType
 currency = DATA Currency (IncomingPayment);
 nameCurrency 'Валюта' (IncomingPayment b) = name(currency(b));
 
-WHEN LOCAL (SETCHANGED(type(IncomingPayment p)) OR SETCHANGED(companyAccount(p))) AND (currency(type(p)) OR currency(companyAccount(p))) 
-           AND NOT CHANGED(currency(p)) 
-    DO currency(p) <- OVERRIDE currency(companyAccount(p)), currency(type(p));  
+currency(IncomingPayment p) <- OVERRIDE currency(companyAccount(p)), currency(type(p)) WHEN (SETCHANGED(type(p)) OR SETCHANGED(companyAccount(p)));  
 
 EXTEND FORM incomingPayment
     PROPERTIES(p) nameCurrency
