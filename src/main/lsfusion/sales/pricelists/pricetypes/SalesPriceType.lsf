@@ -1,6 +1,6 @@
 MODULE SalesPriceType;
 
-REQUIRE SalesSettings, PartnerSales, Partner; 
+REQUIRE SalesSettings, PartnerSales, Partner, Currency; 
 
 NAMESPACE Sales;
 
@@ -10,18 +10,21 @@ name 'Наименование' = DATA ISTRING[100] (PriceType) NONULL CHARWIDTH
 id 'Код' = DATA STRING[20] (PriceType);
 priceType = GROUP AGGR PriceType t BY id(t);
 
+currency = DATA Currency (PriceType);
+nameCurrency 'Валюта' (PriceType o) = name(currency(o));
+
 taxIncluded 'С учетом налогов' = DATA BOOLEAN (PriceType);  
 
 FORM priceType 'Вид цены'
     OBJECTS pt = PriceType PANEL 
-    PROPERTIES(pt) name, id, taxIncluded
+    PROPERTIES(pt) name, id, nameCurrency, taxIncluded
 
     EDIT PriceType OBJECT pt
 ;
 
 FORM priceTypes 'Виды цен'
     OBJECTS pt = PriceType
-    PROPERTIES(pt) READONLY name, id, taxIncluded
+    PROPERTIES(pt) READONLY name, id, nameCurrency, taxIncluded
     PROPERTIES(pt) NEWSESSION NEW, EDIT, DELETE 
 
     LIST PriceType OBJECT pt

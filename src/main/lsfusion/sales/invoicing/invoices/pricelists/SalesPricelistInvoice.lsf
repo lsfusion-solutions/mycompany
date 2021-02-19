@@ -1,6 +1,6 @@
 MODULE SalesPricelistInvoice;
 
-REQUIRE Invoice, SalesPricelistValue;
+REQUIRE Invoice, SalesPricelistValue, InvoiceCurrency;
 
 NAMESPACE Sales;
 
@@ -33,7 +33,9 @@ WHEN LOCAL CHANGED(customer(Invoice o)) OR CHANGED(type(o)) DO
     priceType(o) <- OVERRIDE priceType(customer(o)), priceType(type(o));
 
 // price
-listPrice (InvoiceLine l) = overPriceA(priceType(invoice(l)), item(l), dateTime(invoice(l)));  
+listPrice (InvoiceLine l) = 
+    NUMERIC[10,2](overPriceA(priceType(invoice(l)), item(l), dateTime(l)) * 
+                  rate1((OVERRIDE currency(l), defaultCurrency()), currency(priceType(invoice(l))), date(l)));  
 defaultPrice (InvoiceLine l) += WHEN listPrice(l) THEN listPrice(l);
                                     
 WHEN LOCAL (SETCHANGED(priceType(invoice(InvoiceLine l))) OR

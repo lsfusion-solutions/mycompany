@@ -43,10 +43,12 @@ DESIGN order {
 }
 
 // price
-listPrice (OrderLine l) = overPriceA(priceType(order(l)), item(l), dateTime(order(l)));  
+listPrice (OrderLine l) = 
+    NUMERIC[10,2](overPriceA(priceType(order(l)), item(l), dateTime(l)) * 
+                  rate1((OVERRIDE currency(l), defaultCurrency()), currency(priceType(order(l))), date(l)));  
 defaultPrice (OrderLine l) += WHEN listPrice(l) THEN listPrice(l);
                                     
-WHEN LOCAL (SETCHANGED(priceType(order(OrderLine l))) OR
+WHEN LOCAL (SETCHANGED(priceType(order(OrderLine l))) OR SETCHANGED(currency(order(l))) OR
             (SETCHANGED(dateTime(order(l))) AND status(order(l)) = OrderStatus.draft)) 
             AND NOT CHANGED(price(l)) DO {
     price(l) <- defaultPrice(l); 

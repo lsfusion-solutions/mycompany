@@ -1,6 +1,7 @@
 MODULE SalesPricelist;
 
-REQUIRE SalesPricelistType, Item, Partner, ItemSales, PartnerSales, TaxItem, SalesSettings, SalesPriceType, CostLedger, Doc;
+REQUIRE SalesPricelistType, Item, Partner, ItemSales, PartnerSales, TaxItem, 
+        SalesSettings, SalesPriceType, CostLedger, Doc, ExchangeRate, DateUtils;
 
 NAMESPACE Sales; 
 
@@ -15,6 +16,8 @@ WHEN LOCAL SET(Pricelist p IS Pricelist) AND NOT CHANGED(type(p)) DO type(p) <- 
 
 startDateTime 'Дата начала' = DATA DATETIME (Pricelist) NONULL;
 startDateTime(Pricelist l) <- currentDateTime() WHEN SET(l IS Pricelist);
+
+@defineDateTimeAggregation(Pricelist, start, ' начала');
 
 endDateTime 'Дата окончания' = DATA DATETIME (Pricelist);
 
@@ -48,6 +51,8 @@ pricelist 'Прайс-лист' = DATA Pricelist (PricelistLine) NONULL DELETE;
 
 index '№' = PARTITION SUM 1 ORDER PricelistLine l BY pricelist(l) IN id MATERIALIZED CHARWIDTH 3;
 
+startDate (PricelistLine l) = startDate(pricelist(l));
+
 item '{Item}' = DATA Item (PricelistLine);
 nameItem '{Item}' (PricelistLine prl) = name(item(prl));
 idBarCodeItem 'Штрихкод' (PricelistLine l) = idBarCode(item(l));
@@ -71,7 +76,9 @@ editIn (PricelistLine pl, PriceType priceType) = editIn(pricelist(pl), priceType
 // events
 basePriceType (PricelistLine l, PriceType t) = basePriceType(type(pricelist(l)), t); 
 basePrice (PricelistLine l, PriceType t) = 
-    IF basePriceType(l, t) THEN price(l, basePriceType(l, t)) ELSE (cost(l) IF editIn(l, t));
+    IF basePriceType(l, t) 
+        THEN (price(l, basePriceType(l, t)) / rate1(currency(basePriceType(l, t)), currency(t), startDate(l))) 
+        ELSE ((cost(l) / rate1(currency(t), startDate(l))) IF editIn(l, t));
 
 taxCoeff (PricelistLine l, PriceType t) = 
     (100.0 + salesTax(item(l))) / 100.0 IF taxIncluded(t) AND NOT taxIncluded(basePriceType(l, t));
