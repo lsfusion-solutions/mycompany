@@ -1,15 +1,14 @@
 MODULE ItemImageMobile;
 
 REQUIRE Input, Utils, Reflection, Security, Authentication,
-        MasterDataSettings, ItemImage, 
-        CategoryMobile, BarCodeMobile, Mobile;
+        ItemImage, CategoryMobile, BarCodeMobile, Mobile;
 
 NAMESPACE MasterData;
 
 loadImageApply 'Загрузить' (Item i)  { NEWSESSION { INPUT = image(i) CHANGE DO APPLY; } }
 dropImageApply 'Сбросить' (Item i) { NEWSESSION { APPLY { image(i) <- NULL; } } } CONFIRM;
 
-FORM itemImageLoad 'Загрузка изображений'
+FORM itemImageLoad 'Изображения'
     OBJECTS i = Item PAGESIZE 50
     PROPERTIES(i) READONLY 'Имя' = name, id
     PROPERTIES(i) READONLY PANEL pName '' = name, '' = idBarCode, '' = nameUom 
@@ -62,8 +61,8 @@ DESIGN itemImageLoad {
 @defineCategoryFilter(itemImageLoad, i, filters);
 
 NAVIGATOR {
-    dashboards {
-        NEW itemImageLoad;
+    masterData {
+        NEW itemImageLoad AFTER items;
     }
 }
 
