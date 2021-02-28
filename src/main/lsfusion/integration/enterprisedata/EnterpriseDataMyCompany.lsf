@@ -1,0 +1,106 @@
+MODULE EnterpriseDataMyCompany;
+
+REQUIRE EnterpriseDataSend, EnterpriseDataReceive, Item, CountryP,
+        LegalEntityRu, DebtContract, Currency, Location,
+        BillCurrency, BillContract, BillReceipt, BillCustomsDeclaration;
+
+NAMESPACE EnterpriseData;
+
+// UOM
+EXTEND CLASS Uom : UOM;
+
+name (Uom uom) += STRING(MasterData.name(uom));
+
+// country
+EXTEND CLASS MasterData.Country : Country;
+
+id (MasterData.Country c) += STRING(MasterData.id(c));
+name (MasterData.Country c) += STRING(MasterData.name(c));
+
+// item
+EXTEND CLASS MasterData.Item : Item;
+
+article (MasterData.Item i) += MasterData.reference(i);
+id (MasterData.Item i) += CONCAT '-', prefix(), STRING(i);
+name (MasterData.Item i) += STRING(dataName(i));
+fullName (MasterData.Item i) += STRING(MasterData.name(i));
+
+// partner
+EXTEND CLASS MasterData.Partner : Partner, Company;
+
+inn (MasterData.Partner le) += MasterData.inn(le);
+name (MasterData.Partner le) += STRING(MasterData.name(le));
+fullName (MasterData.Partner le) += STRING(MasterData.fullName(le));
+type (MasterData.Partner le) += MULTI TypePartner.legalEntity IF le IS LegalEntity, TypePartner.individual IF le IS Individual;
+
+// currency
+EXTEND CLASS MasterData.Currency : Currency;
+
+name (MasterData.Currency c) += STRING(MasterData.name(c));
+id (MasterData.Currency c) += MasterData.id(c);
+
+// contract
+EXTEND CLASS MasterData.Contract : Contract;
+
+type (MasterData.Contract c) += TypeContract.other IF c IS MasterData.Contract;
+partner (MasterData.Contract c) += MasterData.partner(c);
+company (MasterData.Contract c) += MasterData.company(c);
+number (MasterData.Contract c) += MasterData.number(c);
+currency (MasterData.Contract c) += OVERRIDE Invoicing.currency(c), defaultCurrency();
+date (MasterData.Contract c) += MasterData.date(c);
+
+CLASS BillContract : Contract;
+billContract = AGGR BillContract WHERE Bill bill IS Bill AND NOT Invoicing.contract(bill);
+
+type (BillContract b) += TypeContract.supplier;
+partner (BillContract b) += OVERRIDE vendor(bill(b)), company(bill(b));
+company (BillContract b) += company(bill(b));
+currency (BillContract b) += currency(bill(b));
+date (BillContract b) += date(bill(b));
+
+// stock
+EXTEND CLASS Location : Stock;
+
+name (Location l) += STRING(Inventory.name(l));
+type (Location l) += TypeStock.nonAutomatedShop IF l IS Location;
+
+// invoice
+EXTEND CLASS Bill : PurchaseInvoice, Settlement;
+
+typeDocument1C 'Документ 1С' = DATA TypePurchaseInvoice (BillType);
+nameTypeDocument1C 'Документ 1С' (BillType b) = staticCaption(typeDocument1C(b));
+
+EXTEND FORM billType PROPERTIES nameTypeDocument1C(o);
+
+isDeleted (Bill b) += status(b) = BillStatus.draft;
+company (Bill b) += OVERRIDE Invoicing.company(b), defaultCompany(); 
+partner (Bill b) += OVERRIDE vendor(b), company(b);
+currency (Bill b) += OVERRIDE Invoicing.currency(b), defaultCurrency();
+dateTime (Bill b) += Invoicing.dateTime(b);
+id (Bill b) += STRING (replace(number(b), '/', ''));
+operation (Bill b) += OVERRIDE typeDocument1C(type(b)), TypePurchaseInvoice.delivery IF b IS Bill;
+contract[Settlement] (Bill b) += OVERRIDE Invoicing.contract(b), billContract(b);
+stock (Bill b) += location(b);
+
+settlements (Bill b) += b AS Bill;
+
+// lines of invoice
+EXTEND CLASS BillLine : PurchaseInvoiceProduct;
+
+purchaseInvoice (BillLine l) += bill(l);
+uom (BillLine l) += OVERRIDE uom(item(l)), uom('1');
+declaration (BillLine l) += STRING[30](OVERRIDE nameCustomsDeclaration(l), '');
+item (BillLine l) += Invoicing.item(l);
+quantity (BillLine l) += NUMERIC[15,3](Invoicing.quantity(l));
+sum (BillLine l) += NUMERIC[15,2](round2(untaxedAmount(l)));
+rateVat (BillLine l) += CASE
+    WHEN taxPercent(l) = 10.0 THEN TypeVat.vat10
+    WHEN taxPercent(l) = 9.09 THEN TypeVat.vat10_110
+    WHEN taxPercent(l) = 20.0 THEN TypeVat.vat20
+    WHEN taxPercent(l) = 16.67 THEN TypeVat.vat20_120
+    ELSE TypeVat.withoutVat
+;
+sumVat (BillLine l) += NUMERIC[15,2](taxAmount(l));
+price (BillLine l) += NUMERIC[15,2](Invoicing.price(l));
+idBarcode (BillLine l) += idBarCodeItem(l);
+isProduct (BillLine l) += Invoicing.item(l) IS Product;
