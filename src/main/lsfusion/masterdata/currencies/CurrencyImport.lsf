@@ -1,0 +1,48 @@
+MODULE CurrencyImport;
+
+REQUIRE Currency;
+
+NAMESPACE MasterData;
+
+currencyExport 'Экспорт валют' () {
+    NEWSESSION {
+        LOCAL f = EXCELFILE ();
+        EXPORT XLSX HEADER FROM 'Код' = id(Currency c), 'Наименование' = name(c); 
+        open(f());
+    }
+}
+
+currencyImport 'Импорт валют' () {
+    LOCAL id = STRING[3] (INTEGER);
+    LOCAL name = ISTRING[30] (INTEGER);
+    
+    INPUT f = EXCELFILE DO {
+        NEWSESSION {   
+            IMPORT XLS HEADER FROM f TO id = A, name = B;
+            
+            FOR imported(INTEGER i) DO NEW c = Currency {
+                id(c) <- id(i);
+                name(c) <- name(i);
+            }
+            
+            APPLY;
+            MESSAGE 'Импорт завершен';
+        }
+    }    
+}
+
+
+EXTEND FORM migrationData 
+    PROPERTIES currencyExport(), currencyImport()
+;
+
+DESIGN migrationData {
+    commons {
+        NEW currency {
+            type = CONTAINERH;
+            caption = 'Валюты';
+            MOVE PROPERTY(currencyImport());
+            MOVE PROPERTY(currencyExport());
+        }
+    }
+}
