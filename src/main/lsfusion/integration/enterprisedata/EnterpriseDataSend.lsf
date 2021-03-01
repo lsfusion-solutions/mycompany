@@ -1,0 +1,323 @@
+MODULE EnterpriseDataSend;
+
+REQUIRE EnterpriseData;
+
+NAMESPACE EnterpriseData;
+
+// all references
+CLASS ABSTRACT Reference : EnterpriseData;
+@defProp(name, 'Наименование', STRING, Reference);
+@defProp(id, 'Код', STRING, Reference);
+
+//UOM
+CLASS ABSTRACT UOM 'Справочник.ЕдиницыИзмерения' : Reference;
+@defProp(fullName, 'НаименованиеПолое', STRING, UOM);
+META defUOM (nm, class, table)
+    EXTEND FORM sendMessage
+        OBJECTS nm###class###table = UOM EXTID 'ЕдиницаИзмерения'
+        PROPERTIES(nm###class###table) id EXTID 'Код', name EXTID 'Наименование'
+        FILTERS nm###class###table = nm(class###table)
+    ;
+END
+
+// item
+CLASS ABSTRACT Item 'Справочник.Номенклатура' : Reference;
+@defProp(article, 'Артикул', STRING, Item);
+@defProp(fullName, 'НаименованиеПолное', STRING, Item);
+META defItem(nm, class, table)
+    EXTEND FORM sendMessage
+        OBJECTS nm###class###table = Item EXTID 'Номенклатура'
+        PROPERTIES(nm###class###table) uid EXTID 'Ссылка', article EXTID 'Арткул', id EXTID 'КодВПрограмме', name EXTID 'Наименование', fullName EXTID 'НаименованиеПолное'
+        FILTERS nm###class###table = nm(class###table)
+    ;
+END
+
+// patner
+CLASS ABSTRACT Partner 'Справочник.Контрагенты' : Reference;
+@defProp(inn, 'ИНН', STRING[12], Partner);
+@defProp(kpp, 'КПП', STRING[9], Partner);
+@defProp(fullName, 'НаименованиеПолное', STRING, Partner);
+@defProp(type, 'ЮридическоеФизическоеЛицо', TypePartner, Partner);
+idType 'ЮридическоеФизическоеЛицо' (Partner p) = staticCaption(type(p));
+META defPartner(nm, class)
+    EXTEND FORM sendMessage
+        OBJECTS nm###class = Partner EXTID 'Контрагент'
+        PROPERTIES(nm###class) uid EXTID 'Ссылка', name EXTID 'Наименование', fullName EXTID 'НаименованиеПолное', inn EXTID 'ИНН', kpp EXTID 'КПП', idType EXTID 'ЮридическоеФизическоеЛицо'
+        FILTERS nm###class = nm(class)
+    ;
+END
+
+// company
+CLASS ABSTRACT Company 'Справочник.Организации' : Partner;
+META defCompany(nm, class)
+    EXTEND FORM sendMessage
+        OBJECTS nm###class = Partner EXTID 'Организация'
+        PROPERTIES(nm###class) uid EXTID 'Ссылка', name EXTID 'Наименование', fullName EXTID 'НаименованиеПолное', inn EXTID 'ИНН', kpp EXTID 'КПП', idType EXTID 'ЮридическоеФизическоеЛицо'
+        FILTERS nm###class = nm(class)
+    ;
+END
+
+// stock
+CLASS ABSTRACT Stock 'Справочник.Склады' : Reference;
+
+@defProp(type, 'ТипСклада', TypeStock, Stock);
+idType 'ТипСклада' (Stock s) = staticCaption(type(s));
+META defStock(nm, class)
+    EXTEND FORM sendMessage
+        OBJECTS nm###class = Stock EXTID 'Склад' 
+        PROPERTIES(nm###class) uid EXTID 'Ссылка', name EXTID 'Наименование', idType EXTID 'ТипСклада'
+        FILTERS nm###class = nm(class)
+    ;
+END
+
+// currency
+CLASS ABSTRACT Currency 'Справочник.Валюты' : Reference;
+META defCurrency(nm, class, extid)
+    EXTEND FORM sendMessage
+        OBJECTS nm###class = Currency EXTID extid 
+        PROPERTIES(nm###class) id EXTID 'Код', name EXTID 'Наименование'
+        FILTERS nm###class = nm(class)
+    ;
+END
+META defCurrency(nm, class)
+    @defCurrency(nm, class, 'Валюта');    
+END
+
+// contract
+CLASS Contract 'Справочник.Договоры' : Reference;
+@defProp(currency, 'ВалютаВзаиморасчетов', Currency, Contract);
+@defProp(type, 'ВидДоговора', TypeContract, Contract);
+idType 'ВидДоговора' (Contract c) = staticCaption(type(c));
+@defProp(partner, 'Контрагент', Partner, Contract);
+@defProp(date, 'Дата', DATE, Contract);
+dateString 'Дата' (Contract c) = dateToString(date(c));
+@defProp(number, 'Номер', STRING, Contract);
+@defProp(company, 'Организация', Company, Contract);
+META defContract(nm, class)
+    EXTEND FORM sendMessage
+        OBJECTS nm###class = Contract EXTID 'Договор'
+        FILTERS nm###class = nm(class)
+        
+        PROPERTIES(nm###class) uid EXTID 'Ссылка', idType EXTID 'ВидДоговора' 
+    ;
+    @defCompany(company, nm###class);
+    @defPartner(partner, nm###class);
+    @defCurrency(currency, nm###class, 'ВалютаВзаиморасчетов');
+    EXTEND FORM sendMessage
+        PROPERTIES(nm###class) name EXTID 'Наименование',  dateString EXTID 'Дата', number EXTID 'Номер' 
+    ;
+END
+
+//settlement
+CLASS Settlement 'ДанныеВзаиморасчетов' : EnterpriseData;
+
+@defProp(contract, 'Договор', Contract, settlement);
+
+META defSettlement(nm, class)
+    EXTEND FORM sendMessage
+        OBJECTS nm###class = Settlement EXTID 'ДанныеВзаиморасчетов'
+        FILTERS nm###class = nm(class)
+    ;
+    @defContract(contract, nm###class);
+END
+
+//country
+CLASS ABSTRACT Country 'Справочник.СтраныМира' : Reference;
+@defProp(alha2, 'КодАльфа2', STRING[2], Country);
+@defProp(alha3, 'КодАльфа3', STRING[3], Country);
+@defProp(fullName, 'НаименованиеПолное', STRING, Country);
+META defCountry (nm, class, table)
+    EXTEND FORM sendMessage
+        OBJECTS nm###class###table = Country EXTID 'СтранаПроисхождения' 
+        PROPERTIES(nm###class###table) id EXTID 'Код', name EXTID 'Наименование'
+        FILTERS nm###class###table = nm(class###table)
+    ;
+END
+
+// all documents
+CLASS ABSTRACT Document 'Документ' : EnterpriseData;
+@defProp(dateTime, 'Дата', DATETIME, Document);
+dateTimeString 'Дата' (Document d) = dateTimeToString(dateTime(d));
+@defProp(id, 'Номер', ISTRING, Document);
+
+GROUP product EXTID 'Товары';
+GROUP service EXTID 'Услуги';
+GROUP paymentCard EXTID 'ОплатаПлатежнымиКартами';
+
+// sale order
+@extDocument(saleOrder, 'Документ.ЗаказКлиента', 'ЗаказКлиентаСсылка');
+@defPropObject(currency, 'Валюта', Currency, saleOrder);
+@defPropObject(customer, 'Контрагент', Partner, saleOrder);
+@defPropSimple(settlements, 'ДанныеВзаиморасчетов', STRING[0], saleOrder);
+@defPropSimple(note, 'Комментарий', STRING, saleOrder);
+
+@extTable(saleOrder, service);
+@defPropObject(item, 'Номенклатура', Item, saleOrder, service);
+@defPropSimple(quantity, 'Количество', NUMERIC[15,3], saleOrder, service);
+@defPropSimple(sum, 'Сумма', NUMERIC[15,2], saleOrder, service);
+@defPropSimple(price, 'Цена', NUMERIC[15,2], saleOrder, service);
+settlements (SaleOrder s) += '' IF s IS SaleOrder; //todo
+
+// Purchase invoice
+@extDocument(purchaseInvoice, 'Документ.ПоступлениеТоваровУслуг', 'ПоступлениеТоваровУслугСсылка');
+@extTable(purchaseInvoice, product);
+@defPropSimple(index, 'НомерСтрокиДокумента', INTEGER, purchaseInvoice, product);
+@defPropDetail(item, 'Номенклатура', Item, purchaseInvoice);
+GROUP itemDataPurchaseInvoiceProduct EXTID 'ДанныеНоменклатуры';
+EXTEND FORM sendMessage
+    OBJECTS itemPurchaseInvoiceProduct = Item EXTID 'Номенклатура' IN itemDataPurchaseInvoiceProduct
+    PROPERTIES(itemPurchaseInvoiceProduct) uid EXTID 'Ссылка', fullName EXTID 'НаименованиеПолное', id EXTID 'КодВПрограмме', article EXTID 'Арткул', name EXTID 'Наименование'
+    FILTERS itemPurchaseInvoiceProduct = item(purchaseInvoiceProduct)
+;
+@defPropDetail(idBarcode, 'Штрихкод', STRING[200], purchaseInvoice);
+EXTEND FORM sendMessage
+    PROPERTIES (purchaseInvoiceProduct) idBarcode EXTID 'Штрихкод' IN itemDataPurchaseInvoiceProduct
+;
+@defPropObject(uom, 'ЕдиницаИзмерения', UOM, purchaseInvoice, product);
+@defPropSimple(quantity, 'Количество', NUMERIC[15,3], purchaseInvoice, product);
+@defPropSimple(sum, 'Сумма', NUMERIC[15,2], purchaseInvoice, product);
+@defPropSimple(price, 'Цена', NUMERIC[15,2], purchaseInvoice, product);
+@defPropId(rateVat, 'СтавкаНДС', TypeVat, purchaseInvoice, product);
+@defPropSimple(sumVat, 'СуммаНДС', NUMERIC[15,2], purchaseInvoice, product);
+@defPropSimple(retailSum, 'СуммаРозничная', NUMERIC[15,2], purchaseInvoice, product);
+@defPropSimple(retailPrice, 'ЦенаРозничная', NUMERIC[15,2], purchaseInvoice, product);
+@defPropSimple(declaration, 'НомерГТД', STRING[30], purchaseInvoice, product);
+
+@defPropObject(currency, 'Валюта', Currency, purchaseInvoice);
+@defPropId(operation, 'ВидОперации', TypePurchaseInvoice, purchaseInvoice);
+@defPropObject(stock, 'Склад', Stock, purchaseInvoice);
+@defPropObject(contract, 'Договор', Contract, purchaseInvoice);
+@defPropSimple(note, 'Комментарий', STRING, purchaseInvoice);
+@defPropObject(partner, 'Контрагент', Partner, purchaseInvoice);
+@defPropObject(settlements, 'ДанныеВзаиморасчетов', Settlement, purchaseInvoice);
+
+// shipment
+@extDocument(shipment, 'Документ.ПеремещениеТоваров', 'ПеремещениеТоваровСсылка');
+@defPropSimple(note, 'Комментарий', STRING, shipment);
+@defPropObject(supplierStock, 'СкладОтправитель', Stock, shipment);
+@defPropObject(customerStock, 'СкладПолучатель', Stock, shipment);
+
+@extTable(shipment, product); 
+@defPropObject(uom, 'ЕдиницаИзмерения', UOM, shipment, product);
+@defPropObject(item, 'Номенклатура', Item, shipment, product);
+@defPropSimple(quantity, 'Количество', NUMERIC[15,3], shipment, product);
+@defPropSimple(retailSum, 'СуммаВРознице', NUMERIC[15,2], shipment, product);
+@defPropId(typeInventory, 'ТипЗапасов', TypeInventory, shipment, product);
+@defPropSimple(idBarcode, 'Штрихкод', STRING[200], shipment, product);
+
+// return invoice
+@extDocument(purchaseReturnInvoice, 'Документ.ВозвратТоваровПоставщику', 'ВозвратТоваровПоставщикуСсылка');
+@defPropObject(currency, 'Валюта', Currency, purchaseReturnInvoice);
+@defPropId(operation, 'ВидОперации', TypePurchaseReturnInvoice, purchaseReturnInvoice);
+@defPropObject(contract, 'Договор', Contract, purchaseReturnInvoice);
+@defPropSimple(note, 'Комментарий', STRING, purchaseReturnInvoice);
+@defPropObject(partner, 'Контрагент', Partner, purchaseReturnInvoice);
+@defPropObject(stock, 'Склад', Stock, purchaseReturnInvoice);
+
+@extTable(purchaseReturnInvoice, product);
+@defPropObject(uom, 'ЕдиницаИзмерения', UOM, purchaseReturnInvoice, product);
+@defPropSimple(declaration, 'НомерГТД', STRING[30], purchaseReturnInvoice, product);
+@defPropObject(country, 'СтранаПроисхождения', Country, purchaseReturnInvoice, product);
+@defPropObject(item, 'Номенклатура', Item, purchaseReturnInvoice, product);
+@defPropSimple(quantity, 'Количество', NUMERIC[15,3], purchaseReturnInvoice, product);
+@defPropSimple(sum, 'Сумма', NUMERIC[15,2], purchaseReturnInvoice, product);
+@defPropSimple(sumVat, 'СуммаНДС', NUMERIC[15,2], purchaseReturnInvoice, product);
+@defPropSimple(price, 'Цена', NUMERIC[15,2], purchaseReturnInvoice, product);
+@defPropSimple(idBarcode, 'Штрихкод', STRING[200], purchaseReturnInvoice, product);
+
+// write off
+@extDocument(writeOff, 'Документ.СписаниеЗапасов', 'СписаниеЗапасовСсылка');
+@defPropSimple(note, 'Комментарий', STRING, writeOff);
+@defPropSimple(reason, 'Основание', STRING, writeOff);
+@defPropObject(stock, 'Склад', Stock, writeOff);
+
+@extTable(writeOff, product);
+@defPropObject(uom, 'ЕдиницаИзмерения', UOM, writeOff, product);
+@defPropSimple(quantity, 'Количество', NUMERIC[15,3], writeOff, product);
+@defPropObject(item, 'Номенклатура', Item, writeOff, product);
+@defPropSimple(declaration, 'НомерГТД', STRING[30], writeOff, product);
+@defPropObject(country, 'СтранаПроисхождения', Country, writeOff, product);
+@defPropSimple(sum, 'Сумма', NUMERIC[15,2], writeOff, product);
+@defPropId(typeInventory, 'ТипЗапасов', TypeInventory, writeOff, product);
+@defPropSimple(price, 'Цена', NUMERIC[15,2], writeOff, product);
+@defPropSimple(idBarcode, 'Штрихкод', STRING[200], writeOff, product);
+
+// income cash orders
+@extDocument(incomeCashOrderRetailSales, 'Документ.ПКОРозничнаяВыручка', 'ПКОРозничнаяВыручкаСсылка');
+@defPropObject(currency, 'Валюта', Currency, incomeCashOrderRetailSales);
+@defPropBoolean(nonAutomatic, 'ВыручкаНТТ', incomeCashOrderRetailSales);
+@defPropSimple(note, 'Комментарий', STRING, incomeCashOrderRetailSales);
+@defPropSimple(reason, 'Основание', STRING, incomeCashOrderRetailSales);
+@defPropSimple(takenFrom, 'ПринятоОт', STRING, incomeCashOrderRetailSales);
+@defPropObject(stock, 'Склад', Stock, incomeCashOrderRetailSales);
+@defPropSimple(sum, 'Сумма', NUMERIC[15,2], incomeCashOrderRetailSales);
+
+@extDocument(incomeCashOrderInternal, 'Документ.ПКОВнутренняяПередача', 'ПКОРозничнаяВыручкаСсылка');
+@defPropObject(currency, 'Валюта', Currency, incomeCashOrderInternal);
+@defPropSimple(note, 'Комментарий', STRING, incomeCashOrderInternal);
+@defPropSimple(reason, 'Основание', STRING, incomeCashOrderInternal);
+@defPropSimple(takenFrom, 'ПринятоОт', STRING, incomeCashOrderInternal);
+@defPropSimple(sum, 'Сумма', NUMERIC[15,2], incomeCashOrderInternal);
+
+@extDocument(incomeCashOrderBank, 'Документ.ПКОПолучениеНаличныхВБанке', 'ПКОПолучениеНаличныхВБанкеСсылка');
+@defPropObject(currency, 'Валюта', Currency, incomeCashOrderBank);
+@defPropSimple(cashOrderOperation, 'ВидОперации', STRING, incomeCashOrderBank);
+@defPropSimple(note, 'Комментарий', STRING, incomeCashOrderBank);
+@defPropSimple(reason, 'Основание', STRING, incomeCashOrderBank);
+@defPropSimple(takenFrom, 'ПринятоОт', STRING, incomeCashOrderBank);
+@defPropSimple(sum, 'Сумма', NUMERIC[15,2], incomeCashOrderBank);
+
+@extDocument(incomeCashOrderOther, 'Документ.ПКОПрочееПоступление', 'ПКОПрочееПоступлениеСсылка');
+@defPropObject(currency, 'Валюта', Currency, incomeCashOrderOther);
+@defPropSimple(note, 'Комментарий', STRING, incomeCashOrderOther);
+@defPropSimple(reason, 'Основание', STRING, incomeCashOrderOther);
+@defPropSimple(takenFrom, 'ПринятоОт', STRING, incomeCashOrderOther);
+@defPropSimple(sum, 'Сумма', NUMERIC[15,2], incomeCashOrderOther);
+
+// outcome cash orders
+@extDocument(outcomeCashOrderInternal, 'Документ.РКОВнутренняяПередача', 'РКОВнутренняяПередачаСсылка');
+@defPropObject(currency, 'Валюта', Currency, outcomeCashOrderInternal);
+@defPropSimple(issuedTo, 'Выдать', STRING, outcomeCashOrderInternal);
+@defPropSimple(chiefAccounter, 'ГлавныйБухгалтер', STRING, outcomeCashOrderInternal);
+@defPropSimple(note, 'Комментарий', STRING, outcomeCashOrderInternal);
+@defPropSimple(paymentInformation, 'НазначениеПлатежа', STRING, outcomeCashOrderInternal);
+@defPropObject(beneficiary, 'ОрганизацияПолучатель', Company, outcomeCashOrderInternal);
+@defPropSimple(reason, 'Основание', STRING, outcomeCashOrderInternal);
+@defPropSimple(document, 'ПоДокументу', STRING, outcomeCashOrderInternal);
+@defPropSimple(appendix, 'Приложение', STRING, outcomeCashOrderInternal);
+@defPropSimple(chief, 'Руководитель', STRING, outcomeCashOrderInternal);
+@defPropSimple(sum, 'Сумма', NUMERIC[15,2], outcomeCashOrderInternal);
+
+@extDocument(outcomeCashOrderBank, 'Документ.РКОНаБанковскийСчет', 'РКОНаБанковскийСчетСсылка');
+@defPropObject(currency, 'Валюта', Currency, outcomeCashOrderBank);
+@defPropId(operation, 'ВидОперации', TypeOutcomeCashOrderBank, outcomeCashOrderBank);
+@defPropSimple(issuedTo, 'Выдать', STRING, outcomeCashOrderBank);
+@defPropSimple(chiefAccounter, 'ГлавныйБухгалтер', STRING, outcomeCashOrderBank);
+@defPropSimple(note, 'Комментарий', STRING, outcomeCashOrderBank);
+@defPropSimple(paymentInformation, 'НазначениеПлатежа', STRING, outcomeCashOrderBank);
+@defPropSimple(reason, 'Основание', STRING, outcomeCashOrderBank);
+@defPropSimple(document, 'ПоДокументу', STRING, outcomeCashOrderBank);
+@defPropSimple(appendix, 'Приложение', STRING, outcomeCashOrderBank);
+@defPropSimple(chief, 'Руководитель', STRING, outcomeCashOrderBank);
+@defPropSimple(sum, 'Сумма', NUMERIC[15,2], outcomeCashOrderBank);
+
+@extDocument(outcomeCashOrderOther, 'Документ.РКОПрочаяВыдача', 'РКОПрочаяВыдачаСсылка');
+@defPropObject(currency, 'Валюта', Currency, outcomeCashOrderOther);
+@defPropSimple(issuedTo, 'Выдать', STRING, outcomeCashOrderOther);
+@defPropSimple(chiefAccounter, 'ГлавныйБухгалтер', STRING, outcomeCashOrderOther);
+@defPropSimple(note, 'Комментарий', STRING, outcomeCashOrderOther);
+@defPropSimple(paymentInformation, 'НазначениеПлатежа', STRING, outcomeCashOrderOther);
+@defPropSimple(reason, 'Основание', STRING, outcomeCashOrderOther);
+@defPropSimple(document, 'ПоДокументу', STRING, outcomeCashOrderOther);
+@defPropSimple(appendix, 'Приложение', STRING, outcomeCashOrderOther);
+@defPropSimple(chief, 'Руководитель', STRING, outcomeCashOrderOther);
+@defPropSimple(sum, 'Сумма', NUMERIC[15,2], outcomeCashOrderOther);
+
+// retail report
+@extDocument(retailReport, 'Документ.ОтчетОРозничныхПродажах', 'ОтчетОРозничныхПродажахСсылка');
+@defPropObject(currency, 'Валюта', Currency, retailReport);
+@defPropSimple(note, 'Комментарий', STRING, retailReport);
+@defPropObject(stock, 'Склад', Stock, retailReport);
+
+@extTable(retailReport, paymentCard);
+@defPropSimple(sum, 'СуммаОплаты', NUMERIC[15,2], retailReport, paymentCard);

@@ -10,19 +10,21 @@ TABLE currency (Currency);
 name 'Наименование' = DATA ISTRING[30] (Currency) CHARWIDTH 10;
 currency (ISTRING[30] name) = GROUP AGGR Currency c BY name(c);
 
+id 'Код' = DATA STRING[3] (Currency) CHARWIDTH 3;
+
 defaultCurrency = DATA Currency();
 default 'По умолчанию' (Currency c) = defaultCurrency() = c; 
 
 FORM currency 'Валюта'
     OBJECTS o = Currency PANEL
-    PROPERTIES(o) name, default
+    PROPERTIES(o) id, name, default
     
     EDIT Currency OBJECT o
 ;
 
 FORM currencies 'Валюты'
     OBJECTS o = Currency
-    PROPERTIES(o) READONLY name, default
+    PROPERTIES(o) READONLY id, name, default
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
 ;
 
