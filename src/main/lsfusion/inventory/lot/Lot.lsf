@@ -34,6 +34,7 @@ META defineDocLot (doc, line, item, quantity, status, caption)
             ',' CHARWIDTH 15; 
     
     quantity##Lot 'Кол-во партий'##caption (line rl) = GROUP SUM quantity(rl, Lot l);
+    quantity##LotLeft (line rl) = quantity(rl) - OVERRIDE quantity##Lot(rl), 0;
        
     WHEN LOCAL CHANGED(quantity##Lot(line rl)) AND NOT status(doc(rl)) DO {
         quantity(rl) <- quantity##Lot(rl);
@@ -157,4 +158,22 @@ META defineLotCodeSearch(doc, quantity)
     
     EXTEND FORM doc
         PROPERTIES() ##doc##LotCode DRAW lot TOOLBAR ON CHANGE searchLotCode(l) READONLYIF NOT useLot(product(l));
+END
+
+META defineDocLotGenerate(doc, quantity)
+    generateLot 'Сгенерировать' (###doc##Line rl) {
+        FOR Product p = product(rl) DO {
+            FOR iterate(INTEGER i, 1, IF useSerialNumbers(p) THEN quantity##LotLeft(rl) ELSE 1) DO NEW l = Lot {
+                incrementValue(numeratorLot(p));
+                id(l) <- CONCAT '', prefixLot(p), incrementedValue();
+                product(l) <- product(rl);
+                
+                quantity(rl, l) <- 1;
+            }
+        }        
+    }
+    
+    EXTEND FORM doc
+        PROPERTIES(l) generateLot DRAW lot TOOLBAR SHOWIF numeratorLot(product(l)) AND quantity##LotLeft(l) > 0
+    ;
 END
