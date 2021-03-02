@@ -1,0 +1,53 @@
+MODULE LotPrint;
+
+REQUIRE Lot, ItemPrint;
+
+count 'Кол-во' = DATA LOCAL INTEGER (Lot);
+
+FORM printItemLot 'Этикетка (партия)'
+    OBJECTS pt = PrintItemType PANEL
+    PROPERTIES(pt) name, nameCompany, addressLinesCompany, addressCsvCompany, phoneCompany, emailCompany, websiteCompany
+    REPORT OVERRIDE file(pt), setExtension(RAWFILE(template(pt)), 'path')
+
+    OBJECTS i = Item
+    PROPERTIES(i) count, id, name, nameUom, idBarCode
+    ORDERS name(i)
+    FILTERS count(i), set(pt, i)
+
+    OBJECTS l = Lot
+    PROPERTIES(l) id
+    FILTERS count(l), product(l) = i
+;
+
+@defineAttributeForm(printItemLot, i);
+
+printLot (PrintItemType pt) {
+    CASE EXCLUSIVE
+        WHEN format(pt) = TemplateFormat.pdf THEN
+            PRINT printItemLot OBJECTS pt = pt PDF;
+        WHEN format(pt) = TemplateFormat.docx THEN
+            PRINT printItemLot OBJECTS pt = pt DOCX;
+        WHEN format(pt) = TemplateFormat.xlsx THEN
+            PRINT printItemLot OBJECTS pt = pt XLSX;
+        WHEN format(pt) = TemplateFormat.rtf THEN
+            PRINT printItemLot OBJECTS pt = pt RTF;
+        WHEN format(pt) = TemplateFormat.html THEN
+            PRINT printItemLot OBJECTS pt = pt HTML;
+        WHEN format(pt) = TemplateFormat.noPreview THEN
+            PRINT printItemLot OBJECTS pt = pt NOPREVIEW;
+        ELSE
+            PRINT printItemLot OBJECTS pt = pt;
+}
+
+printLot () {
+    LOCAL printType = PrintItemType();
+    printType() <- NULL;
+    IF (GROUP SUM 1 IF countItem(PrintItemType t)) = 1 THEN
+        printType() <- GROUP MAX PrintItemType t IF countItem(t);
+    ELSE
+        DIALOG printItemParams OBJECTS t INPUT DOCKED DO {
+            printType() <- t;
+        }
+    IF printType() THEN
+        printLot(printType());
+}

@@ -11,6 +11,7 @@ emailCompany (PrintItemType t) = email(company(t));
 websiteCompany (PrintItemType t) = website(company(t));
 
 count 'Кол-во' = DATA LOCAL INTEGER (Item);
+countItem (PrintItemType t) = GROUP SUM 1 IF count(Item i) AND set(t, i);
 
 FORM printItem 'Этикетка'
     OBJECTS pt = PrintItemType PANEL
@@ -46,7 +47,7 @@ print (PrintItemType pt) {
 FORM printItemParams 'Параметры печати этикеток'
     OBJECTS t = PrintItemType
     PROPERTIES(t) READONLY name
-    FILTERS GROUP SUM 1 IF count(Item i) AND set(t, i)
+    FILTERS countItem(t)
     
     OBJECTS i = Item
     PROPERTIES(i) READONLY name, nameUom, idBarCode, id, nameCategory

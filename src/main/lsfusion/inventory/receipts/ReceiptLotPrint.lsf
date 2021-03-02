@@ -1,0 +1,13 @@
+MODULE ReceiptLotPrint;
+
+REQUIRE ReceiptLot, LotPrint;
+
+printLot 'Этикетка' (ReceiptLine l) {
+    count(Item i) <- 1 IF product(l) = i;
+    count(Lot lot) <- done(l, lot);
+    printLot();
+}
+
+EXTEND FORM receipt
+    PROPERTIES(l) printLot SHOWIF countPrintType(product(l)) AND doneLot(l) DRAW lot
+;
