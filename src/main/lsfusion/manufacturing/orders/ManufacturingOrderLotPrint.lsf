@@ -1,0 +1,13 @@
+MODULE ManufacturingOrderLotPrint;
+
+REQUIRE ManufacturingOrderLot, LotPrint;
+
+printLot 'Этикетка' (FinishedLine l) {
+    count(Item i) <- 1 IF item(l) = i;
+    count(Lot lot) <- produced(l, lot);
+    printLot();
+}
+
+EXTEND FORM manufacturingOrder
+    PROPERTIES(l) printLot SHOWIF countPrintType(item(l)) AND producedLot(l) DRAW lot
+;
