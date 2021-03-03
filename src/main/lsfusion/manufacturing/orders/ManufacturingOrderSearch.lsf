@@ -4,10 +4,16 @@ REQUIRE ManufacturingOrderDone;
 
 NAMESPACE Manufacturing;
 
+// consumed
+lastConsumedLine (ManufacturingOrder o, Item i) = GROUP LAST ConsumedLine l ORDER l BY manufacturingOrder(l), item(l);
+
+@defineDocSearchAction(manufacturingOrder, ConsumedLine, item, consumed, 'Израсходовано');
+
+@defineBarCodeSearch(manufacturingOrder, ConsumedLine, o, c, consumed);
+
+// finished
 lastFinishedLine (ManufacturingOrder o, Item i) = GROUP LAST FinishedLine l ORDER l BY manufacturingOrder(l), item(l);
 
-// done
 @defineDocSearchAction(manufacturingOrder, FinishedLine, item, produced, 'Произведено');
 
-// barcode
-@defineBarCodeSearch(manufacturingOrder, FinishedLine, o, l, product, produced);
+@defineBarCodeSearch(manufacturingOrder, FinishedLine, o, l, produced);

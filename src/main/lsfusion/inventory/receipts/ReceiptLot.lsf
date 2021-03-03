@@ -8,7 +8,7 @@ NAMESPACE Inventory;
 
 @defineDocBarCodeLot (receipt, product, done);
 
-beforeProcessLotBarCode(Receipt r, STRING s) + {
+beforeProcessReceiptLineLotBarCode(Receipt r, STRING s) + {
     IF NOT lot(s) THEN {
         NEW l = Lot {
             id(l) <- STRING[100](s);
@@ -24,8 +24,8 @@ initialDemand 'Планируемое кол-во' = DATA NUMERIC[16,3] (Receipt
 initialDemandLot 'Планируемое кол-во партий' (ReceiptLine rl) = GROUP SUM initialDemand(rl, Lot l);
 
 EXTEND FORM receipt 
-    PROPERTIES (l, lot) BEFORE done(l, lot) initialDemand READONLY
-    PROPERTIES (lot) DELETE GRID
+    PROPERTIES (l, lotL) BEFORE done(l, lotL) initialDemand READONLY
+    PROPERTIES (lotL) DELETE GRID
 ;
 
 //ledger

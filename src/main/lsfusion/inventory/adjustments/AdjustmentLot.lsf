@@ -23,7 +23,7 @@ background (AdjustmentLine al, Lot l) = CASE WHEN theoreticalQuantity(al, l) < r
 
 @defineDocBarCodeLot (adjustment, product, realQuantity);
 
-beforeProcessLotBarCode(Adjustment a, STRING s) + {
+beforeProcessAdjustmentLineLotBarCode(Adjustment a, STRING s) + {
     IF NOT lot(s) THEN {
         NEW l = Lot {
             id(l) <- STRING[100](s);
@@ -57,7 +57,7 @@ DESIGN adjustment {
     }
 }
 
-afterProcessLotBarCode(Adjustment a, STRING s) + {
+afterProcessAdjustmentLineLotBarCode(Adjustment a, STRING s) + {
     SEEK adjustment.lot = lot(s);
     ACTIVATE PROPERTY adjustment.realQuantity(l, lot); 
 }

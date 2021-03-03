@@ -4,11 +4,19 @@ REQUIRE ManufacturingOrderDone, ManufacturingOrderSearch, ManufacturingOrderInv,
 
 NAMESPACE Manufacturing;
 
+// consumed
+@defineDocLot (manufacturingOrder, ConsumedLine, item, consumed, done, ' (израсходовано)');
+
+@defineDocBarCodeLot (manufacturingOrder, ConsumedLine, item, consumed);
+
+@defineDocDesignLotTab(manufacturingOrder, ConsumedLine, consumed, item, c, consumedLinesTab);
+
+// finished
 @defineDocLot (manufacturingOrder, FinishedLine, item, produced, done, ' (принято)');
 
 @defineDocBarCodeLot (manufacturingOrder, FinishedLine, item, produced);
 
-beforeProcessLotBarCode(ManufacturingOrder r, STRING s) + {
+beforeProcessFinishedLineLotBarCode(ManufacturingOrder r, STRING s) + {
     IF NOT lot(s) THEN {
         NEW l = Lot {
             id(l) <- STRING[100](s);
@@ -16,9 +24,9 @@ beforeProcessLotBarCode(ManufacturingOrder r, STRING s) + {
     }
 }
 
-@defineDocDesignLotTab(manufacturingOrder, produced, item, finishedLinesTab);
+@defineDocDesignLotTab(manufacturingOrder, FinishedLine, produced, item, l, finishedLinesTab);
 
-@defineDocLotGenerate(manufacturingOrder, FinishedLine, item, produced);
+@defineDocLotGenerate(manufacturingOrder, FinishedLine, item, l, produced);
 
 //ledger
 quantity(ManufacturingOrderInv i, Lot l) += produced(line(i), l);

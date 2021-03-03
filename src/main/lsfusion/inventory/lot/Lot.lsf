@@ -54,15 +54,15 @@ barCodeToLotId = ABSTRACT CASE STRING (STRING);
 
 META defineDocBarCodeLot (doc, docLine, item, quantity)
     
-    beforeProcessLotBarCode ABSTRACT (###doc, STRING);
-    afterProcessLotBarCode ABSTRACT (###doc, STRING);
+    beforeProcess##docLine##LotBarCode ABSTRACT (###doc, STRING);
+    afterProcess##docLine##LotBarCode ABSTRACT (###doc, STRING);
        
     processBarCode(###doc r, docLine rl, STRING s) + {
         LOCAL lotId = STRING();
         lotId() <- OVERRIDE barCodeToLotId(s), (s AS STRING);
          
         IF lot(lotId()) OR useLot(item(rl)) THEN {
-            beforeProcessLotBarCode(r, lotId());
+            beforeProcess##docLine##LotBarCode(r, lotId());
             
             LOCAL lot = Lot();
             lot() <- lot(lotId());
@@ -93,7 +93,7 @@ META defineDocBarCodeLot (doc, docLine, item, quantity)
             IF quantity##Lot(line()) > OVERRIDE quantity(line()), 0 THEN
                 quantity(line()) <- quantity##Lot(line()); 
                     
-            afterProcessLotBarCode(r, lotId());
+            afterProcess##docLine##LotBarCode(r, lotId());
             
             consumedBarCode() <- TRUE;
         }
@@ -104,31 +104,35 @@ META defineDocBarCodeLot (doc, item, quantity)
     @defineDocBarCodeLot (doc, ###doc##Line, item, quantity);
 END
 
-META defineDocDesignLotTab(doc, quantity, item, container)
+META defineDocDesignLotTab(doc, docLine, quantity, item, line, container)
     EXTEND FORM doc
-        PROPERTIES(l) AFTER quantity(l) SHOWIF useLot() BACKGROUND RGB(198,230,247) IF useLot(item(l)) 
+        PROPERTIES(line) AFTER quantity(line) SHOWIF useLot() BACKGROUND RGB(198,230,247) IF useLot(item(line)) 
                       quantity##Lot 
         
-        OBJECTS lot = Lot
-        PROPERTIES (lot) id READONLY
-        PROPERTIES (l, lot) quantity READONLYIF NOT useLot(product(lot))
-        FILTERS quantity(l, lot)   
+        OBJECTS lot###line = Lot
+        PROPERTIES (lot###line) id READONLY
+        PROPERTIES (line, lot###line) quantity READONLYIF NOT useLot(product(lot###line))
+        FILTERS quantity(line, lot###line)   
     ;
     
     DESIGN doc {
         container {
-            MOVE BOX(lot) {
+            MOVE BOX(lot###line) {
                 caption = 'Партии';
                 showIf = useLot();
             }
         }
     }
     
-    afterProcessLotBarCode(###doc d, STRING s) + {
-        SEEK doc.lot = lot(s);
-        ACTIVATE TAB doc.BOX(lot);
-        ACTIVATE PROPERTY doc.quantity(l, lot); 
+    afterProcess##docLine##LotBarCode(###doc d, STRING s) + {
+        SEEK doc.lot###line = lot(s);
+        ACTIVATE TAB doc.BOX(lot###line);
+        ACTIVATE PROPERTY doc.quantity(line, lot###line); 
     }    
+END
+
+META defineDocDesignLotTab(doc, quantity, item, container)
+    @defineDocDesignLotTab(doc, ###doc##Line, quantity, item, l, container);
 END
 
 META defineLotCodeSearch(doc, quantity)
@@ -160,7 +164,7 @@ META defineLotCodeSearch(doc, quantity)
         PROPERTIES() ##doc##LotCode DRAW lot TOOLBAR ON CHANGE searchLotCode(l) READONLYIF NOT useLot(product(l));
 END
 
-META defineDocLotGenerate(doc, docLine, item, quantity)
+META defineDocLotGenerate(doc, docLine, item, line, quantity)
     generateLot 'Сгенерировать' (docLine rl) {
         FOR Product p = item(rl) DO {
             FOR iterate(INTEGER i, 1, IF useSerialNumbers(p) THEN quantity##LotLeft(rl) ELSE 1) DO NEW l = Lot {
@@ -174,10 +178,10 @@ META defineDocLotGenerate(doc, docLine, item, quantity)
     }
     
     EXTEND FORM doc
-        PROPERTIES(l) generateLot DRAW lot SHOWIF numeratorLot(item(l)) AND quantity##LotLeft(l) > 0
+        PROPERTIES(line) generateLot DRAW lot###line SHOWIF numeratorLot(item(l)) AND quantity##LotLeft(line) > 0
     ;
 END
 
 META defineDocLotGenerate(doc, item, quantity)
-    @defineDocLotGenerate(doc, ###doc##Line, item, quantity);
+    @defineDocLotGenerate(doc, ###doc##Line, item, l, quantity);
 END
