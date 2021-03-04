@@ -51,3 +51,19 @@ printLot () {
     IF printType() THEN
         printLot(printType());
 }
+
+print 'Этикетка' (Lot l) {
+    count(Item i) <- 1 IF i = product(l);
+    count(l) <- 1;
+    printLot();
+}
+
+EXTEND FORM lot
+    PROPERTIES(l) print SHOWIF countPrintType(product(l))
+;
+
+DESIGN lot {
+    secondaryActions {
+        MOVE PROPERTY(print(l));
+    } 
+}

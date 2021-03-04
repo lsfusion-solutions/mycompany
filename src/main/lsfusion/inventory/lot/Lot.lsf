@@ -13,6 +13,46 @@ product 'Товар' = DATA Product (Lot) NONULL INDEXED;
 idProduct 'Код товара' (Lot l) = id(product(l)) IN id;
 nameProduct 'Товар' (Lot l) = name(product(l)) IN id;
 
+FORM lot 'Партия'
+    OBJECTS l = Lot PANEL
+    PROPERTIES(l) id, idProduct, nameProduct
+    
+    EDIT Lot OBJECT l
+;
+
+DESIGN lot {
+    caption = CONCAT ' ', 'Партия', id(l);
+    OBJECTS {        
+        NEW statusPane FIRST {
+            caption = 'Статусы';
+            type = CONTAINERH;
+            alignment = STRETCH;                          
+            NEW statusActions {
+                type = CONTAINERH;                    
+                flex = 1; 
+                NEW primaryActions {
+                    type = CONTAINERH;
+                }
+                NEW secondaryActions {
+                    type = CONTAINERH;
+                }           
+            }
+            NEW status {
+                type = CONTAINERH;
+            }
+        }    
+        NEW header {                          
+            NEW row1 {
+                type = CONTAINERH;
+                alignment = STRETCH;
+                MOVE PROPERTY(id(l));
+                MOVE PROPERTY(idProduct(l));
+            }
+            MOVE PROPERTY(nameProduct(l)) { alignment = STRETCH; };
+        }
+    }  
+}
+
 useLot 'Партионный учет' = DATA BOOLEAN ();
 
 EXTEND FORM options 
@@ -112,6 +152,7 @@ META defineDocDesignLotTab(doc, docLine, quantity, item, line, container)
         OBJECTS lot###line = Lot
         PROPERTIES (lot###line) id READONLY
         PROPERTIES (line, lot###line) quantity READONLYIF NOT useLot(product(lot###line))
+        PROPERTIES (lot###line) EDIT
         FILTERS quantity(line, lot###line)   
     ;
     

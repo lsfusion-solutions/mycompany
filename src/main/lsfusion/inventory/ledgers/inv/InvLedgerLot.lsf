@@ -70,28 +70,30 @@ EXTEND FORM item
     PROPERTIES(inv) AFTER quantity(inv) SHOWIF useLot(product(inv))  quantityLot     
     
     OBJECTS lotI = Lot  
-    PROPERTIES (lotI) READONLY id 
-    PROPERTIES (inv, lotI) READONLY quantity
+    PROPERTIES(lotI) READONLY      id 
+    PROPERTIES(inv, lotI) READONLY quantity
+    PROPERTIES(lotI) NEWSESSION    EDIT
     FILTERS quantity(inv, lotI)
     
     PROPERTIES AFTER onHand(l, i) SHOWIF useLot(i) onHandLot(l, i)     
 
     OBJECTS lotH = Lot
-    PROPERTIES(lotH) READONLY id
+    PROPERTIES(lotH) READONLY    id
     PROPERTIES(l, lotH) READONLY onHand
+    PROPERTIES(lotH) NEWSESSION  EDIT
     FILTERS onHand(l, lotH) AND product(lotH) = i
 ;
 
 DESIGN item {
     invledger {
         MOVE BOX (lotI) { 
-        fill = 0.1; 
-        showIf = useLot(i);
+            fill = 0.4; 
+            showIf = useLot(i);
         }
     }
     lines {
         MOVE BOX(lotH){
-            fill = 0.1; 
+            fill = 0.4; 
             showIf = useLot(i);
         }
     }
