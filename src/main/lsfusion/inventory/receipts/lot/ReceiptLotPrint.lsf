@@ -1,6 +1,14 @@
 MODULE ReceiptLotPrint;
 
-REQUIRE ReceiptLot, LotPrint;
+REQUIRE ReceiptPrint, ReceiptLot, LotPrint;
+
+NAMESPACE Inventory;
+
+EXTEND FORM printReceipt
+    OBJECTS lot = Lot SUBREPORT 'LotBarCode.jrxml'
+    PROPERTIES(lot) READONLY id
+    FILTERS done(l, lot)
+;
 
 printLot 'Этикетка' (ReceiptLine l) {
     count(Item i) <- 1 IF product(l) = i;
