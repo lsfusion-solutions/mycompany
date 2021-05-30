@@ -6,9 +6,13 @@ NAMESPACE Sales;
 
 yearMonth (DATETIME d) = extractYear(d) * 12 + extractMonthNumber(d);
 
+initialSoldAmount 'Продано (изначально)' = DATA NUMERIC[14,2] (Partner);
+
 // partner
 soldAmount 'Продано' (Partner p) = GROUP SUM amount(SalesLedger l) IF customer(l) = p MATERIALIZED;
-prevSoldAmount (Partner p) = PREV(soldAmount(p));
+
+totalSoldAmount 'Продано' (Partner p) = OVERRIDE soldAmount(p) (+) initialSoldAmount(p), (0.0 IF p IS Partner) MATERIALIZED;
+prevTotalSoldAmount (Partner p) = PREV(totalSoldAmount(p));
 
 soldAmount (Partner p, INTEGER ym) = 
     GROUP SUM amount(SalesLedger l) IF customer(l) = p AND yearMonth(dateTime(l)) = ym MATERIALIZED; 
@@ -32,15 +36,17 @@ FORM salesLedgers 'Продажи по контрагенту'
 ;
 
 EXTEND FORM partner
-    PROPERTIES(p) ON CHANGE { SHOW salesLedgers OBJECTS p = p DOCKED; } soldAmount, soldAmountPreviousMonth
+    PROPERTIES(p) initialSoldAmount
+    PROPERTIES(p) ON CHANGE { SHOW salesLedgers OBJECTS p = p DOCKED; } totalSoldAmount, soldAmountPreviousMonth
 ;
 DESIGN partner {
     headerRight {
-        MOVE PROPERTY(soldAmount(p));
+        MOVE PROPERTY(initialSoldAmount(p));
+        MOVE PROPERTY(totalSoldAmount(p));
         MOVE PROPERTY(soldAmountPreviousMonth(p));
     }
 }
 
 EXTEND FORM partners
-    PROPERTIES(p) READONLY soldAmount, soldAmountPreviousMonth
+    PROPERTIES(p) READONLY initialSoldAmount, totalSoldAmount, soldAmountPreviousMonth
 ;

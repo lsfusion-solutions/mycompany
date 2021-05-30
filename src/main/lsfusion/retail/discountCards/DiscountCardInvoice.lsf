@@ -14,6 +14,6 @@ CONSTRAINT DATE(dateTime(Invoice i)) >= blockDate(discountCard(i)) CHECKED BY di
     MESSAGE 'Выбрана заблокированная дисконтная карта'; 
 
 WHEN LOCAL CHANGED(discountCard(Invoice i)) AND NOT CHANGED(customer(i)) DO 
-    customer(i) <- customer(discountCard(i));
+    customer(i) <- OVERRIDE customer(discountCard(i)), customer(type(i));
 WHEN LOCAL CHANGED(customer(Invoice i)) AND NOT CHANGED(discountCard(i)) DO 
     discountCard(i) <- NULL;
