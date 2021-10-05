@@ -8,7 +8,7 @@ bomExport 'Экспорт спецификаций' () {
     NEWSESSION {
         IF NOT (GROUP SUM 1 IF Bom b AND b IS Bom) THEN {
             NEW b = Bom {
-                item(b) <- GROUP LAST Item i IF i IS Item;
+                item(b) <- GROUP LAST Item i IF i IS Item ORDER i;
                 quantity(b) <- 1;
             }
         }
@@ -24,8 +24,8 @@ componentLineExport 'Экспорт строк спецификаций' () {
     NEWSESSION {
         IF NOT (GROUP SUM 1 IF ComponentLine l AND l IS ComponentLine) THEN {
             NEW l = ComponentLine {
-                bom(l) <- GROUP LAST Bom b IF b IS Bom;
-                item(l) <- GROUP LAST Item i IF  i IS Item AND NOT i = item(bom(l));
+                bom(l) <- GROUP LAST Bom b IF b IS Bom ORDER b;
+                item(l) <- GROUP LAST Item i IF  i IS Item AND NOT i = item(bom(l)) ORDER i;
                 quantity(l) <- 1;
             }
         }
@@ -42,8 +42,8 @@ byProductLineExport 'Экспорт производных номенклату�
     NEWSESSION {
         IF NOT (GROUP SUM 1 IF ByproductLine l AND l IS ByproductLine) THEN {
             NEW l = ByproductLine {
-                bom(l) <- GROUP LAST Bom b IF b IS Bom;
-                product(l) <- GROUP LAST Item i IF i IS Item AND NOT i = item(bom(l));
+                bom(l) <- GROUP LAST Bom b IF b IS Bom ORDER b;
+                product(l) <- GROUP LAST Item i IF i IS Item AND NOT i = item(bom(l)) ORDER i;
                 quantity(l) <- 1;
             }
         }
@@ -99,7 +99,7 @@ componentLineImport 'Импорт строк спецификаций' () {
             } 
             
             FOR imported(INTEGER i) DO NEW l = ComponentLine {
-                bom(l) <- GROUP LAST Bom b IF number(b) = id(i);
+                bom(l) <- GROUP LAST Bom b IF number(b) = id(i) ORDER b;
                 item(l) <- item(idItem(i));
                 quantity(l) <- quantity(i);
             }
@@ -126,7 +126,7 @@ byProductLineImport 'Импорт производных номенклатур'
             }
             
             FOR imported(INTEGER i) DO NEW l = ByproductLine {
-                bom(l) <- GROUP LAST Bom b IF number(b) = id(i);
+                bom(l) <- GROUP LAST Bom b IF number(b) = id(i) ORDER b;
                 product(l) <- item(idItem(i));
                 quantity(l) <- quantity(i);
             }

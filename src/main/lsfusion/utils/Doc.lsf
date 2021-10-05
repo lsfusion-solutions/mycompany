@@ -317,10 +317,10 @@ META defineDocLineRelation(docTo, docFrom, captTo, captFrom, objTo, objFrom)
     
     count###docTo (###docFrom s) = GROUP SUM 1 IF in(###docTo i, s) MATERIALIZED;
     count###docFrom##s (###docTo i) = GROUP SUM 1 IF in(i, ###docFrom s) MATERIALIZED;
-    numberDate###docTo captTo (###docFrom s) = GROUP CONCAT numberDate(###docTo i) IF in(i, s), ',' CHARWIDTH 30; 
+    numberDate###docTo captTo (###docFrom s) = GROUP CONCAT numberDate(###docTo i) IF in(i, s), ',' ORDER i CHARWIDTH 30; 
     numberDate###docTo##Line captTo (###docFrom##Line s) = numberDate(docTo##Line(s)); 
 
-    numberDate###docFrom##s captFrom (###docTo s) = GROUP CONCAT numberDate(###docFrom i) IF in(s, i), ',' CHARWIDTH 30; 
+    numberDate###docFrom##s captFrom (###docTo s) = GROUP CONCAT numberDate(###docFrom i) IF in(s, i), ',' ORDER i CHARWIDTH 30; 
     
     count###docFrom##Line (###docTo b) = GROUP SUM 1 IF docTo(docTo##Line(###docFrom##Line l)) = b;
     

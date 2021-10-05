@@ -104,7 +104,7 @@ DESIGN transferMobile {
 createTransfer 'Переместить' (ShipmentType t, Location from) {
     quantity(Product p) <- NULL WHERE NOT onHand(from, p) > 0;
     ASK 'Переместить с ' + name(from) + ' на ' + nameShipmentToLocation() + ' ' + (GROUP SUM 1 IF quantity(Product p)) + ' позиций ?\n' +
-        GROUP CONCAT name(Product p) + ' - ' + quantity(p), '\n' DO {
+        GROUP CONCAT name(Product p) + ' - ' + quantity(p), '\n' ORDER p DO {
         NEWSESSION {
             NEW s = Shipment {
                 type(s) <- t;

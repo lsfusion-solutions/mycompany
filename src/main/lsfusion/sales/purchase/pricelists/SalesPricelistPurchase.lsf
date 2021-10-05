@@ -21,10 +21,10 @@ in (Purchase.Pricelist i, Pricelist s) = GROUP SUM 1 IF pricelist(pricelistLine(
 
 countPricelist (Pricelist s) = GROUP SUM 1 IF in(Purchase.Pricelist i, s) MATERIALIZED;
 countPricelists (Purchase.Pricelist i) = GROUP SUM 1 IF in(i, Pricelist s) MATERIALIZED;
-numberDatePricelist 'Прайс-листы' (Pricelist s) = GROUP CONCAT numberDate(Purchase.Pricelist i) IF in(i, s), ',' CHARWIDTH 30; 
+numberDatePricelist 'Прайс-листы' (Pricelist s) = GROUP CONCAT numberDate(Purchase.Pricelist i) IF in(i, s), ',' ORDER i CHARWIDTH 30; 
 numberDatePricelistLine 'Прайс-листы' (PricelistLine s) = numberDate(pricelistLine(s)); 
 
-numberDatePricelists 'Прайс-листы' (Purchase.Pricelist s) = GROUP CONCAT numberDate(Pricelist i) IF in(s, i), ',' CHARWIDTH 30; 
+numberDatePricelists 'Прайс-листы' (Purchase.Pricelist s) = GROUP CONCAT numberDate(Pricelist i) IF in(s, i), ',' ORDER i CHARWIDTH 30;
 
 countPricelistLine (Purchase.Pricelist b) = GROUP SUM 1 IF pricelist(pricelistLine(PricelistLine l)) = b;
 

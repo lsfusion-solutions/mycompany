@@ -71,7 +71,7 @@ META defineDocLot (doc, line, item, quantity, status, caption)
     lots###quantity 'Партии' (line l) = 
         GROUP CONCAT
             (CONCAT '', id(Lot lot) IF quantity(l, lot), '(' + (STRING(DOUBLE(quantity(l, lot))) IF (quantity(l, lot) != 1)) + ')'), 
-            ',' CHARWIDTH 15; 
+            ',' ORDER lot CHARWIDTH 15; 
     
     quantity##Lot 'Кол-во партий'##caption (line rl) = GROUP SUM quantity(rl, Lot l);
     quantity##LotLeft (line rl) = quantity(rl) - OVERRIDE quantity##Lot(rl), 0;

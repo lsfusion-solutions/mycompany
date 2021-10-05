@@ -24,7 +24,7 @@ ledgerDone (ShipmentLine l) += doneRec(l);
 CONSTRAINT done(ShipmentLine l, Location loc) < 0 MESSAGE 'Отгруженное кол-во не может быть меньше 0';
 CONSTRAINT done(ShipmentLine l) (-) doneRec(l) < 0 MESSAGE 'Нельзя отгрузить товара по местам хранения больше чем в строке';
 
-locations (ShipmentLine l) = GROUP CONCAT name(Location loc) + ' : ' + DOUBLE(done(l, loc)), ', ';
+locations (ShipmentLine l) = GROUP CONCAT name(Location loc) + ' : ' + DOUBLE(done(l, loc)), ', ' ORDER loc;
 note(ShipmentLine l) += locations(l);
 
 // events
