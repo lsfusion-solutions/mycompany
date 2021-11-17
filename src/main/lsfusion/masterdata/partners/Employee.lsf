@@ -6,6 +6,12 @@ NAMESPACE MasterData;
 
 CLASS Employee 'Сотрудник' : Individual, CustomUser;
 
+WHEN CHANGED(firstName(Employee e)) DO firstName[Contact](e) <- firstName(e);
+WHEN CHANGED(lastName(Employee e)) DO lastName[Contact](e) <- firstName(e);
+WHEN CHANGED(email(Employee e)) DO email[Contact](e) <- email(e);
+WHEN CHANGED(phone(Employee e)) DO phone[Contact](e) <- phone(e);
+WHEN CHANGED(postAddress(Employee e)) DO postAddress[Contact](e) <- phone(e);
+
 EXTEND CLASS PartnerType {
     employee 'Сотрудник'
 }

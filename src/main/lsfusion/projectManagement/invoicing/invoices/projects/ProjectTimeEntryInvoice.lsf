@@ -1,0 +1,53 @@
+MODULE ProjectTimeEntryInvoice;
+
+REQUIRE ProjectTimeEntry, ProjectInvoice, ServiceP;
+
+PRIORITY MasterData;
+
+NAMESPACE ProjectManagement;
+
+// employee
+service = DATA Service (Employee);
+nameService 'Услуга' (Employee e) = name(service(e));
+
+EXTEND FORM options
+    OBJECTS es = Employee
+    PROPERTIES(es) READONLY firstName, lastName, login
+    PROPERTIES(es)          nameService
+;
+
+DESIGN options {
+    tabbedPane {
+        NEW employees {
+            caption = 'Сотрудники';
+            MOVE BOX(es);
+        }
+    }
+}
+
+service (TimeEntry t) = service(employee(t));
+nameService 'Услуга' (TimeEntry t) = name(service(t));
+
+// line
+invoiceLine = DATA InvoiceLine (TimeEntry) INDEXED;
+numberDate 'Реализация' (TimeEntry t) = numberDate(invoiceLine(t));
+
+EXTEND FORM project
+    PROPERTIES(t) READONLY nameService, numberDate
+;
+
+EXTEND FORM timeEntries
+    PROPERTIES(t) READONLY nameService, numberDate
+;
+
+uninvoicedHours (Project p, Service s) = GROUP SUM hours(TimeEntry t) IF NOT invoiceLine(t) BY project(t), service(t); 
+
+fill (Invoice i, Project p) +{
+    FOR uninvoicedHours(p, Service s) NEW il = InvoiceLine DO {
+        invoice(il) <- i;
+        item(il) <- s;
+        quantity(il) <- uninvoicedHours(p, s);
+        
+        invoiceLine(TimeEntry t) <- il WHERE project(t) = p AND service(t) = s AND NOT invoiceLine(t);
+    } 
+}

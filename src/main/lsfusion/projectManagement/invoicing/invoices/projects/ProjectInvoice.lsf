@@ -1,0 +1,73 @@
+MODULE ProjectInvoice;
+
+REQUIRE Project, Invoice;
+
+NAMESPACE ProjectManagement;
+
+// type
+invoiceType = DATA InvoiceType (ProjectType);
+nameInvoiceType 'Тип реализации' (ProjectType t) = name(invoiceType(t));
+EXTEND FORM projectType PROPERTIES nameInvoiceType(o);
+
+project = DATA Project (Invoice) INDEXED;
+nameProject 'Проект' (Invoice i) = name(project(i));
+
+countInvoices 'Реализации' (Project p) = GROUP SUM 1 IF project(Invoice i) = p;  
+
+EXTEND FORM invoices
+    PROPERTIES(i) READONLY nameProject
+;
+
+EXTEND FORM project
+    OBJECTS i = Invoice
+    PROPERTIES(i) READONLY nameType, dateTime, nameStatus BACKGROUND colorStatus(i), number    
+    PROPERTIES(i) NEWSESSION EDIT GRID
+    FILTERS project(i) = p   
+;
+
+DESIGN project {
+    relatedDoc  {
+        MOVE BOX(i) {
+            caption = CONCAT ' ', 'Реализации', '(' + countInvoices(p) + ')';
+            GRID(i) { headerHeight = 24; }
+        }
+        REMOVE TOOLBARBOX(i);
+    }
+}
+
+fill ABSTRACT LIST (Invoice, Project);
+
+create (Invoice i, Project p) {
+    project(i) <- p;
+
+    type(i) <- invoiceType(type(p));    
+
+    company(i) <- company(p);
+    customer(i) <- partner(p);
+    
+    fill(i, p);
+}
+
+createInvoice 'Реализовать' (Project p) {
+    APPLY;
+    IF canceled() THEN RETURN;
+               
+    NEWSESSION {
+        NEW i = Invoice {
+            create(i, p);
+            
+            SHOW invoice OBJECTS i = i DOCKED;
+        }
+    }
+}
+
+EXTEND FORM project
+    PROPERTIES(p) createInvoice
+;
+
+DESIGN project {
+    primaryActions {
+        MOVE PROPERTY(createInvoice(p)) FIRST { fontStyle = 'bold'; };
+    }
+}
+

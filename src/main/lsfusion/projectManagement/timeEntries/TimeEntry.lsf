@@ -1,0 +1,59 @@
+MODULE TimeEntry;
+
+REQUIRE Project, Employee;
+
+PRIORITY MasterData;
+
+NAMESPACE ProjectManagement;
+
+CLASS TimeEntry 'Отметка времени';
+
+date 'Дата' = DATA DATE (TimeEntry);
+date(TimeEntry e) <- currentDate() WHEN SET(e IS TimeEntry);
+
+hours 'Часов' = DATA NUMERIC[8,2] (TimeEntry);
+
+employee 'Сотрудник' = DATA Employee (TimeEntry) NONULL;
+nameEmployee 'Сотрудник' (TimeEntry t) = name(employee(t));
+WHEN SET(TimeEntry t IS TimeEntry) AND NOT employee(t) AND currentUser() IS Employee DO employee(t) <- currentUser();
+
+description 'Описание' = DATA ISTRING (TimeEntry) CHARWIDTH 20;
+
+FORM timeEntry 'Отметка времени'
+    OBJECTS t = TimeEntry PANEL
+    PROPERTIES(t) nameEmployee, date, hours, description
+    
+    EDIT TimeEntry OBJECT t
+;
+
+DESIGN timeEntry {
+    OBJECTS {
+        NEW pane {
+            NEW header {
+                alignment = STRETCH;
+                MOVE PROPERTY(nameEmployee(t));
+            }
+            NEW time {
+                alignment = STRETCH;
+                type = CONTAINERH;
+                MOVE PROPERTY(date(t));
+                MOVE PROPERTY(hours(t));
+            }
+            MOVE PROPERTY(description(t)) { alignment = STRETCH; charWidth = 40; }
+        }
+    }
+}
+
+FORM timeEntries 'Отметки времени'
+    OBJECTS t = TimeEntry
+    PROPERTIES(t) READONLY   nameEmployee, date, hours
+    PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
+    
+    LIST TimeEntry OBJECT t
+;
+
+NAVIGATOR {
+    operations {
+        NEW timeEntries;
+    }
+}
