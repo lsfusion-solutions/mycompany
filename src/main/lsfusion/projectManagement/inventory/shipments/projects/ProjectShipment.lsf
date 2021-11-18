@@ -1,0 +1,72 @@
+MODULE ProjectShipment;
+
+REQUIRE Project, ShipmentDone;
+
+NAMESPACE ProjectManagement;
+
+// type
+shipmentType = DATA ShipmentType (ProjectType);
+nameShipmentType 'Тип отгрузки' (ProjectType t) = name(shipmentType(t));
+EXTEND FORM projectType PROPERTIES nameShipmentType(o);
+
+project = DATA Project (Shipment) INDEXED;
+nameProject 'Проект' (Shipment i) = name(project(i));
+
+countShipments 'Отгрузки' (Project p) = GROUP SUM 1 IF project(Shipment i) = p;  
+
+EXTEND FORM shipments
+    PROPERTIES(s) READONLY nameProject
+;
+
+EXTEND FORM project
+    OBJECTS s = Shipment
+    PROPERTIES(s) READONLY nameType, scheduledDateTime, executionDateTime, nameStatus BACKGROUND colorStatus(s), number    
+    PROPERTIES(s) NEWSESSION EDIT GRID
+    FILTERS project(s) = p   
+;
+
+DESIGN project {
+    relatedDoc  {
+        MOVE BOX(s) {
+            caption = CONCAT ' ', 'Отгрузки', '(' + countShipments(p) + ')';
+            GRID(s) { headerHeight = 24; }
+        }
+        REMOVE TOOLBARBOX(s);
+    }
+}
+
+fill ABSTRACT LIST (Shipment, Project);
+
+create (Shipment i, Project p) {
+    project(i) <- p;
+
+    type(i) <- shipmentType(type(p));    
+
+    customer(i) <- partner(p);
+    
+    fill(i, p);
+}
+
+createShipment 'Отгрузить' (Project p) {
+    APPLY;
+    IF canceled() THEN RETURN;
+               
+    NEWSESSION {
+        NEW s = Shipment {
+            create(s, p);
+            
+            SHOW shipment OBJECTS s = s DOCKED;
+        }
+    }
+}
+
+EXTEND FORM project
+    PROPERTIES(p) createShipment
+;
+
+DESIGN project {
+    primaryActions {
+        MOVE PROPERTY(createShipment(p)) FIRST { fontStyle = 'bold'; };
+    }
+}
+

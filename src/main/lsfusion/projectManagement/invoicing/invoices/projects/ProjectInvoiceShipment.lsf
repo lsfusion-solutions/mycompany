@@ -1,0 +1,14 @@
+MODULE ProjectInvoiceShipment;
+
+REQUIRE ProjectInvoice, ProjectShipment, InvoiceShipment, ShipmentReceipt;
+
+NAMESPACE ProjectManagement;
+
+fill (Invoice i, Project p) +{
+    FOR project(shipment(ShipmentLine sl)) = p AND NOT invoiceLine(sl) NEW il = InvoiceLine DO {
+        invoice(il) <- i;
+        item(il) <- product(sl);
+        quantity(il) <- toReturn(sl);
+        invoiceLine(sl) <- il;
+    } 
+}
