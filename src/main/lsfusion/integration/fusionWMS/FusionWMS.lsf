@@ -1,0 +1,101 @@
+MODULE FusionWMS;
+
+REQUIRE Partner, Uom, Category, Product, BarCodeUom, Receipt, Shipment;
+
+NAMESPACE WMS;
+
+dateTimeString(DATETIME dt) = FORMULA STRING 'to_char($1,(\'YYYY-MM-DDTHH24:MI:SS\'))';
+dateTimeString(Receipt r) = dateTimeString(scheduledDateTime(r));
+
+FORM insertUpdate
+    OBJECTS p = Partner EXTID 'legalEntity'
+    PROPERTIES (p) name EXTID 'name',
+                   id EXTID 'id',
+                   fullName EXTID 'fullName',
+                   addressCsv EXTID 'address',
+                   archived EXTID 'archived',
+                   VALUE EXTID 'externalId',
+                   phone EXTID 'phone',
+                   email EXTID 'email'
+
+    OBJECTS u = Uom EXTID 'uom'
+    PROPERTIES (u) name EXTID 'name',
+                   id EXTID 'id',
+                   VALUE EXTID 'externalId'
+
+    OBJECTS c = Category EXTID 'category'
+    PROPERTIES (c) VALUE EXTID 'externalId',
+                   name EXTID 'name',
+                   parent EXTID 'parent'
+
+    OBJECTS i = Product EXTID 'item'
+    PROPERTIES (i) VALUE EXTID 'externalId',
+                   id EXTID 'id',
+                   dataName EXTID 'name',
+                   name EXTID 'fullName',
+                   reference EXTID 'article',
+                   uom EXTID 'uom',
+                   category EXTID 'category'
+                   
+    OBJECTS b = BarCode EXTID 'barcodeItem'
+    PROPERTIES (b) id EXTID 'id',
+                   item EXTID 'owner'
+    FILTERS uom(b) = uom(item(b)) OR NOT uom(b)
+    
+    OBJECTS r = Receipt EXTID 'receipt'
+    PROPERTIES (r) VALUE EXTID 'externalId',
+                   vendor EXTID 'vendor',
+                   number EXTID 'number',
+                   dateTimeString EXTID 'dateTime',
+                   nameLocation EXTID 'nameLocation'
+
+    OBJECTS rl = ReceiptLine EXTID 'receiptLine'
+    PROPERTIES (rl) VALUE EXTID 'externalId',
+                    receipt EXTID 'receipt',
+                    product EXTID 'item',
+                    initialDemand EXTID 'initialDemand'
+    FILTERS receipt(rl) = r
+
+    OBJECTS s = Shipment EXTID 'selectionOrder'
+    PROPERTIES (s) VALUE EXTID 'externalId',
+                   customer EXTID 'legalEntity',
+                   number EXTID 'number',
+                   scheduledDateTime EXTID 'dateTime',
+                   deliveryAddress EXTID 'deliveryAddress'
+
+    OBJECTS sl = ShipmentLine EXTID 'selectionOrderLine'
+    PROPERTIES (sl) VALUE EXTID 'externalId',
+                    shipment EXTID 'shipment',
+                    product EXTID 'item',
+                    initialDemand EXTID 'quantity'
+    FILTERS shipment(sl) = s    
+;
+
+connectionString 'Строка подключения' = DATA STRING ();
+
+EXTEND FORM integrationData PROPERTIES connectionString();
+
+DESIGN integrationData {
+    pane {
+        NEW wms {
+            caption = 'FusionWMS';
+            columns = 2;
+            MOVE PROPERTY (connectionString());
+        }
+    }
+}
+
+send 'Передать' () {
+    EXPORT insertUpdate JSON;
+    IF exportFile() AND connectionString() THEN {
+        EXTERNAL HTTP POST connectionString() + '/exec?action=IncomeApi.insertUpdate' PARAMS exportFile();
+    }
+}
+
+EXTEND FORM integrationData PROPERTIES send();
+
+DESIGN integrationData {
+    wms {
+        MOVE PROPERTY (send());
+    }
+}
