@@ -6,6 +6,7 @@ NAMESPACE WMS;
 
 dateTimeString(DATETIME dt) = FORMULA STRING 'to_char($1,(\'YYYY-MM-DDTHH24:MI:SS\'))';
 dateTimeString(Receipt r) = dateTimeString(scheduledDateTime(r));
+dateTimeString(Shipment s) = dateTimeString(scheduledDateTime(s));
 
 FORM insertUpdate
     OBJECTS p = Partner EXTID 'legalEntity'
@@ -60,7 +61,7 @@ FORM insertUpdate
     PROPERTIES (s) VALUE EXTID 'externalId',
                    customer EXTID 'legalEntity',
                    number EXTID 'number',
-                   scheduledDateTime EXTID 'dateTime',
+                   dateTimeString EXTID 'dateTime',
                    deliveryAddress EXTID 'deliveryAddress'
 
     OBJECTS sl = ShipmentLine EXTID 'selectionOrderLine'
