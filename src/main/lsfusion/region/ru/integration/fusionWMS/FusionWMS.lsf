@@ -5,8 +5,8 @@ REQUIRE Partner, Uom, Category, Product, BarCodeUom, Receipt, Shipment;
 NAMESPACE WMS;
 
 dateTimeString(DATETIME dt) = FORMULA STRING 'to_char($1,(\'YYYY-MM-DDTHH24:MI:SS\'))';
-dateTimeString(Receipt r) = dateTimeString(scheduledDateTime(r));
-dateTimeString(Shipment s) = dateTimeString(scheduledDateTime(s));
+scheduledDateTimeString(Receipt r) = dateTimeString(scheduledDateTime(r));
+scheduledDateTimeString(Shipment s) = dateTimeString(scheduledDateTime(s));
 
 FORM insertUpdate
     OBJECTS p = Partner EXTID 'legalEntity'
@@ -47,7 +47,7 @@ FORM insertUpdate
     PROPERTIES (r) VALUE EXTID 'externalId',
                    vendor EXTID 'vendor',
                    number EXTID 'number',
-                   dateTimeString EXTID 'dateTime',
+                   scheduledDateTimeString EXTID 'dateTime',
                    nameLocation EXTID 'nameLocation'
 
     OBJECTS rl = ReceiptLine EXTID 'receiptLine'
@@ -61,7 +61,7 @@ FORM insertUpdate
     PROPERTIES (s) VALUE EXTID 'externalId',
                    customer EXTID 'legalEntity',
                    number EXTID 'number',
-                   dateTimeString EXTID 'dateTime',
+                   scheduledDateTimeString EXTID 'dateTime',
                    deliveryAddress EXTID 'deliveryAddress'
 
     OBJECTS sl = ShipmentLine EXTID 'selectionOrderLine'
