@@ -55,7 +55,7 @@ META defineTax (prefix, cls, caption, form, obj, container)
     prefix##Tax 'Налоги '##caption##', %' (cls i) = GROUP SUM value(Tax tax) IF prefix##In(i, tax);
     name###prefix##Tax 'Налоги '##caption (cls i) = GROUP CONCAT name(Tax t) IF prefix##In(i, t), ', ' ORDER t CHARWIDTH 8;
     
-    WHEN LOCAL CHANGED(prefix##In(cls i, Tax t)) DO {
+    WHEN LOCAL SET(prefix##In(cls i, Tax t)) DO {
         FOR taxGroup(t) = taxGroup(Tax tx) AND NOT t = tx DO {
             prefix##In(i, tx) <- NULL;
         }
