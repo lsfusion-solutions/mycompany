@@ -172,7 +172,7 @@ readonly = ABSTRACT BOOLEAN (Item, ItemAttribute);
 EXTEND FORM item
     OBJECTS a = ItemAttribute
     PROPERTIES name(a) READONLY, 
-               value(i, a) ON CHANGE { DIALOG values OBJECTS a = a, c = category(i), v = attribute(i, a) CHANGE; } 
+               value(i, a) ON CHANGE { DIALOG values OBJECTS a = a, c = category(i), v = attribute(i, a) CHANGE LIST value(v); } 
                            READONLYIF readonly(i, a) BACKGROUND
                                 IF readonly(i, a) THEN RGB(223,223,223) ELSE
                                                       (RGB(245,184,184) IF NOT value(i, a) AND nonull(a))
@@ -223,7 +223,7 @@ CONSTRAINT attributeFilter(ItemAttribute a) AND NOT itemAttribute(attributeFilte
 META defineItemAttributeForm(form, obj, gobj)
     EXTEND FORM form
         OBJECTS ia = ItemAttribute BEFORE gobj
-        PROPERTIES name(ia) READONLY, value(ia) ON CHANGE { DIALOG childValues OBJECTS a = ia, c = c, v = attributeFilter(ia) CHANGE; }
+        PROPERTIES name(ia) READONLY, value(ia) ON CHANGE { DIALOG childValues OBJECTS a = ia, c = c, v = attributeFilter(ia) CHANGE LIST value(v); }
         FILTERS attributeFilter(ia) = attribute(obj, ia) OR NOT attributeFilter(ia)
         FILTERS GROUP SUM 1 IF set(ia, Category cc) AND (level(cc, c) OR level(c, cc)) 
     ;
