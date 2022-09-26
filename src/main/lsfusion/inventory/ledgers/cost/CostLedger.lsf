@@ -38,7 +38,6 @@ negQuantity (OutCostLedger l) = -quantity(l);
 amount '{Amount}' = DATA NUMERIC[14,2] (OutCostLedger);
 price 'Цена' (OutCostLedger il) = amount(il) / quantity(il);
 
-// Проводки с учетом знака
 signedQuantity '{Quantity}' (CostLedger l) = MULTI quantity[InCostLedger](l), -quantity[OutCostLedger](l) MATERIALIZED;
 signedAmount '{Amount}' (CostLedger l) = MULTI amount[InCostLedger](l), -amount[OutCostLedger](l) MATERIALIZED;
 
@@ -66,7 +65,6 @@ costAmount 'Себестоимость' (Product p, DATETIME dt) = GROUP SUM cos
 costPrice 'Себестоимость за единицу' (Product p, DATETIME dt) = costAmount(p, dt) / costQuantity(p, dt);
 
 overCost 'Себестоимость' (Item i, DATETIME dt) = NUMERIC[14,2](OVERRIDE costPrice(i, dt), cost(i, DATE(dt)));
-// Связываем OutCostLedger и InCostLedger
 
 quantity 'Расходовано' = DATA NUMERIC[16,3] (OutCostLedger, InCostLedger);
 costed 'Расходовано' (InCostLedger il) = GROUP SUM quantity(OutCostLedger ol, il) MATERIALIZED;
@@ -77,24 +75,24 @@ costed 'Расходовано' (OutCostLedger ol) = GROUP SUM quantity(ol, InCo
 calcCost = DATA LOCAL NESTED BOOLEAN (CostLedger);
 
 calculateCost () {
-    // расчет по стандартной цене
+    // standard price
     amount (OutCostLedger ol) <- NUMERIC[14,2](quantity(ol) * cost(product(ol), date(ol))) 
         WHERE calcCost(ol) AND costingMethod(product(ol)) = CostingMethod.standardPrice;
 
     dataAmount (InCostLedger il) <- NUMERIC[14,2](quantity(il) * cost(product(il), date(il))) IF costingMethod(product(il)) = CostingMethod.standardPrice
         WHERE calcCost(il);
 
-    // расчет по fifo и среднему
-    quantity(OutCostLedger out, InCostLedger in) <- NULL WHERE calcCost(out); // сбрасываем старый расчет
+    // fifo / average
+    quantity(OutCostLedger out, InCostLedger in) <- NULL WHERE calcCost(out);
 
-    LOCAL ordered = INTEGER (OutCostLedger); // сортируем по товару и дробим на несколько итераций по товарам (остальные расчеты независимы) 
+    LOCAL ordered = INTEGER (OutCostLedger); 
     ordered(OutCostLedger ledger) <- PARTITION SUM 1 IF calcCost(ledger) 
                                                ORDER dateTime(ledger), ledger 
                                                BY product(ledger);
 
     FOR iterate(INTEGER i, 1, (GROUP MAX ordered(OutCostLedger ledger))) DO {
         LOCAL iteration = BOOLEAN (OutCostLedger);
-        iteration(OutCostLedger l) <- ordered(l) = i; // чтобы определились классы
+        iteration(OutCostLedger l) <- ordered(l) = i;
         
         quantity(OutCostLedger ol, InCostLedger il) <- (PARTITION UNGROUP quantity
                                                                   LIMIT notCosted(il) IF location(ol) = location(il) 

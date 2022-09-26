@@ -12,18 +12,17 @@ itemAttribute (STRING[50] id) = GROUP AGGR ItemAttribute i BY id(i);
 index '№' (ItemAttribute a) = PARTITION SUM 1 ORDER a AS ItemAttribute MATERIALIZED CHARWIDTH 2;
 itemAttribute (INTEGER i) = GROUP LAST ItemAttribute a ORDER a BY index(a);  
 
-//обязателен для заполнения
 nonull 'Обязателен для заполнения' = DATA BOOLEAN (ItemAttribute);
 
 name 'Название' = DATA ISTRING[50] (ItemAttribute) IN id NONULL;
 
-// задание доступных категорий для атрибутов
+// available categories
 set 'Вкл.' = DATA BOOLEAN (ItemAttribute, Category);
 
-// с учетом групп
+// recursive
 valid (ItemAttribute a, Category c) = GROUP LAST set(a, Category cc) ORDER DESC level(c, cc); 
 
-// список возможных значений для атрибута
+// available values
 CLASS ItemAttributeValue 'Значение';
 
 itemAttribute 'Атрибут' = DATA ItemAttribute (ItemAttributeValue) NONULL DELETE;
@@ -32,7 +31,6 @@ nameAttribute 'Атрибут' (ItemAttributeValue v) = name(itemAttribute(v));
 value 'Значение' = DATA STRING (ItemAttributeValue) NONULL IN id;
 value (ItemAttribute a, STRING v) = GROUP AGGR ItemAttributeValue av BY itemAttribute(av), value(av);
 
-// форма по вводу значений
 FORM value 'Значение'
     OBJECTS v = ItemAttributeValue PANEL 
     PROPERTIES(v) value 
@@ -47,7 +45,7 @@ newValue 'Значение' (ItemAttribute a) {
     }
 } IMAGE 'add.png' CHANGEKEY 'INSERT';
 
-// задание доступных категорий для конкретных значений
+// available values
 set 'Вкл.' = DATA BOOLEAN (ItemAttributeValue, Category);
 valid (ItemAttributeValue v, Category c) = GROUP LAST set(v, Category cc) ORDER DESC level(c, cc); 
 
@@ -56,7 +54,6 @@ countCategory 'Кол-во заданных категорий' (ItemAttributeVa
 CONSTRAINT set(ItemAttributeValue v, Category c) AND NOT valid(itemAttribute(v), c)
     MESSAGE 'Категория значения должна совпадать с категорией атрибута';
 
-// диалог выбора значений по атрибуту
 FORM values 'Значения'
     OBJECTS a = ItemAttribute PANEL, c = Category PANEL 
 
@@ -79,7 +76,6 @@ FORM childValues 'Значения'
             valid(v, c) OR (GROUP SUM 1 IF set(v, Category cc) AND level(cc, c)) OR NOT countCategory(v)
 ;
 
-// формы ввода атрибутов
 FORM attributes 'Атрибуты'
     OBJECTS a = ItemAttribute
     PROPERTIES(a) READONLY index, id, name, nonull
@@ -149,7 +145,7 @@ NAVIGATOR {
     }
 }
 
-// Задание значения атрибута для товара
+// attribute value
 attribute = DATA ItemAttributeValue (Item, ItemAttribute) INDEXED;
 value 'Значение' (Item i, ItemAttribute a) = value(attribute(i, a));
 
@@ -188,7 +184,7 @@ DESIGN item {
     }
 }
 
-// Формирование наименования для товара
+// full value
 beforeName 'Перед названием' = DATA BOOLEAN (ItemAttribute);
 sequence 'Последовательность' = DATA INTEGER (ItemAttribute);
 prefix 'Префикс' = DATA STRING[15] (ItemAttribute);
@@ -213,7 +209,7 @@ DESIGN attribute {
     }
 }
 
-// Фильтр по атрибутам на форме номенклатуры
+// filters
 attributeFilter = DATA LOCAL ItemAttributeValue (ItemAttribute);
 value 'Значение' (ItemAttribute a) = value(attributeFilter(a));
 
@@ -243,7 +239,6 @@ DESIGN items {
     }
 }
 
-// копирование атрибутов при копировании товара
 copy(Item n, Item o) + {
    FOR attribute(o, ItemAttribute a) DO {
        attribute(n, a) <- attribute(o, a);
