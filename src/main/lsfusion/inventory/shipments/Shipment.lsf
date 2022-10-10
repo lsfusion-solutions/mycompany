@@ -24,7 +24,7 @@ scheduledDateTime(Shipment s) <- currentDateTime() WHEN SET(s IS Shipment);
 
 @defineNumberType(shipment);
 
-numberDate 'Описание' (Shipment s) = number(s) + ' от ' + scheduledDateTime(s) IN id;
+numberDate 'Описание' (Shipment s) = number(s) + ' (' + scheduledDateTime(s) + ')' IN id;
 
 // locations
 location 'Место хранения (откуда)' = DATA Location (Shipment) NONULL INDEXED;
@@ -125,7 +125,7 @@ FORM shipment 'Отгрузка'
 ;
 
 DESIGN shipment {
-    caption = (CONCAT ' ', 'Отгрузка', '№' + number(s), 'от ' + scheduledDateTime(s));
+    caption = (CONCAT ' ', 'Отгрузка', '№' + number(s), '(' + scheduledDateTime(s) + ')');
     OBJECTS {       
         NEW header {
             NEW headerCenter {
