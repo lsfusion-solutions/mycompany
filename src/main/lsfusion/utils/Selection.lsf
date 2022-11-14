@@ -3,7 +3,7 @@ MODULE Selection;
 NAMESPACE Utils;
 
 META defineSelection(cls)
-    selected 'Отм.' = DATA LOCAL NESTED BOOLEAN (cls);
+    selected 'Sel.' = DATA LOCAL NESTED BOOLEAN (cls);
     background(cls o) += WHEN selected(o) THEN RGB(224,224,255);
 
     select '+' (cls o) {
@@ -13,7 +13,7 @@ END
 
 META defineSelectionForm(form, cls, obj)
     selected###form (cls o) = selected(o) AND [FILTER form.obj](o);
-    countSelected###form 'Отмечено' () = GROUP SUM 1 IF selected###form(cls o);
+    countSelected###form 'Selected' () = GROUP SUM 1 IF selected###form(cls o);
     
     invertSelection###form '*' () {
         selected(cls o) <- NOT selected(o) WHERE [FILTER form.obj](o);
@@ -29,7 +29,7 @@ META defineSelectionForm(form, cls, obj)
         PROPERTIES DRAW obj TOOLBAR select(obj), invertSelection###form(), deselectAll###form()
         
         FILTERGROUP selected
-            FILTER 'Отм.' selected(obj) 'ctrl O'
+            FILTER 'Sel.' selected(obj) 'ctrl O'
     ;
     
     DESIGN form {
@@ -49,7 +49,7 @@ END
 META defineSelectionCopyDateTime (form, cls, dateProp, caption)
 
     // copy
-    FORM dialog###form###dateProp 'Введите дату '##caption
+    FORM dialog###form###dateProp 'Enter date:'##caption
         OBJECTS d = DATETIME PANEL
         PROPERTIES dateTime '' = VALUE(d)
     ;
@@ -62,7 +62,7 @@ META defineSelectionCopyDateTime (form, cls, dateProp, caption)
     }
     
     
-    copy###form##Selected 'Копировать' () {
+    copy###form##Selected 'Copy' () {
         DIALOG dialog###form###dateProp OBJECTS d INPUT DO {
             LOCAL NESTED toCopy = BOOLEAN (cls);
             toCopy(cls o) <- selected###form(o);
@@ -89,7 +89,7 @@ META defineSelectionCopyDateTime (form, cls, dateProp, caption)
 END
 
 META defineSelectionDelete(form, cls)
-    deleteSelected###form 'Удалить' () {
+    deleteSelected###form 'Delete' () {
         LOCAL NESTED toDelete = BOOLEAN (cls);
         toDelete(cls o) <- selected###form(o);
         NEWSESSION {

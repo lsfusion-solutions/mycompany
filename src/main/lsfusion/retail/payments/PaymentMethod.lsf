@@ -4,22 +4,22 @@ REQUIRE Pos, IncomingPaymentType, OutgoingPaymentType, RetailSettings;
 
 NAMESPACE Retail;
 
-CLASS PaymentMethod 'Метод оплаты';
-name 'Наименование' = DATA ISTRING[20] (PaymentMethod);
+CLASS PaymentMethod 'Payment method';
+name 'Name' = DATA ISTRING[20] (PaymentMethod);
 
-id 'Код' = DATA STRING[10] (PaymentMethod); 
+id 'ID' = DATA STRING[10] (PaymentMethod); 
 paymentMethod = GROUP AGGR PaymentMethod p BY id(p);
 
 cashPaymentMethod = DATA PaymentMethod();
-isCash 'Наличные' (PaymentMethod pm) = cashPaymentMethod() = pm;  
+isCash 'Cash' (PaymentMethod pm) = cashPaymentMethod() = pm;  
 
 incomingPaymentType = DATA IncomingPaymentType (PaymentMethod) NONULL;
-nameIncomingPaymentType 'Тип входящего платежа' (PaymentMethod m) = name(incomingPaymentType(m));
+nameIncomingPaymentType 'Incoming payment type' (PaymentMethod m) = name(incomingPaymentType(m));
 
 outgoingPaymentType = DATA OutgoingPaymentType (PaymentMethod) NONULL;
-nameOutgoingPaymentType 'Тип возвратного платежа' (PaymentMethod m) = name(outgoingPaymentType(m));
+nameOutgoingPaymentType 'Return payment type' (PaymentMethod m) = name(outgoingPaymentType(m));
 
-FORM paymentMethod 'Метод оплаты'
+FORM paymentMethod 'Payment method'
     OBJECTS pm = PaymentMethod PANEL
     PROPERTIES(pm) name, id, isCash, nameIncomingPaymentType, nameOutgoingPaymentType
     
@@ -31,7 +31,7 @@ DESIGN paymentMethod {
     PROPERTY(nameOutgoingPaymentType(pm)) { notNull = TRUE; }
 }
 
-FORM paymentMethods 'Методы оплаты'
+FORM paymentMethods 'Payment methods'
     OBJECTS pm = PaymentMethod
     PROPERTIES(pm) READONLY name, id
     

@@ -4,15 +4,15 @@ REQUIRE ServiceP, BarCode, System;
 
 NAMESPACE MasterData;
 
-serviceExport 'Экспорт услуг' () {
+serviceExport 'Export services' () {
     NEWSESSION {
         IF NOT (GROUP SUM 1 IF Service s IS Service) THEN {
             NEW s = Service {
                 id(s) <- '123';
-                dataName(s) <- 'Моя услуга';
+                dataName(s) <- 'My service';
                 category(s) <- GROUP LAST Category c ORDER DESC c WHERE c IS Category;
 
-                description(s) <- 'Описание';
+                description(s) <- 'Description';
                 archived(s) <- TRUE;
             }
         }
@@ -24,7 +24,7 @@ serviceExport 'Экспорт услуг' () {
     }
 }
 
-serviceImport 'Импорт услуг' () {
+serviceImport 'Import services' () {
     LOCAL id = STRING[50] (INTEGER);
     LOCAL name = ISTRING[50] (INTEGER);
     LOCAL idCategory = ISTRING[50] (INTEGER);
@@ -38,7 +38,7 @@ serviceImport 'Импорт услуг' () {
             IMPORT XLS HEADER FROM f TO id = A, name = B, idCategory = C, barCode = D, idUnitM = E, description = F, archived = G; 
             
             FOR [GROUP SUM 1 BY idCategory(INTEGER i)](num) AND NOT category[STRING](num) DO {
-                MESSAGE 'Отсутствует категория в базе данных с кодом ' + num + '. Импорт отменен';;
+                MESSAGE 'Missing category in database with code' + ' ' + num + '... Import canceled';;
                 RETURN;
             }  
             
@@ -55,7 +55,7 @@ serviceImport 'Импорт услуг' () {
                 archived(s) <- archived(i);
             }
             APPLY;
-            MESSAGE 'Импорт завершен';
+            MESSAGE 'Import completed';
         }
     }    
 }
@@ -68,7 +68,7 @@ DESIGN migrationData {
     commons {
         NEW service {
             type = CONTAINERH;
-            caption = 'Услуги';
+            caption = 'Services';
             MOVE PROPERTY(serviceImport());
             MOVE PROPERTY(serviceExport());
         }

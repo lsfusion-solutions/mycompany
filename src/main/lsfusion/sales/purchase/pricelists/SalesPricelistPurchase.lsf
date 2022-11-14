@@ -5,7 +5,7 @@ REQUIRE SalesPricelistDone, PurchasePricelistDone;
 NAMESPACE Sales;
 
 pricelistType = DATA PricelistType ();
-namePricelistType 'Тип прайс-листа на продажу' () = name(pricelistType());
+namePricelistType 'Type of price list for sale' () = name(pricelistType());
 
 EXTEND FORM Purchase.options PROPERTIES namePricelistType();
 DESIGN Purchase.options {
@@ -21,10 +21,10 @@ in (Purchase.Pricelist i, Pricelist s) = GROUP SUM 1 IF pricelist(pricelistLine(
 
 countPricelist (Pricelist s) = GROUP SUM 1 IF in(Purchase.Pricelist i, s) MATERIALIZED;
 countPricelists (Purchase.Pricelist i) = GROUP SUM 1 IF in(i, Pricelist s) MATERIALIZED;
-numberDatePricelist 'Прайс-листы' (Pricelist s) = GROUP CONCAT numberDate(Purchase.Pricelist i) IF in(i, s), ',' ORDER i CHARWIDTH 30; 
-numberDatePricelistLine 'Прайс-листы' (PricelistLine s) = numberDate(pricelistLine(s)); 
+numberDatePricelist 'Pricelists' (Pricelist s) = GROUP CONCAT numberDate(Purchase.Pricelist i) IF in(i, s), ',' ORDER i CHARWIDTH 30; 
+numberDatePricelistLine 'Pricelists' (PricelistLine s) = numberDate(pricelistLine(s)); 
 
-numberDatePricelists 'Прайс-листы' (Purchase.Pricelist s) = GROUP CONCAT numberDate(Pricelist i) IF in(s, i), ',' ORDER i CHARWIDTH 30;
+numberDatePricelists 'Pricelists' (Purchase.Pricelist s) = GROUP CONCAT numberDate(Pricelist i) IF in(s, i), ',' ORDER i CHARWIDTH 30;
 
 countPricelistLine (Purchase.Pricelist b) = GROUP SUM 1 IF pricelist(pricelistLine(PricelistLine l)) = b;
 
@@ -71,7 +71,7 @@ newPricelist (Purchase.Pricelist b) {
     }
 }
 
-createPricelist 'Расценить' (Purchase.Pricelist b) {
+createPricelist 'Create Pricelist' (Purchase.Pricelist b) {
     APPLY;
     IF canceled() THEN RETURN;
     
@@ -101,7 +101,7 @@ DESIGN Purchase.pricelist {
     relatedDoc {
         MOVE BOX(sp) {
             showIf = pricelistType();
-            caption = CONCAT ' ', 'Прайс-листы', '(' + countPricelists(p) + ')';
+            caption = CONCAT ' ', 'Pricelists', '(' + countPricelists(p) + ')';
         }
         REMOVE TOOLBARSYSTEM(sp);
     }

@@ -6,7 +6,7 @@ REQUIRE Shipment, ShipmentSelection, ShipmentFilter,
 
 NAMESPACE Manufacturing;
 
-initialDemand 'Планируемое кол-во' (Product p) = GROUP SUM initialDemand(ShipmentLine l) IF product(l) = p AND selectedShipments(shipment(l));
+initialDemand 'Initial demand' (Product p) = GROUP SUM initialDemand(ShipmentLine l) IF product(l) = p AND selectedShipments(shipment(l));
 
 EXTEND FORM shipments
     OBJECTS ss = Shipment
@@ -18,23 +18,23 @@ EXTEND FORM shipments
 
     OBJECTS p = Product
     PROPERTIES(p) READONLY name, nameUom, idBarCode, id
-    PROPERTIES READONLY 'Доступно (откуда)' = prevAvailableRec(shipmentLocation(), p) SHOWIF shipmentLocation()
+    PROPERTIES READONLY 'Available (source)' = prevAvailableRec(shipmentLocation(), p) SHOWIF shipmentLocation()
 
-    PROPERTIES(p) READONLY 'Итого' = initialDemand BACKGROUND RGB(255,212,212) IF initialDemand(p) > OVERRIDE prevAvailableRec(shipmentLocation(), p), (0 IF shipmentLocation()) 
+    PROPERTIES(p) READONLY 'Total' = initialDemand BACKGROUND RGB(255,212,212) IF initialDemand(p) > OVERRIDE prevAvailableRec(shipmentLocation(), p), (0 IF shipmentLocation()) 
                            
     PROPERTIES initialDemand(ss, p) READONLYIF NOT (status(ss) = ShipmentStatus.draft OR status(ss) = ShipmentStatus.waiting)
                                     COLUMNS 'id' (ss) 
                                     HEADER CONCAT ' ', nameCustomer(ss), nameToLocation(ss), [FORMULA STRING[8] 'to_char(($1),\'DD.MM\')'](scheduledDate(ss))
                                     ON CHANGE changeInitialDemand(ss, p)
     
-    PROPERTIES onHand 'Доступно' = prevAvailableRec(toLocation(ss), p) SHOWIF toLocation(ss) READONLY
+    PROPERTIES onHand 'Available' = prevAvailableRec(toLocation(ss), p) SHOWIF toLocation(ss) READONLY
                                   COLUMNS 'id' (ss)
     FILTERGROUP demand
-        FILTER 'Планируемое кол-во' initialDemand(p) DEFAULT
-        FILTER 'Доступно' prevAvailableRec(shipmentLocation(), p)
+        FILTER 'Initial demand' initialDemand(p) DEFAULT
+        FILTER 'Available' prevAvailableRec(shipmentLocation(), p)
     FILTERS level(category(p), c)
     FILTERGROUP active
-        FILTER 'Активный' active(p) 'F10' DEFAULT  
+        FILTER 'Active' active(p) 'F10' DEFAULT  
     ORDERS name(p)
 ;
 
@@ -42,7 +42,7 @@ DESIGN shipments {
     tabbedPane {
         NEW total {
             showIf = countSelectedShipments();
-            caption = 'Итого';
+            caption = 'Total';
             type = SPLITH;
             MOVE BOX(TREE categories);
             NEW products {
@@ -61,9 +61,9 @@ DESIGN shipments {
 
 EXTEND FORM shipments
     OBJECTS pFrom = DATE PANEL BEFORE p, pTo = DATE PANEL BEFORE p
-    PROPERTIES pFrom 'Период с' = VALUE(pFrom), pTo 'по' = VALUE(pTo)
+    PROPERTIES pFrom 'Period from' = VALUE(pFrom), pTo 'to' = VALUE(pTo)
     
-    PROPERTIES shipped 'Отгружалось' = shippedPeriodicRec(toLocation(ss), p, pFrom, pTo) SHOWIF toLocation(ss) READONLY
+    PROPERTIES shipped 'Shipped' = shippedPeriodicRec(toLocation(ss), p, pFrom, pTo) SHOWIF toLocation(ss) READONLY
                                      COLUMNS 'id' (ss)
     
     EVENTS ON INIT { 

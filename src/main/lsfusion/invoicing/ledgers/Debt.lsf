@@ -4,53 +4,53 @@ REQUIRE Partner, Company, Contract, Currency, ExchangeRate, DateUtils;
 
 NAMESPACE Invoicing;
 
-CLASS ABSTRACT Debt 'Задолженность';
-active 'Активен' = ABSTRACT BOOLEAN (Debt) MATERIALIZED;
-number 'Номер' = ABSTRACT STRING[31] (Debt) MATERIALIZED;
+CLASS ABSTRACT Debt 'Debt';
+active 'Active' = ABSTRACT BOOLEAN (Debt) MATERIALIZED;
+number 'Number' = ABSTRACT STRING[31] (Debt) MATERIALIZED;
 
-dateTime 'Дата' = ABSTRACT DATETIME (Debt) MATERIALIZED;
+dateTime 'Date' = ABSTRACT DATETIME (Debt) MATERIALIZED;
 @defineDateTimeAggregation(Debt);
 
-dueDateTime 'Оплатить до' = ABSTRACT DATETIME(Debt) MATERIALIZED;
+dueDateTime 'Pay before' = ABSTRACT DATETIME(Debt) MATERIALIZED;
 
 partner = ABSTRACT Partner (Debt) MATERIALIZED;
-namePartner 'Контрагент' (Debt d) = name(partner(d));
+namePartner 'Partner' (Debt d) = name(partner(d));
 
 INDEX partner(Debt d), dateTime(d), d;
 
 company = ABSTRACT Company (Debt) MATERIALIZED;
-nameCompany 'Компания' (Debt d) = name(company(d));
+nameCompany 'Company' (Debt d) = name(company(d));
 
 contract = ABSTRACT Contract (Debt) MATERIALIZED; 
 
 sourceCurrency = ABSTRACT Currency (Debt) MATERIALIZED;
-nameSourceCurrency 'Исходная валюта' (Debt d) = name(sourceCurrency(d));
+nameSourceCurrency 'Source currency' (Debt d) = name(sourceCurrency(d));
 
-sourceAmount 'Исходная сумма' = ABSTRACT NUMERIC[14,2] (Debt) MATERIALIZED;
+sourceAmount 'Source amount' = ABSTRACT NUMERIC[14,2] (Debt) MATERIALIZED;
 
 currency = ABSTRACT VALUE Currency (Debt) MATERIALIZED;
 currency (Debt d) += defaultCurrency() IF d IS Debt;
 
 rate1 (Debt d, DATE dt) = rate1(currency(d), (OVERRIDE sourceCurrency(d), defaultCurrency()), dt);
-rate1 'Курс' (Debt d) = rate1(d, date(d));
+rate1 'Rate' (Debt d) = rate1(d, date(d));
 currentRate1 (Debt d) = rate1(d, currentDate());
 
 amount '{Amount}' (Debt d) = NUMERIC[14,2](sourceAmount(d) * rate1(d)) MATERIALIZED;
 
-class 'Вид' (Debt d) = objectClassName(d) IF d IS Debt CHARWIDTH 15;
+class 'View' (Debt d) = objectClassName(d) IF d IS Debt CHARWIDTH 15;
 
-type 'Тип' = ABSTRACT ISTRING[100] (Debt) CHARWIDTH 20 MATERIALIZED;
+type 'Type' = ABSTRACT ISTRING[100] (Debt) CHARWIDTH 20 MATERIALIZED;
 
 // incoming
-CLASS ABSTRACT IncomingDebt 'Входящая задолженность' : Debt;
+CLASS ABSTRACT IncomingDebt 'Incoming debt' : Debt;
 
 // outgoing
-CLASS ABSTRACT OutgoingDebt 'Исходящая задолженность' : Debt;
+CLASS ABSTRACT OutgoingDebt 'Outgoing debt' : Debt;
 
 signedAmount '{Amount}' (Debt d) = IF d IS OutgoingDebt THEN amount(d) ELSE -amount(d) MATERIALIZED;
 
 // match
-paid 'Оплачено' = DATA NUMERIC[14,2] (IncomingDebt, OutgoingDebt);
+paid 'Paid' = DATA NUMERIC[14,2] (IncomingDebt, OutgoingDebt);
 
 WHEN CHANGED(amount(IncomingDebt id)) AND amount(id) < paid(id, OutgoingDebt od) DO
     paid(id, od) <- amount(id);
@@ -61,21 +61,21 @@ WHEN CHANGED(amount(OutgoingDebt od)) AND amount(od) < paid(IncomingDebt id, od)
 canBeMatched (IncomingDebt id, OutgoingDebt od) =
     partner(id) = partner(od) AND company(id) = company(od);
 
-paid 'Оплачено' (IncomingDebt id) = GROUP SUM paid(id, OutgoingDebt od) IF active(od) MATERIALIZED;
-paid 'Оплачено' (OutgoingDebt od) = GROUP SUM paid(IncomingDebt id, od) IF active(id) MATERIALIZED;  
-paid 'Оплачено' (Debt d) = MULTI paid[IncomingDebt](d), paid[OutgoingDebt](d);
+paid 'Paid' (IncomingDebt id) = GROUP SUM paid(id, OutgoingDebt od) IF active(od) MATERIALIZED;
+paid 'Paid' (OutgoingDebt od) = GROUP SUM paid(IncomingDebt id, od) IF active(id) MATERIALIZED;  
+paid 'Paid' (Debt d) = MULTI paid[IncomingDebt](d), paid[OutgoingDebt](d);
 
-left 'Осталось' (IncomingDebt id) = amount(id) (-) paid(id);
-left 'Осталось' (OutgoingDebt od) = amount(od) (-) paid(od);
-left 'Осталось' (Debt d) = MULTI left[IncomingDebt](d), left[OutgoingDebt](d);
-signedLeft 'Осталось' (Debt d) = IF d IS OutgoingDebt THEN left(d) ELSE -left(d);
+left 'Left' (IncomingDebt id) = amount(id) (-) paid(id);
+left 'Left' (OutgoingDebt od) = amount(od) (-) paid(od);
+left 'Left' (Debt d) = MULTI left[IncomingDebt](d), left[OutgoingDebt](d);
+signedLeft 'Left' (Debt d) = IF d IS OutgoingDebt THEN left(d) ELSE -left(d);
 
-left 'Осталось' (IncomingDebt id, OutgoingDebt od) = min(left(id), left(od));
+left 'Left' (IncomingDebt id, OutgoingDebt od) = min(left(id), left(od));
 
 sourceLeft (IncomingDebt id) = NUMERIC[14,2] (left(id) / currentRate1(id)); 
 sourceLeft (OutgoingDebt od) = NUMERIC[14,2] (left(od) / currentRate1(od)); 
 
 canBePaid (IncomingDebt id, OutgoingDebt od) = canBeMatched(id, od) AND left(id, od) > 0 AND active(id) AND active(od);
 
-CONSTRAINT left(IncomingDebt id) < 0 MESSAGE 'По входящей задолженности разнесено больше, чем сумма задолженности';
-CONSTRAINT left(OutgoingDebt id) < 0 MESSAGE 'По исходящей задолженности разнесено больше, чем сумма задолженности';
+CONSTRAINT left(IncomingDebt id) < 0 MESSAGE 'Incoming debt is posted more than the amount owed';
+CONSTRAINT left(OutgoingDebt id) < 0 MESSAGE 'Outgoing debt has posted more than the outstanding amount';

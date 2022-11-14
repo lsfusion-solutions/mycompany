@@ -5,14 +5,14 @@ REQUIRE IncomingPayment, ExchangeRate;
 NAMESPACE Invoicing;
 
 currency = DATA Currency (IncomingPaymentType);
-nameCurrency 'Валюта' (IncomingPaymentType o) = name(currency(o));
+nameCurrency 'Currency' (IncomingPaymentType o) = name(currency(o));
 
 EXTEND FORM incomingPaymentType
     PROPERTIES(o) nameCurrency
 ;
 
 currency = DATA Currency (IncomingPayment);
-nameCurrency 'Валюта' (IncomingPayment b) = name(currency(b));
+nameCurrency 'Currency' (IncomingPayment b) = name(currency(b));
 
 currency(IncomingPayment p) <- OVERRIDE currency(companyAccount(p)), currency(type(p)) WHEN (SETCHANGED(type(p)) OR SETCHANGED(companyAccount(p)));  
 
@@ -34,4 +34,4 @@ EXTEND FORM incomingPayments
 
 rate1 (IncomingPayment b) = rate1(currency(b), date(b));
 
-currencyAmount 'Сумма в базовой валюте' (IncomingPayment p) = NUMERIC[14,2](amount(p) * rate1(p));
+currencyAmount 'Currency base amount' (IncomingPayment p) = NUMERIC[14,2](amount(p) * rate1(p));

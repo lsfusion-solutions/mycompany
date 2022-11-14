@@ -17,7 +17,7 @@ FORM posDashboard 'POS'
     FILTERS s = openedSession(p)
     
     OBJECTS i = Invoice PANEL
-    PROPERTIES(i) 'Итого' = fullAmount, 'Скидка' = discountAmount, 'К оплате' = amount, 
+    PROPERTIES(i) 'Total' = fullAmount, 'Discount' = discountAmount, 'To pay' = amount, 
                   nameCustomer
     FILTERS session(i) = s
     
@@ -33,11 +33,11 @@ FORM posDashboard 'POS'
     PROPERTIES(s) READONLY openingDateTime, amount
     
     OBJECTS si = Invoice
-    PROPERTIES(si) READONLY dateTime, number, nameCustomer, 'Итого' = fullAmount, 'Скидка' = discountAmount, 'К оплате' = amount
+    PROPERTIES(si) READONLY dateTime, number, nameCustomer, 'Total' = fullAmount, 'Discount' = discountAmount, 'To pay' = amount
     PROPERTIES(si) NEWSESSION EDIT
     FILTERGROUP invoices
-        FILTER 'По смене' PREV(session(si)) = s DEFAULT
-        FILTER 'По кассе' PREV(pos(session(si))) = p
+        FILTER 'By session' PREV(session(si)) = s DEFAULT
+        FILTER 'By POS' PREV(pos(session(si))) = p
 ;
 
 DESIGN posDashboard {
@@ -108,19 +108,19 @@ DESIGN posDashboard {
                 type = TABBED;
                 
                 NEW session {
-                    caption = 'Смена';
+                    caption = 'Session';
                     NEW posHeader {
                         type = CONTAINERH;
                         alignment = STRETCH;
-                        MOVE PROPERTY(name(p)) { caption = 'Касса ККМ'; }
+                        MOVE PROPERTY(name(p)) { caption = 'Cash register'; }
                     }
                     NEW sessionHeader {
                         type = CONTAINERH;
                         alignment = STRETCH;
                         MOVE PROPERTY(number(s));
                         MOVE PROPERTY(openSession(p)) { fill = 1; fontStyle = 'bold';  };
-                        MOVE PROPERTY(openingDateTime(s)) { caption = 'Открыта'; focusable = FALSE; }
-                        MOVE PROPERTY(close(s)) { fontStyle = 'bold'; caption = 'Закрыть смену'; }
+                        MOVE PROPERTY(openingDateTime(s)) { caption = 'Opened'; focusable = FALSE; }
+                        MOVE PROPERTY(close(s)) { fontStyle = 'bold'; caption = 'Close session'; }
                     }
                     NEW cashRegister {
                         type = CONTAINERH;
@@ -136,7 +136,7 @@ DESIGN posDashboard {
                         fill = 1;
                         type = TABBED;
                         MOVE BOX(si) {
-                            caption = 'Чеки'; 
+                            caption = 'Checks'; 
                             showIf = openedSession(p); 
                             MOVE TOOLBAR(si) { alignment = END; }
                         }
@@ -190,7 +190,7 @@ NAVIGATOR {
 }
 
 // new receipt
-newReceipt 'Новый чек' (Session s) {
+newReceipt 'New receipt' (Session s) {
     CANCEL;
     createInvoice(s);
 } CONFIRM CHANGEKEY 'shift F12';
@@ -214,7 +214,7 @@ changeBarCode (Invoice i, InvoiceLine l) {
             processBarCode(i, l, b);
             
             IF NOT consumedBarCode() THEN
-                MESSAGE 'Штрих-код не найден';
+                MESSAGE 'Barcode not found';
         } 
     }
 }

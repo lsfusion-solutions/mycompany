@@ -4,39 +4,39 @@ REQUIRE Item;
 
 NAMESPACE MasterData;
 
-CLASS ItemAttribute 'Атрибут';
+CLASS ItemAttribute 'Attribute';
 
-id 'Код' = DATA STRING[50] (ItemAttribute) IN id CHARWIDTH 8;
+id 'ID' = DATA STRING[50] (ItemAttribute) IN id CHARWIDTH 8;
 itemAttribute (STRING[50] id) = GROUP AGGR ItemAttribute i BY id(i);
 
 index '№' (ItemAttribute a) = PARTITION SUM 1 ORDER a AS ItemAttribute MATERIALIZED CHARWIDTH 2;
 itemAttribute (INTEGER i) = GROUP LAST ItemAttribute a ORDER a BY index(a);  
 
-nonull 'Обязателен для заполнения' = DATA BOOLEAN (ItemAttribute);
+nonull 'Required' = DATA BOOLEAN (ItemAttribute);
 
-name 'Название' = DATA ISTRING[50] (ItemAttribute) IN id NONULL;
+name 'Name' = DATA ISTRING[50] (ItemAttribute) IN id NONULL;
 
 // available categories
-set 'Вкл.' = DATA BOOLEAN (ItemAttribute, Category);
+set 'Incl.' = DATA BOOLEAN (ItemAttribute, Category);
 
 // recursive
 valid (ItemAttribute a, Category c) = GROUP LAST set(a, Category cc) ORDER DESC level(c, cc); 
 
 // available values
-CLASS ItemAttributeValue 'Значение';
+CLASS ItemAttributeValue 'Value';
 
-itemAttribute 'Атрибут' = DATA ItemAttribute (ItemAttributeValue) NONULL DELETE;
-nameAttribute 'Атрибут' (ItemAttributeValue v) = name(itemAttribute(v));
+itemAttribute 'Attribute' = DATA ItemAttribute (ItemAttributeValue) NONULL DELETE;
+nameAttribute 'Attribute' (ItemAttributeValue v) = name(itemAttribute(v));
 
-value 'Значение' = DATA STRING (ItemAttributeValue) NONULL IN id;
+value 'Value' = DATA STRING (ItemAttributeValue) NONULL IN id;
 value (ItemAttribute a, STRING v) = GROUP AGGR ItemAttributeValue av BY itemAttribute(av), value(av);
 
-FORM value 'Значение'
+FORM value 'Value'
     OBJECTS v = ItemAttributeValue PANEL 
     PROPERTIES(v) value 
 ;
 
-newValue 'Значение' (ItemAttribute a) {
+newValue 'Value' (ItemAttribute a) {
     NEWSESSION {
         NEW v = ItemAttributeValue {
             itemAttribute(v) <- a;
@@ -46,15 +46,15 @@ newValue 'Значение' (ItemAttribute a) {
 } IMAGE 'add.png' CHANGEKEY 'INSERT';
 
 // available values
-set 'Вкл.' = DATA BOOLEAN (ItemAttributeValue, Category);
+set 'Incl.' = DATA BOOLEAN (ItemAttributeValue, Category);
 valid (ItemAttributeValue v, Category c) = GROUP LAST set(v, Category cc) ORDER DESC level(c, cc); 
 
-countCategory 'Кол-во заданных категорий' (ItemAttributeValue v) = GROUP SUM 1 IF set(v, Category c) MATERIALIZED;
+countCategory 'Number of preset categories' (ItemAttributeValue v) = GROUP SUM 1 IF set(v, Category c) MATERIALIZED;
 
 CONSTRAINT set(ItemAttributeValue v, Category c) AND NOT valid(itemAttribute(v), c)
-    MESSAGE 'Категория значения должна совпадать с категорией атрибута';
+    MESSAGE 'The value category must match the attribute category';
 
-FORM values 'Значения'
+FORM values 'Values'
     OBJECTS a = ItemAttribute PANEL, c = Category PANEL 
 
     OBJECTS v = ItemAttributeValue
@@ -65,7 +65,7 @@ FORM values 'Значения'
             valid(v, c) OR NOT countCategory(v)
 ;
 
-FORM childValues 'Значения'
+FORM childValues 'Values'
     OBJECTS a = ItemAttribute PANEL, c = Category PANEL 
 
     OBJECTS v = ItemAttributeValue
@@ -76,7 +76,7 @@ FORM childValues 'Значения'
             valid(v, c) OR (GROUP SUM 1 IF set(v, Category cc) AND level(cc, c)) OR NOT countCategory(v)
 ;
 
-FORM attributes 'Атрибуты'
+FORM attributes 'Attributes'
     OBJECTS a = ItemAttribute
     PROPERTIES(a) READONLY index, id, name, nonull
     PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE 
@@ -84,7 +84,7 @@ FORM attributes 'Атрибуты'
     LIST ItemAttribute OBJECT a
 ;
 
-FORM attribute 'Атрибут'
+FORM attribute 'Attribute'
     OBJECTS a = ItemAttribute PANEL
     PROPERTIES(a) name, id, nonull
     
@@ -112,7 +112,7 @@ DESIGN attribute {
             NEW attribute {
                 fill = 1;
                 NEW name {
-                    caption = 'Настройки';
+                    caption = 'Settings';
                     MOVE PROPERTY(name(a));
                     MOVE PROPERTY(id(a));
                     MOVE PROPERTY(nonull(a));
@@ -122,15 +122,15 @@ DESIGN attribute {
                 type = TABBED;
                 fill = 5;
                 MOVE BOX(TREE categories) {
-                    caption = 'Категории';
+                    caption = 'Categories';
                 }
                 NEW values {
                     type = CONTAINERH;
-                    caption = 'Значения';
+                    caption = 'Values';
                     fill = 2;
                     MOVE BOX(v);
                     MOVE BOX(TREE cat) {
-                        caption = 'Категории значений';
+                        caption = 'Value categories';
                         fill = 1;
                     }    
                 }
@@ -147,21 +147,21 @@ NAVIGATOR {
 
 // attribute value
 attribute = DATA ItemAttributeValue (Item, ItemAttribute) INDEXED;
-value 'Значение' (Item i, ItemAttribute a) = value(attribute(i, a));
+value 'Value' (Item i, ItemAttribute a) = value(attribute(i, a));
 
 CONSTRAINT nonull(ItemAttribute a) AND NOT value(Item i, a) AND valid(a, category(i)) AND NOT SET(nonull(a))
-    MESSAGE 'Атрибут обязателен для заполнения';
+    MESSAGE 'The attribute is required';
 
 CONSTRAINT attribute(Item i, ItemAttribute a) AND (countCategory(attribute(i, a)) AND NOT valid(attribute(i, a), category(i)))
     CHECKED BY attribute[Item, ItemAttribute]
-    MESSAGE 'Категория номенклатуры должна совпадать с категорией значения';
+    MESSAGE 'The item category must match the value category';
 
 CONSTRAINT attribute(Item i, ItemAttribute a) AND NOT itemAttribute(attribute(i, a)) = a
     CHECKED BY attribute[Item, ItemAttribute]
-    MESSAGE 'Выбрано недопустимое значение для данной номенклатуры';
+    MESSAGE 'An invalid value was selected for this item';
     
 CONSTRAINT DROPPED(ItemAttributeValue v IS ItemAttributeValue) AND PREV(attribute(Item i, ItemAttribute a)) = v
-    MESSAGE 'Нельзя удалять значение, которое используется';
+    MESSAGE 'Can\'t delete value that is in use';
 
 readonly = ABSTRACT BOOLEAN (Item, ItemAttribute);
 
@@ -178,19 +178,19 @@ EXTEND FORM item
 DESIGN item {
     tabs {
         NEW attributes FIRST {
-            caption = 'Атрибуты';
+            caption = 'Attributes';
             MOVE BOX(a);
         }
     }
 }
 
 // full value
-beforeName 'Перед названием' = DATA BOOLEAN (ItemAttribute);
-sequence 'Последовательность' = DATA INTEGER (ItemAttribute);
-prefix 'Префикс' = DATA STRING[15] (ItemAttribute);
-suffix 'Суффикс' = DATA STRING[15] (ItemAttribute);
+beforeName 'Before name' = DATA BOOLEAN (ItemAttribute);
+sequence 'Sequence' = DATA INTEGER (ItemAttribute);
+prefix 'Prefix' = DATA STRING[15] (ItemAttribute);
+suffix 'Suffix' = DATA STRING[15] (ItemAttribute);
 
-fullValue 'Полное значение' (Item i, ItemAttribute a) = (CONCAT '', prefix(a), value(i, a), suffix(a)) IF value(i, a);
+fullValue 'Full value' (Item i, ItemAttribute a) = (CONCAT '', prefix(a), value(i, a), suffix(a)) IF value(i, a);
 prefixName(Item i) += STRING(GROUP CONCAT fullValue(i, ItemAttribute a) IF sequence(a) AND beforeName(a), ' ' ORDER sequence(a), a);
 suffixName(Item i) += STRING(GROUP CONCAT fullValue(i, ItemAttribute a) IF sequence(a) AND NOT beforeName(a), ' ' ORDER sequence(a), a);
 
@@ -200,7 +200,7 @@ EXTEND FORM attribute PROPERTIES(a) beforeName, sequence, prefix, suffix;
 DESIGN attribute {
     attribute {
         NEW itemValues {
-            caption = 'Формирование наименования';
+            caption = 'Formation of the name';
             MOVE PROPERTY(beforeName(a));
             MOVE PROPERTY(sequence(a));
             MOVE PROPERTY(prefix(a));
@@ -211,7 +211,7 @@ DESIGN attribute {
 
 // filters
 attributeFilter = DATA LOCAL ItemAttributeValue (ItemAttribute);
-value 'Значение' (ItemAttribute a) = value(attributeFilter(a));
+value 'Value' (ItemAttribute a) = value(attributeFilter(a));
 
 CONSTRAINT attributeFilter(ItemAttribute a) AND NOT itemAttribute(attributeFilter(a)) = a
     CHECKED BY attributeFilter MESSAGE '';
@@ -233,7 +233,7 @@ END
 DESIGN items {
     tabs {
         NEW filters {
-            caption = 'Фильтры';
+            caption = 'Filters';
             MOVE BOX(ia);
         }
     }

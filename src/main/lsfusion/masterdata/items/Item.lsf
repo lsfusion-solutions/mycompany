@@ -7,47 +7,47 @@ PRIORITY System;
 NAMESPACE MasterData;
 
 CLASS ABSTRACT Item '{Item}';
-class 'Вид' (Item i) = objectClassName(i) IF i IS Item CHARWIDTH 6;
+class 'View' (Item i) = objectClassName(i) IF i IS Item CHARWIDTH 6;
 
-@defineID(item, '{Items}', 'НМ', 6);
+@defineID(item, '{Items}', 'NM', 6);
 
-dataName 'Наименование' = DATA ISTRING[200] (Item) IN id NONULL CHARWIDTH 20;
-prefixName 'Префикс' = ABSTRACT STRING (Item);
-suffixName 'Суффикс' = ABSTRACT STRING (Item);
+dataName 'Name' = DATA ISTRING[200] (Item) IN id NONULL CHARWIDTH 20;
+prefixName 'Prefix' = ABSTRACT STRING (Item);
+suffixName 'Suffix' = ABSTRACT STRING (Item);
 
-name 'Наименование (полное)' (Item i) = CONCAT ' ', prefixName(i), dataName(i), suffixName(i) CHARWIDTH 30 MATERIALIZED INDEXED;
+name 'Name (full)' (Item i) = CONCAT ' ', prefixName(i), dataName(i), suffixName(i) CHARWIDTH 30 MATERIALIZED INDEXED;
 
-reference 'Артикул' = DATA STRING[50] (Item) CHARWIDTH 10;
+reference 'Reference' = DATA STRING[50] (Item) CHARWIDTH 10;
 
-description 'Описание' = DATA TEXT (Item);
+description 'Description' = DATA TEXT (Item);
 
-category 'Категория' = DATA Category (Item) NONULL INDEXED;
-idCategory 'Код категории' (Item i) = id(category(i));
-nameCategory 'Категория' (Item i) = name(category(i));
-canonicalNameCategory 'Категория (полная)' (Item i) = canonicalName(category(i));
+category 'Category' = DATA Category (Item) NONULL INDEXED;
+idCategory 'Category code' (Item i) = id(category(i));
+nameCategory 'Category' (Item i) = name(category(i));
+canonicalNameCategory 'Category (full)' (Item i) = canonicalName(category(i));
 
 // uom
 uom = DATA Uom (Item);
-idUom 'Код ед. изм.' (Item i) = id(uom(i));
-nameUom 'Ед. изм.' (Item i) = name(uom(i));
+idUom 'UoM code' (Item i) = id(uom(i));
+nameUom 'UoM' (Item i) = name(uom(i));
 
-CONSTRAINT DROPPED(Uom u IS Uom) AND PREV(uom(Item i)) MESSAGE 'Нельзя удалить единицу измерения на которую ссылается номенклатура'; 
+CONSTRAINT DROPPED(Uom u IS Uom) AND PREV(uom(Item i)) MESSAGE 'You cannot delete the unit of measure referenced by the item'; 
 
 dataDefaultUom = DATA Uom (Category);
-nameDataDefaultUom 'Единица измерения' (Category c) = name(dataDefaultUom(c));
+nameDataDefaultUom 'Unit of measure' (Category c) = name(dataDefaultUom(c));
 EXTEND FORM category PROPERTIES nameDataDefaultUom(c);
 DESIGN category { default { MOVE PROPERTY(nameDataDefaultUom(c)); } }
 
 defaultUom (Category c) = GROUP LAST dataDefaultUom(Category parent) ORDER DESC level(c, parent);
 WHEN LOCAL SETCHANGED(category(Item i)) AND NOT uom(i) DO uom(i) <- defaultUom(category(i));
 
-archived 'Неактивный' = DATA BOOLEAN (Item) CHARWIDTH 10;
-active 'Активный' (Item i) = NOT archived(i) CHARWIDTH 10;
+archived 'Inactive' = DATA BOOLEAN (Item) CHARWIDTH 10;
+active 'Active' (Item i) = NOT archived(i) CHARWIDTH 10;
 
-level1 'Категория 1' (Item i) = nameCategory1(category(i));
-level2 'Категория 2' (Item i) = nameCategory2(category(i));
-level3 'Категория 3' (Item i) = nameCategory3(category(i));
-level4 'Категория 4' (Item i) = nameCategory4(category(i));
+level1 'Category 1' (Item i) = nameCategory1(category(i));
+level2 'Category 2' (Item i) = nameCategory2(category(i));
+level3 'Category 3' (Item i) = nameCategory3(category(i));
+level4 'Category 4' (Item i) = nameCategory4(category(i));
 
 readonly = ABSTRACT BOOLEAN (Item);
 
@@ -73,7 +73,7 @@ DESIGN item {
     caption = CONCAT ' ', class(i), name(i);
     OBJECTS {        
         NEW statusPane FIRST {
-            caption = 'Статусы';
+            caption = 'Statuses';
             type = CONTAINERH;
             alignment = STRETCH;                          
             NEW statusActions {
@@ -119,10 +119,10 @@ DESIGN item {
             fill = 1;
             NEW operations {
                 type = TABBED;
-                caption = 'Документы';
+                caption = 'Documents';
             }
             NEW description {
-                caption = 'Описание';
+                caption = 'Description';
                 MOVE PROPERTY(description(i)) { fill = 1; };
             }
         }
@@ -139,10 +139,10 @@ FORM items '{Items}'
     PROPERTIES(i) SHOWIF isReadonly() NEWSESSION EDIT, DELETE
     ORDERS name(i) 
     FILTERGROUP category
-        FILTER 'По категории' level(category(i), c) DEFAULT
+        FILTER 'By category' level(category(i), c) DEFAULT
     FILTERGROUP active
-        FILTER 'Активный' active(i) 'F8' DEFAULT 
-        FILTER 'Неактивный' archived(i) 'F7'
+        FILTER 'Active' active(i) 'F8' DEFAULT 
+        FILTER 'Inactive' archived(i) 'F7'
         
     LIST Item OBJECT i
 ;

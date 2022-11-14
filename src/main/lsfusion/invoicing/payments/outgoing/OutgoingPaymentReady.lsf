@@ -5,14 +5,14 @@ REQUIRE OutgoingPayment;
 NAMESPACE Invoicing;
 
 EXTEND CLASS OutgoingPaymentStatus {
-    ready 'К оплате'
+    ready 'To pay'
 }
-ready 'К оплате' = DATA BOOLEAN (OutgoingPayment);
+ready 'To pay' = DATA BOOLEAN (OutgoingPayment);
 
 status (OutgoingPayment r) += WHEN ready(r) THEN OutgoingPaymentStatus.ready;
 colorStatus (OutgoingPayment r) += WHEN status(r) = OutgoingPaymentStatus.ready THEN RGB(252,247,149);
 
-markAsToDo 'В работу' (OutgoingPayment r) {
+markAsToDo 'Mark as Todo' (OutgoingPayment r) {
     APPLY; 
     IF canceled() THEN RETURN;
     
@@ -37,5 +37,5 @@ DESIGN outgoingPayment {
 
 EXTEND FORM outgoingPayments    
     EXTEND FILTERGROUP status
-        FILTER 'К оплате' status(p) = OutgoingPaymentStatus.ready    
+        FILTER 'To pay' status(p) = OutgoingPaymentStatus.ready    
 ;

@@ -4,26 +4,26 @@ REQUIRE InvoicingSettings, CountryP;
 
 NAMESPACE Invoicing;
 
-CLASS Bank 'Банк';
+CLASS Bank 'Bank';
 
-id 'Код' = DATA STRING[11] (Bank);
+id 'ID' = DATA STRING[11] (Bank);
 bank (STRING[11] s) = GROUP AGGR Bank b BY id(b);
 
-name 'Наименование' = DATA ISTRING[30] (Bank) IN id NONULL;
-country 'Страна' = DATA Country (Bank);
-nameCountry  'Страна' (Bank b) = name(country(b)); 
-city 'Город' = DATA ISTRING[30] (Bank);
-address 'Адрес' = DATA ISTRING[50] (Bank);
-phone 'Телефон' = DATA ISTRING[30] (Bank);
+name 'Name' = DATA ISTRING[30] (Bank) IN id NONULL;
+country 'Country' = DATA Country (Bank);
+nameCountry  'Country' (Bank b) = name(country(b)); 
+city 'City' = DATA ISTRING[30] (Bank);
+address 'Address' = DATA ISTRING[50] (Bank);
+phone 'Phone' = DATA ISTRING[30] (Bank);
 
-FORM bank 'Банк'
+FORM bank 'Bank'
     OBJECTS b = Bank PANEL 
     PROPERTIES(b) name, id, nameCountry, city, address, phone
     
     EDIT Bank OBJECT b
 ;
 
-FORM banks 'Банки'
+FORM banks 'Banks'
     OBJECTS b = Bank
     PROPERTIES(b) READONLY name, id, nameCountry, city, address, phone
     PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE

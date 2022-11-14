@@ -8,17 +8,17 @@ CLASS LotOrder 'Заказ КМ';
 
 @defineDocStatus(lotOrder, 'заказа КМ');
 
-id 'Код' = DATA STRING[100] (LotOrder) CHARWIDTH 36;
+id 'ID' = DATA STRING[100] (LotOrder) CHARWIDTH 36;
 
-type 'Тип' = DATA LotType (LotOrder) NONULL;
-nameType 'Тип' (LotOrder r) = name(type(r));
+type 'Type' = DATA LotType (LotOrder) NONULL;
+nameType 'Type' (LotOrder r) = name(type(r));
 idType (LotOrder r) = id(type(r));
 
-company 'Компания' = DATA Company (LotOrder) NONULL;
-nameCompany 'Компания' (LotOrder o) = name(company(o));
+company 'Company' = DATA Company (LotOrder) NONULL;
+nameCompany 'Company' (LotOrder o) = name(company(o));
 WHEN LOCAL SET(LotOrder o IS LotOrder) AND NOT CHANGED(company(o)) DO company(o) <- defaultCompany(); 
 
-note 'Примечание' = DATA ISTRING (LotOrder) CHARWIDTH 30;
+note 'Note' = DATA ISTRING (LotOrder) CHARWIDTH 30;
 
 // line
 CLASS LotOrderLine 'Строка заказа КМ';
@@ -27,16 +27,16 @@ lotOrder 'Заказ КМ' = DATA LotOrder (LotOrderLine) NONULL DELETE;
 
 index '№' = PARTITION SUM 1 ORDER LotOrderLine l BY lotOrder(l) IN id MATERIALIZED CHARWIDTH 3;
 
-product 'Продукт' = DATA Product (LotOrderLine);
-nameProduct 'Продукт' (LotOrderLine l) = name(product(l));
-idBarCodeProduct 'Штрихкод' (LotOrderLine l) = idBarCode(product(l));
-idProduct 'Код' (LotOrderLine l) = id(product(l));
+product 'Product' = DATA Product (LotOrderLine);
+nameProduct 'Product' (LotOrderLine l) = name(product(l));
+idBarCodeProduct 'Barcode' (LotOrderLine l) = idBarCode(product(l));
+idProduct 'ID' (LotOrderLine l) = id(product(l));
 gtinProduct 'GTIN' (LotOrderLine l) = gtin(product(l));
 
 uom (LotOrderLine l) = uom(product(l));
-nameUom 'Ед. изм.' (LotOrderLine l) = name(uom(l));
+nameUom 'UoM' (LotOrderLine l) = name(uom(l));
 
-quantity 'Кол-во' = DATA NUMERIC[16,3] (LotOrderLine);
+quantity 'Qty' = DATA NUMERIC[16,3] (LotOrderLine);
 
 quantityLotOrderLine (LotOrder o) = GROUP SUM quantity(LotOrderLine d) IF lotOrder(d) = o; 
 quantity (LotOrder o, Product p) = GROUP SUM quantity(LotOrderLine d) IF lotOrder(d) = o AND p = product(d); 
@@ -60,7 +60,7 @@ DESIGN lotOrder {
             fill = 1;
             type = TABBED;
             NEW lines {
-                caption = 'Строки';
+                caption = 'Lines';
                 type = SPLITH;
                 MOVE BOX(l);
                 NEW linesTab {
@@ -101,7 +101,7 @@ clone (LotOrder to, LotOrder from) + {
     }
 }
 
-copy 'Копировать' (LotOrder from) {
+copy 'Copy' (LotOrder from) {
     NEWSESSION {
         NEW to = LotOrder {
             clone(to, from);

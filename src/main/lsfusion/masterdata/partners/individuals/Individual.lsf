@@ -4,20 +4,20 @@ REQUIRE Partner, MasterData, LegalEntity, Position, DocTemplate, Location;
 
 NAMESPACE MasterData;
 
-CLASS Individual 'Физическое лицо';
+CLASS Individual 'Individual';
 
 firstName '{First_name}' = DATA ISTRING[30] (Individual);
-lastName 'Фамилия' = DATA ISTRING[30] (Individual) NONULL;
-middleName 'Отчество' = DATA ISTRING[30] (Individual);
+lastName 'Surname' = DATA ISTRING[30] (Individual) NONULL;
+middleName 'Middle name' = DATA ISTRING[30] (Individual);
 
 legalEntity = DATA LegalEntity (Individual);
-idLegalEntity 'Организация' (Individual i) = id(legalEntity(i));
-nameLegalEntity 'Организация' (Individual i) = name(legalEntity(i));
+idLegalEntity 'Legal entity' (Individual i) = id(legalEntity(i));
+nameLegalEntity 'Legal entity' (Individual i) = name(legalEntity(i));
 
 countIndividual (Partner p) = GROUP SUM 1 IF legalEntity(Individual i) = p;  
 
 position = DATA Position (Individual);
-namePosition 'Должность' (Individual i) = name(position(i));
+namePosition 'Position' (Individual i) = name(position(i));
 
 EXTEND CLASS Individual : Partner;
 
@@ -27,7 +27,7 @@ fullName (Individual i) += CONCAT ' ', lastName(i), firstName(i), middleName(i);
 positionName (Individual i) = CONCAT ' ', namePosition(i), lastName(i), firstName(i), middleName(i);
 
 EXTEND CLASS PartnerType {
-    individual 'Физическое лицо'
+    individual 'Individual'
 }
 
 type (Partner p) += WHEN p IS Individual THEN PartnerType.individual;
@@ -54,7 +54,7 @@ DESIGN partner {
     }
 }
 
-newIndividual 'Физическое лицо' () {
+newIndividual 'Individual' () {
     NEWSESSION {
         NEW i = Individual {
             DIALOG partner OBJECTS p = i DOCKED DO seek(i);
@@ -67,12 +67,12 @@ EXTEND FORM partners
 ;
 EXTEND FORM dialogPartners
     EXTEND FILTERGROUP type
-        FILTER 'Физические лица' p IS Individual
+        FILTER 'Individuals' p IS Individual
     
     PROPERTIES newIndividual() DRAW p TOOLBAR
 ;
 
-FORM individuals 'Физические лица'
+FORM individuals 'Individuals'
     OBJECTS i = Individual
     PROPERTIES(i) READONLY firstName, lastName, middleName, nameLegalEntity, namePosition, id
 
@@ -90,7 +90,7 @@ DESIGN partner {
     tabs {
         NEW contacts {
             showIf = p IS LegalEntity;
-            caption = (CONCAT ' ', 'Контакты', '(' + countIndividual(p) + ')');
+            caption = (CONCAT ' ', 'Contacts', '(' + countIndividual(p) + ')');
             MOVE BOX(em);           
         }
     }
@@ -100,7 +100,7 @@ DESIGN partner {
 DESIGN location {
     tabbedPane {
         NEW invoicePrint {
-            caption = 'Печать накладных';
+            caption = 'Print waybills';
         }
     }
 }
@@ -113,7 +113,7 @@ META defineEmployee (prop, caption, cls, obj, container)
     position###prop (###cls o) = position(prop(o));
      
     CONSTRAINT prop(###cls o) AND NOT type(legalEntity(prop(o))) = PartnerType.company 
-        CHECKED BY prop[###cls] MESSAGE 'Должен быть наш работник';
+        CHECKED BY prop[###cls] MESSAGE 'There must be our worker';
     
     EXTEND FORM cls
         PROPERTIES(obj) positionName###prop 

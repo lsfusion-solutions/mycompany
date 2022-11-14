@@ -2,9 +2,9 @@ MODULE LotPrint;
 
 REQUIRE Lot, ItemPrint;
 
-count 'Кол-во' = DATA LOCAL INTEGER (Lot);
+count 'Qty' = DATA LOCAL INTEGER (Lot);
 
-FORM printItemLot 'Этикетка'
+FORM printItemLot 'Label'
     OBJECTS pt = PrintItemType PANEL
     PROPERTIES(pt) name, nameCompany, addressLinesCompany, addressCsvCompany, phoneCompany, emailCompany, websiteCompany
     REPORT OVERRIDE file(pt), setExtension(RAWFILE(template(pt)), 'path')
@@ -52,7 +52,7 @@ printLot () {
         printLot(printType());
 }
 
-print 'Этикетка' (Lot l) {
+print 'Label' (Lot l) {
     count(Item i) <- 1 IF i = product(l);
     count(l) <- 1;
     printLot();

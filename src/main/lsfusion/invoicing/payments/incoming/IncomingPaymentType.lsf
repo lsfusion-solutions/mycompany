@@ -4,24 +4,24 @@ REQUIRE Numerator, InvoicingSettings, BankAccount, CashAccount;
 
 NAMESPACE Invoicing;
 
-CLASS IncomingPaymentType 'Тип входящего платежа';
-name 'Название' = DATA ISTRING[50] (IncomingPaymentType) NONULL IN id;
+CLASS IncomingPaymentType 'Incoming payment type';
+name 'Name' = DATA ISTRING[50] (IncomingPaymentType) NONULL IN id;
 
-id 'Код' = DATA STRING[20] (IncomingPaymentType);
+id 'ID' = DATA STRING[20] (IncomingPaymentType);
 incomingPaymentType = GROUP AGGR IncomingPaymentType t BY id(t);
 
-interpay 'Внутренний платеж' = DATA BOOLEAN (IncomingPaymentType);
+interpay 'Internal payment' = DATA BOOLEAN (IncomingPaymentType);
 
-cash 'Касса' = DATA BOOLEAN (IncomingPaymentType);
-bank 'Банковский счет' = DATA BOOLEAN (IncomingPaymentType);
+cash 'Cash account' = DATA BOOLEAN (IncomingPaymentType);
+bank 'Bank account' = DATA BOOLEAN (IncomingPaymentType);
 
 CONSTRAINT IncomingPaymentType t IS IncomingPaymentType AND NOT cash(t) AND NOT bank(t)
-    MESSAGE 'Должен быть разрешен хотя бы один вид счета';
+    MESSAGE 'At least one account type must be allowed';
 
-numerator 'Нумератор' = DATA Numerator (IncomingPaymentType);
-nameNumerator 'Нумератор' (IncomingPaymentType o) = name(numerator(o));
+numerator 'Numerator' = DATA Numerator (IncomingPaymentType);
+nameNumerator 'Numerator' (IncomingPaymentType o) = name(numerator(o));
 
-FORM incomingPaymentType 'Тип входящего платежа'
+FORM incomingPaymentType 'Incoming payment type'
     OBJECTS o = IncomingPaymentType PANEL 
     PROPERTIES(o) name, id, nameNumerator,
                   interpay, cash, bank  
@@ -32,7 +32,7 @@ FORM incomingPaymentType 'Тип входящего платежа'
 DESIGN incomingPaymentType {
     OBJECTS {
         NEW typeAccount {
-            caption = 'Разрешенные типы счетов';
+            caption = 'Allowed account types';
             type = CONTAINERH;
             MOVE PROPERTY(cash(o));
             MOVE PROPERTY(bank(o));
@@ -44,7 +44,7 @@ DESIGN incomingPaymentType {
     }   
 }
 
-FORM incomingPaymentTypes 'Типы входящих платежей'
+FORM incomingPaymentTypes 'Types of incoming payments'
     OBJECTS o = IncomingPaymentType
     PROPERTIES(o) READONLY name, id
     

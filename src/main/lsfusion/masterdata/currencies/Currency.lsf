@@ -4,31 +4,31 @@ REQUIRE MasterData;
 
 NAMESPACE MasterData;
 
-CLASS Currency 'Валюта';
+CLASS Currency 'Currency';
 TABLE currency (Currency);
 
-name 'Наименование' = DATA ISTRING[30] (Currency) CHARWIDTH 10;
+name 'Name' = DATA ISTRING[30] (Currency) CHARWIDTH 10;
 currency (ISTRING[30] name) = GROUP AGGR Currency c BY name(c);
 
-id 'Код' = DATA STRING[3] (Currency) CHARWIDTH 3;
+id 'ID' = DATA STRING[3] (Currency) CHARWIDTH 3;
 
 defaultCurrency = DATA Currency();
-default 'По умолчанию' (Currency c) = defaultCurrency() = c; 
+default 'Default' (Currency c) = defaultCurrency() = c; 
 
-FORM currency 'Валюта'
+FORM currency 'Currency'
     OBJECTS o = Currency PANEL
     PROPERTIES(o) id, name, default
     
     EDIT Currency OBJECT o
 ;
 
-FORM currencies 'Валюты'
+FORM currencies 'Currencies'
     OBJECTS o = Currency
     PROPERTIES(o) READONLY id, name, default
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
 ;
 
-FORM dialogCurrencies 'Валюты'
+FORM dialogCurrencies 'Currencies'
     OBJECTS o = Currency
     PROPERTIES(o) READONLY name
     

@@ -4,21 +4,21 @@ REQUIRE Partner, Numerator, InvoicingSettings;
 
 NAMESPACE Invoicing;
 
-CLASS BillType 'Тип поступления';
-name 'Название' = DATA ISTRING[50] (BillType) NONULL;
+CLASS BillType 'Bill type';
+name 'Name' = DATA ISTRING[50] (BillType) NONULL;
 
-id 'Код' = DATA STRING[20] (BillType);
+id 'ID' = DATA STRING[20] (BillType);
 billType = GROUP AGGR BillType t BY id(t);
 
-numerator 'Нумератор' = DATA Numerator (BillType);
-nameNumerator 'Нумератор' (BillType o) = name(numerator(o));
+numerator 'Numerator' = DATA Numerator (BillType);
+nameNumerator 'Numerator' (BillType o) = name(numerator(o));
 
 vendor = DATA Partner (BillType);
-nameVendor 'Поставщик' (BillType o) = name(vendor(o));
+nameVendor 'Vendor' (BillType o) = name(vendor(o));
 
-taxIncluded 'Цена включает налоги' = DATA BOOLEAN (BillType);
+taxIncluded 'Price includes taxes' = DATA BOOLEAN (BillType);
 
-FORM billType 'Тип поступления'
+FORM billType 'Bill type'
     OBJECTS o = BillType PANEL 
     PROPERTIES(o) name, id, nameNumerator, nameVendor, taxIncluded
      
@@ -34,7 +34,7 @@ DESIGN billType {
     }
 }
 
-FORM billTypes 'Типы поступления'
+FORM billTypes 'Bill types'
     OBJECTS o = BillType
     PROPERTIES(o) READONLY name, id
     
@@ -54,7 +54,7 @@ DESIGN options {
 }
 
 // default type
-countBillType 'Кол-во типов' () = GROUP SUM 1 IF r IS BillType; 
+countBillType 'Number of types' () = GROUP SUM 1 IF r IS BillType; 
 firstBillType = GROUP LAST BillType r ORDER DESC r WHERE r IS BillType;
 
 defaultBillType = firstBillType() IF countBillType() = 1;

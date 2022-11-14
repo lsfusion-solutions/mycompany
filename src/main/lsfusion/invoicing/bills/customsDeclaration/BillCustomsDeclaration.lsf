@@ -4,15 +4,15 @@ REQUIRE Bill, CustomsDeclaration;
 
 NAMESPACE Invoicing;
 
-import 'Импорт' = DATA BOOLEAN (BillType);
+import 'Import' = DATA BOOLEAN (BillType);
 
 EXTEND FORM billType PROPERTIES import(o);
 
-customsDeclaration 'Таможенная декларация' = DATA CustomsDeclaration (BillLine);
+customsDeclaration 'Customs declaration' = DATA CustomsDeclaration (BillLine);
 
-nameCustomsDeclaration 'Таможенная декларация' (BillLine bl) = name(customsDeclaration(bl));
+nameCustomsDeclaration 'Customs declaration' (BillLine bl) = name(customsDeclaration(bl));
 
-customsDeclaration 'Таможенная декларация' (Item i, Company c, DATETIME d) = 
+customsDeclaration 'Customs declaration' (Item i, Company c, DATETIME d) = 
     GROUP LAST customsDeclaration(BillLine bl) ORDER DESC dateTime(bill(bl)), bl
           WHERE date(customsDeclaration(bl)) <= DATE(d) AND dateTime(bill(bl)) <= d AND item(bl) = i AND company(bill(bl)) = c
 ;

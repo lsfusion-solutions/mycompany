@@ -4,21 +4,21 @@ REQUIRE ShipmentCanceled;
 
 NAMESPACE Inventory;
 
-nonperiodic 'Непериодичная' = DATA BOOLEAN (ShipmentType);
+nonperiodic 'Non-periodic' = DATA BOOLEAN (ShipmentType);
 
-nonperiodic 'Непериодичная' (Shipment s) = nonperiodic(type(s));
-nonperiodic 'Непериодичная' (ShipmentLine l) = nonperiodic(shipment(l));
+nonperiodic 'Non-periodic' (Shipment s) = nonperiodic(type(s));
+nonperiodic 'Non-periodic' (ShipmentLine l) = nonperiodic(shipment(l));
 
-demandedPeriodic 'Планировалось (за период)' (Location l, Product p, DATE dFrom, DATE dTo) = 
+demandedPeriodic 'Planned (for the period)' (Location l, Product p, DATE dFrom, DATE dTo) = 
     GROUP SUM (OVERRIDE initialDemand(ShipmentLine sl), done(sl)) IF active(shipment(sl)) AND NOT nonperiodic(sl) AND 
               location(sl) = l AND product(sl) = p AND executionDate(sl) >= dFrom AND executionDate(sl) <= dTo;  
 
-demandedPeriodicRec 'Планировалось (за период)' (Location l, Product p, DATE dFrom, DATE dTo) =
+demandedPeriodicRec 'Planned (for the period)' (Location l, Product p, DATE dFrom, DATE dTo) =
     GROUP SUM demandedPeriodic(Location child, p, dFrom, dTo) IF level(child, l);
 
-shippedPeriodic 'Отгружено (за период)' (Location l, Product p, DATE dFrom, DATE dTo) = 
+shippedPeriodic 'Shipped (for the period)' (Location l, Product p, DATE dFrom, DATE dTo) = 
     GROUP SUM done(ShipmentLine sl) IF active(shipment(sl)) AND NOT nonperiodic(sl) AND 
               location(sl) = l AND product(sl) = p AND executionDate(sl) >= dFrom AND executionDate(sl) <= dTo;  
 
-shippedPeriodicRec 'Планировалось (за период)' (Location l, Product p, DATE dFrom, DATE dTo) =
+shippedPeriodicRec 'Planned (for the period)' (Location l, Product p, DATE dFrom, DATE dTo) =
     GROUP SUM shippedPeriodic(Location child, p, dFrom, dTo) IF level(child, l);

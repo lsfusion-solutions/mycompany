@@ -5,11 +5,11 @@ REQUIRE Project, TimeEntry;
 NAMESPACE ProjectManagement;
 
 project = DATA Project (TimeEntry);
-nameProject 'Проект' (TimeEntry e) = name(project(e));
-nameCustomer 'Контрагент' (TimeEntry e) = namePartner(project(e));
+nameProject 'Project' (TimeEntry e) = name(project(e));
+nameCustomer 'Partner' (TimeEntry e) = namePartner(project(e));
 
-countTimeEntry 'Отметки времени' (Project p) = GROUP SUM 1 IF project(TimeEntry t) = p;  
-hoursTimeEntry 'Часов' (Project p) = GROUP SUM hours(TimeEntry t) IF project(t) = p;  
+countTimeEntry 'Time entries' (Project p) = GROUP SUM 1 IF project(TimeEntry t) = p;  
+hoursTimeEntry 'Hours' (Project p) = GROUP SUM hours(TimeEntry t) IF project(t) = p;  
 
 EXTEND FORM timeEntry
     PROPERTIES(t) nameProject
@@ -36,7 +36,7 @@ EXTEND FORM project
 DESIGN project {
     tabs {
         NEW timeEntries {
-            caption = (CONCAT ' ', 'Отметки времени', '(' + countTimeEntry(p) + ')', '(' + hoursTimeEntry(p) + ')');
+            caption = (CONCAT ' ', 'Time entries', '(' + countTimeEntry(p) + ')', '(' + hoursTimeEntry(p) + ')');
             MOVE BOX(t) { caption = ''; }
         }
     }

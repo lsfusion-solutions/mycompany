@@ -5,26 +5,26 @@ REQUIRE BillDone, InvoiceCanceled;
 NAMESPACE Invoicing;
 
 // types
-isRefund 'Возврат' = DATA BOOLEAN (InvoiceType);
+isRefund 'Return' = DATA BOOLEAN (InvoiceType);
 EXTEND FORM invoiceType PROPERTIES(o) isRefund;
 
 isRefund (Invoice i) = isRefund(type(i));
 isCustomer(Invoice i) += isRefund(i) AND isVendor(customer(i));
 
 invoiceType = DATA InvoiceType (BillType);
-nameInvoiceType 'Тип возврата' (BillType t) = name(invoiceType(t));
+nameInvoiceType 'Return type' (BillType t) = name(invoiceType(t));
 EXTEND FORM billType PROPERTIES(o) nameInvoiceType;
 
 // lines
-@defineDocLineRelation(bill, invoice, 'Поступления', 'Возвраты', b, i);
+@defineDocLineRelation(bill, invoice, 'Bill', 'Refund', b, i);
 
-numberBillLine 'Реализация' (InvoiceLine l) = number(billLine(l)); 
+numberBillLine 'Invoice' (InvoiceLine l) = number(billLine(l)); 
 
 CONSTRAINT billLine(InvoiceLine l) AND NOT 
                 (vendor(billLine(l)) = customer(l) AND 
                  item(billLine(l)) = item(l))
     CHECKED BY billLine
-    MESSAGE 'Контрагент и номенклатура реализации должны совпадать с контрагентом и товаром возврата';
+    MESSAGE 'Partner and sales item must match the partner and return item';
 
 // events
 WHEN LOCAL SETCHANGED(billLine(InvoiceLine l)) DO {
@@ -40,7 +40,7 @@ EXTEND FORM invoice
 fill ABSTRACT LIST (InvoiceLine, BillLine);
 fill ABSTRACT LIST (Invoice, Bill);
 
-addRefund 'Вернуть' (Bill b) {
+addRefund 'Return' (Bill b) {
     APPLY; 
     IF canceled() THEN RETURN;
     
@@ -88,10 +88,10 @@ DESIGN bill {
 }
 
 // returned quantity
-returned 'Возвращено' (BillLine bl) = 
+returned 'Returned' (BillLine bl) = 
     GROUP SUM quantity(InvoiceLine il) IF billLine(il) = bl AND active(invoice(il));
 
-FORM billInvoiceShow 'Возвраты'
+FORM billInvoiceShow 'Refunds'
     OBJECTS bl = BillLine
     
     OBJECTS il = InvoiceLine

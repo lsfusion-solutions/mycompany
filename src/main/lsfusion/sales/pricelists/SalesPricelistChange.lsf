@@ -5,15 +5,15 @@ REQUIRE SalesPricelistValue, SalesPriceTypeMarkup;
 NAMESPACE Sales;
 
 // change prices
-CLASS ChangePriceType 'Вид изменения цен' {
-    markupPriceList 'Установить надбавки из предыдущих прайсов',
-    markupPriceType 'Установить надбавки из видов цен',
-    pricePriceList 'Установить цены из предыдущих прайсов'
+CLASS ChangePriceType 'Price change type' {
+    markupPriceList 'Set markups from previous prices',
+    markupPriceType 'Set markups from price types',
+    pricePriceList 'Set prices from previous prices'
 }
 
-name 'Наименование' (ChangePriceType o) = staticCaption(o) IF o IS ChangePriceType CHARWIDTH 50;
+name 'Name' (ChangePriceType o) = staticCaption(o) IF o IS ChangePriceType CHARWIDTH 50;
 
-FORM dialogChangePriceTypes 'Вид изменения цен'
+FORM dialogChangePriceTypes 'Price change type'
     OBJECTS o = ChangePriceType
     PROPERTIES(o) READONLY name
     
@@ -21,11 +21,11 @@ FORM dialogChangePriceTypes 'Вид изменения цен'
 ;
 
 changePriceType = DATA LOCAL ChangePriceType ();
-nameChangePriceType 'Вид изменения цен' = name(changePriceType());
+nameChangePriceType 'Price change type' = name(changePriceType());
 
-change 'Изменить на, %' = DATA LOCAL NUMERIC[10,2] ();
+change 'Change to, %' = DATA LOCAL NUMERIC[10,2] ();
 
-FORM changePrices 'Изменение цен'
+FORM changePrices 'Price change'
     PROPERTIES() nameChangePriceType, 
                  change SHOWIF changePriceType() = ChangePriceType.pricePriceList 
 ;
@@ -41,7 +41,7 @@ DESIGN changePrices {
     }
 }
 
-changePrices 'Изменить цены' (Pricelist p) {
+changePrices 'Change prices' (Pricelist p) {
     DIALOG changePrices DO {
         CASE 
             WHEN changePriceType() = ChangePriceType.markupPriceList THEN {

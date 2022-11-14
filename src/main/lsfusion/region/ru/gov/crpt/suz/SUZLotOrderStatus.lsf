@@ -5,18 +5,18 @@ REQUIRE SUZLotOrderPost;
 NAMESPACE SUZ;
 
 EXTEND CLASS LotOrderStatus {
-    available 'Доступен'
+    available 'Available'
 }
-available 'Доступен' = DATA BOOLEAN (LotOrder);
+available 'Available' = DATA BOOLEAN (LotOrder);
 
 status (LotOrder s) += WHEN available(s) THEN LotOrderStatus.available;
 colorStatus (LotOrder s) += WHEN status(s) = LotOrderStatus.available THEN RGB(224,224,255);
 
 // check
-bufferStatus 'Статус' = DATA STRING (LotOrderLine);
+bufferStatus 'Status' = DATA STRING (LotOrderLine);
 rejectionReason 'Причина отмены' = DATA STRING (LotOrderLine); 
 
-availableCodes 'Доступно' = DATA INTEGER (LotOrderLine);
+availableCodes 'Available' = DATA INTEGER (LotOrderLine);
 
 checkStatus 'Проверить статус' (LotOrder o) {
     APPLY; 
@@ -53,7 +53,7 @@ checkStatus 'Проверить статус' (LotOrder o) {
                                                               LIMIT quantity(l) IF lotOrder(l) = lotOrder() AND gtinProduct(l) = gtin()
                                                               ORDER l) WHERE lotOrder(l) = o AND gtinProduct(l) = gtin;
             }
-            statusMessage() <- statusMessage() + (CONCAT ' ', 'Товар', gtin, ', статус :', bufferStatus(), '\n');
+            statusMessage() <- statusMessage() + (CONCAT ' ', 'Product', gtin, ', статус :', bufferStatus(), '\n');
         }
         MESSAGE statusMessage();
         
@@ -81,5 +81,5 @@ DESIGN lotOrder {
 
 EXTEND FORM lotOrders    
     EXTEND FILTERGROUP status
-        FILTER 'Доступен' status(o) = LotOrderStatus.available    
+        FILTER 'Available' status(o) = LotOrderStatus.available    
 ;

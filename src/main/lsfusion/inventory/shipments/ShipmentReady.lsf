@@ -5,9 +5,9 @@ REQUIRE Utils, ShipmentWaiting, ResLedger;
 NAMESPACE Inventory;
 
 EXTEND CLASS ShipmentStatus {
-    ready 'В работе'
+    ready 'Ready'
 }
-ready 'В работе' = DATA BOOLEAN (Shipment);
+ready 'Ready' = DATA BOOLEAN (Shipment);
 
 status (Shipment s) += WHEN ready(s) THEN ShipmentStatus.ready;
 colorStatus (Shipment s) += WHEN status(s) = ShipmentStatus.ready THEN RGB(252,247,149);
@@ -15,11 +15,11 @@ colorStatus (Shipment s) += WHEN status(s) = ShipmentStatus.ready THEN RGB(252,2
 // reserved
 toReserve (Shipment s) = status(s) = ShipmentStatus.waiting OR status(s) = ShipmentStatus.ready MATERIALIZED;   
 
-reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ShipmentLine);
+reserved 'Reserved' = DATA NUMERIC[16,3] (ShipmentLine);
 linesReserved (Shipment s) = GROUP SUM 1 IF reserved(ShipmentLine l) = initialDemand(l) AND shipment(l) = s;
 reserved (Shipment s) = linesReserved(s) = countLines(s);
 
-available 'Доступно' (ShipmentLine l) = prevAvailableRec(location(shipment(l)), product(l)) (+) PREV(reserved(l)); 
+available 'Available' (ShipmentLine l) = prevAvailableRec(location(shipment(l)), product(l)) (+) PREV(reserved(l)); 
 
 extraCheckAvailability ABSTRACT (Shipment);
 precheckAvailability (Shipment s) {
@@ -28,7 +28,7 @@ precheckAvailability (Shipment s) {
     ready(s) <- reserved(s);
 }
 
-checkAvailability 'Зарезервировать' (Shipment s) {
+checkAvailability 'Check availability' (Shipment s) {
     APPLY; 
     IF canceled() THEN RETURN;
     
@@ -39,7 +39,7 @@ checkAvailability 'Зарезервировать' (Shipment s) {
 }
 
 extraUnreserve ABSTRACT (Shipment); 
-unreserve 'Снять резервирование' (Shipment s) {
+unreserve 'Unreserve' (Shipment s) {
     NEWSESSION {
         reserved(ShipmentLine l) <- NULL WHERE shipment(l) = s;
         extraUnreserve(s); 
@@ -70,7 +70,7 @@ DESIGN shipment {
 
 EXTEND FORM shipments    
     EXTEND FILTERGROUP status
-        FILTER 'В работе' status(s) = ShipmentStatus.ready    
+        FILTER 'Ready' status(s) = ShipmentStatus.ready    
 ;
 
-@defineSelectionAction(shipments, Shipment, checkAvailability, 'Зарезервировать', statuses);
+@defineSelectionAction(shipments, Shipment, checkAvailability, 'Check availability', statuses);

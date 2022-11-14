@@ -5,32 +5,32 @@ REQUIRE ShipmentReady;
 NAMESPACE Inventory;
 
 EXTEND CLASS ShipmentStatus {
-    done 'Отгружен'
+    done 'Done'
 }
-done 'Отгружен' = DATA BOOLEAN (Shipment);
+done 'Done' = DATA BOOLEAN (Shipment);
 
 status(Shipment s) += WHEN done(s) THEN ShipmentStatus.done;
 
-executionDateTime 'Дата выполнения' = DATA DATETIME (Shipment);
+executionDateTime 'Execution Date' = DATA DATETIME (Shipment);
 WHEN SET(done(Shipment s)) AND NOT CHANGED(executionDateTime(s)) DO executionDateTime(s) <- currentDateTime(); 
-@defineDateTimeAggregation(Shipment, execution, ' отгрузки');
+@defineDateTimeAggregation(Shipment, execution, 'Execution ');
 
-executionDateTime 'Дата выполнения' (ShipmentLine l) = executionDateTime(shipment(l));
-executionDate 'Дата выполнения' (ShipmentLine l) = executionDate(shipment(l));
+executionDateTime 'Execution Date' (ShipmentLine l) = executionDateTime(shipment(l));
+executionDate 'Execution Date' (ShipmentLine l) = executionDate(shipment(l));
 
-done 'Отгружено' = DATA NUMERIC[16,3] (ShipmentLine);
+done 'Done' = DATA NUMERIC[16,3] (ShipmentLine);
 
-weightDone 'Вес' (ShipmentLine l) = NUMERIC[16,3](done(l) * weight(product(l)));
+weightDone 'Weight' (ShipmentLine l) = NUMERIC[16,3](done(l) * weight(product(l)));
 
 CONSTRAINT done(ShipmentLine l) < 0 OR done(l) > initialDemand(l) 
-    MESSAGE 'Отгруженое количество должно быть от 0 до исходного';
+    MESSAGE 'The shipped quantity must be between 0 and original';
 
-setDone 'Заполнить Отгружено' (Shipment s) {
+setDone 'Fill done' (Shipment s) {
     done(ShipmentLine l) <- reserved(l) WHERE shipment(l) = s;    
 }
 
 extraValidate ABSTRACT LIST (Shipment);
-validate 'Отгрузить' (Shipment s) {   
+validate 'Mark as Done' (Shipment s) {   
     APPLY;
     IF canceled() THEN RETURN;
     
@@ -39,7 +39,7 @@ validate 'Отгрузить' (Shipment s) {
             extraValidate(s);
             
             IF NOT (GROUP SUM 1 IF done(ShipmentLine l) AND shipment(l) = s) THEN
-                ASK 'Не заполнены отгруженные количества для отгрузки ' + number(s) + '. Проставить зарезервированными?' DO {
+                ASK 'Done quantities not filled' + ' ' + number(s) + '... ' + 'Fill quantities with initial demand ?' DO {
                     setDone(s);
                 } ELSE RETURN;
         }
@@ -80,7 +80,7 @@ EXTEND FORM shipments
     PROPERTIES(s) READONLYIF isReadonly() executionDateTime AFTER scheduledDateTime(s)
  
     EXTEND FILTERGROUP status
-        FILTER 'Отгружен' status(s) = ShipmentStatus.done
+        FILTER 'Done' status(s) = ShipmentStatus.done
 ;
 
-@defineSelectionAction(shipments, Shipment, validate, 'Отгружен', statuses);
+@defineSelectionAction(shipments, Shipment, validate, 'Mark as Done', statuses);

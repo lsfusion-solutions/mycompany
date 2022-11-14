@@ -5,14 +5,14 @@ REQUIRE Shipment, ShipmentSelection, InvLedger;
 NAMESPACE Inventory;
 
 EXTEND CLASS ShipmentStatus {
-    waiting 'В ожидании'
+    waiting 'Waiting'
 }
-waiting 'В ожидании' = DATA BOOLEAN (Shipment);
+waiting 'Waiting' = DATA BOOLEAN (Shipment);
 
 status (Shipment s) += WHEN waiting(s) THEN ShipmentStatus.waiting;
 colorStatus (Shipment s) += WHEN status(s) = ShipmentStatus.waiting THEN RGB(250,150,157);
 
-markAsToDo 'В работу' (Shipment s) {
+markAsToDo 'Mark as Todo' (Shipment s) {
     APPLY; 
     IF canceled() THEN RETURN;
     
@@ -37,15 +37,15 @@ DESIGN shipment {
 
 EXTEND FORM shipments    
     EXTEND FILTERGROUP status
-        FILTER 'В ожидании' status(s) = ShipmentStatus.waiting    
+        FILTER 'Waiting' status(s) = ShipmentStatus.waiting    
 ;
 
-@defineSelectionAction(shipments, Shipment, markAsToDo, 'В работу', statuses);
+@defineSelectionAction(shipments, Shipment, markAsToDo, 'Mark as Todo', statuses);
 
 // total
-waiting 'Ожидает отгрузку' (Location l, Product p) = 
+waiting 'Awaiting shipment' (Location l, Product p) = 
     GROUP SUM initialDemand(ShipmentLine sl) IF status(shipment(sl)) = ShipmentStatus.waiting AND 
               location(sl) = l AND product(sl) = p;
 
-waitingRec 'Ожидает отгрузку' (Location l, Product p) =
+waitingRec 'Awaiting shipment' (Location l, Product p) =
     GROUP SUM waiting(Location child, p) IF level(child, l);

@@ -5,15 +5,15 @@ REQUIRE ShipmentDone;
 NAMESPACE Inventory;
     
 EXTEND CLASS ShipmentStatus {
-    canceled 'Отменен'
+    canceled 'Cancelled'
 }
-canceled 'Отменен' = DATA BOOLEAN (Shipment);
-active 'Активен' (Shipment s) = done(s) AND NOT canceled(s);
+canceled 'Cancelled' = DATA BOOLEAN (Shipment);
+active 'Active' (Shipment s) = done(s) AND NOT canceled(s);
 
 status(Shipment s) += WHEN canceled(s) THEN ShipmentStatus.canceled;
 colorStatus(Shipment s) += WHEN status(s) = ShipmentStatus.canceled THEN RGB(181,195,247);
 
-cancel 'Отменить' (Shipment s) {
+cancel 'Cancel' (Shipment s) {
     APPLY; 
     IF canceled() THEN RETURN;
            
@@ -38,7 +38,7 @@ DESIGN shipment {
 
 EXTEND FORM shipments    
     EXTEND FILTERGROUP status
-        FILTER 'Отменен' status(s) = ShipmentStatus.canceled    
+        FILTER 'Cancelled' status(s) = ShipmentStatus.canceled    
 ;
 
-@defineSelectionAction(shipments, Shipment, cancel, 'Отменить', statuses);
+@defineSelectionAction(shipments, Shipment, cancel, 'Cancel', statuses);

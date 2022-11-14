@@ -5,9 +5,9 @@ REQUIRE GISMTDocument;
 NAMESPACE GISMT;
 
 EXTEND CLASS DocumentStatus {
-    canceled 'Отменен'
+    canceled 'Cancelled'
 }
-canceled 'Отменен' = DATA BOOLEAN (Document);
+canceled 'Cancelled' = DATA BOOLEAN (Document);
 
 status(Document d) += WHEN canceled(d) THEN DocumentStatus.canceled;
 colorStatus(Document d) += WHEN status(d) = DocumentStatus.canceled THEN RGB(181,195,247);
@@ -16,7 +16,7 @@ INDEX source(Document d), lotType(d);
 document (Source s, LotType lt) = GROUP AGGR Document d WHERE NOT canceled(d) BY source(d), lotType(d);
 countDocument (Source s) = GROUP SUM 1 IF source(Document d) = s; 
 
-cancel 'Отменить' (Document o) {
+cancel 'Cancel' (Document o) {
     APPLY; 
     IF canceled() THEN RETURN;
            
@@ -41,6 +41,6 @@ DESIGN document {
 
 EXTEND FORM documents    
     EXTEND FILTERGROUP status
-        FILTER 'Отменен' status(d) = DocumentStatus.canceled    
+        FILTER 'Cancelled' status(d) = DocumentStatus.canceled    
 ;
 

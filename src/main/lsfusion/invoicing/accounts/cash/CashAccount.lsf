@@ -4,13 +4,13 @@ REQUIRE Account;
 
 NAMESPACE Invoicing;
 
-CLASS CashAccount 'Касса' : Account;
+CLASS CashAccount 'Cash account' : Account;
 
-name 'Наименование' = DATA ISTRING[100] (CashAccount);
+name 'Name' = DATA ISTRING[100] (CashAccount);
 name (CashAccount a) += name(a); 
 
 EXTEND CLASS AccountType {
-    cash 'Касса'
+    cash 'Cash account'
 }
 
 type(Account a) += WHEN a IS CashAccount THEN AccountType.cash;
@@ -25,7 +25,7 @@ DESIGN account {
     }
 }
 
-newCashAccount 'Касса' () {
+newCashAccount 'Cash account' () {
     NEWSESSION {
         NEW c = CashAccount { 
             DIALOG account OBJECTS a = c DOCKED DO seek(c);  
@@ -33,7 +33,7 @@ newCashAccount 'Касса' () {
     }
 } IMAGE 'add.png';
 
-newCashAccount 'Касса' (Partner p) {
+newCashAccount 'Cash account' (Partner p) {
     NESTEDSESSION {
         NEW c = CashAccount {
             holder(c) <- p;
@@ -52,7 +52,7 @@ EXTEND FORM partner
     PROPERTIES newCashAccount(p) DRAW a TOOLBAR
 ;
 
-FORM cashAccounts 'Кассы'
+FORM cashAccounts 'Cash accounts'
     OBJECTS a = CashAccount
     PROPERTIES(a) READONLY name, nameAccountHolder, note
     

@@ -4,12 +4,12 @@ REQUIRE Uom;
 
 NAMESPACE MasterData;
 
-uomExport 'Экспорт единиц измерения' () {
+uomExport 'Export Units' () {
     NEWSESSION {
         IF NOT (GROUP SUM 1 IF Uom i AND i IS Uom) THEN {
             NEW i = Uom {
                 id(i) <- '1';
-                name(i) <- 'Штука';
+                name(i) <- 'Piece';
             }
         }
     
@@ -19,7 +19,7 @@ uomExport 'Экспорт единиц измерения' () {
     }
 }
 
-uomImport 'Импорт единиц измерения' () {
+uomImport 'Import Units' () {
     LOCAL id = STRING[50] (INTEGER);
     LOCAL name = ISTRING[50] (INTEGER);
     
@@ -33,7 +33,7 @@ uomImport 'Импорт единиц измерения' () {
             }
             
             APPLY;
-            MESSAGE 'Импорт завершен';
+            MESSAGE 'Import completed';
         }
     }    
 }
@@ -46,7 +46,7 @@ DESIGN migrationData {
     commons {
         NEW uom {
             type = CONTAINERH;
-            caption = 'Единицы измерения';
+            caption = 'Units of measure';
             MOVE PROPERTY(uomImport());
             MOVE PROPERTY(uomExport());
         }

@@ -8,29 +8,29 @@ REQUIRE InvoicingSettings, TaxItem, BankAccount,
 
 NAMESPACE Invoicing;
 
-CLASS Invoice 'Реализация';
+CLASS Invoice 'Invoice';
 
-@defineDocStatus(invoice, 'счета');
+@defineDocStatus(invoice, 'Invoice');
 
 // type
-type 'Тип' = DATA InvoiceType (Invoice) NONULL;
-nameType 'Тип' (Invoice s) = name(type(s));
+type 'Type' = DATA InvoiceType (Invoice) NONULL;
+nameType 'Type' (Invoice s) = name(type(s));
 
 WHEN LOCAL SET(Invoice s IS Invoice) AND NOT CHANGED(type(s)) DO type(s) <- defaultInvoiceType(); 
 
 // dateTime
-dateTime 'Дата' = DATA DATETIME (Invoice) NONULL IN id;
+dateTime 'Date' = DATA DATETIME (Invoice) NONULL IN id;
 WHEN LOCAL SET (Invoice b IS Invoice) DO dateTime(b) <- currentDateTime();
 @defineDateTimeAggregation(Invoice);
 
 @defineNumberType(invoice);
 
-numberDate 'Описание' (Invoice i) = number(i) + ' (' + dateTime(i) + ')' IN id;
+numberDate 'Description' (Invoice i) = number(i) + ' (' + dateTime(i) + ')' IN id;
 
 // customer
 customer = DATA Partner (Invoice);
-nameCustomer 'Покупатель' (Invoice i) = name(customer(i));
-addressCsvCustomer 'Адрес покупателя' (Invoice i) = addressCsv(customer(i));
+nameCustomer 'Customer' (Invoice i) = name(customer(i));
+addressCsvCustomer 'Customer address' (Invoice i) = addressCsv(customer(i));
 
 WHEN LOCAL SETCHANGED(type(Invoice i)) AND customer(type(i)) AND NOT CHANGED(customer(i)) DO customer(i) <- customer(type(i));  
 
@@ -38,20 +38,20 @@ isCustomer = ABSTRACT VALUE BOOLEAN (Invoice);
 isCustomer(Invoice i) += isCustomer(customer(i));
 CONSTRAINT customer(Invoice i) AND NOT isCustomer(i) 
                 CHECKED BY customer[Invoice]
-                MESSAGE 'Контрагент должен быть покупателем';
+                MESSAGE 'The partner must be a customer';
 
 @defineDocDepartment(invoice, customer);
 
 // company
-company 'Компания' = DATA Company (Invoice) NONULL;
-nameCompany 'Компания' (Invoice b) = name(company(b));
+company 'Company' = DATA Company (Invoice) NONULL;
+nameCompany 'Company' (Invoice b) = name(company(b));
 WHEN LOCAL SET(Invoice b IS Invoice) AND NOT CHANGED(company(b)) DO company(b) <- defaultCompany(); 
 
 // payment
 paymentTerms = DATA PaymentTerm (Invoice); 
-namePaymentTerms 'Условия оплаты' (Invoice i) = name(paymentTerms(i));
+namePaymentTerms 'Payment terms' (Invoice i) = name(paymentTerms(i));
 
-dueDateTime 'Оплатить до' = DATA DATETIME (Invoice);
+dueDateTime 'Pay before' = DATA DATETIME (Invoice);
 
 WHEN LOCAL CHANGED(customer(Invoice b)) AND NOT CHANGED(paymentTerms(b)) DO paymentTerms(b) <- customerPaymentTerms(customer(b)); 
 
@@ -60,59 +60,59 @@ WHEN LOCAL (SETCHANGED(paymentTerms(Invoice i)) OR SETCHANGED(dateTime(i))) AND 
 }
 
 // partner account
-customerAccount 'Счет покупателя' = DATA Account (Invoice);
-nameCustomerAccount 'Счет покупателя' (Invoice b) = name(customerAccount(b));
+customerAccount 'Customer account' = DATA Account (Invoice);
+nameCustomerAccount 'Customer account' (Invoice b) = name(customerAccount(b));
 WHEN LOCAL CHANGED (customer(Invoice b)) DO customerAccount(b) <- defaultAccount(customer(b));
 
 CONSTRAINT customerAccount(Invoice b) AND NOT customer(b) = holder(customerAccount(b))
     CHECKED BY customerAccount
-    MESSAGE 'Счет должен принадлежать выбранному контрагенту';
+    MESSAGE 'The account must belong to the selected partner';
 
 // company account
-companyAccount 'Счет компании' = DATA Account (Invoice);
-nameCompanyAccount 'Счет компании' (Invoice b) = name(companyAccount(b));
+companyAccount 'Company account' = DATA Account (Invoice);
+nameCompanyAccount 'Company account' (Invoice b) = name(companyAccount(b));
 WHEN LOCAL CHANGED(company(Invoice b)) DO companyAccount(b) <- defaultAccount(company(b));
 
 CONSTRAINT companyAccount(Invoice b) AND NOT company(b) = holder(companyAccount(b))
     CHECKED BY companyAccount
-    MESSAGE 'Счет должен принадлежать выбранной компании';
+    MESSAGE 'The account must belong to the selected company';
 
-deliveryAddress 'Адрес доставки' = DATA STRING (Invoice) CHARWIDTH 20;
+deliveryAddress 'Delivery address' = DATA STRING (Invoice) CHARWIDTH 20;
 WHEN LOCAL (CHANGED(customer(Invoice i)) OR CHANGED(department(i))) AND NOT CHANGED(deliveryAddress(i)) DO 
     deliveryAddress(i) <- OVERRIDE addressCsv(department(i)), addressCsvCustomer(i);
 
-customerReference 'Код покупателя' = DATA STRING[30] (Invoice);
-note 'Примечание' = DATA ISTRING[50] (Invoice);
+customerReference '{Customer_reference}' = DATA STRING[30] (Invoice);
+note 'Note' = DATA ISTRING[50] (Invoice);
 
 // lines
-CLASS InvoiceLine 'Строка реализации';
+CLASS InvoiceLine 'Invoice line';
 
-invoice 'Реализация' = DATA Invoice (InvoiceLine) NONULL DELETE;
+invoice 'Invoice' = DATA Invoice (InvoiceLine) NONULL DELETE;
 
 index '№' = PARTITION SUM 1 ORDER InvoiceLine l BY invoice(l) IN id MATERIALIZED CHARWIDTH 3;
 
 item '{Item}' = DATA Item (InvoiceLine) NONULL;
 nameItem '{Item}' (InvoiceLine l) = name(item(l)) IN id;
-idBarCodeItem 'Штрихкод' (InvoiceLine l) = idBarCode(item(l));
-idItem 'Код' (InvoiceLine l) = id(item(l));
+idBarCodeItem 'Barcode' (InvoiceLine l) = idBarCode(item(l));
+idItem 'ID' (InvoiceLine l) = id(item(l));
 
 CONSTRAINT item(InvoiceLine l) AND NOT canBeSold(item(l))
             CHECKED BY item 
-            MESSAGE 'Номенклатура не предназначена для продажи';
+            MESSAGE 'The item is not for sale';
 
-countProductLines 'Кол-во строк с товарами' (Invoice i) = GROUP SUM 1 IF invoice(InvoiceLine l) = i AND item(l) IS Product;
+countProductLines 'Number of lines with goods' (Invoice i) = GROUP SUM 1 IF invoice(InvoiceLine l) = i AND item(l) IS Product;
 
 uom = DATA Uom (InvoiceLine);
-nameUom 'Ед. изм.' (InvoiceLine l) = name(uom(l));
+nameUom 'UoM' (InvoiceLine l) = name(uom(l));
 WHEN LOCAL CHANGED(item(InvoiceLine l)) DO uom(l) <- uom(item(l)); 
 
-description 'Описание' = DATA STRING (InvoiceLine); 
+description 'Description' = DATA STRING (InvoiceLine); 
 
-quantity 'Кол-во' = DATA NUMERIC[16,3] (InvoiceLine) NONULL CHARWIDTH 7;
+quantity 'Qty' = DATA NUMERIC[16,3] (InvoiceLine) NONULL CHARWIDTH 7;
 
-weight 'Вес' (InvoiceLine l) = NUMERIC[16,3](quantity(l) * weight(item(l)));
+weight 'Weight' (InvoiceLine l) = NUMERIC[16,3](quantity(l) * weight(item(l)));
 
-price 'Цена' = DATA NUMERIC[10,2] (InvoiceLine) NONULL;
+price 'Price' = DATA NUMERIC[10,2] (InvoiceLine) NONULL;
 
 defaultPrice = ABSTRACT CASE NUMERIC[10,2] (InvoiceLine);
 WHEN LOCAL SETCHANGED(item(InvoiceLine l)) AND NOT CHANGED(price(l)) DO price(l) <- defaultPrice(l);
@@ -125,17 +125,17 @@ defaultPrice (InvoiceLine l) += WHEN salesPrice(item(l)) THEN salesPrice(item(l)
 taxIncluded (InvoiceLine l) += taxIncluded(type(invoice(l)));
 
 // Line properties
-nameStatus 'Статус' (InvoiceLine l) = nameStatus(invoice(l));
+nameStatus 'Status' (InvoiceLine l) = nameStatus(invoice(l));
 type (InvoiceLine l) = type(invoice(l));
-number 'Номер' (InvoiceLine l) = number(invoice(l));
-numberDate 'Описание' (InvoiceLine l) = numberDate(invoice(l));
-dateTime 'Дата' (InvoiceLine l) = dateTime(invoice(l));
-date 'Дата' (InvoiceLine l) = date(invoice(l));
+number 'Number' (InvoiceLine l) = number(invoice(l));
+numberDate 'Description' (InvoiceLine l) = numberDate(invoice(l));
+dateTime 'Date' (InvoiceLine l) = dateTime(invoice(l));
+date 'Date' (InvoiceLine l) = date(invoice(l));
 customer (InvoiceLine l) = customer(invoice(l));
-nameCustomer 'Покупатель' (InvoiceLine l) = nameCustomer(invoice(l));
-nameCompany 'Компания' (InvoiceLine l) = nameCompany(invoice(l));
+nameCustomer 'Customer' (InvoiceLine l) = nameCustomer(invoice(l));
+nameCompany 'Company' (InvoiceLine l) = nameCompany(invoice(l));
 
-FORM invoiceLines 'Строки реализаций'
+FORM invoiceLines 'Invoice lines'
     OBJECTS l = InvoiceLine
     PROPERTIES(l) READONLY dateTime, number, index, nameItem, quantity, price
     PROPERTIES(l) NEWSESSION EDIT
@@ -145,7 +145,7 @@ FORM invoiceLines 'Строки реализаций'
 
 edit (InvoiceLine l) + { edit(invoice(l)); } 
 
-FORM invoice 'Реализация'
+FORM invoice 'Invoice'
     OBJECTS  i = Invoice PANEL 
     PROPERTIES(i) nameType, dateTime, number, 
                   nameCustomer, nameDepartment SHOWIF countDepartment(customer(i)), nameCompany,
@@ -161,7 +161,7 @@ FORM invoice 'Реализация'
 ;
 
 DESIGN invoice {
-    caption = (CONCAT ' ', 'Реализация', '№' + number(i), '(' + dateTime(i) + ')');
+    caption = (CONCAT ' ', 'Invoice', '№' + number(i), '(' + dateTime(i) + ')');
     OBJECTS {
         NEW header {
             type = CONTAINERH;
@@ -185,7 +185,7 @@ DESIGN invoice {
             fill = 5;
             type = TABBED;
             NEW lines {
-                caption = 'Строки';
+                caption = 'Lines';
                 MOVE BOX(l) { 
                     fill = 3;
                     PROPERTY(nameItem(l)) { notNull = TRUE; } 
@@ -196,11 +196,11 @@ DESIGN invoice {
                 }
             }
             NEW otherInformation {
-                caption = 'Прочая информация';
+                caption = 'Other information';
                 type = COLUMNS;
                 columns = 2;
                 NEW payment {
-                    caption = 'Оплата';
+                    caption = 'Payment';
                     alignment = STRETCH;
                     MOVE PROPERTY(namePaymentTerms(i)); 
                     MOVE PROPERTY(dueDateTime(i)); 
@@ -208,11 +208,11 @@ DESIGN invoice {
                     MOVE PROPERTY(nameCustomerAccount(i));              
                 }
                 NEW shippingInformation {
-                    caption = 'Доставка';
+                    caption = 'Shipping information';
                     MOVE PROPERTY(deliveryAddress(i));
                 }           
                 NEW invoiceInformat {
-                    caption = 'Прочие';
+                    caption = 'Others';
                     alignment = STRETCH;
                     MOVE PROPERTY(customerReference(i)); 
                     MOVE PROPERTY(note(i));
@@ -228,13 +228,13 @@ DESIGN invoice {
 }
 
 @defineDocHistory(invoice, i, item, quantity);
-@defineDocSearch(invoice, item, quantity, 'Кол-во', i, canBeSold);
+@defineDocSearch(invoice, item, quantity, 'Quantity', i, canBeSold);
 @defineBarCodeSearch(invoice, i, l, quantity);
 
 @defineDocDiscountForm(invoice);
 
 background = ABSTRACT CASE COLOR (Invoice);
-FORM invoices 'Реализации'
+FORM invoices 'Invoices'
     OBJECTS i = Invoice BACKGROUND background(i)
     PROPERTIES(i) READONLYIF isReadonly()
                            nameType, dateTime, number, nameCustomer, nameCompany,
@@ -247,7 +247,7 @@ FORM invoices 'Реализации'
 
 @extendFormEditable(invoices);
 
-@defineDocObjectsForm(invoices, i, 'Реализации');
+@defineDocObjectsForm(invoices, i, 'Invoices');
 @defineDocTaxForm(invoice, i);
 @defineDocStatusForm(invoice, i);
 @defineDocLinesCount(invoice, i);
@@ -276,7 +276,7 @@ clone (Invoice to, Invoice from) + {
     }
 }
 
-copy 'Копировать' (Invoice from)  { 
+copy 'Copy' (Invoice from)  { 
     NEWSESSION {
         NEW to = Invoice {
             clone(to, from);

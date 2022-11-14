@@ -17,7 +17,7 @@ META defineDocObjectsForm (form, obj, title)
                 }
                 NEW rightPane {
                     NEW filters {
-                        caption = 'Фильтры';
+                        caption = 'Filters';
                         alignment = STRETCH;
                         MOVE FILTERGROUPS(obj) {
                             type = CONTAINERV;
@@ -26,11 +26,11 @@ META defineDocObjectsForm (form, obj, title)
                     }
                     NEW actions {
                         alignment = STRETCH;
-                        caption = 'Действия';
+                        caption = 'Actions';
                     }
                     NEW statuses {
                         alignment = STRETCH;
-                        caption = 'Статусы';
+                        caption = 'Statuses';
                     }
                 }
             }
@@ -39,15 +39,15 @@ META defineDocObjectsForm (form, obj, title)
 END
 
 META defineDocStatus (doc, title)
-    CLASS ###doc##Status 'Статус '##title {
-        draft 'Черновик'
+    CLASS ###doc##Status title##' status' {
+        draft 'Draft'
     }
     
-    name 'Имя' (###doc##Status s) = staticCaption(s) IF s IS ###doc##Status CHARWIDTH 12;
+    name '{First_name}' (###doc##Status s) = staticCaption(s) IF s IS ###doc##Status CHARWIDTH 12;
     
-    status 'Статус' = ABSTRACT CASE ###doc##Status (###doc) MATERIALIZED INDEXED;
-    nameStatus 'Статус' (###doc d) = name(status(d));
-    colorStatus 'Цвет' = ABSTRACT CASE COLOR (###doc);
+    status 'Status' = ABSTRACT CASE ###doc##Status (###doc) MATERIALIZED INDEXED;
+    nameStatus 'Status' (###doc d) = name(status(d));
+    colorStatus 'Colour' = ABSTRACT CASE COLOR (###doc);
     
     status(###doc d) += WHEN d IS ###doc THEN ###doc##Status.draft;
     colorStatus(###doc d) += WHEN status(d) = ###doc##Status.draft THEN RGB(187,242,210);
@@ -59,7 +59,7 @@ META defineDocStatusForm (doc, let)
     EXTEND FORM doc##s
         PROPERTIES(##let) READONLY nameStatus BACKGROUND colorStatus(##let) FIRST
         FILTERGROUP status
-            FILTER 'Черновик' status(##let) = ###doc##Status.draft
+            FILTER 'Draft' status(##let) = ###doc##Status.draft
     ;
     
     DESIGN doc##s {
@@ -72,7 +72,7 @@ META defineDocStatusForm (doc, let)
     
     DESIGN doc {
         NEW statusPane FIRST {
-            caption = 'Статусы';
+            caption = 'Statuses';
             type = CONTAINERH;
             alignment = STRETCH;                          
             NEW statusActions {
@@ -136,13 +136,13 @@ META defineDocSearchTab (doc, it)
         ORDERS name(itm)
         FILTERS level(category(itm), c)
         FILTERGROUP active
-            FILTER 'Активный' active(itm) 'F10' DEFAULT  
+            FILTER 'Active' active(itm) 'F10' DEFAULT  
     ;
     
     DESIGN doc {
         details {
             NEW search {
-                caption = 'Подбор';
+                caption = 'Search';
                 type = SPLITH;
                 fill = 1;
                 MOVE BOX(TREE categories);
@@ -176,7 +176,7 @@ META defineDocSearch (doc, it, fun, capt, let, check)
     ;
 END
 
-disableHistory 'Отключить запись истории' = DATA BOOLEAN () PREREAD;
+disableHistory 'Disable history recording' = DATA BOOLEAN () PREREAD;
 EXTEND FORM System.options 
     PROPERTIES() disableHistory
 ;
@@ -197,8 +197,8 @@ META defineDocHistory(doc, let, class, fun)
             dateTime(h) <- currentDateTime();
             user(h) <- currentUser();
             computer(h) <- currentComputer();
-            type(h) <- 'Добавлена строка';
-            description (h) <- 'Добавлена строка с индексом ' + index(l);
+            type(h) <- 'Added line';
+            description (h) <- 'Added line with index' + ' ' + index(l);
         }
     }
     
@@ -209,8 +209,8 @@ META defineDocHistory(doc, let, class, fun)
             dateTime(h) <- currentDateTime();
             user(h) <- currentUser();
             computer(h) <- currentComputer();
-            type(h) <- 'Удалена строка';
-            description (h) <- 'Удалена строка с индексом ' + PREV(index(l));
+            type(h) <- 'Removed line';
+            description (h) <- 'Deleted line with index' + ' ' + PREV(index(l));
         }
     }
     
@@ -220,8 +220,8 @@ META defineDocHistory(doc, let, class, fun)
             doc(h) <- ##let;
             dateTime(h) <- currentDateTime();
             user(h) <- currentUser();
-            type(h) <- 'Изменено исходное кол-во';
-            description (h) <- 'Изменено исходное кол-во продукта ' + name###class(l) + ' на ' + ##fun(l);
+            type(h) <- 'Changed the original quantity';
+            description (h) <- 'Changed the initial product quantity' + ' ' + name###class(l) + ' -> ' + ##fun(l);
         }
     }
     
@@ -232,27 +232,27 @@ META defineDocHistory(doc, let, class, fun)
             dateTime(h) <- currentDateTime();
             user(h) <- currentUser();
             computer(h) <- currentComputer();
-            type(h) <- 'Изменен продукт';
-            description (h) <- 'Изменен продукт в строке ' + index(l) + ' на ' + name###class(l);
+            type(h) <- 'Product changed';
+            description (h) <- 'Product changed in line' + ' ' + index(l) + ' -> ' + name###class(l);
         }
     }
 END
 
 META defineDocHistoryHead(doc, let)
-    CLASS ###doc##History 'История изменений';
+    CLASS ###doc##History 'Change history';
     
     doc = DATA ###doc (###doc##History);
 
-    dateTime 'Дата' = DATA DATETIME (###doc##History);
+    dateTime 'Date' = DATA DATETIME (###doc##History);
     
     user = DATA User (###doc##History);
-    nameUser 'Пользователь' (###doc##History l) = name(user(l));
+    nameUser 'User' (###doc##History l) = name(user(l));
     
     computer = DATA Computer (###doc##History);
-    hostnameComputer 'Компьютер' (###doc##History l) = hostname(computer(l)) CHARWIDTH 10;
+    hostnameComputer 'Computer' (###doc##History l) = hostname(computer(l)) CHARWIDTH 10;
     
-    type 'Тип' = DATA ISTRING[100] (###doc##History) CHARWIDTH 15;
-    description 'Описание' = DATA TEXT (###doc##History);
+    type 'Type' = DATA ISTRING[100] (###doc##History) CHARWIDTH 15;
+    description 'Description' = DATA TEXT (###doc##History);
      
     WHEN SETCHANGED(status(###doc let)) AND NOT disableHistory() DO {     
         NEW l = ###doc##History {
@@ -260,8 +260,8 @@ META defineDocHistoryHead(doc, let)
             dateTime(l) <- currentDateTime();
             user(l) <- currentUser();
             computer(l) <- currentComputer();
-            type(l) <- 'Изменен статус';
-            description (l) <- 'Изменен статус на ' + staticCaption(status(let));
+            type(l) <- 'Status changed';
+            description (l) <- 'Changed status to' + ' ' + staticCaption(status(let));
         }
     }
 
@@ -274,7 +274,7 @@ META defineDocHistoryHead(doc, let)
     DESIGN doc {
         details {
             NEW history {
-                caption = 'История';
+                caption = 'History';
                 fill = 1;
                 type = SPLITH;
                 MOVE BOX(doc##l) { 
@@ -346,10 +346,10 @@ META defineDocLineRelation(docTo, docFrom, captTo, captFrom, objTo, objFrom)
 END
 
 META defineDocDiscount (doc)
-    discount 'Скидка, %' = DATA NUMERIC[5,2] (###doc##Line);
+    discount 'Discount, %' = DATA NUMERIC[5,2] (###doc##Line);
     
-    discountPrice 'Цена со скидкой' = DATA NUMERIC[10,2] (###doc##Line);
-    resultPrice 'Цена итоговая' (###doc##Line l) = OVERRIDE discountPrice(l), price(l);
+    discountPrice 'Discount price' = DATA NUMERIC[10,2] (###doc##Line);
+    resultPrice 'Final price' (###doc##Line l) = OVERRIDE discountPrice(l), price(l);
     
     WHEN LOCAL (CHANGED(price(###doc##Line l)) OR CHANGED(discount(l))) AND NOT CHANGED(discountPrice(l)) DO 
         discountPrice(l) <- NUMERIC[10,2] (price(l) * (100.0 - discount(l)) / 100.0);
@@ -372,11 +372,11 @@ META defineDocDiscountForm (doc)
 END
 
 META defineDocLinesCount(doc, d) 
-    count###doc###Line 'Кол-во строк' (###doc d) = GROUP SUM 1 IF doc(###doc###Line l) = d MATERIALIZED;
+    count###doc###Line 'Number of lines' (###doc d) = GROUP SUM 1 IF doc(###doc###Line l) = d MATERIALIZED;
     
     DESIGN doc {
         lines {
-            caption = (CONCAT ' ', 'Строки', '(' + count###doc##Line(d) + ')');
+            caption = (CONCAT ' ', 'Lines', '(' + count###doc##Line(d) + ')');
         }
     }
     EXTEND FORM doc##s PROPERTIES(d) READONLY count###doc###Line;

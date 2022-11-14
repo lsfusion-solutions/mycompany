@@ -4,7 +4,7 @@ REQUIRE BankAccount, Partner;
 
 NAMESPACE Invoicing;
 
-bankAccountExport 'Экспорт счетов' () {
+bankAccountExport 'Export accounts' () {
     NEWSESSION {
         LOCAL f = EXCELFILE ();
         EXPORT XLSX HEADER FROM 'HolderID' = id(holder(BankAccount b)), 'Note' = note(b),
@@ -13,7 +13,7 @@ bankAccountExport 'Экспорт счетов' () {
     }
 }
 
-bankAccountImport 'Импорт счетов' () {
+bankAccountImport 'Import of invoices' () {
     LOCAL idPartner = STRING[50] (INTEGER);
     LOCAL note = ISTRING[100] (INTEGER);
     LOCAL number = ISTRING[100] (INTEGER);
@@ -24,12 +24,12 @@ bankAccountImport 'Импорт счетов' () {
             IMPORT XLS HEADER FROM f TO idPartner = A, note = B, number = C, idBank = D;
     
             FOR [GROUP SUM 1 BY idPartner(INTEGER i)](num) AND NOT partner[STRING](num) DO {
-                MESSAGE 'Отсутствует контрагент в базе данных с кодом ' + num + '. Импорт отменен';
+                MESSAGE 'There is no partner in the database with the code' + ' ' + num + '... Import canceled';
                 RETURN;
             } 
 
             FOR [GROUP SUM 1 BY idBank(INTEGER i)](num) AND NOT bank[STRING](num) DO {
-                MESSAGE 'Отсутствует банк в базе данных с кодом ' + num + '. Импорт отменен';
+                MESSAGE 'There is no bank in the database with the code' + ' ' + num + '... Import canceled';
                 RETURN;
             } 
         
@@ -44,7 +44,7 @@ bankAccountImport 'Импорт счетов' () {
             }
             
             APPLY;
-            MESSAGE 'Импорт завершен';
+            MESSAGE 'Import completed';
         }
     }
 }    
@@ -57,7 +57,7 @@ DESIGN migrationData {
     commons {
         NEW bankAccount {
             type = CONTAINERH;
-            caption = 'Банковские счета';
+            caption = 'Bank accounts';
             MOVE PROPERTY(bankAccountImport());
             MOVE PROPERTY(bankAccountExport());
         }

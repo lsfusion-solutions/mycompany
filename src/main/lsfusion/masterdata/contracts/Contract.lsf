@@ -4,32 +4,32 @@ REQUIRE MetaNumerator, Company;
 
 NAMESPACE MasterData;
 
-CLASS Contract 'Договор';
+CLASS Contract 'Contract';
 
-@defineID(contract, 'Договоры', 'ДГ', 4);
+@defineID(contract, 'Contracts', 'CN', 4);
 
-name 'Наименование' = DATA ISTRING[30] (Contract) IN id;
+name 'Name' = DATA ISTRING[30] (Contract) IN id;
 
-date 'Дата' = DATA DATE (Contract) NONULL IN id;
-endDate 'Дата окончания' = DATA DATE (Contract) IN id;
+date 'Date' = DATA DATE (Contract) NONULL IN id;
+endDate 'End date' = DATA DATE (Contract) IN id;
 
-number 'Номер' = DATA STRING[50] (Contract) NONULL CHARWIDTH 10;
+number 'Number' = DATA STRING[50] (Contract) NONULL CHARWIDTH 10;
 
-numberDate 'Описание' (Contract c) = number(c) + ' (' + date(c) + ')';
+numberDate 'Description' (Contract c) = number(c) + ' (' + date(c) + ')';
 description (Contract c) = OVERRIDE name(c), numberDate(c);  
 
-company 'Компания' = DATA Company (Contract) NONULL;
-idCompany 'Код компании' (Contract o) = id(company(o));
-nameCompany 'Компания' (Contract o) = name(company(o)) IN id;
+company 'Company' = DATA Company (Contract) NONULL;
+idCompany 'Company ID' (Contract o) = id(company(o));
+nameCompany 'Company' (Contract o) = name(company(o)) IN id;
 WHEN LOCAL SET(Contract o IS Contract) AND NOT CHANGED(company(o)) DO company(o) <- defaultCompany();
 
-partner 'Контрагент' = DATA Partner (Contract) NONULL;
-idPartner 'Код контрагента' (Contract p) = id(partner(p));
-namePartner 'Контрагент' (Contract p) = name(partner(p)) IN id;
+partner 'Partner' = DATA Partner (Contract) NONULL;
+idPartner 'Partner ID' (Contract p) = id(partner(p));
+namePartner 'Partner' (Contract p) = name(partner(p)) IN id;
 
 countContract (Company c, Partner p) = GROUP SUM 1 IF company(Contract ct) = c AND partner(ct) = p;  
 
-FORM contract 'Договор'
+FORM contract 'Contract'
     OBJECTS c = Contract PANEL
     PROPERTIES(c) id, name, date, endDate, number, nameCompany, namePartner 
     
@@ -42,7 +42,7 @@ DESIGN contract {
             type = CONTAINERH;
             NEW headerLeft {
                 NEW params {
-                    caption = 'Параметры';
+                    caption = 'Parameters';
                     type = CONTAINERH;
                     alignment = STRETCH;
                     MOVE PROPERTY(id(c));
@@ -52,7 +52,7 @@ DESIGN contract {
                     MOVE PROPERTY(name(c));
                 }
                 NEW legal {
-                    caption = 'Контрагенты';
+                    caption = 'Partners';
                     type = CONTAINERH;
                     alignment = STRETCH;
                     MOVE PROPERTY(nameCompany(c));
@@ -64,13 +64,13 @@ DESIGN contract {
     }
 }
 
-FORM contracts 'Договоры'
+FORM contracts 'Contracts'
     OBJECTS c = Contract
     PROPERTIES(c) READONLY id, name, date, endDate, number, nameCompany, namePartner
     PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE
 ;
 
-FORM dialogContracts 'Договоры'
+FORM dialogContracts 'Contracts'
     OBJECTS c = Contract
     PROPERTIES(c) READONLY id, name, date, endDate, number, nameCompany, namePartner
     
@@ -84,18 +84,18 @@ NAVIGATOR {
 }
 
 META defineDocContract(doc, obj, property, container)
-    contract 'Договор' = DATA Contract (###doc) INDEXED;
+    contract 'Contract' = DATA Contract (###doc) INDEXED;
     numberDateContract (###doc i) = numberDate(contract(i));
-    descriptionContract 'Договор' (###doc i) = description(contract(i));
+    descriptionContract 'Contract' (###doc i) = description(contract(i));
     
     CONSTRAINT contract(###doc i) AND NOT company(i) = company(contract(i))
         CHECKED BY contract[###doc]
-        MESSAGE 'Компания документа не соответствует компании договора';
+        MESSAGE 'The company of the document does not match the company of the contract';
     
     CONSTRAINT contract(###doc i) AND NOT property(i) = partner(contract(i))
         CHECKED BY contract[###doc]
-        MESSAGE 'Контрагент документа не соответствует контрагенту договора';
-        
+        MESSAGE 'The partner of the document does not match the partner of the contract';
+    
     WHEN LOCAL FORMS doc CHANGED(company(###doc i)) OR CHANGED(property(i)) DO
         contract(i) <- NULL;  
     

@@ -4,31 +4,31 @@ REQUIRE InventorySettings, Numerator, Location;
 
 NAMESPACE Inventory;
 
-CLASS ShipmentType 'Тип отгрузки';
-name 'Название' = DATA ISTRING[50] (ShipmentType) NONULL;
+CLASS ShipmentType 'Shipment type';
+name 'Name' = DATA ISTRING[50] (ShipmentType) NONULL;
 
-id 'Код' = DATA STRING[20] (ShipmentType);
+id 'ID' = DATA STRING[20] (ShipmentType);
 shipmentType = GROUP AGGR ShipmentType t BY id(t);
 
-isTransfer 'Перемещение' = DATA BOOLEAN (ShipmentType) CHARWIDTH 10;
+isTransfer 'Transfer' = DATA BOOLEAN (ShipmentType) CHARWIDTH 10;
 countTransferTypes = GROUP SUM 1 IF isTransfer(ShipmentType t);
 
-numerator 'Нумератор' = DATA Numerator (ShipmentType);
-nameNumerator 'Нумератор' (ShipmentType o) = name(numerator(o));
+numerator 'Numerator' = DATA Numerator (ShipmentType);
+nameNumerator 'Numerator' (ShipmentType o) = name(numerator(o));
 
 // locations
 defaultLocation = DATA Location (ShipmentType);
-nameDefaultLocation 'Место хранения (откуда)' (ShipmentType o) = name(defaultLocation(o));
+nameDefaultLocation 'Source location' (ShipmentType o) = name(defaultLocation(o));
 
 defaultToLocation = DATA Location (ShipmentType);
-nameDefaultToLocation 'Место хранения (куда)' (ShipmentType o) = name(defaultToLocation(o));
+nameDefaultToLocation 'Destination location' (ShipmentType o) = name(defaultToLocation(o));
 
 CONSTRAINT defaultToLocation(ShipmentType s) = defaultLocation(s)
-           MESSAGE 'Места хранения откуда и куда не могут совпадать';
+           MESSAGE 'Where and where storage locations cannot coincide';
 
-maxQuantity 'Максимальное кол-во товара' = DATA NUMERIC[16,3] (ShipmentType);
+maxQuantity 'Maximum quantity' = DATA NUMERIC[16,3] (ShipmentType);
 
-FORM shipmentType 'Тип отгрузки'
+FORM shipmentType 'Shipment type'
     OBJECTS o = ShipmentType PANEL 
     PROPERTIES(o) name, id, isTransfer, nameNumerator, 
                   nameDefaultLocation, nameDefaultToLocation SHOWIF isTransfer(o), 
@@ -46,7 +46,7 @@ DESIGN shipmentType {
     }
 }
 
-FORM shipmentTypes 'Типы отгрузок'
+FORM shipmentTypes 'Shipment types'
     OBJECTS o = ShipmentType
     PROPERTIES(o) READONLY name, id
     
@@ -66,7 +66,7 @@ DESIGN options {
 }
 
 // default type
-countShipmentTypes 'Кол-во типов' () = GROUP SUM 1 IF r IS ShipmentType; 
+countShipmentTypes 'Number of types' () = GROUP SUM 1 IF r IS ShipmentType; 
 firstShipmentType = GROUP LAST ShipmentType r ORDER DESC r WHERE r IS ShipmentType;
 
 defaultShipmentType = firstShipmentType() IF countShipmentTypes() = 1;

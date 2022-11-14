@@ -6,20 +6,20 @@ PRIORITY MasterData;
 
 NAMESPACE ProjectManagement;
 
-CLASS TimeEntry 'Отметка времени';
+CLASS TimeEntry 'Time entry';
 
-date 'Дата' = DATA DATE (TimeEntry);
+date 'Date' = DATA DATE (TimeEntry);
 date(TimeEntry e) <- currentDate() WHEN SET(e IS TimeEntry);
 
-hours 'Часов' = DATA NUMERIC[8,2] (TimeEntry);
+hours 'Hours' = DATA NUMERIC[8,2] (TimeEntry);
 
-employee 'Сотрудник' = DATA Employee (TimeEntry) NONULL;
-nameEmployee 'Сотрудник' (TimeEntry t) = name(employee(t));
+employee 'Employee' = DATA Employee (TimeEntry) NONULL;
+nameEmployee 'Employee' (TimeEntry t) = name(employee(t));
 WHEN SET(TimeEntry t IS TimeEntry) AND NOT employee(t) AND currentUser() IS Employee DO employee(t) <- currentUser();
 
-description 'Описание' = DATA ISTRING (TimeEntry) CHARWIDTH 20;
+description 'Description' = DATA ISTRING (TimeEntry) CHARWIDTH 20;
 
-FORM timeEntry 'Отметка времени'
+FORM timeEntry 'Time entry'
     OBJECTS t = TimeEntry PANEL
     PROPERTIES(t) nameEmployee, date, hours, description
     
@@ -44,7 +44,7 @@ DESIGN timeEntry {
     }
 }
 
-FORM timeEntries 'Отметки времени'
+FORM timeEntries 'Time entries'
     OBJECTS t = TimeEntry
     PROPERTIES(t) READONLY   nameEmployee, date, hours
     PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE

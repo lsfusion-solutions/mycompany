@@ -4,24 +4,24 @@ REQUIRE PaymentMethod, Payment, CashAccount;
 
 NAMESPACE Retail;
 
-disabled 'Отключен' = DATA BOOLEAN (Pos, PaymentMethod);
+disabled 'Disabled' = DATA BOOLEAN (Pos, PaymentMethod);
 
 account = DATA Account (Pos, PaymentMethod);
-nameAccount 'Счет' (Pos p, PaymentMethod pm) = name(account(p, pm));
+nameAccount 'Account' (Pos p, PaymentMethod pm) = name(account(p, pm));
 
 CONSTRAINT company(Pos p) AND account(p, PaymentMethod pm) AND NOT holder(account(p, pm)) = company(p)
                 CHECKED BY account[Pos,PaymentMethod]
-                MESSAGE 'Владелец счета кассы не совпадает с компанией в методе оплаты';
+                MESSAGE 'Cash account owner does not match the company in the payment method';
 
 account = DATA CashAccount (Pos);
-nameAccount 'Касса' (Pos p) = name(account(p));
+nameAccount 'Cash account' (Pos p) = name(account(p));
 
 CONSTRAINT company(Pos p) AND account(p) AND NOT holder(account(p)) = company(p)
                 CHECKED BY account[Pos]
-                MESSAGE 'Владелец счета центральной кассы не совпадает с компанией в методе оплаты';
+                MESSAGE 'Central checkout account holder does not match the company in the payment method';
 
 cashAccount (Pos p) = account(p, cashPaymentMethod());
-cashBalance 'Наличных в кассе' (Pos p) = balance(cashAccount(p));
+cashBalance 'Cash at the checkout' (Pos p) = balance(cashAccount(p));
 
 EXTEND FORM pos
     PROPERTIES(p) nameAccount

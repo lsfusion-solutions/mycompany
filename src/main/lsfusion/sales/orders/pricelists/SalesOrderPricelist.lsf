@@ -6,7 +6,7 @@ NAMESPACE Sales;
 
 // order type
 priceType = DATA PriceType (OrderType);
-namePriceType 'Вид цен' (OrderType t) = name(priceType(t));
+namePriceType 'Price type' (OrderType t) = name(priceType(t));
 
 EXTEND FORM orderType
     PROPERTIES(o) namePriceType
@@ -17,17 +17,17 @@ taxValid (OrderType it, PriceType pt) =
 
 CONSTRAINT priceType(OrderType i) AND priceType(i) AND NOT taxValid(i, priceType(i))
            CHECKED BY priceType[OrderType]
-           MESSAGE 'Для типа заказа выбран недопустимый вид цены, (не)включающий налоги'; 
+           MESSAGE 'Invalid price type selected for order type, (not) including taxes'; 
 
 // price types
 priceType = DATA PriceType (Order);
-namePriceType 'Вид цен' (Order o) =  name(priceType(o));
+namePriceType 'Price type' (Order o) =  name(priceType(o));
 
 priceType (OrderLine l) = priceType(order(l));
 
 CONSTRAINT type(Order i) AND priceType(i) AND NOT taxValid(type(i), priceType(i))
            CHECKED BY priceType[Order]
-           MESSAGE 'Для реализации выбран недопустимый для типа вид цены, (не)включающий налоги'; 
+           MESSAGE 'For implementation, a price type that is not valid for the type has been selected, (not) including taxes'; 
 
 WHEN LOCAL CHANGED(customer(Order o)) OR CHANGED(type(o)) DO 
     priceType(o) <- OVERRIDE priceType(customer(o)), priceType(type(o));
@@ -55,11 +55,11 @@ WHEN LOCAL (SETCHANGED(priceType(order(OrderLine l))) OR SETCHANGED(currency(ord
 }
 
 // search
-overListPrice 'Цена' (Order o, Item i) = overPriceA(priceType(o), i, dateTime(o));
+overListPrice 'Price' (Order o, Item i) = overPriceA(priceType(o), i, dateTime(o));
 
 EXTEND FORM order
     PROPERTIES(o, itm) READONLY overListPrice
 
     FILTERGROUP pricelist
-        FILTER 'В прайс-листе' overListPrice(o, itm)
+        FILTER 'In pricelist' overListPrice(o, itm)
 ;

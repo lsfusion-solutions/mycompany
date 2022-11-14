@@ -4,12 +4,12 @@ REQUIRE Contract;
 
 NAMESPACE MasterData;
 
-contractExport 'Экспорт договоров' () {
+contractExport 'Export contracts' () {
     NEWSESSION {
         IF NOT (GROUP SUM 1 IF Contract l AND l IS Contract) THEN {
             NEW l = Contract {
                 id(l) <- '123';
-                name(l) <- 'Мой договор';
+                name(l) <- 'Contract';
                 date(l) <- 2021_01_01; 
                 endDate(l) <- 2021_12_31; 
                 number(l) <- '5/41'; 
@@ -23,7 +23,7 @@ contractExport 'Экспорт договоров' () {
     }
 }
 
-contractImport 'Импорт договоров' () {
+contractImport 'Import contracts' () {
     LOCAL id = STRING[50] (INTEGER);
     LOCAL name = ISTRING[30] (INTEGER);
     LOCAL date = DATE (INTEGER);
@@ -47,7 +47,7 @@ contractImport 'Импорт договоров' () {
             }
             
             APPLY;
-            MESSAGE 'Импорт завершен';
+            MESSAGE 'Import completed';
         }
     }    
 }
@@ -60,7 +60,7 @@ DESIGN migrationData {
     commons {
         NEW contract {
             type = CONTAINERH;
-            caption = 'Договоры';
+            caption = 'Contracts';
             MOVE PROPERTY(contractImport());
             MOVE PROPERTY(contractExport());
         }

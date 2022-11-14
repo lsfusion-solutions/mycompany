@@ -5,14 +5,14 @@ REQUIRE PurchaseOrderConfirmed;
 NAMESPACE Purchase;
 
 EXTEND CLASS OrderStatus {
-    locked 'Закрыт'
+    locked 'Locked'
 }
-locked 'Закрыт' = DATA BOOLEAN (Order);
+locked 'Locked' = DATA BOOLEAN (Order);
 
 status(Order o) += WHEN locked(o) THEN OrderStatus.locked;
 colorStatus(Order o) += WHEN status(o) = OrderStatus.locked THEN RGB(255,255,255);
 
-lock 'Закрыть' (Order o) {
+lock 'Lock' (Order o) {
     APPLY; 
     IF canceled() THEN RETURN;
 
@@ -37,11 +37,11 @@ DESIGN order {
 
 EXTEND FORM orders    
     FILTERGROUP unlocked
-        FILTER 'Открыт' NOT locked(o) DEFAULT    
+        FILTER 'Opened' NOT locked(o) DEFAULT    
 ;
 
 DESIGN orders {
     FILTERGROUP(unlocked) { alignment = STRETCH; }
 }
 
-@defineSelectionAction(orders, Order, lock, 'Закрыть', statuses);
+@defineSelectionAction(orders, Order, lock, 'Lock', statuses);

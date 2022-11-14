@@ -5,27 +5,27 @@ REQUIRE ManufacturingOrderWaiting, ResLedger;
 NAMESPACE Manufacturing;
 
 EXTEND CLASS ManufacturingOrderStatus {
-    ready 'В работе'
+    ready 'Ready'
 }
-ready 'В работе' = DATA BOOLEAN (ManufacturingOrder);
+ready 'Ready' = DATA BOOLEAN (ManufacturingOrder);
 
 status (ManufacturingOrder s) += WHEN ready(s) THEN ManufacturingOrderStatus.ready;
 colorStatus (ManufacturingOrder s) += WHEN status(s) = ManufacturingOrderStatus.ready THEN RGB(252,247,149);
 
 CONSTRAINT ready(ManufacturingOrder o) AND NOT materialsLocation(o)
-    MESSAGE 'Не выбрано место хранения списания в производственном заказе'; 
+    MESSAGE 'No scrap storage location selected in production order'; 
 
 // reserved
-reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ConsumedLine);
+reserved 'Reserved' = DATA NUMERIC[16,3] (ConsumedLine);
 countReservedLines (ManufacturingOrder m) = GROUP SUM 1 IF reserved(ConsumedLine l) AND manufacturingOrder(l) = m;
 
 linesReserved (ManufacturingOrder m) = GROUP SUM 1 IF reserved(ConsumedLine l) = toConsume(l) AND manufacturingOrder(l) = m;
 reserved (ManufacturingOrder m) = linesReserved(m) = countReservedLines(m);
 
-available 'Доступно' (ConsumedLine l) = 
+available 'Available' (ConsumedLine l) = 
     prevAvailable(materialsLocation(manufacturingOrder(l)), item(l) AS Product) (+) PREV(reserved(l)); 
 
-checkAvailability 'Зарезервировать' (ManufacturingOrder m) {
+checkAvailability 'Check availability' (ManufacturingOrder m) {
     APPLY; 
     IF canceled() THEN RETURN;
     
@@ -38,7 +38,7 @@ checkAvailability 'Зарезервировать' (ManufacturingOrder m) {
     }
 }
 
-unreserve 'Снять резервирование' (ManufacturingOrder m) {
+unreserve 'Unreserve' (ManufacturingOrder m) {
     NEWSESSION {
         reserved(ConsumedLine l) <- NULL WHERE manufacturingOrder(l) = m;
         ready(m) <- NULL;
@@ -70,7 +70,7 @@ DESIGN manufacturingOrder {
 
 EXTEND FORM manufacturingOrders
     EXTEND FILTERGROUP status
-        FILTER 'В работе' status(o) = ManufacturingOrderStatus.ready    
+        FILTER 'Ready' status(o) = ManufacturingOrderStatus.ready    
 ;
 
-@defineSelectionAction(manufacturingOrders, ManufacturingOrder, checkAvailability, 'Зарезервировать', statuses);
+@defineSelectionAction(manufacturingOrders, ManufacturingOrder, checkAvailability, 'Check availability', statuses);

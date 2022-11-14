@@ -4,21 +4,21 @@ REQUIRE RetailSettings, Company, Authentication;
 
 NAMESPACE Retail;
 
-CLASS Pos 'Касса ККМ';
+CLASS Pos 'Cash register';
 
-id 'Код' = DATA STRING[20] (Pos) IN id;
+id 'ID' = DATA STRING[20] (Pos) IN id;
 pos (STRING[20] id) = GROUP AGGR Pos d BY id(d);
 
-name 'Наименование' = DATA ISTRING[100] (Pos) NONULL CHARWIDTH 15;
+name 'Name' = DATA ISTRING[100] (Pos) NONULL CHARWIDTH 15;
 
-company 'Компания' = DATA Company (Pos);
-nameCompany 'Компания' (Pos p) = name(company(p));
+company 'Company' = DATA Company (Pos);
+nameCompany 'Company' (Pos p) = name(company(p));
 WHEN LOCAL SET(Pos p IS Pos) AND NOT CHANGED(company(p)) DO company(p) <- defaultCompany();
 
-in 'Вкл' = DATA BOOLEAN (Pos, Computer);
+in 'On' = DATA BOOLEAN (Pos, Computer);
 countPos (Computer c) = GROUP SUM 1 IF in(Pos p, c) MATERIALIZED;
 
-FORM pos 'Касса ККМ'
+FORM pos 'Cash register'
     OBJECTS p = Pos PANEL
     PROPERTIES(p) name, id, nameCompany
     
@@ -39,7 +39,7 @@ DESIGN pos {
     }
 }
 
-FORM poss 'Кассы ККМ'
+FORM poss 'Cash registers'
     OBJECTS p = Pos
     PROPERTIES(p) READONLY name, id
     PROPERTIES(p) NEWSESSION NEW, EDIT, DELETE

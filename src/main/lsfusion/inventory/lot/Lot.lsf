@@ -4,16 +4,16 @@ REQUIRE InventorySettings, Product;
 
 NAMESPACE Inventory;
 
-CLASS Lot 'Партия';
+CLASS Lot 'Lot';
 
-id 'Код' = DATA STRING[100] (Lot) CHARWIDTH 15;
+id 'ID' = DATA STRING[100] (Lot) CHARWIDTH 15;
 lot (STRING[100] id) = GROUP AGGR Lot o BY id(o);
 
-product 'Товар' = DATA Product (Lot) NONULL INDEXED;
-idProduct 'Код товара' (Lot l) = id(product(l)) IN id;
-nameProduct 'Товар' (Lot l) = name(product(l)) IN id;
+product 'Product' = DATA Product (Lot) NONULL INDEXED;
+idProduct 'Product ID' (Lot l) = id(product(l)) IN id;
+nameProduct 'Product' (Lot l) = name(product(l)) IN id;
 
-FORM lot 'Партия'
+FORM lot 'Lot'
     OBJECTS l = Lot PANEL
     PROPERTIES(l) id, idProduct, nameProduct
     
@@ -21,10 +21,10 @@ FORM lot 'Партия'
 ;
 
 DESIGN lot {
-    caption = CONCAT ' ', 'Партия', id(l);
+    caption = CONCAT ' ', 'Lot', id(l);
     OBJECTS {        
         NEW statusPane FIRST {
-            caption = 'Статусы';
+            caption = 'Statuses';
             type = CONTAINERH;
             alignment = STRETCH;                          
             NEW statusActions {
@@ -53,7 +53,7 @@ DESIGN lot {
     }  
 }
 
-useLot 'Партионный учет' = DATA BOOLEAN ();
+useLot 'Use lots' = DATA BOOLEAN ();
 
 EXTEND FORM options 
     PROPERTIES useLot()
@@ -66,14 +66,14 @@ DESIGN options {
 } 
 
 META defineDocLot (doc, line, item, quantity, status, caption)
-    quantity 'Кол-во'##caption = DATA NUMERIC[16,3] (line, Lot);
+    quantity 'Quantity'##caption = DATA NUMERIC[16,3] (line, Lot);
     
-    lots###quantity 'Партии' (line l) = 
+    lots###quantity 'Lots' (line l) = 
         GROUP CONCAT
             (CONCAT '', id(Lot lot) IF quantity(l, lot), '(' + (STRING(DOUBLE(quantity(l, lot))) IF (quantity(l, lot) != 1)) + ')'), 
             ',' ORDER lot CHARWIDTH 15; 
     
-    quantity##Lot 'Кол-во партий'##caption (line rl) = GROUP SUM quantity(rl, Lot l);
+    quantity##Lot 'Lot quantity'##caption (line rl) = GROUP SUM quantity(rl, Lot l);
     quantity##LotLeft (line rl) = quantity(rl) - OVERRIDE quantity##Lot(rl), 0;
        
     WHEN LOCAL CHANGED(quantity##Lot(line rl)) AND NOT status(doc(rl)) DO {
@@ -81,9 +81,9 @@ META defineDocLot (doc, line, item, quantity, status, caption)
     }
     
     CONSTRAINT quantity(line rl, Lot l) AND item(rl) != product(l)
-                    MESSAGE 'Строка для партии должна относится к тому же продукту, что и партия';
+                    MESSAGE 'The line for the batch must refer to the same product as the batch';
     CONSTRAINT SET(((OVERRIDE quantity(line rl), 0.0) - quantity##Lot(rl) < 0) AND status(doc(rl))) AND useLot(item(rl))
-                    MESSAGE 'Несовпадение количества с количеством в партиях'##caption;                   
+                    MESSAGE 'Mismatch between quantity and quantity in lots'##caption;                   
 END 
 
 META defineDocLot (doc, item, quantity, status, caption)
@@ -159,7 +159,7 @@ META defineDocDesignLotTab(doc, docLine, quantity, item, line, container)
     DESIGN doc {
         container {
             MOVE BOX(lot###line) {
-                caption = 'Партии';
+                caption = 'Lots';
                 showIf = useLot();
             }
         }
@@ -177,7 +177,7 @@ META defineDocDesignLotTab(doc, quantity, item, container)
 END
 
 META defineLotCodeSearch(doc, quantity)
-    ##doc##LotCode 'Партия' = DATA LOCAL STRING ();
+    ##doc##LotCode 'Lot' = DATA LOCAL STRING ();
     
     processLotCode ABSTRACT (###doc, STRING);
     
@@ -191,7 +191,7 @@ META defineLotCodeSearch(doc, quantity)
                 }
                 
                 IF product(lot(id)) != product(rl) THEN {
-                    MESSAGE 'Партия относится к другому продукту' + ' (' + name(product(lot(id))) + ')';
+                    MESSAGE 'The lot refers to another product' + ' (' + name(product(lot(id))) + ')';
                 } ELSE {                
                     quantity(rl, lot(id)) <- quantity(rl, lot(id)) (+) 1;
                     SEEK doc.lot = lot(id);
@@ -206,7 +206,7 @@ META defineLotCodeSearch(doc, quantity)
 END
 
 META defineDocLotGenerate(doc, docLine, item, line, quantity)
-    generateLot 'Сгенерировать' (docLine rl) {
+    generateLot 'Generate' (docLine rl) {
         FOR Product p = item(rl) DO {
             FOR iterate(INTEGER i, 1, IF useSerialNumbers(p) THEN quantity##LotLeft(rl) ELSE 1) DO NEW l = Lot {
                 incrementValue(numeratorLot(p));

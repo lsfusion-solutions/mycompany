@@ -4,7 +4,7 @@ REQUIRE Bank;
 
 NAMESPACE Invoicing;
 
-bankExport 'Экспорт банков' () {
+bankExport 'Bank export' () {
     NEWSESSION {
         LOCAL f = EXCELFILE ();
         EXPORT XLSX HEADER FROM 'ID' = id(Bank b), 'Name' = name(b),
@@ -14,7 +14,7 @@ bankExport 'Экспорт банков' () {
     }
 }
 
-bankImport 'Импорт банков' () {
+bankImport 'Bank import' () {
     LOCAL id = STRING[11] (INTEGER);
     LOCAL name = ISTRING[30] (INTEGER);
     LOCAL idCountry = STRING[3] (INTEGER);
@@ -36,7 +36,7 @@ bankImport 'Импорт банков' () {
                 phone(b) <- phone(i);
             }
             APPLY;
-            MESSAGE 'Импорт завершен';
+            MESSAGE 'Import completed';
         }
     }
 }    
@@ -49,7 +49,7 @@ DESIGN migrationData {
     commons {
         NEW bank {
             type = CONTAINERH;
-            caption = 'Банки';
+            caption = 'Banks';
             MOVE PROPERTY(bankImport());
             MOVE PROPERTY(bankExport());
         }

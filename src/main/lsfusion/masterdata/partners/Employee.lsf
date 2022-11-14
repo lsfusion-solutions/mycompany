@@ -4,7 +4,7 @@ REQUIRE Individual, Authentication, Security;
 
 NAMESPACE MasterData;
 
-CLASS Employee 'Сотрудник' : Individual, CustomUser;
+CLASS Employee 'Employee' : Individual, CustomUser;
 
 WHEN CHANGED(firstName(Employee e)) DO firstName[Contact](e) <- firstName(e);
 WHEN CHANGED(lastName(Employee e)) DO lastName[Contact](e) <- firstName(e);
@@ -13,7 +13,7 @@ WHEN CHANGED(phone(Employee e)) DO phone[Contact](e) <- phone(e);
 WHEN CHANGED(postAddress(Employee e)) DO postAddress[Contact](e) <- phone(e);
 
 EXTEND CLASS PartnerType {
-    employee 'Сотрудник'
+    employee 'Employee'
 }
 
 type (Partner p) += WHEN p IS Employee THEN PartnerType.employee;
@@ -23,11 +23,11 @@ WHEN CHANGED(postAddress(Employee e)) AND NOT CHANGED(address(e)) DO address(e) 
 
 CONSTRAINT Employee e IS Employee AND NOT legalEntity(e) IS Company
     CHECKED BY legalEntity
-    MESSAGE 'Организацией сотрудника может быть только компания';
+    MESSAGE 'An employee\'s legal entity can only be a company';
 
 WHEN LOCAL SET(Employee e IS Employee) AND NOT CHANGED(legalEntity(e)) DO legalEntity(e) <- defaultCompany(); 
 
-FORM employee 'Сотрудник'
+FORM employee 'Employee'
     OBJECTS e = Employee PANEL
     PROPERTIES(e) id, login, sha256Password ON CHANGE changeSHA256Password(e), isLocked, archived, 
                   nameLegalEntity, lastName, firstName, middleName, namePosition, email, phone, address, city, state,
@@ -97,7 +97,7 @@ DESIGN employee {
     }
 }
 
-FORM employees 'Сотрудники'
+FORM employees 'Employees'
     OBJECTS e = Employee
     PROPERTIES(e) READONLY  name, login, namePosition, nameLegalEntity
     PROPERTIES(e) NEWSESSION NEW, EDIT, DELETE

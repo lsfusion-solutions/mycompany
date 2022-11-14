@@ -10,7 +10,7 @@ matches (ReceiptLine rl, PrintPricelistType t) =
 matches (Receipt r, PrintPricelistType t) = GROUP SUM 1 IF receipt(ReceiptLine rl) = r AND matches(rl, t);
 countPrintType (Receipt r) = GROUP SUM 1 IF matches(r, PrintPricelistType t); 
 
-FORM dialogPricelistTypesReceipt 'Выбор типа прайс-листа'
+FORM dialogPricelistTypesReceipt 'Select pricelist type'
     OBJECTS r = Receipt PANEL
     
     OBJECTS t = PrintPricelistType
@@ -18,7 +18,7 @@ FORM dialogPricelistTypesReceipt 'Выбор типа прайс-листа'
     FILTERS matches(r, t)
 ; 
     
-printPricelist 'Прайс-лист' (Receipt r) {
+printPricelist 'Pricelist' (Receipt r) {
     LOCAL printType = PrintPricelistType();
     printType() <- NULL;
     IF countPrintType(r) = 1 THEN

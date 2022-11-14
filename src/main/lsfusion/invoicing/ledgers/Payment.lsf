@@ -4,41 +4,41 @@ REQUIRE Company, Account, InvoicingSettings;
 
 NAMESPACE Invoicing;
 
-CLASS ABSTRACT Payment 'Платеж';
+CLASS ABSTRACT Payment 'Payment';
 
-active 'Активен' = ABSTRACT BOOLEAN (Payment) MATERIALIZED;
-nameType 'Тип' = ABSTRACT ISTRING[50] (Payment) MATERIALIZED;
+active 'Active' = ABSTRACT BOOLEAN (Payment) MATERIALIZED;
+nameType 'Type' = ABSTRACT ISTRING[50] (Payment) MATERIALIZED;
 
-dateTime 'Дата' = ABSTRACT DATETIME (Payment) MATERIALIZED;
+dateTime 'Date' = ABSTRACT DATETIME (Payment) MATERIALIZED;
 
-number 'Номер' = ABSTRACT STRING[31] (Payment) MATERIALIZED;
+number 'Number' = ABSTRACT STRING[31] (Payment) MATERIALIZED;
 
 partner = ABSTRACT Partner (Payment) MATERIALIZED;
-namePartner 'Контрагент' (Payment p) = name(partner(p));
+namePartner 'Partner' (Payment p) = name(partner(p));
 
 company = ABSTRACT Company (Payment) MATERIALIZED;
-nameCompany 'Компания' (Payment p) = name(company(p));
+nameCompany 'Company' (Payment p) = name(company(p));
 
 // acounts
 partnerAccount = ABSTRACT Account (Payment) MATERIALIZED;
-namePartnerAccount 'Счет контрагента' (Payment p) = name(partnerAccount(p));
+namePartnerAccount 'Partner account' (Payment p) = name(partnerAccount(p));
 
 companyAccount = ABSTRACT Account (Payment) MATERIALIZED;
-nameCompanyAccount 'Счет компании' (Payment p) = name(companyAccount(p));
+nameCompanyAccount 'Company account' (Payment p) = name(companyAccount(p));
 
 signedAmount '{Amount}' = ABSTRACT NUMERIC[14,2] (Payment) MATERIALIZED;
 
-note 'Примечание' = ABSTRACT ISTRING[50] (Payment) MATERIALIZED;
-reference 'Ссылка' = ABSTRACT ISTRING[50] (Payment) MATERIALIZED;
+note 'Note' = ABSTRACT ISTRING[50] (Payment) MATERIALIZED;
+reference 'Reference' = ABSTRACT ISTRING[50] (Payment) MATERIALIZED;
 
 // balance
 
-balance 'Остаток' (Account a) = GROUP SUM signedAmount(Payment p) IF companyAccount(p) = a AND active(p) MATERIALIZED;
+balance 'On hand' (Account a) = GROUP SUM signedAmount(Payment p) IF companyAccount(p) = a AND active(p) MATERIALIZED;
 
 CONSTRAINT balance(Account a) < 0 AND NOT allowNegative(a)
-    MESSAGE 'Остаток по счету / кассе не может быть отрицательным';
+    MESSAGE 'Account / cash balance cannot be negative';
 
-FORM payments 'Движение денежных средств'
+FORM payments 'Payments'
     OBJECTS p = Payment
     PROPERTIES(p) READONLY nameType, dateTime, number, 
                            namePartner, namePartnerAccount, 
@@ -67,10 +67,10 @@ DESIGN payments {
             type = TABBED;
             fill = 1;
             MOVE BOX(p) {
-                caption = 'Платежи';
+                caption = 'Payments';
             }
             NEW accounts {
-                caption = 'Счета';
+                caption = 'Accounts';
                 type = SPLITV;
                 MOVE BOX(a);
                 MOVE BOX(pa);

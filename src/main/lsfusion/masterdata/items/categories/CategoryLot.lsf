@@ -5,29 +5,29 @@ REQUIRE Category, Lot;
 NAMESPACE MasterData;
 
 // use lot
-dataUseLot 'Партионный учет' = DATA BOOLEAN (Category);
+dataUseLot 'Use lots' = DATA BOOLEAN (Category);
 nearestUseLot (Category c) = GROUP LAST dataUseLot(Category cp) ORDER level(c, cp);
 
-useLot 'Партионный учет' (Category c) = OVERRIDE dataUseLot(c), nearestUseLot(c) MATERIALIZED;
+useLot 'Use lots' (Category c) = OVERRIDE dataUseLot(c), nearestUseLot(c) MATERIALIZED;
 
 // serial numbers
-dataUseSerialNumbers 'Серийные номера' = DATA BOOLEAN (Category);
+dataUseSerialNumbers 'Serial numbers' = DATA BOOLEAN (Category);
 nearestUseSerialNumbers (Category c) = GROUP LAST dataUseSerialNumbers(Category cp) ORDER level(c, cp);
 
-useSerialNumbers 'Серийные номера' (Category c) = OVERRIDE dataUseSerialNumbers(c), nearestUseSerialNumbers(c) MATERIALIZED;
+useSerialNumbers 'Serial numbers' (Category c) = OVERRIDE dataUseSerialNumbers(c), nearestUseSerialNumbers(c) MATERIALIZED;
 
 // numerator
 dataNumeratorLot = DATA Numerator (Category);
 nearestNumeratorLot (Category child) = GROUP LAST dataNumeratorLot(Category parent) ORDER DESC level(child, parent) WHERE dataNumeratorLot(parent);
 
 numeratorLot (Category c) = OVERRIDE dataNumeratorLot(c), nearestNumeratorLot(c) MATERIALIZED;
-nameNumeratorLot 'Нумератор' (Category c) = name(numeratorLot(c));
+nameNumeratorLot 'Numerator' (Category c) = name(numeratorLot(c));
 
 // prefix
 dataPrefixLot = DATA STRING[50] (Category);
 nearestPrefixLot (Category child) = GROUP LAST dataPrefixLot(Category parent) ORDER DESC level(child, parent) WHERE dataPrefixLot(parent);
 
-prefixLot 'Префикс' (Category c) = OVERRIDE dataPrefixLot(c), nearestPrefixLot(c) MATERIALIZED CHARWIDTH 15;
+prefixLot 'Prefix' (Category c) = OVERRIDE dataPrefixLot(c), nearestPrefixLot(c) MATERIALIZED CHARWIDTH 15;
 
 EXTEND FORM category
     PROPERTIES (c) SHOWIF useLot() useLot
@@ -36,7 +36,7 @@ EXTEND FORM category
 DESIGN category {
     tabs {
         NEW lot {
-            caption = 'Партии'; 
+            caption = 'Lots'; 
             MOVE PROPERTY(useLot(c));
             MOVE PROPERTY(useSerialNumbers(c));
             MOVE PROPERTY(nameNumeratorLot(c));

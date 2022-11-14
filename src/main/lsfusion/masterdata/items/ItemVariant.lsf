@@ -4,8 +4,8 @@ REQUIRE ItemAttribute, BarCode, Product, ServiceP;
 
 NAMESPACE MasterData;
 
-variantOf 'Основная номенклатура' = DATA Item (Item) INDEXED;
-nameVariantOf 'Основная номенклатура' (Item i) = name(variantOf(i));
+variantOf 'Variant of' = DATA Item (Item) INDEXED;
+nameVariantOf 'Variant of' (Item i) = name(variantOf(i));
 
 primary (Item i) = OVERRIDE variantOf(i), (i AS Item) MATERIALIZED INDEXED;
 
@@ -40,7 +40,7 @@ EXTEND FORM item
     PROPERTIES(i) nameVariantOf
 ;
 
-addVariant 'Разновидность' (Item i) {
+addVariant 'Variant' (Item i) {
     NEWSESSION {
         IF i IS Product THEN NEW p = Product {
             variantOf(p) <- i;
@@ -62,8 +62,8 @@ EXTEND FORM item
 
 EXTEND FORM items
     FILTERGROUP variants
-        FILTER 'Основные' NOT variantOf(i) 'F10'
-        FILTER 'Разновидности' variantOf(i) 'F9'
+        FILTER 'Main' NOT variantOf(i) 'F10'
+        FILTER 'Variants' variantOf(i) 'F9'
 ;
 
 DESIGN item {
@@ -72,7 +72,7 @@ DESIGN item {
     }
     tabs {
         NEW variants {
-            caption = 'Разновидности';
+            caption = 'Variants';
             MOVE BOX(ii);
         }
     }

@@ -6,13 +6,13 @@ NAMESPACE ProjectManagement;
 
 // type
 invoiceType = DATA InvoiceType (ProjectType);
-nameInvoiceType 'Тип реализации' (ProjectType t) = name(invoiceType(t));
+nameInvoiceType 'Invoice type' (ProjectType t) = name(invoiceType(t));
 EXTEND FORM projectType PROPERTIES nameInvoiceType(o);
 
 project = DATA Project (Invoice) INDEXED;
-nameProject 'Проект' (Invoice i) = name(project(i));
+nameProject 'Project' (Invoice i) = name(project(i));
 
-countInvoices 'Реализации' (Project p) = GROUP SUM 1 IF project(Invoice i) = p;  
+countInvoices 'Invoices' (Project p) = GROUP SUM 1 IF project(Invoice i) = p;  
 
 EXTEND FORM invoices
     PROPERTIES(i) READONLY nameProject
@@ -28,7 +28,7 @@ EXTEND FORM project
 DESIGN project {
     relatedDoc  {
         MOVE BOX(i) {
-            caption = CONCAT ' ', 'Реализации', '(' + countInvoices(p) + ')';
+            caption = CONCAT ' ', 'Invoices', '(' + countInvoices(p) + ')';
             GRID(i) { headerHeight = 24; }
         }
         REMOVE TOOLBARBOX(i);
@@ -48,7 +48,7 @@ create (Invoice i, Project p) {
     fill(i, p);
 }
 
-createInvoice 'Реализовать' (Project p) {
+createInvoice 'Create Invoice' (Project p) {
     APPLY;
     IF canceled() THEN RETURN;
                

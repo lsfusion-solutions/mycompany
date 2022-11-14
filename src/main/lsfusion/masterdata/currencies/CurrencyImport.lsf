@@ -4,7 +4,7 @@ REQUIRE Currency;
 
 NAMESPACE MasterData;
 
-currencyExport 'Экспорт валют' () {
+currencyExport 'Export currencies' () {
     NEWSESSION {
         LOCAL f = EXCELFILE ();
         EXPORT XLSX HEADER FROM 'ID' = id(Currency c), 'Name' = name(c); 
@@ -12,7 +12,7 @@ currencyExport 'Экспорт валют' () {
     }
 }
 
-currencyImport 'Импорт валют' () {
+currencyImport 'Import currencies' () {
     LOCAL id = STRING[3] (INTEGER);
     LOCAL name = ISTRING[30] (INTEGER);
     
@@ -26,7 +26,7 @@ currencyImport 'Импорт валют' () {
             }
             
             APPLY;
-            MESSAGE 'Импорт завершен';
+            MESSAGE 'Import completed';
         }
     }    
 }
@@ -40,7 +40,7 @@ DESIGN migrationData {
     commons {
         NEW currency {
             type = CONTAINERH;
-            caption = 'Валюты';
+            caption = 'Currencies';
             MOVE PROPERTY(currencyImport());
             MOVE PROPERTY(currencyExport());
         }

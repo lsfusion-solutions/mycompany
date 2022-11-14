@@ -5,14 +5,14 @@ REQUIRE SUZLotOrder;
 NAMESPACE SUZ;
 
 EXTEND CLASS LotOrderStatus {
-    canceled 'Отменен'
+    canceled 'Cancelled'
 }
-canceled 'Отменен' = DATA BOOLEAN (LotOrder);
+canceled 'Cancelled' = DATA BOOLEAN (LotOrder);
 
 status(LotOrder o) += WHEN canceled(o) THEN LotOrderStatus.canceled;
 colorStatus(LotOrder o) += WHEN status(o) = LotOrderStatus.canceled THEN RGB(181,195,247);
 
-cancel 'Отменить' (LotOrder o) {
+cancel 'Cancel' (LotOrder o) {
     APPLY; 
     IF canceled() THEN RETURN;
            
@@ -37,6 +37,6 @@ DESIGN lotOrder {
 
 EXTEND FORM lotOrders    
     EXTEND FILTERGROUP status
-        FILTER 'Отменен' status(o) = LotOrderStatus.canceled    
+        FILTER 'Cancelled' status(o) = LotOrderStatus.canceled    
 ;
 

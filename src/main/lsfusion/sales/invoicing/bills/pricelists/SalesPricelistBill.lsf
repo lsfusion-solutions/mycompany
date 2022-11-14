@@ -5,14 +5,14 @@ REQUIRE BillReady, SalesPricelistDone;
 NAMESPACE Sales;
 
 pricelistType = DATA PricelistType (BillType);
-namePricelistType 'Тип прайс-листа' (BillType t) = name(pricelistType(t));
+namePricelistType 'Pricelist type' (BillType t) = name(pricelistType(t));
 
-setPriceToCost 'Установить в себестоимость цену' = DATA BOOLEAN (BillType);
+setPriceToCost 'Set cost price' = DATA BOOLEAN (BillType);
 
 EXTEND FORM billType PROPERTIES namePricelistType(o), setPriceToCost(o) SHOWIF pricelistType(o);
 
 // lines
-@defineDocLineRelation(bill, pricelist, 'Поступления', 'Прайс-листы', b, p);
+@defineDocLineRelation(bill, pricelist, 'Bill', 'Pricelist', b, p);
 
 fill ABSTRACT LIST (PricelistLine, BillLine);
 billPricelistCreated = DATA LOCAL Pricelist ();
@@ -34,7 +34,7 @@ newPricelist (Bill b) {
     }
 }
 
-createPricelist 'Расценить' (Bill b) {
+createPricelist 'Create Pricelist' (Bill b) {
     APPLY;
     IF canceled() THEN RETURN;
     
@@ -64,7 +64,7 @@ DESIGN bill {
     relatedDoc {
         MOVE BOX(p) {
             showIf = pricelistType(type(b));
-            caption = CONCAT ' ', 'Прайс-листы', '(' + countPricelists(b) + ')';
+            caption = CONCAT ' ', 'Pricelists', '(' + countPricelists(b) + ')';
         }
         REMOVE TOOLBARSYSTEM(p);
     }

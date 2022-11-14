@@ -6,7 +6,7 @@ REQUIRE PosDashboard, PosPaymentMethod,
 
 NAMESPACE Retail;
 
-FORM inputMoney 'Внесение/изъятие денег'
+FORM inputMoney 'Deposit/withdrawal cash'
     PROPERTIES() READONLY keyboardDecimalInput
 ;
 DESIGN inputMoney {
@@ -21,7 +21,7 @@ DESIGN inputMoney {
 
 // deposit
 depositPaymentType = DATA IncomingPaymentType ();
-nameDepositPaymentType 'Тип внесения денег' = name(depositPaymentType());
+nameDepositPaymentType 'Deposit type' = name(depositPaymentType());
 EXTEND FORM options PROPERTIES() nameDepositPaymentType;
 DESIGN options {
     commons {
@@ -30,7 +30,7 @@ DESIGN options {
 }
 
 afterDeposit ABSTRACT LIST (Pos, IncomingPayment); 
-deposit 'Внесение денег' (Pos p) {
+deposit 'Deposit cash' (Pos p) {
     DIALOG inputMoney DO {
         FOR NUMERIC[14,2] a = NUMERIC[14,2] (keyboardDecimalInput()) IF a > 0 DO 
             NEWSESSION {
@@ -56,7 +56,7 @@ deposit 'Внесение денег' (Pos p) {
 }
 
 withdrawPaymentType = DATA OutgoingPaymentType ();
-nameWithdrawPaymentType 'Тип изъятия денег' = name(withdrawPaymentType());
+nameWithdrawPaymentType 'Withdrawal type' = name(withdrawPaymentType());
 EXTEND FORM options PROPERTIES() nameWithdrawPaymentType;
 DESIGN options {
     commons {
@@ -66,7 +66,7 @@ DESIGN options {
 
 // withdraw
 afterWithdraw ABSTRACT LIST (Pos, OutgoingPayment);
-withdraw 'Выемка денег' (Pos p) {
+withdraw 'Withdraw' (Pos p) {
     DIALOG inputMoney DO {
         FOR NUMERIC[14,2] a = NUMERIC[14,2] (keyboardDecimalInput()) IF a > 0 DO 
             NEWSESSION {
@@ -117,10 +117,10 @@ DESIGN posDashboard {
     }
     sessionDetails {
         MOVE BOX(ip) {
-            caption = 'Внесение денег';
+            caption = 'Deposit cash';
         }
         MOVE BOX(op) {
-            caption = 'Выемка денег';
+            caption = 'Withdraw cash';
         }
     }
 }

@@ -5,13 +5,13 @@ REQUIRE BillDone, BillDebt, OutgoingPaymentDebt, OutgoingPaymentCurrency;
 NAMESPACE Invoicing;
 
 paymentType = DATA OutgoingPaymentType (BillType);
-namePaymentType 'Тип платежа' (BillType t) = name(paymentType(t));
+namePaymentType 'Payment type' (BillType t) = name(paymentType(t));
 
 EXTEND FORM billType PROPERTIES namePaymentType(o);
 
 fill ABSTRACT LIST (OutgoingPayment, Bill);
 
-registerPayment 'Оплатить' (Bill b) {
+registerPayment 'Register Payment' (Bill b) {
     APPLY; 
     IF canceled() THEN RETURN;
     

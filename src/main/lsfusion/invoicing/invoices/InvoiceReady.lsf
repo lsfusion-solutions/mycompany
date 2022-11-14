@@ -5,14 +5,14 @@ REQUIRE Invoice, InvoiceSelection;
 NAMESPACE Invoicing;
 
 EXTEND CLASS InvoiceStatus {
-    ready 'К оплате'
+    ready 'To pay'
 }
-ready 'К оплате' = DATA BOOLEAN (Invoice);
+ready 'To pay' = DATA BOOLEAN (Invoice);
 
 status(Invoice i) += WHEN ready(i) THEN InvoiceStatus.ready;
 colorStatus(Invoice i) += WHEN status(i) = InvoiceStatus.ready THEN RGB(252,247,149);
 
-markAsToDo 'В работу' (Invoice i) {
+markAsToDo 'Mark as Todo' (Invoice i) {
     APPLY; 
     IF canceled() THEN RETURN;
     
@@ -37,7 +37,7 @@ DESIGN invoice {
 
 EXTEND FORM invoices    
     EXTEND FILTERGROUP status
-        FILTER 'К оплате' status(i) = InvoiceStatus.ready 'F8'    
+        FILTER 'To pay' status(i) = InvoiceStatus.ready 'F8'    
 ;
 
-@defineSelectionAction(invoices, Invoice, markAsToDo, 'В работу', statuses);
+@defineSelectionAction(invoices, Invoice, markAsToDo, 'Mark as Todo', statuses);

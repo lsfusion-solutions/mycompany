@@ -4,12 +4,12 @@ REQUIRE ItemCost;
 
 NAMESPACE MasterData;
 
-itemCostExport 'Экспорт себестоимостей' () {
+itemCostExport 'Export costs' () {
     NEWSESSION {
         IF NOT (GROUP SUM 1 IF Item p IS Item) THEN {
             NEW p = Item {
                 id(p) <- '123';
-                dataName(p) <- 'Мой продукт';
+                dataName(p) <- 'My product';
                 category(p) <- GROUP LAST Category c ORDER c WHERE c IS Category;
                                
                 dataCost(p, DATE d) <- 3.45 WHERE d = 2000_01_01;
@@ -23,7 +23,7 @@ itemCostExport 'Экспорт себестоимостей' () {
     }
 }
 
-itemCostImport 'Импорт себестоимостей' () {
+itemCostImport 'Import costs' () {
     LOCAL id = STRING[50] (INTEGER);
     LOCAL cost = NUMERIC[10,2] (INTEGER);
     LOCAL di = DATE (INTEGER);
@@ -36,7 +36,7 @@ itemCostImport 'Импорт себестоимостей' () {
             }            
 
             APPLY;
-            MESSAGE 'Импорт завершен';
+            MESSAGE 'Import completed';
         }
     }    
 }
@@ -49,7 +49,7 @@ DESIGN migrationData {
     commons {
         NEW itemCost {
             type = CONTAINERH;
-            caption = 'Себестоимости номенклатуры';
+            caption = 'Item cost price';
             MOVE PROPERTY(itemCostImport());
             MOVE PROPERTY(itemCostExport());
         }

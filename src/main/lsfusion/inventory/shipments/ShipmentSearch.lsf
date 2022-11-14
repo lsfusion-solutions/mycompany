@@ -7,18 +7,18 @@ NAMESPACE Inventory;
 @defineDocSearchTab(shipment, product);
 EXTEND FORM shipment FILTERS canBeSold(itm);
 
-available 'Доступно' (Shipment s, Product p) = prevAvailableRec(location(s), p); 
+available 'Available' (Shipment s, Product p) = prevAvailableRec(location(s), p); 
 
 EXTEND FORM shipment
     PROPERTIES(s, itm) READONLY available
     FILTERGROUP available
-        FILTER 'Доступные' available(s, itm) 'F5' DEFAULT
+        FILTER 'Available' available(s, itm) 'F5' DEFAULT
 ;
 
 lastShipmentLine (Shipment s, Product p) = GROUP LAST ShipmentLine l ORDER l BY shipment(l), product(l);
 
 // initial demand
-@defineDocSearchAction(shipment, product, initialDemand, 'Планируемое кол-во');
+@defineDocSearchAction(shipment, product, initialDemand, 'Initial demand');
 EXTEND FORM shipment
     PROPERTIES(s, itm) SHOWIF NOT immediate(s) initialDemand ON CHANGE changeInitialDemand(s, itm)
 ;
@@ -28,7 +28,7 @@ DESIGN shipment {
 }
 
 // done
-@defineDocSearchAction(shipment, product, done, 'Отгружено');
+@defineDocSearchAction(shipment, product, done, 'Done');
 EXTEND FORM shipment
     PROPERTIES(s, itm) SHOWIF immediate(s) done ON CHANGE changeDone(s, itm)
 ;

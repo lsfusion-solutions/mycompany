@@ -5,18 +5,18 @@ REQUIRE Bom;
 NAMESPACE Manufacturing;
 
 // nested
-dataNestedBom 'Спецификация' = DATA Bom (ComponentLine);
+dataNestedBom 'Bill of Materials' = DATA Bom (ComponentLine);
 CONSTRAINT dataNestedBom(ComponentLine l) AND NOT item(l) = item(dataNestedBom(l))
     CHECKED BY dataNestedBom
-    MESSAGE 'Номенклатура спецификации компонента должна равняться номенклатуре компонента';
+    MESSAGE 'Component BOM item must equal component item item';
 
 nestedBom (ComponentLine c) = OVERRIDE dataNestedBom(c), defaultBom(item(c));
-descriptionNestedBom 'Спецификация' (ComponentLine c) = description(nestedBom(c));
+descriptionNestedBom 'Bill of Materials' (ComponentLine c) = description(nestedBom(c));
 
 // nested        
 textIndex (ComponentLine c) = lpad(TEXT(index(c)), 4, '0');
 
-level 'Уровень' (Bom b, ComponentLine c, TEXT path) =
+level 'Level' (Bom b, ComponentLine c, TEXT path) =
     RECURSION 1l IF bom(c) = b AND path = textIndex(c)
          STEP 2l IF bom(c) = nestedBom($c) AND path = ($path + '/' + textIndex(c)); //MATERIALIZED
 
@@ -25,11 +25,11 @@ quantity (Bom b, ComponentLine c, TEXT path, NUMERIC[20,11] q) =
     RECURSION NUMERIC[20,11](1.0) IF q = quantity(c) AND bom(c) = b AND path = lpad(TEXT(index(c)), 4, '0')
          STEP NUMERIC[20,11](1.0) IF q = $q * quantity(c) / quantity(bom(c)) AND bom(c) = nestedBom($c) AND path = ($path + '/' + lpad(TEXT(index(c)), 4, '0')) CYCLES NO; //MATERIALIZED
 
-quantity 'Кол-во' (Bom b, ComponentLine c, TEXT path) = 
+quantity 'Qty' (Bom b, ComponentLine c, TEXT path) = 
     GROUP SUM quantity(b, c, path, NUMERIC[20,11] q) * q; 
 
 // intermediate         
-intermediate 'Промежуточная' = DATA BOOLEAN (Bom);
+intermediate 'Intermediate' = DATA BOOLEAN (Bom);
 
 EXTEND FORM bom
     PROPERTIES(b) intermediate

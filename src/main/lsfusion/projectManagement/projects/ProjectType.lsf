@@ -4,16 +4,16 @@ REQUIRE ProjectManagementSettings, Numerator;
 
 NAMESPACE ProjectManagement;
 
-CLASS ProjectType 'Тип проекта';
-name 'Название' = DATA ISTRING[50] (ProjectType) NONULL;
+CLASS ProjectType 'Project type';
+name 'Name' = DATA ISTRING[50] (ProjectType) NONULL;
 
-id 'Код' = DATA STRING[20] (ProjectType);
+id 'ID' = DATA STRING[20] (ProjectType);
 projectType = GROUP AGGR ProjectType t BY id(t);
 
-numerator 'Нумератор' = DATA Numerator (ProjectType);
-nameNumerator 'Нумератор' (ProjectType o) = name(numerator(o));
+numerator 'Numerator' = DATA Numerator (ProjectType);
+nameNumerator 'Numerator' (ProjectType o) = name(numerator(o));
 
-FORM projectType 'Тип проекта'
+FORM projectType 'Project type'
     OBJECTS o = ProjectType PANEL 
     PROPERTIES(o) name, id, nameNumerator
      
@@ -29,7 +29,7 @@ DESIGN projectType {
     }
 }
 
-FORM projectTypes 'Типы реализации'
+FORM projectTypes 'Invoice types'
     OBJECTS o = ProjectType
     PROPERTIES(o) READONLY name, id
     
@@ -49,7 +49,7 @@ DESIGN options {
 }
 
 // default type
-countProjectTypes 'Кол-во типов' () = GROUP SUM 1 IF r IS ProjectType; 
+countProjectTypes 'Number of types' () = GROUP SUM 1 IF r IS ProjectType; 
 firstProjectType = GROUP LAST ProjectType r ORDER DESC r WHERE r IS ProjectType;
 
 defaultProjectType = firstProjectType() IF countProjectTypes() = 1;

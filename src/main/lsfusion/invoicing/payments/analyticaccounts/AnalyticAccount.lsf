@@ -4,31 +4,31 @@ REQUIRE InvoicingSettings;
 
 NAMESPACE Invoicing;
 
-CLASS AnalyticAccount 'Статья ДДС';
+CLASS AnalyticAccount 'Analytic account';
 
-id 'Код' = DATA STRING[20] (AnalyticAccount);
-name 'Наименование' = DATA ISTRING[50] (AnalyticAccount) NONULL;
+id 'ID' = DATA STRING[20] (AnalyticAccount);
+name 'Name' = DATA ISTRING[50] (AnalyticAccount) NONULL;
 
-parent 'Родитель' = DATA AnalyticAccount (AnalyticAccount);
-parent 'Родитель' (STRING[20] s) = GROUP AGGR AnalyticAccount a BY id(a);
+parent 'Parent' = DATA AnalyticAccount (AnalyticAccount);
+parent 'Parent' (STRING[20] s) = GROUP AGGR AnalyticAccount a BY id(a);
 
-level 'Уровень' (AnalyticAccount p, AnalyticAccount c) = RECURSION 1l IF c IS AnalyticAccount AND p = c
+level 'Level' (AnalyticAccount p, AnalyticAccount c) = RECURSION 1l IF c IS AnalyticAccount AND p = c
     STEP 2l IF p = parent($p) MATERIALIZED ;
 
-canonicalName 'Каноническое имя' (AnalyticAccount a) = GROUP CONCAT name(AnalyticAccount p), '/' ORDER DESC level(a, p) IN id;
-canonicalNameParent 'Родитель' (AnalyticAccount a) = canonicalName(parent(a));
+canonicalName 'Canonical name' (AnalyticAccount a) = GROUP CONCAT name(AnalyticAccount p), '/' ORDER DESC level(a, p) IN id;
+canonicalNameParent 'Parent' (AnalyticAccount a) = canonicalName(parent(a));
 
 CONSTRAINT DROPPED(AnalyticAccount a IS AnalyticAccount) AND PREV(parent(AnalyticAccount c) = a)
-        MESSAGE 'Запрещено удалять статьи, на которые ссылаются другие статьи';
+        MESSAGE 'It is forbidden to delete articles that are referenced by other articles';
 
-FORM analyticAccount 'Статья ДДС'
+FORM analyticAccount 'Analytic account'
     OBJECTS a = AnalyticAccount PANEL 
     PROPERTIES (a) id, name, canonicalNameParent
     
     EDIT AnalyticAccount OBJECT a
 ;
 
-FORM analyticAccounts 'Статьи ДДС'
+FORM analyticAccounts 'Analytic accounts'
     OBJECTS a = AnalyticAccount
     PROPERTIES(a) READONLY id, name, canonicalNameParent
     PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE 
@@ -42,7 +42,7 @@ FORM analyticAccounts 'Статьи ДДС'
     EVENTS ON CHANGE aa {SEEK analyticAccounts.a = aa;} 
 ;
 
-newAnalyticAccount 'Добавить' (AnalyticAccount a) {
+newAnalyticAccount 'Add to' (AnalyticAccount a) {
     NEWSESSION {
         NEW na = AnalyticAccount {
             parent(na) <- a;
@@ -59,11 +59,11 @@ DESIGN analyticAccounts {
             type = TABBED;
             fill = 1;
             NEW list {
-                caption = 'Список';
+                caption = 'List';
                 MOVE BOX(a);
             }
             NEW tree {
-                caption = 'Дерево';
+                caption = 'Wood';
                 MOVE BOX(TREE tree);
             }
         }
@@ -77,7 +77,7 @@ NAVIGATOR {
 }
 
 META definePaymentTypeAnalytic(pay)
-    in 'Вкл.' = DATA BOOLEAN (###pay###PaymentType, AnalyticAccount);
+    in 'Incl.' = DATA BOOLEAN (###pay###PaymentType, AnalyticAccount);
 
     EXTEND FORM ##pay###PaymentType
         OBJECTS a = AnalyticAccount
@@ -91,15 +91,15 @@ META definePaymentTypeAnalytic(pay)
     DESIGN ##pay###PaymentType {
         tabbedPane {
             NEW analyticAccount {
-                caption = 'Статьи ДДС';
+                caption = 'Analytic accounts';
                 type = TABBED;
                 fill = 1;
                 NEW list {
-                    caption = 'Список';
+                    caption = 'List';
                     MOVE BOX(a);
                 }
                 NEW tree {
-                    caption = 'Дерево';
+                    caption = 'Wood';
                     MOVE BOX(TREE tree);
                 }
             }
@@ -117,7 +117,7 @@ META definePaymentAnalytic(pay)
     EXTEND FORM ##pay###Payment PROPERTIES(p) nameAnalyticAccount READONLYIF countAnalyticAccount(type(p)) = 1;
 
     CONSTRAINT type(###pay###Payment p) AND analyticAccount(p) AND NOT in(type(p), analyticAccount(p)) AND countAnalyticAccount(type(p))
-        CHECKED MESSAGE 'Статья ДДС должна соответствовать типу платежа';
+        CHECKED MESSAGE 'The analytic account must correspond to the type of payment';
 
     DESIGN ##pay###Payment {
         params {

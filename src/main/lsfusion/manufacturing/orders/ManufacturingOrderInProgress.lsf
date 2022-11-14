@@ -5,21 +5,21 @@ REQUIRE ManufacturingOrderReady, Input;
 NAMESPACE Manufacturing;
 
 EXTEND CLASS ManufacturingOrderStatus {
-    inProgress 'В процессе'
+    inProgress 'In progress'
 }
-inProgress 'В процессе' = DATA BOOLEAN (ManufacturingOrder);
+inProgress 'In progress' = DATA BOOLEAN (ManufacturingOrder);
 
 status(ManufacturingOrder m) += WHEN inProgress(m) THEN ManufacturingOrderStatus.inProgress;
 colorStatus(ManufacturingOrder m) += WHEN status(m) = ManufacturingOrderStatus.inProgress THEN RGB(252,247,149);
 
-consumed 'Израсходовано' = DATA NUMERIC[16,3] (ConsumedLine);
-consumed 'Израсходовано' (ManufacturingOrder o) = GROUP SUM consumed(ConsumedLine l) IF manufacturingOrder(l) = o AND item(l) = item(o) MATERIALIZED;
+consumed 'Consumed' = DATA NUMERIC[16,3] (ConsumedLine);
+consumed 'Consumed' (ManufacturingOrder o) = GROUP SUM consumed(ConsumedLine l) IF manufacturingOrder(l) = o AND item(l) = item(o) MATERIALIZED;
 
-produced 'Произведено' = DATA NUMERIC[16,3] (FinishedLine);
-produced 'Произведено' (ManufacturingOrder o) = GROUP SUM produced(FinishedLine l) IF manufacturingOrder(l) = o AND item(l) = item(o) MATERIALIZED;
+produced 'Produced' = DATA NUMERIC[16,3] (FinishedLine);
+produced 'Produced' (ManufacturingOrder o) = GROUP SUM produced(FinishedLine l) IF manufacturingOrder(l) = o AND item(l) = item(o) MATERIALIZED;
 
 // manufacture
-manufactured 'Произведено' (ManufacturingOrder o) = IF unbuild(o) THEN consumed(o) ELSE produced(o);
+manufactured 'Produced' (ManufacturingOrder o) = IF unbuild(o) THEN consumed(o) ELSE produced(o);
 
 setManufactured (ManufacturingOrder o, NUMERIC[16,3] q) {
     produced(FinishedLine l) <- NUMERIC[16,3](toProduce(l) * q / toManufacture(o)) WHERE manufacturingOrder(l) = o; 
@@ -69,7 +69,7 @@ EXTEND FORM manufacturingOrders
     PROPERTIES(o) READONLYIF isReadonly() manufactured AFTER toManufacture(o) ON CHANGE changeManufactured(o)
 
     EXTEND FILTERGROUP status
-        FILTER 'В процессе' status(o) = ManufacturingOrderStatus.inProgress    
+        FILTER 'In progress' status(o) = ManufacturingOrderStatus.inProgress    
 ;
 
 @defineSelectionAction(manufacturingOrders, ManufacturingOrder, manufacture, '{Manufacture}', statuses);

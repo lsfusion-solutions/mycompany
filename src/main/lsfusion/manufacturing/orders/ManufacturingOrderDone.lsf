@@ -5,26 +5,26 @@ REQUIRE ManufacturingOrderInProgress;
 NAMESPACE Manufacturing;
 
 EXTEND CLASS ManufacturingOrderStatus {
-    done 'Завершен'
+    done 'Done'
 }
 
-done 'Завершен' = DATA BOOLEAN (ManufacturingOrder);
+done 'Done' = DATA BOOLEAN (ManufacturingOrder);
 
-executionDateTime 'Дата выполнения' = DATA DATETIME (ManufacturingOrder);
+executionDateTime 'Execution Date' = DATA DATETIME (ManufacturingOrder);
 WHEN SET(done(ManufacturingOrder o)) AND NOT CHANGED(executionDateTime(o)) DO executionDateTime(o) <- currentDateTime(); 
 
-productsLocation 'Получатель' = DATA Location (ManufacturingOrder);
-nameProductsLocation 'Получатель' (ManufacturingOrder m) = name(productsLocation(m));
+productsLocation 'Products location' = DATA Location (ManufacturingOrder);
+nameProductsLocation 'Products location' (ManufacturingOrder m) = name(productsLocation(m));
 
 @defineDocLocationAccess(manufacturingOrder, o, products);
 
 CONSTRAINT done(ManufacturingOrder o) AND NOT productsLocation(o)
-    MESSAGE 'Не выбрано место хранения получателя в завершенном производственном заказе'; 
+    MESSAGE 'No products location selected in completed production order'; 
 
-prevOnHandAProductsLocation 'Остаток после операции (куда)' (ManufacturingOrder o) = 
+prevOnHandAProductsLocation 'On hand after (destination)' (ManufacturingOrder o) = 
     prevOnHandA(productsLocation(o), item(o), executionDateTime(o));
 
-markAsDone 'Завершить' (ManufacturingOrder m) {
+markAsDone 'Mark as Done' (ManufacturingOrder m) {
     APPLY;
     IF canceled() THEN RETURN;
         
@@ -77,11 +77,11 @@ EXTEND FORM manufacturingOrders
     PROPERTIES(o) READONLY prevOnHandAProductsLocation READONLY AFTER nameProductsLocation(o)  
 
     EXTEND FILTERGROUP status
-        FILTER 'Завершен' status(o) = ManufacturingOrderStatus.done    
+        FILTER 'Done' status(o) = ManufacturingOrderStatus.done    
 ;
 
 extraCopy (ManufacturingOrder o, ManufacturingOrder m) + {
     productsLocation(o) <- productsLocation(m);
 }
 
-@defineSelectionAction(manufacturingOrders, ManufacturingOrder, markAsDone, 'Завершить', statuses);
+@defineSelectionAction(manufacturingOrders, ManufacturingOrder, markAsDone, 'Mark as Done', statuses);

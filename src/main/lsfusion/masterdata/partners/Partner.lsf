@@ -4,36 +4,36 @@ REQUIRE Utils, MetaNumerator, Input;
 
 NAMESPACE MasterData;
 
-CLASS ABSTRACT Partner 'Контрагент';
+CLASS ABSTRACT Partner 'Partner';
 
-@defineID(partner, 'Контрагенты', 'КН', 4);
+@defineID(partner, 'Partners', 'KN', 4);
 
-name 'Наименование' = ABSTRACT ISTRING[92] (Partner) IN id CHARWIDTH 15;
-fullName 'Полное наименование' = ABSTRACT ISTRING[200] (Partner) IN id CHARWIDTH 25;
+name 'Name' = ABSTRACT ISTRING[92] (Partner) IN id CHARWIDTH 15;
+fullName 'Full name' = ABSTRACT ISTRING[200] (Partner) IN id CHARWIDTH 25;
 
-address 'Адрес' = DATA ISTRING[150] (Partner) CHARWIDTH 30;
-city 'Город' = DATA ISTRING[50] (Partner) CHARWIDTH 12;
-state 'Область' = DATA ISTRING[50] (Partner) CHARWIDTH 12;
-zip 'Почтовый индекс' = DATA ISTRING[6] (Partner);
+address 'Address' = DATA ISTRING[150] (Partner) CHARWIDTH 30;
+city 'City' = DATA ISTRING[50] (Partner) CHARWIDTH 12;
+state 'State' = DATA ISTRING[50] (Partner) CHARWIDTH 12;
+zip 'Postcode' = DATA ISTRING[6] (Partner);
 
-addressCsv 'Адрес' (Partner p) = CONCAT ', ', address(p), city(p), state(p) IF NOT state(p) = city(p), zip(p);
-addressLines 'Адрес' (Partner p) = CONCAT '\n ', address(p), city(p), state(p) IF NOT state(p) = city(p), zip(p);
+addressCsv 'Address' (Partner p) = CONCAT ', ', address(p), city(p), state(p) IF NOT state(p) = city(p), zip(p);
+addressLines 'Address' (Partner p) = CONCAT '\n ', address(p), city(p), state(p) IF NOT state(p) = city(p), zip(p);
 
-phone 'Телефон' = DATA ISTRING[30] (Partner);
-email 'Электронная почта' = DATA ISTRING[30] (Partner);
+phone 'Phone' = DATA ISTRING[30] (Partner);
+email 'Email' = DATA ISTRING[30] (Partner);
 
-archived 'Неактивный' = DATA BOOLEAN (Partner);
-active 'Активный' (Partner p) = NOT archived(p);
+archived 'Inactive' = DATA BOOLEAN (Partner);
+active 'Active' (Partner p) = NOT archived(p);
 
 // type
-CLASS PartnerType 'Тип контрагента';
+CLASS PartnerType 'Partner type';
 
-name 'Имя' (PartnerType o) = staticCaption(o) IF o IS PartnerType CHARWIDTH 15;
+name '{First_name}' (PartnerType o) = staticCaption(o) IF o IS PartnerType CHARWIDTH 15;
 
 type  = ABSTRACT CASE PartnerType (Partner);
-nameType 'Тип контрагента' (Partner p) = name(type(p));
+nameType 'Partner type' (Partner p) = name(type(p));
 
-FORM partner 'Контрагент'
+FORM partner 'Partner'
     OBJECTS p = Partner PANEL 
     PROPERTIES(p) id, nameType, 
                   address, city, state, zip,
@@ -79,20 +79,20 @@ DESIGN partner {
             type = TABBED;
             fill = 1;
             NEW legalInfo {
-                caption = 'Юридические данные';
+                caption = 'Legal data';
                 NEW legalInfoOptions;
             }
         }
     }
 }
 
-FORM partners 'Контрагенты'
+FORM partners 'Partners'
     OBJECTS p = Partner
     PROPERTIES(p) READONLYIF isReadonly() name, id, nameType, addressCsv, phone, email 
     PROPERTIES(p) NEWSESSION EDIT, DELETE 
     FILTERGROUP active
-        FILTER 'Активный' active(p) 'F10' DEFAULT
-        FILTER 'Неактивный' archived(p) 'F9'
+        FILTER 'Active' active(p) 'F10' DEFAULT
+        FILTER 'Inactive' archived(p) 'F9'
 ;
 
 @extendFormEditable(partners);
@@ -110,15 +110,15 @@ DESIGN partners {
     }
 }
 
-FORM dialogPartners 'Выбор контрагента'
+FORM dialogPartners 'Select partner'
     OBJECTS p = Partner
     PROPERTIES(p) READONLY name, id, nameType
     PROPERTIES(p) NEWSESSION EDIT
     ORDERS name(p)
      
     FILTERGROUP active
-        FILTER 'Активный' active(p) 'F10' DEFAULT
-        FILTER 'Неактивный' archived(p) 'F9'
+        FILTER 'Active' active(p) 'F10' DEFAULT
+        FILTER 'Inactive' archived(p) 'F9'
 
     PROPERTIES() nameFilter, clearNameFilter
     FILTERS isISubstring(name(p), nameFilter()) OR NOT nameFilter()

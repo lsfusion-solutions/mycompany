@@ -8,10 +8,10 @@ META defineItemPack(prefix, caption)
 
     // category
     prefix##Uom = DATA Uom (Category);
-    name###prefix##Uom 'Единица измерения для '##caption (Category c) = name(prefix##Uom(c));
-    
+    name###prefix##Uom 'Unit of measure for '##caption (Category c) = name(prefix##Uom(c));
+
     parent###prefix##Uom (Category child) =
-       GROUP LAST prefix##Uom(Category parent) ORDER DESC level(child, parent) WHERE prefix##Uom(parent);
+    GROUP LAST prefix##Uom(Category parent) ORDER DESC level(child, parent) WHERE prefix##Uom(parent);
     
     EXTEND FORM category
         PROPERTIES(c) name###prefix##Uom
@@ -25,8 +25,8 @@ META defineItemPack(prefix, caption)
     
     // item   
     data###prefix##Uom = DATA Uom (Item);
-    prefix##Uom 'Надбавка, %' (Item i) = OVERRIDE data###prefix##Uom(i), parent###prefix##Uom(category(i)) MATERIALIZED;
-    name###prefix##Uom 'Единица измерения '##caption (Item i) = name(prefix##Uom(i));
+    prefix##Uom '{Markup_p}' (Item i) = OVERRIDE data###prefix##Uom(i), parent###prefix##Uom(category(i)) MATERIALIZED;
+    name###prefix##Uom 'Unit of measure for '##caption (Item i) = name(prefix##Uom(i));
     
     EXTEND FORM item
         PROPERTIES(i) name###prefix##Uom
@@ -38,27 +38,27 @@ META defineItemPack(prefix, caption)
         }
     }
     
-    prefix##Pack##Ratio 'Кол-во в месте' (Item i) = ratio(i, prefix##Uom(i)) MATERIALIZED;
+    prefix##Pack##Ratio 'Quantity in package' (Item i) = ratio(i, prefix##Uom(i)) MATERIALIZED;
 
 END
 
 META defineDocPack(doc, prefix, item, quantity, let)
 
-    pack 'Показывать количество мест' = DATA BOOLEAN (###doc##Type);
+    pack 'Show number of seats' = DATA BOOLEAN (###doc##Type);
     EXTEND FORM doc##Type PROPERTIES(o) pack;
 
     packUom = DATA Uom (###doc##Line);
-    namePackUom 'Вид упаковки' (###doc##Line l) = name(packUom(l));
+    namePackUom 'Type of packaging' (###doc##Line l) = name(packUom(l));
 
-    packRatio 'Кол-во в месте' (###doc##Line l) = ratio(item(l), packUom(l));
+    packRatio 'Quantity in package' (###doc##Line l) = ratio(item(l), packUom(l));
 
     WHEN LOCAL CHANGED(item(###doc##Line l)) AND pack(type(doc(l))) AND ratio(item(l), prefix##Uom(item(l))) AND NOT CHANGED(packUom(l)) DO
         packUom(l) <- prefix##Uom(item(l));
 
     CONSTRAINT packUom(###doc##Line l) AND NOT packRatio(l)
-        CHECKED BY packUom[###doc##Line] MESSAGE 'Для выбранного места не задано соотношение перевода в базовую единицу измерения'; 
+        CHECKED BY packUom[###doc##Line] MESSAGE 'The selected location does not have a conversion ratio to the base unit of measure'; 
     
-    packQuantity 'Кол-во мест' = DATA NUMERIC[16,3] (###doc##Line);
+    packQuantity 'Number of packages' = DATA NUMERIC[16,3] (###doc##Line);
     WHEN LOCAL (CHANGED(quantity(###doc##Line l)) OR CHANGED(item(l)) OR CHANGED(packUom(l))) AND packRatio(l) AND NOT CHANGED(packQuantity(l)) DO
         packQuantity(l) <- NUMERIC[16,3](quantity(l) / packRatio(l));
     
@@ -79,7 +79,7 @@ END
 
 META defineDocSearchPack(doc, prefix, let)    
 
-    packQuantity 'Кол-во мест' (###doc o, Item i) = 
+    packQuantity 'Number of packages' (###doc o, Item i) = 
         GROUP SUM packQuantity(###doc##Line l) BY doc(l), item(l);
     
     changePackQuantity (###doc o, Item i) {

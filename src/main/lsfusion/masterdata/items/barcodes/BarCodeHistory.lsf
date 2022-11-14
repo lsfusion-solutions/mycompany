@@ -10,8 +10,8 @@ WHEN SETCHANGED(id(BarCode l)) DO {
         dateTime(h) <- currentDateTime();
         user(h) <- currentUser();
         computer(h) <- currentComputer();
-        type(h) <- 'Изменен штрихкод';
-        description (h) <- CONCAT ' ', 'Изменен штрихкод на', id(l);
+        type(h) <- 'Barcode changed';
+        description (h) <- CONCAT ' ', 'Changed barcode to', id(l);
     }
 }
     
@@ -21,8 +21,8 @@ WHEN SET(BarCode l IS BarCode) DO {
         dateTime(h) <- currentDateTime();
         user(h) <- currentUser();
         computer(h) <- currentComputer();
-        type(h) <- 'Добавлен штрихкод';
-        description (h) <- CONCAT ' ', 'Добавлен штрихкод', id(l);
+        type(h) <- 'Added barcode';
+        description (h) <- CONCAT ' ', 'Added barcode', id(l);
     }
 }
 
@@ -32,11 +32,11 @@ WHEN DROPPED(BarCode l IS BarCode) DO {
         dateTime(h) <- currentDateTime();
         user(h) <- currentUser();
         computer(h) <- currentComputer();
-        type(h) <- 'Удален штрихкод';
-        description (h) <- CONCAT ' ', 'Удален штрихкод', PREV(id(l));
+        type(h) <- 'Barcode removed';
+        description (h) <- CONCAT ' ', 'Barcode removed', PREV(id(l));
     }
 }  
 
-@defineItemHistoryFilter('Добавлен штрихкод');
-@defineItemHistoryFilter('Изменен штрихкод');
-@defineItemHistoryFilter('Удален штрихкод');
+@defineItemHistoryFilter('Added barcode');
+@defineItemHistoryFilter('Barcode changed');
+@defineItemHistoryFilter('Barcode removed');

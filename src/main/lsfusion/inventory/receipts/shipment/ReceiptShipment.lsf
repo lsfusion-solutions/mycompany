@@ -5,31 +5,31 @@ REQUIRE ReceiptCanceled, ShipmentCanceled;
 NAMESPACE Inventory;
 
 // types
-isReturn 'Возврат' = DATA BOOLEAN (ShipmentType);
+isReturn 'Return' = DATA BOOLEAN (ShipmentType);
 EXTEND FORM shipmentType PROPERTIES(o) isReturn;
 
 isReturn (Shipment s) = isReturn(type(s));
 isCustomer(Shipment s) += isReturn(s) AND isVendor(customer(s));
 
 shipmentType = DATA ShipmentType (ReceiptType);
-nameShipmentType 'Тип возврата' (ReceiptType t) = name(shipmentType(t));
+nameShipmentType 'Return type' (ReceiptType t) = name(shipmentType(t));
 EXTEND FORM receiptType PROPERTIES(o) nameShipmentType;
 
 // line
-@defineDocLineRelation (receipt, shipment, 'Приемка', 'Отгрузка', r, s);
+@defineDocLineRelation (receipt, shipment, 'Receipt', 'Shipment', r, s);
 
 CONSTRAINT receiptLine(ShipmentLine l) AND NOT 
                 (vendor(receiptLine(l)) = customer(l) AND 
                  product(receiptLine(l)) = product(l))
     CHECKED BY receiptLine
-    MESSAGE 'Контрагент и товар приемки должны совпадать с контрагентом и товаром возврата';
+    MESSAGE 'The partner and the goods received must match the partner and the returned goods';
     
 EXTEND FORM shipment
     PROPERTIES(l) numberDateReceiptLine SHOWIF isReturn(s)
 ;
 
 // Shipment
-return 'Вернуть' (Receipt r) {    
+return 'Return' (Receipt r) {    
     NEWSESSION {
         NEW ns = Shipment {
             type(ns) <- shipmentType(type(r));
@@ -67,10 +67,10 @@ WHEN LOCAL (SETCHANGED(product(ShipmentLine l)) OR SETCHANGED(customer(l))) AND 
 }
 
 // returned quantity
-returned 'Возвращено' (ReceiptLine rl) = 
+returned 'Returned' (ReceiptLine rl) = 
     GROUP SUM done(ShipmentLine sl) IF receiptLine(sl) = rl AND active(shipment(sl));
 
-FORM receiptShipmentShow 'Возвраты'
+FORM receiptShipmentShow 'Refunds'
     OBJECTS rl = ReceiptLine
 
     OBJECTS sl = ShipmentLine

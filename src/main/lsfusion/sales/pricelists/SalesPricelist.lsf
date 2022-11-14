@@ -5,38 +5,38 @@ REQUIRE SalesPricelistType, Item, Partner, ItemSales, PartnerSales, TaxItem,
 
 NAMESPACE Sales; 
 
-CLASS Pricelist 'Прайс-лист';
+CLASS Pricelist 'Pricelist';
 
-type 'Тип' = DATA PricelistType (Pricelist);
-nameType 'Тип' (Pricelist p) = name(type(p));
+type 'Type' = DATA PricelistType (Pricelist);
+nameType 'Type' (Pricelist p) = name(type(p));
 
 WHEN LOCAL SET(Pricelist p IS Pricelist) AND NOT CHANGED(type(p)) DO type(p) <- defaultPricelistType();
 
-@defineDocStatus(pricelist, 'прайс-листа');
+@defineDocStatus(pricelist, 'Pricelist');
 
-startDateTime 'Дата начала' = DATA DATETIME (Pricelist) NONULL;
+startDateTime 'Start date' = DATA DATETIME (Pricelist) NONULL;
 startDateTime(Pricelist l) <- currentDateTime() WHEN SET(l IS Pricelist);
 
-@defineDateTimeAggregation(Pricelist, start, ' начала');
+@defineDateTimeAggregation(Pricelist, start, 'Start ');
 
-endDateTime 'Дата окончания' = DATA DATETIME (Pricelist);
+endDateTime 'End date' = DATA DATETIME (Pricelist);
 
 @defineNumberType(pricelist);
 
-numberDate 'Описание' (Pricelist p) = number(p) + ' (' + startDateTime(p) + ')' IN id;
+numberDate 'Description' (Pricelist p) = number(p) + ' (' + startDateTime(p) + ')' IN id;
 
-note 'Примечание' = DATA STRING[50] (Pricelist);
+note 'Note' = DATA STRING[50] (Pricelist);
 
 // price types
-editIn 'Изменять цены' = DATA BOOLEAN (Pricelist, PriceType);
+editIn 'Change prices' = DATA BOOLEAN (Pricelist, PriceType);
 
-priceListTypes 'Виды цен' (Pricelist pricelist) = 
+priceListTypes 'Price types' (Pricelist pricelist) = 
     GROUP CONCAT name(PriceType pricelistType) IF editIn(pricelist, pricelistType) , ', '
           ORDER pricelistType CHARWIDTH 10 MATERIALIZED;
 
 WHEN LOCAL CHANGED (type(Pricelist pl)) DO editIn(pl, PriceType pt) <- in(type(pl), pt);
 
-FORM chooseTypes 'Выбор видов цен'
+FORM chooseTypes 'Selection of price types'
     OBJECTS pr = Pricelist PANEL 
     
     OBJECTS t = PriceType
@@ -45,9 +45,9 @@ FORM chooseTypes 'Выбор видов цен'
 ;
 
 // lines
-CLASS PricelistLine 'Строка прайс-листа';
+CLASS PricelistLine 'Pricelist line';
 
-pricelist 'Прайс-лист' = DATA Pricelist (PricelistLine) NONULL DELETE;
+pricelist 'Pricelist' = DATA Pricelist (PricelistLine) NONULL DELETE;
 
 index '№' = PARTITION SUM 1 ORDER PricelistLine l BY pricelist(l) IN id MATERIALIZED CHARWIDTH 3;
 
@@ -55,21 +55,21 @@ startDate (PricelistLine l) = startDate(pricelist(l));
 
 item '{Item}' = DATA Item (PricelistLine);
 nameItem '{Item}' (PricelistLine prl) = name(item(prl));
-idBarCodeItem 'Штрихкод' (PricelistLine l) = idBarCode(item(l));
-idItem 'Код' (PricelistLine l) = id(item(l));
-nameSalesTax 'Налоги' (PricelistLine l) = nameSalesTax(item(l));
+idBarCodeItem 'Barcode' (PricelistLine l) = idBarCode(item(l));
+idItem 'ID' (PricelistLine l) = id(item(l));
+nameSalesTax 'Taxes' (PricelistLine l) = nameSalesTax(item(l));
 
 uom (PricelistLine l) = uom(item(l));
-nameUom 'Ед. изм.' (PricelistLine l) = name(uom(l)); 
+nameUom 'UoM' (PricelistLine l) = name(uom(l)); 
 
-cost 'Себестоимость' = DATA NUMERIC[14,2] (PricelistLine);
+cost 'Cost' = DATA NUMERIC[14,2] (PricelistLine);
 WHEN LOCAL SETCHANGED(item(PricelistLine l)) AND NOT CHANGED(cost(l)) DO cost(l) <- overCost(item(l), startDateTime(pricelist(l)));
 
-markup 'Надбавка' = DATA NUMERIC[10,2] (PricelistLine, PriceType);
-price 'Цена' = DATA NUMERIC[10,2] (PricelistLine, PriceType);
+markup 'Surcharge' = DATA NUMERIC[10,2] (PricelistLine, PriceType);
+price 'Price' = DATA NUMERIC[10,2] (PricelistLine, PriceType);
 
 CONSTRAINT DROPPED(PriceType t IS PriceType) AND PREV(price(PricelistLine l, t))
-    MESSAGE 'Запрещено удалять виды цен, по которым есть прайсы';
+    MESSAGE 'It is forbidden to delete the types of prices for which there are prices';
 
 editIn (PricelistLine pl, PriceType priceType) = editIn(pricelist(pl), priceType);
 
@@ -102,15 +102,15 @@ changeMarkup (PricelistLine l, PriceType t) {
 }
 
 // Line properties
-nameType 'Тип' (PricelistLine l) = nameType(pricelist(l));
-nameStatus 'Статус' (PricelistLine l) = nameStatus(pricelist(l));
-number 'Номер' (PricelistLine prl) = number(pricelist(prl));
-numberDate 'Описание' (PricelistLine l) = numberDate(pricelist(l));
-startDateTime 'Дата начала' (PricelistLine prl) = startDateTime(pricelist(prl));
-endDateTime 'Дата окончания' (PricelistLine prl) = endDateTime(pricelist(prl));
-note 'Примечание' (PricelistLine prl) = note(pricelist(prl));
+nameType 'Type' (PricelistLine l) = nameType(pricelist(l));
+nameStatus 'Status' (PricelistLine l) = nameStatus(pricelist(l));
+number 'Number' (PricelistLine prl) = number(pricelist(prl));
+numberDate 'Description' (PricelistLine l) = numberDate(pricelist(l));
+startDateTime 'Start date' (PricelistLine prl) = startDateTime(pricelist(prl));
+endDateTime 'End date' (PricelistLine prl) = endDateTime(pricelist(prl));
+note 'Note' (PricelistLine prl) = note(pricelist(prl));
 
-FORM pricelist 'Прайс-лист'
+FORM pricelist 'Pricelist'
     OBJECTS p = Pricelist PANEL
     PROPERTIES(p) nameType, number, startDateTime, endDateTime, note,
                   priceListTypes ON CHANGE { SHOW chooseTypes OBJECTS pr = p; }
@@ -129,7 +129,7 @@ FORM pricelist 'Прайс-лист'
 ;
 
 DESIGN pricelist {
-    caption = (CONCAT ' ', 'Прайс-лист', '№' + number(p), '(' + startDateTime(p) + ')');
+    caption = (CONCAT ' ', 'Pricelist', '№' + number(p), '(' + startDateTime(p) + ')');
     OBJECTS {
         NEW header {
             type = CONTAINERH;
@@ -142,8 +142,8 @@ DESIGN pricelist {
                 NEW period {
                     alignment = STRETCH;
                     type = CONTAINERH;
-                    MOVE PROPERTY(startDateTime(p)) { caption = 'Действует с '; }
-                    MOVE PROPERTY(endDateTime(p)) { caption = 'по '; }
+                    MOVE PROPERTY(startDateTime(p)) { caption = 'Valid from'; }
+                    MOVE PROPERTY(endDateTime(p)) { caption = 'to'; }
                 }
                 MOVE PROPERTY(priceListTypes(p)); 
                 MOVE PROPERTY(note(p)); 
@@ -153,7 +153,7 @@ DESIGN pricelist {
             fill = 1;
             type = TABBED;
             NEW lines {
-                caption = 'Строки';
+                caption = 'Lines';
                 MOVE BOX(l) {
                     PROPERTY(markup(l, t)) { background = RGB(212,242,252); }
                     PROPERTY(price(l, t)) { background = RGB(198,230,247); }
@@ -168,7 +168,7 @@ DESIGN pricelist {
     }
 }
 
-FORM pricelists 'Прайс-листы'
+FORM pricelists 'Pricelists'
     OBJECTS p = Pricelist
     PROPERTIES(p) READONLY nameType, startDateTime, endDateTime, number, note, priceListTypes
     PROPERTIES(p) NEWSESSION NEW, EDIT ,DELETE
@@ -186,7 +186,7 @@ NAVIGATOR {
 }
 
 // copy
-copy 'Копировать' (Pricelist pl) {
+copy 'Copy' (Pricelist pl) {
     NEWSESSION {
         NEW p = Pricelist {
             type(p) <- type(pl);

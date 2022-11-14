@@ -8,28 +8,28 @@ REQUIRE InvoicingSettings, TaxItem, BankAccount,
 
 NAMESPACE Invoicing;
 
-CLASS Bill 'Поступление';
+CLASS Bill 'Bill';
 
-@defineDocStatus(bill, 'счета');
+@defineDocStatus(bill, 'Bill');
 
 // type
-type 'Тип' = DATA BillType (Bill) NONULL;
-nameType 'Тип' (Bill s) = name(type(s));
+type 'Type' = DATA BillType (Bill) NONULL;
+nameType 'Type' (Bill s) = name(type(s));
 
 WHEN LOCAL SET(Bill s IS Bill) AND NOT CHANGED(type(s)) DO type(s) <- defaultBillType(); 
 
 // dateTime
-dateTime 'Дата' = DATA DATETIME (Bill) NONULL IN id;
+dateTime 'Date' = DATA DATETIME (Bill) NONULL IN id;
 WHEN LOCAL SET (Bill b IS Bill) DO dateTime(b) <- currentDateTime();
 @defineDateTimeAggregation(Bill);
 
 @defineNumberType(bill);
 
-numberDate 'Описание' (Bill b) = number(b) + ' (' + dateTime(b) + ')' IN id;
+numberDate 'Description' (Bill b) = number(b) + ' (' + dateTime(b) + ')' IN id;
 
 // vendor
-vendor 'Поставщик' = DATA Partner (Bill);
-nameVendor 'Поставщик' (Bill b) = name(vendor(b));
+vendor 'Vendor' = DATA Partner (Bill);
+nameVendor 'Vendor' (Bill b) = name(vendor(b));
 
 WHEN LOCAL SETCHANGED(type(Bill b)) AND vendor(type(b)) AND NOT CHANGED(vendor(b)) DO vendor(b) <- vendor(type(b));  
 
@@ -37,18 +37,18 @@ isVendor = ABSTRACT VALUE BOOLEAN (Bill);
 isVendor(Bill b) += isVendor(vendor(b));
 CONSTRAINT vendor(Bill b) AND NOT isVendor(b) 
                 CHECKED BY vendor[Bill]
-                MESSAGE 'Контрагент должен быть поставщиком';
+                MESSAGE 'The partner must be a vendor';
 
 // company
-company 'Компания' = DATA Company (Bill) NONULL;
-nameCompany 'Компания' (Bill b) = name(company(b));
+company 'Company' = DATA Company (Bill) NONULL;
+nameCompany 'Company' (Bill b) = name(company(b));
 WHEN LOCAL SET(Bill b IS Bill) AND NOT CHANGED(company(b)) DO company(b) <- defaultCompany(); 
 
 // payment
 paymentTerms = DATA PaymentTerm (Bill); 
-namePaymentTerms 'Условия оплаты' (Bill b) = name(paymentTerms(b));
+namePaymentTerms 'Payment terms' (Bill b) = name(paymentTerms(b));
 
-dueDateTime 'Оплатить до' = DATA DATETIME (Bill);
+dueDateTime 'Pay before' = DATA DATETIME (Bill);
 
 WHEN LOCAL CHANGED(vendor(Bill b)) AND NOT CHANGED(paymentTerms(b)) DO paymentTerms(b) <- vendorPaymentTerms(vendor(b)); 
 
@@ -57,52 +57,52 @@ WHEN LOCAL (SETCHANGED(paymentTerms(Bill b)) OR SETCHANGED(dateTime(b))) AND pay
 }
 
 // partner account
-vendorAccount 'Счет поставщика' = DATA Account (Bill);
-nameVendorAccount 'Счет поставщика' (Bill b) = name(vendorAccount(b));
+vendorAccount 'Vendor account' = DATA Account (Bill);
+nameVendorAccount 'Vendor account' (Bill b) = name(vendorAccount(b));
 WHEN LOCAL CHANGED (vendor(Bill b)) DO vendorAccount(b) <- defaultAccount(vendor(b));
 
 CONSTRAINT vendorAccount(Bill b) AND NOT vendor(b) = holder(vendorAccount(b))
     CHECKED BY vendorAccount
-    MESSAGE 'Счет должен принадлежать выбранному контрагенту';
+    MESSAGE 'The account must belong to the selected partner';
 
 // company account
-companyAccount 'Счет компании' = DATA Account (Bill);
-nameCompanyAccount 'Счет компании' (Bill b) = name(companyAccount(b));
+companyAccount 'Company account' = DATA Account (Bill);
+nameCompanyAccount 'Company account' (Bill b) = name(companyAccount(b));
 WHEN LOCAL CHANGED(company(Bill b)) DO companyAccount(b) <- defaultAccount(company(b));
 
 CONSTRAINT companyAccount(Bill b) AND NOT company(b) = holder(companyAccount(b))
     CHECKED BY companyAccount
-    MESSAGE 'Счет должен принадлежать выбранной компании';
+    MESSAGE 'The account must belong to the selected company';
 
-vendorReference 'Код поставщика' = DATA STRING[30] (Bill);
-note 'Примечание' = DATA ISTRING[50] (Bill);
+vendorReference 'Vendor reference' = DATA STRING[30] (Bill);
+note 'Note' = DATA ISTRING[50] (Bill);
 
 // lines
-CLASS BillLine 'Строка поступления';
+CLASS BillLine 'Bill line';
 
-bill 'Поступление' = DATA Bill (BillLine) NONULL DELETE;
+bill 'Bill' = DATA Bill (BillLine) NONULL DELETE;
 
 index '№' = PARTITION SUM 1 ORDER BillLine l BY bill(l) IN id MATERIALIZED CHARWIDTH 3;
 
 item '{Item}' = DATA Item (BillLine) NONULL;
 nameItem '{Item}' (BillLine l) = name(item(l)) IN id;
-idBarCodeItem 'Штрихкод' (BillLine l) = idBarCode(item(l));
-idItem 'Код' (BillLine l) = id(item(l));
+idBarCodeItem 'Barcode' (BillLine l) = idBarCode(item(l));
+idItem 'ID' (BillLine l) = id(item(l));
 
-countProductLines 'Кол-во строк с товарами' (Bill b) = GROUP SUM 1 IF bill(BillLine l) = b AND item(l) IS Product;
-countServiceLine 'Кол-во строк с услугами' (Bill b) = GROUP SUM 1 IF b = bill(BillLine bl) AND item(bl) IS Service;
+countProductLines 'Number of lines with goods' (Bill b) = GROUP SUM 1 IF bill(BillLine l) = b AND item(l) IS Product;
+countServiceLine 'Number of lines with services' (Bill b) = GROUP SUM 1 IF b = bill(BillLine bl) AND item(bl) IS Service;
 
 CONSTRAINT item(BillLine l) AND NOT canBePurchased(item(l))
             CHECKED BY item 
-            MESSAGE 'Номенклатура не предназначена для закупки';
+            MESSAGE 'The item is not intended for purchase';
 
 uom (BillLine l) = uom(item(l));
-nameUom 'Ед. изм.' (BillLine l) = name(uom(l));
+nameUom 'UoM' (BillLine l) = name(uom(l));
 
-description 'Описание' = DATA STRING (BillLine); 
+description 'Description' = DATA STRING (BillLine); 
 
-quantity 'Кол-во' = DATA NUMERIC[16,3] (BillLine) NONULL;
-price 'Цена' = DATA NUMERIC[10,2] (BillLine) NONULL;
+quantity 'Qty' = DATA NUMERIC[16,3] (BillLine) NONULL;
+price 'Price' = DATA NUMERIC[10,2] (BillLine) NONULL;
 
 defaultPrice = ABSTRACT CASE NUMERIC[10,2] (BillLine);
 WHEN LOCAL SETCHANGED(item(BillLine l)) AND NOT CHANGED(price(l)) DO price(l) <- defaultPrice(l);
@@ -114,16 +114,16 @@ defaultPrice (BillLine l) += WHEN cost(item(l), DATE(dateTime(bill(l)))) THEN co
 taxIncluded (BillLine l) += taxIncluded(type(bill(l)));
 
 // Line properties
-nameStatus 'Статус' (BillLine l) = nameStatus(bill(l));
-dateTime 'Дата' (BillLine l) = dateTime(bill(l));
-date 'Дата' (BillLine l) = date(bill(l));
-number 'Номер' (BillLine l) = number(bill(l));
-numberDate 'Описание' (BillLine l) = numberDate(bill(l));
+nameStatus 'Status' (BillLine l) = nameStatus(bill(l));
+dateTime 'Date' (BillLine l) = dateTime(bill(l));
+date 'Date' (BillLine l) = date(bill(l));
+number 'Number' (BillLine l) = number(bill(l));
+numberDate 'Description' (BillLine l) = numberDate(bill(l));
 vendor (BillLine l) = vendor(bill(l));
-nameVendor 'Поставщик' (BillLine l) = nameVendor(bill(l));
-nameCompany 'Компания' (BillLine l) = nameCompany(bill(l));
+nameVendor 'Vendor' (BillLine l) = nameVendor(bill(l));
+nameCompany 'Company' (BillLine l) = nameCompany(bill(l));
 
-FORM billLines 'Строки поступления'
+FORM billLines 'Bill lines'
     OBJECTS l = BillLine
     PROPERTIES(l) READONLY dateTime, number, index, nameItem, quantity, price
     PROPERTIES(l) NEWSESSION EDIT
@@ -133,7 +133,7 @@ FORM billLines 'Строки поступления'
 
 edit (BillLine l) + { edit(bill(l)); } 
 
-FORM bill 'Поступление'
+FORM bill 'Bill'
     OBJECTS  b = Bill PANEL 
     PROPERTIES(b) nameType, dateTime, number, 
                   nameVendor, nameCompany,
@@ -149,7 +149,7 @@ FORM bill 'Поступление'
 ;
 
 DESIGN bill {
-    caption = (CONCAT ' ', 'Поступление', '№' + number(b), '(' + dateTime(b) + ')');
+    caption = (CONCAT ' ', 'Bill', '№' + number(b), '(' + dateTime(b) + ')');
     OBJECTS {
         NEW header {
             alignment = STRETCH;    
@@ -172,7 +172,7 @@ DESIGN bill {
             fill = 5;
             type = TABBED;
             NEW lines {
-                caption = 'Строки';
+                caption = 'Lines';
                 MOVE BOX(l) { 
                     fill = 3;
                     PROPERTY(nameItem(l)) { notNull = TRUE; } 
@@ -183,11 +183,11 @@ DESIGN bill {
                 }
             }
             NEW otherInformation {
-                caption = 'Прочая информация';
+                caption = 'Other information';
                 type = COLUMNS;
                 columns = 2;
                 NEW payment {
-                    caption = 'Оплата';
+                    caption = 'Payment';
                     alignment = STRETCH;
                     MOVE PROPERTY(namePaymentTerms(b)); 
                     MOVE PROPERTY(dueDateTime(b)); 
@@ -195,7 +195,7 @@ DESIGN bill {
                     MOVE PROPERTY(nameVendorAccount(b));              
                 }           
                 NEW billInformat {
-                    caption = 'Прочие';
+                    caption = 'Others';
                     alignment = STRETCH;
                     MOVE PROPERTY(vendorReference(b)); 
                     MOVE PROPERTY(note(b));
@@ -211,11 +211,11 @@ DESIGN bill {
 }
 
 @defineDocHistory(bill, b, item, quantity);
-@defineDocSearch(bill, item, quantity, 'Кол-во', b, canBePurchased);
+@defineDocSearch(bill, item, quantity, 'Quantity', b, canBePurchased);
 @defineBarCodeSearch(bill, b, l, quantity);
 
 background = ABSTRACT CASE COLOR (Bill);
-FORM bills 'Поступления'
+FORM bills 'Bills'
     OBJECTS b = Bill BACKGROUND background(b)
     PROPERTIES(b) READONLYIF isReadonly()
                            nameType, dateTime, number, 
@@ -229,7 +229,7 @@ FORM bills 'Поступления'
 
 @extendFormEditable(bills);
 
-@defineDocObjectsForm(bills, b, 'Поступления');
+@defineDocObjectsForm(bills, b, 'Bills');
 @defineDocTaxForm(bill, b);
 @defineDocStatusForm(bill, b);
 @defineDocLinesCount(bill, b);
@@ -254,7 +254,7 @@ clone (Bill to, Bill from) + {
     }
 }
 
-copy 'Копировать' (Bill from)  { 
+copy 'Copy' (Bill from)  { 
     NEWSESSION {
         NEW to = Bill {
             clone(to, from);

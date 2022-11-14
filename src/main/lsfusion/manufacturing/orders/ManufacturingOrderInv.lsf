@@ -2,7 +2,7 @@ MODULE ManufacturingOrderInv;
 
 REQUIRE ManufacturingOrderCanceled, InvLedger;
 
-CLASS ManufacturingOrderInv 'Производство' : InvLedger;
+CLASS ManufacturingOrderInv : InvLedger;
 manILedger = AGGR ManufacturingOrderInv WHERE produced(FinishedLine line) AND item(line) IS Product;
 
 type(ManufacturingOrderInv l) += nameType(manufacturingOrder(line(l)));
@@ -18,7 +18,7 @@ number(ManufacturingOrderInv l) += number(manufacturingOrder[FinishedLine](line(
 
 edit (ManufacturingOrderInv l) + { edit(manufacturingOrder(line(l))); }
 
-CLASS ManufacturingOrderInvLedger 'Списание сырья' : InvLedger;
+CLASS ManufacturingOrderInvLedger 'Consumed materials' : InvLedger;
 manInvLedger = AGGR ManufacturingOrderInvLedger WHERE consumed(ConsumedLine line) AND item(line) IS Product;
 
 type(ManufacturingOrderInvLedger l) += nameType(manufacturingOrder(line(l)));

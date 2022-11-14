@@ -5,31 +5,31 @@ REQUIRE ShipmentCanceled, ReceiptCanceled;
 NAMESPACE Inventory;
 
 // types
-isReturn 'Возврат' = DATA BOOLEAN (ReceiptType);
+isReturn 'Return' = DATA BOOLEAN (ReceiptType);
 EXTEND FORM receiptType PROPERTIES(o) isReturn;
 
 isReturn (Receipt r) = isReturn(type(r));
 isVendor(Receipt r) += isReturn(r) AND isCustomer(vendor(r));
 
 receiptType = DATA ReceiptType (ShipmentType);
-nameReceiptType 'Тип возврата' (ShipmentType t) = name(receiptType(t));
+nameReceiptType 'Return type' (ShipmentType t) = name(receiptType(t));
 EXTEND FORM shipmentType PROPERTIES(o) nameReceiptType;
 
 // line
-@defineDocLineRelation (shipment, receipt, 'Отгрузка', 'Приемка', s, r);
+@defineDocLineRelation (shipment, receipt, 'Shipment', 'Receipt', s, r);
 
 CONSTRAINT shipmentLine(ReceiptLine l) AND NOT 
                 (customer(shipmentLine(l)) = vendor(l) AND 
                  product(shipmentLine(l)) = product(l))
     CHECKED BY shipmentLine
-    MESSAGE 'Контрагент и товар отгрузки должны совпадать с контрагентом и товаром возврата';
+    MESSAGE 'The partner and shipment item must match the partner and return item';
     
 EXTEND FORM receipt
     PROPERTIES(l) numberDateShipmentLine SHOWIF isReturn(r)
 ;
 
 // Shipment
-return 'Вернуть' (Shipment s) {    
+return 'Return' (Shipment s) {    
     NEWSESSION {
         NEW nr = Receipt {
             type(nr) <- receiptType(type(s));
@@ -58,12 +58,12 @@ DESIGN shipment {
 }
 
 // returned quantity
-returned 'Возвращено' (ShipmentLine sl) = 
+returned 'Returned' (ShipmentLine sl) = 
     GROUP SUM done(ReceiptLine rl) IF shipmentLine(rl) = sl AND active(receipt(rl)) MATERIALIZED;
 
 toReturn (ShipmentLine sl) = done(sl) - OVERRIDE returned(sl), 0;
 
-FORM shipmentReceiptShow 'Возвраты'
+FORM shipmentReceiptShow 'Refunds'
     OBJECTS sl = ShipmentLine
     
     OBJECTS rl = ReceiptLine

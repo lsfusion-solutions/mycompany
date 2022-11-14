@@ -9,92 +9,92 @@ REQUIRE Time, MetaNumerator, Employee, Company, Currency,
 
 NAMESPACE Purchase;
 
-CLASS Order 'Заказ поставщику';
+CLASS Order 'Purchase order';
 
-@defineDocStatus(order, 'заказа поставщику');
+@defineDocStatus(order, 'Purchase order');
 
 // type
-type 'Тип' = DATA OrderType (Order) NONULL;
-nameType 'Тип' (Order s) = name(type(s));
+type 'Type' = DATA OrderType (Order) NONULL;
+nameType 'Type' (Order s) = name(type(s));
 
 WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(type(o)) DO type(o) <- defaultOrderType(); 
 
-dateTime 'Дата'  = DATA DATETIME (Order);
+dateTime 'Date'  = DATA DATETIME (Order);
 WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(dateTime(o)) DO { dateTime(o) <- currentDateTime();}
 @defineDateTimeAggregation(Order);
 
 @defineNumberType(order);
 
-numberDate 'Описание' (Order o) = number(o) + ' (' + dateTime(o) + ')' IN id;
+numberDate 'Description' (Order o) = number(o) + ' (' + dateTime(o) + ')' IN id;
 
-vendor 'Поставщик' = DATA Partner (Order) NONULL;
-nameVendor 'Поставщик' (Order o) = name(vendor(o));
+vendor 'Vendor' = DATA Partner (Order) NONULL;
+nameVendor 'Vendor' (Order o) = name(vendor(o));
 
 CONSTRAINT vendor(Order o) AND NOT isVendor(vendor(o))
                 CHECKED BY vendor[Order]
-                MESSAGE 'Контрагент заказа поставщику должен быть поставщиком';
+                MESSAGE 'The partner of the purchase order  must be a vendor';
 
-addressCsvVendor 'Адрес поставщика' (Order o) = addressCsv(vendor(o));
+addressCsvVendor 'Vendor address' (Order o) = addressCsv(vendor(o));
 
 // Invoicing information
 paymentTerms = DATA PaymentTerm (Order);
-namePaymentTerms 'Условия оплаты' (Order o) = name(paymentTerms(o));
+namePaymentTerms 'Payment terms' (Order o) = name(paymentTerms(o));
 
 WHEN LOCAL CHANGED(vendor(Order o)) AND NOT CHANGED(paymentTerms(o)) DO paymentTerms(o) <- vendorPaymentTerms(vendor(o)); 
 
 // Shipping information
-scheduledDateTime 'Планируемая дата' = DATA DATETIME (Order);
+scheduledDateTime 'Scheduled date' = DATA DATETIME (Order);
 scheduledDateTime(Order o) <- currentDateTime() WHEN SET(o IS Order);   
 
 // company
-company 'Компания' = DATA Company (Order) NONULL;
-nameCompany 'Компания' (Order o) = name(company(o));
+company 'Company' = DATA Company (Order) NONULL;
+nameCompany 'Company' (Order o) = name(company(o));
 WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(company(o)) DO company(o) <- defaultCompany();
 
 // location
 location = DATA Location (Order);
-nameLocation 'Место хранения' (Order o) = name(location(o));
+nameLocation 'Location' (Order o) = name(location(o));
 
 // currency
 currency = DATA Currency (Order);
-nameCurrency 'Валюта' (Order o) = name(currency(o));
+nameCurrency 'Currency' (Order o) = name(currency(o));
 
 WHEN LOCAL SETCHANGED(type(Order o)) AND currency(type(o)) AND NOT CHANGED(currency(o)) DO currency(o) <- currency(type(o));  
 
 // Purchase information
-representative 'Наш представитель' = DATA Employee (Order);
-nameRepresentative 'Наш представитель' (Order o) = MasterData.name(representative(o));
+representative 'Our representative' = DATA Employee (Order);
+nameRepresentative 'Our representative' (Order o) = MasterData.name(representative(o));
 
 representative(Order o) <- currentUser() IF currentUser() IS Employee WHEN SET(o IS Order);
 
 CONSTRAINT representative(Order o) AND NOT legalEntity(representative(o)) = company(o) 
-    CHECKED BY representative MESSAGE 'Должен быть наш работник';
+    CHECKED BY representative MESSAGE 'There must be our worker';
 
-vendorReference 'Код поставщика' = DATA STRING[30] (Order);
+vendorReference 'Vendor reference' = DATA STRING[30] (Order);
 
 // Lines
-CLASS OrderLine 'Строка заказа';
+CLASS OrderLine 'Order line';
 order =  DATA Order (OrderLine) NONULL  DELETE;
 
 index '№' = PARTITION SUM 1 ORDER OrderLine l BY order(l) IN id MATERIALIZED CHARWIDTH 3;
 
 item = DATA Item (OrderLine) NONULL;
 nameItem '{Item}' (OrderLine l) = name(item(l));
-idBarCodeItem 'Штрихкод' (OrderLine l) = idBarCode(item(l));
-idItem 'Код' (OrderLine l) = id(item(l));
+idBarCodeItem 'Barcode' (OrderLine l) = idBarCode(item(l));
+idItem 'ID' (OrderLine l) = id(item(l));
 
 CONSTRAINT item(OrderLine l) AND NOT canBePurchased(item(l))
             CHECKED BY item[OrderLine] 
-            MESSAGE 'Номенклатура не предназначена для закупки';
+            MESSAGE 'The item is not intended for purchase';
 
-description 'Описание' = DATA ISTRING (OrderLine);
+description 'Description' = DATA ISTRING (OrderLine);
 
 uom (OrderLine l) = uom(item(l));
-nameUom 'Ед. изм.' (OrderLine l) = name(uom(l));
+nameUom 'UoM' (OrderLine l) = name(uom(l));
 
 quantity '{Quantity}' = DATA NUMERIC[16,3] (OrderLine);
 
-price 'Цена' = DATA NUMERIC[10,2] (OrderLine);
+price 'Price' = DATA NUMERIC[10,2] (OrderLine);
 
 defaultPrice = ABSTRACT CASE NUMERIC[10,2] (OrderLine);
 WHEN LOCAL SETCHANGED(item(OrderLine l)) AND NOT CHANGED(price(l)) DO price(l) <- defaultPrice(l);
@@ -109,22 +109,22 @@ WHEN LOCAL CHANGED (item(OrderLine ol)) DO {
 }
 
 // Line properties
-nameStatus 'Статус' (OrderLine l) = nameStatus(order(l)); 
+nameStatus 'Status' (OrderLine l) = nameStatus(order(l)); 
 type (OrderLine l) = type(order(l)); 
 
-dateTime 'Создан' (OrderLine l) = dateTime(order(l));
-number 'Номер' (OrderLine l) = number(order(l));
-numberDate 'Описание' (OrderLine l) = numberDate(order(l));
+dateTime 'Created by' (OrderLine l) = dateTime(order(l));
+number 'Number' (OrderLine l) = number(order(l));
+numberDate 'Description' (OrderLine l) = numberDate(order(l));
 
-location 'Место хранения' (OrderLine l) = location(order(l));
-nameLocation 'Место хранения' (OrderLine l) = location(order(l));
+location 'Location' (OrderLine l) = location(order(l));
+nameLocation 'Location' (OrderLine l) = location(order(l));
 
 vendor (OrderLine l) = vendor(order(l));
-nameVendor 'Поставщик' (OrderLine l) = nameVendor(order(l));
+nameVendor 'Vendor' (OrderLine l) = nameVendor(order(l));
 
 edit (OrderLine l) + { edit(order(l)); } 
 
-FORM order 'Заказ поставщику'
+FORM order 'Purchase order'
     OBJECTS o = Order PANEL
     PROPERTIES(o) nameType, dateTime, number, 
                   nameVendor, nameCompany, nameLocation, nameCurrency,
@@ -142,7 +142,7 @@ FORM order 'Заказ поставщику'
 ;      
 
 DESIGN order {
-    caption = (CONCAT ' ', 'Заказ поставщику', '№' + number(o), '(' + dateTime(o) + ')');
+    caption = (CONCAT ' ', 'Purchase order', '№' + number(o), '(' + dateTime(o) + ')');
     OBJECTS {
         NEW header {
             alignment = STRETCH;    
@@ -167,25 +167,25 @@ DESIGN order {
             fill = 7;
             type = TABBED;
             NEW lines {
-                caption = 'Строки';
+                caption = 'Lines';
                 MOVE BOX(l);
             }
             NEW otherInformation {
-                caption = 'Прочая информация';
+                caption = 'Other information';
                 type = COLUMNS;
                 columns = 2;
                 NEW invoicing {
-                    caption = 'Расчеты';
+                    caption = 'Invoicing';
                     alignment = STRETCH;
                     MOVE PROPERTY(namePaymentTerms(o));                         
                 }
                 NEW shippingInformation {
-                    caption = 'Поставка';
+                    caption = 'Shipping';
                     alignment = STRETCH;
                     MOVE PROPERTY(scheduledDateTime(o));
                 }
                 NEW purchaseInformation {
-                    caption = 'Прочие';
+                    caption = 'Others';
                     alignment = STRETCH;
                     MOVE PROPERTY(nameRepresentative(o));
                     MOVE PROPERTY(vendorReference(o));
@@ -196,7 +196,7 @@ DESIGN order {
             align = END;
             type = CONTAINERH; 
             NEW total {
-                caption = 'Итого';
+                caption = 'Total';
                 type = CONTAINERH;
                 MOVE PROPERTY(untaxedAmount(o));
                 MOVE PROPERTY(taxAmount(o));
@@ -209,7 +209,7 @@ DESIGN order {
 @defineDocHistory(order, o, item, quantity);
 
 background = ABSTRACT CASE COLOR (Order);
-FORM orders 'Заказы поставщикам'
+FORM orders 'Purchase orders'
     OBJECTS o = Order BACKGROUND background(o)
     PROPERTIES(o) READONLYIF isReadonly()
                            nameType, dateTime, number, nameVendor,
@@ -222,7 +222,7 @@ FORM orders 'Заказы поставщикам'
 
 @extendFormEditable(orders);
 
-@defineDocObjectsForm(orders, o, 'Заказы поставщикам');
+@defineDocObjectsForm(orders, o, 'Purchase orders');
 @defineDocStatusForm(order, o);
 @defineDocLinesCount(order, o);
 @defineDocLocationAccess(order, o);
@@ -252,7 +252,7 @@ clone (Order to, Order from) {
     }
 }
 
-copy 'Копировать' (Order from)  { 
+copy 'Copy' (Order from)  { 
     NEWSESSION {
         NEW to = Order {
             clone(to, from);

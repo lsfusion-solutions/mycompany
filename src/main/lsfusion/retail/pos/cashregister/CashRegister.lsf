@@ -6,17 +6,17 @@ REQUIRE Pos, Session, IncomingPayment, OutgoingPayment, Invoicing,
 
 NAMESPACE Retail;
 
-CLASS CashDriver 'Драйвер ККТ';
+CLASS CashDriver 'Cash driver';
 
-name 'Имя' (CashDriver d) = staticCaption(d) IF d IS CashDriver;
+name '{First_name}' (CashDriver d) = staticCaption(d) IF d IS CashDriver;
 
-driver 'Драйвер' = DATA CashDriver (Pos);
-nameDriver 'Драйвер' (Pos p) = name(driver(p));
+driver 'Driver' = DATA CashDriver (Pos);
+nameDriver 'Driver' (Pos p) = name(driver(p));
 
-dataHostname 'Хост' = DATA ISTRING[30] (Pos);
-hostname 'Хост' (Pos p) = OVERRIDE dataHostname(p), 'localhost'; 
+dataHostname 'Host' = DATA ISTRING[30] (Pos);
+hostname 'Host' (Pos p) = OVERRIDE dataHostname(p), 'localhost'; 
 
-FORM cashDrivers 'Драйверы'
+FORM cashDrivers 'Cash drivers'
     OBJECTS d = CashDriver
     PROPERTIES(d) READONLY name
     
@@ -28,14 +28,14 @@ EXTEND FORM poss PROPERTIES(p) READONLY nameDriver;
 
 session = DATA Session (Payment);
 
-openShift 'Открыть смену' ABSTRACT CASE EXCLUSIVE (Session);
-closeShift 'Закрыть смену' ABSTRACT CASE EXCLUSIVE (Session);
-cashIn 'Внесение' ABSTRACT CASE EXCLUSIVE (Payment);
-cashOut 'Выемка' ABSTRACT CASE EXCLUSIVE (Payment);
-buy 'Чек расхода' ABSTRACT CASE EXCLUSIVE (Invoice);
+openShift 'Open session' ABSTRACT CASE EXCLUSIVE (Session);
+closeShift 'Close session' ABSTRACT CASE EXCLUSIVE (Session);
+cashIn 'Cash in' ABSTRACT CASE EXCLUSIVE (Payment);
+cashOut 'Cash out' ABSTRACT CASE EXCLUSIVE (Payment);
+buy 'Cash receipt' ABSTRACT CASE EXCLUSIVE (Invoice);
 
-continuePrint 'Допечатать' ABSTRACT CASE EXCLUSIVE (Pos);
-reportX 'X-отчет' ABSTRACT CASE EXCLUSIVE (Pos);
+continuePrint 'Continue printing' ABSTRACT CASE EXCLUSIVE (Pos);
+reportX 'X-Report' ABSTRACT CASE EXCLUSIVE (Pos);
 
 afterOpen(Session s) + {openShift(s);}
 afterClose(Session s) + {closeShift(s);}
@@ -49,10 +49,10 @@ afterWithdraw(Pos p, OutgoingPayment o) + {
     cashOut(o);
 }
 
-fiscalOpenSession 'Фискальный' = DATA BOOLEAN (Session);
-fiscalCloseSession 'Фискальный' = DATA BOOLEAN (Session);
+fiscalOpenSession 'Fiscal' = DATA BOOLEAN (Session);
+fiscalCloseSession 'Fiscal' = DATA BOOLEAN (Session);
 
-refiscalSession 'Фискализировать' (Session s) {
+refiscalSession 'Fiscalize' (Session s) {
     IF fiscalOpenSession(s) AND NOT fiscalCloseSession(s) AND closingDateTime(s) THEN
         closeShift(s);
     ELSE

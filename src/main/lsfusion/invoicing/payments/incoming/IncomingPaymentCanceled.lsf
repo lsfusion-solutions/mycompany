@@ -5,15 +5,15 @@ REQUIRE IncomingPaymentDone;
 NAMESPACE Invoicing;
     
 EXTEND CLASS IncomingPaymentStatus {
-    canceled 'Отменен'
+    canceled 'Cancelled'
 }
-canceled 'Отменен' = DATA BOOLEAN (IncomingPayment);
-active 'Активен' (IncomingPayment s) = done(s) AND NOT canceled(s);
+canceled 'Cancelled' = DATA BOOLEAN (IncomingPayment);
+active 'Active' (IncomingPayment s) = done(s) AND NOT canceled(s);
 
 status(IncomingPayment s) += WHEN canceled(s) THEN IncomingPaymentStatus.canceled;
 colorStatus(IncomingPayment s) += WHEN status(s) = IncomingPaymentStatus.canceled THEN RGB(181,195,247);
 
-cancel 'Отменить' (IncomingPayment s) {
+cancel 'Cancel' (IncomingPayment s) {
     APPLY; 
     IF canceled() THEN RETURN;
            
@@ -38,5 +38,5 @@ DESIGN incomingPayment {
 
 EXTEND FORM incomingPayments    
     EXTEND FILTERGROUP status
-        FILTER 'Отменен' status(p) = IncomingPaymentStatus.canceled    
+        FILTER 'Cancelled' status(p) = IncomingPaymentStatus.canceled    
 ;

@@ -4,24 +4,24 @@ REQUIRE Numerator, InvoicingSettings, BankAccount, CashAccount;
 
 NAMESPACE Invoicing;
 
-CLASS OutgoingPaymentType 'Тип исходящего платежа';
-name 'Название' = DATA ISTRING[50] (OutgoingPaymentType) NONULL;
+CLASS OutgoingPaymentType 'Outgoing payment type';
+name 'Name' = DATA ISTRING[50] (OutgoingPaymentType) NONULL;
 
-id 'Код' = DATA STRING[20] (OutgoingPaymentType);
+id 'ID' = DATA STRING[20] (OutgoingPaymentType);
 outgoingPaymentType = GROUP AGGR OutgoingPaymentType t BY id(t);
 
-interpay 'Внутренний платеж' = DATA BOOLEAN (OutgoingPaymentType);
+interpay 'Internal payment' = DATA BOOLEAN (OutgoingPaymentType);
 
-cash 'Касса' = DATA BOOLEAN (OutgoingPaymentType);
-bank 'Банковский счет' = DATA BOOLEAN (OutgoingPaymentType);
+cash 'Cash account' = DATA BOOLEAN (OutgoingPaymentType);
+bank 'Bank account' = DATA BOOLEAN (OutgoingPaymentType);
 
 CONSTRAINT OutgoingPaymentType t IS OutgoingPaymentType AND NOT cash(t) AND NOT bank(t)
-    MESSAGE 'Должен быть разрешен хотя бы один вид счета';
+    MESSAGE 'At least one account type must be allowed';
 
-numerator 'Нумератор' = DATA Numerator (OutgoingPaymentType);
-nameNumerator 'Нумератор' (OutgoingPaymentType o) = name(numerator(o));
+numerator 'Numerator' = DATA Numerator (OutgoingPaymentType);
+nameNumerator 'Numerator' (OutgoingPaymentType o) = name(numerator(o));
 
-FORM outgoingPaymentType 'Тип исходящего платежа'
+FORM outgoingPaymentType 'Outgoing payment type'
     OBJECTS o = OutgoingPaymentType PANEL 
     PROPERTIES(o) name, id, nameNumerator,
                   interpay, cash, bank
@@ -32,7 +32,7 @@ FORM outgoingPaymentType 'Тип исходящего платежа'
 DESIGN outgoingPaymentType {
     OBJECTS {
         NEW typeAcoount {
-            caption = 'Разрешенные типы счетов';
+            caption = 'Allowed account types';
             type = CONTAINERH;
             MOVE PROPERTY(cash(o));
             MOVE PROPERTY(bank(o));
@@ -44,7 +44,7 @@ DESIGN outgoingPaymentType {
     }   
 }
 
-FORM outgoingPaymentTypes 'Типы исходящих платежей'
+FORM outgoingPaymentTypes 'Types of outgoing payments'
     OBJECTS o = OutgoingPaymentType
     PROPERTIES(o) READONLY name, id
     

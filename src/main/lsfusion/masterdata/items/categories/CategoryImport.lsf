@@ -4,12 +4,12 @@ REQUIRE Category;
 
 NAMESPACE MasterData;
 
-categoryExport 'Экспорт категорий' () {
+categoryExport 'Export categories' () {
     NEWSESSION {
         IF NOT (GROUP SUM 1 IF Category c AND c IS Category) THEN {
             NEW c = Category {
                 id(c) <- '123';
-                name(c) <- 'Моя категория';
+                name(c) <- 'My category';
             }
         }
         LOCAL f = EXCELFILE ();
@@ -18,7 +18,7 @@ categoryExport 'Экспорт категорий' () {
     }
 }
 
-categoryImport 'Импорт категорий' () {
+categoryImport 'Import categories' () {
     LOCAL id = STRING[50] (INTEGER);
     LOCAL name = ISTRING[50] (INTEGER);
     LOCAL parent = ISTRING[50] (INTEGER);
@@ -35,7 +35,7 @@ categoryImport 'Импорт категорий' () {
                 parent(c) <- category(parent(i));
             }
             APPLY;
-            MESSAGE 'Импорт завершен';
+            MESSAGE 'Import completed';
         }
     }
 }
@@ -48,7 +48,7 @@ DESIGN migrationData {
     commons {
         NEW category {
             type = CONTAINERH;
-            caption = 'Категории';
+            caption = 'Categories';
             MOVE PROPERTY(categoryImport());
             MOVE PROPERTY(categoryExport());
         }

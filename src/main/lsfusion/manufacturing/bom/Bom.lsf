@@ -4,24 +4,24 @@ REQUIRE Product, Company, ManufacturingSettings, MetaNumerator, BarCode;
 
 NAMESPACE Manufacturing;
 
-CLASS Bom 'Спецификация';
+CLASS Bom 'Bill of Materials';
 
-@defineNumber(bom, 'Спецификации', 'СП');
+@defineNumber(bom, 'Bills of Materials', 'SP');
 bom (STRING[50] id) = GROUP AGGR Bom b BY number(b);
 
-name 'Название' = DATA ISTRING[50] (Bom);
-description 'Описание' (Bom b) = CONCAT ' ', name(b), number(b) IN id;
+name 'Name' = DATA ISTRING[50] (Bom);
+description 'Description' (Bom b) = CONCAT ' ', name(b), number(b) IN id;
 
-archived 'Неактивная' = DATA BOOLEAN (Bom);
-active 'Активная' (Bom b) = NOT archived(b);
+archived 'Inactive' = DATA BOOLEAN (Bom);
+active 'Active' (Bom b) = NOT archived(b);
 
 item '{Item}' = DATA Item (Bom) NONULL DELETE;
 nameItem '{Item}' (Bom b) = name(item(b));
 
-quantity 'Кол-во' = DATA NUMERIC[16,3] (Bom) NONULL;
+quantity 'Qty' = DATA NUMERIC[16,3] (Bom) NONULL;
 
 uom (Bom b) = uom(item(b));
-nameUom 'Ед. изм.' (Bom b) = name(uom(b));
+nameUom 'UoM' (Bom b) = name(uom(b));
 
 // default
 dataDefaultBom = DATA Bom (Item);
@@ -29,59 +29,59 @@ calcDefaultBom (Item i) = GROUP LAST Bom b ORDER DESC b WHERE active(b) AND item
 defaultBom (Item i) = OVERRIDE dataDefaultBom(i), calcDefaultBom(i);  
 
 CONSTRAINT defaultBom(Item i) AND NOT item(defaultBom(i)) = i
-    MESSAGE 'Номенклатура спецификации по умолчанию должна совпадать с номенклатурой';
+    MESSAGE 'The default BOM item must match the item';
 WHEN DROPPED(item(defaultBom(Item i)) = i) DO dataDefaultBom(i) <- NULL;
 
 CONSTRAINT dataDefaultBom(Item i) AND archived(dataDefaultBom(i))
-    MESSAGE 'Спецификация по умолчанию должна быть активной';
+    MESSAGE 'The default spec should be active';
 
-default 'По умолчанию' (Bom b) = defaultBom(item(b)) = b;
+default 'Default' (Bom b) = defaultBom(item(b)) = b;
 changeDefault (Bom b) {
     INPUT l = BOOLEAN DO
         dataDefaultBom(Item i) <- b IF l WHERE i = item(b);
 }
 
 // lines
-CLASS ComponentLine 'Строка компонентов';
+CLASS ComponentLine 'Component line';
 
-bom 'Спецификация' = DATA Bom (ComponentLine) NONULL DELETE;
+bom 'Bill of Materials' = DATA Bom (ComponentLine) NONULL DELETE;
 
 index '№' = PARTITION SUM 1 ORDER ComponentLine l BY bom(l) IN id MATERIALIZED CHARWIDTH 3;
 
 item '{Item}' = DATA Item (ComponentLine);
 nameItem '{Item}' (ComponentLine l) = name(item(l));
-idBarCodeItem 'Штрихкод' (ComponentLine l) = idBarCode(item(l));
-idItem 'Код' (ComponentLine l) = id(item(l));
+idBarCodeItem 'Barcode' (ComponentLine l) = idBarCode(item(l));
+idItem 'ID' (ComponentLine l) = id(item(l));
 
 uom (ComponentLine l) = uom(item(l));
-nameUom 'Ед. изм.' (ComponentLine l) = name(uom(l));
+nameUom 'UoM' (ComponentLine l) = name(uom(l));
 
-quantity 'Кол-во' = DATA NUMERIC[16,3] (ComponentLine);
+quantity 'Qty' = DATA NUMERIC[16,3] (ComponentLine);
 
-costRatio 'Доля стоимости' = DATA NUMERIC[5,2] (ComponentLine);
+costRatio 'Cost ratio' = DATA NUMERIC[5,2] (ComponentLine);
 
-countComponentLine 'Компонентов' (Bom b) = GROUP SUM 1 IF bom(ComponentLine l) = b MATERIALIZED;
+countComponentLine 'Components' (Bom b) = GROUP SUM 1 IF bom(ComponentLine l) = b MATERIALIZED;
 
 // byproduct
-CLASS ByproductLine 'Строка производных номенклатур';
+CLASS ByproductLine 'Byproduct line';
 
-bom 'Спецификация' = DATA Bom (ByproductLine) NONULL DELETE;
+bom 'Bill of Materials' = DATA Bom (ByproductLine) NONULL DELETE;
 
 index '№' = PARTITION SUM 1 ORDER ByproductLine l BY bom(l) IN id MATERIALIZED CHARWIDTH 3;
 
-product 'Товар' = DATA Product (ByproductLine);
-nameProduct 'Товар' (ByproductLine l) = name(product(l));
-idBarCodeProduct 'Штрихкод' (ByproductLine l) = idBarCode(product(l));
-idProduct 'Код' (ByproductLine l) = id(product(l));
+product 'Product' = DATA Product (ByproductLine);
+nameProduct 'Product' (ByproductLine l) = name(product(l));
+idBarCodeProduct 'Barcode' (ByproductLine l) = idBarCode(product(l));
+idProduct 'ID' (ByproductLine l) = id(product(l));
 
 uom (ByproductLine l) = uom(product(l));
-nameUom 'Ед. изм.' (ByproductLine l) = name(uom(l));
+nameUom 'UoM' (ByproductLine l) = name(uom(l));
 
-quantity 'Кол-во' = DATA NUMERIC[16,3] (ByproductLine);
+quantity 'Qty' = DATA NUMERIC[16,3] (ByproductLine);
 
-countByproductLine 'Отходы' (Bom b) = GROUP SUM 1 IF bom(ByproductLine l) = b MATERIALIZED;
+countByproductLine 'Byproducts' (Bom b) = GROUP SUM 1 IF bom(ByproductLine l) = b MATERIALIZED;
 
-FORM bom 'Спецификация'
+FORM bom 'Bill of Materials'
     OBJECTS b = Bom PANEL 
     PROPERTIES(b) number, nameItem, quantity, nameUom, name, 
                   default ON CHANGE changeDefault(b), archived
@@ -98,10 +98,10 @@ FORM bom 'Спецификация'
 ;
 
 DESIGN bom {
-    caption = (CONCAT ' ', 'Спецификация', '№' + number(b));
+    caption = (CONCAT ' ', 'Bill of Materials', '№' + number(b));
     OBJECTS {
         NEW actions {
-            caption = 'Действия';
+            caption = 'Actions';
             type = CONTAINERH;
             alignment = STRETCH;
         }
@@ -127,24 +127,24 @@ DESIGN bom {
             fill = 1;
             type = TABBED;
             NEW components {
-                caption = 'Компоненты';
+                caption = 'Components';
                 MOVE BOX(c);
             }
             NEW byproducts {
-                caption = 'Отходы';
+                caption = 'Byproducts';
                 MOVE BOX(l);
             }
         }
     }
 }
 
-FORM boms 'Спецификации'
+FORM boms 'Bills of Materials'
     OBJECTS b = Bom
     PROPERTIES(b) READONLY number, nameItem, quantity, nameUom, name, archived, countComponentLine, countByproductLine
     PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE
     
     FILTERGROUP active
-        FILTER 'Активные' active(b) DEFAULT
+        FILTER 'Active' active(b) DEFAULT
     
     LIST Bom OBJECT b
 ;
@@ -155,7 +155,7 @@ NAVIGATOR {
     }
 }
 
-FORM dialogItemBoms 'Выбор спецификации'
+FORM dialogItemBoms 'Select Bill of Materials'
     OBJECTS i = Item PANEL
     
     OBJECTS b = Bom
@@ -168,7 +168,7 @@ FORM dialogItemBoms 'Выбор спецификации'
 extraCopy ABSTRACT (Bom, Bom);
 extraCopy ABSTRACT (ComponentLine, ComponentLine);
 
-copy 'Копировать' (Bom b) {
+copy 'Copy' (Bom b) {
     NEWSESSION {
         NEW nb = Bom {
             name(nb) <- name(b);

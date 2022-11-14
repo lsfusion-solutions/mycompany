@@ -4,7 +4,7 @@ REQUIRE ItemUom;
 
 NAMESPACE MasterData;
 
-itemUomExport 'Экспорт соотношений единиц измерений' () {
+itemUomExport 'Export unit ratios' () {
     NEWSESSION {
         LOCAL f = EXCELFILE ();
         EXPORT XLSX HEADER FROM
@@ -15,7 +15,7 @@ itemUomExport 'Экспорт соотношений единиц измерен
     }
 }
 
-itemUomImport 'Импорт соотношений единиц измерений' () {
+itemUomImport 'Import unit ratios' () {
     LOCAL idItem = STRING[50] (INTEGER);
     LOCAL idUom = STRING[50] (INTEGER);
     LOCAL ratio = NUMERIC[20,10] (INTEGER);
@@ -25,12 +25,12 @@ itemUomImport 'Импорт соотношений единиц измерени
             IMPORT XLS HEADER FROM f TO idItem = A, idUom = B, ratio = C; 
 
             FOR [GROUP SUM 1 BY idItem(INTEGER i)](STRING num) AND NOT item(num) DO {
-                MESSAGE 'Отсутствует номенклатура в базе данных с кодом ' + num + '. Импорт отменен';
+                MESSAGE 'Missing item in database with code' + ' ' + num + '... Import canceled';
                 RETURN;
             }  
 
             FOR [GROUP SUM 1 BY idUom(INTEGER i)](STRING num) AND NOT item(num) DO {
-                MESSAGE 'Отсутствует единица измерения в базе данных с кодом ' + num + '. Импорт отменен';
+                MESSAGE 'Unit of measure is missing in the database with code' + ' ' + num + '... Import canceled';
                 RETURN;
             }  
             
@@ -38,7 +38,7 @@ itemUomImport 'Импорт соотношений единиц измерени
                 ratio(i, u) <- ratio(j);
             
             APPLY;
-            MESSAGE 'Импорт завершен';
+            MESSAGE 'Import completed';
         }
     }    
 }
@@ -51,7 +51,7 @@ DESIGN migrationData {
     commons {
         NEW attribute {
             type = CONTAINERH;
-            caption = 'Соотношения единиц измерений';
+            caption = 'Unit ratios';
             MOVE PROPERTY(itemUomExport());
             MOVE PROPERTY(itemUomImport());
         }

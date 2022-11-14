@@ -28,7 +28,7 @@ matches (Discount d, SalesDiscountLine l) =
     NOT fromAccumulated(d) > prevTotalSoldAmount(customer(l)) AND
     NOT fromAccumulatedPreviousMonth(d) > (OVERRIDE prevSoldAmountPreviousMonth(customer(l)), 0.0) COMPLEX;
 
-discountPrice 'Цена со скидкой' (Discount d, SalesDiscountLine l) =
+discountPrice 'Discount price' (Discount d, SalesDiscountLine l) =
     IF priceType(d) THEN priceA(priceType(d), item(l), dateTime(l)) ELSE NUMERIC[10,2](price(l) * (100.0 - discount(d)) / 100.0); 
     
 minSalesDiscountAuto (SalesDiscountLine l) =
@@ -36,7 +36,7 @@ minSalesDiscountAuto (SalesDiscountLine l) =
 
 // manual select
 
-FORM selectDiscount 'Выбор скидки'
+FORM selectDiscount 'Discount selection'
     OBJECTS l = SalesDiscountLine PANEL
     
     OBJECTS d = Discount
@@ -67,7 +67,7 @@ META defineDocSalesDiscountLine (doc, caption, NS)
     
     amount(###doc##Line l) += fullAmount(doc(l));
     
-    noRecalcDiscountAuto###doc 'Не рассчитывать автоматически скидки в '##caption = DATA BOOLEAN () PREREAD;
+    noRecalcDiscountAuto###doc 'Do not automatically calculate discounts in '##caption = DATA BOOLEAN () PREREAD;
     EXTEND FORM options PROPERTIES() noRecalcDiscountAuto###doc;
     
     WHEN LOCAL (CHANGED(dateTime(###doc##Line l)) OR CHANGED(quantity(l)) OR CHANGED(fullAmount(doc(l))) OR 
@@ -75,7 +75,7 @@ META defineDocSalesDiscountLine (doc, caption, NS)
                 NOT noRecalcDiscountAuto###doc() AND NOT manual(salesDiscount(l)) DO
         salesDiscount(l) <- minSalesDiscountAuto(l);
     
-    recalcDiscountAuto 'Рассчитать скидки' (###doc d) {
+    recalcDiscountAuto 'Calculate discounts' (###doc d) {
         salesDiscount(###doc##Line l) <- minSalesDiscountAuto(l) WHERE doc(l) = d AND NOT manual(salesDiscount(l));
     }
 END

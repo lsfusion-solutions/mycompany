@@ -5,14 +5,14 @@ REQUIRE Bill, BillSelection;
 NAMESPACE Invoicing;
 
 EXTEND CLASS BillStatus {
-    ready 'К оплате'
+    ready 'To pay'
 }
-ready 'К оплате' = DATA BOOLEAN (Bill);
+ready 'To pay' = DATA BOOLEAN (Bill);
 
 status(Bill b) += WHEN ready(b) THEN BillStatus.ready;
 colorStatus(Bill b) += WHEN status(b) = BillStatus.ready THEN RGB(252,247,149);
 
-markAsToDo 'В работу' (Bill b) {
+markAsToDo 'Mark as Todo' (Bill b) {
     APPLY; 
     IF canceled() THEN RETURN;
         
@@ -37,7 +37,7 @@ DESIGN bill {
 
 EXTEND FORM bills    
     EXTEND FILTERGROUP status
-        FILTER 'В работе' status(b) = BillStatus.ready    
+        FILTER 'Ready' status(b) = BillStatus.ready    
 ;
 
-@defineSelectionAction(bills, Bill, markAsToDo, 'В работу', statuses);
+@defineSelectionAction(bills, Bill, markAsToDo, 'Mark as Todo', statuses);

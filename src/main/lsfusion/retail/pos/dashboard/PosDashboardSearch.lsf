@@ -5,10 +5,10 @@ REQUIRE PosDashboard,
 
 NAMESPACE Retail;
 
-filterName 'Наименование' = DATA LOCAL ISTRING (); 
-filterPrice 'Цена' = DATA LOCAL NUMERIC[14,2] ();
+filterName 'Name' = DATA LOCAL ISTRING (); 
+filterPrice 'Price' = DATA LOCAL NUMERIC[14,2] ();
 
-selectPosSearch 'Выбрать' (Invoice i, Item it) {
+selectPosSearch 'Select' (Invoice i, Item it) {
     setQuantity(i, it, 1);
     SEEK posDashboard.l = lastInvoiceLine(i, it);
 } CHANGEMOUSE 'DBLCLK';
@@ -32,13 +32,13 @@ EXTEND FORM posDashboard
             overListPrice(i, it) = filterPrice() OR NOT filterPrice()
 
     FILTERGROUP searchFilter
-        FILTER 'В чеке' quantity(i, it) 'shift F10'
+        FILTER 'In check' quantity(i, it) 'shift F10'
 ;
 
 DESIGN posDashboard {
     tabPane {
         NEW search FIRST {
-            caption = 'Поиск';
+            caption = 'Search';
             showIf = openedSession(p) AND NOT hideInvoice();
             NEW filters {
                 type = CONTAINERH;

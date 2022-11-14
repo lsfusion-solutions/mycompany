@@ -7,104 +7,104 @@ REQUIRE Time, MetaNumerator, Employee, Company, DateUtils,
 
 NAMESPACE Sales;
 
-CLASS Order 'Заказ покупателя';
+CLASS Order 'Customer order';
 
-@defineDocStatus(order, 'заказа покупателя');
+@defineDocStatus(order, 'Customer order');
 
 // type
-type 'Тип' = DATA OrderType (Order) NONULL;
-nameType 'Тип' (Order s) = name(type(s));
+type 'Type' = DATA OrderType (Order) NONULL;
+nameType 'Type' (Order s) = name(type(s));
 
 WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(type(o)) DO type(o) <- defaultOrderType(); 
 
-dateTime 'Дата' = DATA DATETIME (Order);
+dateTime 'Date' = DATA DATETIME (Order);
 dateTime(Order o) <- currentDateTime() WHEN SET(o IS Order);
 @defineDateTimeAggregation(Order);
 
 @defineNumberType(order);
 
-numberDate 'Описание' (Order o) = number(o) + ' (' + dateTime(o) + ')' IN id;
+numberDate 'Description' (Order o) = number(o) + ' (' + dateTime(o) + ')' IN id;
 
 // customer
-customer 'Покупатель' = DATA Partner (Order) NONULL;
-nameCustomer 'Покупатель' (Order o) = name(customer(o));
-addressCsvCustomer 'Адрес покупателя' (Order o) = addressCsv(customer(o));
+customer 'Customer' = DATA Partner (Order) NONULL;
+nameCustomer 'Customer' (Order o) = name(customer(o));
+addressCsvCustomer 'Customer address' (Order o) = addressCsv(customer(o));
 
 CONSTRAINT customer(Order o) AND NOT isCustomer(customer(o))
                 CHECKED BY customer[Order]
-                MESSAGE 'Контрагент заказа покупателя должен быть покупателем';
+                MESSAGE 'The partner of the buyer\'s order must be the buyer';
 
 @defineDocDepartment(order, customer);
 
 // Quotation
-validity 'Срок действия' = DATA DATETIME (Order);
+validity 'Validity' = DATA DATETIME (Order);
 
 // Invoicing information
 paymentTerms = DATA PaymentTerm (Order);
-namePaymentTerms 'Условия оплаты' (Order o)= name(paymentTerms(o));
+namePaymentTerms 'Payment terms' (Order o)= name(paymentTerms(o));
 
 WHEN LOCAL CHANGED(customer(Order o)) AND NOT CHANGED(paymentTerms(o)) DO paymentTerms(o) <- customerPaymentTerms(customer(o)); 
 
 // company
-company 'Компания' = DATA Company (Order) NONULL;
-nameCompany 'Компания' (Order o) = name(company(o));
+company 'Company' = DATA Company (Order) NONULL;
+nameCompany 'Company' (Order o) = name(company(o));
 WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(company(o)) DO company(o) <- defaultCompany();
 
 // Shipping information
-scheduledDateTime 'Планируемая дата' = DATA DATETIME (Order);
+scheduledDateTime 'Scheduled date' = DATA DATETIME (Order);
 scheduledDateTime(Order o) <- currentDateTime() WHEN SET(o IS Order);
 
-scheduledDate 'Дата поставки' (Order o) = DATE(scheduledDateTime(o));
+scheduledDate 'Date of delivery' (Order o) = DATE(scheduledDateTime(o));
 
-deliveryAddress 'Адрес доставки' = DATA STRING (Order) CHARWIDTH 20;
+deliveryAddress 'Delivery address' = DATA STRING (Order) CHARWIDTH 20;
 WHEN LOCAL (CHANGED(customer(Order o)) OR CHANGED(department(o))) AND NOT CHANGED(deliveryAddress(o)) DO 
     deliveryAddress(o) <- OVERRIDE addressCsv(department(o)), addressCsvCustomer(o);
 
 // location
 location = DATA Location (Order) PREREAD;
-nameLocation 'Место хранения' (Order o) = name(location(o));
+nameLocation 'Location' (Order o) = name(location(o));
 
 // currency
 currency = DATA Currency (Order);
-nameCurrency 'Валюта' (Order o) = name(currency(o));
+nameCurrency 'Currency' (Order o) = name(currency(o));
 
 WHEN LOCAL SETCHANGED(type(Order o)) AND currency(type(o)) AND NOT CHANGED(currency(o)) DO currency(o) <- currency(type(o));  
 
 // Sales information
-representative 'Наш представитель' = DATA Employee (Order);
-nameRepresentative 'Наш представитель' (Order o)= MasterData.name(representative(o));
+representative 'Our representative' = DATA Employee (Order);
+nameRepresentative 'Our representative' (Order o)= MasterData.name(representative(o));
 
 representative(Order o) <- currentUser() IF currentUser() IS Employee WHEN SET(o IS Order);
 
 CONSTRAINT representative(Order o) AND NOT legalEntity(representative(o)) = company(o) 
-    CHECKED BY representative MESSAGE 'Должен быть наш работник';
+    CHECKED BY representative MESSAGE 'There must be our worker';
 
-customerReference 'Код покупателя' = DATA STRING[30] (Order);
+customerReference '{Customer_reference}' = DATA STRING[30] (Order);
 
 // Lines
-CLASS OrderLine 'Строка заказа';
+CLASS OrderLine 'Order line';
 order =  DATA Order (OrderLine) NONULL DELETE;
 
 index '№' = PARTITION SUM 1 ORDER OrderLine l BY order(l) IN id MATERIALIZED CHARWIDTH 3;
 
 item = DATA Item (OrderLine) NONULL;
 nameItem '{Item}' (OrderLine l) = name(item(l));
-idBarCodeItem 'Штрихкод' (OrderLine l) = idBarCode(item(l));
-idItem 'Код' (OrderLine l) = id(item(l));
-isService 'Услуга' (OrderLine l) = item(l) IS Service;
+idBarCodeItem 'Barcode' (OrderLine l) = idBarCode(item(l));
+idItem 'ID' (OrderLine l) = id(item(l));
+isService 'Service' (OrderLine l) = item(l) IS Service;
 
 CONSTRAINT item(OrderLine l) AND NOT canBeSold(item(l))
             CHECKED BY item[OrderLine] 
-            MESSAGE 'Номенклатура не предназначена для продажи';
+            MESSAGE 'The item is not for sale';
 
-description 'Описание' = DATA ISTRING (OrderLine) CHARWIDTH 20;
+description 'Description' = DATA ISTRING (OrderLine) CHARWIDTH 20;
 
 uom (OrderLine l) = uom(item(l));
-nameUom 'Ед. изм.' (OrderLine l) = name(uom(l));
+nameUom 'UoM' (OrderLine l) = name(uom(l));
 
 quantity '{Quantity}' = DATA NUMERIC[16,3] (OrderLine);
 
-price 'Цена' = DATA NUMERIC[10,2] (OrderLine);
+price 'Price' = DATA NUMERIC[10,2] (OrderLine);
 
 defaultPrice = ABSTRACT CASE NUMERIC[10,2] (OrderLine);
 WHEN LOCAL SETCHANGED(item(OrderLine l)) AND NOT CHANGED(price(l)) DO price(l) <- defaultPrice(l);
@@ -121,21 +121,21 @@ WHEN LOCAL CHANGED(item(OrderLine ol)) DO {
 }
 
 // Line properties
-nameStatus 'Статус' (OrderLine l) = nameStatus(order(l));
+nameStatus 'Status' (OrderLine l) = nameStatus(order(l));
 type (OrderLine l) = type(order(l)); 
-dateTime 'Дата' (OrderLine l) = dateTime(order(l));
-date 'Дата' (OrderLine l) = date(order(l));
-number 'Номер' (OrderLine l) = number(order(l));
-numberDate 'Описание' (OrderLine l) = numberDate(order(l));
-nameLocation 'Место хранения' (OrderLine l) = nameLocation(order(l));
+dateTime 'Date' (OrderLine l) = dateTime(order(l));
+date 'Date' (OrderLine l) = date(order(l));
+number 'Number' (OrderLine l) = number(order(l));
+numberDate 'Description' (OrderLine l) = numberDate(order(l));
+nameLocation 'Location' (OrderLine l) = nameLocation(order(l));
 
 customer (OrderLine l) = customer(order(l));
-nameCustomer 'Заказчик' (OrderLine l) = nameCustomer(order(l));
+nameCustomer 'Customer' (OrderLine l) = nameCustomer(order(l));
 
 currency (OrderLine l) = currency(order(l));
-nameCurrency 'Валюта' (OrderLine l) = nameCurrency(order(l));
+nameCurrency 'Currency' (OrderLine l) = nameCurrency(order(l));
 
-FORM order 'Заказ покупателя'
+FORM order 'Customer order'
     OBJECTS o = Order PANEL
     PROPERTIES(o) nameType, dateTime, number, 
                   nameCustomer, nameDepartment SHOWIF countDepartment(customer(o)), 
@@ -155,7 +155,7 @@ FORM order 'Заказ покупателя'
 ;      
 
 DESIGN order {
-    caption = (CONCAT ' ', 'Заказ покупателя', '№' + number(o), '(' + dateTime(o) + ')');
+    caption = (CONCAT ' ', 'Customer order', '№' + number(o), '(' + dateTime(o) + ')');
     OBJECTS {
         NEW header {
             alignment = STRETCH;   
@@ -181,34 +181,34 @@ DESIGN order {
             fill = 7;
             type = TABBED;
             NEW lines {
-                caption = 'Строки';
+                caption = 'Lines';
                 MOVE BOX(l) {
                     PROPERTY(nameItem(l)) { notNull = TRUE; }
                 }
             }
             NEW otherInformation {
-                caption = 'Прочая информация';
+                caption = 'Other information';
                 type = COLUMNS;
                 columns = 2;
                 NEW quotation {
-                    caption = 'Запрос предложений';
+                    caption = 'Quotation';
                     alignment = STRETCH;
                     MOVE PROPERTY(validity(o));
                 }
                 NEW invoicing {
-                    caption = 'Расчеты';
+                    caption = 'Invoicing';
                     alignment = STRETCH;
                     MOVE PROPERTY(namePaymentTerms(o));                         
                     MOVE PROPERTY(addressCsvCustomer(o));
                 }
                 NEW shippingInformation {
-                    caption = 'Поставка';
+                    caption = 'Shipping';
                     alignment = STRETCH;
                     MOVE PROPERTY(scheduledDateTime(o));
                     MOVE PROPERTY(deliveryAddress(o));
                 }
                 NEW salesInformation {
-                    caption = 'Прочие';
+                    caption = 'Others';
                     alignment = STRETCH;
                     MOVE PROPERTY(nameRepresentative(o));                                       
                     MOVE PROPERTY(customerReference(o));               
@@ -219,7 +219,7 @@ DESIGN order {
             align = END;
             type = CONTAINERH; 
             NEW total {
-                caption = 'Итого';
+                caption = 'Total';
                 type = CONTAINERH;
                 MOVE PROPERTY(untaxedAmount(o));
                 MOVE PROPERTY(taxAmount(o));
@@ -233,7 +233,7 @@ DESIGN order {
 @defineDocDiscountForm(order);
 
 background = ABSTRACT CASE COLOR (Order);
-FORM orders 'Заказы покупателей'
+FORM orders 'Customer orders'
      OBJECTS o = Order BACKGROUND background(o)
      PROPERTIES(o) READONLYIF isReadonly()
                             nameType, dateTime, number, nameCustomer, nameDepartment,
@@ -248,7 +248,7 @@ FORM orders 'Заказы покупателей'
 
 @extendFormEditable(orders);
 
-@defineDocObjectsForm(orders, o, 'Заказы покупателей');
+@defineDocObjectsForm(orders, o, 'Customer orders');
 @defineDocStatusForm(order, o);
 @defineDocLinesCount(order, o);
 @defineDocLocationAccess(order, o);
@@ -278,7 +278,7 @@ clone (Order to, Order from) {
     }
 }
 
-copy 'Копировать' (Order from)  { 
+copy 'Copy' (Order from)  { 
     NEWSESSION {
         NEW to = Order {
             clone(to, from);

@@ -11,7 +11,7 @@ NAMESPACE Sales;
 @defineChangeInput(location, Order, Location, dialogLocationsMobile, l);
 @defineChangeInput(item, OrderLine, Item, dialogItemsMobile, i);
 
-FORM orderMobile 'Заказ мобильный'
+FORM orderMobile 'Mobile order'
     OBJECTS o = Order PANEL
     PROPERTIES(o) nameType, dateTime, number, 
                   nameCustomer ON CHANGE changeCustomer(o), 
@@ -22,10 +22,10 @@ FORM orderMobile 'Заказ мобильный'
     
     OBJECTS l = OrderLine
     PROPERTIES(l) nameItem ON CHANGE changeItem(l) 
-    PROPERTIES(l) 'Кол-во' = quantity, price, NEW, DELETE
+    PROPERTIES(l) 'Qty' = quantity, price, NEW, DELETE
     PROPERTIES(l) PANEL SHOWIF pack(type(o))
-                  'Мест' = packQuantity ON CHANGE changePackQuantity(l),
-                  'В месте' = packRatio READONLY
+                  'Packs' = packQuantity ON CHANGE changePackQuantity(l),
+                  'Packing' = packRatio READONLY
     PROPERTIES(l) PANEL nameSalesDiscount, '' = discount, '' = discountPrice
     PROPERTIES(l) PANEL READONLY idItem, idBarCodeItem,
                                  nameUom, taxes, '{Amount}' = amount
@@ -33,14 +33,14 @@ FORM orderMobile 'Заказ мобильный'
 ;
 
 DESIGN orderMobile {
-    caption = (CONCAT ' ', 'Заказ', '№' + number(o));
+    caption = (CONCAT ' ', 'Order', '№' + number(o));
     
     OBJECTS {
         NEW pane {
             type = TABBED;
             fill = 1;
             NEW params {
-                caption = 'Параметры';
+                caption = 'Parameters';
                 MOVE PROPERTY(nameType(o)) { alignment = STRETCH; }
                 NEW id {
                     type = CONTAINERH;
@@ -70,7 +70,7 @@ DESIGN orderMobile {
                 MOVE TOOLBARBOX;
             }
             NEW lines {
-                caption = CONCAT ' ', 'Строки', '(' + countOrderLine(o) + ')';
+                caption = CONCAT ' ', 'Lines', '(' + countOrderLine(o) + ')';
                 MOVE USERFILTER(l);
                 MOVE GRID(l) {
                     headerHeight = 24;
@@ -113,7 +113,7 @@ DESIGN orderMobile {
 
 // orders
 
-newMobile 'Добавить' () {
+newMobile 'Add to' () {
     NEWSESSION {
         NEW o = Order {
             DIALOG orderMobile OBJECTS o = o DOCKED DO seek(o);
@@ -121,31 +121,31 @@ newMobile 'Добавить' () {
     }
 } IMAGE 'add.png';
 
-editMobile 'Редактировать' (Order o) {
+editMobile 'Edit' (Order o) {
     NEWSESSION {
         SHOW orderMobile OBJECTS o = o DOCKED;
     }
 } IMAGE 'edit.png' CHANGEMOUSE 'DBLCLK';
 
 customerFilter = DATA LOCAL Partner ();
-nameCustomerFilter 'Заказчик' = name(customerFilter());
+nameCustomerFilter 'Customer' = name(customerFilter());
 @defineChangeInput(customerFilter, Partner, dialogPartnersMobile, p);    
 clearCustomerFilter '' () { customerFilter() <- NULL; } IMAGE 'delete.png';
 
-FORM ordersMobile 'Мобильный заказ'
+FORM ordersMobile 'Mobile order'
     OBJECTS o = Order
     PROPERTIES(o) READONLY date, nameStatus BACKGROUND colorStatus(o), number, nameCustomer
     PROPERTIES newMobile() DRAW o TOOLBAR, editMobile(o) TOOLBAR, DELETE(o) NEWSESSION
 
     FILTERGROUP unlocked
-        FILTER 'Открыт' NOT locked(o) DEFAULT    
+        FILTER 'Opened' NOT locked(o) DEFAULT    
 
     PROPERTIES() nameCustomerFilter ON CHANGE changeCustomerFilter(), clearCustomerFilter
     FILTERS customer(o) = customerFilter() OR NOT customerFilter()
 ;
 
 DESIGN ordersMobile {
-    caption = 'Заказы';
+    caption = 'Orders';
     OBJECTS {
         NEW filters {
             type = CONTAINERH;

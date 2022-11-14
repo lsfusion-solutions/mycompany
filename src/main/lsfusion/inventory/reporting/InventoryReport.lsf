@@ -4,11 +4,11 @@ REQUIRE InvLedger, ResLedger, ItemImage, ItemAttribute, LocationEmployee, BarCod
 
 NAMESPACE Inventory;
 
-selectedDateTime 'Выбрать дату' = DATA LOCAL DATETIME () PREREAD;
-singleLocation 'По одному складу' = DATA LOCAL BOOLEAN () PREREAD;
-onHandDateTime 'Остаток на дату' (Location l, Product p) = onHandA(l, p, selectedDateTime());
+selectedDateTime 'Select date' = DATA LOCAL DATETIME () PREREAD;
+singleLocation 'One warehouse' = DATA LOCAL BOOLEAN () PREREAD;
+onHandDateTime 'Balance as of date' (Location l, Product p) = onHandA(l, p, selectedDateTime());
                                 
-FORM inventoryReport 'Текущие остатки'
+FORM inventoryReport 'Inventory report'
     PROPERTIES selectedDateTime(), singleLocation()
     
     TREE locations lt = Location PARENT parent(lt)
@@ -20,8 +20,8 @@ FORM inventoryReport 'Текущие остатки'
     ORDERS name(c)
     
     OBJECTS lp = (l = Location, p = Product)
-    PROPERTIES READONLY 'Склад' = canonicalName(l) SHOWIF NOT singleLocation() 
-    PROPERTIES(p) READONLY 'Товар' = name, nameUom, idBarCode, id, reference
+    PROPERTIES READONLY 'Location' = canonicalName(l) SHOWIF NOT singleLocation() 
+    PROPERTIES(p) READONLY 'Product' = name, nameUom, idBarCode, id, reference
     PROPERTIES(l, p) READONLY reserved, available
     PROPERTIES(l, p) READONLY SHOWIF NOT selectedDateTime() onHand, onHandRec
     PROPERTIES(l, p) READONLY SHOWIF selectedDateTime() onHandDateTime 
@@ -34,10 +34,10 @@ FORM inventoryReport 'Текущие остатки'
             accessGranted(l)
 
     FILTERGROUP rowFilter
-        FILTER 'Остаток'
+        FILTER 'On hand'
             IF selectedDateTime() THEN onHandDateTime(l, p) ELSE 
                 (IF singleLocation() THEN onHandRec(l, p) ELSE onHand(l, p)) DEFAULT
-        FILTER 'Принято' dateReceived(l, p)
+        FILTER '{Received}' dateReceived(l, p)
                 
     OBJECTS il = InvLedger
     PROPERTIES(il) READONLY class, type, dateTime, number, namePartner,
@@ -46,7 +46,7 @@ FORM inventoryReport 'Текущие остатки'
                             quantity
     PROPERTIES(il) NEWSESSION EDIT
     FILTERGROUP activeInv
-        FILTER 'Активный' active(il) DEFAULT
+        FILTER 'Active' active(il) DEFAULT
     FILTERS product(il) = p,
             IF singleLocation() THEN (level(fromLocation(il), l) OR level(toLocation(il), l))
                                 ELSE (fromLocation(il) = l OR toLocation(il) = l),
@@ -64,10 +64,10 @@ FORM inventoryReport 'Текущие остатки'
             
     OBJECTS a = ItemAttribute
     OBJECTS rlp = (ll = Location, rp = Product) PIVOT
-    PROPERTIES READONLY 'Склад' = canonicalName(ll), 'Товар' = name(rp), value(rp, a) COLUMNS (a) HEADER name(a),
-                        level1(rp), level2(rp), level3(rp), level4(rp), 'Категория полная' = canonicalNameCategory(rp)
+    PROPERTIES READONLY 'Location' = canonicalName(ll), 'Product' = name(rp), value(rp, a) COLUMNS (a) HEADER name(a),
+                        level1(rp), level2(rp), level3(rp), level4(rp), 'Canonical group' = canonicalNameCategory(rp)
     PROPERTIES(ll, rp) READONLY dateReceived, dateShipped
-    PROPERTIES READONLY MEASURE reserved(ll, rp), available(ll, rp), onHand 'Остаток' = IF selectedDateTime() THEN onHandDateTime(ll, rp) ELSE onHand(ll, rp)
+    PROPERTIES READONLY MEASURE reserved(ll, rp), available(ll, rp), onHand 'On hand' = IF selectedDateTime() THEN onHandDateTime(ll, rp) ELSE onHand(ll, rp)
     FILTERS IF selectedDateTime() THEN onHandDateTime(ll, rp) ELSE onHand(ll, rp),
             accessGranted(ll)
 ;
@@ -83,14 +83,14 @@ DESIGN inventoryReport {
             fill = 1;
             type = TABBED;
             NEW pane {
-                caption = 'Текущие остатки';
+                caption = 'Inventory report';
                 type = SPLITH;
                 fill = 1;
                 NEW filterTabs {
                     fill = 1;
                     type = TABBED;
-                    MOVE BOX(TREE locations) { caption = 'Места хранения'; }
-                    MOVE BOX(TREE categories) { caption = 'Категории'; }
+                    MOVE BOX(TREE locations) { caption = 'Locations'; }
+                    MOVE BOX(TREE categories) { caption = 'Categories'; }
                 }
                 NEW pane2 {
                     fill = 3;
@@ -98,16 +98,16 @@ DESIGN inventoryReport {
                     MOVE BOX(lp);
                     NEW tabs {
                         type = TABBED;
-                        MOVE BOX(il) { caption = 'Регистр изменения остатка'; }
-                        MOVE BOX(rl) { caption = 'Регистр резервов'; }
+                        MOVE BOX(il) { caption = 'Inventory ledger'; }
+                        MOVE BOX(rl) { caption = 'Reservation ledger'; }
                         NEW image { 
-                            caption = 'Изображение';
+                            caption = 'Picture';
                             MOVE PROPERTY(image(p)) { caption = ''; fill = 1; } 
                         }
                     }
                 }               
             }
-            MOVE BOX (rlp) { caption = 'Сводная таблица'; }
+            MOVE BOX (rlp) { caption = 'Pivot'; }
         }
     }
 }
@@ -117,7 +117,7 @@ DESIGN inventoryReport {
 @defineItemAttributeForm(inventoryReport, p, lp);
 DESIGN inventoryReport {
     filterTabs {
-        MOVE BOX(ia) { caption = 'Атрибуты'; }
+        MOVE BOX(ia) { caption = 'Attributes'; }
     }
 }
 

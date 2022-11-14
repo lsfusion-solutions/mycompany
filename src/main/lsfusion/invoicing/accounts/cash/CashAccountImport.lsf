@@ -4,7 +4,7 @@ REQUIRE CashAccount, Partner;
 
 NAMESPACE Invoicing;
 
-cashAccountExport 'Экспорт касс' () {
+cashAccountExport 'Export cash registers' () {
     NEWSESSION {
         LOCAL f = EXCELFILE ();
         EXPORT XLSX HEADER FROM 'HolderID' = id(holder(CashAccount c)), 'Note' = note(c),
@@ -13,7 +13,7 @@ cashAccountExport 'Экспорт касс' () {
     }
 }
 
-cashAccountImport 'Импорт касс' () {
+cashAccountImport 'Import cash registers' () {
     LOCAL idPartner = STRING[50] (INTEGER);
     LOCAL note = ISTRING[100] (INTEGER);
     LOCAL name = ISTRING[100] (INTEGER);
@@ -23,7 +23,7 @@ cashAccountImport 'Импорт касс' () {
             IMPORT XLS HEADER FROM f TO idPartner = A, note = B, name = C;
 
             FOR [GROUP SUM 1 BY idPartner(INTEGER i)](num) AND NOT partner[STRING](num) DO {
-                MESSAGE 'Отсутствует контрагент в базе данных с кодом ' + num + '. Импорт отменен';
+                MESSAGE 'There is no partner in the database with the code' + ' ' + num + '... Import canceled';
                 RETURN;
             } 
             
@@ -36,7 +36,7 @@ cashAccountImport 'Импорт касс' () {
             }
             
             APPLY;
-            MESSAGE 'Импорт завершен';
+            MESSAGE 'Import completed';
         }
     }
 }    
@@ -49,7 +49,7 @@ DESIGN migrationData {
     commons {
         NEW cashAccount {
             type = CONTAINERH;
-            caption = 'Кассы';
+            caption = 'Cash accounts';
             MOVE PROPERTY(cashAccountImport());
             MOVE PROPERTY(cashAccountExport());
         }

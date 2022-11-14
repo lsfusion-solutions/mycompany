@@ -5,9 +5,9 @@ REQUIRE SalesLedger, SalesDiscount;
 NAMESPACE Sales;
 
 salesDiscount = ABSTRACT Discount (SalesLedger) MATERIALIZED;
-nameSalesDiscount 'Скидка' (SalesLedger l) = name(salesDiscount(l));
+nameSalesDiscount 'Discount' (SalesLedger l) = name(salesDiscount(l));
 
-fullPrice 'Цена без скидки' = ABSTRACT NUMERIC[16,3] (SalesLedger) MATERIALIZED;
+fullPrice 'Price without discount' = ABSTRACT NUMERIC[16,3] (SalesLedger) MATERIALIZED;
 
-discountAmount 'Сумма скидки' (SalesLedger l) = NUMERIC[14,2](quantity(l) * fullPrice(l)) - amount(l); 
-discount 'Скидка, %' (SalesLedger l) = NUMERIC[10,0] (100.0 * discountAmount(l) / amount(l));
+discountAmount 'Discount amount' (SalesLedger l) = NUMERIC[14,2](quantity(l) * fullPrice(l)) - amount(l); 
+discount 'Discount, %' (SalesLedger l) = NUMERIC[10,0] (100.0 * discountAmount(l) / amount(l));

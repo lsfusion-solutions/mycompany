@@ -5,15 +5,15 @@ REQUIRE ScrapDone;
 NAMESPACE Inventory;
     
 EXTEND CLASS ScrapStatus {
-    canceled 'Отменен'
+    canceled 'Cancelled'
 }
-canceled 'Отменен' = DATA BOOLEAN (Scrap);
-active 'Активен' (Scrap s) = done(s) AND NOT canceled(s);
+canceled 'Cancelled' = DATA BOOLEAN (Scrap);
+active 'Active' (Scrap s) = done(s) AND NOT canceled(s);
 
 status(Scrap s) += WHEN canceled(s) THEN ScrapStatus.canceled;
 colorStatus(Scrap s) += WHEN status(s) = ScrapStatus.canceled THEN RGB(181,195,247);
 
-cancel 'Отменить' (Scrap s) {
+cancel 'Cancel' (Scrap s) {
     APPLY; 
     IF canceled() THEN RETURN;
            
@@ -38,5 +38,5 @@ DESIGN scrap {
 
 EXTEND FORM scraps    
     EXTEND FILTERGROUP status
-        FILTER 'Отменен' status(s) = ScrapStatus.canceled    
+        FILTER 'Cancelled' status(s) = ScrapStatus.canceled    
 ;

@@ -5,21 +5,21 @@ REQUIRE MetaNumerator, Time, DateUtils,
 
 NAMESPACE Retail;
 
-CLASS Session 'Смена';
+CLASS Session 'Session';
 
-openingDateTime 'Открыта' = DATA DATETIME (Session) NONULL;
+openingDateTime 'Opened' = DATA DATETIME (Session) NONULL;
 openingDateTime(Session s) <- currentDateTime() WHEN SET(s IS Session);
-@defineDateTimeAggregation(Session, opening, ' открытия');
+@defineDateTimeAggregation(Session, opening, 'Opening ');
 
-closingDateTime 'Закрыта' = DATA DATETIME (Session);
+closingDateTime 'Closed' = DATA DATETIME (Session);
 CONSTRAINT closingDateTime(Session s) < openingDateTime(s)
-    MESSAGE 'Смена не может быть закрыта раньше чем была открыта';
+    MESSAGE 'The session cannot be closed earlier than it was open';
 
-opened 'Открыта' (Session s) = openingDateTime(s) AND NOT closingDateTime(s);
+opened 'Opened' (Session s) = openingDateTime(s) AND NOT closingDateTime(s);
 
-@defineNumber(session, 'Смены', 'СМ');
+@defineNumber(session, 'Sessions', 'SM');
 
-numberDate 'Описание' (Session s) = number(s) + ' (' + openingDateTime(s) + ')' IN id;
+numberDate 'Description' (Session s) = number(s) + ' (' + openingDateTime(s) + ')' IN id;
 
 pos 'POS' = DATA Pos (Session) NONULL;
 namePos 'POS' (Session s) = name(pos(s));
@@ -27,7 +27,7 @@ namePos 'POS' (Session s) = name(pos(s));
 // opened
 openedSession (Pos p) = GROUP AGGR Session s WHERE opened(s) BY pos(s);
 
-FORM session 'Смена'
+FORM session 'Session'
     OBJECTS s = Session PANEL
     PROPERTIES(s) namePos, number, 
                   openingDateTime, closingDateTime
@@ -58,7 +58,7 @@ DESIGN session {
     }
 }
 
-FORM sessions 'Смены'
+FORM sessions 'Sessions'
     OBJECTS o = Session
     PROPERTIES(o) READONLY openingDateTime, closingDateTime, number, namePos
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
@@ -76,7 +76,7 @@ NAVIGATOR {
 
 // actions
 afterOpen ABSTRACT LIST (Session);
-openSession 'Открыть смену' (Pos p) {
+openSession 'Open session' (Pos p) {
     CANCEL;
 
     NEWSESSION {
@@ -88,12 +88,12 @@ openSession 'Открыть смену' (Pos p) {
                     afterOpen(s);
             }
         ELSE
-            MESSAGE 'Уже есть открытая смена';
+            MESSAGE 'There is already an open session';
     }
 }
 
 afterClose ABSTRACT LIST (Session);
-close 'Закрыть смену' (Session s) {
+close 'Close session' (Session s) {
     CANCEL;
 
     NEWSESSION {

@@ -4,10 +4,10 @@ REQUIRE PosDashboardReturn, PosDashboardPayment, CreditNote, OutgoingPaymentDone
 
 NAMESPACE Retail;
 
-invoicePaid 'Оплачено' (Bill b, PaymentMethod pm) = GROUP SUM paid(Invoice i, pm) IF in(i, b);
+invoicePaid 'Paid' (Bill b, PaymentMethod pm) = GROUP SUM paid(Invoice i, pm) IF in(i, b);
 invalidAmount(Bill b, PaymentMethod pm) = amount(pm) > OVERRIDE invoicePaid(b, pm), 0.0; 
 
-FORM posPaymentReturn 'Оплата'
+FORM posPaymentReturn 'Payment'
     OBJECTS b = Bill PANEL
     PROPERTIES nameVendor(b), amount(b)
     
@@ -59,7 +59,7 @@ EXTEND FORM posPaymentReturn
 
 @defineKeyboardDecimal(amount, posPaymentReturn, PaymentMethod, pm, right, 64);
 
-posPayment 'Оплата' (Session s, Bill b) {
+posPayment 'Payment' (Session s, Bill b) {
     amount(PaymentMethod pm) <- NULL;
     DIALOG posPaymentReturn OBJECTS b = b NOMANAGESESSION DO {
         FOR am = amount(PaymentMethod pm) DO NEW p = OutgoingPayment {

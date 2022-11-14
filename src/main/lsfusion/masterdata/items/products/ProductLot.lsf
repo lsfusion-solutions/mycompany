@@ -4,12 +4,12 @@ REQUIRE Product, CategoryLot;
 
 NAMESPACE MasterData;
 
-dataUseLot 'Партионный учет' = DATA BOOLEAN (Product);
-useLot 'Партионный учет' (Product i) = useLot() AND (dataUseLot(i) OR (useLot(category(i)) AND i IS Product)) MATERIALIZED;
+dataUseLot 'Use lots' = DATA BOOLEAN (Product);
+useLot 'Use lots' (Product i) = useLot() AND (dataUseLot(i) OR (useLot(category(i)) AND i IS Product)) MATERIALIZED;
 
 useSerialNumbers (Product p) = useSerialNumbers(category(p));
 numeratorLot (Product p) = numeratorLot(category(p));
-prefixLot 'Префикс' (Product p) = prefixLot(category(p));
+prefixLot 'Prefix' (Product p) = prefixLot(category(p));
 
 EXTEND FORM item
     PROPERTIES (i) dataUseLot SHOWIF i IS Product AND useLot();

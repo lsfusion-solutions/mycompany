@@ -4,22 +4,22 @@ REQUIRE LegalEntity, MasterData;
 
 NAMESPACE MasterData;
 
-CLASS Company 'Компания' : LegalEntity;
+CLASS Company 'Company' : LegalEntity;
 
 EXTEND CLASS PartnerType {
-    company 'Компания'
+    company 'Company'
 }
 
-dataDefaultCompany 'Компания' = DATA Company ();
+dataDefaultCompany 'Company' = DATA Company ();
 
-countCompany 'Кол-во компаний' () = GROUP SUM 1 IF c IS Company MATERIALIZED;
+countCompany 'Number of companies' () = GROUP SUM 1 IF c IS Company MATERIALIZED;
 firstCompany () = GROUP LAST Company c ORDER DESC c WHERE c IS Company; 
 
 defaultCompany = OVERRIDE dataDefaultCompany(), (firstCompany() IF countCompany() = 1) MATERIALIZED;
 
 type (Partner p) += WHEN p IS Company THEN PartnerType.company;
 
-FORM companies 'Компании'
+FORM companies 'Companies'
     OBJECTS c = Company
     PROPERTIES(c) READONLY name, id
     PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE
@@ -35,5 +35,5 @@ NAVIGATOR {
 
 EXTEND FORM dialogPartners
     EXTEND FILTERGROUP type
-        FILTER 'Компании' p IS Company
+        FILTER 'Companies' p IS Company
 ;

@@ -4,26 +4,26 @@ REQUIRE SalesSettings, SalesPriceType;
 
 NAMESPACE Sales;
 
-CLASS PricelistType 'Тип прайс-листа';
-name 'Наименование' = DATA ISTRING[50] (PricelistType) NONULL IN id;
+CLASS PricelistType 'Pricelist type';
+name 'Name' = DATA ISTRING[50] (PricelistType) NONULL IN id;
 
-id 'Код' = DATA STRING[20] (PricelistType) CHARWIDTH 10;
+id 'ID' = DATA STRING[20] (PricelistType) CHARWIDTH 10;
 priceListType (STRING[20] id) = GROUP AGGR PricelistType t BY id(t);
 
-numerator 'Нумератор' = DATA Numerator (PricelistType);
-nameNumerator 'Нумератор' (PricelistType o) = name(numerator(o));
+numerator 'Numerator' = DATA Numerator (PricelistType);
+nameNumerator 'Numerator' (PricelistType o) = name(numerator(o));
 
-showCost 'Показывать себестоимость' = DATA BOOLEAN (PricelistType);
+showCost 'Show cost price' = DATA BOOLEAN (PricelistType);
 
-in 'Вкл.' = DATA BOOLEAN (PricelistType, PriceType);
+in 'Incl.' = DATA BOOLEAN (PricelistType, PriceType);
 
-showCurrentPrice 'Показывать действующие цены' = DATA BOOLEAN (PricelistType, PriceType);
-showMarkup 'Показывать надбавки' = DATA BOOLEAN (PricelistType, PriceType);
+showCurrentPrice 'Show current prices' = DATA BOOLEAN (PricelistType, PriceType);
+showMarkup 'Show markups' = DATA BOOLEAN (PricelistType, PriceType);
 
 basePriceType = DATA PriceType (PricelistType, PriceType);
-nameBasePriceType 'Считать надбавку от' (PricelistType t, PriceType pt) = name(basePriceType(t, pt));
+nameBasePriceType 'Calculate markup from' (PricelistType t, PriceType pt) = name(basePriceType(t, pt));
 
-FORM pricelistType 'Тип прайс-листа'
+FORM pricelistType 'Pricelist type'
     OBJECTS t = PricelistType PANEL
     PROPERTIES(t) name, id, nameNumerator, showCost
                   
@@ -54,7 +54,7 @@ DESIGN pricelistType {
     }
 }
 
-FORM pricelistTypes 'Типы прайс-листов'
+FORM pricelistTypes 'Types of price lists'
     OBJECTS t = PricelistType
     PROPERTIES(t) READONLY name, id
     
@@ -73,7 +73,7 @@ DESIGN options {
     }
 }
 
-countPricelistTypes 'Кол-во типов' () = GROUP SUM 1 IF PricelistType t IS PricelistType; 
+countPricelistTypes 'Number of types' () = GROUP SUM 1 IF PricelistType t IS PricelistType; 
 firstPricelistType = GROUP LAST PricelistType t ORDER DESC t WHERE t IS PricelistType;
 
 defaultPricelistType = firstPricelistType() IF countPricelistTypes() = 1;

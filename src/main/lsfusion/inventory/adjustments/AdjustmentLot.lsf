@@ -4,9 +4,9 @@ REQUIRE Adjustment, ProductLot, AdjustmentSearch, AdjustmentInv, InvLedgerLot;
 
 NAMESPACE Inventory;
 
-@defineDocLot (adjustment, product, theoreticalQuantity, done, ' (теоретическое)');
+@defineDocLot (adjustment, product, theoreticalQuantity, done, ' (theoretical)');
 
-@defineDocLot (adjustment, product, realQuantity, done, ' (фактическое)');
+@defineDocLot (adjustment, product, realQuantity, done, ' (real)');
 
 fillTheoreticalQuantity(AdjustmentLine al) + {
     theoreticalQuantity(al, Lot l) <- prevOnHandB(location(al), l, dateTime(adjustment(al))) IF product(l) = product(al);
@@ -51,7 +51,7 @@ EXTEND FORM adjustment
 DESIGN adjustment {
     linesTab {
         MOVE BOX(lot){
-            caption = 'Партии';
+            caption = 'Lots';
             showIf = useLot();
         }
     }

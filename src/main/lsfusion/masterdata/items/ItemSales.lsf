@@ -4,13 +4,13 @@ REQUIRE MasterData, Item;
 
 NAMESPACE MasterData;
 
-canBeSold 'Предназначен для продажи' = DATA BOOLEAN (Item);
+canBeSold 'Can be sold' = DATA BOOLEAN (Item);
 
 WHEN LOCAL SET(Item i IS Item) DO {
     canBeSold(i) <- TRUE;
 }
 
-salesPrice 'Цена продажи' = DATA NUMERIC[10,2] (Item) CHARWIDTH 15;
+salesPrice 'Sales price' = DATA NUMERIC[10,2] (Item) CHARWIDTH 15;
 
 copy(Item n, Item o) + {
     canBeSold(n) <- canBeSold(o);
@@ -27,7 +27,7 @@ DESIGN item {
     }
     tabs {
         NEW sales {
-            caption = 'Продажа';
+            caption = 'Sale';
             showIf = canBeSold(i);
             MOVE PROPERTY(salesPrice(i));
         }

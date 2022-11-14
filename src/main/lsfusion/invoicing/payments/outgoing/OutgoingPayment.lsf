@@ -7,35 +7,35 @@ REQUIRE Time, MetaNumerator, Doc, DateUtils,
 
 NAMESPACE Invoicing;
 
-CLASS OutgoingPayment 'Исходящий платеж';
+CLASS OutgoingPayment 'Outgoing payment';
 
-@defineDocStatus(outgoingPayment, 'исходящего платежа');
+@defineDocStatus(outgoingPayment, 'Outgoing payment');
 
 // type
-type 'Тип' = DATA OutgoingPaymentType (OutgoingPayment) NONULL;
-nameType 'Тип' (OutgoingPayment s) = name(type(s));
+type 'Type' = DATA OutgoingPaymentType (OutgoingPayment) NONULL;
+nameType 'Type' (OutgoingPayment s) = name(type(s));
 
-dateTime 'Дата' = DATA DATETIME (OutgoingPayment) NONULL;
+dateTime 'Date' = DATA DATETIME (OutgoingPayment) NONULL;
 dateTime(OutgoingPayment p) <- currentDateTime() WHEN SET(p IS OutgoingPayment);
 @defineDateTimeAggregation(OutgoingPayment);
 
 @defineNumberType(outgoingPayment);
 
-numberDate 'Описание' (OutgoingPayment p) = number(p) + ' (' + dateTime(p) + ')' IN id;
+numberDate 'Description' (OutgoingPayment p) = number(p) + ' (' + dateTime(p) + ')' IN id;
 
 // partners
-partner 'Контрагент' = DATA Partner (OutgoingPayment);
-namePartner 'Контрагент' (OutgoingPayment p) = name(partner(p));
+partner 'Partner' = DATA Partner (OutgoingPayment);
+namePartner 'Partner' (OutgoingPayment p) = name(partner(p));
 
 WHEN LOCAL SETCHANGED(type(OutgoingPayment p)) AND NOT CHANGED(partner(p)) AND interpay(type(p)) AND countCompany() = 1 DO
     partner(p) <- defaultCompany();
 
 CONSTRAINT interpay(type(OutgoingPayment p)) AND NOT partner(p) IS Company
                 CHECKED BY partner
-                MESSAGE 'При внутреннем платеже контрагентом может быть только компания';
+                MESSAGE 'With an internal payment, only a company can be a partner';
 
-company 'Компания' = DATA Company (OutgoingPayment) NONULL;
-nameCompany 'Компания' (OutgoingPayment p) = name(company(p));
+company 'Company' = DATA Company (OutgoingPayment) NONULL;
+nameCompany 'Company' (OutgoingPayment p) = name(company(p));
 
 WHEN LOCAL SET(OutgoingPayment p IS OutgoingPayment) AND NOT CHANGED(company(p)) DO
     company(p) <- defaultCompany();
@@ -43,7 +43,7 @@ WHEN LOCAL SET(OutgoingPayment p IS OutgoingPayment) AND NOT CHANGED(company(p))
 // accounts
 // partner
 partnerAccount = DATA Account (OutgoingPayment);
-namePartnerAccount 'Счет контрагента' (OutgoingPayment p) = name(partnerAccount(p));
+namePartnerAccount 'Partner account' (OutgoingPayment p) = name(partnerAccount(p));
 
 WHEN LOCAL CHANGED(partner(OutgoingPayment p)) AND NOT CHANGED(partnerAccount(p)) DO
     partnerAccount(p) <- defaultAccount(partner(p), type(p));
@@ -52,17 +52,17 @@ WHEN LOCAL SET(type(OutgoingPayment p)) AND NOT CHANGED(partnerAccount(p)) DO
 
 CONSTRAINT partnerAccount(OutgoingPayment p) AND NOT holder(partnerAccount(p)) = partner(p)
                 CHECKED BY partnerAccount
-                MESSAGE 'Владелец счета контрагента не совпадает с контрагентом в исходящем платеже';
+                MESSAGE 'The partner account owner does not match the partner in the outgoing payment';
 CONSTRAINT partnerAccount(OutgoingPayment p) IS BankAccount AND NOT bank(type(p))
                 CHECKED BY partnerAccount
-                MESSAGE 'Для этого типа платежа банковские счета контрагента не разрешены';
+                MESSAGE 'Partner bank accounts are not allowed for this type of payment';
 CONSTRAINT partnerAccount(OutgoingPayment p) IS CashAccount AND NOT cash(type(p))
                 CHECKED BY partnerAccount
-                MESSAGE 'Для этого типа платежа кассы контрагента не разрешены';
+                MESSAGE 'Partner cash desks are not allowed for this type of payment.';
 
 // company
 companyAccount = DATA Account (OutgoingPayment);
-nameCompanyAccount 'Счет компании' (OutgoingPayment p) = name(companyAccount(p));
+nameCompanyAccount 'Company account' (OutgoingPayment p) = name(companyAccount(p));
 
 WHEN LOCAL CHANGED(company(OutgoingPayment p)) AND NOT CHANGED(companyAccount(p)) DO
     companyAccount(p) <- defaultAccount(company(p), type(p));
@@ -71,21 +71,21 @@ WHEN LOCAL SET(type(OutgoingPayment p)) AND NOT CHANGED(companyAccount(p)) DO
 
 CONSTRAINT companyAccount(OutgoingPayment p) AND NOT holder(companyAccount(p)) = company(p)
                 CHECKED BY companyAccount
-                MESSAGE 'Владелец счета компании не совпадает с компанией в исходящем платеже';
+                MESSAGE 'The company account holder does not match the company in the outgoing payment';
 CONSTRAINT companyAccount(OutgoingPayment p) IS BankAccount AND NOT bank(type(p))
                 CHECKED BY companyAccount
-                MESSAGE 'Для этого типа платежа банковские счета компании не разрешены';
+                MESSAGE 'Company bank accounts are not allowed for this type of payment';
 CONSTRAINT companyAccount(OutgoingPayment p) IS CashAccount AND NOT cash(type(p))
                 CHECKED BY companyAccount
-                MESSAGE 'Для этого типа платежа кассы компании не разрешены';
+                MESSAGE 'For this type of payment, company cash registers are not allowed';
 
 amount '{Amount}' = DATA NUMERIC[14,2] (OutgoingPayment) NONULL;
 
-note 'Примечание' = DATA ISTRING[50] (OutgoingPayment);
-reference 'Ссылка' = DATA ISTRING[50] (OutgoingPayment);
+note 'Note' = DATA ISTRING[50] (OutgoingPayment);
+reference 'Reference' = DATA ISTRING[50] (OutgoingPayment);
 
 // forms
-FORM outgoingPayment 'Исходящий платеж'
+FORM outgoingPayment 'Outgoing payment'
     OBJECTS p = OutgoingPayment PANEL 
     PROPERTIES(p) nameType, dateTime, number, amount,
                   namePartner, namePartnerAccount, 
@@ -96,11 +96,11 @@ FORM outgoingPayment 'Исходящий платеж'
 ;
 
 DESIGN outgoingPayment {
-    caption = (CONCAT ' ', 'Исходящий платеж', '№' + number(p), '(' + dateTime(p) + ')');
+    caption = (CONCAT ' ', 'Outgoing payment', '№' + number(p), '(' + dateTime(p) + ')');
     OBJECTS {
         NEW header {
             NEW params {
-                caption = 'Параметры';
+                caption = 'Parameters';
                 type = CONTAINERH;
                 alignment = STRETCH;
                 MOVE PROPERTY(nameType(p)) { notNull = TRUE; } 
@@ -109,21 +109,21 @@ DESIGN outgoingPayment {
                 MOVE PROPERTY(amount(p));
             }
             NEW partner {
-                caption = 'Контрагент';
+                caption = 'Partner';
                 type = CONTAINERH;
                 alignment = STRETCH;
                 MOVE PROPERTY(namePartner(p));
                 MOVE PROPERTY(namePartnerAccount(p));
             }
             NEW company { 
-                caption = 'Компания';
+                caption = 'Company';
                 type = CONTAINERH;
                 alignment = STRETCH;
                 MOVE PROPERTY(nameCompany(p)) { notNull = TRUE; }
                 MOVE PROPERTY(nameCompanyAccount(p));
             }
             NEW otherInformation {
-                caption = 'Прочая информация';
+                caption = 'Other information';
                 alignment = STRETCH;
                 MOVE PROPERTY(note(p)); 
                 MOVE PROPERTY(reference(p));    
@@ -143,7 +143,7 @@ DESIGN outgoingPayment {
 
 @defineDocHistoryHead(outgoingPayment, p);
 
-FORM outgoingPayments 'Исходящие платежи'
+FORM outgoingPayments 'Outgoing payments'
     OBJECTS p = OutgoingPayment
     PROPERTIES(p) READONLY nameType, dateTime, number, amount,
                            namePartner, namePartnerAccount, 

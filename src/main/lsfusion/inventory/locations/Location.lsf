@@ -4,21 +4,21 @@ REQUIRE InventorySettings, Company, MetaNumerator, Selection;
 
 NAMESPACE Inventory;
 
-CLASS Location 'Место хранения';
+CLASS Location 'Location';
 
-@defineID(location, 'Места хранения', 'МХ', 4);
+@defineID(location, 'Locations', 'MX', 4);
 
-name 'Название' = DATA ISTRING[30] (Location) IN id NONULL CHARWIDTH 15;
+name 'Name' = DATA ISTRING[30] (Location) IN id NONULL CHARWIDTH 15;
 
 // hierarchy
-parent 'Родитель' = DATA Location (Location);
-idParent 'Код родителя' (Location l) = id(parent(l));
-nameParent 'Родитель' (Location l) = name(parent(l));
+parent 'Parent' = DATA Location (Location);
+idParent 'Parent ID' (Location l) = id(parent(l));
+nameParent 'Parent' (Location l) = name(parent(l));
 
 CONSTRAINT DROPPED(Location l IS Location) AND PREV(parent(Location cl) = l)
-        MESSAGE 'Нельзя удалить место хранения имеющее подчиненные склады';
+        MESSAGE 'You cannot delete a storage location that has subordinate warehouses';
 
-level 'Уровень' (Location child, Location parent) =
+level 'Level' (Location child, Location parent) =
    RECURSION 1l IF child IS Location AND parent = child
         STEP 2l IF parent = parent($parent) MATERIALIZED;
 
@@ -26,32 +26,32 @@ isChild (Location child, Location parent) = TRUE IF level(child, parent);
 
 countChildren (Location parent) = GROUP SUM 1 IF parent(Location child) = parent;
 
-canonicalName 'Каноническое имя' (Location l) =
+canonicalName 'Canonical name' (Location l) =
    GROUP CONCAT name(Location parent), ' / ' ORDER DESC level(l, parent) CHARWIDTH 20 IN id;
-canonicalNameParent 'Родитель' (Location l) = canonicalName(parent(l));
+canonicalNameParent 'Parent' (Location l) = canonicalName(parent(l));
 
 // company
-company 'Владелец' = DATA Company (Location); 
-idCompany 'Код владельца' (Location l) = id(company(l)); 
-nameCompany 'Владелец' (Location l) = name(company(l)); 
+company 'Owner' = DATA Company (Location); 
+idCompany 'Owner code' (Location l) = id(company(l)); 
+nameCompany 'Owner' (Location l) = name(company(l)); 
 
 WHEN LOCAL SET(Location l IS Location) AND NOT CHANGED(company(l)) DO company(l) <- defaultCompany();
 
 // address
-address 'Адрес' = DATA ISTRING[50] (Location);
-city 'Город' = DATA ISTRING[30] (Location);
-state 'Область' = DATA ISTRING[30] (Location);
-zip 'Почтовый индекс' = DATA ISTRING[10] (Location);
+address 'Address' = DATA ISTRING[50] (Location);
+city 'City' = DATA ISTRING[30] (Location);
+state 'State' = DATA ISTRING[30] (Location);
+zip 'Postcode' = DATA ISTRING[10] (Location);
 
 hierarchyAddress (Location l) = GROUP LAST address(Location parent) ORDER DESC level(l,parent);
 hierarchyCity (Location l) = GROUP LAST city(Location parent) ORDER DESC level(l,parent);
 hierarchyState  (Location l) = GROUP LAST state(Location parent) ORDER DESC level(l,parent);
 hierarchyZip  (Location l) = GROUP LAST zip(Location parent) ORDER DESC level(l,parent);
 
-addressCsv 'Адрес' (Location l) = CONCAT ', ', hierarchyAddress(l), hierarchyCity(l), hierarchyState(l), hierarchyZip(l);
-addressLines 'Адрес' (Location l) = CONCAT '\n', hierarchyAddress(l), hierarchyCity(l), hierarchyState(l), hierarchyZip(l);
+addressCsv 'Address' (Location l) = CONCAT ', ', hierarchyAddress(l), hierarchyCity(l), hierarchyState(l), hierarchyZip(l);
+addressLines 'Address' (Location l) = CONCAT '\n', hierarchyAddress(l), hierarchyCity(l), hierarchyState(l), hierarchyZip(l);
   
-FORM location 'Место хранения'
+FORM location 'Location'
     OBJECTS l = Location PANEL
     PROPERTIES(l) name, id, 
                   canonicalNameParent, nameCompany,
@@ -91,7 +91,7 @@ DESIGN location {
 }
 
 background (Location l) = ABSTRACT CASE COLOR (Location);
-FORM locations 'Места хранения'
+FORM locations 'Locations'
     OBJECTS l = Location BACKGROUND background(l)
     PROPERTIES(l) READONLY name, id, 
                            canonicalNameParent, nameCompany,
@@ -112,11 +112,11 @@ DESIGN locations {
     OBJECTS {
         type = TABBED;
         NEW list {
-            caption = 'Список';
+            caption = 'List';
             MOVE BOX(l);
         }
         NEW tree {
-            caption = 'Дерево';
+            caption = 'Wood';
             MOVE BOX(TREE locations);
         }
     }

@@ -4,7 +4,7 @@ REQUIRE BarCode;
 
 NAMESPACE MasterData;
 
-barCodeExport 'Экспорт штрихкодов' () {
+barCodeExport 'Export barcodes' () {
     NEWSESSION {
         IF NOT (GROUP SUM 1 IF BarCode b AND b IS BarCode) THEN {
             NEW b = BarCode {
@@ -19,7 +19,7 @@ barCodeExport 'Экспорт штрихкодов' () {
     }
 }
 
-barCodeImport 'Импорт штрихкодов' () {
+barCodeImport 'Import barcodes' () {
     LOCAL id = STRING (INTEGER);
     LOCAL idItem = ISTRING[50] (INTEGER);
 
@@ -29,7 +29,7 @@ barCodeImport 'Импорт штрихкодов' () {
             IMPORT XLS HEADER FROM f TO idItem = A, id = B;
             
             FOR [GROUP SUM 1 BY idItem(INTEGER i)](num) AND NOT item[STRING](num) DO {
-                MESSAGE 'Отсутствует номенклатура в базе данных с кодом ' + num + '. Импорт отменен';
+                MESSAGE 'Missing item in database with code' + ' ' + num + '... Import canceled';
                 RETURN;
             }
             
@@ -38,7 +38,7 @@ barCodeImport 'Импорт штрихкодов' () {
                 item(b) <- item(idItem(i));
             }
             APPLY;
-            MESSAGE 'Импорт завершен';
+            MESSAGE 'Import completed';
         }
     }
 }
@@ -51,7 +51,7 @@ DESIGN migrationData {
     commons {
         NEW barCode {
             type = CONTAINERH;
-            caption = 'Штрихкоды';
+            caption = 'Barcodes';
             MOVE PROPERTY(barCodeImport());
             MOVE PROPERTY(barCodeExport());
         }

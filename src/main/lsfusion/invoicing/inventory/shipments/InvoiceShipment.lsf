@@ -5,13 +5,13 @@ REQUIRE InvoiceCanceled, InvoiceReady, ShipmentCanceled, LocationEmployee;
 NAMESPACE Invoicing;
 
 shipmentType = DATA ShipmentType (InvoiceType);
-nameShipmentType 'Тип отгрузки' (InvoiceType t) = name(shipmentType(t));
+nameShipmentType 'Shipment type' (InvoiceType t) = name(shipmentType(t));
 
 EXTEND FORM invoiceType PROPERTIES nameShipmentType(o);
 
 // location
-location 'Место хранения' = DATA Location (Invoice);
-nameLocation 'Место хранения' (Invoice i) = name(location(i));
+location 'Location' = DATA Location (Invoice);
+nameLocation 'Location' (Invoice i) = name(location(i));
 
 EXTEND FORM invoice 
     PROPERTIES(i) nameLocation SHOWIF shipmentType(type(i))
@@ -30,7 +30,7 @@ EXTEND FORM invoices
 @defineDocLocationAccess(invoice, i);
 
 // lines
-@defineDocLineRelation(invoice, shipment, 'Реализации', 'Отгрузки', i, s);
+@defineDocLineRelation(invoice, shipment, 'Invoice', 'Shipment', i, s);
 
 fill ABSTRACT LIST (ShipmentLine, InvoiceLine);
 invoiceShipmentCreated = DATA LOCAL Shipment ();
@@ -59,7 +59,7 @@ newShipment (Invoice i) {
     }
 }
 
-createShipment 'Создать отгрузку' (Invoice b) {
+createShipment 'Create Shipment' (Invoice b) {
     APPLY;
     IF canceled() THEN RETURN;
     
@@ -84,7 +84,7 @@ DESIGN invoice {
     }
     relatedDoc {
         MOVE BOX(s) {
-            caption = CONCAT ' ', 'Отгрузки', '(' + countShipments(i) + ')';
+            caption = CONCAT ' ', 'Shipments', '(' + countShipments(i) + ')';
         }
         REMOVE TOOLBARSYSTEM(s);
     }
@@ -95,7 +95,7 @@ clone (Invoice to, Invoice from) + {
 }
 
 // auto create
-autoCreateShipment 'Автоматически создавать отгрузку' = DATA BOOLEAN (InvoiceType);
+autoCreateShipment 'Automatically create shipment' = DATA BOOLEAN (InvoiceType);
 EXTEND FORM invoiceType PROPERTIES autoCreateShipment(o) SHOWIF shipmentType(o);
 
 WHEN (SET(ready(Invoice i)) OR SET(countProductLines(i))) AND ready(i) AND autoCreateShipment(type(i)) AND countProductLines(i) DO 

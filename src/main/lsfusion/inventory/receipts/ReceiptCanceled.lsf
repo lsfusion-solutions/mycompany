@@ -5,15 +5,15 @@ REQUIRE ReceiptDone;
 NAMESPACE Inventory;
     
 EXTEND CLASS ReceiptStatus {
-    canceled 'Отменен'
+    canceled 'Cancelled'
 }
-canceled 'Отменен' = DATA BOOLEAN (Receipt);
-active 'Активен' (Receipt r) = done(r) AND NOT canceled(r);
+canceled 'Cancelled' = DATA BOOLEAN (Receipt);
+active 'Active' (Receipt r) = done(r) AND NOT canceled(r);
 
 status(Receipt r) += WHEN canceled(r) THEN ReceiptStatus.canceled;
 colorStatus(Receipt r) += WHEN status(r) = ReceiptStatus.canceled THEN RGB(181,195,247);
 
-cancel 'Отменить' (Receipt r) {
+cancel 'Cancel' (Receipt r) {
     APPLY; 
     IF canceled() THEN RETURN;
            
@@ -38,7 +38,7 @@ DESIGN receipt {
 
 EXTEND FORM receipts    
     EXTEND FILTERGROUP status
-        FILTER 'Отменен' status(r) = ReceiptStatus.canceled    
+        FILTER 'Cancelled' status(r) = ReceiptStatus.canceled    
 ;
 
-@defineSelectionAction(receipts, Receipt, cancel, 'Отменить', statuses);
+@defineSelectionAction(receipts, Receipt, cancel, 'Cancel', statuses);

@@ -4,23 +4,23 @@ REQUIRE SalesPricelist, DocTemplate;
 
 NAMESPACE Sales;
 
-CLASS PrintPricelistType 'Шаблон прайс-листа';
+CLASS PrintPricelistType 'Pricelist template';
 
-name 'Наименование' = DATA STRING[50] (PrintPricelistType);
+name 'Name' = DATA STRING[50] (PrintPricelistType);
 
 company = DATA Company (PrintPricelistType);
-nameCompany 'Компания' (PrintPricelistType t) = name(company(t)); 
+nameCompany 'Company' (PrintPricelistType t) = name(company(t)); 
 
 WHEN LOCAL SET(PrintPricelistType t IS PrintPricelistType) AND NOT CHANGED(company(t)) DO company(t) <- defaultCompany();
 
-template 'Шаблон' = DATA STRING (PrintPricelistType) CHARWIDTH 50;
+template 'Template' = DATA STRING (PrintPricelistType) CHARWIDTH 50;
 
 file = DATA FILE (PrintPricelistType);
 hasFile (PrintPricelistType t) = TRUE IF file(t);
 
 hasTemplate (PrintPricelistType t) = template(t) OR hasFile(t);
 
-openFile 'Открыть' (PrintPricelistType t) { 
+openFile 'Open' (PrintPricelistType t) { 
     IF hasFile(t) THEN {
         open(file(t));
     } ELSE IF template(t) THEN {
@@ -28,25 +28,25 @@ openFile 'Открыть' (PrintPricelistType t) {
         open(resourceFile());
     } 
 }
-loadFile 'Загрузить' (PrintPricelistType t) { INPUT = file(t) CHANGE; }
-dropFile 'Сбросить' (PrintPricelistType t) { file(t) <- NULL; } 
+loadFile 'Download' (PrintPricelistType t) { INPUT = file(t) CHANGE; }
+dropFile 'Reset' (PrintPricelistType t) { file(t) <- NULL; } 
 
 format = DATA TemplateFormat (PrintPricelistType);
-nameFormat 'Формат' (PrintPricelistType t) = name(format(t));
+nameFormat 'Format' (PrintPricelistType t) = name(format(t));
 
 // category
-set 'Вкл' = DATA BOOLEAN (PrintPricelistType, Category);
+set 'On' = DATA BOOLEAN (PrintPricelistType, Category);
 
 countCategory (PrintPricelistType t) = GROUP SUM 1 IF set(t, Category c) MATERIALIZED;
-set 'Вкл' (PrintPricelistType t, Item i) = (GROUP LAST set(t, Category pc) ORDER level(category(i), pc)) OR NOT countCategory(t);
+set 'On' (PrintPricelistType t, Item i) = (GROUP LAST set(t, Category pc) ORDER level(category(i), pc)) OR NOT countCategory(t);
 
 // pricetype
-set 'Вкл' = DATA BOOLEAN (PrintPricelistType, PriceType);
+set 'On' = DATA BOOLEAN (PrintPricelistType, PriceType);
 
-index 'Порядок' (PrintPricelistType t, PriceType pt) = PARTITION SUM 1 IF set(t, pt) ORDER pt BY t MATERIALIZED; 
+index 'Index' (PrintPricelistType t, PriceType pt) = PARTITION SUM 1 IF set(t, pt) ORDER pt BY t MATERIALIZED; 
 priceType (PrintPricelistType t, INTEGER i) = GROUP MAX PriceType pt IF index(t, pt) = i; 
 
-FORM printPricelistType 'Шаблон прайс-листа'
+FORM printPricelistType 'Pricelist template'
     OBJECTS t = PrintPricelistType PANEL
     PROPERTIES(t) name, nameCompany, 
                   template SHOWIF NOT hasFile(t), openFile,
@@ -91,7 +91,7 @@ DESIGN printPricelistType {
     }
 }
 
-FORM printPricelistTypes 'Шаблоны прайс-листа'
+FORM printPricelistTypes 'Pricelist templates'
     OBJECTS t = PrintPricelistType
     PROPERTIES READONLY name(t)
     
@@ -123,14 +123,14 @@ DESIGN pricelists {
         fill = 1;
         type = TABBED;
         NEW print {
-            caption = 'Печать';
+            caption = 'Print';
             MOVE BOX(pp);
         }
         NEW lists {
-            caption = 'Прайс-листы';
+            caption = 'Pricelists';
             MOVE BOX(p);
         }
     }
 }
 
-countPrintPricelistTypes 'Кол-во шаблонов' () = GROUP SUM 1 IF r IS PrintPricelistType; 
+countPrintPricelistTypes 'Number of templates' () = GROUP SUM 1 IF r IS PrintPricelistType; 

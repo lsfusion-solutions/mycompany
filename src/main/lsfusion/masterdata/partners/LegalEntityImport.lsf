@@ -4,12 +4,12 @@ REQUIRE LegalEntity, PartnerPurchase, PartnerSales;
 
 NAMESPACE MasterData;
 
-legalEntityExport 'Экспорт организаций' () {
+legalEntityExport 'Export legal entities' () {
     NEWSESSION {
         IF NOT (GROUP SUM 1 IF LegalEntity l IS LegalEntity) THEN {
             NEW l = LegalEntity {
                 id(l) <- '123';
-                name(l) <- 'Организация';
+                name(l) <- 'Legal entity';
             }
         }
     
@@ -22,7 +22,7 @@ legalEntityExport 'Экспорт организаций' () {
     }
 }
 
-legalEntityImport 'Импорт организаций' () {
+legalEntityImport 'Import legal entities' () {
     LOCAL id = STRING[50] (INTEGER);
     LOCAL name = ISTRING[30] (INTEGER);
     LOCAL website = ISTRING[30] (INTEGER);
@@ -53,7 +53,7 @@ legalEntityImport 'Импорт организаций' () {
                 isCustomer(l) <- isCustomer(j);
             }
             APPLY;
-            MESSAGE 'Импорт завершен';
+            MESSAGE 'Import completed';
         }
     }    
 }
@@ -66,7 +66,7 @@ DESIGN migrationData {
     commons {
         NEW legalEntity {
             type = CONTAINERH;
-            caption = 'Организации';
+            caption = 'Legal entities';
             MOVE PROPERTY(legalEntityImport());
             MOVE PROPERTY(legalEntityExport());
         }

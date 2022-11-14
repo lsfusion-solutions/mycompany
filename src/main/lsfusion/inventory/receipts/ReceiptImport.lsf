@@ -4,7 +4,7 @@ REQUIRE ReceiptDone, InvLedger, ReceiptCost, ItemPurchase;
 
 NAMESPACE Inventory;
 
-receiptExport 'Экспорт остатков' () {
+receiptExport 'Export on hand' () {
     LOCAL f = EXCELFILE ();
     
     IF GROUP SUM 1 IF onHand(Location l, Product p) THEN
@@ -16,7 +16,7 @@ receiptExport 'Экспорт остатков' () {
     open(f());
 }
 
-receiptImport 'Импорт остатков' () {
+receiptImport 'Import on hand' () {
     LOCAL idLocation = STRING[50] (INTEGER);
     LOCAL idProduct = ISTRING[50] (INTEGER);
     LOCAL quantity = NUMERIC[16,3] (INTEGER);
@@ -27,17 +27,17 @@ receiptImport 'Импорт остатков' () {
             IMPORT XLS HEADER FROM f TO idLocation = A, idProduct = B, quantity = C, cost = D;
             
             FOR [GROUP SUM 1 BY idLocation(INTEGER i)](num) AND NOT location[STRING](num) DO {
-                MESSAGE 'Отсутствует место хранения в базе данных с кодом ' + num + '. Импорт отменен';
+                MESSAGE 'Missing_storage_location_in_database_with_code' + ' ' + num + '... Import canceled';
                 RETURN;
             }
             
             FOR [GROUP SUM 1 BY idProduct(INTEGER i)](num) AND NOT item[STRING](num) DO {
-                MESSAGE 'Отсутствует товар в базе данных с кодом ' + num + '. Импорт отменен';
+                MESSAGE 'There is no product in the database with a code' + ' ' + num + '... Import canceled';
                 RETURN;
             }
             
             IF NOT (GROUP SUM 1 IF ReceiptType t AND t IS ReceiptType) THEN {
-                MESSAGE 'Отсутствуют типы приемки в базе данных. Импорт отменен';
+                MESSAGE 'There are no receipt types in the database. Import canceled';
                 RETURN;
             }
             
@@ -61,7 +61,7 @@ receiptImport 'Импорт остатков' () {
             }
                         
             APPLY;
-            MESSAGE 'Импорт завершен';
+            MESSAGE 'Import completed';
         }
     }
 }
@@ -74,7 +74,7 @@ DESIGN migrationData {
     commons {
         NEW receipt {
             type = CONTAINERH;
-            caption = 'Остатки';
+            caption = 'On hand';
             MOVE PROPERTY(receiptImport());
             MOVE PROPERTY(receiptExport());
         }

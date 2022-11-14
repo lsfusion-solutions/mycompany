@@ -10,7 +10,7 @@ pricelistLineB (PriceType t, Item i, DATETIME d) =
                NOT startDateTime(pricelist(prl)) >= d AND NOT endDateTime(pricelist(prl)) < d
           ORDER startDateTime(pricelist(prl)), prl;
 
-priceB 'Цена' (PriceType t, Item i, DATETIME d) = price(pricelistLineB(t, i, d), t);
+priceB 'Price' (PriceType t, Item i, DATETIME d) = price(pricelistLineB(t, i, d), t);
 
 pricelistLineA (PriceType t, Item i, DATETIME d) = 
     GROUP LAST PricelistLine prl IF item(prl) = primary(i) AND price(prl, t) AND done(pricelist(prl)) AND
@@ -31,6 +31,6 @@ currentPriceColor (PricelistLine l, PriceType t) =
         ELSE IF currentPrice(l, t) > price(l, t) THEN RGB(250,150,157);
 
 EXTEND FORM pricelist
-    PROPERTIES    currentPrice(l, t) COLUMNS 'p' (t) HEADER name(t) + ' (текущая)' 
+    PROPERTIES    currentPrice(l, t) COLUMNS 'p' (t) HEADER name(t) + ' ' + '(current)' 
                         SHOWIF showCurrentPrice(type(p), t) AFTER price(l, t) BACKGROUND currentPriceColor(l, t)
 ;

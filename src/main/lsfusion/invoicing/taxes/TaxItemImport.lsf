@@ -4,7 +4,7 @@ REQUIRE TaxItem;
 
 NAMESPACE Invoicing;
 
-taxItemImportSales 'Импорт налогов на реализацию' () {
+taxItemImportSales 'Import sales taxes' () {
     LOCAL id = STRING[50] (INTEGER);
     LOCAL group = STRING[20] (INTEGER);
     LOCAL value = NUMERIC[5,2] (INTEGER);
@@ -18,12 +18,12 @@ taxItemImportSales 'Импорт налогов на реализацию' () {
             } 
             
             APPLY;
-            MESSAGE 'Импорт завершен';
+            MESSAGE 'Import completed';
         }
     }
 }
 
-taxItemImportPurchase 'Импорт налогов на закупку' () {
+taxItemImportPurchase 'Import purchase taxes' () {
     LOCAL id = STRING[50] (INTEGER);
     LOCAL group = STRING[20] (INTEGER);
     LOCAL value = NUMERIC[5,2] (INTEGER);
@@ -37,13 +37,13 @@ taxItemImportPurchase 'Импорт налогов на закупку' () {
             } 
             
             APPLY;
-            MESSAGE 'Импорт завершен';
+            MESSAGE 'Import completed';
         }
     }
 }
 
 
-taxItemExportSales 'Экспорт налогов на реализацию' () {
+taxItemExportSales 'Export sales taxes' () {
     NEWSESSION {
         LOCAL f = EXCELFILE ();
         EXPORT XLSX HEADER FROM 'ID' = id(Item i), 'TaxGroupID' = id(taxGroup(Tax t)), 'Value' = value(t) WHERE salesIn(i, t) TO f;   
@@ -51,7 +51,7 @@ taxItemExportSales 'Экспорт налогов на реализацию' () 
     }
 }
 
-taxItemExportPurchase 'Экспорт налогов на закупку' () {
+taxItemExportPurchase 'Export purchase taxes' () {
     NEWSESSION {
         LOCAL f = EXCELFILE ();
         EXPORT XLSX HEADER FROM 'ID' = id(Item i), 'TaxGroupID' = id(taxGroup(Tax t)), 'Value' = value(t) WHERE purchaseIn(i, t) TO f;   
@@ -67,7 +67,7 @@ DESIGN migrationData {
     commons {
         NEW tax {
             type = CONTAINERH;
-            caption = 'Налоги';
+            caption = 'Taxes';
             NEW importTax {
                 MOVE PROPERTY(taxItemImportSales());
                 MOVE PROPERTY(taxItemImportPurchase());

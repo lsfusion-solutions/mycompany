@@ -5,13 +5,13 @@ REQUIRE IncomingPayment;
 NAMESPACE Invoicing;
 
 EXTEND CLASS IncomingPaymentStatus {
-    done 'Проведен'
+    done 'Done'
 }
-done 'Проведен' = DATA BOOLEAN (IncomingPayment);
+done 'Done' = DATA BOOLEAN (IncomingPayment);
 
 status(IncomingPayment s) += WHEN done(s) THEN IncomingPaymentStatus.done;
 
-markAsDone 'Провести' (IncomingPayment s) {
+markAsDone 'Mark as Done' (IncomingPayment s) {
     APPLY;
     IF canceled() THEN RETURN;
     
@@ -37,5 +37,5 @@ DESIGN incomingPayment {
 
 EXTEND FORM incomingPayments
     EXTEND FILTERGROUP status
-        FILTER 'Проведен' status(p) = IncomingPaymentStatus.done
+        FILTER 'Done' status(p) = IncomingPaymentStatus.done
 ;

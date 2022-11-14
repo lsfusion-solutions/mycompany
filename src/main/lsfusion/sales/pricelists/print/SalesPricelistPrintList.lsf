@@ -11,7 +11,7 @@ matches (PricelistLine l, PrintPricelistType t) =
 matches (Pricelist p, PrintPricelistType t) = GROUP SUM 1 IF pricelist(PricelistLine l) = p AND matches(l, t);
 countPrintType (Pricelist p) = GROUP SUM 1 IF matches(p, PrintPricelistType t); 
 
-FORM dialogPricelistTypesList 'Выбор типа прайс-листа'
+FORM dialogPricelistTypesList 'Select pricelist type'
     OBJECTS p = Pricelist PANEL
     
     OBJECTS t = PrintPricelistType
@@ -19,7 +19,7 @@ FORM dialogPricelistTypesList 'Выбор типа прайс-листа'
     FILTERS matches(p, t)
 ; 
     
-print 'Печать' (Pricelist p) {
+print 'Print' (Pricelist p) {
     LOCAL printType = PrintPricelistType();
     printType() <- NULL;
     IF countPrintType(p) = 1 THEN

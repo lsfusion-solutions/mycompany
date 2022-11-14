@@ -6,7 +6,7 @@ NAMESPACE Retail;
 
 EXTEND FORM posDashboard
     OBJECTS b = Bill PANEL
-    PROPERTIES(b) 'К оплате' = amount, nameVendor
+    PROPERTIES(b) 'To pay' = amount, nameVendor
     FILTERS session(b) = s
     
     OBJECTS bl = BillLine
@@ -17,7 +17,7 @@ EXTEND FORM posDashboard
     PROPERTIES returnNewReceipt = newReceipt(s)
 
     OBJECTS sb = Bill
-    PROPERTIES(sb) READONLY dateTime, number, nameVendor, 'К оплате' = amount
+    PROPERTIES(sb) READONLY dateTime, number, nameVendor, 'To pay' = amount
     PROPERTIES(sb) NEWSESSION EDIT
     FILTERS PREV(session(sb)) = s
 ;
@@ -52,14 +52,14 @@ DESIGN posDashboard {
         }
         sessionDetails {
             MOVE BOX(sb) AFTER BOX(si) {
-                caption = 'Возвраты'; 
+                caption = 'Refunds'; 
                 showIf = openedSession(p); 
             }
         }
     }
 }
 
-return 'Оформить возврат' (Session s, Invoice i) {
+return 'Return' (Session s, Invoice i) {
     IF s THEN { 
         CANCEL;
         

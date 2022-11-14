@@ -4,30 +4,30 @@ REQUIRE ProjectManagementSettings, ProjectType, MetaNumerator, Company;
 
 NAMESPACE ProjectManagement;
 
-CLASS Project 'Проект';
+CLASS Project 'Project';
 
-type 'Тип' = DATA ProjectType (Project) NONULL;
-nameType 'Тип' (Project s) = name(type(s));
+type 'Type' = DATA ProjectType (Project) NONULL;
+nameType 'Type' (Project s) = name(type(s));
 WHEN LOCAL SET(Project s IS Project) AND NOT CHANGED(type(s)) DO type(s) <- defaultProjectType(); 
 
 @defineNumberType(project);
 
-name 'Наименование' = DATA STRING (Project) CHARWIDTH 20 IN id;
+name 'Name' = DATA STRING (Project) CHARWIDTH 20 IN id;
 
-company 'Компания' = DATA Company (Project);
-nameCompany 'Компания' (Project p) = name(company(p));
+company 'Company' = DATA Company (Project);
+nameCompany 'Company' (Project p) = name(company(p));
 WHEN LOCAL SET(Project p IS Project) AND NOT CHANGED(company(p)) DO company(p) <- defaultCompany();
 
-partner 'Контрагент' = DATA Partner (Project);
-namePartner 'Контрагент' (Project p) = name(partner(p)) IN id;
+partner 'Partner' = DATA Partner (Project);
+namePartner 'Partner' (Project p) = name(partner(p)) IN id;
 
-startDate 'Дата начала' = DATA DATE (Project) IN id;
+startDate 'Start date' = DATA DATE (Project) IN id;
 startDate(Project p) <- currentDate() WHEN SET(p IS Project);
-endDate 'Дата окончания' = DATA DATE (Project);
+endDate 'End date' = DATA DATE (Project);
 
-description 'Описание' = DATA RICHTEXT (Project);
+description 'Description' = DATA RICHTEXT (Project);
 
-FORM project 'Проект'
+FORM project 'Project'
     OBJECTS p = Project PANEL
     
     PROPERTIES(p) nameType, number, name, nameCompany, namePartner, startDate, endDate,
@@ -37,10 +37,10 @@ FORM project 'Проект'
 ;
 
 DESIGN project {
-    caption = CONCAT ' ', 'Проект', name(p), number(p);
+    caption = CONCAT ' ', 'Project', name(p), number(p);
     OBJECTS {        
         NEW statusPane FIRST {
-            caption = 'Статусы';
+            caption = 'Statuses';
             type = CONTAINERH;
             alignment = STRETCH;                          
             NEW statusActions {
@@ -80,14 +80,14 @@ DESIGN project {
             type = TABBED;
             fill = 1;
             NEW description {
-                caption = 'Описание';
+                caption = 'Description';
                 MOVE PROPERTY(description(p)) { caption = ''; fill = 1; }
             }
         }
     }  
 }
 
-FORM projects 'Проекты'
+FORM projects 'Projects'
     OBJECTS p = Project
 
     PROPERTIES(p) READONLY nameType, number, name, nameCompany, namePartner, startDate, endDate

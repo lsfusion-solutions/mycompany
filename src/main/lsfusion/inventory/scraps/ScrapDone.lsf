@@ -5,13 +5,13 @@ REQUIRE Scrap;
 NAMESPACE Inventory;
 
 EXTEND CLASS ScrapStatus {
-    done 'Проведен'
+    done 'Done'
 }
-done 'Проведен' = DATA BOOLEAN (Scrap);
+done 'Done' = DATA BOOLEAN (Scrap);
 
 status(Scrap s) += WHEN done(s) THEN ScrapStatus.done;
 
-markAsDone 'Провести' (Scrap s) {
+markAsDone 'Mark as Done' (Scrap s) {
     APPLY;
     IF canceled() THEN RETURN;
     
@@ -36,5 +36,5 @@ DESIGN scrap {
 
 EXTEND FORM scraps
     EXTEND FILTERGROUP status
-        FILTER 'Проведен' status(s) = ScrapStatus.done
+        FILTER 'Done' status(s) = ScrapStatus.done
 ;

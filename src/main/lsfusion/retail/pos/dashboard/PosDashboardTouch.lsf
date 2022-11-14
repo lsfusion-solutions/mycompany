@@ -5,8 +5,8 @@ REQUIRE PosDashboardSearch, Utils,
 
 NAMESPACE Retail;
 
-hideTouch 'Спрятать' = DATA BOOLEAN (Category);
-hideTouch 'Спрятать' = DATA BOOLEAN (Item);
+hideTouch 'Hide' = DATA BOOLEAN (Category);
+hideTouch 'Hide' = DATA BOOLEAN (Item);
 
 EXTEND FORM options
     TREE categories c = Category PARENT parent(c)
@@ -20,13 +20,13 @@ EXTEND FORM options
     ORDERS name(itm)
     FILTERS level(category(itm), c)
     FILTERGROUP active
-        FILTER 'Активный' active(itm) 'F10' DEFAULT  
+        FILTER 'Active' active(itm) 'F10' DEFAULT  
 ;
 
 DESIGN options {
     tabbedPane {
         NEW touch {
-            caption = 'Выбор';
+            caption = 'Touch';
             type = SPLITH;
             MOVE BOX(TREE categories);
             MOVE BOX(itm);
@@ -44,7 +44,7 @@ parent (TouchNode n) = MULTI parent[Category](n), category[Item](n);
 image (TouchNode n) = MULTI image[Category](n), image[Item](n);
 hide (TouchNode n) = MULTI hideTouch[Category](n), hideTouch[Item](n);
 
-canonicalName 'Каноническое имя' (TouchNode n) =
+canonicalName 'Canonical name' (TouchNode n) =
    GROUP CONCAT name(TouchNode parent), ' / ' ORDER DESC level(n, parent) CHARWIDTH 50 IN id;
 
 index (TouchNode n) = PARTITION SUM 1 IF NOT hide(n) ORDER name(n), n BY parent(n);
@@ -54,11 +54,11 @@ EXTEND FORM posDashboard
     PROPERTIES(tn) READONLY '' = canonicalName
 ;
 
-back 'Назад' (TouchNode tn) {
+back 'Back' (TouchNode tn) {
     SEEK posDashboard.tn = parent(tn);
 }
 
-drop 'Сбросить' () {
+drop 'Reset' () {
     SEEK posDashboard.tn = GROUP LAST Category c ORDER c WHERE c IS Category AND NOT parent(c);
 }
 EXTEND FORM posDashboard 
@@ -90,7 +90,7 @@ EXTEND FORM posDashboard
 DESIGN posDashboard {
     tabPane {
         NEW touch BEFORE search {
-            caption = 'Выбор';
+            caption = 'Touch';
             showIf = openedSession(p) AND NOT hideInvoice();
             NEW current {
                 alignment = STRETCH;

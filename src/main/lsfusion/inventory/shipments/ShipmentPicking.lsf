@@ -5,30 +5,30 @@ REQUIRE ShipmentPrint, ShipmentRes, ShipmentInv;
 NAMESPACE Inventory;
 
 // type
-picking 'Отбор' = DATA BOOLEAN (ShipmentType);
+picking 'Picking' = DATA BOOLEAN (ShipmentType);
 EXTEND FORM shipmentType PROPERTIES(o) picking;
 
 // reserved
-reserved 'Зарезервировано' = DATA NUMERIC[16,3] (ShipmentLine, Location);
-reservedRec 'Зарезервировано (с учетом вложенных)' (ShipmentLine l) = GROUP SUM reserved(l, Location loc) IF level(loc, location(shipment(l)));
+reserved 'Reserved' = DATA NUMERIC[16,3] (ShipmentLine, Location);
+reservedRec 'Reserved (including nested)' (ShipmentLine l) = GROUP SUM reserved(l, Location loc) IF level(loc, location(shipment(l)));
 ledgerReserved (ShipmentLine l) += reservedRec(l);
 
-CONSTRAINT reserved(ShipmentLine l, Location loc) < 0 MESSAGE 'Зарезервированое кол-во не может быть меньше 0';
-CONSTRAINT reserved(ShipmentLine l) (-) reservedRec(l) < 0 MESSAGE 'Нельзя зарезервировать товара по местам хранения больше чем в строке';
+CONSTRAINT reserved(ShipmentLine l, Location loc) < 0 MESSAGE 'Reserved quantity cannot be less than 0';
+CONSTRAINT reserved(ShipmentLine l) (-) reservedRec(l) < 0 MESSAGE 'You cannot reserve goods for storage locations more than in a line';
 
 // done
-done 'Отгружено' = DATA NUMERIC[16,3] (ShipmentLine, Location);
-doneRec 'Отгружено (с учетом вложенных)' (ShipmentLine l) = GROUP SUM done(l, Location loc) IF level(loc, location(shipment(l)));
+done 'Done' = DATA NUMERIC[16,3] (ShipmentLine, Location);
+doneRec 'Shipped (including nested)' (ShipmentLine l) = GROUP SUM done(l, Location loc) IF level(loc, location(shipment(l)));
 ledgerDone (ShipmentLine l) += doneRec(l);
 
-CONSTRAINT done(ShipmentLine l, Location loc) < 0 MESSAGE 'Отгруженное кол-во не может быть меньше 0';
-CONSTRAINT done(ShipmentLine l) (-) doneRec(l) < 0 MESSAGE 'Нельзя отгрузить товара по местам хранения больше чем в строке';
+CONSTRAINT done(ShipmentLine l, Location loc) < 0 MESSAGE 'The shipped quantity cannot be less than 0';
+CONSTRAINT done(ShipmentLine l) (-) doneRec(l) < 0 MESSAGE 'You cannot ship goods to storage locations more than in a line';
 
 locations (ShipmentLine l) = GROUP CONCAT name(Location loc) + ' : ' + DOUBLE(done(l, loc)), ', ' ORDER loc;
 note(ShipmentLine l) += locations(l);
 
 // events
-dateReceived 'Дата последнего прихода' (ShipmentLine l, Location loc) = prevDateReceived(loc, product(l));
+dateReceived 'Last receipt date' (ShipmentLine l, Location loc) = prevDateReceived(loc, product(l));
 
 WHEN LOCAL CHANGED(done(ShipmentLine l)) AND picking(type(shipment(l))) DO 
     done(l, Location loc) <- PARTITION UNGROUP done
@@ -36,7 +36,7 @@ WHEN LOCAL CHANGED(done(ShipmentLine l)) AND picking(type(shipment(l))) DO
                                        ORDER dateReceived(l, loc), loc
                                        BY l;
 
-available 'Доступно' (ShipmentLine l, Location loc) = prevAvailable(loc, product(l)) (+) PREV(reserved(l, loc));
+available 'Available' (ShipmentLine l, Location loc) = prevAvailable(loc, product(l)) (+) PREV(reserved(l, loc));
 extraCheckAvailability (Shipment s) + {
     IF picking(type(s)) THEN {
         reserved(ShipmentLine l, Location loc) <- 
@@ -75,7 +75,7 @@ DESIGN shipment {
         type = SPLITH;
         linesTab {
             MOVE BOX(loc) {
-                caption = 'Отбор';
+                caption = 'Picking';
                 showIf = (picking(type(s)) AND waiting(s) AND NOT immediate(s));
             }
         }
@@ -83,7 +83,7 @@ DESIGN shipment {
 }
 
 // resledger
-CLASS ShipmentPickingRes 'Отгрузка' : ResLedger;
+CLASS ShipmentPickingRes 'Shipment' : ResLedger;
 
 pickingLedger = AGGR ShipmentPickingRes WHERE reserved(ShipmentLine l, Location loc) AND toReserve(shipment(l));
 
@@ -99,7 +99,7 @@ product(ShipmentPickingRes r) += product(l(r));
 reserved(ShipmentPickingRes r) += reserved(l(r),loc(r));
 
 // invledger
-CLASS ShipmentPickingInv 'Отгрузка' : InvLedger;
+CLASS ShipmentPickingInv 'Shipment' : InvLedger;
 
 invLedger = AGGR ShipmentPickingInv WHERE done(ShipmentLine l, Location loc);
 

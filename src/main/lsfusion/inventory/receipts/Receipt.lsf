@@ -6,81 +6,81 @@ REQUIRE System, Time, DateUtils,
 
 NAMESPACE Inventory;
 
-CLASS Receipt 'Приемка';
+CLASS Receipt 'Receipt';
 
-@defineDocStatus(receipt, 'приемки');
+@defineDocStatus(receipt, 'Receipt');
 
-immediate 'Незапланированное' = DATA BOOLEAN (Receipt);
+immediate 'Unplanned' = DATA BOOLEAN (Receipt);
 
 // type
-type 'Тип' = DATA ReceiptType (Receipt) NONULL;
-nameType 'Тип' (Receipt r) = name(type(r));
+type 'Type' = DATA ReceiptType (Receipt) NONULL;
+nameType 'Type' (Receipt r) = name(type(r));
 
 WHEN LOCAL SET(Receipt r IS Receipt) AND NOT CHANGED(type(r)) DO type(r) <- defaultReceiptType(); 
 
-scheduledDateTime 'Планируемая дата' = DATA DATETIME (Receipt) NONULL IN id;
+scheduledDateTime 'Scheduled date' = DATA DATETIME (Receipt) NONULL IN id;
 scheduledDateTime(Receipt r) <- currentDateTime() WHEN (r IS Receipt); 
-@defineDateTimeAggregation(Receipt, scheduled, ' планируемая');
+@defineDateTimeAggregation(Receipt, scheduled, 'Scheduled ');
 
 @defineNumberType(receipt);
 receipt (STRING[31] number) = GROUP LAST Receipt r ORDER r BY number(r);
 
-numberDate 'Описание' (Receipt r) = number(r) + ' (' + scheduledDateTime(r) + ')' IN id;
+numberDate 'Description' (Receipt r) = number(r) + ' (' + scheduledDateTime(r) + ')' IN id;
 
 // location
-location 'Место хранения' = DATA Location (Receipt) NONULL INDEXED;
-nameLocation 'Место хранения' (Receipt r) = name(location(r));
+location 'Location' = DATA Location (Receipt) NONULL INDEXED;
+nameLocation 'Location' (Receipt r) = name(location(r));
 WHEN LOCAL SETCHANGED(type(Receipt r)) AND defaultLocation(type(r)) AND NOT CHANGED(location(r)) DO location(r) <- defaultLocation(type(r));
 
-company 'Компания' (Receipt r) = company(location(r));
+company 'Company' (Receipt r) = company(location(r));
 
 // partner
 vendor = DATA Partner (Receipt) INDEXED;
-nameVendor 'Поставщик' (Receipt r) = name(vendor(r));
+nameVendor 'Vendor' (Receipt r) = name(vendor(r));
 
 isVendor = ABSTRACT VALUE BOOLEAN (Receipt);
 isVendor(Receipt r) += isVendor(vendor(r));
 CONSTRAINT vendor(Receipt r) AND NOT isVendor(r) 
                 CHECKED BY vendor[Receipt]
-                MESSAGE 'Контрагент должен быть поставщиком';
+                MESSAGE 'The partner must be a vendor';
 
-note 'Примечание' = DATA ISTRING[50] (Receipt);
+note 'Note' = DATA ISTRING[50] (Receipt);
 
 // lines
-CLASS ReceiptLine 'Строка приемки';
+CLASS ReceiptLine 'Receipt line';
 
-receipt 'Документ' = DATA Receipt (ReceiptLine) NONULL DELETE INDEXED;
+receipt 'Document' = DATA Receipt (ReceiptLine) NONULL DELETE INDEXED;
 
-countLines 'Кол-во строк' (Receipt r) = GROUP SUM 1 IF receipt(ReceiptLine l) = r MATERIALIZED;
+countLines 'Number of lines' (Receipt r) = GROUP SUM 1 IF receipt(ReceiptLine l) = r MATERIALIZED;
 index '№' = PARTITION SUM 1 ORDER ReceiptLine l BY receipt(l) IN id MATERIALIZED CHARWIDTH 3;
 
-product 'Товар' = DATA Product (ReceiptLine) NONULL INDEXED;
-nameProduct 'Товар' (ReceiptLine l) = name(product(l)) IN id;
-idBarCodeProduct 'Штрихкод' (ReceiptLine l) = idBarCode(product(l));
-idProduct 'Код' (ReceiptLine l) = id(product(l));
+product 'Product' = DATA Product (ReceiptLine) NONULL INDEXED;
+nameProduct 'Product' (ReceiptLine l) = name(product(l)) IN id;
+idBarCodeProduct 'Barcode' (ReceiptLine l) = idBarCode(product(l));
+idProduct 'ID' (ReceiptLine l) = id(product(l));
 
 CONSTRAINT product(ReceiptLine l) AND NOT canBePurchased(product(l))
             CHECKED BY product[ReceiptLine]
-            MESSAGE 'Товар не предназначен для закупки';
+            MESSAGE 'The product is not intended for purchase';
 
 uom (ReceiptLine l) = uom(product(l));
-nameUom 'Ед. изм.' (ReceiptLine l) = name(uom(l));
+nameUom 'UoM' (ReceiptLine l) = name(uom(l));
 
-initialDemand 'Планируемое кол-во' = DATA NUMERIC[16,3] (ReceiptLine);
+initialDemand 'Initial demand' = DATA NUMERIC[16,3] (ReceiptLine);
 
 CONSTRAINT initialDemand(ReceiptLine l) < 0 OR initialDemand(l) > maxQuantity(type(receipt(l))) AND maxQuantity(type(receipt(l))) 
-    MESSAGE 'Планируемое количество должно быть от 0 до максимально разрешенного';
+    MESSAGE 'The planned amount should be between 0 and the maximum allowed';
     
 // Line properties
-nameStatus 'Статус' (ReceiptLine l) = nameStatus(receipt(l));
-number 'Номер' (ReceiptLine l) = number(receipt(l)) IN id;
-numberDate 'Описание' (ReceiptLine l) = numberDate(receipt(l));
-scheduledDateTime 'Планируемая дата' (ReceiptLine l) = scheduledDateTime(receipt(l)) IN id;
+nameStatus 'Status' (ReceiptLine l) = nameStatus(receipt(l));
+number 'Number' (ReceiptLine l) = number(receipt(l)) IN id;
+numberDate 'Description' (ReceiptLine l) = numberDate(receipt(l));
+scheduledDateTime 'Scheduled date' (ReceiptLine l) = scheduledDateTime(receipt(l)) IN id;
 vendor (ReceiptLine l) = vendor(receipt(l));
-nameVendor 'Поставщик' (ReceiptLine l) = nameVendor(receipt(l));
-nameLocation 'Место хранения' (ReceiptLine l) = nameLocation(receipt(l));
+nameVendor 'Vendor' (ReceiptLine l) = nameVendor(receipt(l));
+nameLocation 'Location' (ReceiptLine l) = nameLocation(receipt(l));
 
-FORM receiptLines 'Строки приемки'
+FORM receiptLines 'Receipt lines'
     OBJECTS l = ReceiptLine
     PROPERTIES(l) READONLY scheduledDateTime, number, index, nameProduct
 
@@ -89,7 +89,7 @@ FORM receiptLines 'Строки приемки'
 
 edit (ReceiptLine l) + { edit(receipt(l)); } 
            
-FORM receipt 'Приемка'
+FORM receipt 'Receipt'
     OBJECTS r = Receipt PANEL
     PROPERTIES(r) nameType, scheduledDateTime, number, 
                   nameVendor, nameLocation,
@@ -105,7 +105,7 @@ FORM receipt 'Приемка'
 ;
 
 DESIGN receipt {
-    caption = (CONCAT ' ', 'Приемка', '№' + number(r), '(' + scheduledDateTime(r) + ')');
+    caption = (CONCAT ' ', 'Receipt', '№' + number(r), '(' + scheduledDateTime(r) + ')');
     OBJECTS {       
         NEW header {
             NEW headerCenter {
@@ -130,7 +130,7 @@ DESIGN receipt {
             fill = 5;
             type = TABBED;
             NEW lines {
-                caption = 'Строки';
+                caption = 'Lines';
                 type = SPLITH;
                 MOVE BOX(l) {
                     PROPERTY(nameProduct(l)) { notNull = TRUE; }
@@ -155,7 +155,7 @@ DESIGN receipt {
 // receipts
 background = ABSTRACT CASE COLOR (Receipt);
 
-FORM receipts 'Приемки'
+FORM receipts 'Receipts'
     OBJECTS r = Receipt BACKGROUND background(r)
     PROPERTIES(r) READONLYIF isReadonly()
                            nameType, scheduledDateTime, number, 
@@ -166,7 +166,7 @@ FORM receipts 'Приемки'
 
 @extendFormEditable(receipts);
 
-@defineDocObjectsForm(receipts, r, 'Приемки');
+@defineDocObjectsForm(receipts, r, 'Receipts');
 @defineDocStatusForm(receipt, r);
 @defineDocLocationAccess(receipt, r);
 
@@ -177,7 +177,7 @@ NAVIGATOR {
 }
 
 // immediate
-immediateReceipt 'Незапланированная приемка' () {
+immediateReceipt 'Immediate receipt' () {
     NEWSESSION {
         NEW r = Receipt {
             immediate(r) <- TRUE;
@@ -204,7 +204,7 @@ clone(Receipt to, Receipt from) {
     }
 }
 
-copy 'Копировать' (Receipt from) { 
+copy 'Copy' (Receipt from) { 
     NEWSESSION {
         NEW to = Receipt {
             clone(to, from);

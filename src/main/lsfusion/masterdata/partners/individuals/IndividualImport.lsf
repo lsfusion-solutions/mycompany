@@ -4,14 +4,14 @@ REQUIRE Individual;
 
 NAMESPACE MasterData;
 
-individualExport 'Экспорт физических лиц' () {
+individualExport 'Export individuals' () {
     NEWSESSION {
         IF NOT (GROUP SUM 1 IF Individual i IS Individual) THEN {
             NEW i = Individual {
                 id(i) <- '123';
                 firstName(i) <- '{First_name}';
-                lastName(i) <- 'Фамилия';
-                middleName(i) <- 'Отчество';
+                lastName(i) <- 'Surname';
+                middleName(i) <- 'Middle name';
             }
         }
     
@@ -23,7 +23,7 @@ individualExport 'Экспорт физических лиц' () {
     }
 }
 
-individualImport 'Импорт физических лиц' () {
+individualImport 'Import individuals' () {
     LOCAL id = STRING[50] (INTEGER);
     LOCAL firstName = ISTRING[30] (INTEGER);
     LOCAL lastName = ISTRING[30] (INTEGER);
@@ -55,7 +55,7 @@ individualImport 'Импорт физических лиц' () {
                 email(i) <- email(j);
             }
             APPLY;
-            MESSAGE 'Импорт завершен';
+            MESSAGE 'Import completed';
         }
     }    
 }
@@ -68,7 +68,7 @@ DESIGN migrationData {
     commons {
         NEW individual {
             type = CONTAINERH;
-            caption = 'Физ лица';
+            caption = 'Individuals';
             MOVE PROPERTY(individualImport());
             MOVE PROPERTY(individualExport());
         }

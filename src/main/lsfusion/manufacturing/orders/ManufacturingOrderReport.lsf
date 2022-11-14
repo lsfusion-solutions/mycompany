@@ -6,15 +6,15 @@ NAMESPACE Manufacturing;
 
 attribute(ManufacturingOrder o, ItemAttribute a) = value(attribute(item(o), a));
 
-FORM manufacturingOrderReport 'Отчет по заказам'
+FORM manufacturingOrderReport 'Order report'
     OBJECTS a = ItemAttribute
     
     OBJECTS o = ManufacturingOrder PIVOT
     PROPERTIES(o) READONLY nameType, scheduledDateTime, executionDateTime, nameStatus, number, 
                            nameCompany, nameMaterialsLocation, nameProductsLocation, 
                            nameItem, nameUom, descriptionBom
-    PROPERTIES READONLY 'Категория 1' = level1(item(o)), 'Категория 2' = level2(item(o)), 'Категория 3' = level3(item(o)), 'Категория 4' = level4(item(o)), 
-                        'Категория полная' = canonicalNameCategory(item(o)) 
+    PROPERTIES READONLY 'Category 1' = level1(item(o)), 'Category 2' = level2(item(o)), 'Category 3' = level3(item(o)), 'Category 4' = level4(item(o)), 
+                        'Canonical group' = canonicalNameCategory(item(o)) 
     PROPERTIES READONLY attribute(o, a) COLUMNS (a) HEADER name(a)
     PROPERTIES(o) READONLY MEASURE toManufacture, manufactured
     FILTERS accessGranted(materialsLocation(o)) OR accessGranted(productsLocation(o)) 

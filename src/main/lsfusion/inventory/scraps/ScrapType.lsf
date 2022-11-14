@@ -4,19 +4,19 @@ REQUIRE Numerator, Location;
 
 NAMESPACE Inventory;
 
-CLASS ScrapType 'Тип списания';
-name 'Название' = DATA ISTRING[50] (ScrapType) NONULL;
+CLASS ScrapType 'Scrap type';
+name 'Name' = DATA ISTRING[50] (ScrapType) NONULL;
 
-id 'Код' = DATA STRING[20] (ScrapType);
+id 'ID' = DATA STRING[20] (ScrapType);
 scrapType = GROUP AGGR ScrapType t BY id(t);
 
 numerator = DATA Numerator (ScrapType);
-nameNumerator 'Нумератор' (ScrapType o) = name(numerator(o));
+nameNumerator 'Numerator' (ScrapType o) = name(numerator(o));
 
 defaultLocation = DATA Location (ScrapType);
-nameDefaultLocation 'Место хранения' (ScrapType o) = name(defaultLocation(o));
+nameDefaultLocation 'Location' (ScrapType o) = name(defaultLocation(o));
 
-FORM scrapType 'Тип приемки'
+FORM scrapType 'Scrap type'
     OBJECTS o = ScrapType PANEL 
     PROPERTIES(o) name, id, nameNumerator, nameDefaultLocation
      
@@ -32,7 +32,7 @@ DESIGN scrapType {
     }
 }
 
-FORM scrapTypes 'Типы списания'
+FORM scrapTypes 'Scrap type'
     OBJECTS o = ScrapType
     PROPERTIES(o) READONLY name, id
     LIST ScrapType OBJECT o;
@@ -51,7 +51,7 @@ DESIGN options {
 }
 
 // default type
-countScrapTypes 'Кол-во типов' () = GROUP SUM 1 IF r IS ScrapType; 
+countScrapTypes 'Number of types' () = GROUP SUM 1 IF r IS ScrapType; 
 firstScrapType = GROUP LAST ScrapType r ORDER DESC r WHERE r IS ScrapType;
 
 defaultScrapType = firstScrapType() IF countScrapTypes() = 1;

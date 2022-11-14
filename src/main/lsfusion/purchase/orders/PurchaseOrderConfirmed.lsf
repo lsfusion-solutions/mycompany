@@ -5,14 +5,14 @@ REQUIRE PurchaseOrderSent;
 NAMESPACE Purchase;
 
 EXTEND CLASS OrderStatus {
-    confirmed 'Подтвержден'
+    confirmed 'Confirmed'
 }
-confirmed 'Подтвержден' = DATA BOOLEAN (Order);
+confirmed 'Confirmed' = DATA BOOLEAN (Order);
 
 status(Order o) += WHEN confirmed(o) THEN OrderStatus.confirmed;
 colorStatus(Order o) += WHEN status(o) = OrderStatus.confirmed THEN RGB(150,255,150);
 
-confirm 'Подтвердить' (Order o){
+confirm 'Confirm' (Order o){
     APPLY; 
     IF canceled() THEN RETURN;
     
@@ -41,7 +41,7 @@ DESIGN order {
 
 EXTEND FORM orders    
     EXTEND FILTERGROUP status
-        FILTER 'Подтвержден' status(o) = OrderStatus.confirmed    
+        FILTER 'Confirmed' status(o) = OrderStatus.confirmed    
 ;
 
-@defineSelectionAction(orders, Order, confirm, 'Подтвердить', statuses);
+@defineSelectionAction(orders, Order, confirm, 'Confirm', statuses);

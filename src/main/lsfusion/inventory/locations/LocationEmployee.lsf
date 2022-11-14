@@ -4,7 +4,7 @@ REQUIRE Location, Employee;
 
 NAMESPACE Inventory;
 
-hasAccess 'Есть доступ' = DATA BOOLEAN (Employee, Location); 
+hasAccess 'Has access' = DATA BOOLEAN (Employee, Location); 
 
 hasParentAccess (Employee e, Location l) = GROUP LAST hasAccess(e, Location pl) ORDER DESC level(l, pl); 
 
@@ -28,7 +28,7 @@ EXTEND FORM employee
 DESIGN employee {
     details {
         MOVE BOX(TREE locations) {
-            caption = 'Места хранения';
+            caption = 'Locations';
             PROPERTY(hasAccess(e, lt)) {
                 width = 40;
             }
@@ -41,7 +41,7 @@ META defineDocLocationAccess(doc, let, prefix)
         prefix###location(o) <- firstLocation();
 
     CONSTRAINT SETCHANGED(prefix###location(###doc o)) AND accessDenied(prefix###location(o)) CHECKED BY prefix###location[###doc]
-               MESSAGE 'У текущего пользователя нет прав доступа к выбранному месту хранения';
+               MESSAGE 'The current user does not have permission to access the selected storage location';
                
     EXTEND FORM doc##s
         FILTERS accessGranted(prefix###location(let)) OR NOT prefix###location(let) 

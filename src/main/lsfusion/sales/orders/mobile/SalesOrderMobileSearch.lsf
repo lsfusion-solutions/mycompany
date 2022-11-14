@@ -6,25 +6,25 @@ NAMESPACE Sales;
 
 EXTEND FORM orderMobile
     OBJECTS i = Item PAGESIZE 50
-    PROPERTIES(i) READONLY 'Имя' = name
+    PROPERTIES(i) READONLY '{First_name}' = name
     PROPERTIES READONLY overListPrice(o, i), available(o, i), 
-                        'В месте' = salesPackRatio(i) SHOWIF pack(type(o)) 
+                        'Packing' = salesPackRatio(i) SHOWIF pack(type(o)) 
     PROPERTIES(o, i) quantity ON CHANGE changeQuantity(o, i)
     PROPERTIES(i) READONLY PANEL pName '' = name, '' = id, '' = idBarCode, '' = nameUom
     ORDERS name(i)
     
     FILTERGROUP available
-        FILTER 'Доступно' available(o, i) > 0 OR NOT i IS Product DEFAULT
+        FILTER 'Available' available(o, i) > 0 OR NOT i IS Product DEFAULT
 
     FILTERGROUP order
-        FILTER 'Заказано' quantity(o, i)
+        FILTER 'Ordered' quantity(o, i)
 
 ;
 
 DESIGN orderMobile {
     pane {
         NEW search {
-            caption = 'Подбор';
+            caption = 'Search';
             NEW filters {
                 alignment = STRETCH;
                 NEW groupFilter {

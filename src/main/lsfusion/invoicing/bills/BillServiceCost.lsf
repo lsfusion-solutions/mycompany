@@ -5,12 +5,12 @@ REQUIRE MasterData, Bill, BarCode, Utils, ItemCost;
 NAMESPACE Invoicing;
 
 // cost allocation base
-CLASS CostAllocationBase 'База распределения';
+CLASS CostAllocationBase 'Distribution base';
 TABLE CostAllocationBase (CostAllocationBase);
 
-name 'Наименование' (CostAllocationBase o) = staticCaption(o) IF o IS CostAllocationBase CHARWIDTH 15;
+name 'Name' (CostAllocationBase o) = staticCaption(o) IF o IS CostAllocationBase CHARWIDTH 15;
 
-FORM dialogCostAllocationBases 'База распределения'
+FORM dialogCostAllocationBases 'Distribution base'
     OBJECTS o = CostAllocationBase
     PROPERTIES(o) READONLY name
     
@@ -18,17 +18,17 @@ FORM dialogCostAllocationBases 'База распределения'
 ;
 
 EXTEND CLASS CostAllocationBase {
-    amount 'Сумма',
-    cost 'Плановая себестоимость',
-    salesPrice 'Сумма продажи',
-    weight 'Масса',
-    volume 'Объем',
-    overallWeight 'Габаритный вес'
+    amount 'Amount',
+    cost 'Planned cost',
+    salesPrice 'Sales amount',
+    weight 'Weight',
+    volume 'Volume',
+    overallWeight 'Overall weight'
 }
 
 // item form
-costAllocationBase 'База распределения' = DATA CostAllocationBase (Service);
-nameCostAllocationBase 'База распределения' (Service s) = name(costAllocationBase(s));
+costAllocationBase 'Distribution base' = DATA CostAllocationBase (Service);
+nameCostAllocationBase 'Distribution base' (Service s) = name(costAllocationBase(s));
 
 EXTEND FORM item PROPERTIES nameCostAllocationBase(i); 
 
@@ -39,8 +39,8 @@ DESIGN item {
 }
 
 // cost allocation line
-costAllocationBase 'База распределения' = DATA CostAllocationBase (BillLine);
-nameCostAllocationBase 'База распределения' (BillLine bsl) = name(costAllocationBase(bsl));
+costAllocationBase 'Distribution base' = DATA CostAllocationBase (BillLine);
+nameCostAllocationBase 'Distribution base' (BillLine bsl) = name(costAllocationBase(bsl));
 
 WHEN LOCAL CHANGED(item(BillLine bsl)) DO costAllocationBase(bsl) <- costAllocationBase(item(bsl) AS Service);
 
@@ -60,25 +60,25 @@ allocationBase (BillLine bl, CostAllocationBase b) +=
 allocationBase (BillLine bl, CostAllocationBase b) += 
     WHEN item(bl) IS Product AND b = CostAllocationBase.overallWeight THEN NUMERIC[14,3](max(volume(item(bl)) * 200, weight(item(bl))) * quantity(bl));
 
-allocationBase 'База распределения' (BillLine bl, BillLine bsl) = allocationBase(bl, costAllocationBase(bsl));
+allocationBase 'Distribution base' (BillLine bl, BillLine bsl) = allocationBase(bl, costAllocationBase(bsl));
 
-serviceLine 'Распределять' = DATA BOOLEAN (BillLine, BillLine);
-costAllocated 'Распределено' = DATA NUMERIC[14,2] (BillLine, BillLine);
+serviceLine 'Distribute' = DATA BOOLEAN (BillLine, BillLine);
+costAllocated 'Distributed' = DATA NUMERIC[14,2] (BillLine, BillLine);
 
-costAllocated 'Распределено' (BillLine bsl) = GROUP SUM costAllocated(BillLine bl, bsl) IF serviceLine(bl, bsl);
+costAllocated 'Distributed' (BillLine bsl) = GROUP SUM costAllocated(BillLine bl, bsl) IF serviceLine(bl, bsl);
 
 CONSTRAINT costAllocated(BillLine bsl) AND NOT costAllocated(bsl) <= untaxedAmount(bsl)
-    MESSAGE 'Распределенная сумма не может превышать стоимость услуги';  
+    MESSAGE 'The allocated amount cannot exceed the cost of the service';  
 
-calcCostAllocated 'Распределено' (BillLine bl, BillLine bsl) = PARTITION UNGROUP untaxedAmount
+calcCostAllocated 'Distributed' (BillLine bl, BillLine bsl) = PARTITION UNGROUP untaxedAmount
     PROPORTION STRICT ROUND(2) allocationBase(bl, bsl) IF serviceLine(bl, bsl)
     ORDER bl BY bsl;
 
-allocate 'Распределить' (BillLine bsl) {
+allocate 'Distribute' (BillLine bsl) {
     costAllocated (BillLine bl, bsl) <- calcCostAllocated(bl, bsl);
 }
 
-service 'Распределять' (Bill b, BillLine bsl) = GROUP MAX serviceLine(BillLine bl, bsl) IF bill(bl) = b;
+service 'Distribute' (Bill b, BillLine bsl) = GROUP MAX serviceLine(BillLine bl, bsl) IF bill(bl) = b;
 checkBill (Bill b, BillLine bsl) {
     LOCAL checked = BOOLEAN ();
     checked() <- NOT service(b,bsl);
@@ -113,7 +113,7 @@ DESIGN bill {
         details {
             NEW cost {
                 showIf = countServiceLine(b);
-                caption = 'Распределение на себестоимость';
+                caption = 'Cost distribution';
                 MOVE BOX(bsl) {
                     fill = 0.3;
                 }

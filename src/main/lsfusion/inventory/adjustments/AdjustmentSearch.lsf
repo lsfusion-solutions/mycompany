@@ -4,7 +4,7 @@ REQUIRE AdjustmentInProgress, BarCode;
 
 NAMESPACE Inventory;
 
-realQuantity 'Фактическое кол-во' (Adjustment, Product, Location) = 
+realQuantity 'Real quantity' (Adjustment, Product, Location) = 
     GROUP SUM realQuantity(AdjustmentLine l) BY adjustment(l), product(l), location(l);
 
 setRealQuantity(Adjustment a, Product p, Location loc, NUMERIC[16,3] q) {
@@ -36,8 +36,8 @@ EXTEND FORM adjustment
     ORDERS name(lt)
         
     OBJECTS lp = (loc = Location, p = Product)
-    PROPERTIES READONLY    'Склад' = canonicalName(loc)
-    PROPERTIES(p) READONLY 'Товар' = name, nameUom, idBarCode, id  
+    PROPERTIES READONLY    'Location' = canonicalName(loc)
+    PROPERTIES(p) READONLY 'Product' = name, nameUom, idBarCode, id  
     PROPERTIES(loc, p) READONLY      onHand
     PROPERTIES realQuantity(a, p, loc) ON CHANGE changeRealQuantity(a, p, loc)
     FILTERS level(loc, lt), onHand(loc, p)
@@ -50,7 +50,7 @@ DESIGN adjustment {
             showIf = status(a) = AdjustmentStatus.inProgress AND type(a) = AdjustmentType.manual;
             fill = 1;
             type = SPLITH;
-            caption = 'Подбор';
+            caption = 'Search';
             MOVE BOX(TREE locations);
             MOVE BOX (lp) { fill = 2; }
         }

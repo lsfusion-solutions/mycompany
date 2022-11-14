@@ -4,37 +4,37 @@ REQUIRE Currency;
 
 NAMESPACE MasterData;
 
-CLASS ExchangeRate 'Курс валют';
+CLASS ExchangeRate 'Exchange rate';
 TABLE exchangeRate (ExchangeRate);
 
-name 'Наименование' = DATA ISTRING[30] (ExchangeRate) CHARWIDTH 10;
+name 'Name' = DATA ISTRING[30] (ExchangeRate) CHARWIDTH 10;
 
 currency = DATA Currency (ExchangeRate) NONULL;
-nameCurrency 'Валюта' (ExchangeRate er) = name(currency(er));
+nameCurrency 'Currency' (ExchangeRate er) = name(currency(er));
 WHEN LOCAL SET(ExchangeRate er IS ExchangeRate) AND NOT CHANGED(currency(er)) DO currency(er) <- defaultCurrency(); 
 
 defaultExchangeRate = DATA ExchangeRate (Currency);
-default 'По умолчанию' (ExchangeRate er) = defaultExchangeRate(currency(er)) = er;
+default 'Default' (ExchangeRate er) = defaultExchangeRate(currency(er)) = er;
 changeDefault (ExchangeRate er) {
     INPUT b = BOOLEAN DO
         defaultExchangeRate(currency(er)) <- er IF b;
 } 
 
 // lines
-CLASS ExchangeRateLine 'Строка курса валют';
+CLASS ExchangeRateLine 'Exchange rate line';
 
-exchangeRate 'Курс валют' = DATA ExchangeRate (ExchangeRateLine) NONULL DELETE;
+exchangeRate 'Exchange rate' = DATA ExchangeRate (ExchangeRateLine) NONULL DELETE;
 
-date 'Дата' = DATA DATE (ExchangeRateLine) NONULL;
+date 'Date' = DATA DATE (ExchangeRateLine) NONULL;
 
 currency = DATA Currency (ExchangeRateLine) NONULL;
-nameCurrency 'Валюта' (ExchangeRateLine l) = name(currency(l));
+nameCurrency 'Currency' (ExchangeRateLine l) = name(currency(l));
 
-rate 'Курс' = DATA NUMERIC[20,10] (ExchangeRateLine) NONULL;
+rate 'Rate' = DATA NUMERIC[20,10] (ExchangeRateLine) NONULL;
 
 INDEX exchangeRate(ExchangeRateLine rl), currency(rl), date(rl);
 
-FORM exchangeRate 'Курс валют'
+FORM exchangeRate 'Exchange rate'
     OBJECTS o = ExchangeRate PANEL
     PROPERTIES(o) name, nameCurrency, default ON CHANGE changeDefault(o)
     
@@ -50,13 +50,13 @@ DESIGN exchangeRate {
     PROPERTY(nameCurrency(l)) { notNull = TRUE; }
 }
 
-FORM exchangeRates 'Курсы валют'
+FORM exchangeRates 'Exchange rates'
     OBJECTS o = ExchangeRate
     PROPERTIES(o) READONLY name, nameCurrency, default
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
 ;
 
-FORM dialogExchangeRates 'Курсы валют'
+FORM dialogExchangeRates 'Exchange rates'
     OBJECTS o = ExchangeRate
     PROPERTIES(o) READONLY name, nameCurrency
     

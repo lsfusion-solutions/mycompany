@@ -4,7 +4,7 @@ REQUIRE Item;
 
 NAMESPACE MasterData;
 
-ratio 'Соотношение' = DATA NUMERIC[20,10] (Item, Uom);
+ratio 'Ratio' = DATA NUMERIC[20,10] (Item, Uom);
 
 EXTEND FORM item
     OBJECTS u = Uom
@@ -14,13 +14,13 @@ EXTEND FORM item
     FILTERS u != uom(i)
     
     FILTERGROUP ratio
-        FILTER 'Используются' ratio(i, u)
+        FILTER 'Used' ratio(i, u)
 ;
 
 DESIGN item {
     tabs {
         MOVE BOX(u) {
-            caption = 'Единицы измерения';
+            caption = 'Units of measure';
         }
     }
 }
@@ -28,17 +28,17 @@ DESIGN item {
 // partner
 META defineDocPartnerUom(doc)
     partnerUom = DATA Uom (doc##Line);
-    namePartnerUom 'Ед. изм. контрагента' (doc##Line l) = name(partnerUom(l));
+    namePartnerUom 'UoM (partner)' (doc##Line l) = name(partnerUom(l));
 
     WHEN LOCAL CHANGED(item(doc##Line l)) AND NOT ratio(item(l), partnerUom(l)) DO 
         partnerUom(l) <- NULL;
         
     CONSTRAINT partnerUom(doc##Line l) AND NOT ratio(item(l), partnerUom(l)) CHECKED BY partnerUom[doc##Line]
-        MESSAGE 'Выбрана единица измерения контрагента, для которой не задано соотношение';
+        MESSAGE 'The partner unit of measure is selected for which the ratio is not specified';
 END
 
 META defineDocPartnerQuantity(doc)
-    partnerQuantity 'Кол-во контрагента' = DATA NUMERIC[16,3] (doc##Line);
+    partnerQuantity 'Number of partner' = DATA NUMERIC[16,3] (doc##Line);
     WHEN LOCAL (CHANGED(quantity(doc##Line l)) OR CHANGED(partnerUom(l))) AND NOT CHANGED(partnerQuantity(l)) DO
         partnerQuantity(l) <- NUMERIC[16,3](quantity(l) / ratio(item(l), partnerUom(l)));
     
@@ -50,7 +50,7 @@ META defineDocPartnerQuantity(doc)
 END
 
 META defineDocPartnerPrice(doc)
-    partnerPrice 'Цена контрагента' = DATA NUMERIC[10,2] (doc##Line);
+    partnerPrice 'Partner price' = DATA NUMERIC[10,2] (doc##Line);
     WHEN LOCAL (CHANGED(price(doc##Line l)) OR CHANGED(partnerUom(l))) AND NOT CHANGED(partnerPrice(l)) DO
         partnerPrice(l) <- NUMERIC[10,2](price(l) * ratio(item(l), partnerUom(l)));
     

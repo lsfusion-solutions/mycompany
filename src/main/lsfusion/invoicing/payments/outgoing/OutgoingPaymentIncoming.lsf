@@ -6,14 +6,14 @@ NAMESPACE Invoicing;
 
 // type
 outgoingPaymentType = DATA OutgoingPaymentType (IncomingPaymentType);
-nameOutgoingPaymentType 'Тип исходящего платежа' (IncomingPaymentType t) = name(outgoingPaymentType(t));
+nameOutgoingPaymentType 'Outgoing payment type' (IncomingPaymentType t) = name(outgoingPaymentType(t));
 
 EXTEND FORM incomingPaymentType
     PROPERTIES(o) nameOutgoingPaymentType
 ;
 
 // incoming
-@defineDocRelation(incomingPayment, outgoingPayment, 'Входящий платеж', 'Исходящий платеж', p, p);
+@defineDocRelation(incomingPayment, outgoingPayment, 'Incoming payment', 'Outgoing payment', p, p);
 
 outgoingPaymentCreated = DATA LOCAL OutgoingPayment ();
 newOutgoingPayment (IncomingPayment op) {
@@ -39,7 +39,7 @@ newOutgoingPayment (IncomingPayment op) {
     }
 }
 
-createOutgoingPayment 'Создать исходящий платеж' (IncomingPayment op) {
+createOutgoingPayment 'Create outgoing payment' (IncomingPayment op) {
     APPLY;
     IF canceled() THEN RETURN;
     
@@ -60,7 +60,7 @@ DESIGN incomingPayment {
 }
 
 // auto create
-autoCreateOutgoingPayment 'Автоматически создавать исходящий платеж' = DATA BOOLEAN (IncomingPaymentType);
+autoCreateOutgoingPayment 'Automatically create outgoing payment' = DATA BOOLEAN (IncomingPaymentType);
 EXTEND FORM incomingPaymentType PROPERTIES(o) autoCreateOutgoingPayment;
 
 WHEN SET(active(IncomingPayment ip)) AND NOT countOutgoingPayment(ip) AND autoCreateOutgoingPayment(type(ip)) DO

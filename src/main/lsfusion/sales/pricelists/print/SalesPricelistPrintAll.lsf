@@ -4,17 +4,17 @@ REQUIRE SalesPricelistPrint, SalesPricelistValue;
 
 NAMESPACE Sales;
 
-changedPrice 'Изменившиеся' = DATA LOCAL BOOLEAN(); 
-toPrintData 'Вкл' = DATA LOCAL BOOLEAN (Category);
-toPrintData 'Вкл' = DATA LOCAL BOOLEAN (Item);
+changedPrice 'Changed' = DATA LOCAL BOOLEAN(); 
+toPrintData 'On' = DATA LOCAL BOOLEAN (Category);
+toPrintData 'On' = DATA LOCAL BOOLEAN (Item);
 
-toPrint 'Вкл' (Item i) = OVERRIDE toPrintData(i), GROUP LAST toPrintData(Category c) ORDER level(category(i), c);  
+toPrint 'On' (Item i) = OVERRIDE toPrintData(i), GROUP LAST toPrintData(Category c) ORDER level(category(i), c);  
 
-FORM printAllParams 'Параметры печати'
+FORM printAllParams 'Print options'
     OBJECTS t = PrintPricelistType PANEL
 
     OBJECTS date = DATETIME PANEL
-    PROPERTIES(date) date 'Дата' = VALUE
+    PROPERTIES(date) date 'Date' = VALUE
     
     PROPERTIES() changedPrice
 
@@ -31,7 +31,7 @@ FORM printAllParams 'Параметры печати'
     PROPERTIES toPrint(i)
     ORDERS name(i)
     FILTERGROUP inItem
-        FILTER 'Включенные' toPrint(i) 
+        FILTER 'Included' toPrint(i) 
     FILTERS level(category(i), c), canBeSold(i)
 
     EVENTS ON INIT { 
@@ -64,11 +64,11 @@ DESIGN printAllParams {
 }
 
 // actions
-dropPrint 'Сбросить' () {
+dropPrint 'Reset' () {
     toPrintData (Category c) <- NULL;
     toPrintData (Item i) <- NULL;
 }
-selectPrint 'Выбрать все' () {
+selectPrint 'Select all' () {
     toPrintData (Item i) <- TRUE WHERE [FILTER printAllParams.i](i);
 }
 
@@ -77,7 +77,7 @@ EXTEND FORM printAllParams
 ;
 
 // print
-printAll 'Сформировать' (PrintPricelistType t) {
+printAll 'Print' (PrintPricelistType t) {
     toPrintData (Category c) <- set(t, c);
     DIALOG printAllParams OBJECTS t = t, date INPUT DOCKED DO {
         price(PriceType pt, Item i) <- priceA(pt, i, date) IF (toPrint(i) OR NOT GROUP SUM 1 IF toPrint(Item j)) AND

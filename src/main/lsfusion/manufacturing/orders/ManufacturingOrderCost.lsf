@@ -5,7 +5,7 @@ REQUIRE ManufacturingOrderCanceled, CostLedger, CostLocation;
 NAMESPACE Manufacturing;
 
 // out
-CLASS ConsumedOutCostLedger 'Списание сырья' : OutCostLedger;
+CLASS ConsumedOutCostLedger : OutCostLedger;
 outCostLedger = AGGR ConsumedOutCostLedger WHERE consumed(ConsumedLine line) AND active(manufacturingOrder(line)) AND item(line) IS Product;
 
 type(ConsumedOutCostLedger l) += nameType(manufacturingOrder(line(l)));
@@ -20,10 +20,10 @@ quantity(ConsumedOutCostLedger l) += consumed(line(l));
 
 edit(ConsumedOutCostLedger l) + { edit(line(l)); }
 
-cost 'Себестоимость' (ConsumedLine l) = amount(outCostLedger(l));
+cost 'Cost' (ConsumedLine l) = amount(outCostLedger(l));
 
 // in
-CLASS ConsumedInCostLedger 'Производство' : InCostLedger;
+CLASS ConsumedInCostLedger 'Manufacturing' : InCostLedger;
 inCostLedger = AGGR ConsumedInCostLedger WHERE produced(FinishedLine line) AND active(manufacturingOrder(line)) AND item(line) IS Product;
 
 type(ConsumedInCostLedger l) += nameType(manufacturingOrder(line(l)));
@@ -36,7 +36,7 @@ location(ConsumedInCostLedger l) += costLocation(productsLocation(manufacturingO
 product(ConsumedInCostLedger l) += item(line(l)) AS Product;
 quantity(ConsumedInCostLedger l) += produced(line(l));
 
-cost 'Себестоимость' (ManufacturingOrder o) = GROUP SUM amount(ConsumedOutCostLedger l) IF manufacturingOrder(line(l)) = o;
+cost 'Cost' (ManufacturingOrder o) = GROUP SUM amount(ConsumedOutCostLedger l) IF manufacturingOrder(line(l)) = o;
 
 calcAmount (ConsumedInCostLedger l) += NUMERIC[14,2](cost(manufacturingOrder(line(l))) * normalizedCostRatio(line(l)));
 

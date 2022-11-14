@@ -8,19 +8,19 @@ nameItemIndent '{Items}' (ComponentLine l, TEXT path) =
     STRING(CONCAT '', repeat('    ', wordCount(path, '/') - 1), nameItem(l));
 
 // cost
-cost 'Стоимость изделия' (Bom b, ComponentLine l, TEXT path) = 
+cost 'Product cost' (Bom b, ComponentLine l, TEXT path) = 
     quantity(b, l, path) * cost(item(l));
-cost 'Стоимость изделия' (Bom b) = cost(item(b)) * quantity(b);
+cost 'Product cost' (Bom b) = cost(item(b)) * quantity(b);
 
 // components cost
-componentsCost 'Стоимость компонентов' (Bom b, TEXT path) = 
+componentsCost 'Components cost' (Bom b, TEXT path) = 
     GROUP SUM quantity(b, ComponentLine ll, TEXT child) * cost(item(ll)) IF 
                 startsWith(child, path) AND 
                 NOT nestedBom(ll);
-componentsCost 'Стоимость компонентов' (Bom b) = 
+componentsCost 'Components cost' (Bom b) = 
     GROUP SUM componentsCost(b, TEXT path) IF level(b, ComponentLine l, path) AND NOT nestedBom(l);
 
-FORM structureAndCost 'Структура и стоимость'
+FORM structureAndCost 'Structure and cost'
     OBJECTS b = Bom PANEL 
     PROPERTIES(b) READONLY number, cost, componentsCost
        
@@ -32,7 +32,7 @@ FORM structureAndCost 'Структура и стоимость'
     ORDERS path
 ;
 
-structureAndCost 'Структура и стоимость' (Bom b) {
+structureAndCost 'Structure and cost' (Bom b) {
     SHOW structureAndCost OBJECTS b = b;
 }
 
@@ -47,7 +47,7 @@ DESIGN bom {
 }
 
 // print
-FORM printStructureAndCost 'Структура и стоимость'
+FORM printStructureAndCost 'Structure and cost'
     OBJECTS b = Bom PANEL 
     PROPERTIES(b) READONLY nameItem, componentsCost
        
@@ -59,7 +59,7 @@ FORM printStructureAndCost 'Структура и стоимость'
     ORDERS path
 ;
 
-print 'Печать' (Bom b) {
+print 'Print' (Bom b) {
     PRINT printStructureAndCost OBJECTS b = b; 
 }
 

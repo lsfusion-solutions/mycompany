@@ -4,7 +4,7 @@ REQUIRE ProductLot, ReceiptSearch, ReceiptInv, InvLedgerLot;
 
 NAMESPACE Inventory;
 
-@defineDocLot (receipt, product, done, done, ' (принято)');
+@defineDocLot (receipt, product, done, done, ' (done)');
 
 @defineDocBarCodeLot (receipt, product, done);
 
@@ -20,8 +20,8 @@ beforeProcessReceiptLineLotBarCode(Receipt r, STRING s) + {
 
 @defineDocLotGenerate(receipt, product, done);
 
-initialDemand 'Планируемое кол-во' = DATA NUMERIC[16,3] (ReceiptLine, Lot);
-initialDemandLot 'Планируемое кол-во партий' (ReceiptLine rl) = GROUP SUM initialDemand(rl, Lot l);
+initialDemand 'Initial demand' = DATA NUMERIC[16,3] (ReceiptLine, Lot);
+initialDemandLot 'Lot initial demand' (ReceiptLine rl) = GROUP SUM initialDemand(rl, Lot l);
 
 EXTEND FORM receipt 
     PROPERTIES (l, lotL) BEFORE done(l, lotL) initialDemand READONLY

@@ -5,14 +5,14 @@ REQUIRE ManufacturingOrderDone;
 NAMESPACE Manufacturing;
 
 EXTEND CLASS ManufacturingOrderStatus {
-    canceled 'Отменен'
+    canceled 'Cancelled'
 }
 
-canceled 'Отменен' = DATA BOOLEAN (ManufacturingOrder);
-active 'Активен' (ManufacturingOrder o) = done(o) AND NOT canceled(o);
+canceled 'Cancelled' = DATA BOOLEAN (ManufacturingOrder);
+active 'Active' (ManufacturingOrder o) = done(o) AND NOT canceled(o);
 started (ManufacturingOrder o) = NOT status(o) = ManufacturingOrderStatus.draft AND NOT canceled(o);
 
-cancel 'Отменить' (ManufacturingOrder m) {
+cancel 'Cancel' (ManufacturingOrder m) {
     APPLY; 
        IF canceled() THEN RETURN;
            

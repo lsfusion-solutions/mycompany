@@ -4,12 +4,12 @@ REQUIRE ManufacturingOrderFilter, InvLedger;
 
 NAMESPACE Manufacturing;
 
-toProduce 'Произвести' = DATA LOCAL NUMERIC[16,3] (Item);
+toProduce '{Manufacture}' = DATA LOCAL NUMERIC[16,3] (Item);
 
 dataProduceBom = DATA LOCAL Bom (Item);
 produceBom (Item i) = OVERRIDE dataProduceBom(i), defaultBom(i);
 
-nameProduceBom 'Спецификация' (Item i) = name(produceBom(i));
+nameProduceBom 'Bill of Materials' (Item i) = name(produceBom(i));
 
 changeProduceBom (Item i) {
     DIALOG dialogItemBoms OBJECTS i = i, b = produceBom(i) INPUT NULL DO {
@@ -17,7 +17,7 @@ changeProduceBom (Item i) {
     }
 }
 
-FORM inputProduceQuantity 'Выбор продукции'
+FORM inputProduceQuantity 'Product selection'
     OBJECTS i = Item
     PROPERTIES(i) READONLY name, nameUom, id, idBarCode
     PROPERTIES(i) toProduce
@@ -27,13 +27,13 @@ FORM inputProduceQuantity 'Выбор продукции'
     FILTERS defaultBom(i)
     
     FILTERGROUP toProduce
-        FILTER 'Произвести' toProduce(i)
+        FILTER '{Manufacture}' toProduce(i)
 ;
 
 // products
-onHandProducts 'Остаток' = onHand(manufacturingOrderProductsLocation(), i);
+onHandProducts 'On hand' = onHand(manufacturingOrderProductsLocation(), i);
 
-fillNegative 'Закрыть расход' () {
+fillNegative 'Fill negative' () {
     toProduce(Item i) <- -onHandProducts(i) WHERE [FILTER inputProduceQuantity.i](i) AND onHandProducts(i) < 0; 
 }
 
@@ -46,9 +46,9 @@ EXTEND FORM inputProduceQuantity
 
 // bulk create
 
-bulkCreate 'Создать заказы' () {
+bulkCreate 'Create orders' () {
     IF NOT manufacturingOrderType() THEN {
-        MESSAGE 'Не выбран тип производственного заказа';
+        MESSAGE 'No production order type selected';
         RETURN;
     }
     

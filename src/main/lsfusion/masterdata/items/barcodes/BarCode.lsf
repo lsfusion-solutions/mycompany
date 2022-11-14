@@ -4,15 +4,15 @@ REQUIRE MasterData, Item, Product;
 
 NAMESPACE MasterData;
 
-CLASS BarCode 'Штрихкод';
+CLASS BarCode 'Barcode';
 
 item '{Item}' = DATA Item (BarCode) NONULL DELETE;
-idItem 'Код номенклатуры' (BarCode b) = id(item(b));
+idItem 'Item code' (BarCode b) = id(item(b));
 nameItem '{Item}' (BarCode b) = name(item(b));
 
 multiple = ABSTRACT BOOLEAN (BarCode) MATERIALIZED;
 
-@defineID(barCode, 'Штрихкоды', '', 13);
+@defineID(barCode, 'Barcodes', '', 13);
 itemBarCode (STRING[50] id) = item(barCode(id));
 
 singleBarCode (STRING[50] id) = GROUP MAX BarCode b IF NOT multiple(b) BY id(b);
@@ -22,11 +22,11 @@ dataDefaultBarCode = DATA BarCode (Item);
 calcDefaultBarCode (Item i) = GROUP LAST BarCode b ORDER DESC b WHERE item(b) = i;
 
 defaultBarCode (Item i) = OVERRIDE dataDefaultBarCode(i), calcDefaultBarCode(i);
-default 'По умолчанию' (BarCode b) = defaultBarCode(item(b)) = b CHARWIDTH 10;
+default 'Default' (BarCode b) = defaultBarCode(item(b)) = b CHARWIDTH 10;
 
 barCode (Item i) = defaultBarCode(i);
 
-idBarCode 'Штрихкод' (Item i) = id(barCode(i)) MATERIALIZED INDEXED;
+idBarCode 'Barcode' (Item i) = id(barCode(i)) MATERIALIZED INDEXED;
 
 changeDefault (BarCode b) {
     INPUT c = BOOLEAN DO {
@@ -59,7 +59,7 @@ DESIGN item {
     }
     tabs {
         NEW barCodes {
-            caption = 'Штрихкоды';
+            caption = 'Barcodes';
             MOVE BOX(b);        
         }
     }
@@ -74,7 +74,7 @@ EXTEND FORM products
 ;
 
 consumedBarCode = DATA LOCAL BOOLEAN ();
-barCode 'Штрихкод' = DATA LOCAL STRING () CHANGEKEY 'F4';
+barCode 'Barcode' = DATA LOCAL STRING () CHANGEKEY 'F4';
 
 META defineBarCodeSearch(doc, docLine, let, line, quantity)
     processBarCode ABSTRACT LIST (###doc, docLine, STRING);
@@ -88,7 +88,7 @@ META defineBarCodeSearch(doc, docLine, let, line, quantity)
                 consumedBarCode() <- NULL;
                 processBarCode(d, l, id);
                 IF NOT consumedBarCode() THEN
-                    MESSAGE 'Штрихкод не найден';
+                    MESSAGE 'Barcode not found';
             }
         }
     }
@@ -108,7 +108,7 @@ META defineBarCodeSeek(form, obj, gobj)
             IF itemBarCode(id) THEN
                 SEEK form.obj = itemBarCode(id);
             ELSE
-                MESSAGE 'Штрихкод не найден';
+                MESSAGE 'Barcode not found';
         }
     }
     
@@ -126,7 +126,7 @@ changeBarCode (Item i) {
     INPUT s = STRING DO {
         IF s THEN {
             IF barCode(s) THEN
-                MESSAGE 'Штрихкод уже присутствует в базе данных.';
+                MESSAGE 'The barcode is already in the database.';
             ELSE NEW b = BarCode {
                 item(b) <- i;
                 id(b) <- s;
@@ -140,7 +140,7 @@ EXTEND FORM item
 ;
 
 // auto create
-dataAutoCreateBarCode 'Автоматически генерировать штрихкод' = DATA BOOLEAN (Category);
+dataAutoCreateBarCode 'Automatically generate barcode' = DATA BOOLEAN (Category);
 autoCreateBarCode (Category c) = GROUP LAST dataAutoCreateBarCode(Category cp) ORDER level(c, cp);
 
 EXTEND FORM category

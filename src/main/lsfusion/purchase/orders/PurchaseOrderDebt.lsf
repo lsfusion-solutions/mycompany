@@ -4,8 +4,8 @@ REQUIRE PurchaseOrder, DebtPartner;
 
 NAMESPACE Purchase;
 
-debt 'Долг' (Order o) = debt(vendor(o));
-pastDueDebt 'Просроченный долг' (Order o) = pastDueDebt(vendor(o));
+debt 'Debt' (Order o) = debt(vendor(o));
+pastDueDebt 'Overdue debt' (Order o) = pastDueDebt(vendor(o));
 
 EXTEND FORM order
     PROPERTIES(o) ON CHANGE { SHOW debts OBJECTS p = vendor(o) DOCKED; } debt, pastDueDebt
@@ -14,7 +14,7 @@ EXTEND FORM order
 DESIGN order {
     footer {
         NEW debt FIRST {
-            caption = 'Долг';
+            caption = 'Debt';
             type = CONTAINERH;
             MOVE PROPERTY(debt(o));
             MOVE PROPERTY(pastDueDebt(o));

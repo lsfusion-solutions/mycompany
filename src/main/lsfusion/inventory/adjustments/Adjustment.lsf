@@ -6,17 +6,17 @@ REQUIRE InventorySettings, LocationEmployee,
                                   
 NAMESPACE Inventory;
 
-CLASS Adjustment 'Инвентаризация';
+CLASS Adjustment 'Adjustment';
 
-@defineDocStatus(adjustment, 'инвентаризации');
+@defineDocStatus(adjustment, 'Adjustment');
 
-dateTime 'Дата' = DATA DATETIME (Adjustment);
+dateTime 'Date' = DATA DATETIME (Adjustment);
 WHEN LOCAL SET(Adjustment a IS Adjustment) AND NOT CHANGED(dateTime(a)) DO dateTime(a) <- currentDateTime();
 @defineDateTimeAggregation(Adjustment);
 
-@defineNumber(adjustment, 'Инвентаризации', 'ИНВ');
+@defineNumber(adjustment, 'Adjustments', 'INV');
 
-numberDate 'Описание' (Adjustment a) = number(a) + ' (' + dateTime(a) + ')' IN id;
+numberDate 'Description' (Adjustment a) = number(a) + ' (' + dateTime(a) + ')' IN id;
 
 DESIGN options {
     commons {
@@ -24,59 +24,59 @@ DESIGN options {
     }
 }
 
-location 'Место хранения' = DATA Location (Adjustment) NONULL;
-nameLocation 'Место хранения' (Adjustment a) = name(location(a));
+location 'Location' = DATA Location (Adjustment) NONULL;
+nameLocation 'Location' (Adjustment a) = name(location(a));
 
 // type
-CLASS AdjustmentType 'Тип инвентаризации' {
-    all 'Все',
-    category 'По категории',
-    manual 'Вручную'
+CLASS AdjustmentType 'Adjustment type' {
+    all 'All',
+    category 'By category',
+    manual 'Manually'
 }
-name 'Имя' (AdjustmentType o) = ISTRING[100](staticCaption(o)) IF o IS AdjustmentType CHARWIDTH 15;
+name '{First_name}' (AdjustmentType o) = ISTRING[100](staticCaption(o)) IF o IS AdjustmentType CHARWIDTH 15;
 
-FORM type 'Тип инвентаризации'
+FORM type 'Adjustment type'
     OBJECTS t = AdjustmentType PANEL
-    PROPERTIES(t) 'Тип инвентаризации' = name
+    PROPERTIES(t) 'Adjustment type' = name
     
     EDIT AdjustmentType OBJECT t  
 ;
 
-type 'Тип' =  DATA AdjustmentType (Adjustment) NONULL;
-nameType 'Тип' (Adjustment a) = name(type(a));
+type 'Type' =  DATA AdjustmentType (Adjustment) NONULL;
+nameType 'Type' (Adjustment a) = name(type(a));
 
-category 'Категория' = DATA Category (Adjustment);
-nameCategory 'Категория' (Adjustment a) = name(category(a));
+category 'Category' = DATA Category (Adjustment);
+nameCategory 'Category' (Adjustment a) = name(category(a));
 
-note 'Примечание' = DATA ISTRING[50] (Adjustment);
+note 'Note' = DATA ISTRING[50] (Adjustment);
 
 // lines
-CLASS AdjustmentLine 'Строка инвентаризации';
+CLASS AdjustmentLine 'Adjustment line';
 
 adjustment = DATA Adjustment (AdjustmentLine) NONULL DELETE;
 
 index '№' = PARTITION SUM 1 ORDER AdjustmentLine l BY adjustment(l) IN id MATERIALIZED CHARWIDTH 3;
 
-product 'Товар' = DATA Product (AdjustmentLine);
-nameProduct 'Товар' (AdjustmentLine l) = name(product(l));
-idBarCodeProduct 'Штрихкод' (AdjustmentLine l) = idBarCode(product(l));
-idProduct 'Код' (AdjustmentLine l) = id(product(l));
+product 'Product' = DATA Product (AdjustmentLine);
+nameProduct 'Product' (AdjustmentLine l) = name(product(l));
+idBarCodeProduct 'Barcode' (AdjustmentLine l) = idBarCode(product(l));
+idProduct 'ID' (AdjustmentLine l) = id(product(l));
 
 uom (AdjustmentLine l) = uom(product(l));
-nameUom 'Ед. изм.' (AdjustmentLine l) = name(uom(l));
+nameUom 'UoM' (AdjustmentLine l) = name(uom(l));
 
-location 'Место хранения' = DATA Location (AdjustmentLine);
-nameLocation 'Место хранения' (AdjustmentLine l) = canonicalName(location(l));
+location 'Location' = DATA Location (AdjustmentLine);
+nameLocation 'Location' (AdjustmentLine l) = canonicalName(location(l));
 
 WHEN LOCAL SETCHANGED(location(adjustment(AdjustmentLine l))) AND NOT location(l) DO location(l) <- location(adjustment(l));
 
 CONSTRAINT location(AdjustmentLine l) AND NOT level(location(l), location(adjustment(l))) CHECKED BY location[AdjustmentLine]
-    MESSAGE 'Место хранения строки инвентаризации не является потомком места хранения документа';
+    MESSAGE 'The inventory line storage location is not a descendant of the document storage location';
 
 lastAdjustmentLine (Adjustment a, Product p, Location l) = 
     GROUP LAST AdjustmentLine al ORDER al BY adjustment(al), product(al), location(al);
 
-theoreticalQuantity 'Теоретическое кол-во' = DATA NUMERIC[16,3] (AdjustmentLine);
+theoreticalQuantity 'Theoretical quantity' = DATA NUMERIC[16,3] (AdjustmentLine);
 
 fillTheoreticalQuantity ABSTRACT LIST (AdjustmentLine);
 fillTheoreticalQuantity(AdjustmentLine l) + {
@@ -87,13 +87,13 @@ WHEN LOCAL (SETCHANGED (location(AdjustmentLine l)) OR SETCHANGED(product(l)))
     fillTheoreticalQuantity(l); 
 
 // line properties
-nameStatus 'Статус' (AdjustmentLine l) = nameStatus(adjustment(l)) IN id;
-dateTime 'Дата' (AdjustmentLine l) = dateTime(adjustment(l)) IN id;
-number 'Номер' (AdjustmentLine l) = number(adjustment(l)) IN id;
+nameStatus 'Status' (AdjustmentLine l) = nameStatus(adjustment(l)) IN id;
+dateTime 'Date' (AdjustmentLine l) = dateTime(adjustment(l)) IN id;
+number 'Number' (AdjustmentLine l) = number(adjustment(l)) IN id;
 
 edit (AdjustmentLine l) + { edit(adjustment(l)); } 
 
-FORM adjustment 'Инвентаризация'
+FORM adjustment 'Adjustment'
     OBJECTS a = Adjustment PANEL 
     PROPERTIES(a) READONLYIF readonly(a)
                   dateTime, number, 
@@ -113,7 +113,7 @@ FORM adjustment 'Инвентаризация'
 ;
 
 DESIGN adjustment {
-    caption = (CONCAT ' ', 'Инвентаризация', '№' + number(a), '(' + dateTime(a) + ')');
+    caption = (CONCAT ' ', 'Adjustment', '№' + number(a), '(' + dateTime(a) + ')');
     OBJECTS {
         NEW header {
             NEW headerCenter {
@@ -138,7 +138,7 @@ DESIGN adjustment {
             fill = 1;
             type = TABBED;
             NEW lines {
-                caption = 'Строки';
+                caption = 'Lines';
                 type = SPLITH;
                 MOVE BOX(l);
                 NEW linesTab {
@@ -152,7 +152,7 @@ DESIGN adjustment {
 
 @defineDocHistory(adjustment, a, product, theoreticalQuantity);
 
-FORM adjustments 'Инвентаризации'
+FORM adjustments 'Adjustment'
     OBJECTS a = Adjustment
     PROPERTIES(a) READONLY dateTime, number, nameType, nameLocation, nameCategory, note
     PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE 
@@ -173,7 +173,7 @@ NAVIGATOR {
 }
 
 // fill
-fill 'Заполнить' (Adjustment a) {
+fill 'Fill' (Adjustment a) {
     FOR adjustment(AdjustmentLine l) = a DO
         fillTheoreticalQuantity(l);
 

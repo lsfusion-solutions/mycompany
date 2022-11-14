@@ -4,14 +4,14 @@ REQUIRE InvoicingSettings;
 
 NAMESPACE Invoicing;
 
-CLASS CustomsDeclaration 'Таможенная декларация';
+CLASS CustomsDeclaration 'Customs declaration';
 
-date 'Дата декларирования' = DATA DATE (CustomsDeclaration) NONULL;
-id 'Номер' = DATA STRING[30] (CustomsDeclaration) NONULL;
+date 'Declaration date' = DATA DATE (CustomsDeclaration) NONULL;
+id 'Number' = DATA STRING[30] (CustomsDeclaration) NONULL;
 
-name 'Таможенная декларация' (CustomsDeclaration d) = ' №' + id(d) + ' (' + date(d) + ')' IN id;
+name 'Customs declaration' (CustomsDeclaration d) = ' №' + id(d) + ' (' + date(d) + ')' IN id;
 
-FORM customsDeclaration 'Таможенная декларация'
+FORM customsDeclaration 'Customs declaration'
     OBJECTS d = CustomsDeclaration PANEL 
     PROPERTIES(d) id, date
     
@@ -19,10 +19,10 @@ FORM customsDeclaration 'Таможенная декларация'
 ;
 
 DESIGN customsDeclaration {
-    caption = (CONCAT ' ', 'Таможенная декларация', '№' + id(d), '(' + date(d) + ')');
+    caption = (CONCAT ' ', 'Customs declaration', '№' + id(d), '(' + date(d) + ')');
 }
 
-FORM customsDeclarations 'Таможенные декларации'
+FORM customsDeclarations 'Customs declarations'
     OBJECTS d = CustomsDeclaration 
     PROPERTIES(d) READONLY id, date
     PROPERTIES(d) NEWSESSION NEW, EDIT, DELETE

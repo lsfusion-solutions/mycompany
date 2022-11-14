@@ -5,9 +5,9 @@ REQUIRE SUZAuthentication, SUZLotOrder, CryptoPro;
 NAMESPACE SUZ;
 
 EXTEND CLASS LotOrderStatus {
-    posted 'Отправлен'
+    posted 'Sent'
 }
-posted 'Отправлен' = DATA BOOLEAN (LotOrder);
+posted 'Sent' = DATA BOOLEAN (LotOrder);
 
 status (LotOrder s) += WHEN posted(s) THEN LotOrderStatus.posted;
 colorStatus (LotOrder s) += WHEN status(s) = LotOrderStatus.posted THEN RGB(252,247,149);
@@ -20,8 +20,8 @@ CLASS ReleaseMethodType 'Способ выпуска товаров в обор�
     CROSSBORDER 'Трансграничная торговля',
     REMARK 'Перемаркировка'
 }
-id 'Код' (ReleaseMethodType o) = STRING[100](rtrim(getWord(staticName(o),'.',2),'_')) IF o IS ReleaseMethodType CHARWIDTH 10;
-name 'Наименование' (ReleaseMethodType o) = staticCaption(o) IF o IS ReleaseMethodType CHARWIDTH 15;
+id 'ID' (ReleaseMethodType o) = STRING[100](rtrim(getWord(staticName(o),'.',2),'_')) IF o IS ReleaseMethodType CHARWIDTH 10;
+name 'Name' (ReleaseMethodType o) = staticCaption(o) IF o IS ReleaseMethodType CHARWIDTH 15;
     
 FORM dialogReleaseMethodTypes 'Способ выпуска товаров в оборот'
     OBJECTS o = ReleaseMethodType
@@ -99,7 +99,7 @@ DESIGN lotOrder {
 
 EXTEND FORM lotOrders    
     EXTEND FILTERGROUP status
-        FILTER 'Отправлен' status(o) = LotOrderStatus.posted    
+        FILTER 'Sent' status(o) = LotOrderStatus.posted    
 ;
 
 // constraint

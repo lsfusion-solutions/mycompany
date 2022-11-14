@@ -7,24 +7,24 @@ NAMESPACE Sales;
 
 // options
 shipmentType = DATA ShipmentType (OrderType);
-nameShipmentType 'Тип отгрузки' (OrderType t) = name(shipmentType(t));
+nameShipmentType 'Shipment type' (OrderType t) = name(shipmentType(t));
 EXTEND FORM orderType PROPERTIES nameShipmentType(o);
  
 // relation
-@defineDocLineRelation(order, shipment, 'Заказы', 'Отгрузки', o, s);
+@defineDocLineRelation(order, shipment, 'Order', 'Shipment', o, s);
 
-reserved 'Зарезервировано' (OrderLine ol) = 
+reserved 'Reserved' (OrderLine ol) = 
     GROUP SUM reserved(ShipmentLine rl) IF orderLine(rl) = ol AND toReserve(shipment(rl));
 
-done 'Отгружено' (OrderLine ol) = 
+done 'Done' (OrderLine ol) = 
     GROUP SUM done(ShipmentLine rl) IF orderLine(rl) = ol AND active(shipment(rl));
-toShip 'В работу' (OrderLine ol) = 
+toShip 'Mark as Todo' (OrderLine ol) = 
     max(quantity(ol) (-) done(ol), 0) IF item(ol) IS Product MATERIALIZED;
 
-toShip 'В работу' (Order o) = GROUP SUM toShip(OrderLine ol) IF order(ol) = o;
+toShip 'Mark as Todo' (Order o) = GROUP SUM toShip(OrderLine ol) IF order(ol) = o;
 
 CONSTRAINT (quantity(OrderLine ol) (-) done(ol)) < 0 AND confirmed(order(ol)) 
-    MESSAGE 'По товару отгрузка превышает количество в заказе';
+    MESSAGE 'For the product, the shipment exceeds the quantity in the order';
 
 reserveShipment = DATA Shipment (Order);
 
@@ -76,7 +76,7 @@ WHEN SET(locked(Order o)) DO {
     DELETE Shipment s WHERE s = reserveShipment(o) AND toReserve(s);
 }
 
-FORM orderShipmentShow 'Расход со склада'
+FORM orderShipmentShow 'Shipments'
     OBJECTS ol = OrderLine
     
     OBJECTS sl = ShipmentLine
@@ -97,7 +97,7 @@ EXTEND FORM order
 DESIGN order {
     relatedDoc  {
         MOVE BOX(sh) {
-            caption = CONCAT ' ', 'Отгрузки', '(' + countShipments(o) + ')';
+            caption = CONCAT ' ', 'Shipments', '(' + countShipments(o) + ')';
             GRID(sh) { 
                 headerHeight = 24;
                 width = 100;

@@ -6,7 +6,7 @@ NAMESPACE Sales;
 
 // invoice type
 priceType = DATA PriceType (InvoiceType);
-namePriceType 'Вид цен' (InvoiceType t) = name(priceType(t));
+namePriceType 'Price type' (InvoiceType t) = name(priceType(t));
 
 EXTEND FORM invoiceType
     PROPERTIES(o) namePriceType
@@ -17,17 +17,17 @@ taxValid (InvoiceType it, PriceType pt) =
 
 CONSTRAINT priceType(InvoiceType i) AND priceType(i) AND NOT taxValid(i, priceType(i))
            CHECKED BY priceType[InvoiceType]
-           MESSAGE 'Для типа реализации выбран недопустимый вид цены, (не)включающий налоги'; 
+           MESSAGE 'Invalid price type selected for the type of implementation, (not) including taxes'; 
 
 // price types
-priceType 'Вид цен' = DATA PriceType (Invoice);
-namePriceType 'Вид цен' (Invoice o) =  name(priceType(o));
+priceType 'Price type' = DATA PriceType (Invoice);
+namePriceType 'Price type' (Invoice o) =  name(priceType(o));
 
 priceType (InvoiceLine l) = priceType(invoice(l));
 
 CONSTRAINT type(Invoice i) AND priceType(i) AND NOT taxValid(type(i), priceType(i))
            CHECKED BY priceType[Invoice]
-           MESSAGE 'Для реализации выбран недопустимый для типа вид цены, (не)включающий налоги'; 
+           MESSAGE 'For implementation, a price type that is not valid for the type has been selected, (not) including taxes'; 
 
 WHEN LOCAL CHANGED(customer(Invoice o)) OR CHANGED(type(o)) DO 
     priceType(o) <- OVERRIDE priceType(customer(o)), priceType(type(o));
@@ -55,11 +55,11 @@ DESIGN invoice {
 }
 
 // search
-overListPrice 'Цена' (Invoice o, Item i) = overPriceA(priceType(o), i, dateTime(o));
+overListPrice 'Price' (Invoice o, Item i) = overPriceA(priceType(o), i, dateTime(o));
 
 EXTEND FORM invoice
     PROPERTIES(i, itm) READONLY overListPrice
 
     FILTERGROUP pricelist
-        FILTER 'В прайс-листе' overListPrice(i, itm)
+        FILTER 'In pricelist' overListPrice(i, itm)
 ;

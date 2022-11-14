@@ -6,13 +6,13 @@ NAMESPACE ProjectManagement;
 
 // type
 shipmentType = DATA ShipmentType (ProjectType);
-nameShipmentType 'Тип отгрузки' (ProjectType t) = name(shipmentType(t));
+nameShipmentType 'Shipment type' (ProjectType t) = name(shipmentType(t));
 EXTEND FORM projectType PROPERTIES nameShipmentType(o);
 
 project = DATA Project (Shipment) INDEXED;
-nameProject 'Проект' (Shipment i) = name(project(i));
+nameProject 'Project' (Shipment i) = name(project(i));
 
-countShipments 'Отгрузки' (Project p) = GROUP SUM 1 IF project(Shipment i) = p;  
+countShipments 'Shipments' (Project p) = GROUP SUM 1 IF project(Shipment i) = p;  
 
 EXTEND FORM shipments
     PROPERTIES(s) READONLY nameProject
@@ -28,7 +28,7 @@ EXTEND FORM project
 DESIGN project {
     relatedDoc  {
         MOVE BOX(s) {
-            caption = CONCAT ' ', 'Отгрузки', '(' + countShipments(p) + ')';
+            caption = CONCAT ' ', 'Shipments', '(' + countShipments(p) + ')';
             GRID(s) { headerHeight = 24; }
         }
         REMOVE TOOLBARBOX(s);
@@ -47,7 +47,7 @@ create (Shipment i, Project p) {
     fill(i, p);
 }
 
-createShipment 'Отгрузить' (Project p) {
+createShipment 'Mark as Done' (Project p) {
     APPLY;
     IF canceled() THEN RETURN;
                

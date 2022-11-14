@@ -10,10 +10,10 @@ phoneCompany (PrintItemType t) = phone(company(t));
 emailCompany (PrintItemType t) = email(company(t));
 websiteCompany (PrintItemType t) = website(company(t));
 
-count 'Кол-во' = DATA LOCAL INTEGER (Item);
+count 'Qty' = DATA LOCAL INTEGER (Item);
 countItem (PrintItemType t) = GROUP SUM 1 IF count(Item i) AND set(t, i);
 
-FORM printItem 'Этикетка'
+FORM printItem 'Label'
     OBJECTS pt = PrintItemType PANEL
     PROPERTIES(pt) name, nameCompany, addressLinesCompany, addressCsvCompany, phoneCompany, emailCompany, websiteCompany
     REPORT OVERRIDE file(pt), setExtension(RAWFILE(template(pt)), 'path')
@@ -44,7 +44,7 @@ print (PrintItemType pt) {
             PRINT printItem OBJECTS pt = pt;
 }
 
-FORM printItemParams 'Параметры печати этикеток'
+FORM printItemParams 'Print options for labels'
     OBJECTS t = PrintItemType
     PROPERTIES(t) READONLY name
     FILTERS countItem(t)
@@ -56,7 +56,7 @@ FORM printItemParams 'Параметры печати этикеток'
     FILTERS set(t, i), active(i)
 
     FILTERGROUP print
-        FILTER 'На печать' count(i) DEFAULT 
+        FILTER 'To print' count(i) DEFAULT 
 ;
 
 DESIGN printItemParams {
@@ -78,7 +78,7 @@ printItem () {
     }
 }
 
-print 'Этикетка' (Item i) {
+print 'Label' (Item i) {
     count(Item ii) <- 1 IF i = ii;
     printItem();
 }

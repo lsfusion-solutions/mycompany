@@ -4,25 +4,25 @@ REQUIRE TaxGroup;
 
 NAMESPACE Invoicing;
 
-CLASS Tax 'Налог';
+CLASS Tax 'Tax';
 
-name 'Название' = DATA ISTRING[50] (Tax) IN id;
+name 'Name' = DATA ISTRING[50] (Tax) IN id;
 
-value 'Значение, %' = DATA NUMERIC[5,2] (Tax);
+value 'Value,%' = DATA NUMERIC[5,2] (Tax);
 
-taxGroup 'Группа налога' = DATA TaxGroup (Tax);
-nameTaxGroup 'Группа налога' (Tax t) = name(taxGroup(t));
+taxGroup 'Tax group' = DATA TaxGroup (Tax);
+nameTaxGroup 'Tax group' (Tax t) = name(taxGroup(t));
 
 tax (TaxGroup g, NUMERIC[5,2] v) = GROUP LAST Tax t ORDER t WHERE taxGroup(t) = g AND value(t) = v; 
 
-FORM tax 'Налог'
+FORM tax 'Tax'
     OBJECTS t = Tax PANEL 
     PROPERTIES(t) name, value, nameTaxGroup
     
     EDIT Tax OBJECT t
 ;
 
-FORM taxes 'Налоги'
+FORM taxes 'Taxes'
     OBJECTS t = Tax
     PROPERTIES(t) READONLY name, value, nameTaxGroup
     PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
@@ -37,7 +37,7 @@ NAVIGATOR {
 }
 
 // change tax
-setTax 'Вкл' = DATA LOCAL BOOLEAN (Tax);
+setTax 'On' = DATA LOCAL BOOLEAN (Tax);
 
 WHEN LOCAL CHANGED(setTax(Tax t)) DO {
     FOR taxGroup(t) = taxGroup(Tax tx) AND NOT t = tx DO {
@@ -45,15 +45,15 @@ WHEN LOCAL CHANGED(setTax(Tax t)) DO {
     }
 }
 
-FORM changeTax 'Установить налог'
+FORM changeTax 'Set tax'
     OBJECTS t = Tax
     PROPERTIES(t) setTax, name READONLY
 ;
 
 META defineTax (prefix, cls, caption, form, obj, container)
-    prefix##In 'Вкл' = DATA BOOLEAN (cls, Tax) CHARWIDTH 5;
-    prefix##Tax 'Налоги '##caption##', %' (cls i) = GROUP SUM value(Tax tax) IF prefix##In(i, tax);
-    name###prefix##Tax 'Налоги '##caption (cls i) = GROUP CONCAT name(Tax t) IF prefix##In(i, t), ', ' ORDER t CHARWIDTH 8;
+    prefix##In 'On' = DATA BOOLEAN (cls, Tax) CHARWIDTH 5;
+    prefix##Tax caption##'Tax'##', %' (cls i) = GROUP SUM value(Tax tax) IF prefix##In(i, tax);
+    name###prefix##Tax caption##'Tax' (cls i) = GROUP CONCAT name(Tax t) IF prefix##In(i, t), ', ' ORDER t CHARWIDTH 8;
     
     WHEN LOCAL SET(prefix##In(cls i, Tax t)) DO {
         FOR taxGroup(t) = taxGroup(Tax tx) AND NOT t = tx DO {

@@ -4,18 +4,18 @@ REQUIRE Account, Bank, Utils;
 
 NAMESPACE Invoicing;
 
-CLASS BankAccount 'Банковский счет' : Account;
+CLASS BankAccount 'Bank account' : Account;
 
-number 'Номер счета' = DATA STRING[30] (BankAccount) IN id NONULL;
+number 'Account number' = DATA STRING[30] (BankAccount) IN id NONULL;
 
-bank 'Банк' = DATA Bank (BankAccount) NONULL;
-nameBank 'Банк' (BankAccount b) = name(bank(b));
-id 'Код банка' (BankAccount b) = id(bank(b));
+bank 'Bank' = DATA Bank (BankAccount) NONULL;
+nameBank 'Bank' (BankAccount b) = name(bank(b));
+id 'Bank code' (BankAccount b) = id(bank(b));
 
 name (BankAccount a) += (CONCAT ' ', number(a), 'в ' + nameBank(a)) IF a IS BankAccount; 
 
 EXTEND CLASS AccountType {
-     bank 'Банковский счет'
+     bank 'Bank account'
 }
 
 type(Account a) += WHEN a IS BankAccount THEN AccountType.bank;
@@ -35,7 +35,7 @@ DESIGN account {
     }
 }
 
-newBankAccount 'Банковский счет' () {
+newBankAccount 'Bank account' () {
     NEWSESSION {
         NEW b = BankAccount {
             DIALOG account OBJECTS a = b DOCKED DO seek(b);  
@@ -43,7 +43,7 @@ newBankAccount 'Банковский счет' () {
     }
 } IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
 
-newBankAccount 'Банковский счет' (Partner p) {
+newBankAccount 'Bank account' (Partner p) {
     NESTEDSESSION {
         NEW b = BankAccount {
             holder(b) <- p;

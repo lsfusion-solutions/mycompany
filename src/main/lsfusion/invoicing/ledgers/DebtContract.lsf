@@ -5,16 +5,16 @@ REQUIRE DebtPartner, Contract;
 NAMESPACE Invoicing;
 
 currency = DATA Currency (Contract);
-nameCurrency 'Валюта' (Contract c) = name(currency(c));
+nameCurrency 'Currency' (Contract c) = name(currency(c));
 currency (Debt d) += currency(contract(d));
 
-debtContract 'Долг' (Debt d) = PARTITION SUM signedAmount(d) ORDER dateTime(d), d BY contract(d); 
+debtContract 'Debt' (Debt d) = PARTITION SUM signedAmount(d) ORDER dateTime(d), d BY contract(d); 
 
-debt 'Долг' (Contract c) = GROUP SUM signedAmount(Debt d) IF contract(d) = c;
+debt 'Debt' (Contract c) = GROUP SUM signedAmount(Debt d) IF contract(d) = c;
 
-pastDueDebt 'Просроченный долг' (Contract c) = GROUP SUM signedLeft(Debt d) IF contract(d) = c AND dueDateTime(d) < currentDateTime();
+pastDueDebt 'Overdue debt' (Contract c) = GROUP SUM signedLeft(Debt d) IF contract(d) = c AND dueDateTime(d) < currentDateTime();
 
-FORM debtsContract 'Долги по договору'
+FORM debtsContract 'Contract debts'
     OBJECTS c = Contract PANEL
     PROPERTIES(c) READONLY name
 
@@ -25,7 +25,7 @@ FORM debtsContract 'Долги по договору'
     ORDERS dateTime(d)
     
     FILTERGROUP pastDue
-        FILTER 'Просроченные' dueDateTime(d) < currentDateTime() AND signedLeft(d)
+        FILTER 'Overdue' dueDateTime(d) < currentDateTime() AND signedLeft(d)
     FILTERS active(d),
             contract(d) = c
 ;
@@ -37,7 +37,7 @@ EXTEND FORM contract
 DESIGN contract {
     headerRight {
         NEW debt {
-            caption = 'Долг';
+            caption = 'Debt';
             alignment = STRETCH;
             MOVE PROPERTY(nameCurrency(c));
             MOVE PROPERTY(debt(c));

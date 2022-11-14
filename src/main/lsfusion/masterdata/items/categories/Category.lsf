@@ -4,27 +4,27 @@ REQUIRE Hierarchy, MetaNumerator;
 
 NAMESPACE MasterData;
 
-CLASS Category 'Категория';
+CLASS Category 'Category';
 
-@defineID(category, 'Категории', 'КТ', 4);
+@defineID(category, 'Categories', 'CT', 4);
 
-name 'Наименование' = DATA ISTRING[50] (Category) IN id NONULL;
+name 'Name' = DATA ISTRING[50] (Category) IN id NONULL;
 
 // hierarchy
 parent = DATA Category (Category) INDEXED;
-idParent 'Код родителя' (Category c) = id(parent(c));
-nameParent 'Родитель' (Category c) = name(parent(c));
+idParent 'Parent ID' (Category c) = id(parent(c));
+nameParent 'Parent' (Category c) = name(parent(c));
 
 CONSTRAINT DROPPED(Category c IS Category) AND PREV(parent(Category child) = c)
-        MESSAGE 'Запрещено удалять категории, на которые ссылаются другие категории';
+        MESSAGE 'It is forbidden to delete categories that are referenced by other categories';
 
-level 'Уровень' (Category child, Category parent) =
+level 'Level' (Category child, Category parent) =
    RECURSION 1l IF child IS Category AND parent = child
         STEP 2l IF parent = parent($parent) MATERIALIZED;
 
-canonicalName 'Каноническое имя' (Category c) =
+canonicalName 'Canonical name' (Category c) =
    GROUP CONCAT name(Category parent), ' / ' ORDER DESC level(c, parent) CHARWIDTH 50 IN id;
-canonicalNameParent 'Родитель' (Category c) = canonicalName(parent(c));
+canonicalNameParent 'Parent' (Category c) = canonicalName(parent(c));
 
 levelRoot '{hierarchy.level}' (Category child, Category parent) = PARTITION SUM 1 IF level(child, parent)
                                                                   ORDER DESC level(child, parent)
@@ -32,24 +32,24 @@ levelRoot '{hierarchy.level}' (Category child, Category parent) = PARTITION SUM 
 categoryRoot (Category child, level) = GROUP NAGGR Category parent BY levelRoot(child, parent);  
 
 category1 (Category child) = categoryRoot(child, 1) MATERIALIZED;    
-nameCategory1 'Категория 1' (Category child) = name(category1(child));
+nameCategory1 'Category 1' (Category child) = name(category1(child));
 
 category2 (Category child) = categoryRoot(child, 2) MATERIALIZED;
-nameCategory2 'Категория 2' (Category child) = name(category2(child));
+nameCategory2 'Category 2' (Category child) = name(category2(child));
     
 category3 (Category child) = categoryRoot(child, 3) MATERIALIZED;
-nameCategory3 'Категория 3' (Category child) = name(category3(child));
+nameCategory3 'Category 3' (Category child) = name(category3(child));
     
 category4 (Category child) = categoryRoot(child, 4) MATERIALIZED; 
-nameCategory4 'Категория 4' (Category child) = name(category4(child));
+nameCategory4 'Category 4' (Category child) = name(category4(child));
    
 category5 (Category child) = categoryRoot(child, 5) MATERIALIZED; 
-nameCategory5 'Категория 5' (Category child) = name(category5(child));
+nameCategory5 'Category 5' (Category child) = name(category5(child));
    
 category6 (Category child) = categoryRoot(child, 6) MATERIALIZED;
-nameCategory6 'Категория 6' (Category child) = name(category6(child));    
+nameCategory6 'Category 6' (Category child) = name(category6(child));    
         
-FORM category 'Категория'
+FORM category 'Category'
    OBJECTS c = Category PANEL
    PROPERTIES(c) name, id, canonicalNameParent
   
@@ -74,13 +74,13 @@ DESIGN category {
             fill = 1;
             type = TABBED;
             NEW default {
-                caption = 'Значения по умолчанию';
+                caption = 'Default values';
             }
         }
     }
 }
 
-newCategory 'Категория' (Category cc) {
+newCategory 'Category' (Category cc) {
     NEWSESSION {
         NEW cat = Category {
             parent(cat) <- cc;
@@ -89,7 +89,7 @@ newCategory 'Категория' (Category cc) {
     }
 } IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
 
-FORM categories 'Категории'
+FORM categories 'Categories'
     OBJECTS c = Category
     PROPERTIES(c) READONLY name, id, canonicalNameParent
     PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE
@@ -110,11 +110,11 @@ DESIGN categories {
         fill = 1;
         type = TABBED;
         NEW list {
-            caption = 'Список';
+            caption = 'List';
             MOVE BOX(c);
         }
         NEW tree {
-            caption = 'Дерево';
+            caption = 'Wood';
             MOVE BOX(TREE categories);
         }
     }

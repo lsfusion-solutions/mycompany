@@ -5,10 +5,10 @@ REQUIRE Numerator;
 NAMESPACE Utils;
 
 META defineNumber(class, caption, srs)
-    number 'Номер' = DATA STRING[31] (###class) NONULL CHARWIDTH 10;
+    number 'Number' = DATA STRING[31] (###class) NONULL CHARWIDTH 10;
     
     numerator###class = DATA Numerator();
-    nameNumerator###class 'Нумератор - '##caption = name(numerator###class());
+    nameNumerator###class 'Numerator'##' - '##caption = name(numerator###class());
     
     loadDefaultNumerators () + {
         NEW n = Numerator {
@@ -38,7 +38,7 @@ META defineNumber(class, caption, srs)
 END
 
 META defineNumberType(class)
-    number 'Номер' = DATA STRING[31] (###class) NONULL CHARWIDTH 10;
+    number 'Number' = DATA STRING[31] (###class) NONULL CHARWIDTH 10;
 
     WHEN SETCHANGED(type(###class o)) AND numerator(type(o)) AND NOT number(o) DO {
         number(o) <- CONCAT '/', series(numerator(type(o))), curStringValue(numerator(type(o)));
@@ -47,11 +47,11 @@ META defineNumberType(class)
 END
 
 META defineID(class, caption, srs, width)
-    id 'Код' = DATA STRING[50] (###class) IN id CHARWIDTH width INDEXED;
+    id 'ID' = DATA STRING[50] (###class) IN id CHARWIDTH width INDEXED;
     ##class (STRING[50] id) = GROUP AGGR ###class o BY id(o);
     
     numerator###class = DATA Numerator();
-    nameNumerator###class 'Нумератор - '##caption = name(numerator###class());
+    nameNumerator###class 'Numerator'##' - '##caption = name(numerator###class());
     
     loadDefaultNumerators () + {
         NEW n = Numerator {

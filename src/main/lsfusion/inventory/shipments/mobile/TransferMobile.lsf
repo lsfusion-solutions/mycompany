@@ -5,36 +5,36 @@ REQUIRE Mobile, ItemMobile, CategoryMobile, LocationMobile, BarCodeMobile,
 
 NAMESPACE Inventory;
 
-quantity 'Кол-во' = DATA LOCAL NESTED NUMERIC[16,3] (Product);
+quantity 'Qty' = DATA LOCAL NESTED NUMERIC[16,3] (Product);
 backgroundQuantity (Location l, Product p) = CASE WHEN quantity(p) > onHand(l, p) THEN RGB(255,212,212)
                                                            WHEN quantity(p) THEN RGB(212,255,212); 
 
-FORM transferMobile 'Мобильное перемещение'
+FORM transferMobile 'Mobile transfer'
     OBJECTS t = ShipmentType PANEL
-    PROPERTIES(t) 'Тип' = name SELECTOR SHOWIF countTransferTypes() > 1
+    PROPERTIES(t) 'Type' = name SELECTOR SHOWIF countTransferTypes() > 1
     FILTERS isTransfer(t)
 
     OBJECTS l = Location PANEL
     FILTERS accessGranted(l)
 
     OBJECTS p = Product PAGESIZE 50
-    PROPERTIES BACKGROUND backgroundQuantity(l, p) READONLY 'Наименование' = name(p), 'Остаток' = onHand(l, p)
+    PROPERTIES BACKGROUND backgroundQuantity(l, p) READONLY 'Name' = name(p), 'On hand' = onHand(l, p)
     PROPERTIES BACKGROUND backgroundQuantity(l, p) quantity (p)
     PROPERTIES(p) READONLY PANEL pName '' = name, '' = id, '' = idBarCode, '' = nameUom
     ORDERS name(p)
     FILTERS onHand(l, p)
 
     FILTERGROUP quantity
-        FILTER 'Отобрано' quantity(p)
+        FILTER 'Selected' quantity(p)
 ;
 
 @defineChangeInputObject(Location, transferMobile, l, dialogLocationsMobile);
 
 DESIGN transferMobile {
-    caption = 'Перемещение';
+    caption = 'Transfer';
     OBJECTS {
         MOVE PROPERTY(name(t)) { alignment = STRETCH; };
-        MOVE PROPERTY(name(l)) { caption = 'Откуда'; alignment = STRETCH; };
+        MOVE PROPERTY(name(l)) { caption = 'Source'; alignment = STRETCH; };
         NEW filters {
             alignment = STRETCH;
             NEW groupFilter {
@@ -101,9 +101,9 @@ DESIGN transferMobile {
 // actions
 @defineChangeInput(shipmentToLocation, Location, dialogLocationsMobile, l);
 
-createTransfer 'Переместить' (ShipmentType t, Location from) {
+createTransfer 'Move' (ShipmentType t, Location from) {
     quantity(Product p) <- NULL WHERE NOT onHand(from, p) > 0;
-    ASK 'Переместить с ' + name(from) + ' на ' + nameShipmentToLocation() + ' ' + (GROUP SUM 1 IF quantity(Product p)) + ' позиций' + '?\n' +
+    ASK 'Move from' + ' ' + name(from) + ' -> ' + nameShipmentToLocation() + ' ' + (GROUP SUM 1 IF quantity(Product p)) + ' ' + 'lines' + '?\n' +
         GROUP CONCAT name(Product p) + ' - ' + quantity(p), '\n' ORDER p DO {
         NEWSESSION {
             NEW s = Shipment {

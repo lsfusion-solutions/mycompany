@@ -10,9 +10,9 @@ notCashPaymentAmount() = GROUP SUM amount(PaymentMethod pm) IF NOT isCash(pm);
 
 change (Invoice i) = paymentAmount() (-) amount(i); 
 
-FORM posPayment 'Оплата'
+FORM posPayment 'Payment'
     OBJECTS i = Invoice PANEL
-    PROPERTIES nameCustomer(i), amount(i), change 'Сдача' = change(i) IF change(i) > 0
+    PROPERTIES nameCustomer(i), amount(i), change 'Change' = change(i) IF change(i) > 0
     
     OBJECTS pm = PaymentMethod
     PROPERTIES(pm) name READONLY, amount 
@@ -62,7 +62,7 @@ EXTEND FORM posPayment
 
 afterPosPayment ABSTRACT LIST (Invoice);
 
-posPayment 'Оплата' (Session s, Invoice i) {
+posPayment 'Payment' (Session s, Invoice i) {
     amount(PaymentMethod pm) <- NULL;
     DIALOG posPayment OBJECTS i = i, pm INPUT NOMANAGESESSION DO {
         IF NOT paymentAmount() THEN amount(pm) <- amount(i);

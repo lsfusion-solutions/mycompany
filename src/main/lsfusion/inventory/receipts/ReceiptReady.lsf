@@ -5,14 +5,14 @@ REQUIRE Receipt, ResLedger, ReceiptSelection;
 NAMESPACE Inventory;
 
 EXTEND CLASS ReceiptStatus {
-    ready 'К приемке'
+    ready '{Ready_}'
 }
-ready 'К приемке' = DATA BOOLEAN (Receipt);
+ready '{Ready_}' = DATA BOOLEAN (Receipt);
 
 status (Receipt r) += WHEN ready(r) THEN ReceiptStatus.ready;
 colorStatus (Receipt r) += WHEN status(r) = ReceiptStatus.ready THEN RGB(252,247,149);
 
-markAsToDo 'В работу' (Receipt r) {
+markAsToDo 'Mark as Todo' (Receipt r) {
     APPLY; 
     IF canceled() THEN RETURN;
     
@@ -37,7 +37,7 @@ DESIGN receipt {
 
 EXTEND FORM receipts    
     EXTEND FILTERGROUP status
-        FILTER 'К приемке' status(r) = ReceiptStatus.ready    
+        FILTER '{Ready_}' status(r) = ReceiptStatus.ready    
 ;
 
-@defineSelectionAction(receipts, Receipt, markAsToDo, 'В работу', statuses);
+@defineSelectionAction(receipts, Receipt, markAsToDo, 'Mark as Todo', statuses);

@@ -7,21 +7,21 @@ NAMESPACE Purchase;
 
 // options
 receiptType = DATA ReceiptType (OrderType);
-nameReceiptType 'Тип приемки' (OrderType t) = name(receiptType(t));
+nameReceiptType 'Receipt type' (OrderType t) = name(receiptType(t));
 EXTEND FORM orderType PROPERTIES nameReceiptType(o);
 
 // relation
-@defineDocLineRelation(order, receipt, 'Заказы', 'Приемки', o, r);
+@defineDocLineRelation(order, receipt, 'Order', 'Receipt', o, r);
 
-done 'Принято' (OrderLine ol) = 
+done '{Received}' (OrderLine ol) = 
     GROUP SUM done(ReceiptLine rl) IF orderLine(rl) = ol AND active(receipt(rl));
-toReceive 'К приемке' (OrderLine ol) = 
+toReceive '{Ready_}' (OrderLine ol) = 
     max(quantity(ol) (-) done(ol), 0) IF item(ol) IS Product;
 
-toReceive 'К приемке' (Order o) = GROUP SUM toReceive(OrderLine ol) IF order(ol) = o;
+toReceive '{Ready_}' (Order o) = GROUP SUM toReceive(OrderLine ol) IF order(ol) = o;
 
 CONSTRAINT (quantity(OrderLine ol) (-) done(ol)) < 0 AND confirmed(order(ol)) 
-    MESSAGE 'По товару приемка превышает количество в заказе';
+    MESSAGE 'For the goods, the receipt exceeds the quantity in the order';
 
 reserveReceipt = DATA Receipt (Order);
 
@@ -67,7 +67,7 @@ WHEN SET(locked(Order o)) DO {
     DELETE Receipt r WHERE r = reserveReceipt(o) AND status(reserveReceipt(o)) = ReceiptStatus.ready;
 }
 
-FORM orderReceiptShow 'Принято'
+FORM orderReceiptShow '{Received}'
     OBJECTS ol = OrderLine
     
     OBJECTS rl = ReceiptLine
@@ -87,7 +87,7 @@ EXTEND FORM order
 DESIGN order {
     relatedDoc {
         MOVE BOX(rc) {
-            caption = CONCAT ' ', 'Приемки', '(' + countReceipts(o) + ')';
+            caption = CONCAT ' ', 'Receipts', '(' + countReceipts(o) + ')';
             GRID(rc) { headerHeight = 24; }
         }
         REMOVE TOOLBARSYSTEM(rc);

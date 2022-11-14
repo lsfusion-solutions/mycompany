@@ -6,12 +6,12 @@ NAMESPACE Sales;
 
 yearMonth (DATETIME d) = extractYear(d) * 12 + extractMonthNumber(d);
 
-initialSoldAmount 'Продано (изначально)' = DATA NUMERIC[14,2] (Partner);
+initialSoldAmount 'Sold (initial)' = DATA NUMERIC[14,2] (Partner);
 
 // partner
-soldAmount 'Продано' (Partner p) = GROUP SUM amount(SalesLedger l) IF customer(l) = p MATERIALIZED;
+soldAmount 'Sold' (Partner p) = GROUP SUM amount(SalesLedger l) IF customer(l) = p MATERIALIZED;
 
-totalSoldAmount 'Продано' (Partner p) = OVERRIDE soldAmount(p) (+) initialSoldAmount(p), (0.0 IF p IS Partner) MATERIALIZED;
+totalSoldAmount 'Sold' (Partner p) = OVERRIDE soldAmount(p) (+) initialSoldAmount(p), (0.0 IF p IS Partner) MATERIALIZED;
 prevTotalSoldAmount (Partner p) = PREV(totalSoldAmount(p));
 
 soldAmount (Partner p, INTEGER ym) = 
@@ -19,10 +19,10 @@ soldAmount (Partner p, INTEGER ym) =
 
 soldAmountPreviousMonth (Partner p, DATETIME d) = soldAmount(p, yearMonth(d) - 1);
 
-soldAmountPreviousMonth 'Продано за предыдущий месяц' (Partner p) = soldAmountPreviousMonth(p, currentDateTime());
+soldAmountPreviousMonth 'Sold in the previous month' (Partner p) = soldAmountPreviousMonth(p, currentDateTime());
 prevSoldAmountPreviousMonth (Partner p) = PREV(soldAmountPreviousMonth(p));
 
-FORM salesLedgers 'Продажи по контрагенту'
+FORM salesLedgers 'Sales by partner'
     OBJECTS p = Partner PANEL
     PROPERTIES(p) READONLY name
 

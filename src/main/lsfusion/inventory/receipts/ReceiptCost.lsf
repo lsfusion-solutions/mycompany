@@ -4,9 +4,9 @@ REQUIRE ReceiptCanceled, CostLedger, CostLocation;
 
 NAMESPACE Inventory;
 
-cost 'Себестоимость' = ABSTRACT CASE NUMERIC[14,2] (ReceiptLine);
+cost 'Cost' = ABSTRACT CASE NUMERIC[14,2] (ReceiptLine);
 
-CLASS ReceiptCostLedger 'Приемка' : InCostLedger;
+CLASS ReceiptCostLedger 'Receipt' : InCostLedger;
 costLedger = AGGR ReceiptCostLedger WHERE done(ReceiptLine line) AND active(receipt(line));
 
 type(ReceiptCostLedger l) += nameType(receipt(line(l)));
@@ -24,9 +24,9 @@ calcAmount (ReceiptCostLedger l) += cost(line(l));
 edit(ReceiptCostLedger l) + { edit(line(l)); }
 
 // data cost
-showCost 'Показывать себестоимость' = DATA BOOLEAN (ReceiptType);
+showCost 'Show cost price' = DATA BOOLEAN (ReceiptType);
 
-dataCost 'Себестоимость' = DATA NUMERIC[14,2] (ReceiptLine);
+dataCost 'Cost' = DATA NUMERIC[14,2] (ReceiptLine);
 cost (ReceiptLine l) += WHEN dataCost(l) THEN dataCost(l);
 
 EXTEND FORM receipt

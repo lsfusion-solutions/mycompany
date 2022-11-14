@@ -21,7 +21,7 @@ sourceCurrency (OutgoingPayment p) += currency(p);
 sourceAmount (OutgoingPayment p) += amount(p);
 
 // pay
-pay 'Разнести' (IncomingDebt d, OutgoingPayment p) {
+pay 'Match' (IncomingDebt d, OutgoingPayment p) {
     paid(d, p) <- left(d, p) (+) paid(d, p);
 } CHANGEMOUSE 'DBLCLK';
 
@@ -40,9 +40,9 @@ EXTEND FORM outgoingPayment
 DESIGN outgoingPayment {
     details {
         NEW debts {
-            caption = 'Разнесение оплат';
-            MOVE BOX(d) { caption = 'Разнесенные'; }            
-            MOVE BOX(dd) { caption = 'Доступные'; }          
+            caption = 'Payments matching';
+            MOVE BOX(d) { caption = 'Matched'; }            
+            MOVE BOX(dd) { caption = 'Available'; }          
         }
     }
 }
@@ -53,7 +53,7 @@ WHEN (SETCHANGED(reference(OutgoingPayment p)) OR SETCHANGED(partner(p)) OR SET(
      canBePaid(d, p) DO
     paid(d, p) <- left(d, p);
     
-countPaid 'Кол-во оплат' (OutgoingDebt p) = GROUP SUM 1 IF paid(IncomingDebt d, p) AND active(d) MATERIALIZED;
+countPaid 'Number of payments' (OutgoingDebt p) = GROUP SUM 1 IF paid(IncomingDebt d, p) AND active(d) MATERIALIZED;
 
 EXTEND FORM outgoingPayments
     PROPERTIES(p) READONLY countPaid, paid

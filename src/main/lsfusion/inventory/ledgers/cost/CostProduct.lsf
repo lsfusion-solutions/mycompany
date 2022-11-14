@@ -4,29 +4,29 @@ REQUIRE Product;
 
 NAMESPACE MasterData;
 
-CLASS CostingMethod 'Методы расчета себестоимости' {
-    standardPrice 'Плановая себестоимость',
-    avco 'Средняя себестоимость',
+CLASS CostingMethod 'Costing methods' {
+    standardPrice 'Planned cost',
+    avco 'Average cost',
     fifo 'FIFO'
 }
 
-name 'Метод расчета себестоимости' (CostingMethod o) = staticCaption(o) IF o IS CostingMethod CHARWIDTH 10;
+name 'Cost calculation method' (CostingMethod o) = staticCaption(o) IF o IS CostingMethod CHARWIDTH 10;
 
-FORM costingMethods 'Методы расчета себестоимости'
+FORM costingMethods 'Costing methods'
     OBJECTS c = CostingMethod
-    PROPERTIES(c) READONLY 'Методы' = name
+    PROPERTIES(c) READONLY 'Methods' = name
     
     LIST CostingMethod OBJECT c
 ;
 
 dataCostingMethod = DATA CostingMethod (Category);
-nameDataCostingMethod 'Метод расчета себестоимости' (Category c) = name(dataCostingMethod(c));
+nameDataCostingMethod 'Cost calculation method' (Category c) = name(dataCostingMethod(c));
 
-costingMethod 'Методы расчета себестоимости' (Category c) = 
+costingMethod 'Costing methods' (Category c) = 
         GROUP LAST dataCostingMethod(Category parent) ORDER DESC level(c, parent) MATERIALIZED;
 
 costingMethod (Product p) = OVERRIDE costingMethod(category(p AS Product)), (CostingMethod.fifo IF p IS Product) MATERIALIZED;
-nameCostingMethod 'Метод расчета себестоимости' (Product p) = name(costingMethod(p));
+nameCostingMethod 'Cost calculation method' (Product p) = name(costingMethod(p));
 
 EXTEND FORM category
     PROPERTIES(c) nameDataCostingMethod
