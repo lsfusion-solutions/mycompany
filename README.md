@@ -8,4 +8,5 @@ Site : https://mycompany.lsfusion.org/ru
 
 Demo : https://demo.lsfusion.org/mycompany-ru
 
-Discussion : https://slack.lsfusion.org/
+# Contact us
+https://slack.lsfusion.org/
