@@ -7,21 +7,17 @@ REQUIRE Input, Reflection,
 NAMESPACE Sales;
 
 // order
-@defineChangeInput(customer, Order, Partner, dialogPartnersMobile, p);
-@defineChangeInput(location, Order, Location, dialogLocationsMobile, l);
-@defineChangeInput(item, OrderLine, Item, dialogItemsMobile, i);
-
 FORM orderMobile 'Mobile order'
     OBJECTS o = Order PANEL
     PROPERTIES(o) nameType, dateTime, number, 
-                  nameCustomer ON CHANGE changeCustomer(o), 
-                  nameLocation ON CHANGE changeLocation(o),
+                  nameCustomer, 
+                  nameLocation,
                   untaxedAmount, amount
 
     PROPERTIES(o) confirm SHOWIF (status(o) = OrderStatus.sent OR status(o) = OrderStatus.draft), confirmed 
     
     OBJECTS l = OrderLine
-    PROPERTIES(l) nameItem ON CHANGE changeItem(l) 
+    PROPERTIES(l) nameItem 
     PROPERTIES(l) 'Qty' = quantity, price, NEW, DELETE
     PROPERTIES(l) PANEL SHOWIF pack(type(o))
                   'Packs' = packQuantity ON CHANGE changePackQuantity(l),
@@ -129,7 +125,6 @@ editMobile 'Edit' (Order o) {
 
 customerFilter = DATA LOCAL Partner ();
 nameCustomerFilter 'Customer' = name(customerFilter());
-@defineChangeInput(customerFilter, Partner, dialogPartnersMobile, p);    
 clearCustomerFilter '' () { customerFilter() <- NULL; } IMAGE 'delete.png';
 
 FORM ordersMobile 'Mobile order'
@@ -140,7 +135,7 @@ FORM ordersMobile 'Mobile order'
     FILTERGROUP unlocked
         FILTER 'Opened' NOT locked(o) DEFAULT    
 
-    PROPERTIES() nameCustomerFilter ON CHANGE changeCustomerFilter(), clearCustomerFilter
+    PROPERTIES() nameCustomerFilter, clearCustomerFilter
     FILTERS customer(o) = customerFilter() OR NOT customerFilter()
 ;
 

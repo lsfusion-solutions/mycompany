@@ -15,6 +15,7 @@ FORM transferMobile 'Mobile transfer'
     FILTERS isTransfer(t)
 
     OBJECTS l = Location PANEL
+    PROPERTIES(l) name SELECTOR
     FILTERS accessGranted(l)
 
     OBJECTS p = Product PAGESIZE 50
@@ -27,8 +28,6 @@ FORM transferMobile 'Mobile transfer'
     FILTERGROUP quantity
         FILTER 'Selected' quantity(p)
 ;
-
-@defineChangeInputObject(Location, transferMobile, l, dialogLocationsMobile);
 
 DESIGN transferMobile {
     caption = 'Transfer';
@@ -44,6 +43,7 @@ DESIGN transferMobile {
             }
         }
         MOVE GRID(p) {
+            fill = 1;
             PROPERTY(name(p)) { charWidth = 25; fontSize = 10; }
             PROPERTY(onHand(l, p)) { charWidth = 4; }
             PROPERTY(quantity(p)) { charWidth = 4; }
@@ -99,8 +99,6 @@ DESIGN transferMobile {
 @defineKeyboard(transferMobile, Product, p, searchKeyboard, 16, setQuantity);
 
 // actions
-@defineChangeInput(shipmentToLocation, Location, dialogLocationsMobile, l);
-
 createTransfer 'Move' (ShipmentType t, Location from) {
     quantity(Product p) <- NULL WHERE NOT onHand(from, p) > 0;
     ASK 'Move from' + ' ' + name(from) + ' -> ' + nameShipmentToLocation() + ' ' + (GROUP SUM 1 IF quantity(Product p)) + ' ' + 'lines' + '?\n' +
@@ -128,7 +126,7 @@ createTransfer 'Move' (ShipmentType t, Location from) {
 } 
 
 EXTEND FORM transferMobile
-    PROPERTIES nameShipmentToLocation() ON CHANGE changeShipmentToLocation(), createTransfer(t, l) READONLYIF NOT (GROUP SUM 1 IF quantity(Product pp)) OR NOT shipmentToLocation()
+    PROPERTIES nameShipmentToLocation(), createTransfer(t, l) READONLYIF NOT (GROUP SUM 1 IF quantity(Product pp)) OR NOT shipmentToLocation()
 ;
 
 DESIGN transferMobile {
