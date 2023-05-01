@@ -2,7 +2,7 @@ MODULE Bom;
 
 REQUIRE FileUtils, MetaNumerator, Authentication,
         Product, Company, 
-        ManufacturingSettings, BarCode;
+        ManufacturingSettings, BarCode, Icon;
 
 NAMESPACE Manufacturing;
 
@@ -12,7 +12,7 @@ CLASS Bom 'Bill of Materials';
 bom (STRING[50] id) = GROUP AGGR Bom b BY number(b);
 
 name 'Name' = DATA ISTRING[50] (Bom);
-description 'Description' (Bom b) = CONCAT ' ', name(b), number(b) IN id;
+description 'Description' (Bom b) = badged(name(b), number(b)) IN id;
 
 archived 'Inactive' = DATA BOOLEAN (Bom);
 active '{Active}' (Bom b) = NOT archived(b);

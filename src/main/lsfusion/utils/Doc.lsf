@@ -1,6 +1,6 @@
 MODULE Doc;
 
-REQUIRE Authentication, Time, BarCode, ItemAttribute;
+REQUIRE Authentication, Time, BarCode, ItemAttribute, Icon;
 
 NAMESPACE Utils;
 
@@ -44,12 +44,14 @@ META defineDocStatus (doc, title)
     }
     
     name '{First_name}' (###doc##Status s) = staticCaption(s) IF s IS ###doc##Status CHARWIDTH 12;
+    imagedName '{First_name}' (###doc##Status s) = imagedCaption(s) IF s IS ###doc##Status CHARWIDTH 12;
 
     color 'Colour' = ABSTRACT CASE COLOR (###doc##Status) MATERIALIZED;
     color (###doc##Status s) += WHEN s = ###doc##Status.draft THEN RGB(187,242,210);
 
     status 'Status' = ABSTRACT CASE ###doc##Status (###doc) MATERIALIZED INDEXED;
     nameStatus 'Status' (###doc d) = name(status(d));
+    imagedNameStatus 'Status' (###doc d) = imagedName(status(d)) MATERIALIZED ;
     colorStatus 'Colour' (###doc d) = color(status(d));
     
     status(###doc d) += WHEN d IS ###doc THEN ###doc##Status.draft;
@@ -59,7 +61,7 @@ END
 
 META defineDocStatusForm (doc, let)
     EXTEND FORM doc##s
-        PROPERTIES(##let) READONLY nameStatus BACKGROUND colorStatus(##let) FIRST
+        PROPERTIES(##let) READONLY imagedNameStatus BACKGROUND colorStatus(##let) FIRST
         FILTERGROUP status
             FILTER 'Draft' status(##let) = ###doc##Status.draft
     ;
@@ -69,7 +71,7 @@ META defineDocStatusForm (doc, let)
     }
     
     EXTEND FORM doc
-        PROPERTIES(##let) nameStatus BACKGROUND colorStatus(##let)
+        PROPERTIES(##let) imagedNameStatus BACKGROUND colorStatus(##let)
     ;
     
     DESIGN doc {
@@ -89,7 +91,7 @@ META defineDocStatusForm (doc, let)
             }
             NEW status {
                 type = CONTAINERH;
-                MOVE PROPERTY(nameStatus(##let));
+                MOVE PROPERTY(imagedNameStatus(##let));
             }
         }    
     } 
@@ -385,7 +387,7 @@ META defineDocLinesCount(doc, d)
     
     DESIGN doc {
         lines {
-            caption = (CONCAT ' ', 'Lines', '(' + count###doc##Line(d) + ')');
+            caption = badged('Lines', count###doc##Line(d));
         }
     }
     EXTEND FORM doc##s PROPERTIES(d) READONLY count###doc###Line;
@@ -408,3 +410,5 @@ META defineDocFilter(doc, cls, property, obj, caption)
     }
 
 END
+
+badgedDoc(STRING caption, STRING number, DATETIME dateTime) = badged(caption, (CONCAT ' ', '№' + number, '(' + dateTime +  ')'));
