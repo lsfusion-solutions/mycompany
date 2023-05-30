@@ -1,0 +1,76 @@
+MODULE EmployeeImport;
+
+REQUIRE Employee;
+
+NAMESPACE MasterData;
+
+employeeExport 'Export employees' () {
+    NEWSESSION {
+        IF NOT (GROUP SUM 1 IF Employee i IS Employee) THEN {
+            NEW i = Employee {
+                id(i) <- '123';
+                firstName(i) <- '{First_name}';
+                lastName(i) <- 'Surname';
+                middleName(i) <- 'Middle name';
+            }
+        }
+
+        LOCAL f = EXCELFILE ();
+        EXPORT XLSX HEADER FROM 'ID' = id(Employee p), 'FirstName' = firstName(p), 'LastName' = lastName(p),
+        'MiddleName' = middleName(p), 'LegalEntityID' = idLegalEntity(p), 'Address' = address(p), 'City' = city(p),
+        'State' = state(p), 'Zip' = zip(p), 'Phone' = phone(p), 'Email' = email(p) WHERE p IS Employee TO f;
+        open(f());
+    }
+}
+
+employeeImport 'Import employees' () {
+    LOCAL id = STRING[50] (INTEGER);
+    LOCAL firstName = ISTRING[30] (INTEGER);
+    LOCAL lastName = ISTRING[30] (INTEGER);
+    LOCAL middleName = ISTRING[30] (INTEGER);
+    LOCAL legalEntity = ISTRING[50] (INTEGER);
+    LOCAL address = ISTRING[150] (INTEGER);
+    LOCAL city = ISTRING[30] (INTEGER);
+    LOCAL state = ISTRING[30] (INTEGER);
+    LOCAL zip = ISTRING[10] (INTEGER);
+    LOCAL phone = ISTRING[100] (INTEGER);
+    LOCAL email = ISTRING[30] (INTEGER);
+
+    INPUT f = EXCELFILE DO {
+        NEWSESSION {
+            IMPORT XLS HEADER FROM f TO id, firstName, lastName, middleName, legalEntity, address, city, state,
+                    zip, phone, email;
+
+            FOR imported(INTEGER j) DO NEW i = Employee {
+                id(i) <- id(j);
+                firstName(i) <- firstName(j);
+                lastName(i) <- lastName(j);
+                middleName(i) <- middleName(j);
+                legalEntity(i) <- partner(legalEntity(j));
+                address(i) <- address(j);
+                city(i) <- city(j);
+                state(i) <- state(j);
+                zip(i) <- zip(j);
+                phone(i) <- phone(j);
+                email(i) <- email(j);
+            }
+            APPLY;
+            MESSAGE 'Import completed';
+        }
+    }
+}
+
+EXTEND FORM migrationData
+    PROPERTIES employeeImport(), employeeExport()
+;
+
+DESIGN migrationData {
+    commons {
+        NEW employee {
+            type = CONTAINERH;
+            caption = 'Employees';
+            MOVE PROPERTY(employeeImport());
+            MOVE PROPERTY(employeeExport());
+        }
+    }
+}
