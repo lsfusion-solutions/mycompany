@@ -8,7 +8,7 @@ CLASS LotOrder 'Заказ КМ';
 
 @defineDocStatus(lotOrder, 'заказа КМ');
 
-id 'ID' = DATA STRING[100] (LotOrder) CHARWIDTH 36;
+id '{ID}' = DATA STRING[100] (LotOrder) CHARWIDTH 36;
 
 type 'Type' = DATA LotType (LotOrder) NONULL;
 nameType 'Type' (LotOrder r) = name(type(r));
@@ -30,7 +30,7 @@ index '№' = PARTITION SUM 1 ORDER LotOrderLine l BY lotOrder(l) IN id MATERIAL
 product 'Product' = DATA Product (LotOrderLine);
 nameProduct 'Product' (LotOrderLine l) = name(product(l));
 idBarCodeProduct 'Barcode' (LotOrderLine l) = idBarCode(product(l));
-idProduct 'ID' (LotOrderLine l) = id(product(l));
+idProduct '{ID}' (LotOrderLine l) = id(product(l));
 gtinProduct 'GTIN' (LotOrderLine l) = gtin(product(l));
 
 uom (LotOrderLine l) = uom(product(l));
