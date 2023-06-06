@@ -88,7 +88,7 @@ checkBill (Bill b, BillLine bsl) {
 
 EXTEND FORM bill
     OBJECTS bsl = BillLine
-    PROPERTIES(bsl) READONLY index, nameItem, nameUom, idBarCodeItem, idItem, untaxedAmount, costAllocated
+    PROPERTIES(bsl) READONLY index, nameItem, nameUom, idBarCodeItem, idItem, referenceItem, untaxedAmount, costAllocated
     PROPERTIES(bsl) nameCostAllocationBase
     FILTERS b = bill(bsl),
             item(bsl) IS Service
@@ -101,7 +101,7 @@ EXTEND FORM bill
     
     OBJECTS bl = BillLine
     PROPERTIES(bl) READONLY numberDate SHOWIF (GROUP SUM 1 IF service(Bill bb, bsl)) > 1 
-    PROPERTIES(bl) READONLY index, nameItem, nameUom, idBarCodeItem, idItem, quantity, price, taxes, untaxedAmount
+    PROPERTIES(bl) READONLY index, nameItem, nameUom, idBarCodeItem, idItem, referenceItem, quantity, price, taxes, untaxedAmount
     PROPERTIES(bl, bsl) READONLY allocationBase
     PROPERTIES(bl, bsl) costAllocated, serviceLine
     FILTERS service(bill(bl), bsl),
