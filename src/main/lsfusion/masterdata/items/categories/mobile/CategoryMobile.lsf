@@ -6,22 +6,16 @@ NAMESPACE MasterData;
 
 // filter
 categoryFilter = DATA LOCAL Category ();
-nameCategoryFilter 'Category' = name(categoryFilter());
-clearCategoryFilter '' () { categoryFilter() <- NULL; } IMAGE 'delete.png';
+nameCategoryFilter '' = name(categoryFilter());
 
 META defineCategoryFilter(form, obj, container)
     EXTEND FORM form
-        PROPERTIES() nameCategoryFilter, clearCategoryFilter
+        PROPERTIES() nameCategoryFilter
         FILTERS level(category(obj), categoryFilter()) OR NOT categoryFilter()
     ;
     DESIGN form {
         container {
-            NEW categoryFilter {
-                type = CONTAINERH;
-                alignment = STRETCH;
-                MOVE PROPERTY(nameCategoryFilter()) { alignment = STRETCH; }                    
-                MOVE PROPERTY(clearCategoryFilter());
-            }
+            MOVE PROPERTY(nameCategoryFilter()) { placeholder = 'Category'; alignment = STRETCH; }
         }
     }
 

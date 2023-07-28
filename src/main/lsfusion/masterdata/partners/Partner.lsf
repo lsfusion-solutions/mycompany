@@ -120,7 +120,7 @@ FORM dialogPartners 'Select partner'
         FILTER 'Active' active(p) 'F10' DEFAULT
         FILTER 'Inactive' archived(p) 'F9'
 
-    PROPERTIES() nameFilter, clearNameFilter
+    PROPERTIES() nameFilter
     FILTERS isISubstring(name(p), nameFilter()) OR NOT nameFilter()
     
     EVENTS ON INIT { nameFilter() <- NULL; }
@@ -132,12 +132,7 @@ DESIGN dialogPartners {
     OBJECTS {
         NEW filters FIRST {
             alignment = STRETCH;
-            NEW nameFilter {
-                alignment = STRETCH;
-                type = CONTAINERH;
-                MOVE PROPERTY(nameFilter());
-                MOVE PROPERTY(clearNameFilter());
-            }
+            MOVE PROPERTY(nameFilter()) { placeholder = 'Name'; }
         }
     }
 }

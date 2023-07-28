@@ -4,22 +4,16 @@ REQUIRE BarCode;
 
 NAMESPACE MasterData;
 
-barCodeFilter 'Barcode' = DATA LOCAL STRING[50] () CHARWIDTH 13;
-clearBarCodeFilter '' () { barCodeFilter() <- NULL; } IMAGE 'delete.png';
+barCodeFilter '' = DATA LOCAL STRING[50] () CHARWIDTH 13;
 
 META defineBarCodeFilter(form, obj, container)
     EXTEND FORM form
-        PROPERTIES() barCodeFilter, clearBarCodeFilter
+        PROPERTIES() barCodeFilter
         FILTERS (GROUP SUM 1 IF endsWith(id(BarCode b), barCodeFilter()) AND item(b) = obj) OR NOT barCodeFilter()
     ;
     DESIGN form {
         container {
-            NEW barCodeFilter {
-                type = CONTAINERH;
-                alignment = STRETCH;
-                MOVE PROPERTY(barCodeFilter()) { alignment = STRETCH; }
-                MOVE PROPERTY(clearBarCodeFilter());
-            }
+            MOVE PROPERTY(barCodeFilter()) { placeholder = 'Barcode'; alignment = STRETCH; }
         }
     }
 END
