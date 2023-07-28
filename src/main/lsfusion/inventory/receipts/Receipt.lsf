@@ -57,7 +57,8 @@ index '№' = PARTITION SUM 1 ORDER ReceiptLine l BY receipt(l) IN id MATERIALIZ
 product 'Product' = DATA Product (ReceiptLine) NONULL INDEXED;
 nameProduct 'Product' (ReceiptLine l) = name(product(l)) IN id;
 idBarCodeProduct 'Barcode' (ReceiptLine l) = idBarCode(product(l));
-idProduct 'ID' (ReceiptLine l) = id(product(l));
+idProduct '{ID}' (ReceiptLine l) = id(product(l));
+referenceProduct 'Reference' (ReceiptLine l) = reference(product(l));
 
 CONSTRAINT product(ReceiptLine l) AND NOT canBePurchased(product(l))
             CHECKED BY product[ReceiptLine]
@@ -96,7 +97,7 @@ FORM receipt 'Receipt'
                   note
 
     OBJECTS l = ReceiptLine
-    PROPERTIES(l) index READONLY, nameProduct, nameUom, idBarCodeProduct, idProduct,
+    PROPERTIES(l) index READONLY, nameProduct, nameUom, idBarCodeProduct, idProduct, referenceProduct,
                   initialDemand SHOWIF NOT immediate(r) BACKGROUND IF status(receipt(l)) = ReceiptStatus.draft THEN RGB(198,230,247)
     PROPERTIES(l) NEW, DELETE        
     FILTERS receipt(l) = r

@@ -90,7 +90,8 @@ index '№' = PARTITION SUM 1 ORDER OrderLine l BY order(l) IN id MATERIALIZED C
 item = DATA Item (OrderLine) NONULL;
 nameItem '{Item}' (OrderLine l) = name(item(l));
 idBarCodeItem 'Barcode' (OrderLine l) = idBarCode(item(l));
-idItem 'ID' (OrderLine l) = id(item(l));
+idItem '{ID}' (OrderLine l) = id(item(l));
+referenceItem 'Reference' (OrderLine l) = reference(item(l));
 isService 'Service' (OrderLine l) = item(l) IS Service;
 
 CONSTRAINT item(OrderLine l) AND NOT canBeSold(item(l))
@@ -147,7 +148,7 @@ FORM order 'Customer order'
     PROPERTIES(o) READONLY untaxedAmount, taxAmount, amount
                  
     OBJECTS l = OrderLine
-    PROPERTIES(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, quantity, price, untaxedAmount, taxes ON CHANGE changeTax(l)
+    PROPERTIES(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, referenceItem, quantity, price, untaxedAmount, taxes ON CHANGE changeTax(l)
     PROPERTIES(l) NEW, DELETE
     FILTERS order(l) = o
     

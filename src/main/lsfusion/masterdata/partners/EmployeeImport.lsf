@@ -1,29 +1,29 @@
-MODULE IndividualImport;
+MODULE EmployeeImport;
 
-REQUIRE Individual;
+REQUIRE Employee;
 
 NAMESPACE MasterData;
 
-individualExport 'Export individuals' () {
+employeeExport 'Export employees' () {
     NEWSESSION {
-        IF NOT (GROUP SUM 1 IF Individual i IS Individual) THEN {
-            NEW i = Individual {
+        IF NOT (GROUP SUM 1 IF Employee i IS Employee) THEN {
+            NEW i = Employee {
                 id(i) <- '123';
                 firstName(i) <- '{First_name}';
                 lastName(i) <- 'Surname';
                 middleName(i) <- 'Middle name';
             }
         }
-    
+
         LOCAL f = EXCELFILE ();
-        EXPORT XLSX HEADER FROM '{ID}' = id(Individual p), 'FirstName' = firstName(p), 'LastName' = lastName(p), 
-            'MiddleName' = middleName(p), 'LegalEntityID' = idLegalEntity(p), 'Address' = address(p), 'City' = city(p), 
-            'State' = state(p), 'Zip' = zip(p), 'Phone' = phone(p), 'Email' = email(p) WHERE p IS Individual TO f;   
+        EXPORT XLSX HEADER FROM '{ID}' = id(Employee p), 'FirstName' = firstName(p), 'LastName' = lastName(p),
+        'MiddleName' = middleName(p), 'LegalEntityID' = idLegalEntity(p), 'Address' = address(p), 'City' = city(p),
+        'State' = state(p), 'Zip' = zip(p), 'Phone' = phone(p), 'Email' = email(p) WHERE p IS Employee TO f;
         open(f());
     }
 }
 
-individualImport 'Import individuals' () {
+employeeImport 'Import employees' () {
     LOCAL id = STRING[50] (INTEGER);
     LOCAL firstName = ISTRING[30] (INTEGER);
     LOCAL lastName = ISTRING[30] (INTEGER);
@@ -35,13 +35,13 @@ individualImport 'Import individuals' () {
     LOCAL zip = ISTRING[10] (INTEGER);
     LOCAL phone = ISTRING[100] (INTEGER);
     LOCAL email = ISTRING[30] (INTEGER);
-       
+
     INPUT f = EXCELFILE DO {
         NEWSESSION {
-            IMPORT XLS HEADER FROM f TO id, firstName, lastName, middleName, legalEntity, address, city, state, 
-                                        zip, phone, email; 
-            
-            FOR imported(INTEGER j) DO NEW i = Individual {
+            IMPORT XLS HEADER FROM f TO id, firstName, lastName, middleName, legalEntity, address, city, state,
+                    zip, phone, email;
+
+            FOR imported(INTEGER j) DO NEW i = Employee {
                 id(i) <- id(j);
                 firstName(i) <- firstName(j);
                 lastName(i) <- lastName(j);
@@ -57,20 +57,20 @@ individualImport 'Import individuals' () {
             APPLY;
             MESSAGE 'Import completed';
         }
-    }    
+    }
 }
 
-EXTEND FORM migrationData 
-    PROPERTIES individualImport(), individualExport()
+EXTEND FORM migrationData
+    PROPERTIES employeeImport(), employeeExport()
 ;
 
 DESIGN migrationData {
     commons {
-        NEW individual {
+        NEW employee {
             type = CONTAINERH;
-            caption = 'Individuals';
-            MOVE PROPERTY(individualImport());
-            MOVE PROPERTY(individualExport());
+            caption = 'Employees';
+            MOVE PROPERTY(employeeImport());
+            MOVE PROPERTY(employeeExport());
         }
     }
 }

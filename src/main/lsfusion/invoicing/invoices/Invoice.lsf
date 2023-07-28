@@ -94,7 +94,8 @@ index '№' = PARTITION SUM 1 ORDER InvoiceLine l BY invoice(l) IN id MATERIALIZ
 item '{Item}' = DATA Item (InvoiceLine) NONULL;
 nameItem '{Item}' (InvoiceLine l) = name(item(l)) IN id;
 idBarCodeItem 'Barcode' (InvoiceLine l) = idBarCode(item(l));
-idItem 'ID' (InvoiceLine l) = id(item(l));
+idItem '{ID}' (InvoiceLine l) = id(item(l));
+referenceItem 'Reference' (InvoiceLine l) = reference(item(l));
 
 CONSTRAINT item(InvoiceLine l) AND NOT canBeSold(item(l))
             CHECKED BY item 
@@ -153,7 +154,7 @@ FORM invoice 'Invoice'
                   deliveryAddress, customerReference, note
         
     OBJECTS l = InvoiceLine
-    PROPERTIES(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, 
+    PROPERTIES(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, referenceItem, 
                   quantity, price, taxes ON CHANGE changeTax(l), NEW, DELETE 
     FILTERS invoice(l) = i
 
