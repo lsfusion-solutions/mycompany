@@ -5,7 +5,7 @@ REQUIRE InvLedger, ResLedger, ItemImage, ItemAttribute, LocationEmployee, BarCod
 NAMESPACE Inventory;
 
 selectedDateTime 'Select date' = DATA LOCAL DATETIME () PREREAD;
-singleLocation 'One warehouse' = DATA LOCAL BOOLEAN () PREREAD;
+singleLocation 'Single location' = DATA LOCAL BOOLEAN () PREREAD;
 onHandDateTime 'Balance as of date' (Location l, Product p) = onHandA(l, p, selectedDateTime());
                                 
 FORM inventoryReport 'Inventory report'
@@ -46,7 +46,7 @@ FORM inventoryReport 'Inventory report'
                             quantity
     PROPERTIES(il) NEWSESSION EDIT
     FILTERGROUP activeInv
-        FILTER 'Active' active(il) DEFAULT
+        FILTER '{Active}' active(il) DEFAULT
     FILTERS product(il) = p,
             IF singleLocation() THEN (level(fromLocation(il), l) OR level(toLocation(il), l))
                                 ELSE (fromLocation(il) = l OR toLocation(il) = l),
