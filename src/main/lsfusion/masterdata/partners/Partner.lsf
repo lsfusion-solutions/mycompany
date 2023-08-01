@@ -23,7 +23,7 @@ phone 'Phone' = DATA ISTRING[100] (Partner) CHARWIDTH 10;
 email 'Email' = DATA ISTRING[30] (Partner);
 
 archived 'Inactive' = DATA BOOLEAN (Partner);
-active 'Active' (Partner p) = NOT archived(p);
+active '{Active}' (Partner p) = NOT archived(p);
 
 // type
 CLASS PartnerType 'Partner type';
@@ -91,7 +91,7 @@ FORM partners 'Partners'
     PROPERTIES(p) READONLYIF isReadonly() name, id, nameType, addressCsv, phone, email 
     PROPERTIES(p) NEWSESSION EDIT, DELETE 
     FILTERGROUP active
-        FILTER 'Active' active(p) 'F10' DEFAULT
+        FILTER '{Active}' active(p) 'F10' DEFAULT
         FILTER 'Inactive' archived(p) 'F9'
 ;
 
@@ -117,7 +117,7 @@ FORM dialogPartners 'Select partner'
     ORDERS name(p)
      
     FILTERGROUP active
-        FILTER 'Active' active(p) 'F10' DEFAULT
+        FILTER '{Active}' active(p) 'F10' DEFAULT
         FILTER 'Inactive' archived(p) 'F9'
 
     PROPERTIES() nameFilter, clearNameFilter

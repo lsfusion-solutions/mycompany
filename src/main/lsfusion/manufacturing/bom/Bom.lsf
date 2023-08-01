@@ -13,7 +13,7 @@ name 'Name' = DATA ISTRING[50] (Bom);
 description 'Description' (Bom b) = CONCAT ' ', name(b), number(b) IN id;
 
 archived 'Inactive' = DATA BOOLEAN (Bom);
-active 'Active' (Bom b) = NOT archived(b);
+active '{Active}' (Bom b) = NOT archived(b);
 
 item '{Item}' = DATA Item (Bom) NONULL DELETE;
 nameItem '{Item}' (Bom b) = name(item(b));
@@ -144,7 +144,7 @@ FORM boms 'Bills of Materials'
     PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE
     
     FILTERGROUP active
-        FILTER 'Active' active(b) DEFAULT
+        FILTER '{Active}' active(b) DEFAULT
     
     LIST Bom OBJECT b
 ;
