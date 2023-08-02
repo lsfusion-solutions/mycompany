@@ -213,6 +213,8 @@ DESIGN attribute {
 attributeFilter = DATA LOCAL ItemAttributeValue (ItemAttribute);
 value 'Value' (ItemAttribute a) = value(attributeFilter(a));
 
+notMatchAttributeFilter(Item i) = GROUP SUM 1 IF attributeFilter(ItemAttribute a) AND NOT attributeFilter(a) = attribute(i, a);  
+
 CONSTRAINT attributeFilter(ItemAttribute a) AND NOT itemAttribute(attributeFilter(a)) = a
     CHECKED BY attributeFilter MESSAGE '';
 
@@ -220,7 +222,7 @@ META defineItemAttributeForm(form, obj, gobj)
     EXTEND FORM form
         OBJECTS ia = ItemAttribute BEFORE gobj
         PROPERTIES name(ia) READONLY, value(ia) ON CHANGE { DIALOG childValues OBJECTS a = ia, c = c, v = attributeFilter(ia) CHANGE LIST value(v); }
-        FILTERS attributeFilter(ia) = attribute(obj, ia) OR NOT attributeFilter(ia)
+        FILTERS NOT notMatchAttributeFilter(obj)
         FILTERS GROUP SUM 1 IF set(ia, Category cc) AND (level(cc, c) OR level(c, cc)) 
     ;
 END
