@@ -32,6 +32,8 @@ DESIGN orderMobile {
     caption = badged('{Order}', '№' + number(o));
     
     OBJECTS {
+        class = '';
+        border = FALSE;
         NEW pane {
             type = TABBED;
             fill = 1;
@@ -130,7 +132,7 @@ nameCustomerFilter 'Customer' = name(customerFilter());
 FORM ordersMobile 'Mobile order'
     OBJECTS o = Order
     PROPERTIES(o) READONLY date, nameStatus BACKGROUND colorStatus(o), number, nameCustomer
-    PROPERTIES newMobile() DRAW o TOOLBAR, editMobile(o) TOOLBAR, DELETE(o) NEWSESSION
+    PROPERTIES '' = newMobile() DRAW o TOOLBAR, '' = editMobile(o) TOOLBAR, '' = DELETE(o) NEWSESSION
 
     FILTERGROUP unlocked
         FILTER 'Opened' NOT locked(o) DEFAULT    
@@ -142,6 +144,8 @@ FORM ordersMobile 'Mobile order'
 DESIGN ordersMobile {
     caption = 'Orders';
     OBJECTS {
+        class = '';
+        border = FALSE;
         NEW filters {
             type = CONTAINERH;
             MOVE PROPERTY(nameCustomerFilter());
@@ -150,7 +154,9 @@ DESIGN ordersMobile {
         }
         MOVE USERFILTER(o);
         MOVE GRID(o);
-        MOVE TOOLBARSYSTEM(o);
+        MOVE TOOLBARSYSTEM(o) {
+            showSettings = FALSE;
+        }
         MOVE TOOLBAR(o);
         REMOVE TOOLBARBOX;
     }
