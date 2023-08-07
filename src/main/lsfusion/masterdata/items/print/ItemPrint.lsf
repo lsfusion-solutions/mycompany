@@ -13,7 +13,7 @@ websiteCompany (PrintItemType t) = website(company(t));
 count 'Qty' = DATA LOCAL INTEGER (Item);
 countItem (PrintItemType t) = GROUP SUM 1 IF count(Item i) AND set(t, i);
 
-FORM printItem 'Label'
+FORM printItem '{Label}'
     OBJECTS pt = PrintItemType PANEL
     PROPERTIES(pt) name, nameCompany, addressLinesCompany, addressCsvCompany, phoneCompany, emailCompany, websiteCompany
     REPORT OVERRIDE file(pt), setExtension(RAWFILE(template(pt)), 'path')
@@ -78,7 +78,7 @@ printItem () {
     }
 }
 
-print 'Label' (Item i) {
+print '{Label}' (Item i) {
     count(Item ii) <- 1 IF i = ii;
     printItem();
 }

@@ -5,9 +5,9 @@ REQUIRE Receipt, ResLedger, ReceiptSelection;
 NAMESPACE Inventory;
 
 EXTEND CLASS ReceiptStatus {
-    ready '{Ready_}'
+    ready 'Ready'
 }
-ready '{Ready_}' = DATA BOOLEAN (Receipt);
+ready 'Ready' = DATA BOOLEAN (Receipt);
 
 status (Receipt r) += WHEN ready(r) THEN ReceiptStatus.ready;
 colorStatus (Receipt r) += WHEN status(r) = ReceiptStatus.ready THEN RGB(252,247,149);
@@ -37,7 +37,7 @@ DESIGN receipt {
 
 EXTEND FORM receipts    
     EXTEND FILTERGROUP status
-        FILTER '{Ready_}' status(r) = ReceiptStatus.ready    
+        FILTER 'Ready' status(r) = ReceiptStatus.ready    
 ;
 
 @defineSelectionAction(receipts, Receipt, markAsToDo, 'Mark as Todo', statuses);
