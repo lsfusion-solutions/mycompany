@@ -15,10 +15,10 @@ EXTEND FORM orderType PROPERTIES nameReceiptType(o);
 
 done '{Received}' (OrderLine ol) = 
     GROUP SUM done(ReceiptLine rl) IF orderLine(rl) = ol AND active(receipt(rl));
-toReceive '{Ready_}' (OrderLine ol) = 
+toReceive 'Ready' (OrderLine ol) = 
     max(quantity(ol) (-) done(ol), 0) IF item(ol) IS Product;
 
-toReceive '{Ready_}' (Order o) = GROUP SUM toReceive(OrderLine ol) IF order(ol) = o;
+toReceive 'Ready' (Order o) = GROUP SUM toReceive(OrderLine ol) IF order(ol) = o;
 
 CONSTRAINT (quantity(OrderLine ol) (-) done(ol)) < 0 AND confirmed(order(ol)) 
     MESSAGE 'For the goods, the receipt exceeds the quantity in the order';

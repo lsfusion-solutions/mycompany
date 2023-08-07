@@ -1,6 +1,6 @@
 MODULE Doc;
 
-REQUIRE Authentication, Time, BarCode, Icon;
+REQUIRE Authentication, Time, BarCode, Icon, ItemAttribute;
 
 NAMESPACE Utils;
 
@@ -140,14 +140,21 @@ META defineDocSearchTab (doc, it)
         FILTERGROUP active
             FILTER '{Active}' active(itm) 'F10' DEFAULT  
     ;
-    
+
+    @defineItemAttributeForm(doc, itm, itm);
+        
     DESIGN doc {
         details {
             NEW search {
                 caption = 'Search';
                 type = SPLITH;
                 fill = 1;
-                MOVE BOX(TREE categories);
+                NEW filters {
+                    fill = 1;
+                    type = TABBED;
+                    MOVE BOX(TREE categories) { caption = 'Categories'; }
+                    MOVE BOX(ia) { caption = 'Attributes'; }
+                }
                 MOVE BOX(itm) { 
                     fill = 2;
                     caption = '';
