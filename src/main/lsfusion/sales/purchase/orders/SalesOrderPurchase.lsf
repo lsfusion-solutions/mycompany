@@ -1,0 +1,66 @@
+MODULE SalesOrderPurchase;
+
+REQUIRE SalesOrderConfirmed, PurchaseOrderConfirmed;
+
+NAMESPACE Sales;
+
+// lines
+orderLine = DATA Purchase.OrderLine (OrderLine) INDEXED;
+
+in (Purchase.Order i, Order s) = GROUP SUM 1 IF order(orderLine(OrderLine l)) = i AND order(l) = s MATERIALIZED;
+
+countOrder (Order s) = GROUP SUM 1 IF in(Purchase.Order i, s) MATERIALIZED;
+countOrders (Purchase.Order i) = GROUP SUM 1 IF in(i, Order s) MATERIALIZED;
+numberDateOrder 'Purchase orders' (Order s) = GROUP CONCAT numberDate(Purchase.Order i) IF in(i, s), ',' ORDER i CHARWIDTH 30;
+numberDateOrderLine 'Purchase order' (OrderLine s) = numberDate(orderLine(s));
+
+numberDateOrders 'Sale orders' (Purchase.Order s) = GROUP CONCAT numberDate(Order i) IF in(s, i), ',' ORDER i CHARWIDTH 30;
+numberDateOrders 'Sale orders' (Purchase.OrderLine pl) = GROUP CONCAT numberDate(OrderLine sl) IF orderLine(sl) = pl, ',' ORDER sl CHARWIDTH 30;
+
+countOrderLine (Purchase.Order b) = GROUP SUM 1 IF order(orderLine(OrderLine l)) = b;
+
+countOrderLine (Purchase.OrderLine pl) = GROUP SUM 1 IF orderLine(OrderLine sl) = pl;
+quantityOrderLine (Purchase.OrderLine pl) = GROUP SUM quantity(OrderLine sl) IF orderLine(sl) = pl;
+
+// sales order
+openOrder (Order s) {
+    FOR in(Purchase.Order i, s) DO
+        edit(i);
+}
+EXTEND FORM order
+    PROPERTIES(o) numberDateOrder ON CHANGE openOrder(o) SHOWIF countOrder(o)
+    
+    PROPERTIES(l) READONLY numberDateOrderLine SHOWIF countOrder(o)
+;
+DESIGN order {
+    footer {
+        MOVE PROPERTY(numberDateOrder(o));
+    }
+}
+EXTEND FORM orders
+    PROPERTIES(o) READONLY numberDateOrder
+;
+
+// purchase order
+EXTEND FORM Purchase.orders
+    PROPERTIES(o) READONLY numberDateOrders
+;
+
+EXTEND FORM Purchase.order
+    OBJECTS so = Order
+    PROPERTIES(so) READONLY nameType, dateTime, scheduledDateTime, nameStatus BACKGROUND colorStatus(so), number, nameCustomer, nameLocation
+    PROPERTIES(so) NEWSESSION EDIT GRID
+    FILTERS in(o, so)
+    
+    PROPERTIES(l) READONLY numberDateOrders SHOWIF countOrders(o)
+;
+
+DESIGN Purchase.order {
+    relatedDoc {
+        MOVE BOX(so) {
+            caption = CONCAT ' ', 'Sale orders', '(' + countOrders(o) + ')';
+        }
+        REMOVE TOOLBARSYSTEM(so);
+    }
+}
+

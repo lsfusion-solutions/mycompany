@@ -1,0 +1,50 @@
+MODULE SalesOrderPurchaseAdd;
+
+REQUIRE SalesOrderPurchase, PurchaseOrderSearch;
+
+NAMESPACE Sales;
+
+add 'Add' (Purchase.Order o, OrderLine sl) {
+    IF NOT lastOrderLine(o, item(sl)) THEN NEW pl = Purchase.OrderLine {
+        order(pl) <- o;
+        item(pl) <- item(sl);
+        quantity(pl) <- quantity(sl);
+        
+        orderLine(sl) <- pl;
+    }
+    
+    FOR Purchase.OrderLine pl = lastOrderLine(o, item(sl)) DO {
+        orderLine(sl) <- pl;
+        quantity(pl) <- quantityOrderLine(pl);
+    }
+    
+} IMAGE 'add.png' CHANGEKEY 'ADD';
+
+delete 'Delete' (Purchase.Order o, OrderLine sl) {
+    IF countOrderLine(orderLine(sl)) > 1 THEN {
+        orderLine(sl) <- NULL;
+        quantity(orderLine(sl)) <- quantityOrderLine(orderLine(sl));
+    } ELSE
+        DELETE Purchase.OrderLine pl WHERE pl = orderLine(sl);
+} IMAGE 'delete.png' CHANGEKEY 'SUBTRACT';
+
+EXTEND FORM Purchase.order
+    OBJECTS sol = OrderLine
+    PROPERTIES(sol) READONLY BACKGROUND o = order(orderLine(sol))
+            nameType, dateTime, scheduledDateTime, nameStatus, number, nameCustomer, nameLocation,
+            nameItem, description, quantity, nameUom, price
+    PROPERTIES(o, sol) TOOLBAR add, delete READONLYIF NOT order(orderLine(sol)) = o
+    
+    FILTERS order(orderLine(sol)) = o OR 
+            ((NOT orderLine(sol) OR canceled(orderLine(sol))) AND 
+             status(sol) = OrderStatus.confirmed AND 
+             (location(sol) = location(o) OR NOT location(o)))
+;
+
+DESIGN Purchase.order {
+    details {
+        MOVE BOX(sol) {
+            caption = 'Sale orders';
+        }
+    }
+}
