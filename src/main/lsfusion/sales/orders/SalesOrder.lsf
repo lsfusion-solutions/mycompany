@@ -54,7 +54,7 @@ WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(company(o)) DO company(o) <- de
 scheduledDateTime 'Scheduled date' = DATA DATETIME (Order);
 scheduledDateTime(Order o) <- currentDateTime() WHEN SET(o IS Order);
 
-scheduledDate 'Date of delivery' (Order o) = DATE(scheduledDateTime(o));
+scheduledDate 'Scheduled date' (Order o) = DATE(scheduledDateTime(o));
 
 deliveryAddress 'Delivery address' = DATA STRING (Order) CHARWIDTH 20;
 WHEN LOCAL (CHANGED(customer(Order o)) OR CHANGED(department(o))) AND NOT CHANGED(deliveryAddress(o)) DO 
@@ -122,16 +122,22 @@ WHEN LOCAL CHANGED(item(OrderLine ol)) DO {
 }
 
 // Line properties
+nameType 'Type' (OrderLine l) = nameType(order(l));
+status 'Status' (OrderLine l) = status(order(l));
 nameStatus 'Status' (OrderLine l) = nameStatus(order(l));
 type (OrderLine l) = type(order(l)); 
 dateTime 'Date' (OrderLine l) = dateTime(order(l));
 date 'Date' (OrderLine l) = date(order(l));
 number 'Number' (OrderLine l) = number(order(l));
 numberDate 'Description' (OrderLine l) = numberDate(order(l));
+location 'Location' (OrderLine l) = location(order(l));
 nameLocation 'Location' (OrderLine l) = nameLocation(order(l));
 
 customer (OrderLine l) = customer(order(l));
 nameCustomer 'Customer' (OrderLine l) = nameCustomer(order(l));
+
+scheduledDateTime 'Scheduled date' (OrderLine l) = scheduledDateTime(order(l));
+scheduledDate 'Scheduled date' (OrderLine l) = scheduledDateTime(order(l));
 
 currency (OrderLine l) = currency(order(l));
 nameCurrency 'Currency' (OrderLine l) = nameCurrency(order(l));
