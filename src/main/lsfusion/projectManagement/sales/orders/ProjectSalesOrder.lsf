@@ -1,0 +1,73 @@
+MODULE ProjectSalesOrder;
+
+REQUIRE Project, SalesOrder;
+
+NAMESPACE ProjectManagement;
+
+// type
+orderType = DATA OrderType (ProjectType);
+nameOrderType 'Order type' (ProjectType t) = name(orderType(t));
+EXTEND FORM projectType PROPERTIES nameOrderType(o);
+
+project = DATA Project (Order) INDEXED;
+nameProject 'Project' (Order i) = name(project(i));
+
+countOrders 'Orders' (Project p) = GROUP SUM 1 IF project(Order i) = p;
+
+EXTEND FORM orders
+    PROPERTIES(o) READONLY nameProject
+;
+
+EXTEND FORM project
+    OBJECTS o = Order
+    PROPERTIES(o) READONLY nameType, dateTime, nameStatus BACKGROUND colorStatus(o), number
+    PROPERTIES(o) NEWSESSION EDIT GRID
+    FILTERS project(o) = p
+;
+
+DESIGN project {
+    tabs  {
+        MOVE BOX(o) {
+            caption = CONCAT ' ', 'Orders', '(' + countOrders(p) + ')';
+            GRID(o) { headerHeight = 24; }
+        }
+        REMOVE TOOLBARBOX(o);
+    }
+}
+
+fill ABSTRACT LIST (Order, Project);
+
+create (Order o, Project p) {
+    project(o) <- p;
+
+    type(o) <- orderType(type(p));
+
+    company(o) <- company(p);
+    customer(o) <- partner(p);
+
+    fill(o, p);
+}
+
+createOrder 'Create Order' (Project p) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    NEWSESSION {
+        NEW o = Order {
+            create(o, p);
+
+            SHOW order OBJECTS o = o DOCKED;
+        }
+    }
+}
+
+EXTEND FORM project
+    PROPERTIES(p) createOrder
+;
+
+DESIGN project {
+    primaryActions {
+        MOVE PROPERTY(createOrder(p)) FIRST { fontStyle = 'bold'; };
+    }
+}
+
