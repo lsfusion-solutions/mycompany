@@ -72,6 +72,8 @@ CONSTRAINT representative(Order o) AND NOT legalEntity(representative(o)) = comp
 
 vendorReference 'Vendor reference' = DATA STRING[30] (Order);
 
+details 'Details' = DATA RICHTEXT (Order);
+
 // Lines
 CLASS OrderLine 'Order line';
 order =  DATA Order (OrderLine) NONULL  DELETE;
@@ -131,7 +133,8 @@ FORM order 'Purchase order'
                   nameVendor, nameCompany, nameLocation, nameCurrency,
                   namePaymentTerms,
                   scheduledDateTime,
-                  nameRepresentative, vendorReference
+                  nameRepresentative, vendorReference,
+                  details
     PROPERTIES(o) READONLY untaxedAmount, taxAmount, amount
                  
     OBJECTS l = OrderLine
@@ -191,7 +194,11 @@ DESIGN order {
                     MOVE PROPERTY(nameRepresentative(o));
                     MOVE PROPERTY(vendorReference(o));
                 }
-            }            
+            }
+            NEW detailsInformation {
+                caption = 'Details';
+                MOVE PROPERTY(details(o)) { caption = ''; fill = 1; }
+            }
         }
         NEW footer {
             align = END;
