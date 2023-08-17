@@ -14,14 +14,25 @@ nameProject 'Project' (Order i) = name(project(i));
 
 countOrders 'Purchase orders' (Project p) = GROUP SUM 1 IF project(Order i) = p;
 
+EXTEND FORM order
+    PROPERTIES(o) nameProject
+;
+
+DESIGN order {
+    headerRight {
+        MOVE PROPERTY(nameProject(o));
+    }
+}
+
 EXTEND FORM orders
     PROPERTIES(o) READONLY nameProject
 ;
 
 EXTEND FORM project
     OBJECTS po = Order
-    PROPERTIES(po) READONLY nameType, dateTime, nameStatus BACKGROUND colorStatus(po), number
-    PROPERTIES(po) NEWSESSION EDIT GRID
+    PROPERTIES(po) READONLY nameStatus BACKGROUND colorStatus(po), nameType, 
+                            dateTime, scheduledDateTime, number,
+                            nameLocation, amount
     FILTERS project(po) = p
 ;
 
@@ -31,7 +42,6 @@ DESIGN project {
             caption = CONCAT ' ', 'Purchase orders', '(' + countOrders(p) + ')';
             GRID(po) { headerHeight = 24; }
         }
-        REMOVE TOOLBARBOX(po);
     }
 }
 
@@ -58,15 +68,9 @@ createOrder 'Create Purchase Order' (Project p) {
             SHOW order OBJECTS o = o DOCKED;
         }
     }
-}
+} IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
 
 EXTEND FORM project
-    PROPERTIES(p) createPurchaseOrder = createOrder
+    PROPERTIES(p) createPurchaseOrder 'Add' = createOrder DRAW po TOOLBAR
+    PROPERTIES(po) NEWSESSION EDIT, DELETE
 ;
-
-DESIGN project {
-    primaryActions {
-        MOVE PROPERTY(createPurchaseOrder) FIRST { fontStyle = 'bold'; };
-    }
-}
-

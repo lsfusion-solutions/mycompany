@@ -14,14 +14,26 @@ nameProject 'Project' (Receipt i) = name(project(i));
 
 countReceipts 'Receipts' (Project p) = GROUP SUM 1 IF project(Receipt i) = p;
 
+EXTEND FORM receipt
+    PROPERTIES(r) nameProject
+;
+
+DESIGN receipt {
+    headerRight {
+        MOVE PROPERTY(nameProject(r));
+    }
+}
+
 EXTEND FORM receipts
     PROPERTIES(r) READONLY nameProject
 ;
 
 EXTEND FORM project
     OBJECTS r = Receipt
-    PROPERTIES(r) READONLY nameType, scheduledDateTime, executionDateTime, nameStatus BACKGROUND colorStatus(r), number
-    PROPERTIES(r) NEWSESSION EDIT GRID
+    PROPERTIES(r) READONLY nameStatus BACKGROUND colorStatus(r), nameType, 
+                           scheduledDateTime, executionDateTime, number,
+                           nameLocation
+    
     FILTERS project(r) = p
 ;
 
@@ -31,7 +43,6 @@ DESIGN project {
             caption = CONCAT ' ', 'Receipts', '(' + countReceipts(p) + ')';
             GRID(r) { headerHeight = 24; }
         }
-        REMOVE TOOLBARBOX(r);
     }
 }
 
@@ -59,12 +70,6 @@ createReceipt 'Create Receipt' (Project p) {
 }
 
 EXTEND FORM project
-    PROPERTIES(p) createReceipt
+    PROPERTIES(p) 'Add' = createReceipt DRAW r TOOLBAR
+    PROPERTIES(r) NEWSESSION EDIT, DELETE
 ;
-
-DESIGN project {
-    primaryActions {
-        MOVE PROPERTY(createReceipt(p)) FIRST { fontStyle = 'bold'; };
-    }
-}
-

@@ -14,14 +14,27 @@ nameProject 'Project' (Bill b) = name(project(b));
 
 countBills 'Bills' (Project p) = GROUP SUM 1 IF project(Bill b) = p;
 
+EXTEND FORM bill
+    PROPERTIES(b) nameProject
+;
+
+DESIGN bill {
+    headerRight {
+        MOVE PROPERTY(nameProject(b));
+    }
+}
+
+
 EXTEND FORM bills
     PROPERTIES(b) READONLY nameProject
 ;
 
 EXTEND FORM project
     OBJECTS b = Bill
-    PROPERTIES(b) READONLY nameType, dateTime, nameStatus BACKGROUND colorStatus(b), number
-    PROPERTIES(b) NEWSESSION EDIT GRID
+    PROPERTIES(b) READONLY nameStatus BACKGROUND colorStatus(b), nameType, 
+                           dateTime, dueDateTime, number,
+                           namePaymentTerms, amount
+
     FILTERS project(b) = p
 ;
 
@@ -31,7 +44,6 @@ DESIGN project {
             caption = CONCAT ' ', 'Bills', '(' + countBills(p) + ')';
             GRID(b) { headerHeight = 24; }
         }
-        REMOVE TOOLBARBOX(b);
     }
 }
 
@@ -61,12 +73,6 @@ createBill 'Create Bill' (Project p) {
 }
 
 EXTEND FORM project
-    PROPERTIES(p) createBill
+    PROPERTIES(p) 'Add' = createBill DRAW b TOOLBAR
+    PROPERTIES(b) NEWSESSION EDIT, DELETE
 ;
-
-DESIGN project {
-    primaryActions {
-        MOVE PROPERTY(createBill(p)) FIRST { fontStyle = 'bold'; };
-    }
-}
-
