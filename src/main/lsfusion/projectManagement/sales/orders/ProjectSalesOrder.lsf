@@ -2,36 +2,36 @@ MODULE ProjectSalesOrder;
 
 REQUIRE Project, SalesOrder;
 
-NAMESPACE ProjectManagement;
+NAMESPACE ProjectSales;
 
 // type
 orderType = DATA OrderType (ProjectType);
-nameOrderType 'Order type' (ProjectType t) = name(orderType(t));
-EXTEND FORM projectType PROPERTIES nameOrderType(o);
+nameOrderType 'Sales order type' (ProjectType t) = name(orderType(t));
+EXTEND FORM projectType PROPERTIES salesOrderType = nameOrderType(o);
 
 project = DATA Project (Order) INDEXED;
 nameProject 'Project' (Order i) = name(project(i));
 
-countOrders 'Orders' (Project p) = GROUP SUM 1 IF project(Order i) = p;
+countOrders 'Sales orders' (Project p) = GROUP SUM 1 IF project(Order i) = p;
 
 EXTEND FORM orders
     PROPERTIES(o) READONLY nameProject
 ;
 
 EXTEND FORM project
-    OBJECTS o = Order
-    PROPERTIES(o) READONLY nameType, dateTime, nameStatus BACKGROUND colorStatus(o), number
-    PROPERTIES(o) NEWSESSION EDIT GRID
-    FILTERS project(o) = p
+    OBJECTS so = Order
+    PROPERTIES(so) READONLY nameType, dateTime, nameStatus BACKGROUND colorStatus(so), number
+    PROPERTIES(so) NEWSESSION EDIT GRID
+    FILTERS project(so) = p
 ;
 
 DESIGN project {
     tabs  {
-        MOVE BOX(o) {
-            caption = CONCAT ' ', 'Orders', '(' + countOrders(p) + ')';
-            GRID(o) { headerHeight = 24; }
+        MOVE BOX(so) {
+            caption = CONCAT ' ', 'Sales orders', '(' + countOrders(p) + ')';
+            GRID(so) { headerHeight = 24; }
         }
-        REMOVE TOOLBARBOX(o);
+        REMOVE TOOLBARBOX(so);
     }
 }
 
@@ -48,7 +48,7 @@ create (Order o, Project p) {
     fill(o, p);
 }
 
-createOrder 'Create Order' (Project p) {
+createOrder 'Create Sales Order' (Project p) {
     APPLY;
     IF canceled() THEN RETURN;
 
@@ -62,12 +62,12 @@ createOrder 'Create Order' (Project p) {
 }
 
 EXTEND FORM project
-    PROPERTIES(p) createOrder
+    PROPERTIES(p) createSalesOrder = createOrder
 ;
 
 DESIGN project {
     primaryActions {
-        MOVE PROPERTY(createOrder(p)) FIRST { fontStyle = 'bold'; };
+        MOVE PROPERTY(createSalesOrder) FIRST { fontStyle = 'bold'; };
     }
 }
 
