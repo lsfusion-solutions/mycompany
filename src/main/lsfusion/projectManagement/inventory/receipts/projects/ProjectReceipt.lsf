@@ -1,0 +1,70 @@
+MODULE ProjectReceipt;
+
+REQUIRE Project, ReceiptDone;
+
+NAMESPACE ProjectManagement;
+
+// type
+receiptType = DATA ReceiptType (ProjectType);
+nameReceiptType 'Receipt type' (ProjectType t) = name(receiptType(t));
+EXTEND FORM projectType PROPERTIES nameReceiptType(o);
+
+project = DATA Project (Receipt) INDEXED;
+nameProject 'Project' (Receipt i) = name(project(i));
+
+countReceipts 'Receipts' (Project p) = GROUP SUM 1 IF project(Receipt i) = p;
+
+EXTEND FORM receipts
+    PROPERTIES(r) READONLY nameProject
+;
+
+EXTEND FORM project
+    OBJECTS r = Receipt
+    PROPERTIES(r) READONLY nameType, scheduledDateTime, executionDateTime, nameStatus BACKGROUND colorStatus(r), number
+    PROPERTIES(r) NEWSESSION EDIT GRID
+    FILTERS project(r) = p
+;
+
+DESIGN project {
+    tabs  {
+        MOVE BOX(r) {
+            caption = CONCAT ' ', 'Receipts', '(' + countReceipts(p) + ')';
+            GRID(r) { headerHeight = 24; }
+        }
+        REMOVE TOOLBARBOX(r);
+    }
+}
+
+fill ABSTRACT LIST (Receipt, Project);
+
+create (Receipt i, Project p) {
+    project(i) <- p;
+
+    type(i) <- receiptType(type(p));
+
+    fill(i, p);
+}
+
+createReceipt 'Create Receipt' (Project p) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    NEWSESSION {
+        NEW r = Receipt {
+            create(r, p);
+
+            SHOW receipt OBJECTS r = r DOCKED;
+        }
+    }
+}
+
+EXTEND FORM project
+    PROPERTIES(p) createReceipt
+;
+
+DESIGN project {
+    primaryActions {
+        MOVE PROPERTY(createReceipt(p)) FIRST { fontStyle = 'bold'; };
+    }
+}
+

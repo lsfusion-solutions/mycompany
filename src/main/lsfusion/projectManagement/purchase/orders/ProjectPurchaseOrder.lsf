@@ -1,0 +1,72 @@
+MODULE ProjectPurchaseOrder;
+
+REQUIRE Project, PurchaseOrder;
+
+NAMESPACE ProjectPurchase;
+
+// type
+orderType = DATA OrderType (ProjectType);
+nameOrderType 'Purchase order type' (ProjectType t) = name(orderType(t));
+EXTEND FORM projectType PROPERTIES purchaseOrderType = nameOrderType(o);
+
+project = DATA Project (Order) INDEXED;
+nameProject 'Project' (Order i) = name(project(i));
+
+countOrders 'Purchase orders' (Project p) = GROUP SUM 1 IF project(Order i) = p;
+
+EXTEND FORM orders
+    PROPERTIES(o) READONLY nameProject
+;
+
+EXTEND FORM project
+    OBJECTS po = Order
+    PROPERTIES(po) READONLY nameType, dateTime, nameStatus BACKGROUND colorStatus(po), number
+    PROPERTIES(po) NEWSESSION EDIT GRID
+    FILTERS project(po) = p
+;
+
+DESIGN project {
+    tabs  {
+        MOVE BOX(po) {
+            caption = CONCAT ' ', 'Purchase orders', '(' + countOrders(p) + ')';
+            GRID(po) { headerHeight = 24; }
+        }
+        REMOVE TOOLBARBOX(po);
+    }
+}
+
+fill ABSTRACT LIST (Order, Project);
+
+create (Order o, Project p) {
+    project(o) <- p;
+
+    type(o) <- orderType(type(p));
+
+    company(o) <- company(p);
+
+    fill(o, p);
+}
+
+createOrder 'Create Purchase Order' (Project p) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    NEWSESSION {
+        NEW o = Order {
+            create(o, p);
+
+            SHOW order OBJECTS o = o DOCKED;
+        }
+    }
+}
+
+EXTEND FORM project
+    PROPERTIES(p) createPurchaseOrder = createOrder
+;
+
+DESIGN project {
+    primaryActions {
+        MOVE PROPERTY(createPurchaseOrder) FIRST { fontStyle = 'bold'; };
+    }
+}
+

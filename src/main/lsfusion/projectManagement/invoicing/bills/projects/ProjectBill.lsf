@@ -1,0 +1,72 @@
+MODULE ProjectBill;
+
+REQUIRE Project, Bill;
+
+NAMESPACE ProjectManagement;
+
+// type
+billType = DATA BillType (ProjectType);
+nameBillType 'Bill type' (ProjectType t) = name(billType(t));
+EXTEND FORM projectType PROPERTIES nameBillType(o);
+
+project = DATA Project (Bill) INDEXED;
+nameProject 'Project' (Bill b) = name(project(b));
+
+countBills 'Bills' (Project p) = GROUP SUM 1 IF project(Bill b) = p;
+
+EXTEND FORM bills
+    PROPERTIES(b) READONLY nameProject
+;
+
+EXTEND FORM project
+    OBJECTS b = Bill
+    PROPERTIES(b) READONLY nameType, dateTime, nameStatus BACKGROUND colorStatus(b), number
+    PROPERTIES(b) NEWSESSION EDIT GRID
+    FILTERS project(b) = p
+;
+
+DESIGN project {
+    tabs  {
+        MOVE BOX(b) {
+            caption = CONCAT ' ', 'Bills', '(' + countBills(p) + ')';
+            GRID(b) { headerHeight = 24; }
+        }
+        REMOVE TOOLBARBOX(b);
+    }
+}
+
+fill ABSTRACT LIST (Bill, Project);
+
+create (Bill b, Project p) {
+    project(b) <- p;
+
+    type(b) <- billType(type(p));
+
+    company(b) <- company(p);
+
+    fill(b, p);
+}
+
+createBill 'Create Bill' (Project p) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    NEWSESSION {
+        NEW b = Bill {
+            create(b, p);
+
+            SHOW bill OBJECTS b = b DOCKED;
+        }
+    }
+}
+
+EXTEND FORM project
+    PROPERTIES(p) createBill
+;
+
+DESIGN project {
+    primaryActions {
+        MOVE PROPERTY(createBill(p)) FIRST { fontStyle = 'bold'; };
+    }
+}
+

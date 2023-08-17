@@ -14,8 +14,8 @@ countOrders (Purchase.Order i) = GROUP SUM 1 IF in(i, Order s) MATERIALIZED;
 numberDateOrder 'Purchase orders' (Order s) = GROUP CONCAT numberDate(Purchase.Order i) IF in(i, s), ',' ORDER i CHARWIDTH 30;
 numberDateOrderLine 'Purchase order' (OrderLine s) = numberDate(orderLine(s));
 
-numberDateOrders 'Sale orders' (Purchase.Order s) = GROUP CONCAT numberDate(Order i) IF in(s, i), ',' ORDER i CHARWIDTH 30;
-numberDateOrders 'Sale orders' (Purchase.OrderLine pl) = GROUP CONCAT numberDate(OrderLine sl) IF orderLine(sl) = pl, ',' ORDER sl CHARWIDTH 30;
+numberDateOrders 'Sales orders' (Purchase.Order s) = GROUP CONCAT numberDate(Order i) IF in(s, i), ',' ORDER i CHARWIDTH 30;
+numberDateOrders 'Sales orders' (Purchase.OrderLine pl) = GROUP CONCAT numberDate(OrderLine sl) IF orderLine(sl) = pl, ',' ORDER sl CHARWIDTH 30;
 
 countOrderLine (Purchase.Order b) = GROUP SUM 1 IF order(orderLine(OrderLine l)) = b;
 
@@ -58,7 +58,7 @@ EXTEND FORM Purchase.order
 DESIGN Purchase.order {
     relatedDoc {
         MOVE BOX(so) {
-            caption = CONCAT ' ', 'Sale orders', '(' + countOrders(o) + ')';
+            caption = CONCAT ' ', 'Sales orders', '(' + countOrders(o) + ')';
         }
         REMOVE TOOLBARSYSTEM(so);
     }
