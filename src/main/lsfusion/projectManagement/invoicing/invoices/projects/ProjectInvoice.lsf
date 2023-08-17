@@ -12,7 +12,17 @@ EXTEND FORM projectType PROPERTIES nameInvoiceType(o);
 project = DATA Project (Invoice) INDEXED;
 nameProject 'Project' (Invoice i) = name(project(i));
 
-countInvoices 'Invoices' (Project p) = GROUP SUM 1 IF project(Invoice i) = p;  
+countInvoices 'Invoices' (Project p) = GROUP SUM 1 IF project(Invoice i) = p;
+
+EXTEND FORM invoice
+    PROPERTIES(i) nameProject
+;
+
+DESIGN invoice {
+    headerRight {
+        MOVE PROPERTY(nameProject(i));
+    }
+}
 
 EXTEND FORM invoices
     PROPERTIES(i) READONLY nameProject
@@ -20,8 +30,9 @@ EXTEND FORM invoices
 
 EXTEND FORM project
     OBJECTS i = Invoice
-    PROPERTIES(i) READONLY nameType, dateTime, nameStatus BACKGROUND colorStatus(i), number    
-    PROPERTIES(i) NEWSESSION EDIT GRID
+    PROPERTIES(i) READONLY nameStatus BACKGROUND colorStatus(i), nameType, 
+                           dateTime, dueDateTime, number,
+                           namePaymentTerms, amount
     FILTERS project(i) = p   
 ;
 
@@ -31,7 +42,6 @@ DESIGN project {
             caption = CONCAT ' ', 'Invoices', '(' + countInvoices(p) + ')';
             GRID(i) { headerHeight = 24; }
         }
-        REMOVE TOOLBARBOX(i);
     }
 }
 
@@ -62,12 +72,6 @@ createInvoice 'Create Invoice' (Project p) {
 }
 
 EXTEND FORM project
-    PROPERTIES(p) createInvoice
+    PROPERTIES(p) 'Add' = createInvoice DRAW i TOOLBAR
+    PROPERTIES(i) NEWSESSION EDIT, DELETE
 ;
-
-DESIGN project {
-    primaryActions {
-        MOVE PROPERTY(createInvoice(p)) FIRST { fontStyle = 'bold'; };
-    }
-}
-

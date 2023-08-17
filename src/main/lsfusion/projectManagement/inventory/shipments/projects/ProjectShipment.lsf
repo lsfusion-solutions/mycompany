@@ -12,7 +12,17 @@ EXTEND FORM projectType PROPERTIES nameShipmentType(o);
 project = DATA Project (Shipment) INDEXED;
 nameProject 'Project' (Shipment i) = name(project(i));
 
-countShipments 'Shipments' (Project p) = GROUP SUM 1 IF project(Shipment i) = p;  
+countShipments 'Shipments' (Project p) = GROUP SUM 1 IF project(Shipment i) = p;
+
+EXTEND FORM shipment
+    PROPERTIES(s) nameProject
+;
+
+DESIGN shipment {
+    headerRight {
+        MOVE PROPERTY(nameProject(s));
+    }
+}
 
 EXTEND FORM shipments
     PROPERTIES(s) READONLY nameProject
@@ -20,8 +30,10 @@ EXTEND FORM shipments
 
 EXTEND FORM project
     OBJECTS s = Shipment
-    PROPERTIES(s) READONLY nameType, scheduledDateTime, executionDateTime, nameStatus BACKGROUND colorStatus(s), number    
-    PROPERTIES(s) NEWSESSION EDIT GRID
+    PROPERTIES(s) READONLY nameStatus BACKGROUND colorStatus(s), nameType, 
+                           scheduledDateTime, executionDateTime, number,
+                           nameLocation
+    
     FILTERS project(s) = p   
 ;
 
@@ -31,7 +43,6 @@ DESIGN project {
             caption = CONCAT ' ', 'Shipments', '(' + countShipments(p) + ')';
             GRID(s) { headerHeight = 24; }
         }
-        REMOVE TOOLBARBOX(s);
     }
 }
 
@@ -61,12 +72,6 @@ createShipment 'Create Shipment' (Project p) {
 }
 
 EXTEND FORM project
-    PROPERTIES(p) createShipment
+    PROPERTIES(p) 'Add' = createShipment DRAW s TOOLBAR
+    PROPERTIES(s) NEWSESSION EDIT, DELETE
 ;
-
-DESIGN project {
-    primaryActions {
-        MOVE PROPERTY(createShipment(p)) FIRST { fontStyle = 'bold'; };
-    }
-}
-
