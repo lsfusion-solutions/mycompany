@@ -1,0 +1,65 @@
+MODULE FileUtils;
+
+NAMESPACE Utils;
+
+uploadFile 'Upload' = DATA LOCAL NAMEDFILE ();
+
+META defineObjectFiles(object, fobj, classCaption)
+
+    CLASS ###object##File classCaption;
+
+    objet = DATA ###object (###object##File) INDEXED NONULL DELETE;
+
+    file = DATA RAWFILE (###object##File);
+
+    name 'Name' = DATA ISTRING (###object##File) CHARWIDTH 15;
+    extension 'Extension' = DATA ISTRING (###object##File) CHARWIDTH 5;
+    nameExtension (###object##File f) = CONCAT '.', name(f), extension(f);
+
+    description 'Description' = DATA ISTRING (###object##File) CHARWIDTH 30;
+
+    dateTime 'Date' = DATA DATETIME (###object##File);
+    dateTime(###object##File f) <- currentDateTime() WHEN SET(f IS ###object##File);
+
+    user = DATA User (###object##File);
+    nameUser 'User' (###object##File f) = name(user(f));
+    user(###object##File f) <- currentUser() WHEN SET(f IS ###object##File);
+
+    open 'Open' (###object##File f) { open(file(f), nameExtension(f)); } IMAGE 'open.png';
+
+    countFiles 'Files' (###object i) = GROUP SUM 1 IF objet(###object##File f) = i;
+
+    EXTEND FORM object
+        OBJECTS of = ###object##File
+        PROPERTIES(of) name, extension, description
+        PROPERTIES(of) READONLY nameUser, dateTime
+        PROPERTIES(of) GRID open, DELETE
+        FILTERS objet(of) = fobj
+
+        PROPERTIES = uploadFile() ON CHANGE {
+            INPUT uf = NAMEDFILE DO NEW uof = ###object##File {
+                objet(uof) <- fobj;
+                file(uof) <- RAWFILE(uf);
+                name(uof) <- name(uf);
+                extension(uof) <- extension(uf);
+            }
+        }
+    ;
+
+    DESIGN object {
+        details {
+            NEW files {
+                caption = (CONCAT ' ', 'Files', '(' + countFiles(fobj) + ')');
+                //            caption = badged('Files', countFiles(i)); 
+                type = CONTAINERH;
+                MOVE BOX(of) {
+                    caption = '';
+                }
+                MOVE PROPERTY(uploadFile()) {
+                    panelCaptionVertical = TRUE;
+                    fill = 0.3;
+                }
+            }
+        }
+    }    
+END
