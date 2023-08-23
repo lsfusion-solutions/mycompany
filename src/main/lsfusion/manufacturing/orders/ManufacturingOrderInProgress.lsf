@@ -10,7 +10,7 @@ EXTEND CLASS ManufacturingOrderStatus {
 inProgress 'In progress' = DATA BOOLEAN (ManufacturingOrder);
 
 status(ManufacturingOrder m) += WHEN inProgress(m) THEN ManufacturingOrderStatus.inProgress;
-colorStatus(ManufacturingOrder m) += WHEN status(m) = ManufacturingOrderStatus.inProgress THEN RGB(252,247,149);
+color(ManufacturingOrderStatus m) += WHEN m = ManufacturingOrderStatus.inProgress THEN RGB(252,247,149);
 
 consumed 'Consumed' = DATA NUMERIC[16,3] (ConsumedLine);
 consumed 'Consumed' (ManufacturingOrder o) = GROUP SUM consumed(ConsumedLine l) IF manufacturingOrder(l) = o AND item(l) = item(o) MATERIALIZED;

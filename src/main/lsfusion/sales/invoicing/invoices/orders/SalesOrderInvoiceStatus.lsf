@@ -1,0 +1,18 @@
+MODULE SalesOrderInvoiceStatus;
+
+REQUIRE SalesOrderInvoice;
+
+NAMESPACE Sales;
+
+count (InvoiceStatus s, Order o) = GROUP SUM 1 IF status(Invoice i) = s AND in(o, i) AND NOT canceled(i);
+
+nameInvoiceStatuses 'Invoice status' (Order o) = 
+    GROUP CONCAT name(InvoiceStatus s) IF count(s, o), ', ' ORDER s CHARWIDTH 12;
+
+invoiceStatus (Order o) =
+    GROUP LAST InvoiceStatus s IF count(s, o) ORDER DESC s;
+colorInvoiceStatus (Order o) = color(invoiceStatus(o));
+
+EXTEND FORM orders
+    PROPERTIES(o) READONLY AFTER nameStatus(o) nameInvoiceStatuses BACKGROUND colorInvoiceStatus(o)
+;

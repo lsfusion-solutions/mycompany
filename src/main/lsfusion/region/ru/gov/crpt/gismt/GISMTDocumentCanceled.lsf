@@ -10,7 +10,7 @@ EXTEND CLASS DocumentStatus {
 canceled 'Cancelled' = DATA BOOLEAN (Document);
 
 status(Document d) += WHEN canceled(d) THEN DocumentStatus.canceled;
-colorStatus(Document d) += WHEN status(d) = DocumentStatus.canceled THEN RGB(181,195,247);
+color(DocumentStatus d) += WHEN d = DocumentStatus.canceled THEN RGB(181,195,247);
 
 INDEX source(Document d), lotType(d);
 document (Source s, LotType lt) = GROUP AGGR Document d WHERE NOT canceled(d) BY source(d), lotType(d);
