@@ -1,0 +1,18 @@
+MODULE PurchaseOrderReceiptStatus;
+
+REQUIRE PurchaseOrderReceipt;
+
+NAMESPACE Purchase;
+
+count (ReceiptStatus s, Order o) = GROUP SUM 1 IF status(Receipt i) = s AND in(o, i) AND NOT canceled(i);
+
+nameReceiptStatuses 'Receipt status' (Order o) =
+    GROUP CONCAT name(ReceiptStatus s) IF count(s, o), ', ' ORDER s CHARWIDTH 12;
+
+receiptStatus (Order o) =
+    GROUP LAST ReceiptStatus s IF count(s, o) ORDER DESC s;
+colorReceiptStatus (Order o) = color(receiptStatus(o));
+
+EXTEND FORM orders
+    PROPERTIES(o) READONLY AFTER nameStatus(o) nameReceiptStatuses BACKGROUND colorReceiptStatus(o)
+;

@@ -1,0 +1,18 @@
+MODULE PurchaseOrderBillStatus;
+
+REQUIRE PurchaseOrderBill;
+
+NAMESPACE Purchase;
+
+count (BillStatus s, Order o) = GROUP SUM 1 IF status(Bill i) = s AND in(o, i) AND NOT canceled(i);
+
+nameBillStatuses 'Bill status' (Order o) =
+    GROUP CONCAT name(BillStatus s) IF count(s, o), ', ' ORDER s CHARWIDTH 12;
+
+billStatus (Order o) =
+    GROUP LAST BillStatus s IF count(s, o) ORDER DESC s;
+colorBillStatus (Order o) = color(billStatus(o));
+
+EXTEND FORM orders
+    PROPERTIES(o) READONLY AFTER nameStatus(o) nameBillStatuses BACKGROUND colorBillStatus(o)
+;

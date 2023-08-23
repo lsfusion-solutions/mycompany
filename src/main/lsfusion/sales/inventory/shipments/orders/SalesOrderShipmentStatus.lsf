@@ -1,0 +1,18 @@
+MODULE SalesOrderShipmentStatus;
+
+REQUIRE SalesOrderShipment;
+
+NAMESPACE Sales;
+
+count (ShipmentStatus s, Order o) = GROUP SUM 1 IF status(Shipment i) = s AND in(o, i) AND NOT canceled(i);
+
+nameShipmentStatuses 'Shipment status' (Order o) =
+    GROUP CONCAT name(ShipmentStatus s) IF count(s, o), ', ' ORDER s CHARWIDTH 12;
+
+shipmentStatus (Order o) =
+    GROUP LAST ShipmentStatus s IF count(s, o) ORDER DESC s;
+colorShipmentStatus (Order o) = color(shipmentStatus(o));
+
+EXTEND FORM orders
+    PROPERTIES(o) READONLY AFTER nameStatus(o) nameShipmentStatuses BACKGROUND colorShipmentStatus(o)
+;

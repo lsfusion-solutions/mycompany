@@ -47,13 +47,15 @@ META defineDocStatus (doc, title)
     name '{First_name}' (###doc##Status s) = staticCaption(s) IF s IS ###doc##Status CHARWIDTH 12;
     imagedName '{First_name}' (###doc##Status s) = imagedCaption(s) IF s IS ###doc##Status CHARWIDTH 12;
 
+    color 'Colour' = ABSTRACT CASE COLOR (###doc##Status) MATERIALIZED;
+    color (###doc##Status s) += WHEN s = ###doc##Status.draft THEN RGB(187,242,210);
+
     status 'Status' = ABSTRACT CASE ###doc##Status (###doc) MATERIALIZED INDEXED;
     nameStatus 'Status' (###doc d) = name(status(d));
     imagedNameStatus 'Status' (###doc d) = imagedName(status(d)) MATERIALIZED ;
-    colorStatus 'Colour' = ABSTRACT CASE COLOR (###doc);
+    colorStatus 'Colour' (###doc d) = color(status(d));
     
     status(###doc d) += WHEN d IS ###doc THEN ###doc##Status.draft;
-    colorStatus(###doc d) += WHEN status(d) = ###doc##Status.draft THEN RGB(187,242,210);
     
     readonly = ABSTRACT CASE BOOLEAN (###doc);
 END
@@ -176,7 +178,7 @@ META defineDocSearch (doc, it, fun, capt, let)
     ;
     DESIGN doc {
         PROPERTY(fun(let, itm)) { background = #EEEEFF; }
-    }        
+    }
 END
 
 META defineDocSearch (doc, it, fun, capt, let, check)
