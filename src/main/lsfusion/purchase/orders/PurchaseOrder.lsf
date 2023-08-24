@@ -19,7 +19,7 @@ nameType 'Type' (Order s) = name(type(s));
 
 WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(type(o)) DO type(o) <- defaultOrderType(); 
 
-dateTime 'Date'  = DATA DATETIME (Order);
+dateTime 'Date'  = DATA DATETIME (Order) IN id;
 WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(dateTime(o)) DO { dateTime(o) <- currentDateTime();}
 @defineDateTimeAggregation(Order);
 
@@ -43,7 +43,7 @@ namePaymentTerms 'Payment terms' (Order o) = name(paymentTerms(o));
 WHEN LOCAL CHANGED(vendor(Order o)) AND NOT CHANGED(paymentTerms(o)) DO paymentTerms(o) <- vendorPaymentTerms(vendor(o)); 
 
 // Shipping information
-scheduledDateTime 'Scheduled date' = DATA DATETIME (Order);
+scheduledDateTime 'Scheduled date' = DATA DATETIME (Order) IN id;
 scheduledDateTime(Order o) <- currentDateTime() WHEN SET(o IS Order);   
 
 // company
@@ -116,7 +116,7 @@ nameStatus 'Status' (OrderLine l) = nameStatus(order(l));
 type (OrderLine l) = type(order(l)); 
 
 dateTime 'Created by' (OrderLine l) = dateTime(order(l));
-number 'Number' (OrderLine l) = number(order(l));
+number 'Number' (OrderLine l) = number(order(l)) IN id;
 numberDate 'Description' (OrderLine l) = numberDate(order(l));
 
 location 'Location' (OrderLine l) = location(order(l));
@@ -224,8 +224,8 @@ background = ABSTRACT CASE COLOR (Order);
 FORM orders 'Purchase orders'
     OBJECTS o = Order BACKGROUND background(o)
     PROPERTIES(o) READONLYIF isReadonly()
-                           nameType, dateTime, number, nameVendor,
-                           namePaymentTerms,
+                           number, dateTime, nameVendor,
+                           nameType, namePaymentTerms,
                            scheduledDateTime, nameLocation,
                            nameRepresentative, vendorReference,
                            untaxedAmount, taxAmount, amount     

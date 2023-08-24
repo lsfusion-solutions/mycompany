@@ -116,9 +116,9 @@ taxIncluded (BillLine l) += taxIncluded(type(bill(l)));
 
 // Line properties
 nameStatus 'Status' (BillLine l) = nameStatus(bill(l));
-dateTime 'Date' (BillLine l) = dateTime(bill(l));
+dateTime 'Date' (BillLine l) = dateTime(bill(l)) IN id;
 date 'Date' (BillLine l) = date(bill(l));
-number 'Number' (BillLine l) = number(bill(l));
+number 'Number' (BillLine l) = number(bill(l)) IN id;
 numberDate 'Description' (BillLine l) = numberDate(bill(l));
 vendor (BillLine l) = vendor(bill(l));
 nameVendor 'Vendor' (BillLine l) = nameVendor(bill(l));
@@ -219,8 +219,8 @@ background = ABSTRACT CASE COLOR (Bill);
 FORM bills 'Bills'
     OBJECTS b = Bill BACKGROUND background(b)
     PROPERTIES(b) READONLYIF isReadonly()
-                           nameType, dateTime, number, 
-                           nameVendor, nameCompany,
+                           number, dateTime, nameVendor,
+                           nameType, nameCompany,
                            namePaymentTerms, dueDateTime, nameVendorAccount, nameCompanyAccount,
                            vendorReference, note
     PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE

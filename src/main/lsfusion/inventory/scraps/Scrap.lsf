@@ -16,7 +16,7 @@ nameType 'Type' (Scrap r) = name(type(r));
 
 WHEN LOCAL SET(Scrap r IS Scrap) AND NOT CHANGED(type(r)) DO type(r) <- defaultScrapType(); 
 
-dateTime 'Date' = DATA DATETIME (Scrap) NONULL;
+dateTime 'Date' = DATA DATETIME (Scrap) NONULL IN id;
 dateTime(Scrap s) <- currentDateTime() WHEN SET(s IS Scrap);
 @defineDateTimeAggregation(Scrap);
 
@@ -84,7 +84,7 @@ DESIGN scrap {
 
 FORM scraps 'Scrap'
     OBJECTS s = Scrap 
-    PROPERTIES(s) READONLY nameType, dateTime, number, nameLocation, note
+    PROPERTIES(s) READONLY number, dateTime, nameType, nameLocation, note
     PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
     
     LIST Scrap OBJECT s

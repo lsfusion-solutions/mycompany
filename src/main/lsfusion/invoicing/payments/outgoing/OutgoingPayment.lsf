@@ -15,7 +15,7 @@ CLASS OutgoingPayment 'Outgoing payment';
 type 'Type' = DATA OutgoingPaymentType (OutgoingPayment) NONULL;
 nameType 'Type' (OutgoingPayment s) = name(type(s));
 
-dateTime 'Date' = DATA DATETIME (OutgoingPayment) NONULL;
+dateTime 'Date' = DATA DATETIME (OutgoingPayment) NONULL IN id;
 dateTime(OutgoingPayment p) <- currentDateTime() WHEN SET(p IS OutgoingPayment);
 @defineDateTimeAggregation(OutgoingPayment);
 
@@ -145,8 +145,9 @@ DESIGN outgoingPayment {
 
 FORM outgoingPayments 'Outgoing payments'
     OBJECTS p = OutgoingPayment
-    PROPERTIES(p) READONLY nameType, dateTime, number, amount,
-                           namePartner, namePartnerAccount, 
+    PROPERTIES(p) READONLY number, dateTime, namePartner, 
+                           nameType, amount,
+                           namePartnerAccount, 
                            nameCompany, nameCompanyAccount, 
                            note, reference
     PROPERTIES(p) NEWSESSION NEW, EDIT, DELETE 

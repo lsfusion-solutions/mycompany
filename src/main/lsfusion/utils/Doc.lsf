@@ -59,9 +59,9 @@ META defineDocStatus (doc, title)
     readonly = ABSTRACT CASE BOOLEAN (###doc);
 END
 
-META defineDocStatusForm (doc, let)
+META defineDocStatusForm (doc, let, beforeProp)
     EXTEND FORM doc##s
-        PROPERTIES(##let) READONLY imagedNameStatus BACKGROUND colorStatus(##let) FIRST
+        PROPERTIES(##let) READONLY imagedNameStatus BACKGROUND colorStatus(##let) BEFORE beforeProp(##let)
         FILTERGROUP status
             FILTER 'Draft' status(##let) = ###doc##Status.draft
     ;
@@ -95,6 +95,10 @@ META defineDocStatusForm (doc, let)
             }
         }    
     } 
+END
+
+META defineDocStatusForm (doc, let)
+    @defineDocStatusForm(doc, let, nameType);
 END
 
 META defineDocSearchAction (doc, docLine, it, fun, capt)

@@ -27,7 +27,7 @@ numberDate 'Description' (Order o) = number(o) + ' (' + dateTime(o) + ')' IN id;
 
 // customer
 customer 'Customer' = DATA Partner (Order) NONULL;
-nameCustomer 'Customer' (Order o) = name(customer(o));
+nameCustomer 'Customer' (Order o) = name(customer(o)) IN id;
 addressCsvCustomer 'Customer address' (Order o) = addressCsv(customer(o));
 
 CONSTRAINT customer(Order o) AND NOT isCustomer(customer(o))
@@ -51,7 +51,7 @@ nameCompany 'Company' (Order o) = name(company(o));
 WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(company(o)) DO company(o) <- defaultCompany();
 
 // Shipping information
-scheduledDateTime 'Scheduled date' = DATA DATETIME (Order);
+scheduledDateTime 'Scheduled date' = DATA DATETIME (Order) IN id;
 scheduledDateTime(Order o) <- currentDateTime() WHEN SET(o IS Order);
 
 scheduledDate 'Scheduled date' (Order o) = DATE(scheduledDateTime(o));
@@ -128,9 +128,9 @@ nameType 'Type' (OrderLine l) = nameType(order(l));
 status 'Status' (OrderLine l) = status(order(l));
 nameStatus 'Status' (OrderLine l) = nameStatus(order(l));
 type (OrderLine l) = type(order(l)); 
-dateTime 'Date' (OrderLine l) = dateTime(order(l));
+dateTime 'Date' (OrderLine l) = dateTime(order(l)) IN id;
 date 'Date' (OrderLine l) = date(order(l));
-number 'Number' (OrderLine l) = number(order(l));
+number 'Number' (OrderLine l) = number(order(l)) IN id;
 numberDate 'Description' (OrderLine l) = numberDate(order(l));
 location 'Location' (OrderLine l) = location(order(l));
 nameLocation 'Location' (OrderLine l) = nameLocation(order(l));
@@ -254,7 +254,8 @@ background = ABSTRACT CASE COLOR (Order);
 FORM orders 'Customer orders'
      OBJECTS o = Order BACKGROUND background(o)
      PROPERTIES(o) READONLYIF isReadonly()
-                            nameType, dateTime, number, nameCustomer, nameDepartment,
+                            number, dateTime, nameCustomer, 
+                            nameType, nameDepartment,
                             validity,
                             namePaymentTerms, addressCsvCustomer,
                             scheduledDateTime, deliveryAddress, nameLocation, 

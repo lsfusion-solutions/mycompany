@@ -128,9 +128,9 @@ taxIncluded (InvoiceLine l) += taxIncluded(type(invoice(l)));
 // Line properties
 nameStatus 'Status' (InvoiceLine l) = nameStatus(invoice(l));
 type (InvoiceLine l) = type(invoice(l));
-number 'Number' (InvoiceLine l) = number(invoice(l));
+number 'Number' (InvoiceLine l) = number(invoice(l)) IN id;
 numberDate 'Description' (InvoiceLine l) = numberDate(invoice(l));
-dateTime 'Date' (InvoiceLine l) = dateTime(invoice(l));
+dateTime 'Date' (InvoiceLine l) = dateTime(invoice(l)) IN id;
 date 'Date' (InvoiceLine l) = date(invoice(l));
 customer (InvoiceLine l) = customer(invoice(l));
 nameCustomer 'Customer' (InvoiceLine l) = nameCustomer(invoice(l));
@@ -238,7 +238,8 @@ background = ABSTRACT CASE COLOR (Invoice);
 FORM invoices 'Invoices'
     OBJECTS i = Invoice BACKGROUND background(i)
     PROPERTIES(i) READONLYIF isReadonly()
-                           nameType, dateTime, number, nameCustomer, nameCompany,
+                           number, dateTime, nameCustomer, 
+                           nameType, nameCompany,
                            namePaymentTerms, dueDateTime, nameCustomerAccount, nameCompanyAccount,
                            customerReference, note         
     PROPERTIES(i) NEWSESSION NEW, EDIT, DELETE

@@ -15,7 +15,7 @@ CLASS IncomingPayment 'Incoming payment';
 type 'Type' = DATA IncomingPaymentType (IncomingPayment) NONULL;
 nameType 'Type' (IncomingPayment s) = name(type(s));
 
-dateTime 'Date' = DATA DATETIME (IncomingPayment) NONULL;
+dateTime 'Date' = DATA DATETIME (IncomingPayment) NONULL IN id;
 dateTime(IncomingPayment p) <- currentDateTime() WHEN SET(p IS IncomingPayment);
 @defineDateTimeAggregation(IncomingPayment);
 
@@ -146,8 +146,9 @@ DESIGN incomingPayment {
 
 FORM incomingPayments 'Incoming payments'
     OBJECTS p = IncomingPayment
-    PROPERTIES(p) READONLY nameType, dateTime, number, amount,
-                           namePartner, namePartnerAccount, 
+    PROPERTIES(p) READONLY number, dateTime, namePartner,
+                           nameType, amount,
+                           namePartnerAccount, 
                            nameCompany, nameCompanyAccount,
                            note, reference
     PROPERTIES(p) NEWSESSION NEW, EDIT, DELETE 

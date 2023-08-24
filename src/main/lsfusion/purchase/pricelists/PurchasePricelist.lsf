@@ -49,7 +49,7 @@ price 'Price' = DATA NUMERIC[10,2] (PricelistLine);
 
 // Line properties
 nameStatus 'Status' (PricelistLine prl) = nameStatus(pricelist(prl));
-number 'Number' (PricelistLine prl) = number(pricelist(prl));
+number 'Number' (PricelistLine prl) = number(pricelist(prl)) IN id;
 numberDate 'Description' (PricelistLine l) = numberDate(pricelist(l));
 startDateTime 'Start date' (PricelistLine prl) = startDateTime(pricelist(prl));
 endDateTime 'End date' (PricelistLine prl) = endDateTime(pricelist(prl));
@@ -111,13 +111,13 @@ DESIGN pricelist {
 
 FORM pricelists 'Vendor pricelists'
     OBJECTS p = Pricelist
-    PROPERTIES(p) READONLY startDateTime, endDateTime, number, nameVendor, note
+    PROPERTIES(p) READONLY number, startDateTime, endDateTime, nameVendor, note
     PROPERTIES(p) NEWSESSION NEW, EDIT, DELETE 
 
     LIST Pricelist OBJECT p
 ;  
 
-@defineDocStatusForm(pricelist, p);
+@defineDocStatusForm(pricelist, p, note);
 @defineDocLinesCount(pricelist, p);
 
 NAVIGATOR {
