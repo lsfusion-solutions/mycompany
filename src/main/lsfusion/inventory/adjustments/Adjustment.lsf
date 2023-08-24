@@ -10,7 +10,7 @@ CLASS Adjustment 'Adjustment';
 
 @defineDocStatus(adjustment, 'Adjustment');
 
-dateTime 'Date' = DATA DATETIME (Adjustment);
+dateTime 'Date' = DATA DATETIME (Adjustment) IN id;
 WHEN LOCAL SET(Adjustment a IS Adjustment) AND NOT CHANGED(dateTime(a)) DO dateTime(a) <- currentDateTime();
 @defineDateTimeAggregation(Adjustment);
 
@@ -155,7 +155,7 @@ DESIGN adjustment {
 
 FORM adjustments 'Adjustment'
     OBJECTS a = Adjustment
-    PROPERTIES(a) READONLY dateTime, number, nameType, nameLocation, nameCategory, note
+    PROPERTIES(a) READONLY number, dateTime, nameType, nameLocation, nameCategory, note
     PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE 
     
     LIST Adjustment OBJECT a

@@ -15,7 +15,7 @@ nameType 'Type' (ManufacturingOrder o) = name(type(o));
 
 WHEN LOCAL SET(ManufacturingOrder o IS ManufacturingOrder) AND NOT CHANGED(type(o)) DO type(o) <- defaultManufacturingOrderType(); 
 
-scheduledDateTime 'Start date' = DATA DATETIME (ManufacturingOrder);
+scheduledDateTime 'Start date' = DATA DATETIME (ManufacturingOrder) IN id;
 scheduledDateTime(ManufacturingOrder o) <- currentDateTime() WHEN SET(o IS ManufacturingOrder);
 @defineDateTimeAggregation(ManufacturingOrder, scheduled, 'Scheduled ');
 
@@ -102,8 +102,8 @@ toManufacture '{Manufacture}' (ManufacturingOrder o) = IF unbuild(o) THEN toCons
 
 // line properties
 nameType 'Type' (ConsumedLine l) = nameType(manufacturingOrder(l));
-scheduledDateTime 'Start date' (ConsumedLine l) = scheduledDateTime(manufacturingOrder(l));
-number 'Number' (ConsumedLine l) = number(manufacturingOrder(l));
+scheduledDateTime 'Start date' (ConsumedLine l) = scheduledDateTime(manufacturingOrder(l)) IN id;
+number 'Number' (ConsumedLine l) = number(manufacturingOrder(l)) IN id;
 descriptionBom 'Bill of Materials' (ConsumedLine l) = descriptionBom(manufacturingOrder(l));
 
 edit (ConsumedLine l) + { edit(manufacturingOrder(l)); } 
@@ -196,9 +196,9 @@ background = ABSTRACT CASE COLOR (ManufacturingOrder);
 FORM manufacturingOrders 'Manufacturing orders'
     OBJECTS o = ManufacturingOrder BACKGROUND background(o)
     PROPERTIES(o) READONLYIF isReadonly()
-                           nameType, scheduledDateTime, number, nameCompany, 
-                           nameItem, unbuild READONLY, 
-                           toManufacture READONLY, nameUom READONLY, 
+                           number, scheduledDateTime, nameItem, 
+                           nameType, nameCompany, 
+                           unbuild READONLY, toManufacture READONLY, nameUom READONLY, 
                            descriptionBom, 
                            nameMaterialsLocation,
                            countConsumedLine READONLY, countFinishedLine READONLY

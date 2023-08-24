@@ -16,7 +16,7 @@ DESIGN pos {
 }
 
 session = DATA Session (Invoice);
-numberSession 'Session' (Invoice i) = number(session(i));
+numberSession '{Session}' (Invoice i) = number(session(i));
 
 WHEN LOCAL SET(session(Invoice i)) AND NOT CHANGED(type(i)) DO
     type(i) <- invoiceType(pos(session(i)));
@@ -26,7 +26,7 @@ WHEN LOCAL SET(session(Invoice i)) AND NOT CHANGED(company(i)) DO
 
 EXTEND FORM session
     OBJECTS i = Invoice
-    PROPERTIES(i) READONLY nameStatus BACKGROUND colorStatus(i), dateTime, number, nameCustomer, 
+    PROPERTIES(i) READONLY number, dateTime, nameCustomer, nameStatus BACKGROUND colorStatus(i), 
                            'Total' = fullAmount, 'Discount' = discountAmount, 'To pay' = amount
     PROPERTIES(i) NEWSESSION EDIT
     FILTERS session(i) = s
@@ -47,7 +47,7 @@ EXTEND FORM invoice
 DESIGN invoice {
     otherInformation {
         NEW session {
-            caption = 'Session';
+            caption = '{Session}';
             MOVE PROPERTY(numberSession(i));
         }
     }
@@ -55,11 +55,11 @@ DESIGN invoice {
 
 // bill
 session = DATA Session (Bill);
-numberSession 'Session' (Bill i) = number(session(i));
+numberSession '{Session}' (Bill i) = number(session(i));
 
 EXTEND FORM session
     OBJECTS b = Bill
-    PROPERTIES(b) READONLY nameStatus BACKGROUND colorStatus(i), dateTime, number, nameVendor, 
+    PROPERTIES(b) READONLY number, dateTime, nameVendor, nameStatus BACKGROUND colorStatus(i), 
                            'To pay' = amount
     PROPERTIES(b) NEWSESSION EDIT
     FILTERS session(b) = s
@@ -94,7 +94,7 @@ EXTEND FORM bill
 DESIGN bill {
     otherInformation {
         NEW session {
-            caption = 'Session';
+            caption = '{Session}';
             MOVE PROPERTY(numberSession(b));
         }
     }
