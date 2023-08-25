@@ -23,14 +23,14 @@ scheduledDateTime(ManufacturingOrder o) <- currentDateTime() WHEN SET(o IS Manuf
 
 numberDate 'Description' (ManufacturingOrder o) = number(o) + ' (' + scheduledDateTime(o) + ')' IN id;
 
-item '{Item}' = DATA Item (ManufacturingOrder) NONULL;
+item '{Item}' = DATA Item (ManufacturingOrder);
 nameItem '{Item}' (ManufacturingOrder m) = name(item(m));
 
 uom (ManufacturingOrder o) = uom(item(o));
 nameUom 'UoM' (ManufacturingOrder m) = name(uom(m));
 
 // bom
-bom 'Bill of Materials' = DATA Bom (ManufacturingOrder) NONULL;
+bom 'Bill of Materials' = DATA Bom (ManufacturingOrder);
 descriptionBom 'Bill of Materials' (ManufacturingOrder m) = description(bom(m));
 CONSTRAINT bom(ManufacturingOrder m) AND NOT item(m) = item(bom(m))
     CHECKED BY bom[ManufacturingOrder]
@@ -140,14 +140,14 @@ DESIGN manufacturingOrder {
                 MOVE PROPERTY(nameCompany(o));
             }
             NEW headerRight {
-                MOVE PROPERTY(nameItem(o)) { notNull = TRUE; }
+                MOVE PROPERTY(nameItem(o));
                 MOVE PROPERTY(unbuild(o));
                 NEW quantity {
                     type = CONTAINERH;
                     MOVE PROPERTY(toManufacture(o));
                     MOVE PROPERTY(nameUom(o));
                 }
-                MOVE PROPERTY(descriptionBom(o)) { notNull = TRUE; };
+                MOVE PROPERTY(descriptionBom(o));
             }
         }
         NEW details {
