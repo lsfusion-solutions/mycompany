@@ -71,6 +71,7 @@ CONSTRAINT representative(Order o) AND NOT legalEntity(representative(o)) = comp
     CHECKED BY representative MESSAGE 'There must be our worker';
 
 vendorReference 'Vendor reference' = DATA STRING[30] (Order);
+note 'Note' = DATA ISTRING (Order) CHARWIDTH 20;
 
 details 'Details' = DATA RICHTEXT (Order);
 
@@ -133,7 +134,7 @@ FORM order 'Purchase order'
                   nameVendor, nameCompany, nameLocation, nameCurrency,
                   namePaymentTerms,
                   scheduledDateTime,
-                  nameRepresentative, vendorReference,
+                  nameRepresentative, vendorReference, note,
                   details
     PROPERTIES(o) READONLY untaxedAmount, taxAmount, amount
                  
@@ -193,6 +194,7 @@ DESIGN order {
                     alignment = STRETCH;
                     MOVE PROPERTY(nameRepresentative(o));
                     MOVE PROPERTY(vendorReference(o));
+                    MOVE PROPERTY(note(o));
                 }
             }
             NEW detailsInformation {
@@ -227,7 +229,7 @@ FORM orders 'Purchase orders'
                            number, dateTime, nameVendor,
                            nameType, namePaymentTerms,
                            scheduledDateTime, nameLocation,
-                           nameRepresentative, vendorReference,
+                           nameRepresentative, vendorReference, note,
                            untaxedAmount, taxAmount, amount     
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
 ;
@@ -255,6 +257,7 @@ clone (Order to, Order from) {
     location(to) <- location(from);
     currency(to) <- currency(from);
     representative(to) <- representative(from); 
+    note(to) <- note(from);
     FOR order(OrderLine l) = from INLINE NEW nl = OrderLine DO {
         order(nl) <- to;
         item(nl) <- item(l);
