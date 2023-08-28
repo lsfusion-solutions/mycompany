@@ -22,7 +22,7 @@ WHEN LOCAL CHANGED(item(OrderLine l)) AND manufacturingOrderType(type(Order o))
 
 // manufacturing order
 orderLine = DATA OrderLine (ManufacturingOrder) INDEXED;
-numberDateOrder '{Order}' (ManufacturingOrder mo) = numberDate(order(orderLine(mo)));
+numberDateSalesOrder 'Sales order' (ManufacturingOrder mo) = numberDate(order(orderLine(mo)));
 
 manufacturingOrder (OrderLine l) = GROUP AGGR ManufacturingOrder mo BY orderLine(mo);
 
@@ -37,17 +37,17 @@ openOrder (ManufacturingOrder mo) {
 }
 
 EXTEND FORM manufacturingOrder
-    PROPERTIES(o) numberDateOrder ON CHANGE openOrder(o) SHOWIF orderLine(o)
+    PROPERTIES(o) numberDateSalesOrder ON CHANGE openOrder(o) SHOWIF orderLine(o)
 ;
 
 DESIGN manufacturingOrder {
     footer {
-        MOVE PROPERTY(numberDateOrder(o));
+        MOVE PROPERTY(numberDateSalesOrder(o));
     }
 }
 
 EXTEND FORM manufacturingOrders
-    PROPERTIES(o) READONLY numberDateOrder
+    PROPERTIES(o) READONLY numberDateSalesOrder
 ;
 
 newManufacturingOrder (OrderLine l) {

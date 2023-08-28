@@ -1,0 +1,77 @@
+MODULE ProjectManufacturingOrder;
+
+REQUIRE Project, ManufacturingOrder;
+
+NAMESPACE ProjectManufacturing;
+
+// type
+orderType = DATA ManufacturingOrderType (ProjectType);
+nameOrderType 'Manufacturing order type' (ProjectType t) = name(orderType(t));
+EXTEND FORM projectType PROPERTIES manufacturingOrderType = nameOrderType(o);
+
+project = DATA Project (ManufacturingOrder) INDEXED;
+nameProject 'Project' (ManufacturingOrder i) = name(project(i));
+
+countOrders 'Manufacturing orders' (Project p) = GROUP SUM 1 IF project(ManufacturingOrder i) = p;
+
+EXTEND FORM manufacturingOrder
+    PROPERTIES(o) nameProject
+;
+
+DESIGN manufacturingOrder {
+    headerRight {
+        MOVE PROPERTY(nameProject(o));
+    }
+}
+
+EXTEND FORM manufacturingOrders
+    PROPERTIES(o) READONLY nameProject
+;
+
+EXTEND FORM project
+    OBJECTS mo = ManufacturingOrder
+    PROPERTIES(mo) READONLY number, scheduledDateTime, nameItem,
+                            nameStatus BACKGROUND colorStatus(mo), nameType,
+                            descriptionBom, nameMaterialsLocation
+                            
+    FILTERS project(mo) = p
+;
+
+DESIGN project {
+    details  {
+        MOVE BOX(mo) {
+            caption = badged('Manufacturing orders', countOrders(p));
+            GRID(mo) { headerHeight = 24; }
+        }
+    }
+}
+
+fill ABSTRACT LIST (ManufacturingOrder, Project);
+
+create (ManufacturingOrder o, Project p) {
+    project(o) <- p;
+
+    type(o) <- orderType(type(p));
+
+    company(o) <- company(p);
+
+    fill(o, p);
+}
+
+createOrder 'Create Manufacturing Order' (Project p) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    NEWSESSION {
+        NEW o = ManufacturingOrder {
+            create(o, p);
+
+            SHOW manufacturingOrder OBJECTS o = o DOCKED;
+        }
+    }
+} IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+
+EXTEND FORM project
+    PROPERTIES(p) createManufacturingOrder 'Add' = createOrder DRAW mo TOOLBAR
+    PROPERTIES(mo) NEWSESSION EDIT, DELETE
+;
