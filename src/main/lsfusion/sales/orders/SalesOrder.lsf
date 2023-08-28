@@ -7,9 +7,9 @@ REQUIRE Time, MetaNumerator, Employee, Company, DateUtils, FileUtils,
 
 NAMESPACE Sales;
 
-CLASS Order 'Customer order';
+CLASS Order 'Sales order';
 
-@defineDocStatus(order, 'Customer order');
+@defineDocStatus(order, 'Sales order');
 
 // type
 type 'Type' = DATA OrderType (Order) NONULL;
@@ -145,7 +145,7 @@ scheduledDate 'Scheduled date' (OrderLine l) = scheduledDateTime(order(l));
 currency (OrderLine l) = currency(order(l));
 nameCurrency 'Currency' (OrderLine l) = nameCurrency(order(l));
 
-FORM order 'Customer order'
+FORM order 'Sales order'
     OBJECTS o = Order PANEL
     PROPERTIES(o) nameType, dateTime, number, 
                   nameCustomer, nameDepartment SHOWIF countDepartment(customer(o)), 
@@ -166,7 +166,7 @@ FORM order 'Customer order'
 ;      
 
 DESIGN order {
-    caption = (CONCAT ' ', 'Customer order', '№' + number(o), '(' + dateTime(o) + ')');
+    caption = (CONCAT ' ', 'Sales order', '№' + number(o), '(' + dateTime(o) + ')');
     OBJECTS {
         NEW header {
             alignment = STRETCH;   
@@ -253,7 +253,7 @@ DESIGN order {
 @defineDocDiscountForm(order);
 
 background = ABSTRACT CASE COLOR (Order);
-FORM orders 'Customer orders'
+FORM orders 'Sales orders'
      OBJECTS o = Order BACKGROUND background(o)
      PROPERTIES(o) READONLYIF isReadonly()
                             number, dateTime, nameCustomer, 
@@ -269,7 +269,7 @@ FORM orders 'Customer orders'
 
 @extendFormEditable(orders);
 
-@defineDocObjectsForm(orders, o, 'Customer orders');
+@defineDocObjectsForm(orders, o, 'Sales orders');
 @defineDocStatusForm(order, o);
 @defineDocLinesCount(order, o);
 @defineDocLocationAccess(order, o);
