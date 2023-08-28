@@ -1,0 +1,16 @@
+MODULE PurchaseOrderManufacturing;
+
+REQUIRE PurchaseOrder, ManufacturingOrder;
+
+NAMESPACE Purchase;
+
+@defineDocLineRelation(order, manufacturingOrder, consumedLine, 'Purchase order', 'Manufacturing order', o, o);
+
+EXTEND FORM manufacturingOrder
+    PROPERTIES numberDateOrderLine(c) SHOWIF countOrder(o)
+;
+
+CONSTRAINT orderLine(ConsumedLine l) AND NOT
+        item(orderLine(l)) = item(l)
+    CHECKED BY orderLine
+    MESSAGE 'Consumed item must match the purchase order item';
