@@ -29,6 +29,11 @@ nameItem '{Item}' (ManufacturingOrder m) = name(item(m));
 uom (ManufacturingOrder o) = uom(item(o));
 nameUom 'UoM' (ManufacturingOrder m) = name(uom(m));
 
+responsible = DATA Employee (ManufacturingOrder);
+nameResponsible 'Responsible' (ManufacturingOrder o) = MasterData.name(responsible(o));
+
+responsible(ManufacturingOrder o) <- currentUser() IF currentUser() IS Employee WHEN SET(o IS ManufacturingOrder);
+
 // bom
 bom 'Bill of Materials' = DATA Bom (ManufacturingOrder);
 descriptionBom 'Bill of Materials' (ManufacturingOrder m) = description(bom(m));
@@ -61,6 +66,8 @@ item '{Item}' = DATA Item (ConsumedLine);
 nameItem '{Item}' (ConsumedLine l) = name(item(l));
 idBarCodeItem 'Barcode' (ConsumedLine l) = idBarCode(item(l));
 idItem '{ID}' (ConsumedLine l) = id(item(l));
+
+description 'Description' = DATA ISTRING (ConsumedLine);
 
 uom (ConsumedLine l) = uom(item(l));
 nameUom 'UoM' (ConsumedLine l) = name(uom(l));
@@ -111,12 +118,12 @@ edit (ConsumedLine l) + { edit(manufacturingOrder(l)); }
 FORM manufacturingOrder 'Manufacturing order'
     OBJECTS o = ManufacturingOrder PANEL 
     PROPERTIES(o) READONLY unbuild
-    PROPERTIES(o) nameType, scheduledDateTime, number, nameCompany, 
+    PROPERTIES(o) nameType, scheduledDateTime, number, nameCompany, nameResponsible, 
                   nameItem, toManufacture, nameUom, 
                   descriptionBom, nameMaterialsLocation 
     
     OBJECTS c = ConsumedLine
-    PROPERTIES(c) index READONLY, nameItem, nameUom, idBarCodeItem, idItem, toConsume, NEW, DELETE
+    PROPERTIES(c) index READONLY, nameItem, description, nameUom, idBarCodeItem, idItem, toConsume, NEW, DELETE
     FILTERS manufacturingOrder(c) = o
 
     OBJECTS l = FinishedLine
@@ -138,6 +145,7 @@ DESIGN manufacturingOrder {
                 MOVE PROPERTY(scheduledDateTime(o));
                 MOVE PROPERTY(number(o)) { notNull = TRUE; }
                 MOVE PROPERTY(nameCompany(o));
+                MOVE PROPERTY(nameResponsible(o));
             }
             NEW headerRight {
                 MOVE PROPERTY(nameItem(o));
@@ -191,6 +199,10 @@ DESIGN manufacturingOrder {
     }
 }
 
+@defineDocHistoryHeader(manufacturingOrder, o);
+@defineDocHistoryLine(manufacturingOrder, ConsumedLine, item, toConsume);
+@defineDocHistoryLine(manufacturingOrder, FinishedLine, item, toProduce);
+
 background = ABSTRACT CASE COLOR (ManufacturingOrder);
 
 FORM manufacturingOrders 'Manufacturing orders'
@@ -199,11 +211,11 @@ FORM manufacturingOrders 'Manufacturing orders'
                            number, scheduledDateTime, nameItem, 
                            nameType, nameCompany, 
                            unbuild READONLY, toManufacture READONLY, nameUom READONLY, 
-                           descriptionBom, 
-                           nameMaterialsLocation,
+                           descriptionBom,
+                               nameMaterialsLocation,
                            countConsumedLine READONLY, countFinishedLine READONLY
-    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
-    
+    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+
     LIST ManufacturingOrder OBJECT o
 ;
 

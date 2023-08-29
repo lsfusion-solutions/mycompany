@@ -204,75 +204,23 @@ DESIGN System.options {
     }
 }
 
-META defineDocHistory(doc, let, class, fun)
-
-    @defineDocHistoryHead(doc, ##let);
-    
-    WHEN SETCHANGED(###doc##Line l IS ###doc##Line) AND doc(l) = ###doc ##let 
-                        AND NOT status(##let) = ###doc##Status.draft AND NOT disableHistory() DO {     
-        NEW h = ###doc##History {
-            doc(h) <- ##let;
-            dateTime(h) <- currentDateTime();
-            user(h) <- currentUser();
-            computer(h) <- currentComputer();
-            type(h) <- 'Added line';
-            description (h) <- 'Added line with index' + ' ' + index(l);
-        }
-    }
-    
-    WHEN DROPPED(###doc##Line l IS ###doc##Line) AND PREV(doc(l)) = ###doc ##let 
-                        AND NOT status(##let) = ###doc##Status.draft AND NOT disableHistory() DO {     
-        NEW h = ###doc##History {
-            doc(h) <- ##let;
-            dateTime(h) <- currentDateTime();
-            user(h) <- currentUser();
-            computer(h) <- currentComputer();
-            type(h) <- 'Removed line';
-            description (h) <- 'Deleted line with index' + ' ' + PREV(index(l));
-        }
-    }
-    
-    WHEN CHANGED(##fun(###doc##Line l)) AND doc(l) = ###doc ##let 
-                        AND NOT status(##let) = ###doc##Status.draft AND NOT disableHistory() DO {     
-        NEW h = ###doc##History {
-            doc(h) <- ##let;
-            dateTime(h) <- currentDateTime();
-            user(h) <- currentUser();
-            type(h) <- 'Changed the original quantity';
-            description (h) <- 'Changed the initial product quantity' + ' ' + name###class(l) + ' -> ' + ##fun(l);
-        }
-    }
-    
-    WHEN CHANGED(class(###doc##Line l)) AND doc(l) = ###doc ##let 
-                        AND NOT status(##let) = ###doc##Status.draft AND NOT disableHistory() DO {     
-        NEW h = ###doc##History {
-            doc(h) <- ##let;
-            dateTime(h) <- currentDateTime();
-            user(h) <- currentUser();
-            computer(h) <- currentComputer();
-            type(h) <- 'Product changed';
-            description (h) <- 'Product changed in line' + ' ' + index(l) + ' -> ' + name###class(l);
-        }
-    }
-END
-
-META defineDocHistoryHead(doc, let)
+META defineDocHistoryHeader(doc, let)
     CLASS ###doc##History 'Change history';
-    
+
     doc = DATA ###doc (###doc##History);
 
     dateTime 'Date' = DATA DATETIME (###doc##History);
-    
+
     user = DATA User (###doc##History);
     nameUser 'User' (###doc##History l) = name(user(l));
-    
+
     computer = DATA Computer (###doc##History);
     hostnameComputer 'Computer' (###doc##History l) = hostname(computer(l)) CHARWIDTH 10;
-    
+
     type 'Type' = DATA ISTRING[100] (###doc##History) CHARWIDTH 15;
     description 'Description' = DATA TEXT (###doc##History);
-     
-    WHEN SETCHANGED(status(###doc let)) AND NOT disableHistory() DO {     
+
+    WHEN SETCHANGED(status(###doc let)) AND NOT disableHistory() DO {
         NEW l = ###doc##History {
             doc(l) <- let;
             dateTime(l) <- currentDateTime();
@@ -288,14 +236,14 @@ META defineDocHistoryHead(doc, let)
         PROPERTIES(doc##l) READONLY dateTime, nameUser, hostnameComputer, type, description, pdescription = description PANEL
         FILTERS doc(doc##l) = let
     ;
-    
+
     DESIGN doc {
         details {
             NEW history {
                 caption = 'History';
                 fill = 1;
                 type = SPLITH;
-                MOVE BOX(doc##l) { 
+                MOVE BOX(doc##l) {
                     fill = 2;
                     caption = '';
                     PROPERTY(description(doc##l)) { valueHeight = 18; }
@@ -304,6 +252,68 @@ META defineDocHistoryHead(doc, let)
             }
         }
     }
+END
+
+META defineDocHistoryLine(doc, docLine, class, fun)
+    
+    WHEN SETCHANGED(docLine l IS docLine) AND doc(l) = ###doc d
+        AND NOT status(d) = ###doc##Status.draft AND NOT disableHistory() DO {
+        NEW h = ###doc##History {
+            doc(h) <- d;
+            dateTime(h) <- currentDateTime();
+            user(h) <- currentUser();
+            computer(h) <- currentComputer();
+            type(h) <- 'Added line';
+            description (h) <- 'Added line with index' + ' ' + index(l);
+        }
+    }
+
+    WHEN DROPPED(docLine l IS docLine) AND PREV(doc(l)) = ###doc d
+        AND NOT status(d) = ###doc##Status.draft AND NOT disableHistory() DO {
+        NEW h = ###doc##History {
+            doc(h) <- d;
+            dateTime(h) <- currentDateTime();
+            user(h) <- currentUser();
+            computer(h) <- currentComputer();
+            type(h) <- 'Removed line';
+            description (h) <- 'Deleted line with index' + ' ' + PREV(index(l));
+        }
+    }
+
+    WHEN CHANGED(##fun(docLine l)) AND doc(l) = ###doc d
+        AND NOT status(d) = ###doc##Status.draft AND NOT disableHistory() DO {
+        NEW h = ###doc##History {
+            doc(h) <- d;
+            dateTime(h) <- currentDateTime();
+            user(h) <- currentUser();
+            type(h) <- 'Changed the initial quantity';
+            description (h) <- 'Changed the initial product quantity' + ' ' + name###class(l) + ' -> ' + ##fun(l);
+        }
+    }
+        
+    WHEN CHANGED(class(docLine l)) AND doc(l) = ###doc d
+        AND NOT status(d) = ###doc##Status.draft AND NOT disableHistory() DO {
+        NEW h = ###doc##History {
+            doc(h) <- d;
+            dateTime(h) <- currentDateTime();
+            user(h) <- currentUser();
+            computer(h) <- currentComputer();
+            type(h) <- 'Product changed';
+            description (h) <- 'Product changed in line' + ' ' + index(l) + ' -> ' + name###class(l);
+        }
+    }
+
+END
+
+META defineDocHistoryLine(doc, class, fun)
+    @defineDocHistoryLine(doc, ###doc##Line, class, fun);
+END
+
+META defineDocHistory(doc, let, class, fun)
+
+    @defineDocHistoryHeader(doc, ##let);
+@defineDocHistoryLine(doc, class, fun);
+    
 END
 
 META defineDocRelation(docTo, docFrom, captTo, captFrom, objTo, objFrom)
