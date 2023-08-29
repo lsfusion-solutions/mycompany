@@ -12,6 +12,9 @@ EXTEND FORM projectType PROPERTIES manufacturingOrderType = nameOrderType(o);
 project = DATA Project (ManufacturingOrder) INDEXED;
 nameProject 'Project' (ManufacturingOrder i) = name(project(i));
 
+project (ConsumedLine l) = project(manufacturingOrder(l));
+nameProject 'Project' (ConsumedLine l) = name(project(l));
+
 countOrders 'Manufacturing orders' (Project p) = GROUP SUM 1 IF project(ManufacturingOrder i) = p;
 
 EXTEND FORM manufacturingOrder
