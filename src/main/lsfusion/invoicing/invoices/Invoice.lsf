@@ -2,7 +2,7 @@ MODULE Invoice;
 
 REQUIRE InvoicingSettings, TaxItem, BankAccount, FileUtils, 
         MetaTax, PaymentTermsSales, DateUtils, Department,
-        ItemSales, PartnerSales, Company, 
+        ItemSales, PartnerSales, Company, Employee,
         BarCode, MetaNumerator, Doc,
         InvoiceType, Product;
 
@@ -81,6 +81,15 @@ deliveryAddress 'Delivery address' = DATA STRING (Invoice) CHARWIDTH 20;
 WHEN LOCAL (CHANGED(customer(Invoice i)) OR CHANGED(department(i))) AND NOT CHANGED(deliveryAddress(i)) DO 
     deliveryAddress(i) <- OVERRIDE addressCsv(department(i)), addressCsvCustomer(i);
 
+// representative
+representative 'Our representative' = DATA Employee (Invoice);
+nameRepresentative 'Our representative' (Invoice o)= MasterData.name(representative(o));
+
+representative(Invoice o) <- currentUser() IF currentUser() IS Employee WHEN SET(o IS Invoice);
+
+CONSTRAINT representative(Invoice o) AND NOT legalEntity(representative(o)) = company(o)
+    CHECKED BY representative MESSAGE 'There must be our worker';
+
 customerReference '{Customer_reference}' = DATA STRING[30] (Invoice);
 note 'Note' = DATA ISTRING (Invoice) CHARWIDTH 20;
 
@@ -151,7 +160,7 @@ FORM invoice 'Invoice'
     PROPERTIES(i) nameType, dateTime, number, 
                   nameCustomer, nameDepartment SHOWIF countDepartment(customer(i)), nameCompany,
                   namePaymentTerms, dueDateTime, nameCustomerAccount, nameCompanyAccount,
-                  deliveryAddress, customerReference, note
+                  deliveryAddress, nameRepresentative, customerReference, note
         
     OBJECTS l = InvoiceLine
     PROPERTIES(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, referenceItem, 
@@ -216,6 +225,7 @@ DESIGN invoice {
                 NEW invoiceInformat {
                     caption = 'Others';
                     alignment = STRETCH;
+                    MOVE PROPERTY(nameRepresentative(i));
                     MOVE PROPERTY(customerReference(i)); 
                     MOVE PROPERTY(note(i));
                 }

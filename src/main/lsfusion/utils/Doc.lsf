@@ -349,8 +349,9 @@ META defineDocLineRelation(docTo, docFrom, docFromLine, captTo, captFrom, objTo,
     numberDate###docTo captTo (###docFrom s) = GROUP CONCAT numberDate(###docTo i) IF in(i, s), ',' ORDER i CHARWIDTH 30; 
     numberDate###docTo##Line captTo (###docFromLine s) = numberDate(docTo##Line(s)); 
 
-    numberDate###docFrom##s captFrom (###docTo s) = GROUP CONCAT numberDate(###docFrom i) IF in(s, i), ',' ORDER i CHARWIDTH 30; 
-    
+    numberDate###docFrom##s captFrom (###docTo s) = GROUP CONCAT numberDate(###docFrom i) IF in(s, i), ',' ORDER i CHARWIDTH 30;
+
+    count###docFromLine (###docTo##Line b) = GROUP SUM 1 IF docTo##Line(###docFromLine l) = b;
     count###docFromLine (###docTo b) = GROUP SUM 1 IF docTo(docTo##Line(###docFromLine l)) = b;
     
     // form

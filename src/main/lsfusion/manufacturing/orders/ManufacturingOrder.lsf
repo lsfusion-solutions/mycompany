@@ -89,6 +89,9 @@ nameItem '{Item}' (FinishedLine l) = name(item(l));
 idBarCodeItem 'Barcode' (FinishedLine l) = idBarCode(item(l));
 idItem '{ID}' (FinishedLine l) = id(item(l));
 
+nameConsumedItem 'Materials' (ManufacturingOrder o) =
+    GROUP CONCAT nameItem(ConsumedLine cl), ' / ' ORDER nameItem(cl) BY manufacturingOrder(cl) CHARWIDTH 14;
+
 uom 'UoM' = DATA Uom (FinishedLine);
 nameUom 'UoM' (FinishedLine l) = name(uom(l));
 WHEN LOCAL CHANGED(item(FinishedLine l)) DO uom(l) <- uom(item(l));
@@ -108,10 +111,16 @@ toProduce '{Manufacture}' (ManufacturingOrder o) = GROUP SUM toProduce(FinishedL
 toManufacture '{Manufacture}' (ManufacturingOrder o) = IF unbuild(o) THEN toConsume(o) ELSE toProduce(o) MATERIALIZED;
 
 // line properties
+status (ConsumedLine l) = status(manufacturingOrder(l));
+nameStatus 'Status' (ConsumedLine l) = name(status(l));
+
 nameType 'Type' (ConsumedLine l) = nameType(manufacturingOrder(l));
 scheduledDateTime 'Start date' (ConsumedLine l) = scheduledDateTime(manufacturingOrder(l)) IN id;
 number 'Number' (ConsumedLine l) = number(manufacturingOrder(l)) IN id;
 descriptionBom 'Bill of Materials' (ConsumedLine l) = descriptionBom(manufacturingOrder(l));
+
+responsible (ConsumedLine l) = responsible(manufacturingOrder(l));
+nameResponsible 'Responsible' (ConsumedLine l) = MasterData.name(responsible(l));
 
 edit (ConsumedLine l) + { edit(manufacturingOrder(l)); } 
 

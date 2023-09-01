@@ -74,6 +74,15 @@ CONSTRAINT companyAccount(Bill b) AND NOT company(b) = holder(companyAccount(b))
     CHECKED BY companyAccount
     MESSAGE 'The account must belong to the selected company';
 
+// representative
+representative 'Our representative' = DATA Employee (Bill);
+nameRepresentative 'Our representative' (Bill o)= MasterData.name(representative(o));
+
+representative(Bill o) <- currentUser() IF currentUser() IS Employee WHEN SET(o IS Bill);
+
+CONSTRAINT representative(Bill o) AND NOT legalEntity(representative(o)) = company(o)
+    CHECKED BY representative MESSAGE 'There must be our worker';
+
 vendorReference 'Vendor reference' = DATA STRING[30] (Bill);
 note 'Note' = DATA ISTRING (Bill) CHARWIDTH 20;
 
@@ -139,7 +148,7 @@ FORM bill 'Bill'
     PROPERTIES(b) nameType, dateTime, number, 
                   nameVendor, nameCompany,
                   namePaymentTerms, dueDateTime, nameVendorAccount, nameCompanyAccount,
-                  vendorReference, note
+                  nameRepresentative, vendorReference, note
         
     OBJECTS l = BillLine
     PROPERTIES(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, referenceItem, 
@@ -199,6 +208,7 @@ DESIGN bill {
                 NEW billInformat {
                     caption = 'Others';
                     alignment = STRETCH;
+                    MOVE PROPERTY(nameRepresentative(b));
                     MOVE PROPERTY(vendorReference(b)); 
                     MOVE PROPERTY(note(b));
                 }
