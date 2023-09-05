@@ -1,7 +1,7 @@
 MODULE Project;
 
 REQUIRE FileUtils, MetaNumerator, Authentication, Icon,
-        ProjectManagementSettings, ProjectType, Company;
+        ProjectManagementSettings, ProjectType, Company, Employee;
 
 NAMESPACE ProjectManagement;
 
@@ -26,12 +26,17 @@ startDate 'Start date' = DATA DATE (Project) IN id;
 startDate(Project p) <- currentDate() WHEN SET(p IS Project);
 endDate 'End date' = DATA DATE (Project);
 
+manager = DATA Employee (Project);
+nameManager 'Manager' (Project o) = MasterData.name(manager(o));
+
+manager(Project o) <- currentUser() IF currentUser() IS Employee WHEN SET(o IS Project);
+
 description 'Description' = DATA RICHTEXT (Project);
 
 FORM project 'Project'
     OBJECTS p = Project PANEL
     
-    PROPERTIES(p) nameType, number, name, nameCompany, namePartner, startDate, endDate,
+    PROPERTIES(p) nameType, number, name, nameCompany, namePartner, startDate, endDate, nameManager,
                   description
     
     EDIT Project OBJECT p
@@ -65,12 +70,13 @@ DESIGN project {
                 MOVE PROPERTY(nameType(p));                   
                 MOVE PROPERTY(number(p));
                 MOVE PROPERTY(name(p));                   
-                MOVE PROPERTY(nameCompany(p));
                 MOVE PROPERTY(namePartner(p));
             }
             NEW headerRight {
                 MOVE PROPERTY(startDate(p));
                 MOVE PROPERTY(endDate(p));
+                MOVE PROPERTY(nameCompany(p));
+                MOVE PROPERTY(nameManager(p));
             }    
         }
         NEW details {
@@ -87,7 +93,7 @@ DESIGN project {
 FORM projects 'Projects'
     OBJECTS p = Project
 
-    PROPERTIES(p) READONLY number, startDate, endDate, namePartner, nameType, name, nameCompany
+    PROPERTIES(p) READONLY number, startDate, endDate, namePartner, nameType, name, nameCompany, nameManager
     PROPERTIES(p) NEWSESSION NEW, EDIT, DELETE
     
     LIST Project OBJECT p
