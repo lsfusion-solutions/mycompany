@@ -22,7 +22,7 @@ addressLines 'Address' (Partner p) = CONCAT '\n ', address(p), city(p), state(p)
 phone 'Phone' = DATA ISTRING[100] (Partner) CHARWIDTH 10;
 email 'Email' = DATA ISTRING[30] (Partner);
 
-archived 'Inactive' = DATA BOOLEAN (Partner);
+archived 'Archived' = DATA BOOLEAN (Partner);
 active '{Active}' (Partner p) = NOT archived(p);
 
 // type
@@ -92,7 +92,7 @@ FORM partners 'Partners'
     PROPERTIES(p) NEWSESSION EDIT, DELETE 
     FILTERGROUP active
         FILTER '{Active}' active(p) 'F10' DEFAULT
-        FILTER 'Inactive' archived(p) 'F9'
+        FILTER 'Archived' archived(p) 'F9'
 ;
 
 @extendFormEditable(partners);
@@ -118,7 +118,7 @@ FORM dialogPartners 'Select partner'
      
     FILTERGROUP active
         FILTER '{Active}' active(p) 'F10' DEFAULT
-        FILTER 'Inactive' archived(p) 'F9'
+        FILTER 'Archived' archived(p) 'F9'
 
     PROPERTIES() nameFilter, clearNameFilter
     FILTERS isISubstring(name(p), nameFilter()) OR NOT nameFilter()

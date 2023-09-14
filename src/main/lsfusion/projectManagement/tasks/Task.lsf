@@ -1,0 +1,79 @@
+MODULE Task;
+
+REQUIRE ProjectManagementSettings, Employee;
+
+PRIORITY MasterData;
+
+NAMESPACE ProjectManagement;
+
+CLASS Task 'Task';
+
+name 'Name' = DATA ISTRING (Task) CHARWIDTH 30;
+
+author 'Author' = DATA Employee (Task);
+nameAuthor 'Author' (Task t) = name(author(t));
+WHEN SET(Task t IS Task) AND NOT author(t) AND currentUser() IS Employee DO author(t) <- currentUser();
+
+assignedTo 'Assigned to' = DATA Employee (Task);
+nameAssignedTo 'Assigned to' (Task t) = name(assignedTo(t));
+
+deadline 'Deadline' = DATA DATE (Task);
+
+description 'Description' = DATA RICHTEXT (Task) CHARWIDTH 20;
+
+archived 'Archived' = DATA BOOLEAN (Task) CHARWIDTH 10;
+active '{Active}' (Task i) = NOT archived(i) CHARWIDTH 10;
+
+FORM task 'Task'
+    OBJECTS t = Task PANEL
+    PROPERTIES(t) name, nameAuthor, nameAssignedTo, deadline, description, archived
+
+    EDIT Task OBJECT t
+;
+
+DESIGN task {
+    OBJECTS {
+        NEW header {
+            NEW main {
+                horizontal = TRUE;
+                alignment = STRETCH;
+                MOVE PROPERTY(name(t)) { flex = 1; fontSize = 16; }
+                MOVE PROPERTY(archived(t)) { alignment = STRETCH; }
+            }
+            NEW params {
+                columns = 2;
+                alignment = STRETCH;
+                MOVE PROPERTY(nameAuthor(t));
+                MOVE PROPERTY(nameAssignedTo(t));
+                MOVE PROPERTY(deadline(t));
+            }
+        }
+        NEW tabbedPane {
+            tabbed = TRUE;
+            fill = 1;
+            NEW description {
+                caption = 'Description';
+                MOVE PROPERTY(description(t)) { caption = ''; fill = 1; }
+            }
+        }
+    }
+}
+
+
+FORM tasks '{Tasks}'
+    OBJECTS t = Task
+    PROPERTIES(t) READONLY name, nameAuthor, nameAssignedTo, deadline, archived
+    PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
+
+    FILTERGROUP active
+        FILTER '{Active}' active(t) 'F8' DEFAULT
+        FILTER 'Archived' archived(t) 'F7'
+
+    LIST Task OBJECT t
+;
+
+NAVIGATOR {
+    operations {
+        NEW tasks;
+    }
+}
