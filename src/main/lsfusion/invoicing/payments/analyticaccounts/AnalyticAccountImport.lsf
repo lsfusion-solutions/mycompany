@@ -5,7 +5,7 @@ REQUIRE AnalyticAccount;
 analyticAccountExport 'Export analytic accounts' () {
     NEWSESSION {
         LOCAL f = EXCELFILE ();
-        EXPORT XLSX HEADER FROM '{ID}' = id(AnalyticAccount a), 'Name' = name(a), 'ParentID' = id(parent(a)) TO f;   
+        EXPORT XLSX HEADER FROM '{ID}' = id(AnalyticAccount a), '{Name}' = name(a), 'ParentID' = id(parent(a)) TO f;   
         open(f());
     }
 }
@@ -37,7 +37,7 @@ EXTEND FORM migrationData
 DESIGN migrationData {
     commons {
         NEW bank {
-            type = CONTAINERH;
+            horizontal = TRUE;
             caption = 'Analytic accounts';
             MOVE PROPERTY(analyticAccountExport());
             MOVE PROPERTY(analyticAccountImport());

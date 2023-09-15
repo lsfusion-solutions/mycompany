@@ -11,10 +11,10 @@ CLASS Bom 'Bill of Materials';
 @defineNumber(bom, 'Bills of Materials', 'SP');
 bom (STRING[50] id) = GROUP AGGR Bom b BY number(b);
 
-name 'Name' = DATA ISTRING[50] (Bom);
+name '{Name}' = DATA ISTRING[50] (Bom);
 description 'Description' (Bom b) = badged(name(b), number(b)) IN id;
 
-archived 'Inactive' = DATA BOOLEAN (Bom);
+archived 'Archived' = DATA BOOLEAN (Bom);
 active '{Active}' (Bom b) = NOT archived(b);
 
 item '{Item}' = DATA Item (Bom) NONULL DELETE;
@@ -100,21 +100,21 @@ FORM bom 'Bill of Materials'
 ;
 
 DESIGN bom {
-    caption = badged('Bill of Materials', '№' + number(b));
+    caption = badged('Bill of Materials', number(b));
     OBJECTS {
         NEW actions {
             caption = 'Actions';
-            type = CONTAINERH;
+            horizontal = TRUE;
             alignment = STRETCH;
         }
         NEW header {
             alignment = STRETCH;
-            type = CONTAINERH;
+            horizontal = TRUE;
             NEW headerLeft {
                 MOVE PROPERTY(number(b))  { notNull = TRUE; }
                 MOVE PROPERTY(nameItem(b)) { notNull = TRUE; }
                 NEW quantity {
-                    type = CONTAINERH;
+                    horizontal = TRUE;
                     MOVE PROPERTY(quantity(b));
                     MOVE PROPERTY(nameUom(b));
                 }

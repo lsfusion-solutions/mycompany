@@ -8,7 +8,7 @@ CLASS ABSTRACT Partner 'Partner';
 
 @defineID(partner, 'Partners', 'KN', 4);
 
-name 'Name' = ABSTRACT ISTRING[92] (Partner) IN id CHARWIDTH 15;
+name '{Name}' = ABSTRACT ISTRING[92] (Partner) IN id CHARWIDTH 15;
 fullName 'Full name' = ABSTRACT ISTRING[200] (Partner) IN id CHARWIDTH 25;
 
 address 'Address' = DATA ISTRING[150] (Partner) CHARWIDTH 30;
@@ -22,7 +22,7 @@ addressLines 'Address' (Partner p) = CONCAT '\n ', address(p), city(p), state(p)
 phone 'Phone' = DATA ISTRING[100] (Partner) CHARWIDTH 10;
 email 'Email' = DATA ISTRING[30] (Partner);
 
-archived 'Inactive' = DATA BOOLEAN (Partner);
+archived 'Archived' = DATA BOOLEAN (Partner);
 active '{Active}' (Partner p) = NOT archived(p);
 
 // type
@@ -46,17 +46,17 @@ FORM partner 'Partner'
 DESIGN partner {
     OBJECTS {
         NEW header {
-            type = CONTAINERH;            
+            horizontal = TRUE;            
             NEW headerLeft {
                 NEW headerTop {
-                    type = CONTAINERH;
+                    horizontal = TRUE;
                     alignment = STRETCH;
                     MOVE PROPERTY(id(p)); 
                     MOVE PROPERTY(nameType(p));
                 }
                 NEW headerDetails { alignment = STRETCH; }
                 NEW headerPane {
-                    type = CONTAINERH;
+                    horizontal = TRUE;
                     alignment = STRETCH;
                     NEW headerColumn1 {
                         MOVE PROPERTY(address(p));
@@ -92,7 +92,7 @@ FORM partners 'Partners'
     PROPERTIES(p) NEWSESSION EDIT, DELETE 
     FILTERGROUP active
         FILTER '{Active}' active(p) 'F10' DEFAULT
-        FILTER 'Inactive' archived(p) 'F9'
+        FILTER 'Archived' archived(p) 'F9'
 ;
 
 @extendFormEditable(partners);
@@ -118,7 +118,7 @@ FORM dialogPartners 'Select partner'
      
     FILTERGROUP active
         FILTER '{Active}' active(p) 'F10' DEFAULT
-        FILTER 'Inactive' archived(p) 'F9'
+        FILTER 'Archived' archived(p) 'F9'
 
     PROPERTIES() nameFilter
     FILTERS isISubstring(name(p), nameFilter()) OR NOT nameFilter()

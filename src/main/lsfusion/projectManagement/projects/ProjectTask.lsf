@@ -1,0 +1,44 @@
+MODULE ProjectTask;
+
+REQUIRE Project, Task;
+
+NAMESPACE ProjectManagement;
+
+project = DATA Project (Task);
+nameProject 'Project' (Task e) = name(project(e));
+
+countActiveTask '{Tasks}' (Project p) = GROUP SUM 1 IF project(Task t) = p AND active(t);
+
+EXTEND FORM task
+    PROPERTIES(t) nameProject
+;
+
+DESIGN task {
+    params {
+        MOVE PROPERTY(nameProject(t));
+    }
+}
+
+EXTEND FORM tasks
+    PROPERTIES(t) READONLY nameProject AFTER name(t)
+;
+
+EXTEND FORM project
+    OBJECTS t = Task
+    PROPERTIES(t) READONLY name, nameAuthor, nameAssignedTo, deadline, archived
+    PROPERTIES(t) EDIT
+    FILTERS project(t) = p
+;
+
+DESIGN project {
+    details {
+        NEW tasks {
+            caption = badged('{Tasks}', countActiveTask(p));
+            MOVE BOX(t) { caption = ''; }
+        }
+    }
+}
+
+EXTEND FORM projects
+    PROPERTIES(p) READONLY countActiveTask
+;

@@ -145,11 +145,11 @@ FORM manufacturingOrder 'Manufacturing order'
 ;
 
 DESIGN manufacturingOrder {
-    caption = badged('Manufacturing order', CONCAT ' ', '№' + number(o), '(' + scheduledDateTime(o) + ')');
+    caption = badged('Manufacturing order', number(o) + '(' + scheduledDateTime(o) + ')');
     OBJECTS {
         NEW header {
             alignment = STRETCH;
-            type = CONTAINERH;
+            horizontal = TRUE;
             NEW headerLeft {
                 MOVE PROPERTY(nameType(o)) { notNull = TRUE; };
                 MOVE PROPERTY(scheduledDateTime(o));
@@ -161,7 +161,7 @@ DESIGN manufacturingOrder {
                 MOVE PROPERTY(nameItem(o));
                 MOVE PROPERTY(unbuild(o));
                 NEW quantity {
-                    type = CONTAINERH;
+                    horizontal = TRUE;
                     MOVE PROPERTY(toManufacture(o));
                     MOVE PROPERTY(nameUom(o));
                 }
@@ -187,7 +187,7 @@ DESIGN manufacturingOrder {
             NEW finished {
                 caption = 'Finished products';
                 NEW finishedHeader { 
-                    type = CONTAINERH;
+                    horizontal = TRUE;
                     alignment = STRETCH; 
                 }
                 NEW finishedPane {
@@ -204,7 +204,7 @@ DESIGN manufacturingOrder {
     }
     TOOLBARBOX {
         NEW footer FIRST {
-            type = CONTAINERH;
+            horizontal = TRUE;
         }
     }
 }

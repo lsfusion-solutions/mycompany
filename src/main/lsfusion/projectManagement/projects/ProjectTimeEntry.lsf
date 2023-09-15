@@ -23,21 +23,19 @@ DESIGN timeEntry {
 
 EXTEND FORM timeEntries
     PROPERTIES(t) READONLY nameProject
-    
-    LIST TimeEntry OBJECT t
 ;
 
 EXTEND FORM project
-    OBJECTS t = TimeEntry
-    PROPERTIES(t) nameEmployee, date, hours, description, NEW, DELETE
-    FILTERS project(t) = p
+    OBJECTS te = TimeEntry
+    PROPERTIES(te) nameEmployee, date, hours, description, NEW, DELETE
+    FILTERS project(te) = p
 ;
 
 DESIGN project {
     details {
         NEW timeEntries {
-            caption = badged('Time entries', CONCAT ' / ', countTimeEntry(p), hoursTimeEntry(p));
-            MOVE BOX(t) { caption = ''; }
+            caption = badged('Time entries', '(' + countTimeEntry(p) + ')' + '(' + hoursTimeEntry(p) + ')');
+            MOVE BOX(te) { caption = ''; }
         }
     }
 }

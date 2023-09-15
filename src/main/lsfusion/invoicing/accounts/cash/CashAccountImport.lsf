@@ -8,7 +8,7 @@ cashAccountExport 'Export cash registers' () {
     NEWSESSION {
         LOCAL f = EXCELFILE ();
         EXPORT XLSX HEADER FROM 'HolderID' = id(holder(CashAccount c)), 'Note' = note(c),
-                                'Name' = name(c) WHERE c IS CashAccount TO f;
+                                '{Name}' = name(c) WHERE c IS CashAccount TO f;
         open(f());
     }
 }
@@ -48,7 +48,7 @@ EXTEND FORM migrationData
 DESIGN migrationData {
     commons {
         NEW cashAccount {
-            type = CONTAINERH;
+            horizontal = TRUE;
             caption = 'Cash accounts';
             MOVE PROPERTY(cashAccountImport());
             MOVE PROPERTY(cashAccountExport());
