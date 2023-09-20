@@ -25,7 +25,7 @@ matches (Discount d, SalesDiscountLine l) =
     NOT endDateTime(d) < dateTime(l) AND
     NOT fromQuantity(d) > quantity(l) AND
     NOT fromAmount(d) > amount(l) AND
-    NOT fromAccumulated(d) > prevTotalSoldAmount(customer(l)) AND
+    NOT fromAccumulated(d) > (OVERRIDE prevTotalSoldAmount(customer(l)), -0.01) AND
     NOT fromAccumulatedPreviousMonth(d) > (OVERRIDE prevSoldAmountPreviousMonth(customer(l)), 0.0) COMPLEX;
 
 discountPrice 'Discount price' (Discount d, SalesDiscountLine l) =
