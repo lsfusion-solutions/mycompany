@@ -9,7 +9,7 @@ attribute(OrderLine l, ItemAttribute a) = value(attribute(item(l), a));
 FORM purchaseOrderReport 'Order report'
     OBJECTS a = ItemAttribute
 
-    OBJECTS report = (o = Order, l = OrderLine) PIVOT
+    OBJECTS o = (o = Order, l = OrderLine) PIVOT
     PROPERTIES(o) READONLY number, dateTime, nameVendor,
                            imagedNameStatus, nameType, vendorReference, 
                            scheduledDateTime, nameLocation,
@@ -24,6 +24,12 @@ FORM purchaseOrderReport 'Order report'
     FILTERS order(l) = o,
             accessGranted(location(o)) OR NOT location(o)
 ;
+
+DESIGN purchaseOrderReport {
+    OBJECTS {
+        NEW filters FIRST { caption = 'Filters'; }
+    }
+}
 
 @defineDateTimeAggregationForm(purchaseOrderReport, o);
 @defineDateFilterForm(purchaseOrderReport, o);

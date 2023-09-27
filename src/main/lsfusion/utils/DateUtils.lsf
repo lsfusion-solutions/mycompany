@@ -48,13 +48,16 @@ setFilterLastCurrentYear 'This year' () {
 
 META defineDateFilterForm(form, let, prefix)
     EXTEND FORM form
-        PROPERTIES() filterDateFrom, filterDateTo, setFilterToday, setFilterYesterday, setFilterTomorrow, setFilterLast7Days, setFilterLast30Days, setFilterLastCurrentMonth, setFilterLastCurrentYear 
+        OBJECTS dates = INTERVAL[DATE] BEFORE let PANEL NULL
+        PROPERTIES filterDates 'Date interval' = VALUE(dates)
 
-        FILTERS NOT prefix###date(let) < filterDateFrom(), NOT prefix###date(let) > filterDateTo() 
+        FILTERS NOT prefix###date(let) < from(dates), NOT prefix###date(let) > to(dates)
     ;
     
     DESIGN form {
-        GROUP (filterDates) { horizontal = TRUE; lines = 1; }
+        filters {
+            MOVE PROPERTY(filterDates);
+        }
     }
 END
 

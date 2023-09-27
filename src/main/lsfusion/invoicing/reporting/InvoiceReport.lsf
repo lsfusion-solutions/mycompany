@@ -9,7 +9,7 @@ attribute(InvoiceLine l, ItemAttribute a) = value(attribute(item(l), a));
 FORM invoiceReport 'Invoices report'
     OBJECTS a = ItemAttribute
 
-    OBJECTS report = (i = Invoice, l = InvoiceLine) PIVOT
+    OBJECTS i = (i = Invoice, l = InvoiceLine) PIVOT
     PROPERTIES(i) READONLY number, dateTime, nameCustomer, 
                            imagedNameStatus, nameType, 
                            nameDepartment, nameCustomerAccount, nameCompany, nameCompanyAccount, nameCurrency, 
@@ -23,6 +23,12 @@ FORM invoiceReport 'Invoices report'
                            untaxedAmount, taxAmount, amount, currencyAmount
     FILTERS invoice(l) = i
 ;
+
+DESIGN invoiceReport {
+    OBJECTS {
+        NEW filters FIRST { caption = 'Filters'; }
+    }
+}
 
 @defineDateTimeAggregationForm(invoiceReport, i);
 @defineDateFilterForm(invoiceReport, i);
