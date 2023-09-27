@@ -4,74 +4,17 @@ REQUIRE Time;
 
 NAMESPACE Utils;
 
-// filters
-
-GROUP filterDates 'Date interval';
-
-filterDateFrom 'Date from' = DATA LOCAL NESTED DATE() IN filterDates;
-filterDateTo 'to' = DATA LOCAL NESTED DATE() IN filterDates;
-
-setFilterToday 'Today' () {
-    filterDateFrom() <- currentDate(); 
-    filterDateTo() <- currentDate();
-} IN filterDates;
-
-setFilterYesterday 'Yesterday' () {
-    filterDateFrom() <- subtract(currentDate(), 1); 
-    filterDateTo() <- subtract(currentDate(), 1);
-} IN filterDates;
-
-setFilterTomorrow 'Tomorrow' () {
-    filterDateFrom() <- sum(currentDate(), 1); 
-    filterDateTo() <- sum(currentDate(), 1);
-} IN filterDates;
-
-setFilterLast7Days '7 days' () {
-    filterDateFrom() <- subtract(currentDate(), 7); 
-    filterDateTo() <- subtract(currentDate(), 1);
-} IN filterDates;
-
-setFilterLast30Days '30 days' () {
-    filterDateFrom() <- subtract(currentDate(), 30); 
-    filterDateTo() <- subtract(currentDate(), 1);
-} IN filterDates;
-
-setFilterLastCurrentMonth 'This month' () {
-    filterDateFrom() <- firstDayOfMonth(currentDate()); 
-    filterDateTo() <- currentDate();
-} IN filterDates;
-
-setFilterLastCurrentYear 'This year' () {
-    filterDateFrom() <- toDateFormat('' + currentYear() + '0101', 'YYYYMMDD'); 
-    filterDateTo() <- currentDate();
-} IN filterDates;
-
 META defineDateFilterForm(form, let, prefix)
     EXTEND FORM form
-        PROPERTIES() filterDateFrom, filterDateTo, setFilterToday, setFilterYesterday, setFilterTomorrow, setFilterLast7Days, setFilterLast30Days, setFilterLastCurrentMonth, setFilterLastCurrentYear 
+        OBJECTS dates = INTERVAL[DATE] BEFORE let PANEL NULL
+        PROPERTIES filterDates 'Date interval' = VALUE(dates)
 
-        FILTERS NOT prefix###date(let) < filterDateFrom(), NOT prefix###date(let) > filterDateTo() 
+        FILTERS NOT prefix###date(let) < from(dates), NOT prefix###date(let) > to(dates)
     ;
     
     DESIGN form {
-        GROUP (filterDates) { 
-            horizontal = TRUE; 
-            lines = 1;
-            PROPERTY(filterDateFrom()) { caption = ''; placeholder = '{From}'; }
-            PROPERTY(filterDateTo()) { caption = ''; placeholder = '{To}'; }
-        }
-    }
-END
-
-META defineDateFilterForm(form, let, prefix, container)
-    @defineDateFilterForm(form, let, prefix);
-    
-    DESIGN form {
-        container {
-            MOVE GROUP(filterDates) {
-                width = 100;
-                alignment = STRETCH;
-            }
+        filters {
+            MOVE PROPERTY(filterDates);
         }
     }
 END
