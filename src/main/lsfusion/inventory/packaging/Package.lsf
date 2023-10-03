@@ -1,0 +1,62 @@
+MODULE Package;
+
+REQUIRE Product, BarCode;
+
+NAMESPACE Inventory;
+
+CLASS Package 'Package';
+
+id '{ID}' = DATA STRING[100] (Package) CHARWIDTH 15;
+reference 'Reference' = DATA STRING[100] (Package) CHARWIDTH 15;
+
+// lines
+CLASS PackageLine 'Package line';
+
+package = DATA Package (PackageLine) NONULL DELETE INDEXED;
+
+countLines 'Number of lines' (Package p) = GROUP SUM 1 IF package(PackageLine l) = p MATERIALIZED;
+index '№' = PARTITION SUM 1 ORDER PackageLine l BY package(l) IN id MATERIALIZED CHARWIDTH 3;
+
+product 'Product' = DATA Product (PackageLine) NONULL INDEXED;
+nameProduct 'Product' (PackageLine l) = name(product(l)) IN id;
+idBarCodeProduct 'Barcode' (PackageLine l) = idBarCode(product(l));
+idProduct '{ID}' (PackageLine l) = id(product(l));
+referenceProduct 'Reference' (PackageLine l) = reference(product(l));
+
+countLines (Package p, Product pr) = GROUP SUM 1 IF package(PackageLine l) = p AND product(l) = pr;
+nameProduct 'Products' (Package p) = GROUP CONCAT name(Product pr) IF countLines(p, pr), ', ' ORDER pr CHARWIDTH 30; 
+
+uom (PackageLine l) = uom(product(l));
+nameUom 'UoM' (PackageLine l) = name(uom(l));
+
+quantity '{Quantity}' = DATA NUMERIC[16,3] (PackageLine);
+
+FORM package 'Package'
+    OBJECTS p = Package PANEL
+    PROPERTIES(p) id, reference
+    
+    OBJECTS l = PackageLine
+    PROPERTIES(l) index READONLY, nameProduct, nameUom, idBarCodeProduct, idProduct, referenceProduct, quantity
+    PROPERTIES(l) NEW, DELETE
+    FILTERS package(l) = p
+    
+    EDIT Package OBJECT p
+;
+
+DESIGN package {
+    caption = badged('Package', CONCAT ' ', id(p), '(' + reference(p) + ')');
+}
+
+FORM packages 'Packages'
+    OBJECTS p = Package
+    PROPERTIES(p) READONLY id, reference, nameProduct, countLines
+    PROPERTIES(p) NEWSESSION NEW, EDIT, DELETE
+
+    LIST Package OBJECT p
+;
+
+NAVIGATOR {
+    masterData {
+        NEW packages;
+    }
+}
