@@ -1,0 +1,31 @@
+MODULE ReceiptPackage;
+
+REQUIRE Receipt, Package;
+
+NAMESPACE Inventory;
+
+in 'Incl.' = DATA BOOLEAN (Receipt, Package);
+
+EXTEND FORM receipt
+    OBJECTS pc = Package
+    PROPERTIES(pc) READONLY id, reference
+    PROPERTIES(pc) EDIT
+    FILTERS in(r, pc)
+    
+    OBJECTS pcl = PackageLine
+    PROPERTIES(pcl) index READONLY, 
+                    nameProduct, nameUom, idBarCodeProduct, idProduct, referenceProduct, 
+                    quantity
+    FILTERS package(pcl) = pc
+;
+
+DESIGN receipt {
+    details {
+        NEW packages {
+            caption = 'Packages';
+            horizontal = TRUE;
+            MOVE BOX(pc);
+            MOVE BOX(pcl) { fill = 3; }
+        }
+    }
+}
