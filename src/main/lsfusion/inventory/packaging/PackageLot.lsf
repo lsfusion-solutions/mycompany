@@ -1,0 +1,17 @@
+MODULE PackageLot;
+
+REQUIRE Package, Lot;
+
+NAMESPACE Inventory;
+
+lot 'Lot' = DATA Lot (PackageLine) INDEXED;
+
+CONSTRAINT product(PackageLine l) AND lot(l) AND NOT product(lot(l)) = product(l)
+    CHECKED BY lot[PackageLine]
+    MESSAGE 'The product of the contents of the package must match the product of the lot';
+
+idLot 'Lot' (PackageLine l) = id(lot(l));
+
+EXTEND FORM package
+    PROPERTIES(l) idLot BEFORE quantity(l)
+;
