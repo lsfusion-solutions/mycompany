@@ -9,6 +9,8 @@ CLASS Package 'Package';
 id '{ID}' = DATA STRING[100] (Package) CHARWIDTH 15;
 reference 'Reference' = DATA STRING[100] (Package) CHARWIDTH 15;
 
+description 'Description' (Package p) = CONCAT '/', id(p), reference(p);
+
 // lines
 CLASS PackageLine 'Package line';
 
@@ -46,7 +48,7 @@ FORM package 'Package'
 ;
 
 DESIGN package {
-    caption = badged('Package', CONCAT ' ', id(p), '(' + reference(p) + ')');
+    caption = badged('Package', description(p));
 }
 
 FORM packages 'Packages'
