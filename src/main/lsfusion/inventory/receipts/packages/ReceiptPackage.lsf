@@ -8,6 +8,8 @@ in 'Incl.' = DATA BOOLEAN (Receipt, Package);
 
 countPackages 'Packages' (Receipt r) = GROUP SUM 1 IF in(r, Package p);
 
+packageReference (Receipt r, STRING[100] reference) = GROUP MIN Package p IF in(r, p) AND reference(p) = reference;
+
 addPackage 'Add to' (Receipt r) {
     DIALOG packages OBJECTS p INPUT DO in(r, p) <- TRUE;
 }
