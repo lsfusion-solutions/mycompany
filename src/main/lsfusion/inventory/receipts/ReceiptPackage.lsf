@@ -6,10 +6,21 @@ NAMESPACE Inventory;
 
 in 'Incl.' = DATA BOOLEAN (Receipt, Package);
 
+countPackages 'Packages' (Receipt r) = GROUP SUM 1 IF in(r, Package p);
+
+addPackage 'Add to' (Receipt r) {
+    DIALOG packages OBJECTS p INPUT DO in(r, p) <- TRUE;
+}
+remove 'Remove' (Receipt r, Package p) {
+    in(r, p) <- NULL;
+} IMAGE 'delete.png';
+
 EXTEND FORM receipt
     OBJECTS pc = Package
     PROPERTIES(pc) READONLY id, reference
-    PROPERTIES(pc) EDIT
+    PROPERTIES(pc) EDIT GRID
+    PROPERTIES(r, pc) remove GRID
+    PROPERTIES(r) addPackage DRAW pc TOOLBAR
     FILTERS in(r, pc)
     
     OBJECTS pcl = PackageLine
@@ -22,7 +33,7 @@ EXTEND FORM receipt
 DESIGN receipt {
     details {
         NEW packages {
-            caption = 'Packages';
+            caption = badged('Packages', countPackages(r));
             horizontal = TRUE;
             MOVE BOX(pc);
             MOVE BOX(pcl) { fill = 3; }
