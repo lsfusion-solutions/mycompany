@@ -1,0 +1,12 @@
+MODULE ReceiptPutAwayLot;
+
+REQUIRE ReceiptPutAway, ReceiptLot;
+
+NAMESPACE Inventory;
+
+quantity = DATA NUMERIC[16,3] (ReceiptPutAway, Lot);
+
+put 'Put away' (ReceiptLine rl, Lot l) = GROUP SUM quantity(ReceiptPutAway p, l) IF receiptLine(p) = rl;
+ledgerDone(ReceiptLine rl, Lot l) += put(rl, l);
+
+quantity(ReceiptPutAwayLedger rl, Lot l) += quantity(line(rl), l);
