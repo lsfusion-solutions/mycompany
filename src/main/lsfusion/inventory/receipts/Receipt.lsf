@@ -64,6 +64,8 @@ CONSTRAINT product(ReceiptLine l) AND NOT canBePurchased(product(l))
             CHECKED BY product[ReceiptLine]
             MESSAGE 'The product is not intended for purchase';
 
+@defineDocSingleLineForItem(receipt, product);
+
 uom (ReceiptLine l) = uom(product(l));
 nameUom 'UoM' (ReceiptLine l) = name(uom(l));
 
@@ -71,7 +73,9 @@ initialDemand 'Initial demand' = DATA NUMERIC[16,3] (ReceiptLine);
 
 CONSTRAINT initialDemand(ReceiptLine l) < 0 OR initialDemand(l) > maxQuantity(type(receipt(l))) AND maxQuantity(type(receipt(l))) 
     MESSAGE 'The planned amount should be between 0 and the maximum allowed';
-    
+
+initialDemand 'Initial demand' (Receipt r) = GROUP SUM initialDemand(ReceiptLine l) IF receipt(l) = r MATERIALIZED;
+
 // Line properties
 imagedNameStatus 'Status' (ReceiptLine l) = imagedNameStatus(receipt(l));
 number 'Number' (ReceiptLine l) = number(receipt(l)) IN id;
