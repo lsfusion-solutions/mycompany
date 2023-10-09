@@ -437,3 +437,15 @@ META defineDocFilter(doc, cls, property, obj, capt)
 END
 
 badgedDoc(STRING caption, STRING number, DATETIME dateTime) = badged(caption, (CONCAT ' ', '№' + number, '(' + dateTime +  ')'));
+
+META defineDocSingleLineForItem(doc, docLine, itemProp)
+    oneLineForItem 'Only one line for one item' = DATA BOOLEAN (###doc##Type);
+    EXTEND FORM doc##Type PROPERTIES(o) oneLineForItem;
+    
+    CONSTRAINT SET([GROUP SUM 1 BY doc(###docLine l), itemProp(l)](###doc d, Item i) > 1) AND oneLineForItem(type(d))
+        MESSAGE 'Only one line for one item';
+END
+
+META defineDocSingleLineForItem(doc, itemProp)
+    @defineDocSingleLineForItem(doc, doc##Line, itemProp);
+END
