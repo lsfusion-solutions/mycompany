@@ -91,7 +91,8 @@ DESIGN location {
 background (Location l) = ABSTRACT CASE COLOR (Location);
 FORM locations 'Locations'
     OBJECTS l = Location BACKGROUND background(l)
-    PROPERTIES(l) READONLY name, id, 
+    PROPERTIES(l) READONLYIF isReadonly() 
+                           name, id, 
                            canonicalNameParent, nameCompany,
                            address, city, state, zip
     PROPERTIES(l) NEWSESSION NEW, EDIT, DELETE
@@ -105,6 +106,8 @@ FORM locations 'Locations'
     
     EVENTS ON CHANGE lt { SEEK locations.l = lt; }
 ;
+
+@extendFormEditable(locations);
 
 DESIGN locations {
     OBJECTS {
