@@ -44,6 +44,7 @@ CONSTRAINT vendor(Receipt r) AND NOT isVendor(r)
                 CHECKED BY vendor[Receipt]
                 MESSAGE 'The partner must be a vendor';
 
+vendorReference 'Vendor reference' = DATA STRING[30] (Receipt);
 note 'Note' = DATA ISTRING (Receipt) CHARWIDTH 20;
 
 // lines
@@ -98,7 +99,7 @@ FORM receipt 'Receipt'
     OBJECTS r = Receipt PANEL
     PROPERTIES(r) nameType, scheduledDateTime, number, 
                   nameVendor, nameLocation,
-                  note
+                  vendorReference, note
 
     OBJECTS l = ReceiptLine
     PROPERTIES(l) index READONLY, nameProduct, nameUom, idBarCodeProduct, idProduct, referenceProduct,
@@ -123,7 +124,8 @@ DESIGN receipt {
                 }
                 NEW headerRight {
                     MOVE PROPERTY(nameVendor(r));
-                    MOVE PROPERTY(nameLocation(r)) { notNull = TRUE; }           
+                    MOVE PROPERTY(nameLocation(r)) { notNull = TRUE; }
+                    MOVE PROPERTY(vendorReference(r));
                 }
             }
             NEW headerBottom {
@@ -167,7 +169,7 @@ FORM receipts 'Receipts'
                            number, scheduledDateTime, nameVendor,
                            nameType, 
                            nameLocation,
-                           note, countLines
+                           vendorReference, note, countLines
     PROPERTIES(r) NEWSESSION NEW, EDIT, DELETE
 ;
 
