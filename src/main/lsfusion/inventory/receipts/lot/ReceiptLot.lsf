@@ -16,12 +16,13 @@ beforeProcessReceiptLineLotBarCode(Receipt r, STRING s) + {
     }
 }
 
-@defineDocDesignLotTab(receipt, done, product, linesTab);
-
-@defineDocLotGenerate(receipt, product, done);
-
 initialDemand 'Initial demand' = DATA NUMERIC[16,3] (ReceiptLine, Lot);
 initialDemandLot 'Lot initial demand' (ReceiptLine rl) = GROUP SUM initialDemand(rl, Lot l);
+
+initialDemandOrDone(ReceiptLine sl, Lot l) = initialDemand(sl, l) OR done(sl, l);
+@defineDocDesignLotTab(receipt, ReceiptLine, done, product, l, linesTab, initialDemandOrDone);
+
+@defineDocLotGenerate(receipt, product, done);
 
 EXTEND FORM receipt 
     PROPERTIES (l, lotL) BEFORE done(l, lotL) initialDemand READONLY

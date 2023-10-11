@@ -158,7 +158,7 @@ META defineDocBarCodeLot (doc, item, quantity)
     @defineDocBarCodeLot (doc, ###doc##Line, item, quantity);
 END
 
-META defineDocDesignLotTab(doc, docLine, quantity, item, line, container)
+META defineDocDesignLotTab(doc, docLine, quantity, item, line, container, filter)
     EXTEND FORM doc
         PROPERTIES(line) AFTER quantity(line) SHOWIF useLot() BACKGROUND RGB(198,230,247) IF useLot(item(line)) 
                       quantity##Lot 
@@ -167,7 +167,7 @@ META defineDocDesignLotTab(doc, docLine, quantity, item, line, container)
         PROPERTIES (lot###line) id READONLY
         PROPERTIES (line, lot###line) quantity READONLYIF NOT useLot(product(lot###line))
         PROPERTIES (lot###line) EDIT
-        FILTERS quantity(line, lot###line)   
+        FILTERS filter(line, lot###line)   
     ;
     
     DESIGN doc {
@@ -184,6 +184,10 @@ META defineDocDesignLotTab(doc, docLine, quantity, item, line, container)
         ACTIVATE TAB doc.BOX(lot###line);
         ACTIVATE PROPERTY doc.quantity(line, lot###line); 
     }    
+END
+
+META defineDocDesignLotTab(doc, docLine, quantity, item, line, container)
+    @defineDocDesignLotTab(doc, docLine, quantity, item, line, container, quantity);
 END
 
 META defineDocDesignLotTab(doc, quantity, item, container)
