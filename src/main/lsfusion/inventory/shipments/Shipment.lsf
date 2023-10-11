@@ -62,6 +62,7 @@ deliveryAddress 'Delivery address' = DATA STRING (Shipment) CHARWIDTH 20;
 WHEN LOCAL (CHANGED(customer(Shipment s)) OR SETCHANGED(department(s))) AND NOT CHANGED(deliveryAddress(s)) DO 
     deliveryAddress(s) <- OVERRIDE addressCsv(department(s)), addressCsvCustomer(s);
 
+customerReference 'Customer reference' = DATA STRING[30] (Shipment) INDEXED;
 note 'Note' = DATA ISTRING (Shipment) CHARWIDTH 20;
 
 // lines
@@ -116,7 +117,7 @@ FORM shipment 'Shipment'
     PROPERTIES(s) nameType, scheduledDateTime, number, 
                   nameCustomer SHOWIF NOT isTransfer(type(s)), nameDepartment SHOWIF countDepartment(customer(s)), 
                   nameLocation, nameToLocation SHOWIF isTransfer(type(s)),
-                  deliveryAddress, note
+                  deliveryAddress, customerReference, note
                   
     OBJECTS l = ShipmentLine
     PROPERTIES(l) index READONLY, nameProduct, nameUom, idBarCodeProduct, idProduct, referenceProduct, 
@@ -138,6 +139,7 @@ DESIGN shipment {
                     MOVE PROPERTY(nameType(s)) { notNull = TRUE; }
                     MOVE PROPERTY(scheduledDateTime(s));
                     MOVE PROPERTY(number(s));
+                    MOVE PROPERTY(customerReference(s));
                 }
                 NEW headerRight {
                     MOVE PROPERTY(nameCustomer(s));
