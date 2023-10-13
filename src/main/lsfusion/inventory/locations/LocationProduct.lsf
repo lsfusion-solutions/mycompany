@@ -1,0 +1,49 @@
+MODULE LocationProduct;
+
+REQUIRE Location, Product;
+
+NAMESPACE Inventory;
+
+location = DATA Location (Location, Product) INDEXED;
+idLocation 'Location code' (Location l, Product p) = id(location(l, p));
+nameLocation 'Location' (Location l, Product p) = name(location(l, p));
+canonicalNameLocation 'Canonical location name' (Location l, Product p) = canonicalName(location(l, p));
+
+CONSTRAINT location(Location l, Product p) AND NOT level(location(l, p), l)
+    CHECKED BY location[Location, Product]
+    MESSAGE 'Incorrect location for the product';
+
+FORM locationProduct 'Location of products'
+    OBJECTS l = Location PANEL
+    PROPERTIES(l) 'Location' = canonicalName SELECTOR
+
+    TREE categories c = Category PARENT parent(c)
+    PROPERTIES READONLY name(c)
+    ORDERS name(c)
+
+    OBJECTS p = Product
+    PROPERTIES(p) READONLY name, id, nameCategory, nameUom, reference
+    PROPERTIES(l, p) idLocation, nameLocation, canonicalNameLocation
+    ORDERS name(p)
+    FILTERS level(category(p), c)
+    FILTERGROUP active
+        FILTER '{Active}' active(p) 'F8' DEFAULT
+        FILTER 'Archived' archived(p) 'F7'
+;
+
+DESIGN locationProduct {
+    OBJECTS {
+        NEW pane {
+            fill = 1;
+            horizontal = TRUE;
+            MOVE BOX(TREE categories);
+            MOVE BOX(p) { fill = 2; }
+        }
+    }
+}
+
+NAVIGATOR {
+    settings {
+        NEW locationProduct;
+    }
+}
