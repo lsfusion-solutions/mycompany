@@ -1,6 +1,6 @@
 MODULE ReceiptPutAway;
 
-REQUIRE ReceiptDone, ReceiptInv, Input;
+REQUIRE ReceiptDone, ReceiptInv, LocationProduct, Input;
 
 NAMESPACE Inventory;
 
@@ -77,7 +77,7 @@ DESIGN putAwayLoc {
 }
 
 newPutAway 'Put away (+)' (ReceiptLine ln) {
-    DIALOG putAwayLoc OBJECTS l INPUT, loc = location(receipt(ln)) DO {
+    DIALOG putAwayLoc OBJECTS l = location(location(receipt(ln)), product(ln)) INPUT, loc = location(receipt(ln)) DO {
         DIALOG dialogQuantity OBJECTS q = done(ln) (-) put(ln) INPUT DO {
             IF q > 0 THEN {
                 NEW p = ReceiptPutAway {
