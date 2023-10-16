@@ -15,6 +15,8 @@ WHEN SET(done(ManufacturingOrder o)) AND NOT CHANGED(executionDateTime(o)) DO ex
 
 productsLocation 'Products location' = DATA Location (ManufacturingOrder);
 nameProductsLocation 'Products location' (ManufacturingOrder m) = name(productsLocation(m));
+CONSTRAINT SETCHANGED(productsLocation(ManufacturingOrder o)) AND internalUse(productsLocation(o)) CHECKED BY productsLocation[ManufacturingOrder]
+    MESSAGE 'The selected location is for internal use';
 
 @defineDocLocationAccess(manufacturingOrder, o, products);
 

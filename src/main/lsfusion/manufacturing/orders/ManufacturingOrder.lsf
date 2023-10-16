@@ -51,6 +51,8 @@ WHEN LOCAL SET(ManufacturingOrder o IS ManufacturingOrder) AND NOT CHANGED(compa
 materialsLocation 'Materials location' = DATA Location (ManufacturingOrder);
 nameMaterialsLocation 'Materials location' (ManufacturingOrder m) = name(materialsLocation(m));
 WHEN LOCAL SETCHANGED(type(ManufacturingOrder mo)) AND NOT materialsLocation(mo) DO materialsLocation(mo) <- materialsLocation(type(mo));
+CONSTRAINT SETCHANGED(materialsLocation(ManufacturingOrder o)) AND internalUse(materialsLocation(o)) CHECKED BY materialsLocation[ManufacturingOrder]
+    MESSAGE 'The selected location is for internal use';
 
 unbuild 'Unbuild' (ManufacturingOrder mo)= unbuild(type(mo)); 
 

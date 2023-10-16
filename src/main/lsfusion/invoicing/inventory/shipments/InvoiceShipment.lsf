@@ -12,6 +12,8 @@ EXTEND FORM invoiceType PROPERTIES nameShipmentType(o);
 // location
 location 'Location' = DATA Location (Invoice);
 nameLocation 'Location' (Invoice i) = name(location(i));
+CONSTRAINT SETCHANGED(location(Invoice o)) AND internalUse(location(o)) CHECKED BY location[Invoice]
+    MESSAGE 'The selected location is for internal use';
 
 EXTEND FORM invoice 
     PROPERTIES(i) nameLocation SHOWIF shipmentType(type(i))
