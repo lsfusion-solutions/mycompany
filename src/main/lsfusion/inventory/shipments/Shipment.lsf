@@ -29,13 +29,17 @@ numberDate 'Description' (Shipment s) = number(s) + ' (' + scheduledDateTime(s) 
 // locations
 location 'Source location' = DATA Location (Shipment) NONULL INDEXED;
 nameLocation 'Source location' (Shipment s) = name(location(s));
-WHEN LOCAL SETCHANGED(type(Shipment s)) AND defaultLocation(type(s)) AND NOT CHANGED(location(s)) DO location(s) <- defaultLocation(type(s));  
+WHEN LOCAL SETCHANGED(type(Shipment s)) AND defaultLocation(type(s)) AND NOT CHANGED(location(s)) DO location(s) <- defaultLocation(type(s));
+CONSTRAINT SETCHANGED(location(Shipment o)) AND internalUse(location(o)) CHECKED BY location[Shipment]
+    MESSAGE 'The selected location is for internal use';
 
 company 'Company' (Shipment s) = company(location(s));
 
 toLocation 'Destination location' = DATA Location (Shipment);
 nameToLocation 'Destination location' (Shipment s) = name(toLocation(s));
-WHEN LOCAL SETCHANGED(type(Shipment s)) AND defaultToLocation(type(s)) AND NOT CHANGED(toLocation(s)) DO toLocation(s) <- defaultToLocation(type(s));  
+WHEN LOCAL SETCHANGED(type(Shipment s)) AND defaultToLocation(type(s)) AND NOT CHANGED(toLocation(s)) DO toLocation(s) <- defaultToLocation(type(s));
+CONSTRAINT SETCHANGED(toLocation(Shipment o)) AND internalUse(location(o)) CHECKED BY toLocation[Shipment]
+    MESSAGE 'The selected location is for internal use';
 
 CONSTRAINT location(Shipment s) = toLocation(s)
     CHECKED BY toLocation[Shipment]

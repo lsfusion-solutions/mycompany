@@ -13,6 +13,8 @@ EXTEND FORM billType PROPERTIES nameReceiptType(o);
 // location
 location 'Location' = DATA Location (Bill);
 nameLocation 'Location' (Bill b) = name(location(b));
+CONSTRAINT SETCHANGED(location(Bill o)) AND internalUse(location(o)) CHECKED BY location[Bill]
+    MESSAGE 'The selected location is for internal use';
 
 EXTEND FORM bill 
     PROPERTIES(b) nameLocation SHOWIF receiptType(type(b))

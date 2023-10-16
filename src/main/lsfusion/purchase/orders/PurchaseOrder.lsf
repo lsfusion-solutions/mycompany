@@ -54,6 +54,8 @@ WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(company(o)) DO company(o) <- de
 // location
 location = DATA Location (Order);
 nameLocation 'Location' (Order o) = name(location(o));
+CONSTRAINT SETCHANGED(location(Order o)) AND internalUse(location(o)) CHECKED BY location[Order]
+    MESSAGE 'The selected location is for internal use';
 
 // currency
 currency = DATA Currency (Order);

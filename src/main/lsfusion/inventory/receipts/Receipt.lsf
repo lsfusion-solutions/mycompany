@@ -31,6 +31,8 @@ numberDate 'Description' (Receipt r) = number(r) + ' (' + scheduledDateTime(r) +
 location 'Location' = DATA Location (Receipt) NONULL INDEXED;
 nameLocation 'Location' (Receipt r) = name(location(r));
 WHEN LOCAL SETCHANGED(type(Receipt r)) AND defaultLocation(type(r)) AND NOT CHANGED(location(r)) DO location(r) <- defaultLocation(type(r));
+CONSTRAINT SETCHANGED(location(Receipt o)) AND internalUse(location(o)) CHECKED BY location[Receipt]
+    MESSAGE 'The selected location is for internal use';
 
 company 'Company' (Receipt r) = company(location(r));
 

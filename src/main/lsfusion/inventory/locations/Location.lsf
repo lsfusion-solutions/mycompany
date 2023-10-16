@@ -10,6 +10,8 @@ CLASS Location 'Location';
 
 name '{Name}' = DATA ISTRING[30] (Location) IN id NONULL CHARWIDTH 15;
 
+internalUse 'For internal use' = DATA BOOLEAN (Location);
+
 // hierarchy
 parent 'Parent' = DATA Location (Location);
 idParent 'Parent ID' (Location l) = id(parent(l));
@@ -53,7 +55,7 @@ addressLines 'Address' (Location l) = CONCAT '\n', hierarchyAddress(l), hierarch
   
 FORM location 'Location'
     OBJECTS l = Location PANEL
-    PROPERTIES(l) name, id, 
+    PROPERTIES(l) name, id, internalUse,
                   canonicalNameParent, nameCompany,
                   address, city, state, zip
      
@@ -67,6 +69,7 @@ DESIGN location {
                 horizontal = TRUE;
                 MOVE PROPERTY(name(l));
                 MOVE PROPERTY(id(l));
+                MOVE PROPERTY(internalUse(l));
             }
             MOVE PROPERTY(canonicalNameParent(l));
             MOVE PROPERTY(nameCompany(l));
@@ -92,7 +95,7 @@ background (Location l) = ABSTRACT CASE COLOR (Location);
 FORM locations 'Locations'
     OBJECTS l = Location BACKGROUND background(l)
     PROPERTIES(l) READONLYIF isReadonly() 
-                           name, id, 
+                           name, id, internalUse,
                            canonicalNameParent, nameCompany,
                            address, city, state, zip
     PROPERTIES(l) NEWSESSION NEW, EDIT, DELETE

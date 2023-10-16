@@ -63,6 +63,8 @@ WHEN LOCAL (CHANGED(customer(Order o)) OR CHANGED(department(o))) AND NOT CHANGE
 // location
 location = DATA Location (Order) PREREAD;
 nameLocation 'Location' (Order o) = name(location(o));
+CONSTRAINT SETCHANGED(location(Order o)) AND internalUse(location(o)) CHECKED BY location[Order]
+    MESSAGE 'The selected location is for internal use';
 
 // currency
 currency = DATA Currency (Order);
