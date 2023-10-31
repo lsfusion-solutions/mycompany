@@ -1,0 +1,46 @@
+MODULE ProjectShift;
+
+REQUIRE Project, Shift;
+
+NAMESPACE ProjectManagement;
+
+project = DATA Project (Shift);
+nameProject 'Project' (Shift e) = name(project(e));
+
+countActiveShift '{Shifts}' (Project p) = GROUP SUM 1 IF project(Shift t) = p;
+
+EXTEND FORM shift
+    PROPERTIES(s) nameProject
+;
+
+DESIGN shift {
+    header {
+        MOVE PROPERTY(nameProject(s));
+    }
+}
+
+EXTEND FORM shifts
+    PROPERTIES(s) READONLY nameProject AFTER nameAssignedTo(s)
+;
+
+EXTEND FORM project
+    OBJECTS s = Shift
+    PROPERTIES(s) READONLY date, interval, nameAssignedTo, note
+    PROPERTIES(s) EDIT
+    FILTERS project(s) = p
+;
+
+DESIGN project {
+    details {
+        NEW shifts {
+            caption = badged('{Shifts}', countActiveShift(p));
+            MOVE BOX(s) { caption = ''; }
+        }
+    }
+}
+
+EXTEND FORM projects
+    PROPERTIES(p) READONLY countActiveShift
+;
+
+@defineDocFilter(shift, Project, project, s, 'Project');

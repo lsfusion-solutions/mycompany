@@ -1,0 +1,102 @@
+MODULE Shift;
+
+REQUIRE Employee, ProjectManagementSettings, 
+        Doc, DateUtils, FileUtils;
+
+PRIORITY MasterData;
+
+NAMESPACE ProjectManagement;
+
+CLASS Shift 'Shift';
+
+date 'Date' = DATA DATE (Shift) IN id;
+
+dayDOW (Shift s) = extractDay(date(s)) + ' ' + extractDOWName(date(s)); 
+
+interval 'Time' = DATA INTERVAL[TIME] (Shift);
+intervalS (Shift s) = toChar(from(interval(s)), 'HH24:MI') + '-' + toChar(to(interval(s)), 'HH24:MI'); 
+
+assignedTo = DATA Employee (Shift);
+nameAssignedTo 'Assigned to' (Shift s) = name(assignedTo(s)) IN id;
+
+note 'Note' = DATA ISTRING (Shift) CHARWIDTH 30;
+
+description 'Description' = DATA RICHTEXT (Shift);
+
+FORM shift 'Shift'
+    OBJECTS s = Shift PANEL
+    PROPERTIES(s) date, interval, nameAssignedTo, note, 
+                  description
+    
+    EDIT Shift OBJECT s
+;
+
+DESIGN shift {
+    OBJECTS {
+        NEW header {
+            NEW time {
+                horizontal = TRUE;
+                MOVE PROPERTY(date(s));
+                MOVE PROPERTY(interval(s));
+            }
+            MOVE PROPERTY(nameAssignedTo(s)) { alignment = STRETCH; }
+            MOVE PROPERTY(note(s)) { alignment = STRETCH; }
+        }
+        NEW details {
+            fill = 5;
+            tabbed = TRUE;
+            NEW description {
+                caption = 'Description';
+                MOVE PROPERTY(description(s)) { caption = ''; fill = 1; }
+            }
+        }
+    }
+}
+
+FORM shifts 'Shifts'
+    OBJECTS dates = INTERVAL[DATE] PANEL
+    PROPERTIES interval = VALUE(dates)
+    EVENTS ON INIT {
+        SEEK shifts.dates = interval(currentDate(), sum(currentDate(), 6));
+    }
+
+    OBJECTS s = Shift
+    PROPERTIES(s) READONLY date, interval, nameAssignedTo, note
+    PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
+
+    FILTERS date(s) >= from(dates),
+            date(s) <= to(dates)
+;
+
+@defineDocObjectsForm(shifts, s, 'Shifts');
+
+@defineObjectFiles(shift, s, 'Shift file');
+
+// date interval
+nextWeekShiftSchedule 'Next week' (INTERVAL[DATE] int){
+    SEEK shifts.dates = interval(sum(from(int), 7), sum(to(int), 7));
+}
+
+prevWeekShiftSchedule 'Previous week' (INTERVAL[DATE] int){
+    SEEK shifts.dates = interval(sum(from(int), -7), sum(to(int), -7));
+}
+
+EXTEND FORM shifts
+    PROPERTIES(dates) nextWeekShiftSchedule, prevWeekShiftSchedule 
+;
+
+DESIGN shifts {
+    filters {
+        NEW dates {
+            MOVE PROPERTY(nextWeekShiftSchedule(dates)) { alignment = STRETCH; }
+            MOVE PROPERTY(interval);
+            MOVE PROPERTY(prevWeekShiftSchedule(dates)) { alignment = STRETCH; }
+        }
+    }
+}
+
+NAVIGATOR {
+    operations {
+        NEW shifts;
+    }
+}
