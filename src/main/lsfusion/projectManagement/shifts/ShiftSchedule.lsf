@@ -1,0 +1,94 @@
+MODULE ShiftSchedule;
+
+REQUIRE Shift, ProjectShift, Time;
+
+PRIORITY MasterData;
+
+NAMESPACE ProjectManagement;
+
+CLASS ShiftTemplate 'Shift template';
+
+interval 'Time' = DATA INTERVAL[TIME] (ShiftTemplate); 
+intervalS (ShiftTemplate s) = toChar(from(interval(s)), 'HH24:MI') + '-' + toChar(to(interval(s)), 'HH24:MI');
+
+EXTEND FORM options
+    OBJECTS s = ShiftTemplate
+    PROPERTIES(s) interval, NEW, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(s) { caption = 'Shift templates'; }
+    }
+}
+
+shiftTemplates () = JSON FROM id = ShiftTemplate e, intervalS(e) WHERE e IS ShiftTemplate;
+
+createShift() {
+    INPUT f = JSON DO {
+        IMPORT JSON FROM f FIELDS() LONG templateId, STRING date, LONG employeeId DO {
+            NEW ss = Shift {
+                FOR LONG(Employee e AS Employee) = employeeId DO assignedTo(ss) <- e;
+                FOR LONG(ShiftTemplate t AS ShiftTemplate) = templateId DO {
+                    interval(ss) <- interval(t);
+                }
+                date(ss) <- toDateFormat(date, 'YYYY-MM-DD');
+            }
+        }
+    }
+}
+
+employees () = JSON FROM id = Employee e, name(e) WHERE e IS Employee;
+
+EXTEND FORM shifts
+    OBJECTS ss = Shift CUSTOM 'shiftSchedule' 
+                            OPTIONS JSON FROM from(dates), to(dates), employees(), shiftTemplates()
+    PROPERTIES(ss) date, 
+                  intervalS,
+                  assignedTo ON CHANGE {
+                      INPUT l = LONG DO
+                        FOR LONG(Employee e AS Employee) = l DO 
+                            assignedTo(ss) <- e;
+                        ELSE 
+                            assignedTo(ss) <- NULL;
+                  }
+   
+    ORDERS date(ss), assignedTo(ss)
+    FILTERS date(ss) >= from(dates),
+            date(ss) <= to(dates)
+
+    FILTERS project(ss) = shiftProject() OR NOT shiftProject()
+
+    PROPERTIES() createShift
+    
+    PROPERTIES(ss) PANEL pinterval = interval, pnameAssignedTo = nameAssignedTo, pnameProject = nameProject, pnote = note, 
+                         edit = EDIT, delete = DELETE
+;
+
+DESIGN shifts {
+    tabbedPane {
+        NEW schedule FIRST {
+            caption = 'Schedule';
+            MOVE GRID(ss) {
+                MOVE PROPERTY(pinterval) { alignment = STRETCH; }
+                MOVE PROPERTY(pnameAssignedTo) { alignment = STRETCH; }
+                MOVE PROPERTY(pnameProject) { alignment = STRETCH; }
+                MOVE PROPERTY(pnote) { alignment = STRETCH; }
+                NEW panelActions {
+                    horizontal = TRUE;
+                    MOVE PROPERTY(edit) { fill = 1; }
+                    MOVE PROPERTY(delete) { fill = 1; }
+                    alignment = STRETCH;
+                }
+            }
+            REMOVE PROPERTY(createShift());
+            REMOVE BOX(ss);
+        }
+    }
+}
+
+// change interval
+onWebClientLoad() + {
+    INTERNAL CLIENT 'shiftschedule.js';
+    INTERNAL CLIENT 'shiftschedule.css';
+}
