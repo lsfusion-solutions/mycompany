@@ -123,7 +123,7 @@ function shiftSchedule() {
                             shiftElement.classList.add("btn-info");
                             shiftElement.innerHTML = shift.intervalS;
                             shiftElement.addEventListener("click", function() {
-                                controller.changeObject(shift, false, shiftElement);
+                                controller.changeObject(shift, true, shiftElement);
                             });
 
                             // drag/drop
