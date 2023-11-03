@@ -63,9 +63,9 @@ prevOnHandB 'On hand' (Location ll, Product p, DATETIME dt) = PREV(onHandB(ll, p
 
 onHandRec 'On hand (including nesting)' (Location l, Product p) = 
     GROUP SUM onHand(Location child, p) IF level(child, l) MATERIALIZED;
+prevOnHandRec 'On hand (including nesting)' (Location l, Product p) = PREV(onHandRec(l, p));
 
-prevOnHandRec 'On hand (including nesting)' (Location l, Product p) = PREV(onHandRec(l, p)); 
-    
+locations 'Locations' (Location l, Product p) = GROUP CONCAT name(Location child) IF onHand(child, p) AND level(child, l), ', ' ORDER child;
 
 // dates
 dateReceived 'Last receipt date' (Location l, Product p) = 

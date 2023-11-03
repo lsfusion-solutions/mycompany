@@ -34,6 +34,11 @@ outQuantityB 'Quantity (sent)' (Location ll, Lot l, DATETIME dt) = outQuantity(l
 onHand 'On hand' (Location ll, Lot l) = inQuantity(ll, l) (-) outQuantity(ll, l) MATERIALIZED;
 prevOnHand (Location ll, Lot l) = PREV(onHand(ll, l));
 
+minLocationOnHand (Lot l) = GROUP MIN Location ll IF onHand(ll, l) > 0;
+prevMinLocationOnHand (Lot l) = PREV(minLocationOnHand(l));
+
+locations 'Locations' (Lot l) = GROUP CONCAT name(Location ll) IF onHand(ll, l) > 0, ', ' ORDER ll;
+
 onHandLot 'On hand (lots)' (Location ll, Product p) = GROUP SUM onHand(ll, Lot l) IF product(l) = p;
 
 onHand 'On hand' (Location ll, Lot l, DATETIME dt) = 
