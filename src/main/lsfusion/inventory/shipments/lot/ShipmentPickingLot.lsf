@@ -1,0 +1,12 @@
+MODULE ShipmentPickingLot;
+
+REQUIRE ShipmentPicking, ShipmentLot;
+
+NAMESPACE Inventory;
+
+quantity = DATA NUMERIC[16,3] (ShipmentLine, Location, Lot);
+
+picked 'Picked' (ShipmentLine sl, Lot l) = GROUP SUM quantity(sl, Location ll, l);
+ledgerDone(ShipmentLine rl, Lot l) += picked(rl, l);
+
+quantity(ShipmentPickingInv sl, Lot l) += quantity(line(sl), location(sl), l);

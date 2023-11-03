@@ -101,21 +101,21 @@ reserved(ShipmentPickingRes r) += reserved(l(r),loc(r));
 // invledger
 CLASS ShipmentPickingInv 'Shipment' : InvLedger;
 
-invLedger = AGGR ShipmentPickingInv WHERE done(ShipmentLine l, Location loc);
+invLedger = AGGR ShipmentPickingInv WHERE done(ShipmentLine line, Location location);
 
-type(ShipmentPickingInv p) += nameType(shipment(l(p)));
+type(ShipmentPickingInv p) += nameType(shipment(line(p)));
 
-active(ShipmentPickingInv p) += active(shipment(l(p)));
+active(ShipmentPickingInv p) += active(shipment(line(p)));
 
-dateTime(ShipmentPickingInv p) += executionDateTime(shipment(l(p)));
-number(ShipmentPickingInv p) += number(shipment(l(p)));
+dateTime(ShipmentPickingInv p) += executionDateTime(shipment(line(p)));
+number(ShipmentPickingInv p) += number(shipment(line(p)));
 
-fromLocation(ShipmentPickingInv p) += loc(p);
-toLocation(ShipmentPickingInv p) += toLocation(shipment(l(p)));
+fromLocation(ShipmentPickingInv p) += location(p);
+toLocation(ShipmentPickingInv p) += toLocation(shipment(line(p)));
 
-partner(ShipmentPickingInv p) += customer(shipment(l(p)));
+partner(ShipmentPickingInv p) += customer(shipment(line(p)));
 
-product(ShipmentPickingInv p) += product(l(p));
-quantity(ShipmentPickingInv p) += done(l(p), loc(p));
+product(ShipmentPickingInv p) += product(line(p));
+quantity(ShipmentPickingInv p) += done(line(p), location(p));
 
-edit (ShipmentPickingInv p) + { edit(shipment(l(p))); } 
+edit (ShipmentPickingInv p) + { edit(shipment(line(p))); } 

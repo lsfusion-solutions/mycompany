@@ -16,4 +16,5 @@ EXTEND FORM shipment
     PROPERTIES (l, lotL) BEFORE done(l, lotL) onHandLast READONLY;
 
 //ledger
-quantity(ShipmentInvLedger sl, Lot l) += done(line(sl), l);
+ledgerDone = ABSTRACT NUMERIC[16,3] (ShipmentLine, Lot);
+quantity(ShipmentInvLedger sl, Lot l) += done(line(sl), l) (-) ledgerDone(line(sl), l);
