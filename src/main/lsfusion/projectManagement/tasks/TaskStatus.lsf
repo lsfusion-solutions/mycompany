@@ -1,0 +1,45 @@
+MODULE TaskStatus;
+
+REQUIRE ProjectManagementSettings;
+
+NAMESPACE ProjectManagement;
+
+CLASS TaskStatus 'Task status';
+name '{Name}' = DATA ISTRING[50] (TaskStatus) NONULL CHARWIDTH 15;
+
+id '{ID}' = DATA STRING[20] (TaskStatus);
+taskStatus = GROUP AGGR TaskStatus t BY id(t);
+
+FORM taskStatus 'Task status'
+    OBJECTS o = TaskStatus PANEL
+    PROPERTIES(o) name, id
+
+    EDIT TaskStatus OBJECT o;
+;
+
+DESIGN taskStatus {
+    OBJECTS {
+        NEW tabbedPane {
+            fill = 1;
+            tabbed = TRUE;
+        }
+    }
+}
+
+FORM taskStatuses 'Task status'
+    OBJECTS o = TaskStatus
+    PROPERTIES(o) READONLY name, id
+    LIST TaskStatus OBJECT o;
+;
+
+EXTEND FORM options
+    OBJECTS ts = TaskStatus
+    PROPERTIES(ts) READONLY name, id
+    PROPERTIES(ts) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(ts);
+    }
+}
