@@ -1,6 +1,6 @@
 MODULE Task;
 
-REQUIRE ProjectManagementSettings, Employee;
+REQUIRE ProjectManagementSettings, Employee, TaskStatus, Doc;
 
 PRIORITY MasterData;
 
@@ -21,12 +21,15 @@ deadline 'Deadline' = DATA DATE (Task);
 
 description 'Description' = DATA RICHTEXT (Task) CHARWIDTH 20;
 
+status 'Status' = DATA TaskStatus (Task);
+nameStatus 'Status' (Task t) = name(status(t));
+
 archived 'Archived' = DATA BOOLEAN (Task) CHARWIDTH 10;
 active '{Active}' (Task i) = NOT archived(i) CHARWIDTH 10;
 
 FORM task 'Task'
     OBJECTS t = Task PANEL
-    PROPERTIES(t) name, nameAuthor, nameAssignedTo, deadline, description, archived
+    PROPERTIES(t) name, nameAuthor, nameAssignedTo, nameStatus, deadline, description, archived
 
     EDIT Task OBJECT t
 ;
@@ -45,6 +48,7 @@ DESIGN task {
                 alignment = STRETCH;
                 MOVE PROPERTY(nameAuthor(t));
                 MOVE PROPERTY(nameAssignedTo(t));
+                MOVE PROPERTY(nameStatus(t));
                 MOVE PROPERTY(deadline(t));
             }
         }
@@ -62,7 +66,7 @@ DESIGN task {
 
 FORM tasks '{Tasks}'
     OBJECTS t = Task
-    PROPERTIES(t) READONLY name, nameAuthor, nameAssignedTo, deadline, archived
+    PROPERTIES(t) READONLY name, nameAuthor, nameAssignedTo, nameStatus, deadline, archived
     PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
 
     FILTERGROUP active
@@ -71,6 +75,8 @@ FORM tasks '{Tasks}'
 
     LIST Task OBJECT t
 ;
+
+@defineDocObjectsForm(tasks, t, 'Tasks');
 
 NAVIGATOR {
     operations {
