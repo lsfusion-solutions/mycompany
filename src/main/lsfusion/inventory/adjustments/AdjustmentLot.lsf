@@ -15,7 +15,8 @@ WHEN LOCAL (SETCHANGED (location(AdjustmentLine al)) OR SETCHANGED(product(al)))
            AND NOT CHANGED(theoreticalQuantity(al)) DO
     fillTheoreticalQuantity(al); 
 
-WHEN LOCAL CHANGED(theoreticalQuantity(AdjustmentLine al, Lot l)) AND NOT CHANGED(realQuantity(al, l)) DO 
+WHEN LOCAL CHANGED(theoreticalQuantity(AdjustmentLine al, Lot l)) AND NOT CHANGED(realQuantity(al, l)) 
+           AND status(adjustment(al)) = AdjustmentStatus.draft DO 
     realQuantity(al, l) <- theoreticalQuantity(al, l);
         
 background (AdjustmentLine al, Lot l) = CASE WHEN theoreticalQuantity(al, l) < realQuantity(al, l) THEN RGB(152,251,152)
