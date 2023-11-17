@@ -19,6 +19,11 @@ firstProduct (Location lp, Location l) = GROUP LAST Product p ORDER DESC p WHERE
 
 defaultProduct (Location lp, Location l) = firstProduct(lp, l) IF countProducts(lp, l) = 1;
 
+countProducts 'Number of products' (Location l) = GROUP SUM 1 BY location(Location lp, Product p);
+firstProduct (Location l) = GROUP LAST Product p ORDER DESC p WHERE location(Location lp, p) = l;
+
+defaultProduct (Location l) = firstProduct(l) IF countProducts(l) = 1;
+
 FORM locationProduct 'Location of products'
     OBJECTS l = Location PANEL
     PROPERTIES(l) 'Location' = canonicalName SELECTOR
