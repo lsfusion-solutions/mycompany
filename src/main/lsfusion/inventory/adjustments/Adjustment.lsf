@@ -35,13 +35,20 @@ CLASS AdjustmentType 'Adjustment type' {
     category 'By category',
     manual 'Manually'
 }
-name '{First_name}' (AdjustmentType o) = ISTRING[100](staticCaption(o)) IF o IS AdjustmentType CHARWIDTH 15;
+name '{Name}' (AdjustmentType o) = ISTRING[100](staticCaption(o)) IF o IS AdjustmentType CHARWIDTH 15;
 
-FORM type 'Adjustment type'
+FORM adjustmentType 'Adjustment type'
     OBJECTS t = AdjustmentType PANEL
-    PROPERTIES(t) 'Adjustment type' = name
+    PROPERTIES(t) name
     
     EDIT AdjustmentType OBJECT t  
+;
+
+FORM adjustmentTypes 'Adjustment types'
+    OBJECTS t = AdjustmentType
+    PROPERTIES(t) READONLY name
+
+    LIST AdjustmentType OBJECT t
 ;
 
 type 'Type' =  DATA AdjustmentType (Adjustment) NONULL;
@@ -155,7 +162,7 @@ DESIGN adjustment {
 
 @defineDocHistory(adjustment, a, product, theoreticalQuantity);
 
-FORM adjustments 'Adjustment'
+FORM adjustments 'Adjustments'
     OBJECTS a = Adjustment
     PROPERTIES(a) READONLY number, dateTime, nameType, nameLocation, nameCategory, note
     PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE 
