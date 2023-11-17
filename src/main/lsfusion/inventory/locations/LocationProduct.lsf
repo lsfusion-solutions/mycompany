@@ -13,6 +13,12 @@ CONSTRAINT location(Location l, Product p) AND NOT level(location(l, p), l)
     CHECKED BY location[Location, Product]
     MESSAGE 'Incorrect location for the product';
 
+// default type
+countProducts 'Number of products' (Location l) = GROUP SUM 1 BY location(Location lp, Product p) MATERIALIZED;
+firstProduct (Location l) = GROUP LAST Product p ORDER DESC p WHERE location(Location lp, p) = l;
+
+defaultProduct (Location l) = firstProduct(l) IF countProducts(l) = 1;
+
 FORM locationProduct 'Location of products'
     OBJECTS l = Location PANEL
     PROPERTIES(l) 'Location' = canonicalName SELECTOR
