@@ -1,0 +1,59 @@
+MODULE PurchasePricelistImportGenerate;
+
+REQUIRE PurchasePricelist;
+
+NAMESPACE Purchase;
+
+FORM generateScriptParams 'Parameters'
+    OBJECTS columns = (id 'Columns' = STRING[2], barcode = STRING[2], name = STRING[2], uom = STRING[2], price = STRING[2]) PANEL
+
+    PROPERTIES '{ID}' = VALUE(id), 'Barcode' = VALUE(barcode), '{Name}' = VALUE(name), 'UoM' = VALUE(uom), 'Price' = VALUE(price)
+
+    OBJECTS row 'Rows' = INTEGER PANEL NULL
+    PROPERTIES 'Start from' = VALUE(row)
+
+    OBJECTS reference 'Items' = BOOLEAN PANEL NULL
+    PROPERTIES 'Use reference as id' = VALUE(reference)
+;
+
+generateScript 'Generate' (PricelistImportType t) {
+    DIALOG generateScriptParams OBJECTS id = 'A' INPUT, barcode = 'B' INPUT, name = 'C' INPUT, uom = 'D' INPUT, price = 'E' INPUT,
+        row = 0 INPUT, reference INPUT DO {
+        script(t) <-
+        'INPUT f = EXCELFILE DO \{
+    IMPORT XLS ' + (OVERRIDE 'WHERE \'@row>=' + row + '\' ', '') + 'FROM f FIELDS 
+    STRING[50] id = ' + id + ',
+    STRING[50] barcode = ' + barcode + ', 
+    ISTRING[200] name = ' + name + ',  
+    STRING[50] uom = ' + uom + ', 
+    NUMERIC[10,2] price = ' + price + ' DO
+        NEW l = Purchase.PricelistLine \{
+            pricelist(l) <- PRICE_LIST;
+            IF NOT ' + (IF reference THEN 'itemReference(id)' ELSE 'item(id)') + ' THEN NEW i = Product \{ 
+                ' + (IF reference THEN 'reference(i) <- id; ' ELSE 'id(i) <- id;') + '
+                dataName(i) <- name;
+                category(i) <- rootCategory();
+                NEW b = BarCode \{
+                    item(b) <- i;
+                    id(b) <- barcode;
+                \}
+                uom(i) <- uomName(uom);
+            \}
+            item(l) <- ' + (IF reference THEN 'itemReference(id)' ELSE 'item(id)') + ';
+            vendorName(l) <- name;
+            vendorReference(l) <- id;
+            price(l) <- price;
+        \}
+\}';
+    }
+}
+
+EXTEND FORM pricelistImportType
+    PROPERTIES(o) generateScript
+;
+
+DESIGN pricelistImportType {
+    pricelistImportScript {
+        MOVE PROPERTY(generateScript(o)) FIRST;
+    }
+}
