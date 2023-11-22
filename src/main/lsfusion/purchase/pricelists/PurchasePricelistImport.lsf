@@ -1,0 +1,102 @@
+MODULE PurchasePricelistImport;
+
+REQUIRE PurchasePricelist;
+
+NAMESPACE Purchase; 
+
+CLASS PricelistImportType 'Pricelist import type';
+
+name '{Name}' = DATA ISTRING[100] (PricelistImportType) CHARWIDTH 15 IN id;
+
+script 'Script' = DATA TEXT (PricelistImportType);
+json (PricelistImportType it) = JSON FROM text = (OVERRIDE script(it), ''), type = 'action';
+changeScript(PricelistImportType it) {
+    INPUT s = TEXT DO {
+        stringToFile(s);
+        LOCAL text = TEXT();
+        IMPORT JSON FROM resultFile() TO() text;
+        script(it) <- text();
+    }
+}
+
+FORM pricelistImportType 'Pricelist import type'
+    OBJECTS o = PricelistImportType PANEL
+    PROPERTIES(o) name, json PANEL CUSTOM 'interpreter' ON CHANGE changeScript(o)
+    
+    EDIT PricelistImportType OBJECT o
+;
+
+DESIGN pricelistImportType {
+    OBJECTS {
+        NEW tabbedPane {
+            fill = 1;
+            tabbed = TRUE;
+            NEW pricelistImportScript {
+                caption = 'Script';
+                MOVE PROPERTY(json(o)) { caption = ''; fill = 1;}
+            }
+        }
+    }
+}
+
+FORM pricelistImportTypes 'Pricelist import types'
+    OBJECTS o = PricelistImportType
+    PROPERTIES(o) READONLY name
+
+    LIST PricelistImportType OBJECT o
+;
+
+EXTEND FORM options
+    OBJECTS pit = PricelistImportType
+    PROPERTIES(pit) READONLY name
+    PROPERTIES(pit) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(pit);
+    }
+}
+
+// partner import type
+
+pricelistImportType = DATA PricelistImportType (Partner) INDEXED;
+namePricelistImportType 'Pricelist import type' (Partner p) = name(pricelistImportType(p)); 
+
+vendors 'Vendors' (PricelistImportType t) = GROUP CONCAT name(Partner p) IF pricelistImportType(p) = t, ', ' ORDER name(p), p CHARWIDTH 30;
+in 'Incl.' (Partner p, PricelistImportType it) = pricelistImportType(p) = it;
+
+EXTEND FORM pricelistImportType
+    OBJECTS p = Partner
+    PROPERTIES in(p, o)
+    PROPERTIES(p) READONLY id, name
+    FILTERS isVendor(p)
+;
+
+DESIGN pricelistImportType {
+    tabbedPane {
+        MOVE BOX(p) { caption = 'Vendors'; }
+    }
+}
+
+EXTEND FORM options
+    PROPERTIES(pit) READONLY vendors
+;
+
+// import into pricelist
+
+importScript (Pricelist p) = script(pricelistImportType(vendor(p)));
+
+import 'Import' (Pricelist p) {
+    EVAL ACTION replace(importScript(p), 'PRICE_LIST', '$1') PARAMS p; 
+}
+
+EXTEND FORM pricelist
+    PROPERTIES(p) import SHOWIF importScript(p)
+;
+
+DESIGN pricelist {
+    secondaryActions {
+        MOVE PROPERTY(import(p));
+    }
+}
