@@ -15,6 +15,8 @@ parent = DATA Category (Category) INDEXED;
 idParent 'Parent ID' (Category c) = id(parent(c));
 nameParent 'Parent' (Category c) = name(parent(c));
 
+rootCategory() = GROUP MIN Category c AS Category IF NOT parent(c);
+
 CONSTRAINT DROPPED(Category c IS Category) AND PREV(parent(Category child) = c)
         MESSAGE 'It is forbidden to delete categories that are referenced by other categories';
 
