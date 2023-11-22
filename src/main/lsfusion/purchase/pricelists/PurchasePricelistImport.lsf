@@ -9,7 +9,9 @@ CLASS PricelistImportType 'Pricelist import type';
 name '{Name}' = DATA ISTRING[100] (PricelistImportType) CHARWIDTH 15 IN id;
 
 script 'Script' = DATA TEXT (PricelistImportType);
-json (PricelistImportType it) = JSON FROM text = (OVERRIDE script(it), ''), type = 'action';
+json '{eval.script.text.script}' (PricelistImportType it) = [FORMULA TEXT 'json_build_object(\'text\',$1,\'type\',$2)']
+    ((OVERRIDE script(it), ''), 'action');
+
 changeScript(PricelistImportType it) {
     INPUT s = TEXT DO {
         stringToFile(s);
