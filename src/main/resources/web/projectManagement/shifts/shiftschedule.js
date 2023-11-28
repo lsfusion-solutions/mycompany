@@ -4,28 +4,28 @@ let dragTemplate = null;
 function shiftSchedule() {
     return {
         render: function (element, controller) {
-            let dashboard = document.createElement("div")
-            dashboard.classList.add("shift-schedule");
+            let schedule = document.createElement("div")
+            schedule.classList.add("shift-schedule");
 
-            element.appendChild(dashboard);
+            element.appendChild(schedule);
 
             let templates = document.createElement("div")
             templates.classList.add("shift-schedule-templates");
-            dashboard.appendChild(templates);
+            schedule.appendChild(templates);
 
             element.templates = templates;
 
-            let dashboardTable = document.createElement("table")
-            dashboardTable.classList.add("table");
-            dashboardTable.classList.add("shift-schedule-table");
+            let scheduleTable = document.createElement("table")
+            scheduleTable.classList.add("table");
+            scheduleTable.classList.add("shift-schedule-table");
 
-            dashboard.appendChild(dashboardTable);
+            schedule.appendChild(scheduleTable);
 
-            element.dashboardTable = dashboardTable;
+            element.scheduleTable = scheduleTable;
         },
         update: function (element, controller, list, options) {
-            while (element.dashboardTable.lastElementChild) {
-                element.dashboardTable.removeChild(element.dashboardTable.lastElementChild);
+            while (element.scheduleTable.lastElementChild) {
+                element.scheduleTable.removeChild(element.scheduleTable.lastElementChild);
             }
 
             while (element.templates.lastElementChild) {
@@ -76,7 +76,7 @@ function shiftSchedule() {
             let header = document.createElement("thead")
             header.classList.add("shift-schedule-header");
             header.classList.add("table-light");
-            element.dashboardTable.appendChild(header);
+            element.scheduleTable.appendChild(header);
 
             let headerRow = document.createElement("tr");
             header.appendChild(headerRow);
@@ -94,7 +94,7 @@ function shiftSchedule() {
 
             let body = document.createElement("tbody")
             body.classList.add("table-group-divider");
-            element.dashboardTable.appendChild(body);
+            element.scheduleTable.appendChild(body);
 
             for (const employee of employees) {
                 let row = document.createElement("tr");
