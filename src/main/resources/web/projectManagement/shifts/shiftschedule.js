@@ -5,19 +5,19 @@ function shiftSchedule() {
     return {
         render: function (element, controller) {
             let dashboard = document.createElement("div")
-            dashboard.classList.add("shift-dashboard");
+            dashboard.classList.add("shift-schedule");
 
             element.appendChild(dashboard);
 
             let templates = document.createElement("div")
-            templates.classList.add("shift-dashboard-templates");
+            templates.classList.add("shift-schedule-templates");
             dashboard.appendChild(templates);
 
             element.templates = templates;
 
             let dashboardTable = document.createElement("table")
             dashboardTable.classList.add("table");
-            dashboardTable.classList.add("shift-dashboard-table");
+            dashboardTable.classList.add("shift-schedule-table");
 
             dashboard.appendChild(dashboardTable);
 
@@ -54,7 +54,7 @@ function shiftSchedule() {
 
                 for (let template of options.shiftTemplates) {
                     let templateElement = document.createElement("button");
-                    templateElement.classList.add("shift-dashboard-template");
+                    templateElement.classList.add("shift-schedule-template");
                     templateElement.classList.add("btn");
                     templateElement.classList.add("btn-info");
                     templateElement.innerHTML = template.intervalS;
@@ -74,7 +74,7 @@ function shiftSchedule() {
 
             // header
             let header = document.createElement("thead")
-            header.classList.add("shift-dashboard-header");
+            header.classList.add("shift-schedule-header");
             header.classList.add("table-light");
             element.dashboardTable.appendChild(header);
 
@@ -82,12 +82,12 @@ function shiftSchedule() {
             header.appendChild(headerRow);
 
             let employeeHeader = document.createElement("th");
-            employeeHeader.classList.add("shift-dashboard-header-employee");
+            employeeHeader.classList.add("shift-schedule-header-employee");
             headerRow.appendChild(employeeHeader);
 
             for (const date in dates) {
                 let dateHeader = document.createElement("th")
-                dateHeader.classList.add("shift-dashboard-header-cell");
+                dateHeader.classList.add("shift-schedule-header-cell");
                 dateHeader.innerHTML = new Date(date).getDate() + ".<br>" + new Date(date).toLocaleString("en-us", { weekday : "short" });
                 headerRow.appendChild(dateHeader);
             }
@@ -98,27 +98,27 @@ function shiftSchedule() {
 
             for (const employee of employees) {
                 let row = document.createElement("tr");
-                row.classList.add("shift-dashboard-row");
+                row.classList.add("shift-schedule-row");
 
                 let employeeCell = document.createElement("td");
-                employeeCell.classList.add("shift-dashboard-row-employee");
+                employeeCell.classList.add("shift-schedule-row-employee");
                 employeeCell.innerHTML = employee.name;
                 row.appendChild(employeeCell);
 
                 for (const date in dates) {
                     let shiftCell = document.createElement("td");
                     if (new Date(date).getDay() == 0)
-                        shiftCell.classList.add("shift-dashboard-row-sunday");
+                        shiftCell.classList.add("shift-schedule-row-sunday");
                     row.appendChild(shiftCell);
 
                     let shiftCellDiv = document.createElement("div");
-                    shiftCellDiv.classList.add("shift-dashboard-row-cell");
+                    shiftCellDiv.classList.add("shift-schedule-row-cell");
                     shiftCell.appendChild(shiftCellDiv);
 
                     if (dates[date][employee.id])
                         for (const shift of dates[date][employee.id]) {
                             let shiftElement = document.createElement("button");
-                            shiftElement.classList.add("shift-dashboard-cell-shift");
+                            shiftElement.classList.add("shift-schedule-cell-shift");
                             shiftElement.classList.add("btn");
                             shiftElement.classList.add("btn-info");
                             shiftElement.innerHTML = shift.intervalS;
@@ -141,10 +141,10 @@ function shiftSchedule() {
                           e.preventDefault();
                     });
                     shiftCell.addEventListener("dragenter", function(e) {
-                        this.classList.add('shift-dashboard-drag-over');
+                        this.classList.add('shift-schedule-drag-over');
                     });
                     shiftCell.addEventListener("dragleave", function(e) {
-                        this.classList.remove('shift-dashboard-drag-over');
+                        this.classList.remove('shift-schedule-drag-over');
                     });
                     shiftCell.addEventListener("drop", function(e) {
                           e.stopPropagation();
