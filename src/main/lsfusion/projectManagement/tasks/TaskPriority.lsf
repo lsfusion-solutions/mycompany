@@ -1,0 +1,49 @@
+MODULE TaskPriority;
+
+REQUIRE ProjectManagementSettings, Color;
+
+NAMESPACE ProjectManagement;
+
+CLASS TaskPriority 'Task priority';
+name '{Name}' = DATA ISTRING[50] (TaskPriority) NONULL CHARWIDTH 15;
+
+id '{ID}' = DATA STRING[20] (TaskPriority);
+taskPriority = GROUP AGGR TaskPriority t BY id(t);
+
+color 'Colour' = DATA Color (TaskPriority);
+nameColor 'Colour' (TaskPriority p) = name(color(p));
+idColor 'Colour' (TaskPriority p) = id(color(p));
+
+FORM taskPriority 'Task priority'
+    OBJECTS o = TaskPriority PANEL
+    PROPERTIES(o) name, id, nameColor
+
+    EDIT TaskPriority OBJECT o;
+;
+
+DESIGN taskPriority {
+    OBJECTS {
+        NEW tabbedPane {
+            fill = 1;
+            tabbed = TRUE;
+        }
+    }
+}
+
+FORM taskPriorityes 'Task priorities'
+    OBJECTS o = TaskPriority
+    PROPERTIES(o) READONLY name, id, nameColor
+    LIST TaskPriority OBJECT o
+;
+
+EXTEND FORM options
+    OBJECTS tp = TaskPriority
+    PROPERTIES(tp) READONLY name, id, nameColor
+    PROPERTIES(tp) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(tp) { caption = 'Task priorities'; }
+    }
+}
