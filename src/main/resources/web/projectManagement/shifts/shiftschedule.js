@@ -49,10 +49,10 @@ function shiftSchedule() {
                             return r;
                         }, dates);
 
-            if (options && options.shiftTemplates) {
+            if (options && options.templates) {
                 // templates
 
-                for (let template of options.shiftTemplates) {
+                for (let template of options.templates) {
                     let templateElement = document.createElement("button");
                     templateElement.classList.add("shift-schedule-template");
                     templateElement.classList.add("btn");

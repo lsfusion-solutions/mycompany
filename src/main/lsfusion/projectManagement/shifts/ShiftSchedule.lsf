@@ -38,11 +38,11 @@ createShift() {
     }
 }
 
-employees () = JSON FROM id = Employee e, name(e) WHERE e IS Employee;
+shiftEmployees () = JSON FROM id = Employee e, name(e) WHERE e IS Employee;
 
 EXTEND FORM shifts
     OBJECTS ss = Shift CUSTOM 'shiftSchedule' 
-                            OPTIONS JSON FROM from(dates), to(dates), employees(), shiftTemplates()
+                            OPTIONS JSON FROM from(dates), to(dates), employees = shiftEmployees(), templates = shiftTemplates()
     PROPERTIES(ss) date, 
                   intervalS,
                   assignedTo ON CHANGE {
@@ -57,7 +57,7 @@ EXTEND FORM shifts
     FILTERS date(ss) >= from(dates),
             date(ss) <= to(dates)
 
-    FILTERS project(ss) = shiftProject() OR NOT shiftProject()
+    FILTERS [FILTER shifts.s](ss)
 
     PROPERTIES() createShift
     
