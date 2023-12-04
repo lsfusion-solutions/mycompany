@@ -28,10 +28,26 @@ function taskKanban() {
                 let statusDiv = document.createElement("div")
                 statusDiv.classList.add("task-kanban-status");
 
-                let statusHeader = document.createElement("h5");
+                let statusHeader = document.createElement("div");
                 statusHeader.classList.add("task-kanban-status-header");
-                statusHeader.innerHTML = status.name;
                 statusDiv.appendChild(statusHeader);
+
+                let statusName = document.createElement("div");
+                statusName.classList.add("task-kanban-status-name");
+                statusName.classList.add("h5");
+                statusName.innerHTML = status.name;
+                statusHeader.appendChild(statusName);
+
+                let statusNew = document.createElement("button");
+                statusNew.classList.add("task-kanban-status-new");
+                statusNew.classList.add("btn");
+                statusNew.classList.add("btn-light");
+                statusNew.innerHTML = "<i class=\"bi bi-plus\"></i>";
+                statusHeader.appendChild(statusNew);
+
+                statusNew.addEventListener("click", function() {
+                    controller.changeProperty("createTask", null, status.id);
+                });
 
                 let statusBody = document.createElement("div");
                 statusBody.classList.add("task-kanban-status-body");

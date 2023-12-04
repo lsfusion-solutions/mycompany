@@ -9,8 +9,18 @@ NAMESPACE ProjectManagement;
 taskStatuses () = JSON FROM id = TaskStatus s, name(s) WHERE s IS TaskStatus;
 taskEmployees () = JSON FROM id = Employee e, name(e) WHERE e IS Employee;
 
-order = DATA INTEGER (CustomUser, Task);
+order = DATA LONG (CustomUser, Task);
 currentOrder (Task t) =  order(currentUser(), t);
+
+createTask() {
+    INPUT id = LONG DO {
+        NEW tt = Task {
+            FOR LONG(TaskStatus s AS TaskStatus) = id DO 
+                status(tt) <- s;
+            order(currentUser(), tt) <- -LONG(tt);
+        }
+    }
+}
 
 EXTEND FORM tasks
     OBJECTS tt = Task CUSTOM 'taskKanban'
@@ -36,6 +46,8 @@ EXTEND FORM tasks
     FILTERS active(tt)
 
     FILTERS [FILTER tasks.t](tt)
+    
+    PROPERTIES() createTask
 
     PROPERTIES(tt) PANEL pnameProject = nameProject, pname = name, pnamePriority = namePriority, pnameAssignedTo = nameAssignedTo, pdeadline = deadline, pdescription = description,
                          edit = EDIT, delete = DELETE
@@ -52,7 +64,7 @@ DESIGN tasks {
                 MOVE PROPERTY(pnamePriority) { alignment = STRETCH; }
                 MOVE PROPERTY(pnameAssignedTo) { alignment = STRETCH; }
                 MOVE PROPERTY(pdeadline) { alignment = STRETCH; }
-                MOVE PROPERTY(pdescription) { alignment = STRETCH; }
+                MOVE PROPERTY(pdescription) { panelCaptionVertical = TRUE; alignment = STRETCH; }
                 NEW panelActions {
                     horizontal = TRUE;
                     MOVE PROPERTY(edit) { fill = 1; }
