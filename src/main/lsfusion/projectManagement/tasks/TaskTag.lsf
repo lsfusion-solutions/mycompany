@@ -1,0 +1,45 @@
+MODULE TaskTag;
+
+REQUIRE ProjectManagementSettings;
+
+NAMESPACE ProjectManagement;
+
+CLASS TaskTag 'Task tag';
+name '{Name}' = DATA ISTRING[50] (TaskTag) NONULL CHARWIDTH 15;
+
+id '{ID}' = DATA STRING[20] (TaskTag);
+taskTag = GROUP AGGR TaskTag t BY id(t);
+
+FORM taskTag 'Task tag'
+    OBJECTS o = TaskTag PANEL
+    PROPERTIES(o) name, id
+
+    EDIT TaskTag OBJECT o;
+;
+
+DESIGN taskTag {
+    OBJECTS {
+        NEW tabbedPane {
+            fill = 1;
+            tabbed = TRUE;
+        }
+    }
+}
+
+FORM taskTags 'Task tags'
+    OBJECTS o = TaskTag
+    PROPERTIES(o) READONLY name, id
+    LIST TaskTag OBJECT o
+;
+
+EXTEND FORM options
+    OBJECTS tg = TaskTag
+    PROPERTIES(tg) READONLY name, id
+    PROPERTIES(tg) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(tg) { caption = 'Task tags'; }
+    }
+}
