@@ -24,6 +24,8 @@ function taskKanban() {
                 element.kanban.removeChild(element.kanban.lastElementChild);
             }
 
+            if (!options.statuses) return;
+
             for (const status of options.statuses) {
                 let statusDiv = document.createElement("div")
                 statusDiv.classList.add("task-kanban-status");
