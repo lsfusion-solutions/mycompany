@@ -9,6 +9,8 @@ NAMESPACE ProjectManagement;
 taskStatuses () = JSON FROM id = TaskStatus s, name(s) WHERE s IS TaskStatus;
 taskEmployees () = JSON FROM id = Employee e, name(e) WHERE e IS Employee;
 
+jsonTags (Task t) = JSON FROM name(TaskTag tg) WHERE in(t, tg);
+
 order = DATA LONG (CustomUser, Task);
 currentOrder (Task t) =  order(currentUser(), t);
 
@@ -27,6 +29,7 @@ EXTEND FORM tasks
             OPTIONS JSON FROM employees = taskEmployees(), statuses = taskStatuses()
     PROPERTIES(tt) nameProject,
                    name,
+                   tags = jsonTags,
                    nameAuthor,
                    deadline,
                    status ON CHANGE {
@@ -49,7 +52,8 @@ EXTEND FORM tasks
     
     PROPERTIES() createTask
 
-    PROPERTIES(tt) PANEL pnameProject = nameProject, pname = name, pnamePriority = namePriority, pnameAssignedTo = nameAssignedTo, pdeadline = deadline, pdescription = description,
+    PROPERTIES(tt) PANEL pnameProject = nameProject, pname = name, pnamePriority = namePriority, ptags = tags, 
+                         pnameAssignedTo = nameAssignedTo, pdeadline = deadline, pdescription = description,
                          edit = EDIT, delete = DELETE
 ;
 
@@ -62,10 +66,11 @@ DESIGN tasks {
                 MOVE PROPERTY(pnameProject) { alignment = STRETCH; }
                 MOVE PROPERTY(pname) { alignment = STRETCH; }
                 MOVE PROPERTY(pnamePriority) { alignment = STRETCH; }
+                MOVE PROPERTY(ptags) { alignment = STRETCH; }
                 MOVE PROPERTY(pnameAssignedTo) { alignment = STRETCH; }
                 MOVE PROPERTY(pdeadline) { alignment = STRETCH; }
                 MOVE PROPERTY(pdescription) {
-                    size = (300, 150);
+                    size = (300, 120);
                     panelCaptionVertical = TRUE; 
                     alignment = STRETCH; 
                 }

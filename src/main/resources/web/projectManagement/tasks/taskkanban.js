@@ -96,6 +96,22 @@ function taskKanban() {
                         taskName.innerHTML = task.name;
                         taskBody.appendChild(taskName);
 
+                        if (task.tags) {
+                            let taskTags = document.createElement("li");
+                            taskTags.classList.add("task-kanban-card-tags");
+                            taskTags.classList.add("list-group-item");
+                            for (const tag of task.tags) {
+                                let taskTag = document.createElement("span");
+                                taskTag.classList.add("task-kanban-card-tag");
+                                taskTag.classList.add("badge");
+                                taskTag.classList.add("rounded-pill");
+                                taskTag.classList.add("text-bg-secondary");
+                                taskTag.innerHTML = tag.name;
+                                taskTags.appendChild(taskTag);
+                            }
+                            taskContent.appendChild(taskTags);
+                        }
+
                         let taskAssignedTo = document.createElement("li");
                         taskAssignedTo.classList.add("task-kanban-card-assigned-to");
                         taskAssignedTo.classList.add("list-group-item");
