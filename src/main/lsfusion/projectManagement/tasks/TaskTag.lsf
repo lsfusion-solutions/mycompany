@@ -1,6 +1,6 @@
 MODULE TaskTag;
 
-REQUIRE ProjectManagementSettings;
+REQUIRE ProjectManagementSettings, Color;
 
 NAMESPACE ProjectManagement;
 
@@ -10,9 +10,13 @@ name '{Name}' = DATA ISTRING[50] (TaskTag) NONULL CHARWIDTH 15;
 id '{ID}' = DATA STRING[20] (TaskTag);
 taskTag = GROUP AGGR TaskTag t BY id(t);
 
+color 'Color' = DATA Color (TaskTag);
+nameColor 'Color' (TaskTag p) = name(color(p));
+idColor 'Color' (TaskTag p) = id(color(p));
+
 FORM taskTag 'Task tag'
     OBJECTS o = TaskTag PANEL
-    PROPERTIES(o) name, id
+    PROPERTIES(o) name, id, nameColor
 
     EDIT TaskTag OBJECT o;
 ;
@@ -28,13 +32,13 @@ DESIGN taskTag {
 
 FORM taskTags 'Task tags'
     OBJECTS o = TaskTag
-    PROPERTIES(o) READONLY name, id
+    PROPERTIES(o) READONLY name, id, nameColor
     LIST TaskTag OBJECT o
 ;
 
 EXTEND FORM options
     OBJECTS tg = TaskTag
-    PROPERTIES(tg) READONLY name, id
+    PROPERTIES(tg) READONLY name, id, nameColor
     PROPERTIES(tg) NEWSESSION NEW, EDIT, DELETE
 ;
 
