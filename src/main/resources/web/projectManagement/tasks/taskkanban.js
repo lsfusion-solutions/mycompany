@@ -107,7 +107,7 @@ function taskKanban() {
                                 taskTag.classList.add("task-kanban-card-tag");
                                 taskTag.classList.add("badge");
                                 taskTag.classList.add("rounded-pill");
-                                taskTag.classList.add("text-bg-secondary");
+                                taskTag.classList.add("text-bg-" + (tag.idColor ? tag.idColor : "secondary"));
                                 taskTag.innerHTML = tag.name;
                                 taskTags.appendChild(taskTag);
                             }
