@@ -76,6 +76,10 @@ EXTEND FORM products
 consumedBarCode = DATA LOCAL BOOLEAN ();
 barCode 'Barcode' = DATA LOCAL STRING () CHANGEKEY 'F4';
 
+doNotActivateQuantityAfterScanning 'Do not activate quantity after scanning' = DATA BOOLEAN();
+EXTEND FORM options PROPERTIES() doNotActivateQuantityAfterScanning;
+DESIGN options { items { MOVE PROPERTY(doNotActivateQuantityAfterScanning()); } }
+
 META defineBarCodeSearch(doc, docLine, let, line, quantity)
     processBarCode ABSTRACT LIST (###doc, docLine, STRING);
     scanBarCode (###doc d, docLine l) {
@@ -83,7 +87,8 @@ META defineBarCodeSearch(doc, docLine, let, line, quantity)
             IF itemSingleBarCode(id) THEN {
                 set###quantity(d, itemSingleBarCode(id), quantity(d, itemSingleBarCode(id)) (+) 1);
                 SEEK ##doc.line = last##docLine(d, itemSingleBarCode(id));
-                ACTIVATE PROPERTY ##doc.quantity(line); 
+                IF NOT doNotActivateQuantityAfterScanning() THEN
+                    ACTIVATE PROPERTY ##doc.quantity(line); 
             } ELSE {
                 consumedBarCode() <- NULL;
                 processBarCode(d, l, id);
