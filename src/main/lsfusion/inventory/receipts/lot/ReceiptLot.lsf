@@ -16,9 +16,7 @@ beforeProcessReceiptLineLotBarCode(Receipt r, STRING s) + {
     }
 }
 
-initialDemand 'Initial demand' = DATA NUMERIC[16,3] (ReceiptLine, Lot);
-initialDemandLot 'Lot initial demand' (ReceiptLine rl) = GROUP SUM initialDemand(rl, Lot l);
-initialDemandLot 'Lot initial demand' (Receipt r) = GROUP SUM initialDemand(ReceiptLine rl, Lot l) IF receipt(rl) = r;
+@defineDocLot (receipt, product, initialDemand, initialDemand, ' (initial demand)');
 
 initialDemandOrDone(ReceiptLine sl, Lot l) = initialDemand(sl, l) OR done(sl, l);
 @defineDocDesignLotTab(receipt, ReceiptLine, done, product, l, linesTab, initialDemandOrDone);
