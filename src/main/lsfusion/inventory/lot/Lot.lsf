@@ -89,13 +89,15 @@ META defineDocLot (doc, line, item, quantity, status, caption)
     
     quantity##Lot 'Lot quantity'##caption (line rl) = GROUP SUM quantity(rl, Lot l);
     quantity##LotLeft (line rl) = quantity(rl) - OVERRIDE quantity##Lot(rl), 0;
-       
+
+    quantity##Lot 'Lot initial demand' (###doc d) = GROUP SUM quantity(line l, Lot lot) IF doc(l) = d;
+        
     WHEN LOCAL CHANGED(quantity##Lot(line rl)) AND NOT status(doc(rl)) DO {
         quantity(rl) <- quantity##Lot(rl);
     }
     
     CONSTRAINT quantity(line rl, Lot l) AND item(rl) != product(l)
-                    MESSAGE 'The line for the batch must refer to the same product as the batch';
+                    MESSAGE 'Document line product is not equal to lot product';
     CONSTRAINT SET(((OVERRIDE quantity(line rl), 0.0) - quantity##Lot(rl) < 0) AND status(doc(rl))) AND useLot(item(rl))
                     MESSAGE 'Mismatch between quantity and quantity in lots'##caption;                   
 END 
