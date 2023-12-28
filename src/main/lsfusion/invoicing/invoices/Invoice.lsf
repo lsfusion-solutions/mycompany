@@ -93,6 +93,8 @@ CONSTRAINT representative(Invoice o) AND NOT legalEntity(representative(o)) = co
 customerReference '{Customer_reference}' = DATA STRING[30] (Invoice) INDEXED;
 note 'Note' = DATA ISTRING (Invoice) CHARWIDTH 20;
 
+details 'Details' = DATA RICHTEXT (Invoice);
+
 // lines
 CLASS InvoiceLine 'Invoice line';
 
@@ -160,7 +162,8 @@ FORM invoice 'Invoice'
     PROPERTIES(i) nameType, dateTime, number, 
                   nameCustomer, nameDepartment SHOWIF countDepartment(customer(i)), nameCompany,
                   namePaymentTerms, dueDateTime, nameCustomerAccount, nameCompanyAccount,
-                  deliveryAddress, nameRepresentative, customerReference, note
+                  deliveryAddress, nameRepresentative, customerReference, note,
+                  details
         
     OBJECTS l = InvoiceLine
     PROPERTIES(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, referenceItem, 
@@ -227,6 +230,14 @@ DESIGN invoice {
                     MOVE PROPERTY(nameRepresentative(i));
                     MOVE PROPERTY(customerReference(i)); 
                     MOVE PROPERTY(note(i));
+                }
+            }
+            NEW detailsInformation {
+                caption = 'Details';
+                MOVE PROPERTY(details(i)) {
+                    caption = '';
+                    fill = 1;
+                    height = 300;
                 }
             }
         }

@@ -86,6 +86,8 @@ CONSTRAINT representative(Bill o) AND NOT legalEntity(representative(o)) = compa
 vendorReference 'Vendor reference' = DATA STRING[30] (Bill) INDEXED;
 note 'Note' = DATA ISTRING (Bill) CHARWIDTH 20;
 
+details 'Details' = DATA RICHTEXT (Bill);
+
 // lines
 CLASS BillLine 'Bill line';
 
@@ -148,7 +150,8 @@ FORM bill 'Bill'
     PROPERTIES(b) nameType, dateTime, number, 
                   nameVendor, nameCompany,
                   namePaymentTerms, dueDateTime, nameVendorAccount, nameCompanyAccount,
-                  nameRepresentative, vendorReference, note
+                  nameRepresentative, vendorReference, note,
+                  details
         
     OBJECTS l = BillLine
     PROPERTIES(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, referenceItem, 
@@ -210,6 +213,14 @@ DESIGN bill {
                     MOVE PROPERTY(nameRepresentative(b));
                     MOVE PROPERTY(vendorReference(b)); 
                     MOVE PROPERTY(note(b));
+                }
+            }
+            NEW detailsInformation {
+                caption = 'Details';
+                MOVE PROPERTY(details(b)) {
+                    caption = '';
+                    fill = 1;
+                    height = 300;
                 }
             }
         }
