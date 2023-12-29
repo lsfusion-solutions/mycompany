@@ -120,11 +120,11 @@ WHEN LOCAL CHANGED(item(InvoiceLine l)) DO uom(l) <- uom(item(l));
 
 description 'Description' = DATA STRING (InvoiceLine); 
 
-quantity 'Qty' = DATA NUMERIC[16,3] (InvoiceLine) NONULL CHARWIDTH 7;
+quantity 'Qty' = DATA NUMERIC[16,3] (InvoiceLine) CHARWIDTH 7;
 
 weight 'Weight' (InvoiceLine l) = NUMERIC[16,3](quantity(l) * weight(item(l)));
 
-price 'Price' = DATA NUMERIC[10,2] (InvoiceLine) NONULL;
+price 'Price' = DATA NUMERIC[10,2] (InvoiceLine);
 
 defaultPrice = ABSTRACT CASE NUMERIC[10,2] (InvoiceLine);
 WHEN LOCAL SETCHANGED(item(InvoiceLine l)) AND NOT CHANGED(price(l)) DO price(l) <- defaultPrice(l);
@@ -137,6 +137,8 @@ defaultPrice (InvoiceLine l) += WHEN salesPrice(item(l)) THEN salesPrice(item(l)
 taxIncluded (InvoiceLine l) += taxIncluded(type(invoice(l)));
 
 // Line properties
+type (InvoiceLine l) = type(invoice(l));
+nameType 'Type' (InvoiceLine l) = nameType(invoice(l)) IN id;
 imagedNameStatus 'Status' (InvoiceLine l) = imagedNameStatus(invoice(l));
 type (InvoiceLine l) = type(invoice(l));
 number 'Number' (InvoiceLine l) = number(invoice(l)) IN id;
