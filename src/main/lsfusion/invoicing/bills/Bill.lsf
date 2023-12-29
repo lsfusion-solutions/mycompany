@@ -104,6 +104,8 @@ referenceItem 'Reference' (BillLine l) = reference(item(l));
 countProductLines 'Number of lines with goods' (Bill b) = GROUP SUM 1 IF bill(BillLine l) = b AND item(l) IS Product;
 countServiceLine 'Number of lines with services' (Bill b) = GROUP SUM 1 IF b = bill(BillLine bl) AND item(bl) IS Service;
 
+items '{Items}' (Bill b) = GROUP CONCAT nameItem(BillLine l) IF bill(l) = b, ',' ORDER l CHARWIDTH 30;
+
 CONSTRAINT item(BillLine l) AND NOT canBePurchased(item(l))
             CHECKED BY item 
             MESSAGE 'The item is not intended for purchase';
@@ -113,8 +115,8 @@ nameUom 'UoM' (BillLine l) = name(uom(l));
 
 description 'Description' = DATA STRING (BillLine); 
 
-quantity 'Qty' = DATA NUMERIC[16,3] (BillLine) NONULL;
-price 'Price' = DATA NUMERIC[10,2] (BillLine) NONULL;
+quantity 'Qty' = DATA NUMERIC[16,3] (BillLine);
+price 'Price' = DATA NUMERIC[10,2] (BillLine);
 
 defaultPrice = ABSTRACT CASE NUMERIC[10,2] (BillLine);
 WHEN LOCAL SETCHANGED(item(BillLine l)) AND NOT CHANGED(price(l)) DO price(l) <- defaultPrice(l);
@@ -126,6 +128,8 @@ defaultPrice (BillLine l) += WHEN cost(item(l), DATE(dateTime(bill(l)))) THEN co
 taxIncluded (BillLine l) += taxIncluded(type(bill(l)));
 
 // Line properties
+type (BillLine l) = type(bill(l));
+nameType 'Type' (BillLine l) = nameType(bill(l)) IN id;
 imagedNameStatus 'Status' (BillLine l) = imagedNameStatus(bill(l));
 dateTime 'Date' (BillLine l) = dateTime(bill(l)) IN id;
 date 'Date' (BillLine l) = date(bill(l));
