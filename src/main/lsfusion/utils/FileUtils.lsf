@@ -4,6 +4,42 @@ NAMESPACE Utils;
 
 uploadFile 'Upload' = DATA LOCAL NAMEDFILE ();
 
+META defineObjectFilesForm(object, form, fobj)
+    EXTEND FORM form
+        OBJECTS of = ###object##File
+        PROPERTIES(of) name, extension, description
+        PROPERTIES(of) READONLY nameUser, dateTime
+        PROPERTIES(of) GRID open, DELETE
+        FILTERS object(of) = fobj
+
+        PROPERTIES = uploadFile() ON CHANGE {
+            INPUT uf = NAMEDFILE DO NEW uof = ###object##File {
+                object(uof) <- fobj;
+                file(uof) <- RAWFILE(uf);
+                name(uof) <- name(uf);
+                extension(uof) <- extension(uf);
+            }
+        }
+    ;
+
+    DESIGN form {
+        details {
+            NEW files {
+                caption = badged('Files', countFiles(fobj));
+                //            caption = badged('Files', countFiles(i)); 
+                horizontal = TRUE;
+                MOVE BOX(of) {
+                    caption = '';
+                }
+                MOVE PROPERTY(uploadFile()) {
+                    panelCaptionVertical = TRUE;
+                    fill = 0.3;
+                }
+            }
+        }
+    }
+END
+
 META defineObjectFiles(object, fobj, classCaption)
 
     CLASS ###object##File classCaption;
@@ -36,37 +72,40 @@ META defineObjectFiles(object, fobj, classCaption)
             open(f);
     }
 
-    EXTEND FORM object
-        OBJECTS of = ###object##File
-        PROPERTIES(of) name, extension, description
-        PROPERTIES(of) READONLY nameUser, dateTime
-        PROPERTIES(of) GRID open, DELETE
-        FILTERS object(of) = fobj
+    @defineObjectFilesForm(object, object, fobj){
+        EXTEND FORM object
+            OBJECTS of = ###object##File
+            PROPERTIES(of) name, extension, description
+            PROPERTIES(of) READONLY nameUser, dateTime
+            PROPERTIES(of) GRID open, DELETE
+            FILTERS object(of) = fobj
 
-        PROPERTIES = uploadFile() ON CHANGE {
-            INPUT uf = NAMEDFILE DO NEW uof = ###object##File {
-                object(uof) <- fobj;
-                file(uof) <- RAWFILE(uf);
-                name(uof) <- name(uf);
-                extension(uof) <- extension(uf);
-            }
-        }
-    ;
-
-    DESIGN object {
-        details {
-            NEW files {
-                caption = badged('Files', countFiles(fobj));
-                //            caption = badged('Files', countFiles(i)); 
-                horizontal = TRUE;
-                MOVE BOX(of) {
-                    caption = '';
-                }
-                MOVE PROPERTY(uploadFile()) {
-                    panelCaptionVertical = TRUE;
-                    fill = 0.3;
+            PROPERTIES = uploadFile() ON CHANGE {
+                INPUT uf = NAMEDFILE DO NEW uof = ###object##File {
+                    object(uof) <- fobj;
+                    file(uof) <- RAWFILE(uf);
+                    name(uof) <- name(uf);
+                    extension(uof) <- extension(uf);
                 }
             }
+        ;
+
+        DESIGN object {
+            details {
+                NEW files {
+                    caption = badged('Files', countFiles(fobj));
+                    //            caption = badged('Files', countFiles(i)); 
+                    horizontal = TRUE;
+                    MOVE BOX(of) {
+                        caption = '';
+                    }
+                    MOVE PROPERTY(uploadFile()) {
+                        panelCaptionVertical = TRUE;
+                        fill = 0.3;
+                    }
+                }
+            }
         }
-    }
+    };
+
 END
