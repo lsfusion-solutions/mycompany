@@ -11,6 +11,16 @@ done 'Paid' = DATA BOOLEAN (Invoice);
 
 status(Invoice b) += WHEN done(b) THEN InvoiceStatus.done;
 
+markAsDone 'Mark as Paid' (Bill b) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    NEWSESSION {
+        done(b) <- TRUE;
+        APPLY;
+    }
+}
+
 EXTEND FORM invoice
     PROPERTIES(i) done 
 ;
