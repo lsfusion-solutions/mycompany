@@ -11,6 +11,16 @@ done 'Paid' = DATA BOOLEAN (Bill);
 
 status(Bill b) += WHEN done(b) THEN BillStatus.done;
 
+markAsDone 'Mark as Paid' (Bill b) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    NEWSESSION {
+        done(b) <- TRUE;
+        APPLY;
+    }
+}
+
 EXTEND FORM bill
     PROPERTIES(b) done 
 ;
