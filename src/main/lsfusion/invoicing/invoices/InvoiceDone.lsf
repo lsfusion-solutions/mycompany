@@ -11,12 +11,12 @@ done 'Paid' = DATA BOOLEAN (Invoice);
 
 status(Invoice b) += WHEN done(b) THEN InvoiceStatus.done;
 
-markAsDone 'Mark as Paid' (Bill b) {
+markAsDone 'Mark as Paid' (Invoice i) {
     APPLY;
     IF canceled() THEN RETURN;
 
     NEWSESSION {
-        done(b) <- TRUE;
+        done(i) <- TRUE;
         APPLY;
     }
 }
