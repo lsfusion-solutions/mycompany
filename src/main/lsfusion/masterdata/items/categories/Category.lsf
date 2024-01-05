@@ -10,6 +10,9 @@ CLASS Category 'Category';
 
 name '{Name}' = DATA ISTRING[50] (Category) IN id NONULL;
 
+archived 'Archived' = DATA BOOLEAN (Category) CHARWIDTH 10;
+active '{Active}' (Category c) = NOT archived(c) CHARWIDTH 10;
+
 // hierarchy
 parent = DATA Category (Category) INDEXED;
 idParent 'Parent ID' (Category c) = id(parent(c));
@@ -53,7 +56,7 @@ nameCategory6 'Category 6' (Category child) = name(category6(child));
         
 FORM category 'Category'
    OBJECTS c = Category PANEL
-   PROPERTIES(c) name, id, canonicalNameParent
+   PROPERTIES(c) name, id, archived, canonicalNameParent
   
    EDIT Category OBJECT c
 ;
@@ -66,6 +69,7 @@ DESIGN category {
                 alignment = STRETCH;
                 MOVE PROPERTY(name(c));
                 MOVE PROPERTY(id(c));
+                MOVE PROPERTY(archived(c));
             }
             MOVE PROPERTY(canonicalNameParent(c)) { alignment = STRETCH; };
             NEW params {
@@ -95,12 +99,18 @@ FORM categories 'Categories'
     OBJECTS c = Category
     PROPERTIES(c) READONLY name, id, canonicalNameParent
     PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE
+    FILTERGROUP active
+        FILTER '{Active}' active(c) 'F8' DEFAULT
+        FILTER 'Archived' archived(c) 'F7'
     
     TREE categories cc = Category PARENT parent(cc)
     PROPERTIES READONLY name(cc)
     PROPERTIES(cc) NEWSESSION EDIT, DELETE
     PROPERTIES(cc) newCategory DRAW cc TOOLBAR 
     ORDERS name(cc)
+    FILTERGROUP activeC
+        FILTER '{Active}' active(cc) 'F8' DEFAULT
+        FILTER 'Archived' archived(cc) 'F7'
     
     LIST Category OBJECT c
     
