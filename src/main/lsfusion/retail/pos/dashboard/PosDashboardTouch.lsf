@@ -13,6 +13,8 @@ EXTEND FORM options
     PROPERTIES READONLY name(c)
     PROPERTIES hideTouch(c)
     ORDERS name(c)
+    FILTERGROUP activeCategory
+        FILTER '{Active}' active(c) DEFAULT
     
     OBJECTS itm = Item
     PROPERTIES(itm) READONLY name, nameUom, idBarCode, id
@@ -43,6 +45,7 @@ name (TouchNode n) = MULTI name[Category](n), name[Item](n);
 parent (TouchNode n) = MULTI parent[Category](n), category[Item](n);
 image (TouchNode n) = MULTI image[Category](n), image[Item](n);
 hide (TouchNode n) = MULTI hideTouch[Category](n), hideTouch[Item](n);
+active (TouchNode n) = MULTI active[Category](n), active[Item](n);
 
 canonicalName 'Canonical name' (TouchNode n) =
    GROUP CONCAT name(TouchNode parent), ' / ' ORDER DESC level(n, parent) CHARWIDTH 50 IN id;
@@ -76,15 +79,18 @@ select (Invoice i, TouchNode tn) {
 EXTEND FORM posDashboard
     OBJECTS tn1 = TouchNode
     FILTERS parent(tn1) = tn, mod(index(tn1),3) = 1, NOT hide(tn1)
-    PROPERTIES NOWAIT select(i, tn1) COLUMNS (tn1) HEADER name(tn1) IMAGE image(tn1) 
+    PROPERTIES NOWAIT select(i, tn1) COLUMNS (tn1) HEADER name(tn1) IMAGE image(tn1)
+    FILTERS active(tn1)
     
     OBJECTS tn2 = TouchNode
     FILTERS parent(tn2) = tn, mod(index(tn2),3) = 2, NOT hide(tn2)
-    PROPERTIES NOWAIT select(i, tn2) COLUMNS (tn2) HEADER name(tn2) IMAGE image(tn2) 
+    PROPERTIES NOWAIT select(i, tn2) COLUMNS (tn2) HEADER name(tn2) IMAGE image(tn2)
+    FILTERS active(tn2)
     
     OBJECTS tn3 = TouchNode
     FILTERS parent(tn3) = tn, mod(index(tn3),3) = 0, NOT hide(tn3)
-    PROPERTIES NOWAIT select(i, tn3) COLUMNS (tn3) HEADER name(tn3) IMAGE image(tn3) 
+    PROPERTIES NOWAIT select(i, tn3) COLUMNS (tn3) HEADER name(tn3) IMAGE image(tn3)
+    FILTERS active(tn3)
 ;
 
 DESIGN posDashboard {

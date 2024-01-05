@@ -91,6 +91,8 @@ FORM attribute 'Attribute'
     TREE categories c = Category PARENT parent(c) 
     PROPERTIES name(c) READONLY, set(a, c) BACKGROUND (GROUP SUM 1 IF set(a, Category cc) AND level(cc, c))
     ORDERS name(c)
+    FILTERGROUP activeCategory
+        FILTER '{Active}' active(c) DEFAULT
            
     OBJECTS v = ItemAttributeValue
     PROPERTIES(v) value, NEW, DELETE
@@ -100,6 +102,8 @@ FORM attribute 'Attribute'
     PROPERTIES name(cc) READONLY, set(v, cc) BACKGROUND (GROUP SUM 1 IF set(v, Category ccc) AND level(ccc, cc))
     FILTERS (GROUP LAST set(a, Category pcc) ORDER level(cc, pcc)) OR (GROUP SUM 1 IF set(a, Category ccc) AND level(ccc, cc)) 
     ORDERS name(cc)
+    FILTERGROUP activeCategoryC
+        FILTER '{Active}' active(cc) DEFAULT
     
     EDIT ItemAttribute OBJECT a
 ;
