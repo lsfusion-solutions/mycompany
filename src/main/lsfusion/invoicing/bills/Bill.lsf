@@ -151,14 +151,16 @@ edit (BillLine l) + { edit(bill(l)); }
 
 FORM bill 'Bill'
     OBJECTS  b = Bill PANEL 
-    PROPERTIES(b) nameType, dateTime, number, 
+    PROPERTIES(b) READONLYIF readonly(b)
+                  nameType, dateTime, number, 
                   nameVendor, nameCompany,
                   namePaymentTerms, dueDateTime, nameVendorAccount, nameCompanyAccount,
                   nameRepresentative, vendorReference, note,
                   details
         
     OBJECTS l = BillLine
-    PROPERTIES(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, referenceItem, 
+    PROPERTIES(l) READONLYIF readonly(b)
+                  index, nameItem, description, nameUom, idBarCodeItem, idItem, referenceItem, 
                   quantity, price, taxes ON CHANGE changeTax(l), NEW, DELETE 
     FILTERS bill(l) = b
 

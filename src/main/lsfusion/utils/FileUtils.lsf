@@ -7,20 +7,21 @@ uploadFile 'Upload' = DATA LOCAL NAMEDFILE ();
 META defineObjectFilesForm(object, form, fobj)
     EXTEND FORM form
         OBJECTS of = ###object##File
-        PROPERTIES(of) name, extension, description
+        PROPERTIES(of) READONLYIF readonly(fobj) name, extension, description
         PROPERTIES(of) READONLY nameUser, dateTime
-        PROPERTIES(of) GRID open, DELETE
+        PROPERTIES(of) GRID open, DELETE READONLYIF readonly(fobj)
         FILTERS object(of) = fobj
 
         PROPERTIES(fobj) newFile DRAW of TOOLBAR
         PROPERTIES inputFile = '' CUSTOM 'inputFile' ON CHANGE {
             INPUT f = JSON DO
-                IMPORT JSON FROM f FIELDS() STRING name, STRING extension, STRING data DO NEW uof = ###object##File {
-                    object(uof) <- fobj;
-                    file(uof) <- decode(data, 'base64');
-                    name(uof) <- name;
-                    extension(uof) <- extension;
-                }
+                IMPORT JSON FROM f FIELDS() STRING name, STRING extension, STRING data DO 
+                    IF NOT readonly(fobj) THEN NEW uof = ###object##File {
+                        object(uof) <- fobj;
+                        file(uof) <- decode(data, 'base64');
+                        name(uof) <- name;
+                        extension(uof) <- extension;
+                    }
         }
     ;
 

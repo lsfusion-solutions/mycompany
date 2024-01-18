@@ -160,14 +160,16 @@ edit (InvoiceLine l) + { edit(invoice(l)); }
 
 FORM invoice 'Invoice'
     OBJECTS  i = Invoice PANEL 
-    PROPERTIES(i) nameType, dateTime, number, 
+    PROPERTIES(i) READONLYIF readonly(i)
+                  nameType, dateTime, number, 
                   nameCustomer, nameDepartment SHOWIF countDepartment(customer(i)), nameCompany,
                   namePaymentTerms, dueDateTime, nameCustomerAccount, nameCompanyAccount,
                   deliveryAddress, nameRepresentative, customerReference, note,
                   details
         
     OBJECTS l = InvoiceLine
-    PROPERTIES(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, referenceItem, 
+    PROPERTIES(l) READONLYIF readonly(i)
+                  index, nameItem, description, nameUom, idBarCodeItem, idItem, referenceItem, 
                   quantity, price, taxes ON CHANGE changeTax(l), NEW, DELETE 
     FILTERS invoice(l) = i
 
