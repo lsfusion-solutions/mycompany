@@ -236,31 +236,10 @@ META defineDocHistoryHeader(doc, let)
         }
     }
 
-    EXTEND FORM doc
-        OBJECTS doc##l = ###doc##History
-        PROPERTIES(doc##l) READONLY dateTime, nameUser, hostnameComputer, type, description, pdescription = description PANEL
-        FILTERS doc(doc##l) = let
-    ;
-
-    DESIGN doc {
-        details {
-            NEW history {
-                caption = 'History';
-                fill = 1;
-                horizontal = TRUE;
-                MOVE BOX(doc##l) {
-                    fill = 2;
-                    caption = '';
-                    PROPERTY(description(doc##l)) { valueHeight = 18; }
-                }
-                MOVE PROPERTY(pdescription) { panelCaptionVertical = TRUE; fill = 1; }
-            }
-        }
-    }
 END
 
 META defineDocHistoryLine(doc, docLine, class, fun)
-    
+
     WHEN SETCHANGED(docLine l IS docLine) AND doc(l) = ###doc d
         AND NOT status(d) = ###doc##Status.draft AND NOT disableHistory() DO {
         NEW h = ###doc##History {
@@ -295,7 +274,7 @@ META defineDocHistoryLine(doc, docLine, class, fun)
             description (h) <- 'Changed the initial product quantity' + ' ' + name###class(l) + ' -> ' + ##fun(l);
         }
     }
-        
+
     WHEN CHANGED(class(docLine l)) AND doc(l) = ###doc d
         AND NOT status(d) = ###doc##Status.draft AND NOT disableHistory() DO {
         NEW h = ###doc##History {
@@ -314,11 +293,36 @@ META defineDocHistoryLine(doc, class, fun)
     @defineDocHistoryLine(doc, ###doc##Line, class, fun);
 END
 
+META defineDocHistoryForm(doc, form, let)
+    EXTEND FORM form
+        OBJECTS doc##l = ###doc##History
+        PROPERTIES(doc##l) READONLY dateTime, nameUser, hostnameComputer, type, description, pdescription = description PANEL
+        FILTERS doc(doc##l) = let
+    ;
+
+    DESIGN form {
+        details {
+            NEW history {
+                caption = 'History';
+                fill = 1;
+                horizontal = TRUE;
+                MOVE BOX(doc##l) {
+                    fill = 2;
+                    caption = '';
+                    PROPERTY(description(doc##l)) { valueHeight = 18; }
+                }
+                MOVE PROPERTY(pdescription) { panelCaptionVertical = TRUE; fill = 1; }
+            }
+        }
+    }
+END
+
 META defineDocHistory(doc, let, class, fun)
 
     @defineDocHistoryHeader(doc, ##let);
-@defineDocHistoryLine(doc, class, fun);
-    
+    @defineDocHistoryLine(doc, class, fun);
+    @defineDocHistoryForm(doc, doc, let);
+
 END
 
 META defineDocRelation(docTo, docFrom, captTo, captFrom, objTo, objFrom)
