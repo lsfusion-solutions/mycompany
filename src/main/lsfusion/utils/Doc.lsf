@@ -212,8 +212,9 @@ DESIGN System.options {
 META defineDocHistoryHeader(doc, let)
     CLASS ###doc##History 'Change history';
 
-    doc = DATA ###doc (###doc##History);
-
+    doc = DATA ###doc (###doc##History) INDEXED;
+    countHistories (###doc d) = GROUP SUM 1 IF doc(###doc##History h) = d;
+    
     dateTime 'Date' = DATA DATETIME (###doc##History);
 
     user = DATA User (###doc##History);
@@ -303,7 +304,7 @@ META defineDocHistoryForm(doc, form, let)
     DESIGN form {
         details {
             NEW history {
-                caption = 'History';
+                caption = badged('History', countHistories(let));
                 fill = 1;
                 horizontal = TRUE;
                 MOVE BOX(doc##l) {
