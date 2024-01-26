@@ -1,0 +1,55 @@
+MODULE AdjustmentCreate;
+
+REQUIRE AdjustmentCanceled, AdjustmentFilter;
+
+NAMESPACE Inventory;
+
+add 'Add' (Location l) {
+    IF NOT adjustmentType() THEN {
+        MESSAGE 'Adjustment type not selected';
+        RETURN;
+    }
+    NEWSESSION {
+        NEW a = Adjustment {
+            type(a) <- adjustmentType();
+            location(a) <- l;
+        }
+        APPLY;
+    }
+} IMAGE 'add.png';
+delete 'Delete' (Location l) {
+    NEWSESSION {
+        DELETE Adjustment a WHERE location(a) = l AND status(a) = AdjustmentStatus.draft; 
+        APPLY;
+    }
+} IMAGE 'delete.png' CONFIRM;
+
+EXTEND FORM adjustments
+    OBJECTS l = Location
+    PROPERTIES(l) READONLY name, id,
+                           canonicalNameParent, nameCompany,
+                           dateTimeLastAdjustment, nameTypeLastAdjustment,
+                           imagedNameStatusLastAdjustment BACKGROUND colorStatusLastAdjustment(l)
+                
+    PROPERTIES(l) add GRID READONLYIF statusLastAdjustment(l) != AdjustmentStatus.done AND statusLastAdjustment(l) != AdjustmentStatus.canceled 
+    PROPERTIES(l) delete TOOLBAR SHOWIF statusLastAdjustment(l) = AdjustmentStatus.draft 
+    FILTERS NOT internalUse(l)
+    
+    OBJECTS p = Product
+    PROPERTIES(p) READONLY name, nameUom, idBarCode, id, nameCategory
+    PROPERTIES(l, p) onHand
+    FILTERS onHand(l, p)
+;
+
+DESIGN adjustments {
+    tabbedPane {
+        NEW adjustmentCreate {
+            caption = 'Create';
+            horizontal = TRUE;
+            MOVE BOX(l);
+            MOVE BOX(p);
+        }
+    }
+}
+
+//@defineSelectionForm(adjustments, Location, l);
