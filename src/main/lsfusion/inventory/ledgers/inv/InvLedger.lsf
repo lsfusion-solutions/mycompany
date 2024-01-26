@@ -53,6 +53,8 @@ outQuantityB 'Quantity (sent)' (Location ll, Product p, DATETIME dt) = outQuanti
 onHand 'On hand' (Location ll, Product p) = inQuantity(ll, p) (-) outQuantity(ll, p) MATERIALIZED;
 prevOnHand (Location ll, Product p) = PREV(onHand(ll, p));
 
+onHand 'On hand' (Location l) = GROUP SUM onHand(l, Product p);
+
 onHandA 'On hand' (Location ll, Product p, DATETIME dt) = 
                                                             inQuantityA(ll, p, dt) (-) outQuantityA(ll, p, dt) IF dt;
 prevOnHandA (Location ll, Product p, DATETIME dt) = PREV(onHandA(ll, p, dt));

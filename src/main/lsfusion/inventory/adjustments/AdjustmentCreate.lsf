@@ -5,13 +5,9 @@ REQUIRE AdjustmentCanceled, AdjustmentFilter;
 NAMESPACE Inventory;
 
 add 'Add' (Location l) {
-    IF NOT adjustmentType() THEN {
-        MESSAGE 'Adjustment type not selected';
-        RETURN;
-    }
     NEWSESSION {
         NEW a = Adjustment {
-            type(a) <- adjustmentType();
+            type(a) <- OVERRIDE adjustmentType(), AdjustmentType.all;
             location(a) <- l;
         }
         APPLY;
