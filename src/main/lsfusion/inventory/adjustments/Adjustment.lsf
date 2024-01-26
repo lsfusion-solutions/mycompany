@@ -59,6 +59,15 @@ nameCategory 'Category' (Adjustment a) = name(category(a));
 
 note 'Note' = DATA ISTRING[50] (Adjustment);
 
+// last
+INDEX location(Adjustment a), dateTime(a), a;
+lastAdjustment (Location l) = GROUP LAST Adjustment a ORDER dateTime(a), a WHERE location(a) = l;
+dateTimeLastAdjustment 'Last adjustment date' (Location l) = dateTime(lastAdjustment(l));
+statusLastAdjustment (Location l) = status(lastAdjustment(l));
+imagedNameStatusLastAdjustment 'Last adjustment status' (Location l) = imagedNameStatus(lastAdjustment(l));
+colorStatusLastAdjustment (Location l) = colorStatus(lastAdjustment(l));
+nameTypeLastAdjustment 'Last adjustment type' (Location l) = nameType(lastAdjustment(l));
+
 // lines
 CLASS AdjustmentLine 'Adjustment line';
 
@@ -136,7 +145,7 @@ DESIGN adjustment {
                 NEW headerRight {
                     MOVE PROPERTY(nameLocation(a))  { notNull = TRUE; }
                     MOVE PROPERTY(nameType(a)) { notNull = TRUE; }           
-                    MOVE PROPERTY(nameCategory(a)) { notNull = TRUE; }           
+                    MOVE PROPERTY(nameCategory(a)) { notNull = TRUE; }
                 }
             }
             NEW headerBottom {
@@ -170,21 +179,11 @@ FORM adjustments 'Adjustments'
     LIST Adjustment OBJECT a
 ;
 
-DESIGN adjustments {
-    OBJECTS {
-        NEW filters FIRST { 
-            caption = 'Filters';
-            horizontal = TRUE;
-        }
-    }
-}
-
+@defineDocObjectsForm(adjustments, a, 'Adjustments');
 
 @defineDocStatusForm(adjustment, a);
 @defineDocLinesCount(adjustment, a);
 @defineDocLocationAccess(adjustment, a);
-
-@defineDateFilterForm(adjustments, a);
 
 NAVIGATOR {
     operations {
