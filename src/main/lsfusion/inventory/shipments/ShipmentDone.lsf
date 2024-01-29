@@ -18,12 +18,15 @@ WHEN SET(done(Shipment s)) AND NOT CHANGED(executionDateTime(s)) DO executionDat
 executionDateTime 'Execution Date' (ShipmentLine l) = executionDateTime(shipment(l));
 executionDate 'Execution Date' (ShipmentLine l) = executionDate(shipment(l));
 
+doNotCheckDone 'Do not check shipped quantity' = DATA BOOLEAN (ShipmentType);
+EXTEND FORM shipmentType PROPERTIES(o) doNotCheckDone;
+
 done 'Done' = DATA NUMERIC[16,3] (ShipmentLine);
 
 weightDone 'Weight' (ShipmentLine l) = NUMERIC[16,3](done(l) * weight(product(l)));
 
-CONSTRAINT done(ShipmentLine l) < 0 OR done(l) > initialDemand(l) 
-    MESSAGE 'The shipped quantity must be between 0 and original';
+CONSTRAINT (done(ShipmentLine l) < 0 OR done(l) > initialDemand(l)) AND NOT doNotCheckDone(type(l))
+    MESSAGE 'Done quantity must be between 0 and initial demand';
 
 setDone 'Fill done' (Shipment s) {
     done(ShipmentLine l) <- reserved(l) WHERE shipment(l) = s;    
