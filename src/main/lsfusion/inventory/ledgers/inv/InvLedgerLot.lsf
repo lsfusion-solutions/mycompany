@@ -103,3 +103,19 @@ DESIGN item {
         }
     }
 }
+
+EXTEND FORM lots
+    OBJECTS il = InvLedger
+    PROPERTIES(il) READONLY class, type, dateTime, number, namePartner,
+                            nameFromLocation, onHandAFromLocation,
+                            nameToLocation, onHandAToLocation
+    PROPERTIES(il, l) READONLY quantity
+    PROPERTIES(il) NEWSESSION EDIT
+    FILTERGROUP activeInv
+        FILTER '{Active}' active(il) DEFAULT
+    FILTERS quantity(il, l)
+;
+
+DESIGN lots {
+    BOX(il) { fill = 0.3; }
+}
