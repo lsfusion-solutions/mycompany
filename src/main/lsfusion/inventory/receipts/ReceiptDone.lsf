@@ -15,10 +15,13 @@ executionDateTime 'Execution Date' = DATA DATETIME (Receipt);
 WHEN SET(done(Receipt r)) AND NOT CHANGED(executionDateTime(r)) DO executionDateTime(r) <- currentDateTime(); 
 executionDateTime 'Execution Date' (ReceiptLine l) = executionDateTime(receipt(l));
 
+doNotCheckDone 'Do not check received quantity' = DATA BOOLEAN (ReceiptType);
+EXTEND FORM receiptType PROPERTIES(o) doNotCheckDone;
+
 done '{Received}' = DATA NUMERIC[16,3] (ReceiptLine);
 
-CONSTRAINT done(ReceiptLine l) < 0 OR done(l) > initialDemand(l) 
-    MESSAGE 'The accepted amount must be between 0 and the original';
+CONSTRAINT (done(ReceiptLine l) < 0 OR done(l) > initialDemand(l)) AND NOT doNotCheckDone(type(l)) 
+    MESSAGE 'Received quantity must be between 0 and initial demand';
 
 setDone 'Fill done' (Receipt r) {
     done(ReceiptLine l) <- initialDemand(l) WHERE receipt(l) = r;    
