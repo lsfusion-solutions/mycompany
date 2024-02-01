@@ -13,6 +13,9 @@ CONSTRAINT location(Location l, Product p) AND NOT level(location(l, p), l)
     CHECKED BY location[Location, Product]
     MESSAGE 'Incorrect location for the product';
 
+nameLocations 'Locations' (Location lp, Product p) = GROUP CONCAT name(Location l) IF location(lp, p) = l, ',' ORDER l;
+nameLocations 'Locations' (Product p) = GROUP CONCAT name(Location l) IF location(Location lp, p) = l, ',' ORDER l, lp;
+
 // default type
 countProducts 'Number of products' (Location lp, Location l) = GROUP SUM 1 BY location(lp, Product p);
 firstProduct (Location lp, Location l) = GROUP LAST Product p ORDER DESC p WHERE location(lp, p) = l;
