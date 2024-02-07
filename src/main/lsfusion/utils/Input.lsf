@@ -1,5 +1,7 @@
 MODULE Input;
 
+REQUIRE SystemEvents;
+
 NAMESPACE Utils;
 
 FORM dialogQuantity 'Quantity input'
@@ -10,6 +12,17 @@ FORM dialogQuantity 'Quantity input'
 DESIGN dialogQuantity {
     PROPERTY(quantity) { fontSize = 16; }
     PROPERTY(formOk()) { changeKey = 'ENTER'; }
+}
+
+// regexp
+
+@defineOption(phoneRegexp, 'Phone regular expression', STRING, commons);
+
+@defineOption(emailRegexp, 'Email regular expression', STRING, commons);
+
+onFirstStarted() + {
+    phoneRegexp() <- '(\\+\\d\{1,3\}( )?)?((\\(\\d\{1,3\}\\))|\\d\{1,3\})[\\- .]?\\d\{3,4\}[\\- .]?\\d\{4\}';
+    emailRegexp() <- '[a-zA-Z0-9_.+\\-]+@[a-zA-Z0-9\\-]+\\.[a-zA-Z0-9\\-.]+';
 }
 
 // filter
