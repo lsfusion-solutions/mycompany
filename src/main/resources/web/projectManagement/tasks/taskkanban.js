@@ -29,6 +29,8 @@ function taskKanban() {
             for (const status of options.statuses) {
                 let statusDiv = document.createElement("div")
                 statusDiv.classList.add("task-kanban-status");
+                if (status !== options.statuses[0])
+                    statusDiv.classList.add("border-start");
 
                 let statusHeader = document.createElement("div");
                 statusHeader.classList.add("task-kanban-status-header");
