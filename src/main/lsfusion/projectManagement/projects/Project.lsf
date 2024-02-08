@@ -1,6 +1,6 @@
 MODULE Project;
 
-REQUIRE FileUtils, MetaNumerator, Authentication, Icon,
+REQUIRE FileUtils, MetaNumerator, Authentication, Icon, Doc,
         ProjectManagementSettings, ProjectStatus, ProjectType, Company, Employee;
 
 NAMESPACE ProjectManagement;
@@ -27,6 +27,9 @@ namePartner 'Partner' (Project p) = name(partner(p)) IN id;
 startDate 'Start date' = DATA DATE (Project) IN id;
 startDate(Project p) <- currentDate() WHEN SET(p IS Project);
 endDate 'End date' = DATA DATE (Project);
+
+archived 'Archived' (Project p) = currentDate() > endDate(p);
+active '{Active}' (Project p) = p IS Project AND NOT archived(p);
 
 status 'Status' = DATA ProjectStatus (Project);
 nameStatus 'Status' (Project t) = name(status(t));
@@ -96,14 +99,24 @@ DESIGN project {
     }  
 }
 
+FORM dialogProjects 'Projects'
+    OBJECTS p = Project
+    PROPERTIES(p) READONLY number, startDate, endDate, namePartner, nameType, name, nameCompany, nameManager
+
+    LIST Project OBJECT p
+;
+
 FORM projects 'Projects'
     OBJECTS p = Project
 
     PROPERTIES(p) READONLY number, startDate, endDate, namePartner, nameType, name, nameCompany, nameManager
     PROPERTIES(p) NEWSESSION NEW, EDIT, DELETE
-    
-    LIST Project OBJECT p
+    FILTERGROUP active
+        FILTER '{Active}' NOT archived(p) DEFAULT
+        FILTER 'Archived' archived(p) 'F7'
 ;
+
+@defineDocObjectsForm(projects, p, '{Projects}');
 
 @defineObjectFiles(project, p, 'Project file');
 
