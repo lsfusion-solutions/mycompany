@@ -1,0 +1,45 @@
+MODULE ProjectStatus;
+
+REQUIRE ProjectManagementSettings;
+
+NAMESPACE ProjectManagement;
+
+CLASS ProjectStatus 'Project status';
+name '{Name}' = DATA ISTRING[50] (ProjectStatus) NONULL CHARWIDTH 15;
+
+id '{ID}' = DATA STRING[20] (ProjectStatus);
+projectStatus = GROUP AGGR ProjectStatus t BY id(t);
+
+FORM projectStatus 'Project status'
+    OBJECTS o = ProjectStatus PANEL
+    PROPERTIES(o) name, id
+
+    EDIT ProjectStatus OBJECT o;
+;
+
+DESIGN projectStatus {
+    OBJECTS {
+        NEW tabbedPane {
+            fill = 1;
+            tabbed = TRUE;
+        }
+    }
+}
+
+FORM projectStatuses 'Project statuses'
+    OBJECTS o = ProjectStatus
+    PROPERTIES(o) READONLY name, id
+    LIST ProjectStatus OBJECT o
+;
+
+EXTEND FORM options
+    OBJECTS ps = ProjectStatus
+    PROPERTIES(ps) READONLY name, id
+    PROPERTIES(ps) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(ps) { caption = 'Project statuses'; }
+    }
+}
