@@ -1,7 +1,7 @@
 MODULE Project;
 
 REQUIRE FileUtils, MetaNumerator, Authentication, Icon,
-        ProjectManagementSettings, ProjectType, Company, Employee;
+        ProjectManagementSettings, ProjectStatus, ProjectType, Company, Employee;
 
 NAMESPACE ProjectManagement;
 
@@ -28,6 +28,9 @@ startDate 'Start date' = DATA DATE (Project) IN id;
 startDate(Project p) <- currentDate() WHEN SET(p IS Project);
 endDate 'End date' = DATA DATE (Project);
 
+status 'Status' = DATA ProjectStatus (Project);
+nameStatus 'Status' (Project t) = name(status(t));
+
 manager = DATA Employee (Project);
 nameManager 'Manager' (Project o) = MasterData.name(manager(o));
 
@@ -38,8 +41,8 @@ description 'Description' = DATA RICHTEXT (Project);
 FORM project 'Project'
     OBJECTS p = Project PANEL
     
-    PROPERTIES(p) nameType, number, name, nameCompany, namePartner, startDate, endDate, nameManager,
-                  description
+    PROPERTIES(p) nameType, number, name, nameCompany, namePartner, startDate, endDate, 
+                  nameStatus, nameManager, description
     
     EDIT Project OBJECT p
 ;
@@ -77,6 +80,7 @@ DESIGN project {
             NEW headerRight {
                 MOVE PROPERTY(startDate(p));
                 MOVE PROPERTY(endDate(p));
+                MOVE PROPERTY(nameStatus(p));
                 MOVE PROPERTY(nameCompany(p));
                 MOVE PROPERTY(nameManager(p));
             }    
