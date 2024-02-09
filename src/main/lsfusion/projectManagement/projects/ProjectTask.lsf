@@ -7,7 +7,7 @@ NAMESPACE ProjectManagement;
 project = DATA Project (Task);
 nameProject 'Project' (Task e) = name(project(e));
 
-countActiveTask '{Tasks}' (Project p) = GROUP SUM 1 IF project(Task t) = p AND active(t);
+countOpenedTask '{Tasks}' (Project p) = GROUP SUM 1 IF project(Task t) = p AND opened(t);
 
 EXTEND FORM task
     PROPERTIES(t) nameProject
@@ -25,7 +25,7 @@ EXTEND FORM tasks
 
 EXTEND FORM project
     OBJECTS t = Task
-    PROPERTIES(t) READONLY name, nameAuthor, nameAssignedTo, deadline, archived
+    PROPERTIES(t) READONLY name, nameAuthor, nameAssignedTo, deadline, closed
     PROPERTIES(t) EDIT
     FILTERS project(t) = p
 ;
@@ -33,14 +33,14 @@ EXTEND FORM project
 DESIGN project {
     details {
         NEW tasks {
-            caption = badged('{Tasks}', countActiveTask(p));
+            caption = badged('{Tasks}', countOpenedTask(p));
             MOVE BOX(t) { caption = ''; }
         }
     }
 }
 
 EXTEND FORM projects
-    PROPERTIES(p) READONLY countActiveTask
+    PROPERTIES(p) READONLY countOpenedTask
 ;
 
 @defineDocFilter(task, Project, project, t, 'Project');
