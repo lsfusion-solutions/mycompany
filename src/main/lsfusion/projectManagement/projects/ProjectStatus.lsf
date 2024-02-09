@@ -10,9 +10,11 @@ name '{Name}' = DATA ISTRING[50] (ProjectStatus) NONULL CHARWIDTH 15;
 id '{ID}' = DATA STRING[20] (ProjectStatus);
 projectStatus = GROUP AGGR ProjectStatus t BY id(t);
 
+closed 'Closed' = DATA BOOLEAN (ProjectStatus);
+
 FORM projectStatus 'Project status'
     OBJECTS o = ProjectStatus PANEL
-    PROPERTIES(o) name, id
+    PROPERTIES(o) name, id, closed
 
     EDIT ProjectStatus OBJECT o;
 ;
@@ -28,13 +30,13 @@ DESIGN projectStatus {
 
 FORM projectStatuses 'Project statuses'
     OBJECTS o = ProjectStatus
-    PROPERTIES(o) READONLY name, id
+    PROPERTIES(o) READONLY name, id, closed
     LIST ProjectStatus OBJECT o
 ;
 
 EXTEND FORM options
     OBJECTS ps = ProjectStatus
-    PROPERTIES(ps) READONLY name, id
+    PROPERTIES(ps) READONLY name, id, closed
     PROPERTIES(ps) NEWSESSION NEW, EDIT, DELETE
 ;
 

@@ -28,6 +28,9 @@ description 'Description' = DATA RICHTEXT (Task) CHARWIDTH 20;
 status 'Status' = DATA TaskStatus (Task);
 nameStatus 'Status' (Task t) = name(status(t));
 
+closed 'Closed' (Task t) = closed(status(t));
+opened 'Opened' (Task t) = t IS Task AND NOT closed(t);
+
 priority 'Priority' = DATA TaskPriority (Task);
 namePriority 'Priority' (Task t) = name(priority(t));
 idColorPriority (Task t) = idColor(priority(t));
@@ -35,14 +38,12 @@ idColorPriority (Task t) = idColor(priority(t));
 in 'Incl.' = DATA BOOLEAN (Task, TaskTag);
 tags 'Tags' (Task t) = GROUP CONCAT name(TaskTag tg) IF in(t, tg), ', ' ORDER name(tg), tg;
 
-archived 'Archived' = DATA BOOLEAN (Task);
-active '{Active}' (Task i) = NOT archived(i);
-
 FORM task 'Task'
     OBJECTS t = Task PANEL
-    PROPERTIES(t) name, nameAuthor, nameAssignedTo, 
-                  nameStatus, namePriority, tags, 
-                  deadline, description, archived
+    PROPERTIES(t) name, nameStatus, 
+                  nameAuthor, nameAssignedTo, 
+                  namePriority, tags, 
+                  deadline, description
 
     EDIT Task OBJECT t
 ;
@@ -54,14 +55,13 @@ DESIGN task {
                 horizontal = TRUE;
                 alignment = STRETCH;
                 MOVE PROPERTY(name(t)) { flex = 1; fontSize = 16; }
-                MOVE PROPERTY(archived(t)) { alignment = STRETCH; }
+                MOVE PROPERTY(nameStatus(t));
             }
             NEW params {
                 lines = 2;
                 alignment = STRETCH;
                 MOVE PROPERTY(nameAuthor(t));
                 MOVE PROPERTY(nameAssignedTo(t));
-                MOVE PROPERTY(nameStatus(t));
                 MOVE PROPERTY(namePriority(t));
                 MOVE PROPERTY(tags(t));
                 MOVE PROPERTY(deadline(t));
@@ -81,12 +81,12 @@ DESIGN task {
 
 FORM tasks '{Tasks}'
     OBJECTS t = Task
-    PROPERTIES(t) READONLY name, nameAuthor, nameAssignedTo, nameStatus, namePriority, tags, deadline, archived
+    PROPERTIES(t) READONLY name, nameAuthor, nameAssignedTo, nameStatus, namePriority, tags, deadline, closed
     PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
 
     FILTERGROUP active
-        FILTER '{Active}' active(t) 'F8' DEFAULT
-        FILTER 'Archived' archived(t) 'F7'
+        FILTER 'Opened' opened(t) 'F8' DEFAULT
+        FILTER 'Closed' closed(t) 'F7'
 
     FILTERGROUP my
         FILTER 'My tasks' author(t) = currentUser() 'F6'

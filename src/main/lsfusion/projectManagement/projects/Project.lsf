@@ -34,6 +34,8 @@ active '{Active}' (Project p) = p IS Project AND NOT archived(p);
 status 'Status' = DATA ProjectStatus (Project);
 nameStatus 'Status' (Project t) = name(status(t));
 
+closed 'Closed' (Project p) = closed(status(p));
+
 manager = DATA Employee (Project);
 nameManager 'Manager' (Project o) = MasterData.name(manager(o));
 
@@ -111,9 +113,13 @@ FORM projects 'Projects'
 
     PROPERTIES(p) READONLY number, startDate, endDate, namePartner, nameType, name, nameCompany, nameManager
     PROPERTIES(p) NEWSESSION NEW, EDIT, DELETE
+
     FILTERGROUP active
-        FILTER '{Active}' NOT archived(p) DEFAULT
-        FILTER 'Archived' archived(p) 'F7'
+        FILTER 'Opened' NOT archived(p) AND NOT closed(p) DEFAULT
+        FILTER 'Closed' archived(p) OR closed(p)
+
+    FILTERGROUP my
+        FILTER 'Assigned to me' manager(p) = currentUser() 'F5'
 ;
 
 @defineDocObjectsForm(projects, p, '{Projects}');
