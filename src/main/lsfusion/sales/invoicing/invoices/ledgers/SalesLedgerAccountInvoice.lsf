@@ -1,0 +1,37 @@
+MODULE SalesLedgerAccountInvoice;
+
+REQUIRE SalesLedgerInvoice, SalesLedgerAccount, SalesAccountTax;
+
+NAMESPACE Sales;
+
+// tax
+amount (SalesLedger l, Tax t) += -taxAmount(t, line(l));
+
+amount 'Amount' = ABSTRACT VALUE NUMERIC[14,2] (InvoiceLine, CustomSalesAccount);
+amount (Invoice i, CustomSalesAccount a) = GROUP SUM amount(InvoiceLine l, a) IF invoice(l) = i; 
+
+dataAmount 'Amount' = DATA NUMERIC[14,2] (InvoiceLine, CustomSalesAccount);
+
+amount(InvoiceLine l, CustomSalesAccount a) += dataAmount(l, a);
+
+amount(SalesLedger l, CustomSalesAccount a) += -amount(line(l), a);
+
+EXTEND FORM invoice
+    OBJECTS sa = CustomSalesAccount
+    
+    OBJECTS la = InvoiceLine
+    PROPERTIES(la) READONLY
+        index, nameItem, description, nameUom, idBarCodeItem, idItem, referenceItem,
+        quantity, price, amount
+    FILTERS invoice(la) = i
+    
+    PROPERTIES(la, sa) amount COLUMNS (sa) HEADER name(sa) FOOTER amount(i, sa)
+;
+
+DESIGN invoice {
+    details {
+        MOVE BOX(la) {
+            caption = 'Sales account';
+        }
+    }
+}

@@ -1,0 +1,50 @@
+MODULE SalesAccount;
+
+REQUIRE SalesSettings;
+
+NAMESPACE Sales;
+
+CLASS ABSTRACT SalesAccount 'Sales account';
+id '{ID}' = ABSTRACT STRING[100] (SalesAccount) CHARWIDTH 15; 
+name = ABSTRACT ISTRING[250] (SalesAccount) CHARWIDTH 25;
+
+CLASS SystemSalesAccount 'Sales account' {
+    revenue 'Revenue',
+    cost 'Cost'
+} : SalesAccount;
+
+id (SystemSalesAccount a) += STRING[100](staticName(a)) IF a IS SystemSalesAccount;
+name(SystemSalesAccount a) += ISTRING[250](staticCaption(a)) IF a IS SystemSalesAccount;
+
+CLASS CustomSalesAccount 'Sales account' : SalesAccount;
+id '{ID}' = DATA STRING[100] (CustomSalesAccount);
+name 'Name' = DATA ISTRING[250] (CustomSalesAccount);
+
+id(CustomSalesAccount a) += id(a);
+name(CustomSalesAccount a) += name(a);
+
+FORM customSalesAccount 'Sales account'
+    OBJECTS o = CustomSalesAccount PANEL
+    PROPERTIES(o) name, id
+
+    EDIT CustomSalesAccount OBJECT o;
+;
+
+FORM salesAccounts 'Sales accounts'
+    OBJECTS o = SalesAccount
+    PROPERTIES(o) READONLY name, id
+
+    LIST SalesAccount OBJECT o;
+;
+
+EXTEND FORM options
+    OBJECTS sa = CustomSalesAccount
+    PROPERTIES(sa) READONLY name, id
+    PROPERTIES(sa) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(sa);
+    }
+}

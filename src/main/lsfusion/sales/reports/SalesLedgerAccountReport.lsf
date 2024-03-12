@@ -1,0 +1,31 @@
+MODULE SalesLedgerAccountReport;
+
+REQUIRE SalesLedgerReport, SalesLedgerAccount;
+
+NAMESPACE Sales;
+
+EXTEND FORM salesLedgerReport
+    OBJECTS la = (sl = SalesLedger, sa = SalesAccount) PIVOT
+    PROPERTIES(sl) READONLY class, type, dateTime, number,
+                            nameCustomer, nameLocation, nameItem,
+                            quantity, price, markup
+    PROPERTIES(sa) READONLY 'Sales account' = name
+    PROPERTIES READONLY 'Category 1' = level1(item(sl)), 'Category 2' = level2(item(sl)), 'Category 3' = level3(item(sl)), 'Category 4' = level4(item(sl)),
+        'Canonical group' = canonicalNameCategory(item(sl))
+    PROPERTIES(sl, sa) READONLY MEASURE revenue, cost, 'Markup' = amount
+    FILTERS amount(sl, sa)
+;
+
+DESIGN salesLedgerReport {
+    pane {
+        MOVE BOX(la) {
+            caption = 'Sales by account';
+        }
+    }
+}
+
+@defineDateTimeAggregationForm(salesLedgerReport, sl);
+
+EXTEND FORM salesLedgerReport
+    FILTERS NOT date(sl) < from(dates), NOT date(sl) > to(dates)
+;

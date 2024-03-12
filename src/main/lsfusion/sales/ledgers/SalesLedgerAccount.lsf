@@ -1,0 +1,16 @@
+MODULE SalesLedgerAccount;
+
+REQUIRE SalesLedger, SalesAccount;
+
+NAMESPACE Sales;
+
+amount 'Amount' = ABSTRACT NUMERIC[14,2] (SalesLedger, SalesAccount) MATERIALIZED;
+
+revenue 'Revenue' (SalesLedger l, SalesAccount a) = amount(l, a) IF amount(l, a) > 0;
+cost 'Cost' (SalesLedger l, SalesAccount a) = -amount(l, a) IF amount(l, a) < 0;
+
+amount 'Amount' = ABSTRACT VALUE EXCLUSIVE NUMERIC[14,2] (SalesLedger, SystemSalesAccount);
+amount (SalesLedger l, SystemSalesAccount sa) += amount(l, sa);
+
+amount[SalesLedger, SystemSalesAccount](SalesLedger l, SystemSalesAccount a) += amount(l) IF a = SystemSalesAccount.revenue;
+amount[SalesLedger, SystemSalesAccount](SalesLedger l, SystemSalesAccount a) += -costAmount(l) IF a = SystemSalesAccount.cost;
