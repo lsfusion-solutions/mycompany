@@ -1,6 +1,6 @@
 MODULE DocTemplate;
 
-REQUIRE MasterData;
+REQUIRE MasterData, Utils;
 
 NAMESPACE Utils;
 
@@ -13,6 +13,7 @@ CLASS TemplateFormat 'Template format' {
     noPreview 'Printer'
 }
 
+id '{ID}' (TemplateFormat o) = getWord(staticName(o), '.', 2) IF o IS TemplateFormat CHARWIDTH 10;
 name '{Name}' (TemplateFormat o) = staticCaption(o) IF o IS TemplateFormat CHARWIDTH 15;
 
 FORM dialogTemplateFormats 'Template format'
@@ -49,12 +50,14 @@ META defineDocTemplate(doc, caption)
     format = DATA TemplateFormat (###doc##Template);
     nameFormat 'Format' (###doc##Template t) = name(format(t));
     
+    exportFileName 'Export file name' = DATA STRING (###doc##Template) CHARWIDTH 50;
+
     FORM doc##Template caption
         OBJECTS o = ###doc##Template PANEL
         PROPERTIES(o) name, 
                       template SHOWIF NOT hasFile(o), openFile,
                       loadFile, dropFile SHOWIF hasFile(o),
-                      nameFormat
+                      nameFormat, exportFileName SHOWIF format(o) != TemplateFormat.noPreview
         
         EDIT ###doc##Template OBJECT o
     ;
@@ -67,14 +70,19 @@ META defineDocTemplate(doc, caption)
                     horizontal = TRUE;
                     MOVE PROPERTY(name(o));
                 }
-                NEW format {
+                NEW template {
                     alignment = STRETCH;
                     horizontal = TRUE;
                     MOVE PROPERTY(template(o));
                     MOVE PROPERTY(openFile(o));
                     MOVE PROPERTY(loadFile(o));
                     MOVE PROPERTY(dropFile(o));
+                }
+                NEW format {
+                    alignment = STRETCH;
+                    horizontal = TRUE;
                     MOVE PROPERTY(nameFormat(o));
+                    MOVE PROPERTY(exportFileName(o));
                 }
             }
         }
@@ -181,7 +189,7 @@ META defineDocTemplateForm(doc, obj)
     }
 END
 
-META defineDocTemplateTypeForm(doc, obj)
+META defineDocTemplateTypeForm(doc, obj, NS)
     doc##Template = DATA LOCAL ###doc##Template();
     EXTEND FORM print###doc
         REPORT OVERRIDE file(doc##Template()), setExtension(RAWFILE(template(doc##Template())), 'path')
@@ -196,21 +204,15 @@ META defineDocTemplateTypeForm(doc, obj)
                 doc##Template() <- itm;
             }
         IF doc##Template() THEN {
-            CASE EXCLUSIVE
-                WHEN format(doc##Template()) = TemplateFormat.pdf THEN
-                    PRINT print###doc OBJECTS o = o PDF;
-                WHEN format(doc##Template()) = TemplateFormat.docx THEN
-                    PRINT print###doc OBJECTS o = o DOCX;
-                WHEN format(doc##Template()) = TemplateFormat.xlsx THEN
-                    PRINT print###doc OBJECTS o = o XLSX;
-                WHEN format(doc##Template()) = TemplateFormat.rtf THEN
-                    PRINT print###doc OBJECTS o = o RTF;
-                WHEN format(doc##Template()) = TemplateFormat.html THEN
-                    PRINT print###doc OBJECTS o = o HTML;
-                WHEN format(doc##Template()) = TemplateFormat.noPreview THEN
-                    PRINT print###doc OBJECTS o = o NOPREVIEW;
-                ELSE
-                    PRINT print###doc OBJECTS o = o;
+            LOCAL printScript = STRING();
+            printScript() <- 'PRINT print'###doc + ' OBJECTS o = $1 ' + (OVERRIDE upper(id(format(doc##Template()))), '');
+            IF format(doc##Template()) != TemplateFormat.noPreview THEN
+                printScript() <- printScript() + ' TO exportFile; FOR '##NS + '.'###doc + ' d = $1 DO open(exportFile(), ' +
+                    (OVERRIDE exportFileName(doc##Template()), '\'' + (CONCAT ' ', name(doc##Template()), number(o)) + '\'') 
+                    + ');';
+            ELSE
+                printScript() <- printScript() + ';';
+            EVAL ACTION printScript() PARAMS o;
         }
              
     }
