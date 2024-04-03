@@ -36,20 +36,6 @@ NAVIGATOR {
     }
 }
 
-// change tax
-setTax 'On' = DATA LOCAL BOOLEAN (Tax);
-
-WHEN LOCAL CHANGED(setTax(Tax t)) DO {
-    FOR taxGroup(t) = taxGroup(Tax tx) AND NOT t = tx DO {
-        setTax(tx) <- NULL;
-    }
-}
-
-FORM changeTax 'Set tax'
-    OBJECTS t = Tax
-    PROPERTIES(t) setTax, name READONLY
-;
-
 META defineTax (prefix, cls, caption, form, obj, container)
     prefix##In 'On' = DATA BOOLEAN (cls, Tax) CHARWIDTH 5;
     prefix##Tax caption##'Tax'##', %' (cls i) = GROUP SUM value(Tax tax) IF prefix##In(i, tax);
@@ -61,15 +47,8 @@ META defineTax (prefix, cls, caption, form, obj, container)
         }
     }
     
-    change###prefix##Tax (cls i) {
-        setTax (Tax t) <- prefix##In(i, t);  
-        DIALOG changeTax DO {
-            prefix##In(i, Tax t) <- setTax(t);
-        } 
-    }
-    
     EXTEND FORM form
-        PROPERTIES(obj) name###prefix##Tax ON CHANGE change###prefix##Tax(obj)
+        PROPERTIES(obj) name###prefix##Tax
     ;
     DESIGN form {
         container {

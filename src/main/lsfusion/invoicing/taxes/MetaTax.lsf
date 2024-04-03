@@ -12,13 +12,10 @@ META defineTaxCalc(doc, let, prefix, price)
     WHEN LOCAL CHANGED(item(###doc##Line l)) DO
         in(l, Tax t) <- prefix##In(item(l), t);
 
-    changeTax (###doc##Line l) {
-        REQUEST {
-            setTax (Tax t) <- in(l, t);
-            DIALOG changeTax; 
-        } DO in(l, Tax t) <- setTax(t);
-    } 
-     
+    WHEN LOCAL SET(in(###doc##Line l, Tax t)) DO {
+        in(l, Tax tx) <- NULL WHERE taxGroup(t) = taxGroup(tx) AND NOT t = tx;
+    }
+
     // amount    
     taxAmount 'Taxes' (Tax t, ###doc##Line l) = DATA NUMERIC[14,2] (Tax, ###doc##Line);
     
