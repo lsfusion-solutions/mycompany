@@ -23,7 +23,8 @@ EXTEND CLASS CostAllocationBase {
     salesPrice 'Sales amount',
     weight 'Weight',
     volume 'Volume',
-    overallWeight 'Overall weight'
+    overallWeight 'Overall weight',
+    quantity 'Quantity'
 }
 
 // item form
@@ -59,6 +60,8 @@ allocationBase (BillLine bl, CostAllocationBase b) +=
     WHEN item(bl) IS Product AND b = CostAllocationBase.volume THEN NUMERIC[14,3](volume(item(bl)) * quantity(bl));
 allocationBase (BillLine bl, CostAllocationBase b) += 
     WHEN item(bl) IS Product AND b = CostAllocationBase.overallWeight THEN NUMERIC[14,3](max(volume(item(bl)) * 200, weight(item(bl))) * quantity(bl));
+allocationBase (BillLine bl, CostAllocationBase b) +=
+    WHEN item(bl) IS Product AND b = CostAllocationBase.quantity THEN NUMERIC[14,3](quantity(bl));
 
 allocationBase 'Distribution base' (BillLine bl, BillLine bsl) = allocationBase(bl, costAllocationBase(bsl));
 
