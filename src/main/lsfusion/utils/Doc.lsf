@@ -421,22 +421,26 @@ META defineDocLinesCount(doc, d)
     EXTEND FORM doc##s PROPERTIES(d) READONLY count###doc###Line;
 END
 
-META defineDocFilter(doc, cls, property, obj, caption)
+META defineDocFilter(doc, cls, property, obj, capt, filterProperty)
     doc###property = DATA LOCAL NESTED cls ();
-    name###doc###property caption = name(doc###property());
+    name###doc###property capt = name(doc###property());
 
-    EXTEND FORM doc##s 
+    EXTEND FORM doc##s
         PROPERTIES() name###doc###property
-        
-        FILTERS property(obj) = doc###property() OR NOT doc###property()
+
+        FILTERS filterProperty(obj) = doc###property() OR NOT doc###property()
     ;
-    
+
     DESIGN doc##s {
         filters {
-            MOVE PROPERTY(name###doc###property());
+            MOVE PROPERTY(name###doc###property()) { caption = ''; placeholder = capt; };
         }
     }
 
+END
+
+META defineDocFilter(doc, cls, property, obj, capt)
+    @defineDocFilter(doc, cls, property, obj, capt, property);
 END
 
 badgedDoc(STRING caption, STRING number, DATETIME dateTime) = badged(caption, (CONCAT ' ', '№' + number, '(' + dateTime +  ')'));
