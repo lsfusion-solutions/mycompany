@@ -25,11 +25,13 @@ CONSTRAINT Employee e IS Employee AND NOT legalEntity(e) IS Company
     CHECKED BY legalEntity
     MESSAGE 'An employee\'s legal entity can only be a company';
 
-WHEN LOCAL SET(Employee e IS Employee) AND NOT CHANGED(legalEntity(e)) DO legalEntity(e) <- defaultCompany(); 
+WHEN LOCAL SET(Employee e IS Employee) AND NOT CHANGED(legalEntity(e)) DO legalEntity(e) <- defaultCompany();
+
+photo = DATA IMAGEFILE (Employee);
 
 FORM employee 'Employee'
     OBJECTS e = Employee PANEL
-    PROPERTIES(e) id, login, sha256Password ON CHANGE changeSHA256Password(e), isLocked, archived, 
+    PROPERTIES(e) id, login, sha256Password ON CHANGE changeSHA256Password(e), photo, isLocked, archived, 
                   nameLegalEntity, lastName, firstName, middleName, namePosition, email, phone, address, city, state,
                   zip, birthday, nameMainRole
     
@@ -47,14 +49,23 @@ DESIGN employee {
             fill = 1;
             NEW header {
                 fill = 1;
-                NEW login {
+                NEW headerRow1 {
                     alignment = STRETCH;
-                    caption = '{authentication.custom.user.login}';
-                    MOVE PROPERTY(id(e));
-                    MOVE PROPERTY(login(e));    
-                    MOVE PROPERTY(sha256Password(e));
-                    MOVE PROPERTY(isLocked(e));
-                    MOVE PROPERTY(archived(e));
+                    horizontal = TRUE;
+                    NEW login {
+                        fill = 2;
+                        caption = '{authentication.custom.user.login}';
+                        MOVE PROPERTY(id(e));
+                        MOVE PROPERTY(login(e));
+                        MOVE PROPERTY(sha256Password(e));
+                        MOVE PROPERTY(isLocked(e));
+                        MOVE PROPERTY(archived(e));
+                    }
+                    MOVE PROPERTY(photo(e)) { 
+                        fill = 1;
+                        width = 100;
+                        caption = '';
+                    }
                 }
                 NEW info {
                     alignment = STRETCH;
