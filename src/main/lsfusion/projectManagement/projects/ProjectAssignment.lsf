@@ -1,0 +1,75 @@
+MODULE ProjectAssignment;
+
+REQUIRE Project, ProjectRole;
+
+PRIORITY MasterData;
+
+NAMESPACE ProjectManagement;
+
+CLASS ProjectAssignment 'Project assignment';
+
+project 'Project' = DATA Project (ProjectAssignment) NONULL DELETE;
+countAssignments = GROUP SUM 1 BY project(ProjectAssignment a) MATERIALIZED;
+
+employee 'Employee' = DATA Employee (ProjectAssignment) NONULL INDEXED;
+nameEmployee 'Employee' (ProjectAssignment a) = name(employee(a));
+
+role 'Project role' = DATA ProjectRole (ProjectAssignment);
+nameRole 'Project role' (ProjectAssignment a) = name(role(a));
+
+fromDate 'Date from' = DATA DATE (ProjectAssignment);
+fromDate (ProjectAssignment a) <- currentDate() WHEN SET(a IS ProjectAssignment);
+
+toDate 'To' = DATA DATE (ProjectAssignment);
+
+active (ProjectAssignment a, DATE d) = d >= fromDate(a) AND NOT d > toDate(a);
+active (ProjectAssignment a) = active(a, currentDate());
+
+EXTEND FORM project
+    OBJECTS pa = ProjectAssignment
+    PROPERTIES(pa) nameEmployee, nameRole, fromDate, toDate, NEW, DELETE
+    FILTERS project(pa) = p
+    
+    FILTERGROUP active
+        FILTER 'Active' active(pa)
+;
+
+DESIGN project {
+    details {
+        MOVE BOX(pa) { caption = badged('Assignments', countAssignments(p)); }
+    }
+}
+
+INDEX project(ProjectAssignment a), employee(a), role(a), fromDate(a), a;
+
+assignment (Project p, Employee e, ProjectRole r, DATE d) = 
+    GROUP LAST ProjectAssignment a ORDER fromDate(a), a WHERE active(a, d) BY project(a), employee(a), role(a);
+
+TABLE projectEmployeeRole (Project, Employee, ProjectRole);
+assignment (Project p, Employee e, ProjectRole r) = assignment(p, e, r, currentDate()) MATERIALIZED;
+
+roles 'Roles' (Project p, Employee e, DATE d) = GROUP CONCAT name(ProjectRole r) IF assignment(p, e, r, d), ', ' ORDER r;
+
+assigned (Project p, Employee e, DATE d) = GROUP SUM 1 IF active(ProjectAssignment a, d) AND project(a) = p AND employee(a) = e;
+assigned (Project p, Employee e) = assigned(p, e, currentDate()) MATERIALIZED;
+countEmployees (Project p) = GROUP SUM 1 IF assigned(p, Employee e);
+
+EXTEND FORM project
+    OBJECTS pd = DATE PANEL
+    PROPERTIES(pd) date 'Date' = VALUE
+    
+    OBJECTS pe = Employee
+    PROPERTIES(pe) READONLY firstName, lastName, namePosition
+    PROPERTIES READONLY roles(p, pe, pd)
+    FILTERS assigned(p, pe, pd);
+;
+
+DESIGN project {
+    details {
+        NEW employees {
+            caption = badged('Employees', countEmployees(p));
+            MOVE PROPERTY(date);
+            MOVE BOX(pe);       
+        }
+    }
+}
