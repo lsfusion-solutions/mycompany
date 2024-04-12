@@ -1,6 +1,6 @@
 MODULE TimeEntry;
 
-REQUIRE Project, Employee;
+REQUIRE Project, Employee, TimeEntryType;
 
 PRIORITY MasterData;
 
@@ -17,11 +17,15 @@ employee 'Employee' = DATA Employee (TimeEntry) NONULL;
 nameEmployee 'Employee' (TimeEntry t) = name(employee(t));
 WHEN SET(TimeEntry t IS TimeEntry) AND NOT employee(t) AND currentUser() IS Employee DO employee(t) <- currentUser();
 
+type 'Type' = DATA TimeEntryType (TimeEntry);
+nameType 'Type' (TimeEntry e) = name(type(e));
+type (TimeEntry e) <- defaultTimeEntryType() WHEN SET(e IS TimeEntry);
+
 description 'Description' = DATA ISTRING (TimeEntry) CHARWIDTH 20;
 
 FORM timeEntry 'Time entry'
     OBJECTS t = TimeEntry PANEL
-    PROPERTIES(t) nameEmployee, date, hours, description
+    PROPERTIES(t) nameEmployee, date, hours, nameType, description
     
     EDIT TimeEntry OBJECT t
 ;
@@ -32,6 +36,7 @@ DESIGN timeEntry {
             NEW header {
                 alignment = STRETCH;
                 MOVE PROPERTY(nameEmployee(t));
+                MOVE PROPERTY(nameType(t));
             }
             NEW time {
                 alignment = STRETCH;
@@ -46,7 +51,7 @@ DESIGN timeEntry {
 
 FORM timeEntries 'Time entries'
     OBJECTS t = TimeEntry
-    PROPERTIES(t) READONLY   nameEmployee, date, hours
+    PROPERTIES(t) READONLY nameEmployee, date, hours, nameType
     PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
     
     LIST TimeEntry OBJECT t
