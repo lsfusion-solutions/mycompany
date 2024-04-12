@@ -1,0 +1,55 @@
+MODULE TimeEntryType;
+
+REQUIRE ProjectManagementSettings, Color;
+
+NAMESPACE ProjectManagement;
+
+CLASS TimeEntryType 'Time entry type';
+name '{Name}' = DATA ISTRING[50] (TimeEntryType) NONULL CHARWIDTH 15;
+
+id '{ID}' = DATA STRING[20] (TimeEntryType);
+timeEntryType = GROUP AGGR TimeEntryType t BY id(t);
+
+color 'Color' = DATA Color (TimeEntryType);
+nameColor 'Color' (TimeEntryType t) = name(color(t));
+idColor 'Color' (TimeEntryType t) = id(color(t));
+
+symbol 'Symbol' = DATA STRING[20] (TimeEntryType) CHARWIDTH 2;
+
+defaultTimeEntryType = DATA TimeEntryType ();
+default 'Default' (TimeEntryType t) = defaultTimeEntryType() = t;
+
+FORM timeEntryType 'Time entry type'
+    OBJECTS o = TimeEntryType PANEL
+    PROPERTIES(o) name, id, default, nameColor, symbol
+
+    EDIT TimeEntryType OBJECT o;
+;
+
+DESIGN timeEntryType {
+    OBJECTS {
+        NEW tabbedPane {
+            fill = 1;
+            tabbed = TRUE;
+        }
+    }
+}
+
+FORM timeEntryTypes 'Time entry types'
+    OBJECTS o = TimeEntryType
+    PROPERTIES(o) READONLY name, id
+
+    LIST TimeEntryType OBJECT o;
+;
+
+EXTEND FORM options
+    OBJECTS tet = TimeEntryType
+    PROPERTIES(tet) READONLY name, id, default, nameColor, symbol
+    PROPERTIES(tet) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(tet);
+    }
+}
