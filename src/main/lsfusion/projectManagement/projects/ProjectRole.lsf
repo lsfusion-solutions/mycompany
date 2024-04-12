@@ -1,0 +1,46 @@
+MODULE ProjectRole;
+
+REQUIRE ProjectManagementSettings, Numerator;
+
+NAMESPACE ProjectManagement;
+
+CLASS ProjectRole 'Project role';
+name '{Name}' = DATA ISTRING[50] (ProjectRole) NONULL CHARWIDTH 15;
+
+id '{ID}' = DATA STRING[20] (ProjectRole);
+projectRole = GROUP AGGR ProjectRole t BY id(t);
+
+FORM projectRole 'Project role'
+    OBJECTS o = ProjectRole PANEL
+    PROPERTIES(o) name, id
+
+    EDIT ProjectRole OBJECT o;
+;
+
+DESIGN projectRole {
+    OBJECTS {
+        NEW tabbedPane {
+            fill = 1;
+            tabbed = TRUE;
+        }
+    }
+}
+
+FORM projectRoles 'Project roles'
+    OBJECTS o = ProjectRole
+    PROPERTIES(o) READONLY name, id
+
+    LIST ProjectRole OBJECT o;
+;
+
+EXTEND FORM options
+    OBJECTS pr = ProjectRole
+    PROPERTIES(pr) READONLY name, id
+    PROPERTIES(pr) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(pr);
+    }
+}
