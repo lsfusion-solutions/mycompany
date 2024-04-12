@@ -138,7 +138,12 @@ FORM order 'Purchase order'
     PROPERTIES(o) READONLY untaxedAmount, taxAmount, amount
                  
     OBJECTS l = OrderLine
-    PROPERTIES(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, referenceItem, quantity, price, untaxedAmount, taxes
+    PROPERTIES(l) index, 
+                  nameItem ON CHANGE {
+                      INPUT i = item(l) LIST name(i) ACTIONS 'add' { newProduct(STRING(i)); } DO item(l) <- i;
+                  },
+                  description, nameUom, idBarCodeItem, idItem, referenceItem, 
+                  quantity, price, untaxedAmount, taxes
     PROPERTIES(l) NEW, DELETE
     FILTERS order(l) = o
      

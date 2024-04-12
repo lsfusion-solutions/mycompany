@@ -61,7 +61,11 @@ FORM pricelist 'Vendor pricelist'
     PROPERTIES(p) number, startDateTime, endDateTime, nameVendor, note
     
     OBJECTS l = PricelistLine
-    PROPERTIES(l) index READONLY, nameItem, nameUom READONLY, vendorName, vendorReference,
+    PROPERTIES(l) index READONLY,
+                  nameItem ON CHANGE {
+                      INPUT i = item(l) LIST name(i) ACTIONS 'add' { newProduct(STRING(i)); } DO item(l) <- i;
+                  },
+                  nameUom READONLY, vendorName, vendorReference,
                   idBarCodeItem, idItem, referenceItem, price
     PROPERTIES(l) NEW, DELETE 
     FILTERS pricelist(l) = p
