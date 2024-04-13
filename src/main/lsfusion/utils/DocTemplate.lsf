@@ -144,51 +144,6 @@ META defineDocTemplateType(doc, caption)
     
 END
 
-META defineDocTemplateForm(doc, obj)
-    doc##Template = DATA LOCAL ###doc##Template();
-    EXTEND FORM print###doc
-        REPORT OVERRIDE file(doc##Template()), setExtension(RAWFILE(template(doc##Template())), 'path')
-    ;
-
-    print 'Print' (###doc o) {
-        doc##Template() <- NULL;
-        IF count###doc##Template() = 1 THEN
-            doc##Template() <- GROUP MAX ###doc##Template it AS ###doc##Template;
-        ELSE
-            DIALOG dialogTemplates###doc OBJECTS itm INPUT DO {
-                doc##Template() <- itm;
-            }
-        IF doc##Template() THEN {
-            CASE EXCLUSIVE
-                WHEN format(doc##Template()) = TemplateFormat.pdf THEN
-                    PRINT print###doc OBJECTS o = o PDF;
-                WHEN format(doc##Template()) = TemplateFormat.docx THEN
-                    PRINT print###doc OBJECTS o = o DOCX;
-                WHEN format(doc##Template()) = TemplateFormat.xlsx THEN
-                    PRINT print###doc OBJECTS o = o XLSX;
-                WHEN format(doc##Template()) = TemplateFormat.rtf THEN
-                    PRINT print###doc OBJECTS o = o RTF;
-                WHEN format(doc##Template()) = TemplateFormat.html THEN
-                    PRINT print###doc OBJECTS o = o HTML;
-                WHEN format(doc##Template()) = TemplateFormat.noPreview THEN
-                    PRINT print###doc OBJECTS o = o NOPREVIEW;
-                ELSE
-                    PRINT print###doc OBJECTS o = o;
-        }
-             
-    }
-
-    EXTEND FORM doc
-        PROPERTIES(obj) print SHOWIF count###doc##Template()
-    ;
-    
-    DESIGN doc {
-        secondaryActions {
-            MOVE PROPERTY(print(obj));
-        }
-    }
-END
-
 META defineDocTemplateTypeForm(doc, obj, NS)
     doc##Template = DATA LOCAL ###doc##Template();
     EXTEND FORM print###doc
@@ -205,7 +160,7 @@ META defineDocTemplateTypeForm(doc, obj, NS)
             }
         IF doc##Template() THEN {
             LOCAL printScript = STRING();
-            printScript() <- 'PRINT print'###doc + ' OBJECTS o = $1 ' + (OVERRIDE upper(id(format(doc##Template()))), '');
+            printScript() <- 'PRINT '##NS + '.print'###doc + ' OBJECTS o = $1 ' + (OVERRIDE upper(id(format(doc##Template()))), '');
             IF format(doc##Template()) != TemplateFormat.noPreview THEN
                 printScript() <- printScript() + ' TO exportFile; FOR '##NS + '.'###doc + ' d = $1 DO open(exportFile(), ' +
                     (OVERRIDE exportFileName(doc##Template()), '\'' + (CONCAT ' ', name(doc##Template()), replace(number(o),'/','')) + '\'') 
