@@ -8,7 +8,10 @@ CLASS TimeEntryHours 'Time entry hours';
 
 type = DATA TimeEntryType (TimeEntryHours);
 
+name 'Name' = DATA STRING (TimeEntryHours) CHARWIDTH 10;
 hours 'Hours' = DATA NUMERIC[8,2] (TimeEntryHours);
+
+nameHours (TimeEntryHours h) = OVERRIDE name(h), rtrim(toChar(hours(h), 'FM99999.99'),'.');
 
 countHours (TimeEntryType t) = GROUP SUM 1 IF type(TimeEntryHours e) = t;
 
@@ -17,13 +20,6 @@ defaultHours (TimeEntryType t) = calcDefaultHours(t) IF countHours(t) = 1;
 
 EXTEND FORM timeEntryType
     OBJECTS h = TimeEntryHours
-    PROPERTIES(h) hours, NEW, DELETE
+    PROPERTIES(h) name, hours, NEW, DELETE
     FILTERS type(h) = o
-;
-
-FORM dialogTimeEntryHours 'Hours'
-    OBJECTS h = TimeEntryHours
-    PROPERTIES(h) hours
-    
-    LIST TimeEntryHours OBJECT h
 ;

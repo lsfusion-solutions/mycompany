@@ -1,0 +1,87 @@
+MODULE TimesheetSupervisorMobile;
+
+REQUIRE Timesheet, Mobile;
+
+PRIORITY MasterData;
+
+NAMESPACE ProjectManagement;
+
+FORM timesheetSupervisorMobile 'Timesheet'
+    OBJECTS d = DATE PANEL
+    PROPERTIES d '' = VALUE(d)
+    PROPERTIES dow '' = extractDOWName (d)
+
+    PROPERTIES prevDate '<' = { SEEK timesheetSupervisorMobile.d = subtract(d, 1); },
+               nextDate '>' = { SEEK timesheetSupervisorMobile.d = sum(d, 1); }
+
+    PROPERTIES() nameTimesheetProject, nameTimesheetTimeEntryType
+
+    EVENTS ON INIT {
+        timesheetProject() <- defaultProject(currentUser());
+        timesheetTimeEntryType() <- OVERRIDE defaultTimeEntryType(), firstTimeEntryType();
+    }
+
+    OBJECTS e = Employee
+    PROPERTIES(e) READONLY name
+    PROPERTIES hoursTimesheet(d, e) BACKGROUND backgroundHoursTimesheet(d, e)
+               READONLYIF NOT timesheetTimeEntryType()
+               ON CHANGE { 
+                   INPUT n = NUMERIC[8,2] DO {
+                       NEWSESSION NESTED (timesheetTimeEntryType) APPLY NESTED (timesheetTimeEntryType) { 
+                           changeTimesheetHours(d, e, timesheetTimeEntryType(), n); 
+                       }
+                   } 
+               }
+    
+    OBJECTS h = TimeEntryHours
+    PROPERTIES NOWAIT changeHours = {
+                   NEWSESSION NESTED (timesheetTimeEntryType) APPLY NESTED (timesheetTimeEntryType) {
+                       changeTimesheetHours(d, e, timesheetTimeEntryType(), hours(h));
+                   }
+               } COLUMNS (h) HEADER nameHours(h)
+    FILTERS type(h) = timesheetTimeEntryType()
+;
+
+DESIGN timesheetSupervisorMobile {
+    OBJECTS {
+        MOVE PROPERTY(nameTimesheetProject()) { 
+            alignment = STRETCH;
+            caption = '';
+//            placeholder = 'Project';
+        }
+        NEW dates {
+            horizontal = TRUE;
+            alignment = CENTER;
+            MOVE PROPERTY(prevDate);
+            MOVE PROPERTY(d);
+            MOVE PROPERTY(dow);
+            MOVE PROPERTY(nextDate);
+        }
+        MOVE GRID(e) {
+            PROPERTY(name(e)) { caption = ''; }
+            PROPERTY(hoursTimesheet(d, e)) { caption = ''; charWidth = 4; };
+        }
+        REMOVE BOX(e);
+        MOVE PROPERTY(nameTimesheetTimeEntryType()) { 
+            alignment = STRETCH;
+            caption = '';
+//            placeholder = 'Type';
+        }
+        MOVE PROPERTY(changeHours) {
+            alignment = STRETCH;
+        }
+
+        REMOVE TOOLBARBOX;
+    }
+} 
+
+NAVIGATOR {
+    dashboards {
+        NEW 'Supervisor timesheet mobile' = timesheetSupervisorMobile;
+    }
+}
+
+showMobileForms() + {
+    IF permit(currentUser(), navigatorElementCanonicalName('ProjectManagement.timesheetSupervisorMobile')) THEN
+        SHOW timesheetSupervisorMobile NOWAIT;
+}
