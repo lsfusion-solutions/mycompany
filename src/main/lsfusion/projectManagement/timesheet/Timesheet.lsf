@@ -1,0 +1,54 @@
+MODULE Timesheet;
+
+REQUIRE ProjectAssignment, ProjectTimeEntry, TimeEntryHours;
+
+NAMESPACE ProjectManagement;
+
+timesheetProject = DATA LOCAL NESTED Project ();
+nameTimesheetProject 'Project' = name(timesheetProject());
+
+CONSTRAINT timesheetProject() AND countAssignments(currentUser()) AND NOT assigned(timesheetProject(), currentUser())
+    CHECKED BY timesheetProject[] MESSAGE '';
+
+timesheetTimeEntryType = DATA LOCAL TimeEntryType ();
+nameTimesheetTimeEntryType 'Time entry type' = name(timesheetTimeEntryType());
+
+timesheetTimeEntryHours = DATA LOCAL TimeEntryHours ();
+nameTimesheetTimeEntryHours 'Hours' = nameHours(timesheetTimeEntryHours());
+CONSTRAINT timesheetTimeEntryHours() AND NOT type(timesheetTimeEntryHours()) = timesheetTimeEntryType()
+    CHECKED BY timesheetTimeEntryHours[] MESSAGE '';
+
+rolesTimesheet 'Roles' (Employee e) = roles(timesheetProject(), e);
+
+hoursTimesheet 'Hours' (DATE d, Employee e)=
+    IF timesheetProject() THEN hours(d, e, timesheetProject())
+    ELSE hours(d, e);
+
+backgroundHoursTimesheet 'Hours' (DATE d, Employee e)=
+    IF countTimeEntryType(d, e) > 1 THEN RGB(255,192,0) ELSE
+        OVERRIDE
+            IF timesheetProject() THEN rgbColor(type(timeEntry(d, e, timesheetProject())))
+            ELSE rgbColor(type(timeEntry(d, e))),
+            RGB(255,224,224) IF extractDOWNumber(d) = 0 OR extractDOWNumber(d) = 6;
+
+changeTimesheetHours (DATE d, Employee e, TimeEntryType et, NUMERIC[8,2] n) {
+    IF n THEN {
+        IF timesheetProject() THEN {
+            IF NOT timeEntry(d, e, timesheetProject(), et) THEN NEW t = TimeEntry {
+                project(t) <- timesheetProject();
+                type(t) <- et;
+                employee(t) <- e;
+                date(t) <- d;
+            }
+            hours(timeEntry(d, e, timesheetProject(), et)) <- n;
+        } ELSE {
+            IF NOT timeEntry(d, e, et) THEN NEW t = TimeEntry {
+                type(t) <- et;
+                employee(t) <- e;
+                date(t) <- d;
+            }
+            hours(timeEntry(d, e, et)) <- n;
+        }
+    } ELSE
+        DELETE TimeEntry t WHERE (project(t) = timesheetProject() OR NOT timesheetProject()) AND employee(t) = e AND date(t) = d;
+}

@@ -9,7 +9,7 @@ quantity 'Qty' = DATA LOCAL NESTED NUMERIC[16,3] (Product);
 backgroundQuantity (Location l, Product p) = CASE WHEN quantity(p) > onHand(l, p) THEN RGB(255,212,212)
                                                            WHEN quantity(p) THEN RGB(212,255,212); 
 
-FORM transferMobile 'Mobile transfer'
+FORM transferMobile 'Transfer'
     OBJECTS t = ShipmentType PANEL
     PROPERTIES(t) 'Type' = name SELECTOR SHOWIF countTransferTypes() > 1
     FILTERS isTransfer(t)
@@ -30,7 +30,6 @@ FORM transferMobile 'Mobile transfer'
 ;
 
 DESIGN transferMobile {
-    caption = 'Transfer';
     OBJECTS {
         class = '';
         border = FALSE;
@@ -144,7 +143,7 @@ DESIGN transferMobile {
 
 NAVIGATOR {
     dashboards {
-        NEW transferMobile;
+        NEW 'Mobile transfer' = transferMobile;
     }
 }
 
