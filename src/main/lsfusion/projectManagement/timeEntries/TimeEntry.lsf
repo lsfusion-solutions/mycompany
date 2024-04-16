@@ -23,6 +23,19 @@ type (TimeEntry e) <- defaultTimeEntryType() WHEN SET(e IS TimeEntry);
 
 description 'Description' = DATA ISTRING (TimeEntry) CHARWIDTH 20;
 
+INDEX employee(TimeEntry e), date(e), e;
+
+timeEntry (DATE d, Employee e, TimeEntryType et) = GROUP MIN TimeEntry t IF date(t) = d AND employee(t) = e AND type(t) = et;
+hours 'Hours' (DATE d, Employee e, TimeEntryType et) =
+    GROUP SUM hours(TimeEntry t) IF type(t) = et AND employee(t) = e AND date(t) = d;
+
+countTimeEntry (DATE d, Employee e, TimeEntryType et) = GROUP SUM 1 IF date(TimeEntry t) = d AND employee(t) = e AND type(t) = et;
+countTimeEntryType (DATE d, Employee e) = GROUP SUM 1 IF countTimeEntry(d, e, TimeEntryType et); 
+
+timeEntry (DATE d, Employee e) = GROUP MIN TimeEntry t IF date(t) = d AND employee(t) = e;
+hours 'Hours' (DATE d, Employee e) =
+    GROUP SUM hours(TimeEntry t) IF date(t) = d AND employee(t) = e;
+
 FORM timeEntry 'Time entry'
     OBJECTS t = TimeEntry PANEL
     PROPERTIES(t) nameEmployee, date, hours, nameType, description
@@ -51,7 +64,7 @@ DESIGN timeEntry {
 
 FORM timeEntries 'Time entries'
     OBJECTS t = TimeEntry
-    PROPERTIES(t) READONLY nameEmployee, date, hours, nameType
+    PROPERTIES(t) READONLY nameEmployee, date, hours, nameType, description
     PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
     
     LIST TimeEntry OBJECT t

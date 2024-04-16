@@ -13,6 +13,7 @@ countAssignments = GROUP SUM 1 BY project(ProjectAssignment a) MATERIALIZED;
 
 employee 'Employee' = DATA Employee (ProjectAssignment) NONULL INDEXED;
 nameEmployee 'Employee' (ProjectAssignment a) = name(employee(a));
+countAssignments = GROUP SUM 1 BY employee(ProjectAssignment a) MATERIALIZED;
 
 role 'Project role' = DATA ProjectRole (ProjectAssignment);
 nameRole 'Project role' (ProjectAssignment a) = name(role(a));
@@ -49,10 +50,16 @@ TABLE projectEmployeeRole (Project, Employee, ProjectRole);
 assignment (Project p, Employee e, ProjectRole r) = assignment(p, e, r, currentDate()) MATERIALIZED;
 
 roles 'Roles' (Project p, Employee e, DATE d) = GROUP CONCAT name(ProjectRole r) IF assignment(p, e, r, d), ', ' ORDER r;
+roles 'Roles' (Project p, Employee e) = GROUP CONCAT name(ProjectRole r) IF assignment(p, e, r), ', ' ORDER r;
 
 assigned (Project p, Employee e, DATE d) = GROUP SUM 1 IF active(ProjectAssignment a, d) AND project(a) = p AND employee(a) = e;
 assigned (Project p, Employee e) = assigned(p, e, currentDate()) MATERIALIZED;
 countEmployees (Project p) = GROUP SUM 1 IF assigned(p, Employee e);
+
+calcDefaultProject (Employee e) = GROUP LAST Project p ORDER p WHERE assigned(p, e);
+countProjects (Employee e) = GROUP SUM 1 IF assigned(Project p, e);
+
+defaultProject (Employee e) = calcDefaultProject(e) IF countProjects(e) = 1;
 
 EXTEND FORM project
     OBJECTS pd = DATE PANEL

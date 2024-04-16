@@ -4,6 +4,18 @@ REQUIRE Time;
 
 NAMESPACE Utils;
 
+days (INTERVAL[DATE] i) = daysBetweenDates(to(i), from(i)) + 1;
+prevMonthInterval (INTERVAL[DATE] i) =
+    IF from(i) = firstDayOfMonth(from(i)) AND to(i) = lastDayOfMonth(from(i)) THEN
+        interval(firstDayOfMonth(subtract(from(i), 1)), lastDayOfMonth(subtract(from(i), 1)))
+    ELSE
+        interval(subtract(from(i), days(i)), subtract(to(i), days(i)));
+nextMonthInterval (INTERVAL[DATE] i) =
+    IF from(i) = firstDayOfMonth(from(i)) AND to(i) = lastDayOfMonth(from(i)) THEN
+        interval(firstDayOfMonth(sum(to(i), 1)), lastDayOfMonth(sum(to(i), 1)))
+    ELSE
+        interval(sum(from(i), days(i)), sum(to(i), days(i)));
+
 META defineDateFilterForm(form, let, prefix)
     EXTEND FORM form
         OBJECTS dates = INTERVAL[DATE] BEFORE let PANEL NULL
