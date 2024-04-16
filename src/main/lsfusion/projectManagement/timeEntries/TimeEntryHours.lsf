@@ -1,0 +1,29 @@
+MODULE TimeEntryHours;
+
+REQUIRE TimeEntryType;
+
+NAMESPACE ProjectManagement;
+
+CLASS TimeEntryHours 'Time entry hours';
+
+type = DATA TimeEntryType (TimeEntryHours);
+
+hours 'Hours' = DATA NUMERIC[8,2] (TimeEntryHours);
+
+countHours (TimeEntryType t) = GROUP SUM 1 IF type(TimeEntryHours e) = t;
+
+calcDefaultHours (TimeEntryType t) = GROUP MIN TimeEntryHours e IF type(e) = t;
+defaultHours (TimeEntryType t) = calcDefaultHours(t) IF countHours(t) = 1;
+
+EXTEND FORM timeEntryType
+    OBJECTS h = TimeEntryHours
+    PROPERTIES(h) hours, NEW, DELETE
+    FILTERS type(h) = o
+;
+
+FORM dialogTimeEntryHours 'Hours'
+    OBJECTS h = TimeEntryHours
+    PROPERTIES(h) hours
+    
+    LIST TimeEntryHours OBJECT h
+;

@@ -18,8 +18,19 @@ CLASS Color 'Color' {
 id '{ID}' (Color t) = getWord(staticName(t), '.', 2) IF t IS Color CHARWIDTH 10;
 name '{Name}' (Color t) = staticCaption(t) IF t IS Color CHARWIDTH 10;
 
+rgb 'Color' (Color c) = 
+    CASE WHEN c = Color.primary THEN #0d6efd
+         WHEN c = Color.secondary THEN #6c757d
+         WHEN c = Color.success THEN #198754
+         WHEN c = Color.info THEN #0dcaf0
+         WHEN c = Color.warning THEN #ffc107
+         WHEN c = Color.danger THEN #dc3545
+         WHEN c = Color.light THEN #f8f9fa
+         WHEN c = Color.dark THEN #212529
+    MATERIALIZED;
+
 FORM colors 'Colors'
     OBJECTS c = Color
-    PROPERTIES(c) READONLY name
+    PROPERTIES(c) READONLY name, rgb
     LIST Color OBJECT c
 ;

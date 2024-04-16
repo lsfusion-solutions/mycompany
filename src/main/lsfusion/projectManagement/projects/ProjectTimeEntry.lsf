@@ -11,6 +11,23 @@ nameCustomer 'Partner' (TimeEntry e) = namePartner(project(e));
 countTimeEntry 'Time entries' (Project p) = GROUP SUM 1 IF project(TimeEntry t) = p;  
 hoursTimeEntry 'Hours' (Project p) = GROUP SUM hours(TimeEntry t) IF project(t) = p;  
 
+INDEX date(TimeEntry e), employee(e), project(e);
+
+timeEntry (DATE d, Employee e, Project p, TimeEntryType et) = GROUP MIN TimeEntry t IF date(t) = d AND employee(t) = e AND project(t) = p AND type(t) = et;
+hours 'Hours' (DATE d, Employee e, Project p, TimeEntryType et) =
+    GROUP SUM hours(TimeEntry t) IF date(t) = d AND employee(t) = e AND project(t) = p AND type(t) = et;
+
+timeEntry (DATE d, Employee e, Project p) = GROUP MIN TimeEntry t IF date(t) = d AND employee(t) = e AND project(t) = p;
+hours 'Hours' (DATE d, Employee e, Project p) =
+    GROUP SUM hours(TimeEntry t) IF date(t) = d AND employee(t) = e AND project(t) = p;
+
+countTimeEntry 'Time entries' (DATE d, Employee e, Project p, TimeEntryType et) =
+    GROUP SUM 1 IF date(TimeEntry t) = d AND employee(t) = e AND project(t) = p AND type(t) = et;
+
+projectDescription 'Description' (TimeEntry e) = CONCAT ' / ', name(project(e)), (CONCAT ' : ', nameType(e), hours(e));  
+
+timeEntries (DATE d, Employee e) = GROUP CONCAT projectDescription(TimeEntry t) IF date(t) = d AND employee(t) = e, '\n' ORDER t;
+
 EXTEND FORM timeEntry
     PROPERTIES(t) nameProject
 ;
