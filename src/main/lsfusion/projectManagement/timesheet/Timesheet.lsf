@@ -36,20 +36,36 @@ backgroundHoursTimesheet 'Hours' (DATE d, Employee e)=
 changeTimesheetHours (DATE d, Employee e, TimeEntryType et, NUMERIC[8,2] n) {
     IF n THEN {
         IF timesheetProject() THEN {
-            IF NOT timeEntry(d, e, timesheetProject(), et) THEN NEW t = TimeEntry {
-                project(t) <- timesheetProject();
-                type(t) <- et;
-                employee(t) <- e;
-                date(t) <- d;
+            FOR TimeEntry t = timeEntry(d, e, timesheetProject(), et) DO {
+                IF hours(t) = n THEN
+                    DELETE t;
+                ELSE
+                    hours(t) <- n;
+            } ELSE {
+                DELETE TimeEntry te WHERE project(te) = timesheetProject() AND employee(te) = e AND date(te) = d;
+                NEW t = TimeEntry {
+                    project(t) <- timesheetProject();
+                    type(t) <- et;
+                    employee(t) <- e;
+                    date(t) <- d;
+                    hours(t) <- n;
+                }
             }
-            hours(timeEntry(d, e, timesheetProject(), et)) <- n;
         } ELSE {
-            IF NOT timeEntry(d, e, et) THEN NEW t = TimeEntry {
-                type(t) <- et;
-                employee(t) <- e;
-                date(t) <- d;
+            FOR TimeEntry t = timeEntry(d, e, et) DO {
+                IF hours(t) = n THEN
+                    DELETE t;
+                ELSE
+                    hours(t) <- n;
+            } ELSE {
+                DELETE TimeEntry te WHERE NOT project(te) AND employee(te) = e AND date(te) = d;
+                NEW t = TimeEntry {
+                    type(t) <- et;
+                    employee(t) <- e;
+                    date(t) <- d;
+                    hours(t) <- n;
+                }
             }
-            hours(timeEntry(d, e, et)) <- n;
         }
     } ELSE
         DELETE TimeEntry t WHERE matchesProject(t) AND employee(t) = e AND date(t) = d;
