@@ -33,11 +33,11 @@ backgroundHoursTimesheet 'Hours' (DATE d, Employee e)=
             ELSE rgbColor(type(timeEntry(d, e))),
             RGB(255,224,224) IF extractDOWNumber(d) = 0 OR extractDOWNumber(d) = 6;
 
-changeTimesheetHours (DATE d, Employee e, TimeEntryType et, NUMERIC[8,2] n) {
+changeTimesheetHours (DATE d, Employee e, TimeEntryType et, NUMERIC[8,2] n, BOOLEAN input) {
     IF n THEN {
         IF timesheetProject() THEN {
             FOR TimeEntry t = timeEntry(d, e, timesheetProject(), et) DO {
-                IF hours(t) = n THEN
+                IF hours(t) = n AND NOT input THEN
                     DELETE t;
                 ELSE
                     hours(t) <- n;
@@ -53,7 +53,7 @@ changeTimesheetHours (DATE d, Employee e, TimeEntryType et, NUMERIC[8,2] n) {
             }
         } ELSE {
             FOR TimeEntry t = timeEntry(d, e, et) DO {
-                IF hours(t) = n THEN
+                IF hours(t) = n AND NOT input THEN
                     DELETE t;
                 ELSE
                     hours(t) <- n;
