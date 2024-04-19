@@ -14,6 +14,8 @@ FORM timesheetSupervisorMobile 'Timesheet'
     PROPERTIES prevDate '<' = { SEEK timesheetSupervisorMobile.d = subtract(d, 1); },
                nextDate '>' = { SEEK timesheetSupervisorMobile.d = sum(d, 1); }
 
+    PROPERTIES(d) copyApply, clearApply
+    
     PROPERTIES() nameTimesheetProject, nameTimesheetTimeEntryType
 
     EVENTS ON INIT {
@@ -56,6 +58,8 @@ DESIGN timesheetSupervisorMobile {
             MOVE PROPERTY(d);
             MOVE PROPERTY(dow);
             MOVE PROPERTY(nextDate);
+            MOVE PROPERTY(copyApply(d));
+            MOVE PROPERTY(clearApply(d));
         }
         MOVE GRID(e) {
             PROPERTY(name(e)) { caption = ''; }

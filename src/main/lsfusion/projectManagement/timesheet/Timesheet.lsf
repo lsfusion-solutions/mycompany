@@ -10,6 +10,8 @@ nameTimesheetProject 'Project' = name(timesheetProject());
 CONSTRAINT timesheetProject() AND countAssignments(currentUser()) AND NOT assigned(timesheetProject(), currentUser())
     CHECKED BY timesheetProject[] MESSAGE '';
 
+matchesProject (TimeEntry t) = project(t) = timesheetProject() OR (NOT timesheetProject() AND NOT project(t));
+
 timesheetTimeEntryType = DATA LOCAL TimeEntryType ();
 nameTimesheetTimeEntryType 'Time entry type' = name(timesheetTimeEntryType());
 
@@ -50,5 +52,32 @@ changeTimesheetHours (DATE d, Employee e, TimeEntryType et, NUMERIC[8,2] n) {
             hours(timeEntry(d, e, et)) <- n;
         }
     } ELSE
-        DELETE TimeEntry t WHERE (project(t) = timesheetProject() OR NOT timesheetProject()) AND employee(t) = e AND date(t) = d;
+        DELETE TimeEntry t WHERE matchesProject(t) AND employee(t) = e AND date(t) = d;
 }
+
+countTimeEntryProject (DATE d) = GROUP SUM 1 IF date(TimeEntry t) = d AND matchesProject(t);
+
+clear 'Clear' (DATE d) {
+    DELETE TimeEntry t WHERE date(t) = d AND matchesProject(t);
+}
+
+maxDate (DATE to) = GROUP MAX date(TimeEntry t) IF date(t) < to AND matchesProject(t);
+copy 'Copy' (DATE d) {
+    clear(d);
+    FOR date(TimeEntry t) = maxDate(d) AND matchesProject(t) INLINE DO NEW tn = TimeEntry {
+        date(tn) <- d;
+        hours(tn) <- hours(t);
+        employee(tn) <- employee(t);
+        project(tn) <- project(t);
+        type(tn) <- type(t);
+    }
+}
+
+copyApply 'Copy' (DATE d) {
+    ASK 'Copying will delete all time entries for the selected day. Continue ?' IF countTimeEntryProject(d) DO
+        NEWSESSION APPLY { copy(d); }
+}
+
+clearApply 'Clear' (DATE d) {
+    NEWSESSION APPLY { clear(d); }
+} CONFIRM;
