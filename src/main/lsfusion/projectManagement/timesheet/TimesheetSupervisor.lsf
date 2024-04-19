@@ -31,7 +31,7 @@ FORM timesheetSupervisor 'Supervisor timesheet'
     
     OBJECTS e = Employee
     PROPERTIES(e) READONLY firstName, lastName, namePosition, rolesTimesheet
-    PROPERTIES hoursTimesheet(d, e) NOWAIT COLUMNS (d) HEADER extractDay(d) BACKGROUND backgroundHoursTimesheet(d, e)
+    PROPERTIES hoursTimesheet(d, e) WAIT COLUMNS (d) HEADER extractDay(d) BACKGROUND backgroundHoursTimesheet(d, e)
                ON CHANGE {
                    FOR TimeEntryType et = timesheetTimeEntryType() AND (timesheetProject() OR NOT project(timeEntry(d, e, timesheetTimeEntryType()))) DO {
                        IF NOT timesheetTimeEntryHours() THEN {
