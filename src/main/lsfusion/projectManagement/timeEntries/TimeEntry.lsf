@@ -7,6 +7,7 @@ PRIORITY MasterData;
 NAMESPACE ProjectManagement;
 
 CLASS TimeEntry 'Time entry';
+TABLE timeEntry (TimeEntry);
 
 date 'Date' = DATA DATE (TimeEntry);
 date(TimeEntry e) <- currentDate() WHEN SET(e IS TimeEntry);
@@ -24,6 +25,7 @@ type (TimeEntry e) <- defaultTimeEntryType() WHEN SET(e IS TimeEntry);
 description 'Description' = DATA ISTRING (TimeEntry) CHARWIDTH 20;
 
 INDEX employee(TimeEntry e), date(e), e;
+INDEX date(TimeEntry e), employee(e);
 
 timeEntry (DATE d, Employee e, TimeEntryType et) = GROUP MIN TimeEntry t IF date(t) = d AND employee(t) = e AND type(t) = et;
 hours 'Hours' (DATE d, Employee e, TimeEntryType et) =
