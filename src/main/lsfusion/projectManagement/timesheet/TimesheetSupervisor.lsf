@@ -35,11 +35,11 @@ FORM timesheetSupervisor 'Supervisor timesheet'
                ON CHANGE {
                    FOR TimeEntryType et = timesheetTimeEntryType() AND (timesheetProject() OR NOT project(timeEntry(d, e, timesheetTimeEntryType()))) DO {
                        IF NOT timesheetTimeEntryHours() THEN {
-                           INPUT n = NUMERIC[4,1] DO {
-                               changeTimesheetHours(d, e, et, n);
+                           INPUT n = hoursTimesheet(d, e) DO {
+                               changeTimesheetHours(d, e, et, n, TRUE);
                            }
                        } ELSE
-                           changeTimesheetHours(d, e, et, hours(timesheetTimeEntryHours()));
+                           changeTimesheetHours(d, e, et, hours(timesheetTimeEntryHours()), NULL);
                    } ELSE
                        SHOW timesheetSupervisorDateEmployee OBJECTS d = d, e = e FLOAT;
                } ON CONTEXTMENU copy(d) ON CONTEXTMENU clear(d)
