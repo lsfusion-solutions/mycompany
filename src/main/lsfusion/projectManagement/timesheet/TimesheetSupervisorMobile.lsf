@@ -9,7 +9,7 @@ NAMESPACE ProjectManagement;
 FORM timesheetSupervisorMobile 'Timesheet'
     OBJECTS d = DATE PANEL
     PROPERTIES d '' = VALUE(d)
-    PROPERTIES dow '' = extractDOWName (d)
+    PROPERTIES dow '' = extractDOWName (d) READONLY
 
     PROPERTIES prevDate '<' = { SEEK timesheetSupervisorMobile.d = subtract(d, 1); },
                nextDate '>' = { SEEK timesheetSupervisorMobile.d = sum(d, 1); }
@@ -46,20 +46,28 @@ FORM timesheetSupervisorMobile 'Timesheet'
 
 DESIGN timesheetSupervisorMobile {
     OBJECTS {
-        MOVE PROPERTY(nameTimesheetProject()) { 
-            alignment = STRETCH;
-            caption = '';
-            placeholder = 'Project';
-        }
-        NEW dates {
+        NEW row1 {
             horizontal = TRUE;
-            alignment = CENTER;
-            MOVE PROPERTY(prevDate);
-            MOVE PROPERTY(d);
-            MOVE PROPERTY(dow);
-            MOVE PROPERTY(nextDate);
-            MOVE PROPERTY(copyApply(d));
+            alignment = STRETCH;
+            MOVE PROPERTY(nameTimesheetProject()) {
+                fill = 1;
+                caption = '';
+                placeholder = 'Project';
+            }
             MOVE PROPERTY(clearApply(d));
+        }
+        NEW row2 {
+            horizontal = TRUE;
+            alignment = STRETCH;
+            NEW dates {
+                fill = 1;
+                horizontal = TRUE;
+                MOVE PROPERTY(prevDate);
+                MOVE PROPERTY(d);
+                MOVE PROPERTY(nextDate);
+                MOVE PROPERTY(dow) { flex = 0;}
+            }
+            MOVE PROPERTY(copyApply(d));
         }
         MOVE GRID(e) {
             PROPERTY(name(e)) { caption = ''; }

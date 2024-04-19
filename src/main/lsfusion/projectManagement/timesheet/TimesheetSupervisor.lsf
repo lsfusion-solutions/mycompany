@@ -31,7 +31,7 @@ FORM timesheetSupervisor 'Supervisor timesheet'
     
     OBJECTS e = Employee
     PROPERTIES(e) READONLY firstName, lastName, namePosition, rolesTimesheet
-    PROPERTIES hoursTimesheet(d, e) COLUMNS (d) HEADER extractDay(d) BACKGROUND backgroundHoursTimesheet(d, e)
+    PROPERTIES hoursTimesheet(d, e) NOWAIT COLUMNS (d) HEADER extractDay(d) BACKGROUND backgroundHoursTimesheet(d, e)
                ON CHANGE {
                    FOR TimeEntryType et = timesheetTimeEntryType() AND (timesheetProject() OR NOT project(timeEntry(d, e, timesheetTimeEntryType()))) DO {
                        IF NOT timesheetTimeEntryHours() THEN {
@@ -39,7 +39,7 @@ FORM timesheetSupervisor 'Supervisor timesheet'
                                changeTimesheetHours(d, e, et, n);
                            }
                        } ELSE
-                           changeTimesheetHours(d, e, et, hours(timesheetTimeEntryHours()) IF NOT hoursTimesheet(d, e));
+                           changeTimesheetHours(d, e, et, hours(timesheetTimeEntryHours()) IF NOT hoursTimesheet(d, e) = hours(timesheetTimeEntryHours()));
                    } ELSE
                        SHOW timesheetSupervisorDateEmployee OBJECTS d = d, e = e FLOAT;
                } ON CONTEXTMENU copy(d) ON CONTEXTMENU clear(d)
