@@ -1,6 +1,6 @@
 MODULE LotPrint;
 
-REQUIRE Lot, ItemPrint;
+REQUIRE Lot, ItemPrint, QZTray;
 
 count 'Qty' = DATA LOCAL INTEGER (Lot);
 
@@ -33,9 +33,14 @@ printLot (PrintItemType pt) {
             PRINT printItemLot OBJECTS pt = pt RTF;
         WHEN format(pt) = TemplateFormat.html THEN
             PRINT printItemLot OBJECTS pt = pt HTML;
-        WHEN format(pt) = TemplateFormat.noPreview THEN
-            PRINT printItemLot OBJECTS pt = pt NOPREVIEW;
-        ELSE
+        WHEN format(pt) = TemplateFormat.noPreview THEN {
+            IF isWeb() THEN {
+                LOCAL file = RAWFILE();
+                PRINT printItemLot OBJECTS pt = pt PDF TO file;
+                QZPrintDefaultPDF(file());
+            } ELSE
+                PRINT printItemLot OBJECTS pt = pt NOPREVIEW;
+        } ELSE
             PRINT printItemLot OBJECTS pt = pt;
 }
 
