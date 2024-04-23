@@ -4,6 +4,15 @@ REQUIRE ProjectAssignment, ProjectTimeEntry, TimeEntryHours;
 
 NAMESPACE ProjectManagement;
 
+autoSaveTimesheetHours 'Auto save timesheet hours' = DATA BOOLEAN ();
+EXTEND FORM options PROPERTIES() autoSaveTimesheetHours;
+
+DESIGN options {
+    commons {
+        MOVE PROPERTY(autoSaveTimesheetHours());
+    }
+}
+
 timesheetProject = DATA LOCAL NESTED Project ();
 nameTimesheetProject 'Project' = name(timesheetProject());
 
@@ -75,6 +84,15 @@ changeTimesheetHours (DATE d, Employee e, TimeEntryType et, NUMERIC[8,2] n, Time
         }
     } ELSE
         DELETE TimeEntry t WHERE matchesProject(t) AND employee(t) = e AND date(t) = d;
+}
+
+changeSaveTimesheetHours (DATE d, Employee e, TimeEntryType et, NUMERIC[8,2] n, TimeEntryHours h, BOOLEAN autoSave) {
+    IF NOT autoSave THEN {
+        changeTimesheetHours(d, e, et, n, h);
+    } ELSE 
+        NEWSESSION APPLY {
+            changeTimesheetHours(d, e, et, n, h);
+        }
 }
 
 countTimeEntryProject (DATE d) = GROUP SUM 1 IF date(TimeEntry t) = d AND matchesProject(t);
