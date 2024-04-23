@@ -28,19 +28,13 @@ FORM timesheetSupervisorMobile 'Timesheet'
     PROPERTIES hoursTimesheet(d, e) BACKGROUND backgroundHoursTimesheet(d, e)
                READONLYIF NOT timesheetTimeEntryType()
                ON CHANGE { 
-                   INPUT n = hoursTimesheet(d, e) DO {
-                       NEWSESSION NESTED (timesheetTimeEntryType) APPLY NESTED (timesheetTimeEntryType) { 
-                           changeTimesheetHours(d, e, timesheetTimeEntryType(), n, TRUE); 
-                       }
-                   } 
+                   INPUT n = hoursTimesheet(d, e) DO
+                       changeSaveTimesheetHours(d, e, timesheetTimeEntryType(), n, NULL, TRUE); 
                }
     
     OBJECTS h = TimeEntryHours
-    PROPERTIES NOWAIT changeHours = {
-                   NEWSESSION NESTED (timesheetTimeEntryType) APPLY NESTED (timesheetTimeEntryType) {
-                       changeTimesheetHours(d, e, timesheetTimeEntryType(), hours(h), NULL);
-                   }
-               } COLUMNS (h) HEADER nameHours(h)
+    PROPERTIES NOWAIT changeHours = { changeSaveTimesheetHours(d, e, timesheetTimeEntryType(), hours(h), h, TRUE); }
+               COLUMNS (h) HEADER nameHours(h)
     FILTERS type(h) = timesheetTimeEntryType()
 ;
 

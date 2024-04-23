@@ -1,6 +1,6 @@
 MODULE TimeEntryHours;
 
-REQUIRE TimeEntryType;
+REQUIRE TimeEntryType, TimeEntry;
 
 NAMESPACE ProjectManagement;
 
@@ -13,6 +13,11 @@ hours 'Hours' = DATA NUMERIC[8,2] (TimeEntryHours);
 
 nameHours (TimeEntryHours h) = OVERRIDE name(h), STRING(rtrim(toChar(hours(h), 'FM99999.99'),'.'));
 
+color 'Color' = DATA Color (TimeEntryHours);
+nameColor 'Color' (TimeEntryHours t) = name(color(t));
+idColor 'Color' (TimeEntryHours t) = id(color(t));
+rgbColor 'Color' (TimeEntryHours t) = rgb(color(t));
+
 countHours (TimeEntryType t) = GROUP SUM 1 IF type(TimeEntryHours e) = t;
 
 calcDefaultHours (TimeEntryType t) = GROUP MIN TimeEntryHours e IF type(e) = t;
@@ -20,6 +25,35 @@ defaultHours (TimeEntryType t) = calcDefaultHours(t) IF countHours(t) = 1;
 
 EXTEND FORM timeEntryType
     OBJECTS h = TimeEntryHours
-    PROPERTIES(h) name, hours, NEW, DELETE
+    PROPERTIES(h) name, hours, nameColor, rgbColor, NEW, DELETE
     FILTERS type(h) = o
 ;
+
+FORM timeEntryHours 'Time entry hours'
+    OBJECTS t = TimeEntryHours
+    PROPERTIES(t) READONLY name, hours
+    
+    LIST TimeEntryHours OBJECT t 
+;
+
+timeEntryHours = DATA TimeEntryHours (TimeEntry);
+nameTimeEntryHours 'Template' (TimeEntry e) = name(timeEntryHours(e));
+rgbColorHoursTimeEntry (TimeEntry e) = OVERRIDE rgbColor(timeEntryHours(e)), rgbColor(type(e));
+
+CONSTRAINT timeEntryHours(TimeEntry e) AND NOT type(timeEntryHours(e)) = type(e)
+    CHECKED BY timeEntryHours[TimeEntry] MESSAGE 'Incorrect hours template for time entry';
+
+WHEN LOCAL SETCHANGED(timeEntryHours(TimeEntry e)) AND hours(timeEntryHours(e)) DO
+    hours(e) <- hours(timeEntryHours(e)); 
+
+EXTEND FORM timeEntries
+    PROPERTIES(t) READONLY nameTimeEntryHours
+;
+EXTEND FORM timeEntry
+    PROPERTIES(t) nameTimeEntryHours
+;
+DESIGN timeEntry {
+    time {
+        MOVE PROPERTY(nameTimeEntryHours(t));
+    }
+}

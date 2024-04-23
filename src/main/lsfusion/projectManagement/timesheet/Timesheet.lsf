@@ -4,6 +4,15 @@ REQUIRE ProjectAssignment, ProjectTimeEntry, TimeEntryHours;
 
 NAMESPACE ProjectManagement;
 
+autoSaveTimesheetHours 'Auto save timesheet hours' = DATA BOOLEAN ();
+EXTEND FORM options PROPERTIES() autoSaveTimesheetHours;
+
+DESIGN options {
+    commons {
+        MOVE PROPERTY(autoSaveTimesheetHours());
+    }
+}
+
 timesheetProject = DATA LOCAL NESTED Project ();
 nameTimesheetProject 'Project' = name(timesheetProject());
 
@@ -29,18 +38,20 @@ hoursTimesheet 'Hours' (DATE d, Employee e)=
 backgroundHoursTimesheet 'Hours' (DATE d, Employee e)=
     IF countTimeEntryType(d, e) > 1 THEN RGB(255,192,0) ELSE
         OVERRIDE
-            IF timesheetProject() THEN rgbColor(type(timeEntry(d, e, timesheetProject())))
-            ELSE rgbColor(type(timeEntry(d, e))),
+            IF timesheetProject() THEN rgbColorHoursTimeEntry(timeEntry(d, e, timesheetProject()))
+            ELSE rgbColorHoursTimeEntry(timeEntry(d, e)),
             RGB(255,224,224) IF extractDOWNumber(d) = 0 OR extractDOWNumber(d) = 6;
 
-changeTimesheetHours (DATE d, Employee e, TimeEntryType et, NUMERIC[8,2] n, BOOLEAN input) {
+changeTimesheetHours (DATE d, Employee e, TimeEntryType et, NUMERIC[8,2] n, TimeEntryHours h) {
     IF n THEN {
         IF timesheetProject() THEN {
             FOR TimeEntry t = timeEntry(d, e, timesheetProject(), et) DO {
-                IF hours(t) = n AND NOT input THEN
+                IF hours(t) = n AND h THEN
                     DELETE t;
-                ELSE
+                ELSE {
                     hours(t) <- n;
+                    timeEntryHours(t) <- h;
+                }
             } ELSE {
                 DELETE TimeEntry te WHERE project(te) = timesheetProject() AND employee(te) = e AND date(te) = d;
                 NEW t = TimeEntry {
@@ -49,14 +60,17 @@ changeTimesheetHours (DATE d, Employee e, TimeEntryType et, NUMERIC[8,2] n, BOOL
                     employee(t) <- e;
                     date(t) <- d;
                     hours(t) <- n;
+                    timeEntryHours(t) <- h;
                 }
             }
         } ELSE {
             FOR TimeEntry t = timeEntry(d, e, et) DO {
-                IF hours(t) = n AND NOT input THEN
+                IF hours(t) = n AND h THEN
                     DELETE t;
-                ELSE
+                ELSE {
                     hours(t) <- n;
+                    timeEntryHours(t) <- h;
+                }
             } ELSE {
                 DELETE TimeEntry te WHERE NOT project(te) AND employee(te) = e AND date(te) = d;
                 NEW t = TimeEntry {
@@ -64,11 +78,21 @@ changeTimesheetHours (DATE d, Employee e, TimeEntryType et, NUMERIC[8,2] n, BOOL
                     employee(t) <- e;
                     date(t) <- d;
                     hours(t) <- n;
+                    timeEntryHours(t) <- h;
                 }
             }
         }
     } ELSE
         DELETE TimeEntry t WHERE matchesProject(t) AND employee(t) = e AND date(t) = d;
+}
+
+changeSaveTimesheetHours (DATE d, Employee e, TimeEntryType et, NUMERIC[8,2] n, TimeEntryHours h, BOOLEAN autoSave) {
+    IF NOT autoSave THEN {
+        changeTimesheetHours(d, e, et, n, h);
+    } ELSE 
+        NEWSESSION APPLY {
+            changeTimesheetHours(d, e, et, n, h);
+        }
 }
 
 countTimeEntryProject (DATE d) = GROUP SUM 1 IF date(TimeEntry t) = d AND matchesProject(t);

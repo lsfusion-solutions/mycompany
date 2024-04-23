@@ -12,7 +12,7 @@ FORM timesheetSupervisorDateEmployee 'Time entries'
     OBJECTS e = Employee PANEL
 
     OBJECTS t = TimeEntry
-    PROPERTIES(t) READONLY nameProject SHOWIF NOT timesheetProject(), hours, nameType, description
+    PROPERTIES(t) READONLY nameProject SHOWIF NOT timesheetProject(), hours, nameType, description, nameTimeEntryHours
     PROPERTIES(t) EDIT, DELETE
     FILTERS date(t) = d,
             employee(t) = e,
@@ -36,10 +36,10 @@ FORM timesheetSupervisor 'Supervisor timesheet'
                    FOR TimeEntryType et = timesheetTimeEntryType() AND (timesheetProject() OR NOT project(timeEntry(d, e, timesheetTimeEntryType()))) DO {
                        IF NOT timesheetTimeEntryHours() THEN {
                            INPUT n = hoursTimesheet(d, e) DO {
-                               changeTimesheetHours(d, e, et, n, TRUE);
+                               changeSaveTimesheetHours(d, e, et, n, NULL, autoSaveTimesheetHours());
                            }
                        } ELSE
-                           changeTimesheetHours(d, e, et, hours(timesheetTimeEntryHours()), NULL);
+                           changeSaveTimesheetHours(d, e, et, hours(timesheetTimeEntryHours()), timesheetTimeEntryHours(), autoSaveTimesheetHours());
                    } ELSE
                        SHOW timesheetSupervisorDateEmployee OBJECTS d = d, e = e FLOAT;
                } ON CONTEXTMENU copy(d) ON CONTEXTMENU clear(d)
