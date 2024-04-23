@@ -33,14 +33,16 @@ backgroundHoursTimesheet 'Hours' (DATE d, Employee e)=
             ELSE rgbColor(type(timeEntry(d, e))),
             RGB(255,224,224) IF extractDOWNumber(d) = 0 OR extractDOWNumber(d) = 6;
 
-changeTimesheetHours (DATE d, Employee e, TimeEntryType et, NUMERIC[8,2] n, BOOLEAN input) {
+changeTimesheetHours (DATE d, Employee e, TimeEntryType et, NUMERIC[8,2] n, TimeEntryHours h) {
     IF n THEN {
         IF timesheetProject() THEN {
             FOR TimeEntry t = timeEntry(d, e, timesheetProject(), et) DO {
-                IF hours(t) = n AND NOT input THEN
+                IF hours(t) = n AND h THEN
                     DELETE t;
-                ELSE
+                ELSE {
                     hours(t) <- n;
+                    timeEntryHours(t) <- h;
+                }
             } ELSE {
                 DELETE TimeEntry te WHERE project(te) = timesheetProject() AND employee(te) = e AND date(te) = d;
                 NEW t = TimeEntry {
@@ -49,14 +51,17 @@ changeTimesheetHours (DATE d, Employee e, TimeEntryType et, NUMERIC[8,2] n, BOOL
                     employee(t) <- e;
                     date(t) <- d;
                     hours(t) <- n;
+                    timeEntryHours(t) <- h;
                 }
             }
         } ELSE {
             FOR TimeEntry t = timeEntry(d, e, et) DO {
-                IF hours(t) = n AND NOT input THEN
+                IF hours(t) = n AND h THEN
                     DELETE t;
-                ELSE
+                ELSE {
                     hours(t) <- n;
+                    timeEntryHours(t) <- h;
+                }
             } ELSE {
                 DELETE TimeEntry te WHERE NOT project(te) AND employee(te) = e AND date(te) = d;
                 NEW t = TimeEntry {
@@ -64,6 +69,7 @@ changeTimesheetHours (DATE d, Employee e, TimeEntryType et, NUMERIC[8,2] n, BOOL
                     employee(t) <- e;
                     date(t) <- d;
                     hours(t) <- n;
+                    timeEntryHours(t) <- h;
                 }
             }
         }

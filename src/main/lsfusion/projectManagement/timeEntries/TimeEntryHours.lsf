@@ -1,6 +1,6 @@
 MODULE TimeEntryHours;
 
-REQUIRE TimeEntryType;
+REQUIRE TimeEntryType, TimeEntry;
 
 NAMESPACE ProjectManagement;
 
@@ -23,3 +23,31 @@ EXTEND FORM timeEntryType
     PROPERTIES(h) name, hours, NEW, DELETE
     FILTERS type(h) = o
 ;
+
+FORM timeEntryHours 'Time entry hours'
+    OBJECTS t = TimeEntryHours
+    PROPERTIES(t) READONLY name, hours
+    
+    LIST TimeEntryHours OBJECT t 
+;
+
+timeEntryHours = DATA TimeEntryHours (TimeEntry);
+nameTimeEntryHours 'Template' (TimeEntry e) = name(timeEntryHours(e));
+
+CONSTRAINT timeEntryHours(TimeEntry e) AND NOT type(timeEntryHours(e)) = type(e)
+    CHECKED BY timeEntryHours[TimeEntry] MESSAGE 'Incorrect hours template for time entry';
+
+WHEN LOCAL SETCHANGED(timeEntryHours(TimeEntry e)) AND hours(timeEntryHours(e)) DO
+    hours(e) <- hours(timeEntryHours(e)); 
+
+EXTEND FORM timeEntries
+    PROPERTIES(t) READONLY nameTimeEntryHours
+;
+EXTEND FORM timeEntry
+    PROPERTIES(t) nameTimeEntryHours
+;
+DESIGN timeEntry {
+    time {
+        MOVE PROPERTY(nameTimeEntryHours(t));
+    }
+}

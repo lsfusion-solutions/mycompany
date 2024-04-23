@@ -30,7 +30,7 @@ FORM timesheetSupervisorMobile 'Timesheet'
                ON CHANGE { 
                    INPUT n = hoursTimesheet(d, e) DO {
                        NEWSESSION NESTED (timesheetTimeEntryType) APPLY NESTED (timesheetTimeEntryType) { 
-                           changeTimesheetHours(d, e, timesheetTimeEntryType(), n, TRUE); 
+                           changeTimesheetHours(d, e, timesheetTimeEntryType(), n, NULL); 
                        }
                    } 
                }
@@ -38,7 +38,7 @@ FORM timesheetSupervisorMobile 'Timesheet'
     OBJECTS h = TimeEntryHours
     PROPERTIES NOWAIT changeHours = {
                    NEWSESSION NESTED (timesheetTimeEntryType) APPLY NESTED (timesheetTimeEntryType) {
-                       changeTimesheetHours(d, e, timesheetTimeEntryType(), hours(h), NULL);
+                       changeTimesheetHours(d, e, timesheetTimeEntryType(), hours(h), h);
                    }
                } COLUMNS (h) HEADER nameHours(h)
     FILTERS type(h) = timesheetTimeEntryType()
