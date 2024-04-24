@@ -11,8 +11,10 @@ FORM timesheetSupervisorMobile 'Timesheet'
     PROPERTIES d '' = VALUE(d)
     PROPERTIES dow '' = extractDOWName (d) READONLY
 
-    PROPERTIES prevDate '<' = { SEEK timesheetSupervisorMobile.d = subtract(d, 1); },
-               nextDate '>' = { SEEK timesheetSupervisorMobile.d = sum(d, 1); }
+    PROPERTIES prevWeek '<<' = { SEEK timesheetSupervisorMobile.d = subtract(d, 7); },
+               prevDate '<' = { SEEK timesheetSupervisorMobile.d = subtract(d, 1); },
+               nextDate '>' = { SEEK timesheetSupervisorMobile.d = sum(d, 1); },
+               nextWeek '>>' = { SEEK timesheetSupervisorMobile.d = sum(d, 7); }
 
     PROPERTIES(d) copyApply, clearApply
     
@@ -31,6 +33,7 @@ FORM timesheetSupervisorMobile 'Timesheet'
                    INPUT n = hoursTimesheet(d, e) DO
                        changeSaveTimesheetHours(d, e, timesheetTimeEntryType(), n, NULL, TRUE); 
                }
+    FILTERS assigned(timesheetProject(), e) OR (NOT countAssignments(timesheetProject()) AND NOT countAssignments(currentUser()))
     
     OBJECTS h = TimeEntryHours
     PROPERTIES NOWAIT changeHours = { changeSaveTimesheetHours(d, e, timesheetTimeEntryType(), hours(h), h, TRUE); }
@@ -40,41 +43,46 @@ FORM timesheetSupervisorMobile 'Timesheet'
 
 DESIGN timesheetSupervisorMobile {
     OBJECTS {
-        NEW row1 {
-            horizontal = TRUE;
-            alignment = STRETCH;
-            MOVE PROPERTY(nameTimesheetProject()) {
-                fill = 1;
-                caption = '';
-                placeholder = 'Project';
-            }
-            MOVE PROPERTY(clearApply(d));
-        }
-        NEW row2 {
-            horizontal = TRUE;
-            alignment = STRETCH;
-            NEW dates {
-                fill = 1;
-                horizontal = TRUE;
-                MOVE PROPERTY(prevDate);
-                MOVE PROPERTY(d);
-                MOVE PROPERTY(nextDate);
-                MOVE PROPERTY(dow) { width = 20; }
-            }
-            MOVE PROPERTY(copyApply(d));
-        }
-        MOVE GRID(e) {
-            PROPERTY(name(e)) { caption = ''; }
-            PROPERTY(hoursTimesheet(d, e)) { caption = ''; charWidth = 4; };
-        }
-        REMOVE BOX(e);
-        MOVE PROPERTY(nameTimesheetTimeEntryType()) { 
+        MOVE PROPERTY(nameTimesheetProject()) {
             alignment = STRETCH;
             caption = '';
-            placeholder = 'Type';
+            placeholder = 'Project';
         }
-        MOVE PROPERTY(changeHours) {
+        NEW dates {
             alignment = STRETCH;
+            horizontal = TRUE;
+            MOVE PROPERTY(prevWeek);
+            MOVE PROPERTY(prevDate);
+            MOVE PROPERTY(d);
+            MOVE PROPERTY(nextDate);
+            MOVE PROPERTY(nextWeek);
+            MOVE PROPERTY(dow) { width = 20; }
+        }
+        NEW tabbedPane {
+            fill = 1;
+            tabbed = TRUE;
+            NEW timesheet {
+                caption = 'Timesheet';
+                NEW hoursHeader {
+                    horizontal = TRUE;
+                    alignment = STRETCH;
+                    MOVE PROPERTY(copyApply(d)) { fill = 1; }
+                    MOVE PROPERTY(clearApply(d)) { fill = 1; }
+                }
+                MOVE GRID(e) {
+                    PROPERTY(name(e)) { caption = ''; }
+                    PROPERTY(hoursTimesheet(d, e)) { caption = ''; charWidth = 4; };
+                }
+                REMOVE BOX(e);
+                MOVE PROPERTY(nameTimesheetTimeEntryType()) {
+                    alignment = STRETCH;
+                    caption = '';
+                                placeholder = 'Type';
+                }
+                MOVE PROPERTY(changeHours) {
+                    alignment = STRETCH;
+                }
+            }
         }
 
         REMOVE TOOLBARBOX;
