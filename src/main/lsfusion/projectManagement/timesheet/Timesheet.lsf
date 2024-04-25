@@ -119,5 +119,20 @@ copyApply 'Copy' (DATE d) {
 }
 
 clearApply 'Clear' (DATE d) {
-    NEWSESSION APPLY { clear(d); }
-} CONFIRM;
+    ASK 'This action cannot be undone. Continue ?' DO
+        NEWSESSION APPLY { clear(d); }
+};
+
+copyHours 'Copy' (DATE d) {
+    IF NOT autoSaveTimesheetHours() THEN
+        copy(d);
+    ELSE
+        copyApply(d);
+}
+
+clearHours 'Clear' (DATE d) {
+    IF NOT autoSaveTimesheetHours() THEN
+        clear(d);
+    ELSE
+        clearApply(d);
+}
