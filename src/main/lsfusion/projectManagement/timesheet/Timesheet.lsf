@@ -142,9 +142,10 @@ FORM timesheetSupervisorDateEmployee 'Time entries'
     OBJECTS e = Employee PANEL
 
     OBJECTS t = TimeEntry
-    PROPERTIES(t) READONLY nameProject SHOWIF NOT timesheetProject(), hours, nameType, description, nameTimeEntryHours
+    PROPERTIES(t) READONLY nameProject SHOWIF NOT timesheetProject(), date SHOWIF from(i) != to(i), hours, nameType, description, nameTimeEntryHours
     PROPERTIES(t) EDIT, DELETE
+    ORDERS date(t)
     FILTERS date(t) >= from(i) AND date(t) <= to(i),
-        employee(t) = e,
-        project(t) = timesheetProject() OR NOT timesheetProject()
+            employee(t) = e,
+            project(t) = timesheetProject() OR NOT timesheetProject()
 ;
