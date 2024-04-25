@@ -1,6 +1,6 @@
 MODULE Timesheet;
 
-REQUIRE ProjectAssignment, ProjectTimeEntry, TimeEntryHours;
+REQUIRE ProjectAssignment, ProjectTimeEntry, TimeEntryHours, Time;
 
 NAMESPACE ProjectManagement;
 
@@ -136,3 +136,15 @@ clearHours 'Clear' (DATE d) {
     ELSE
         clearApply(d);
 }
+
+FORM timesheetSupervisorDateEmployee 'Time entries'
+    OBJECTS i = INTERVAL[DATE] PANEL
+    OBJECTS e = Employee PANEL
+
+    OBJECTS t = TimeEntry
+    PROPERTIES(t) READONLY nameProject SHOWIF NOT timesheetProject(), hours, nameType, description, nameTimeEntryHours
+    PROPERTIES(t) EDIT, DELETE
+    FILTERS date(t) >= from(i) AND date(t) <= to(i),
+        employee(t) = e,
+        project(t) = timesheetProject() OR NOT timesheetProject()
+;
