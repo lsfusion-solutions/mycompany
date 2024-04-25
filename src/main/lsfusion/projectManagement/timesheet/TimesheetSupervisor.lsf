@@ -7,18 +7,6 @@ PRIORITY MasterData;
 
 NAMESPACE ProjectManagement;
 
-FORM timesheetSupervisorDateEmployee 'Time entries'
-    OBJECTS i = INTERVAL[DATE] PANEL
-    OBJECTS e = Employee PANEL
-
-    OBJECTS t = TimeEntry
-    PROPERTIES(t) READONLY nameProject SHOWIF NOT timesheetProject(), hours, nameType, description, nameTimeEntryHours
-    PROPERTIES(t) EDIT, DELETE
-    FILTERS date(t) >= from(i) AND date(t) <= to(i),
-        employee(t) = e,
-        project(t) = timesheetProject() OR NOT timesheetProject()
-;
-
 FORM timesheetSupervisor 'Supervisor timesheet'
     OBJECTS dates = INTERVAL[DATE] PANEL NULL
     PROPERTIES dates '' = VALUE(dates)
