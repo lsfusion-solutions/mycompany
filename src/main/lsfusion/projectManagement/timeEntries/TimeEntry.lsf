@@ -37,6 +37,9 @@ countTimeEntryType (DATE d, Employee e) = GROUP SUM 1 IF countTimeEntry(d, e, Ti
 timeEntry (DATE d, Employee e) = GROUP MIN TimeEntry t IF date(t) = d AND employee(t) = e;
 hours 'Hours' (DATE d, Employee e) =
     GROUP SUM hours(TimeEntry t) IF date(t) = d AND employee(t) = e;
+hours 'Hours' (Employee e, DATE from, DATE to) =
+    GROUP SUM hours(TimeEntry t) IF employee(t) = e AND date(t) >= from AND date(t) <= to;
+hours 'Hours' (Employee e, INTERVAL[DATE] i) = hours(e, from(i), to(i));
 
 FORM timeEntry 'Time entry'
     OBJECTS t = TimeEntry PANEL
