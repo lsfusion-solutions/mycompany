@@ -8,15 +8,15 @@ PRIORITY MasterData;
 NAMESPACE ProjectManagement;
 
 FORM timesheetSupervisorDateEmployee 'Time entries'
-    OBJECTS d = DATE PANEL
+    OBJECTS i = INTERVAL[DATE] PANEL
     OBJECTS e = Employee PANEL
 
     OBJECTS t = TimeEntry
     PROPERTIES(t) READONLY nameProject SHOWIF NOT timesheetProject(), hours, nameType, description, nameTimeEntryHours
     PROPERTIES(t) EDIT, DELETE
-    FILTERS date(t) = d,
-            employee(t) = e,
-            project(t) = timesheetProject() OR NOT timesheetProject()
+    FILTERS date(t) >= from(i) AND date(t) <= to(i),
+        employee(t) = e,
+        project(t) = timesheetProject() OR NOT timesheetProject()
 ;
 
 FORM timesheetSupervisor 'Supervisor timesheet'
@@ -41,7 +41,7 @@ FORM timesheetSupervisor 'Supervisor timesheet'
                        } ELSE
                            changeSaveTimesheetHours(d, e, et, hours(timesheetTimeEntryHours()), timesheetTimeEntryHours(), autoSaveTimesheetHours());
                    } ELSE
-                       SHOW timesheetSupervisorDateEmployee OBJECTS d = d, e = e FLOAT;
+                       SHOW timesheetSupervisorDateEmployee OBJECTS i = interval(d, d), e = e FLOAT;
                } ON CONTEXTMENU copyHours(d) ON CONTEXTMENU clearHours(d)
     FILTERS assigned(timesheetProject(), e) OR (NOT countAssignments(timesheetProject()) AND NOT countAssignments(currentUser()))
 
