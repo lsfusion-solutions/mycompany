@@ -9,6 +9,8 @@ quantity 'Qty' = DATA NUMERIC[16,3] (ReceiptPutAway, Lot);
 put 'Put away' (ReceiptLine rl, Lot l) = GROUP SUM quantity(ReceiptPutAway p, l) IF receiptLine(p) = rl;
 ledgerDone(ReceiptLine rl, Lot l) += put(rl, l);
 
+putLot 'Put away' (ReceiptLine rl) = GROUP SUM quantity(ReceiptPutAway p, Lot l) IF receiptLine(p) = rl;
+
 quantity(ReceiptPutAwayLedger rl, Lot l) += quantity(line(rl), l);
 
 EXTEND FORM receipt
