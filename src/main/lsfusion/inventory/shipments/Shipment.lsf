@@ -117,8 +117,6 @@ FORM shipmentLines 'Shipping lines'
     LIST ShipmentLine OBJECT l
 ;
 
-edit (ShipmentLine l) + { edit(shipment(l)); } 
-
 FORM shipment 'Shipment'
     OBJECTS s = Shipment PANEL 
     PROPERTIES(s) nameType, scheduledDateTime, number, 
@@ -192,6 +190,8 @@ DESIGN shipment {
         }
     }
 }
+
+edit (ShipmentLine l) + { SHOW shipment OBJECTS s = shipment(l), l = l DOCKED; }
 
 @defineDocHistory(shipment, s, product, initialDemand);
 

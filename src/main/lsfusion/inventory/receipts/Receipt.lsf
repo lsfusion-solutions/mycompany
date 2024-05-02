@@ -96,8 +96,6 @@ FORM receiptLines 'Receipt lines'
     LIST ReceiptLine OBJECT l
 ;
 
-edit (ReceiptLine l) + { edit(receipt(l)); } 
-           
 FORM receipt 'Receipt'
     OBJECTS r = Receipt PANEL
     PROPERTIES(r) nameType, scheduledDateTime, number, 
@@ -160,6 +158,8 @@ DESIGN receipt {
         }
     }
 }
+
+edit (ReceiptLine l) + { SHOW receipt OBJECTS r = receipt(l), l = l DOCKED; }
 
 @defineDocHistory(receipt, r, product, initialDemand);
 

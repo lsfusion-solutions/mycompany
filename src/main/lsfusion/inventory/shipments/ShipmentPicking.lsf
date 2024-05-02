@@ -18,11 +18,11 @@ CONSTRAINT reserved(ShipmentLine l) (-) reservedRec(l) < 0 MESSAGE 'You cannot r
 
 // done
 done 'Done' = DATA NUMERIC[16,3] (ShipmentLine, Location);
-doneRec 'Shipped (including nested)' (ShipmentLine l) = GROUP SUM done(l, Location loc) IF level(loc, location(shipment(l)));
-ledgerDone (ShipmentLine l) += doneRec(l);
+picked 'Picked' (ShipmentLine l) = GROUP SUM done(l, Location loc);
+ledgerDone (ShipmentLine l) += picked(l);
 
 CONSTRAINT done(ShipmentLine l, Location loc) < 0 MESSAGE 'The shipped quantity cannot be less than 0';
-CONSTRAINT done(ShipmentLine l) (-) doneRec(l) < 0 MESSAGE 'You cannot ship goods to storage locations more than in a line';
+CONSTRAINT done(ShipmentLine l) (-) picked(l) < 0 MESSAGE 'You cannot ship goods to storage locations more than in a line';
 
 locations (ShipmentLine l) = GROUP CONCAT name(Location loc) + ' : ' + DOUBLE(done(l, loc)), ', ' ORDER loc;
 note(ShipmentLine l) += locations(l);
@@ -77,7 +77,11 @@ DESIGN shipment {
             NEW picking {
                 caption = 'Picking';
                 showIf = picking(type(s)) AND (waiting(s) OR done(s));
-                MOVE BOX(loc) { height = 100; }
+                MOVE BOX(loc) { 
+                    GRID(loc) {
+                        height = 100;
+                    } 
+                }
             }
         }
     }
