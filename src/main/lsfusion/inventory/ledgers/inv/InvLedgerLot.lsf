@@ -34,6 +34,8 @@ outQuantityB 'Quantity (sent)' (Location ll, Lot l, DATETIME dt) = outQuantity(l
 onHand 'On hand' (Location ll, Lot l) = inQuantity(ll, l) (-) outQuantity(ll, l) MATERIALIZED;
 prevOnHand (Location ll, Lot l) = PREV(onHand(ll, l));
 
+onHand 'On hand' (Lot l) = GROUP SUM onHand(Location ll, l);
+
 minLocationOnHand (Lot l) = GROUP MIN Location ll IF onHand(ll, l) > 0;
 prevMinLocationOnHand (Lot l) = PREV(minLocationOnHand(l));
 
@@ -105,6 +107,8 @@ DESIGN item {
 }
 
 EXTEND FORM lots
+    PROPERTIES(l) READONLY onHand
+    
     OBJECTS il = InvLedger
     PROPERTIES(il) READONLY class, type, dateTime, number, namePartner,
                             nameFromLocation, onHandAFromLocation,
