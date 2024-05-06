@@ -13,7 +13,13 @@ putLot 'Put away' (ReceiptLine rl) = GROUP SUM quantity(ReceiptPutAway p, Lot l)
 
 quantity(ReceiptPutAwayLedger rl, Lot l) += quantity(line(rl), l);
 
+select 'Select' (ReceiptPutAway rpw) {
+    quantity(rpw, Lot lt) <- done(receiptLine(rpw), lt);
+}
+
 EXTEND FORM receipt
+    PROPERTIES(p) select TOOLBAR
+
     OBJECTS rpl = Lot
     PROPERTIES id(rpl) READONLY, quantity(p, rpl)
     FILTERS quantity(p, rpl)

@@ -36,7 +36,9 @@ DESIGN adjustment {
 }
 
 // inv adjustment
-difference (AdjustmentLine l) = realQuantity(l) (-) theoreticalQuantity(l);
+difference 'Difference' (AdjustmentLine l) = realQuantity(l) (-) theoreticalQuantity(l);
+difference 'Difference' (Adjustment a) = realQuantity(a) (-) theoreticalQuantity(a);
+
 createInAdjustment = ABSTRACT VALUE BOOLEAN (AdjustmentLine); 
 
 CLASS InvAdjustment 'Adjustment';
@@ -72,6 +74,8 @@ DESIGN adjustment {
 }
 
 EXTEND FORM adjustments
+    PROPERTIES(a) READONLY difference
+    
     EXTEND FILTERGROUP status
         FILTER 'Done' status(a) = AdjustmentStatus.done
 ;

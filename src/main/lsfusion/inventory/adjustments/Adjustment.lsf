@@ -96,6 +96,7 @@ lastAdjustmentLine (Adjustment a, Product p, Location l) =
     GROUP LAST AdjustmentLine al ORDER al BY adjustment(al), product(al), location(al);
 
 theoreticalQuantity 'Theoretical quantity' = DATA NUMERIC[16,3] (AdjustmentLine);
+theoreticalQuantity 'Theoretical quantity' (Adjustment a) = GROUP SUM theoreticalQuantity(AdjustmentLine al) IF adjustment(al) = a MATERIALIZED; 
 
 fillTheoreticalQuantity ABSTRACT LIST (AdjustmentLine);
 fillTheoreticalQuantity(AdjustmentLine l) + {
@@ -173,7 +174,8 @@ DESIGN adjustment {
 
 FORM adjustments 'Adjustments'
     OBJECTS a = Adjustment
-    PROPERTIES(a) READONLY number, dateTime, nameType, nameLocation, nameCategory, note
+    PROPERTIES(a) READONLY number, dateTime, nameType, nameLocation, nameCategory, note, theoreticalQuantity
+    
     PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE 
     
     LIST Adjustment OBJECT a

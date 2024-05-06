@@ -15,6 +15,7 @@ color(AdjustmentStatus a) += WHEN a = AdjustmentStatus.inProgress THEN RGB(252,2
 aggregateRealQuantity = ABSTRACT VALUE BOOLEAN (AdjustmentLine);
 
 realQuantity 'Real quantity' = DATA NUMERIC[16,3] (AdjustmentLine);
+realQuantity 'Real quantity' (Adjustment a) = GROUP SUM realQuantity(AdjustmentLine al) IF adjustment(al) = a MATERIALIZED;
 
 WHEN LOCAL CHANGED(theoreticalQuantity(AdjustmentLine l)) AND NOT CHANGED(realQuantity(l)) AND 
            status(adjustment(l)) = AdjustmentStatus.draft AND
@@ -55,6 +56,8 @@ DESIGN adjustment {
 }
 
 EXTEND FORM adjustments
+    PROPERTIES(a) READONLY realQuantity
+    
     EXTEND FILTERGROUP status
         FILTER 'In progress' status(a) = AdjustmentStatus.inProgress
 ;
