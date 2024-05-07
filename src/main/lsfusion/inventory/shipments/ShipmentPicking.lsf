@@ -30,7 +30,7 @@ note(ShipmentLine l) += locations(l);
 // events
 dateReceived 'Last receipt date' (ShipmentLine l, Location loc) = prevDateReceived(loc, product(l));
 
-WHEN LOCAL CHANGED(done(ShipmentLine l)) AND picking(type(shipment(l))) DO 
+WHEN LOCAL CHANGED(done(ShipmentLine l)) AND picking(type(shipment(l))) AND NOT (GROUP SUM 1 IF CHANGED(done(l, Location loc))) DO
     done(l, Location loc) <- PARTITION UNGROUP done
                                        LIMIT   reserved(l, loc)
                                        ORDER dateReceived(l, loc), loc
