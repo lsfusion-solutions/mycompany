@@ -26,6 +26,10 @@ countTimeEntry 'Time entries' (DATE d, Employee e, Project p, TimeEntryType et) 
 
 projectDescription 'Description' (TimeEntry e) = CONCAT ' / ', name(project(e)), (CONCAT ' : ', nameType(e), hours(e));  
 
+hours 'Hours' (DATE d, Project p) = GROUP SUM hours(TimeEntry t) IF date(t) = d AND project(t) = p;
+hours 'Hours' (Project p, DATE from, DATE to) = GROUP SUM hours(TimeEntry t) IF project(t) = p AND date(t) >= from AND date(t) <= to;
+hours 'Hours' (Project p, INTERVAL[DATE] i) = hours(p, from(i), to(i));
+
 timeEntries (DATE d, Employee e) = GROUP CONCAT projectDescription(TimeEntry t) IF date(t) = d AND employee(t) = e, '\n' ORDER t;
 
 EXTEND FORM timeEntry
