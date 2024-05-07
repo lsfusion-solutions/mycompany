@@ -1,6 +1,6 @@
 MODULE ProjectAssignment;
 
-REQUIRE Project, ProjectRole;
+REQUIRE Project, ProjectRole, Time;
 
 PRIORITY MasterData;
 
@@ -51,6 +51,9 @@ assignment (Project p, Employee e, ProjectRole r) = assignment(p, e, r, currentD
 
 roles 'Roles' (Project p, Employee e, DATE d) = GROUP CONCAT name(ProjectRole r) IF assignment(p, e, r, d), ', ' ORDER r;
 roles 'Roles' (Project p, Employee e) = GROUP CONCAT name(ProjectRole r) IF assignment(p, e, r), ', ' ORDER r;
+
+assigned (Project p, Employee e, DATE from, DATE to) = GROUP SUM 1 IF fromDate(ProjectAssignment a) <= to AND NOT toDate(a) < from AND project(a) = p AND employee(a) = e;
+assigned (Project p, Employee e, INTERVAL[DATE] i) = assigned(p, e, from(i), to(i));
 
 assigned (Project p, Employee e, DATE d) = GROUP SUM 1 IF active(ProjectAssignment a, d) AND project(a) = p AND employee(a) = e;
 assigned (Project p, Employee e) = assigned(p, e, currentDate()) MATERIALIZED;
