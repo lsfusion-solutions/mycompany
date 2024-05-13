@@ -163,19 +163,19 @@ cashOut(OutgoingPayment o) + WHEN driver(pos(session(o))) = CashDriver.atol10 TH
 
 //buy
 typeLine = ABSTRACT STRING (InvoiceLine);
-typeLine(InvoiceLine l) += 'position';
+typeLine(InvoiceLine l) += 'posi' + 'tion';
  
 paymentObject = ABSTRACT CASE STRING (InvoiceLine);
-paymentObject (InvoiceLine l) += WHEN item(l) IS Product THEN 'commodity';
-paymentObject (InvoiceLine l) += WHEN item(l) IS Service THEN 'service';
+paymentObject (InvoiceLine l) += WHEN item(l) IS Product THEN 'comm' + 'odity';
+paymentObject (InvoiceLine l) += WHEN item(l) IS Service THEN 'ser' + 'vice';
 
 paymentType (IncomingPayment p, Invoice i) = idPaymentAtol(paymentMethod(p, i));
  
-FORM buy
+FORM sell
     PROPERTIES uuid = generatedUUID()
     
     OBJECTS i = Invoice
-    PROPERTIES IN request type = 'buy' 
+    PROPERTIES IN request type = 'sell' 
     
     OBJECTS l = InvoiceLine IN request EXTID 'items'
     PROPERTIES(l) typeLine EXTID 'type', nameItem EXTID 'name', price, quantity,
@@ -187,9 +187,9 @@ FORM buy
     PROPERTIES (d, i) paymentType EXTID 'type', paid EXTID 'sum'
     FILTERS paid(d, i), active(d)
 ;
-buy(Invoice i) {
+sell(Invoice i) {
     generateUUID();
-    EXPORT buy OBJECTS i = i JSON CHARSET 'UTF-8';
+    EXPORT sell OBJECTS i = i JSON CHARSET 'UTF-8';
     TRY {
         EXTERNAL HTTP CLIENT 'http://' + hostname(pos(session(i))) + ':16732/requests' PARAMS exportFile();
         fiscal(i) <- TRUE;
@@ -203,4 +203,4 @@ buy(Invoice i) {
             ELSE
                 MESSAGE 'Ошибка - потеряна связь с хостом АТОЛ v.10';
 }
-buy(Invoice i) + WHEN driver(pos(session(i))) THEN {buy(i);}
+sell(Invoice i) + WHEN driver(pos(session(i))) THEN { sell(i);}
