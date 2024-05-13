@@ -28,6 +28,7 @@ META defineTaxCalc(doc, let, prefix, price)
     
     taxAmount 'Taxes' (###doc##Line l) = GROUP SUM taxAmount(Tax t, l) IF in(l, t);
     taxPercent 'Taxes,%' (###doc##Line l) = GROUP SUM value(Tax t) IF in(l, t);
+    countTaxes (###doc##Line l) = GROUP SUM 1 IF in(l, Tax t);
     taxes 'Taxes' (###doc##Line l) = GROUP CONCAT name(Tax t) IF in(l, t), ', ' ORDER t CHARWIDTH 8;
 
     amount 'Total amount' (###doc##Line l) = untaxedAmount(l) (+) (taxAmount(l) IF NOT taxIncluded(l));
