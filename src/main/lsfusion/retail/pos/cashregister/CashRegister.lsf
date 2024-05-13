@@ -32,14 +32,14 @@ openShift 'Open session' ABSTRACT CASE EXCLUSIVE (Session);
 closeShift 'Close session' ABSTRACT CASE EXCLUSIVE (Session);
 cashIn 'Cash in' ABSTRACT CASE EXCLUSIVE (Payment);
 cashOut 'Cash out' ABSTRACT CASE EXCLUSIVE (Payment);
-buy 'Cash receipt' ABSTRACT CASE EXCLUSIVE (Invoice);
+sell 'Cash receipt' ABSTRACT CASE EXCLUSIVE (Invoice);
 
 continuePrint 'Continue printing' ABSTRACT CASE EXCLUSIVE (Pos);
 reportX 'X-Report' ABSTRACT CASE EXCLUSIVE (Pos);
 
 afterOpen(Session s) + {openShift(s);}
 afterClose(Session s) + {closeShift(s);}
-afterPosPayment(Invoice i) + {buy(i);}
+afterPosPayment(Invoice i) + {sell(i);}
 afterDeposit(Pos p, IncomingPayment i) + {
     session(i) <- openedSession(p);
     cashIn(i);
@@ -79,7 +79,7 @@ DESIGN session {
 
 @defFiscal(incomingPayment, p, cashIn);
 @defFiscal(outgoingPayment, p, cashOut);
-@defFiscal(invoice, i, buy);
+@defFiscal(invoice, i, sell);
 
 EXTEND FORM posDashboard PROPERTIES(p) continuePrint, reportX; 
 
