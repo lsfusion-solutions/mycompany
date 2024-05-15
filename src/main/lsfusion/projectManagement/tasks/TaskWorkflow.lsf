@@ -1,0 +1,67 @@
+MODULE TaskWorkflow;
+
+REQUIRE ProjectTask, ProjectAssignment;
+
+NAMESPACE ProjectManagement;
+
+allow 'Allow' = DATA BOOLEAN (ProjectRole, TaskStatus, TaskStatus);
+countAllow (ProjectRole r) = GROUP SUM 1 IF allow(r, TaskStatus from, TaskStatus to) MATERIALIZED; 
+
+allowAuthor 'Allow' = DATA BOOLEAN (ProjectRole, TaskStatus, TaskStatus);
+countAllowAuthor (ProjectRole r) = GROUP SUM 1 IF allowAuthor(r, TaskStatus from, TaskStatus to) MATERIALIZED;
+
+allowAssignedTo 'Allow' = DATA BOOLEAN (ProjectRole, TaskStatus, TaskStatus);
+countAllowAssignedTo (ProjectRole r) = GROUP SUM 1 IF allowAssignedTo(r, TaskStatus from, TaskStatus to) MATERIALIZED;
+
+countAllowAny (ProjectRole r) = countAllow(r) (+) countAllowAuthor(r) (+) countAllowAssignedTo(r) MATERIALIZED; 
+
+forbid (Task t, Employee e, ProjectRole r, TaskStatus from, TaskStatus to) = countAllowAny(r) AND 
+    NOT allow(r, from, to) AND NOT (allowAuthor(r, from, to) AND author(t) = e) AND NOT (allowAssignedTo(r, from, to) AND assignedTo(t) = e);  
+
+allow (Task t, Employee e, TaskStatus from, TaskStatus to) =
+    GROUP SUM 1 IF assignment(project(t), e, ProjectRole r) AND NOT forbid(t, e, r, from, to);
+
+CONSTRAINT CHANGED(status(Task t)) AND countAssignments(currentUser()) AND 
+    PREV(status(t)) AND NOT allow(t, currentUser(), PREV(status(t)), status(t))
+    CHECKED BY status[Task]
+        MESSAGE 'New task status is forbidden for the current user';
+
+EXTEND FORM options
+    OBJECTS r = ProjectRole PANEL
+    PROPERTIES(r) name SELECTOR
+    
+    OBJECTS tscc = TaskStatus
+
+    OBJECTS tscr = TaskStatus
+    PROPERTIES(tscr) READONLY name
+    PROPERTIES allow(r, tscr, tscc) COLUMNS (tscc) HEADER name(tscc)
+
+    OBJECTS tscra = TaskStatus
+    PROPERTIES(tscra) READONLY name
+    PROPERTIES allowAuthor(r, tscra, tscc) COLUMNS (tscc) HEADER name(tscc)
+
+    OBJECTS tscras = TaskStatus
+    PROPERTIES(tscras) READONLY name
+    PROPERTIES allowAssignedTo(r, tscras, tscc) COLUMNS (tscc) HEADER name(tscc)
+;
+
+DESIGN options {
+    tabbedPane {
+        NEW statusChange {
+            caption = 'Workflow';
+            MOVE PROPERTY(name(r));
+            MOVE BOX(tscr) {
+                caption = '';
+                PROPERTY(allow(r, tscr, tscc)) { charWidth = 10; }
+            }
+            MOVE BOX(tscra) {
+                caption = 'Author';
+                PROPERTY(allowAuthor(r, tscra, tscc)) { charWidth = 10; }
+            }
+            MOVE BOX(tscras) {
+                caption = 'Assigned to';
+                PROPERTY(allowAssignedTo(r, tscras, tscc)) { charWidth = 10; }
+            }
+        }
+    }
+}
