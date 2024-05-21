@@ -4,9 +4,9 @@ REQUIRE BillReceiptCost, BillServiceCost;
 
 NAMESPACE Bill;
 
-costAllocated (BillLine bl) = GROUP SUM costAllocated(bl, BillLine bsl) IF serviceLine(bl, bsl) MATERIALIZED;
+costAllocated (BillLine bl) = GROUP SUM costAllocated(bl, BillLine bsl) * rate1(bsl) IF serviceLine(bl, bsl) MATERIALIZED;
 
-extraCost (ReceiptLine rl) += NUMERIC[14,2](costAllocated(billLine(rl)) * rate1(billLine(rl)));
+extraCost (ReceiptLine rl) += NUMERIC[14,2](costAllocated(billLine(rl)));
 
 EXTEND FORM bill
     PROPERTIES nameCostingMethod 'Cost calculation method' = nameCostingMethod(item(bl))
