@@ -34,15 +34,23 @@ opened 'Opened' (Task t) = t IS Task AND NOT closed(t);
 priority 'Priority' = DATA TaskPriority (Task);
 namePriority 'Priority' (Task t) = name(priority(t));
 idColorPriority (Task t) = idColor(priority(t));
+rgbColorPriority (Task t) = rgbColor(priority(t));
 
 in 'Incl.' = DATA BOOLEAN (Task, TaskTag);
 tags 'Tags' (Task t) = GROUP CONCAT name(TaskTag tg) IF in(t, tg), ', ' ORDER name(tg), tg;
+
+FORM changeTags 'Tags'
+    OBJECTS t = Task PANEL
+    
+    OBJECTS tg = TaskTag
+    PROPERTIES in(t, tg), name(tg) READONLY
+;
 
 FORM task 'Task'
     OBJECTS t = Task PANEL
     PROPERTIES(t) name, nameStatus, 
                   nameAuthor, nameAssignedTo, 
-                  namePriority, tags, 
+                  namePriority, tags ON CHANGE { DIALOG changeTags OBJECTS t = t; }, 
                   deadline, description
 
     EDIT Task OBJECT t
@@ -81,7 +89,8 @@ DESIGN task {
 
 FORM tasks '{Tasks}'
     OBJECTS t = Task
-    PROPERTIES(t) READONLY name, nameAuthor, nameAssignedTo, nameStatus, namePriority, tags, deadline, closed
+    PROPERTIES(t) BACKGROUND rgbColorPriority(t) READONLY 
+                  name, nameAuthor, nameAssignedTo, nameStatus, namePriority, tags, deadline, closed
     PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
 
     FILTERGROUP active
