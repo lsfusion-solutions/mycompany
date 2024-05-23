@@ -39,18 +39,11 @@ rgbColorPriority (Task t) = rgbColor(priority(t));
 in 'Incl.' = DATA BOOLEAN (Task, TaskTag);
 tags 'Tags' (Task t) = GROUP CONCAT name(TaskTag tg) IF in(t, tg), ', ' ORDER name(tg), tg;
 
-FORM changeTags 'Tags'
-    OBJECTS t = Task PANEL
-    
-    OBJECTS tg = TaskTag
-    PROPERTIES in(t, tg), name(tg) READONLY
-;
-
 FORM task 'Task'
     OBJECTS t = Task PANEL
     PROPERTIES(t) name, nameStatus, 
                   nameAuthor, nameAssignedTo, 
-                  namePriority, tags ON CHANGE { DIALOG changeTags OBJECTS t = t; }, 
+                  namePriority, tags, 
                   deadline, description
 
     EDIT Task OBJECT t
