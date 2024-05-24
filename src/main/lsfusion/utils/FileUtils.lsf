@@ -7,6 +7,7 @@ uploadFile 'Upload' = DATA LOCAL NAMEDFILE ();
 META defineObjectFilesForm(object, form, fobj)
     EXTEND FORM form
         OBJECTS of = ###object##File
+        PROPERTIES(of) READONLY index
         PROPERTIES(of) READONLYIF readonly(fobj) name, extension, description
         PROPERTIES(of) READONLY nameUser, dateTime
         PROPERTIES(of) GRID open, DELETE READONLYIF readonly(fobj)
@@ -59,6 +60,17 @@ META defineObjectFiles(object, fobj, classCaption)
     open 'Open' (###object##File f) { open(file(f), nameExtension(f)); } IMAGE 'open.png';
 
     countFiles 'Files' (###object i) = GROUP SUM 1 IF object(###object##File f) = i;
+
+    index '{Index}' (###object##File f) = PARTITION SUM 1 ORDER f BY object(f) MATERIALIZED;
+    file (###object o, INTEGER i) = GROUP MIN ###object##File f IF object(f) = o AND index(f) = i;
+    openFile(###object o, INTEGER i) { open(file(o, i)); }
+    
+    file1 (###object o) = file(o, 1);
+    file2 (###object o) = file(o, 2);
+    file3 (###object o) = file(o, 3);
+    openFile1(###object o) { openFile(o, 1); }
+    openFile2(###object o) { openFile(o, 2); }
+    openFile3(###object o) { openFile(o, 3); }
 
     firstFile (###object i) = GROUP MIN ###object##File f IF object(f) = i;
     openFirstFile 'Open' (###object i) { open(firstFile(i)); }
