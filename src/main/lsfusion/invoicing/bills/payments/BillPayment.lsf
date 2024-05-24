@@ -10,6 +10,17 @@ namePaymentType 'Payment type' (BillType t) = name(paymentType(t));
 EXTEND FORM billType PROPERTIES namePaymentType(o);
 
 fill ABSTRACT LIST (OutgoingPayment, Bill);
+fill (OutgoingPayment p, Bill b) + {
+    type(p) <- paymentType(type(b));
+
+    partner(p) <- vendor(b);
+    partnerAccount(p) <- vendorAccount(b);
+
+    company(p) <- company(b);
+    companyAccount(p) <- companyAccount(b);
+    
+    currency(p) <- currency(b);
+}
 
 registerPayment 'Register Payment' (Bill b) {
     APPLY; 
@@ -17,14 +28,6 @@ registerPayment 'Register Payment' (Bill b) {
     
     NEWSESSION {
         NEW p = OutgoingPayment {
-            type(p) <- paymentType(type(b));
-        
-            partner(p) <- vendor(b);
-            partnerAccount(p) <- vendorAccount(b);
-            
-            company(p) <- company(b);
-            companyAccount(p) <- companyAccount(b);
-            
             ready(p) <- TRUE;
             
             fill(p, b);
