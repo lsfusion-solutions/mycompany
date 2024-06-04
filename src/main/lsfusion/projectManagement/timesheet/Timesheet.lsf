@@ -103,6 +103,7 @@ clear 'Clear' (DATE d) {
     DELETE TimeEntry t WHERE date(t) = d AND matchesProject(t);
 }
 
+overCopy ABSTRACT LIST (DATE);
 maxDate (DATE to) = GROUP MAX date(TimeEntry t) IF date(t) < to AND matchesProject(t);
 copy 'Copy' (DATE d) {
     clear(d);
@@ -112,6 +113,7 @@ copy 'Copy' (DATE d) {
         employee(tn) <- employee(t);
         project(tn) <- project(t);
         type(tn) <- type(t);
+        overCopy(d);
     }
 }
 
