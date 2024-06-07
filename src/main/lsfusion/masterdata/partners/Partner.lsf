@@ -20,7 +20,7 @@ addressCsv 'Address' (Partner p) = CONCAT ', ', address(p), city(p), state(p) IF
 addressLines 'Address' (Partner p) = CONCAT '\n ', address(p), city(p), state(p) IF NOT state(p) = city(p), zip(p);
 
 phone 'Phone' = DATA ISTRING[100] (Partner) CHARWIDTH 10;
-email 'Email' = DATA ISTRING[400] (Partner) CHARWIDTH 20 REGEXP '[-!#-\'*+/-9=?A-Z^-~]+(\\.[-!#-\'*+/-9=?A-Z^-~]+)*@[0-9A-Za-z]([0-9A-Za-z-]{0,61}[0-9A-Za-z])?(\\.[0-9A-Za-z]([0-9A-Za-z-]{0,61}[0-9A-Za-z])?)+' '<html>{authentication.email.contact.incorrect}</html>';
+email 'Email' = DATA ISTRING[400] (Partner) CHARWIDTH 20 REGEXP '[\\-!#-\'*+\\/-9=?A-Z^-~]+(\\.[\\-!#-\'*+\\/-9=?A-Z^-~]+)*@[0-9A-Za-z]([0-9A-Za-z\\-]\{0,61\}[0-9A-Za-z])?(\\.[0-9A-Za-z]([0-9A-Za-z\\-]\{0,61\}[0-9A-Za-z])?)+' '{authentication.email.contact.incorrect}';
 
 archived 'Archived' = DATA BOOLEAN (Partner);
 active '{Active}' (Partner p) = NOT archived(p);
