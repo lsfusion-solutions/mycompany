@@ -12,6 +12,9 @@ name '{Name}' = DATA ISTRING[30] (Location) IN id NONULL CHARWIDTH 15;
 
 internalUse 'For internal use' = DATA BOOLEAN (Location);
 
+archived 'Archived' = DATA BOOLEAN (Location);
+active '{Active}' (Location l) = NOT archived(l);
+
 // hierarchy
 parent 'Parent' = DATA Location (Location);
 idParent 'Parent ID' (Location l) = id(parent(l));
@@ -55,7 +58,7 @@ addressLines 'Address' (Location l) = CONCAT '\n', hierarchyAddress(l), hierarch
   
 FORM location 'Location'
     OBJECTS l = Location PANEL
-    PROPERTIES(l) name, id, internalUse,
+    PROPERTIES(l) name, id, internalUse, archived,
                   canonicalNameParent, nameCompany,
                   address, city, state, zip
      
@@ -70,6 +73,7 @@ DESIGN location {
                 MOVE PROPERTY(name(l));
                 MOVE PROPERTY(id(l));
                 MOVE PROPERTY(internalUse(l));
+                MOVE PROPERTY(archived(l));
             }
             MOVE PROPERTY(canonicalNameParent(l));
             MOVE PROPERTY(nameCompany(l));
@@ -95,16 +99,22 @@ background (Location l) = ABSTRACT CASE COLOR (Location);
 FORM locations 'Locations'
     OBJECTS l = Location BACKGROUND background(l)
     PROPERTIES(l) READONLYIF isReadonly() 
-                           name, id, internalUse,
+                           name, id, internalUse, archived,
                            canonicalNameParent, nameCompany,
                            address, city, state, zip
     PROPERTIES(l) NEWSESSION NEW, EDIT, DELETE
+
+    FILTERGROUP active
+        FILTER '{Active}' active(l) DEFAULT
     
     TREE locations lt = Location PARENT parent(lt)
     PROPERTIES(lt) READONLY name, id, canonicalNameParent, nameCompany, address, city, state, zip
     PROPERTIES(lt) NEWSESSION NEW, EDIT, DELETE
     ORDERS name(lt)
-    
+
+    FILTERGROUP activeTree
+        FILTER '{Active}' active(lt) DEFAULT
+
     LIST Location OBJECT l
     
     EVENTS ON CHANGE lt { SEEK locations.l = lt; }
