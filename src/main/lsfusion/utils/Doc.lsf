@@ -213,7 +213,37 @@ DESIGN System.options {
     }
 }
 
-META defineDocHistoryHeader(doc, let)
+META defineHistoryProperty(obj, prop, capt, nameProp)
+    WHEN SETCHANGED(prop(###obj let)) AND NOT disableHistory() DO {
+        NEW l = ###obj##History {
+            obj(l) <- let;
+            dateTime(l) <- currentDateTime();
+            user(l) <- currentUser();
+            computer(l) <- currentComputer();
+            type(l) <- capt;
+            description (l) <- CONCAT ' -> ', PREV(nameProp(let)), nameProp(let);
+        }
+    }
+END
+
+META defineHistoryProperty(obj, prop, capt)
+    @defineHistoryProperty(obj, prop, capt, prop);
+END
+
+META defineDocHistoryLineProperty(doc, docLine, prop, capt, descrProp)
+    WHEN CHANGED(prop(docLine l)) AND doc(l) = ###doc d
+        AND NOT status(d) = ###doc##Status.draft AND NOT disableHistory() DO {
+        NEW h = ###doc##History {
+            doc(h) <- d;
+            dateTime(h) <- currentDateTime();
+            user(h) <- currentUser();
+            type(h) <- capt;
+            description (h) <- '' + index(l) + '. ' + (CONCAT ', ', descrProp(l), (CONCAT ' -> ', PREV(prop(l)), prop(l)));
+        }
+    }
+END
+
+META defineDocHistoryHeader(doc, let, dateProp)
     CLASS ###doc##History 'Change history';
 
     doc = DATA ###doc (###doc##History) INDEXED;
@@ -230,20 +260,14 @@ META defineDocHistoryHeader(doc, let)
     type 'Type' = DATA ISTRING[100] (###doc##History) CHARWIDTH 15;
     description 'Description' = DATA TEXT (###doc##History);
 
-    WHEN SETCHANGED(status(###doc let)) AND NOT disableHistory() DO {
-        NEW l = ###doc##History {
-            doc(l) <- let;
-            dateTime(l) <- currentDateTime();
-            user(l) <- currentUser();
-            computer(l) <- currentComputer();
-            type(l) <- 'Status changed';
-            description (l) <- 'Changed status to' + ' ' + staticCaption(status(let));
-        }
-    }
+    @defineHistoryProperty(doc, status, 'Status', nameStatus);
 
+    @defineHistoryProperty(doc, number, 'Number');
+
+    @defineHistoryProperty(doc, dateProp, 'Date');
 END
 
-META defineDocHistoryLine(doc, docLine, class, fun)
+META defineDocHistoryLine(doc, docLine, class)
 
     WHEN SETCHANGED(docLine l IS docLine) AND doc(l) = ###doc d
         AND NOT status(d) = ###doc##Status.draft AND NOT disableHistory() DO {
@@ -253,7 +277,7 @@ META defineDocHistoryLine(doc, docLine, class, fun)
             user(h) <- currentUser();
             computer(h) <- currentComputer();
             type(h) <- 'Added line';
-            description (h) <- 'Added line with index' + ' ' + index(l);
+            description (h) <- '' + index(l);
         }
     }
 
@@ -265,18 +289,7 @@ META defineDocHistoryLine(doc, docLine, class, fun)
             user(h) <- currentUser();
             computer(h) <- currentComputer();
             type(h) <- 'Removed line';
-            description (h) <- 'Deleted line with index' + ' ' + PREV(index(l));
-        }
-    }
-
-    WHEN CHANGED(##fun(docLine l)) AND doc(l) = ###doc d
-        AND NOT status(d) = ###doc##Status.draft AND NOT disableHistory() DO {
-        NEW h = ###doc##History {
-            doc(h) <- d;
-            dateTime(h) <- currentDateTime();
-            user(h) <- currentUser();
-            type(h) <- 'Changed the initial quantity';
-            description (h) <- 'Changed the initial product quantity' + ' ' + name###class(l) + ' -> ' + ##fun(l);
+            description (h) <- '' + PREV(index(l));
         }
     }
 
@@ -288,14 +301,14 @@ META defineDocHistoryLine(doc, docLine, class, fun)
             user(h) <- currentUser();
             computer(h) <- currentComputer();
             type(h) <- 'Product changed';
-            description (h) <- 'Product changed in line' + ' ' + index(l) + ' -> ' + name###class(l);
+            description (h) <- '' + index(l) + (CONCAT ' -> ', PREV(name###class(l)), name###class(l));
         }
     }
 
 END
 
-META defineDocHistoryLine(doc, class, fun)
-    @defineDocHistoryLine(doc, ###doc##Line, class, fun);
+META defineDocHistoryLine(doc, class)
+    @defineDocHistoryLine(doc, ###doc##Line, class);
 END
 
 META defineDocHistoryForm(doc, form, let)
@@ -322,12 +335,16 @@ META defineDocHistoryForm(doc, form, let)
     }
 END
 
-META defineDocHistory(doc, let, class, fun)
+META defineDocHistory(doc, let, class, dateProp)
 
-    @defineDocHistoryHeader(doc, ##let);
-    @defineDocHistoryLine(doc, class, fun);
+    @defineDocHistoryHeader(doc, ##let, dateProp);
+    @defineDocHistoryLine(doc, class);
     @defineDocHistoryForm(doc, doc, let);
 
+END
+
+META defineDocHistory(doc, let, class)
+    @defineDocHistory(doc, let, class, dateTime);
 END
 
 META defineDocRelation(docTo, docFrom, captTo, captFrom, objTo, objFrom)
