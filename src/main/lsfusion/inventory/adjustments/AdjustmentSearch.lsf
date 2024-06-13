@@ -34,13 +34,15 @@ EXTEND FORM adjustment
     TREE locations lt = Location PARENT parent(lt)
     PROPERTIES READONLY name(lt)
     ORDERS name(lt)
+    FILTERS active(lt)
         
     OBJECTS lp = (loc = Location, p = Product)
     PROPERTIES READONLY    'Location' = canonicalName(loc)
     PROPERTIES(p) READONLY 'Product' = name, nameUom, idBarCode, id  
     PROPERTIES(loc, p) READONLY      onHand
     PROPERTIES realQuantity(a, p, loc) ON CHANGE changeRealQuantity(a, p, loc)
-    FILTERS level(loc, lt), onHand(loc, p)
+    FILTERS level(loc, lt), onHand(loc, p),
+            active(loc)
     ORDERS name(p)
 ;
 
