@@ -21,8 +21,8 @@ done 'Done' = DATA NUMERIC[16,3] (ShipmentLine, Location);
 picked 'Picked' (ShipmentLine l) = GROUP SUM done(l, Location loc);
 ledgerDone (ShipmentLine l) += picked(l);
 
-CONSTRAINT done(ShipmentLine l, Location loc) < 0 MESSAGE 'The shipped quantity cannot be less than 0';
-CONSTRAINT done(ShipmentLine l) (-) picked(l) < 0 MESSAGE 'You cannot ship goods to storage locations more than in a line';
+CONSTRAINT (done(ShipmentLine l, Location loc) < 0) AND done(l) > 0 MESSAGE 'The shipped quantity cannot be less than 0';
+CONSTRAINT (done(ShipmentLine l) (-) picked(l) < 0) AND done(l) > 0 MESSAGE 'You cannot ship goods to storage locations more than in a line';
 
 locations (ShipmentLine l) = GROUP CONCAT name(Location loc) + ' : ' + DOUBLE(done(l, loc)), ', ' ORDER loc;
 note(ShipmentLine l) += locations(l);
