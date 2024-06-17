@@ -25,7 +25,7 @@ done 'Done' = DATA NUMERIC[16,3] (ShipmentLine);
 
 weightDone 'Weight' (ShipmentLine l) = NUMERIC[16,3](done(l) * weight(product(l)));
 
-CONSTRAINT (done(ShipmentLine l) < 0 OR done(l) > initialDemand(l)) AND NOT doNotCheckDone(type(l))
+CONSTRAINT (done(ShipmentLine l) > initialDemand(l)) AND NOT doNotCheckDone(type(l))
     MESSAGE 'Done quantity must be between 0 and initial demand';
 
 setDone 'Fill done' (Shipment s) {

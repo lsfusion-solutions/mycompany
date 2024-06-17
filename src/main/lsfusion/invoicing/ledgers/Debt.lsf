@@ -77,5 +77,5 @@ sourceLeft (OutgoingDebt od) = NUMERIC[14,2] (left(od) / currentRate1(od));
 
 canBePaid (IncomingDebt id, OutgoingDebt od) = canBeMatched(id, od) AND left(id, od) > 0 AND active(id) AND active(od);
 
-CONSTRAINT left(IncomingDebt id) < 0 MESSAGE 'Incoming debt is posted more than the amount owed';
-CONSTRAINT left(OutgoingDebt id) < 0 MESSAGE 'Outgoing debt has posted more than the outstanding amount';
+CONSTRAINT left(IncomingDebt id) < 0 AND amount(id) > 0 MESSAGE 'Incoming debt is posted more than the amount owed';
+CONSTRAINT left(OutgoingDebt id) < 0 AND amount(id) > 0 MESSAGE 'Outgoing debt has posted more than the outstanding amount';
