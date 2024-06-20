@@ -106,6 +106,24 @@ DESIGN item {
     }
 }
 
+EXTEND FORM lot
+    OBJECTS il = InvLedger
+    PROPERTIES(il) READONLY class, type, dateTime, number, namePartner,
+                            nameFromLocation, onHandAFromLocation,
+                            nameToLocation, onHandAToLocation
+    PROPERTIES(il, l) READONLY quantity
+    PROPERTIES(il) NEWSESSION EDIT
+    FILTERGROUP activeInv
+        FILTER '{Active}' active(il) DEFAULT
+    FILTERS quantity(il, l)
+;
+
+DESIGN lot {
+    tabs {
+        MOVE BOX(il) { caption = 'Movement'; }
+    }
+}
+
 EXTEND FORM lots
     PROPERTIES(l) READONLY onHand
     
@@ -121,5 +139,8 @@ EXTEND FORM lots
 ;
 
 DESIGN lots {
-    BOX(il) { fill = 0.3; }
+    BOX(il) { 
+        caption = 'Movement';
+        fill = 0.3; 
+    }
 }
