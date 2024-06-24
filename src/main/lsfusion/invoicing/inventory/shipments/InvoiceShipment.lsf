@@ -34,6 +34,7 @@ EXTEND FORM invoices
 // lines
 @defineDocLineRelation(invoice, shipment, 'Invoice', 'Shipment', i, s);
 
+fill ABSTRACT LIST (Shipment, Invoice);
 fill ABSTRACT LIST (ShipmentLine, InvoiceLine);
 invoiceShipmentCreated = DATA LOCAL Shipment ();
 newShipment (Invoice i) {
@@ -47,7 +48,9 @@ newShipment (Invoice i) {
         deliveryAddress(r) <- deliveryAddress(i);
 
         immediate(r) <- TRUE;
-        done(r) <- TRUE;    
+        done(r) <- TRUE;
+        
+        fill(r, i);
     
         FOR invoice(InvoiceLine l) = i AND item(l) IS Product INLINE NEW rl = ShipmentLine DO {            
             shipment(rl) <- r;
