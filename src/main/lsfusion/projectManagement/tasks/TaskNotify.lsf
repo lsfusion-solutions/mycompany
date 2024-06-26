@@ -1,0 +1,17 @@
+MODULE TaskNotify;
+
+REQUIRE Task;
+
+NAMESPACE ProjectManagement;
+
+notifyAssignedTo (Task t) {
+    IF pushConnection(assignedTo(t)) THEN {
+        NEWTHREAD {
+            SHOW task OBJECTS t = t DOCKED NOWAIT;
+        } TO exportInteger;
+        pushNotify(pushConnection(assignedTo(t)), (CONCAT ' : ', 'New task assigned', name(t)), exportInteger());
+    }
+}
+
+WHEN SETCHANGED(assignedTo(Task t)) DO
+    notifyAssignedTo(t);
