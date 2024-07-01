@@ -98,7 +98,7 @@ calculateCost () {
         iteration(OutCostLedger l) <- ordered(l) = i;
         
         quantity(OutCostLedger ol, InCostLedger il) <- (PARTITION UNGROUP negSignedQuantity
-                                                                  LIMIT notCosted(il) IF location(ol) = location(il) 
+                                                                  LIMIT STRICT (OVERRIDE notCosted(il), 0.0) IF location(ol) = location(il) 
                                                                                      AND product(ol) = product(il) 
 //                                                                                     AND dateTime(il) <= dateTime(ol) 
                                                                   ORDER dateTime(il), il
@@ -106,7 +106,7 @@ calculateCost () {
                                                        WHERE iteration(ol) AND signedQuantity(ol) <= 0;
                                                        
         quantity(OutCostLedger ol, InCostLedger il) <- -(PARTITION UNGROUP signedQuantity
-                                                                   LIMIT costed(il) IF location(ol) = location(il) 
+                                                                   LIMIT STRICT (OVERRIDE costed(il), 0.0) IF location(ol) = location(il) 
                                                                                      AND product(ol) = product(il) 
 //                                                                                     AND dateTime(il) <= dateTime(ol) 
                                                                    ORDER DESC dateTime(il), il
