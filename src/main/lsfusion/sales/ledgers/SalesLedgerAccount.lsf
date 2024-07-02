@@ -6,8 +6,8 @@ NAMESPACE Sales;
 
 amount 'Amount' = ABSTRACT NUMERIC[14,2] (SalesLedger, SalesAccount) MATERIALIZED;
 
-revenue 'Revenue' (SalesLedger l, SalesAccount a) = amount(l, a) IF amount(l, a) > 0;
-cost 'Cost' (SalesLedger l, SalesAccount a) = -amount(l, a) IF amount(l, a) < 0;
+revenue 'Revenue' (SalesLedger l, SalesAccount a) = amount(l, a) IF revenue(a);
+cost 'Cost' (SalesLedger l, SalesAccount a) = -amount(l, a) IF NOT revenue(a);
 
 amount 'Amount' = ABSTRACT VALUE EXCLUSIVE NUMERIC[14,2] (SalesLedger, SystemSalesAccount);
 amount (SalesLedger l, SystemSalesAccount sa) += amount(l, sa);
