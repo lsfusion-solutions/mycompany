@@ -23,7 +23,7 @@ META defineTaxCalc(doc, let, prefix, price)
     taxAmount 'Taxes' (Tax t, ###doc##Line l) = DATA NUMERIC[14,2] (Tax, ###doc##Line);
     
     taxIncluded = ABSTRACT BOOLEAN (###doc##Line);
-    WHEN LOCAL CHANGED(untaxedAmount(###doc##Line l) IF in(l, Tax t)) AND value(t) DO
+    WHEN LOCAL CHANGED(untaxedAmount(###doc##Line l) IF in(l, Tax t)) AND value(t) AND NOT CHANGED(taxAmount(t, l)) DO
         taxAmount (t, l) <- NUMERIC[14,2] (value(t) / (100 (+) (value(t) IF taxIncluded(l))) * untaxedAmount(l));
     
     CONSTRAINT (DROPPED(Tax t IS Tax) AND PREV(taxAmount(t, ###doc##Line l))) 
