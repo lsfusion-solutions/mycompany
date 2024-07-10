@@ -62,6 +62,7 @@ WHEN LOCAL (SETCHANGED(paymentTerms(Invoice i)) OR SETCHANGED(dateTime(i))) AND 
 // partner account
 customerAccount 'Customer account' = DATA Account (Invoice);
 nameCustomerAccount 'Customer account' (Invoice b) = name(customerAccount(b));
+numberCustomerAccount (Invoice b) = number(customerAccount(b));
 WHEN LOCAL CHANGED (customer(Invoice b)) DO customerAccount(b) <- defaultAccount(customer(b));
 
 CONSTRAINT customerAccount(Invoice b) AND NOT customer(b) = holder(customerAccount(b))
@@ -71,6 +72,11 @@ CONSTRAINT customerAccount(Invoice b) AND NOT customer(b) = holder(customerAccou
 // company account
 companyAccount 'Company account' = DATA Account (Invoice);
 nameCompanyAccount 'Company account' (Invoice b) = name(companyAccount(b));
+numberCompanyAccount (Invoice b) = number(companyAccount(b));
+bankCompanyAccount (Invoice b) = bank(companyAccount(b));
+idBankCompanyAccount 'Bank' (Invoice b) = idBank(companyAccount(b));
+nameBankCompanyAccount 'Bank' (Invoice b) = nameBank(companyAccount(b)); 
+
 WHEN LOCAL CHANGED(company(Invoice b)) DO companyAccount(b) <- defaultAccount(company(b));
 
 CONSTRAINT companyAccount(Invoice b) AND NOT company(b) = holder(companyAccount(b))

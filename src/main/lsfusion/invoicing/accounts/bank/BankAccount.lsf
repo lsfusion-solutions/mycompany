@@ -5,12 +5,11 @@ REQUIRE Account, Bank, Utils;
 NAMESPACE Invoicing;
 
 CLASS BankAccount 'Bank account' : Account;
-
 number 'Account number' = DATA STRING[30] (BankAccount) IN id NONULL;
 
 bank 'Bank' = DATA Bank (BankAccount) NONULL;
 nameBank 'Bank' (BankAccount b) = name(bank(b));
-id 'Bank code' (BankAccount b) = id(bank(b));
+idBank 'Bank code' (BankAccount b) = id(bank(b));
 
 name (BankAccount a) += (CONCAT ' ', number(a), 'в ' + nameBank(a)) IF a IS BankAccount; 
 
@@ -21,7 +20,7 @@ EXTEND CLASS AccountType {
 type(Account a) += WHEN a IS BankAccount THEN AccountType.bank;
 
 EXTEND FORM account
-    PROPERTIES(a) number, nameBank, id READONLY
+    PROPERTIES(a) number, nameBank, idBank READONLY
 ;
 
 DESIGN account {
@@ -30,7 +29,7 @@ DESIGN account {
             horizontal = TRUE;
             MOVE PROPERTY(number(a));
             MOVE PROPERTY(nameBank(a)) { notNull = TRUE; }
-            MOVE PROPERTY(id(a));
+            MOVE PROPERTY(idBank(a));
         }
     }
 }
