@@ -8,7 +8,7 @@ NAMESPACE DaData;
 
 short = DATA LOCAL ISTRING[50] (INTEGER);  // Краткое фирменное наименование без указания ОПФ и кавычек
 full = DATA LOCAL ISTRING[200] (INTEGER);  // Полное фирменное наименование без указания ОПФ и кавычек
-short_with_opf = DATA LOCAL ISTRING[200] (INTEGER);  // Краткое фирменное наименование
+short_with_opf = DATA LOCAL ISTRING[50] (INTEGER);  // Краткое фирменное наименование
 full_with_opf = DATA LOCAL ISTRING[200] (INTEGER);  // Полное фирменное наименование
 
 inn = DATA LOCAL STRING[12] (INTEGER);
@@ -54,9 +54,9 @@ findByIdParty (STRING code) {
 
 fill (LegalEntity l, STRING[13] c) {
     findByIdParty(c);
-    IF short(0) THEN {
-        name(l) <- short(0) WHERE NOT name(l);
-        dataFullName(l) <- full_with_opf(0) WHERE NOT dataFullName(l);
+    IF short(0) OR short_with_opf(0) THEN {
+        name(l) <- OVERRIDE short(0), short_with_opf(0) WHERE NOT name(l);
+        dataFullName(l) <- OVERRIDE full_with_opf(0), full(0) WHERE NOT dataFullName(l);
         
         inn(l) <- inn(0) WHERE NOT inn(l);
         kpp(l) <- kpp(0) WHERE NOT kpp(l);
