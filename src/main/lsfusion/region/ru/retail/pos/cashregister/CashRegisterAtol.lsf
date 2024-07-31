@@ -196,8 +196,10 @@ sell(Invoice i) {
     EXPORT sell OBJECTS i = i JSON CHARSET 'UTF-8';
     TRY {
         EXTERNAL HTTP CLIENT 'http://' + hostname(pos(session(i))) + ':16732/requests' PARAMS exportFile();
-        fiscal(i) <- TRUE;
-        APPLY;
+        NEWSESSION {
+            fiscal(i) <- TRUE;
+            APPLY;
+        }
     } CATCH
         CASE
             WHEN statusHttp() > 299 THEN
