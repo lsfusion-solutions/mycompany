@@ -16,8 +16,11 @@ color (ShipmentStatus s) += WHEN s = ShipmentStatus.ready THEN RGB(252,247,149);
 toReserve (Shipment s) = status(s) = ShipmentStatus.waiting OR status(s) = ShipmentStatus.ready MATERIALIZED;   
 
 reserved 'Reserved' = DATA NUMERIC[16,3] (ShipmentLine);
+countReserved (Shipment s) = GROUP SUM 1 IF reserved(ShipmentLine l) AND shipment(l) = s;
 linesReserved (Shipment s) = GROUP SUM 1 IF reserved(ShipmentLine l) = initialDemand(l) AND shipment(l) = s;
 reserved (Shipment s) = linesReserved(s) = countLines(s);
+
+toReserve (ShipmentLine l) = initialDemand(l) (-) reserved(l); 
 
 available 'Available' (ShipmentLine l) = prevAvailableRec(location(shipment(l)), product(l)) (+) PREV(reserved(l)); 
 
@@ -40,6 +43,9 @@ checkAvailability 'Check availability' (Shipment s) {
 
 extraUnreserve ABSTRACT (Shipment); 
 unreserve 'Unreserve' (Shipment s) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
     NEWSESSION {
         reserved(ShipmentLine l) <- NULL WHERE shipment(l) = s;
         extraUnreserve(s); 
@@ -48,9 +54,33 @@ unreserve 'Unreserve' (Shipment s) {
     }
 }
 
+overShipPartially ABSTRACT LIST (ShipmentLine, ShipmentLine);
+shipPartially 'Ship partially' (Shipment s) {
+    APPLY;
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {
+        NEW ns = Shipment {
+            cloneHeader(ns, s);
+            waiting(ns) <- TRUE;
+            FOR shipment(ShipmentLine l) = s AND toReserve(l) > 0 INLINE NEW nl = ShipmentLine DO {
+                shipment(nl) <- ns;
+                product(nl) <- product(l);
+                initialDemand(nl) <- toReserve(l);
+                overShipPartially(nl, l);
+            }
+            DIALOG shipment OBJECTS s = ns DOCKED NOMANAGESESSION DO {
+                ready(s) <- TRUE;
+            }
+            APPLY;
+        }
+    }
+}
+
 EXTEND FORM shipment
-    PROPERTIES(s) checkAvailability SHOWIF toReserve(s) AND NOT reserved(s) AND NOT immediate(s), 
-                  unreserve SHOWIF status(s) = ShipmentStatus.ready, 
+    PROPERTIES(s) checkAvailability SHOWIF toReserve(s) AND NOT reserved(s) AND NOT immediate(s),
+                  shipPartially SHOWIF status(s) = ShipmentStatus.waiting AND countReserved(s),
+                  unreserve SHOWIF toReserve(s) AND countReserved(s), 
                   ready 
        
     PROPERTIES(l) READONLY available, reserved SHOWIF NOT immediate(s)
@@ -61,6 +91,7 @@ DESIGN shipment {
         MOVE PROPERTY(checkAvailability(s)) { valueClass = 'btn-primary'; }
     }
     secondaryActions {
+        MOVE PROPERTY(shipPartially(s)) { valueClass = 'btn-warning'; }
         MOVE PROPERTY(unreserve(s)) { valueClass = 'btn-warning'; }
     }              
     statusGroup {

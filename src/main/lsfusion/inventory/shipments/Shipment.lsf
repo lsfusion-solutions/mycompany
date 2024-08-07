@@ -239,12 +239,16 @@ EXTEND FORM shipments
 ;
 
 // copy
-clone(Shipment to, Shipment from) {
+cloneHeader (Shipment to, Shipment from) {
     type(to) <- type(from);
     location(to) <- location(from);
     toLocation(to) <- toLocation(from);
     note(to) <- note(from);
     immediate(to) <- immediate(from);
+}
+
+clone(Shipment to, Shipment from) {
+    cloneHeader(to, from);
     FOR shipment(ShipmentLine l) = from INLINE NEW nl = ShipmentLine DO {
         shipment(nl) <- to;
         product(nl) <- product(l);
