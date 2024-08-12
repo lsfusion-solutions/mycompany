@@ -12,3 +12,10 @@ pricelistLineA (Partner p, Item i, DATETIME d) =
 priceA (Partner p, Item i, DATETIME d) = price(pricelistLineA(p, i, d));
 
 overPriceA (Partner p, Item i, DATETIME d) = OVERRIDE priceA(p, i, d), cost(i, DATE(d));
+
+pricelistLineA (Item i, DATETIME d) =
+    GROUP LAST PricelistLine prl IF item(prl) = primary(i) AND done(pricelist(prl)) AND
+        NOT startDateTime(pricelist(prl)) > d AND NOT endDateTime(pricelist(prl)) < d
+    ORDER startDateTime(pricelist(prl)), pricelist(prl), prl;
+
+vendorA (Item i) = vendor(pricelistLineA(i, currentDateTime()));

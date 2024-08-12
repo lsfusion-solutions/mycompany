@@ -17,7 +17,7 @@ META defineDocObjectsForm (form, obj, title)
                 }
                 NEW rightPane {
                     tabbed = TRUE;
-                    width = 200;
+                    width = 230;
                     fill = 1;
                     NEW filters {
                         caption = 'Filters';
@@ -369,14 +369,14 @@ META defineDocRelation(docTo, docFrom, captTo, captFrom, objTo, objFrom)
     ;
 END
 
-META defineDocLineRelation(docTo, docFrom, docFromLine, captTo, captFrom, objTo, objFrom)
+META defineDocLineRelation(docTo, docFrom, docFromLine, captTo, captFrom, objTo, objFrom, prefix)
     docTo##Line = DATA ###docTo##Line (###docFromLine) INDEXED;
     
     in (###docTo i, ###docFrom s) = GROUP SUM 1 IF docTo(docTo##Line(###docFromLine l)) = i AND docFrom(l) = s MATERIALIZED; 
     
     count###docTo (###docFrom s) = GROUP SUM 1 IF in(###docTo i, s) MATERIALIZED;
     count###docFrom##s (###docTo i) = GROUP SUM 1 IF in(i, ###docFrom s) MATERIALIZED;
-    numberDate###docTo captTo (###docFrom s) = GROUP CONCAT numberDate(###docTo i) IF in(i, s), ',' ORDER i CHARWIDTH 30; 
+    numberDate###docTo captTo (###docFrom s) = GROUP CONCAT numberDate(###docTo i) IF in(i, s), ',' ORDER i CHARWIDTH 30;
     numberDate###docTo##Line captTo (###docFromLine s) = numberDate(docTo##Line(s)); 
 
     numberDate###docFrom##s captFrom (###docTo s) = GROUP CONCAT numberDate(###docFrom i) IF in(s, i), ',' ORDER i CHARWIDTH 30;
@@ -390,15 +390,15 @@ META defineDocLineRelation(docTo, docFrom, docFromLine, captTo, captFrom, objTo,
             edit(i); 
     }
     EXTEND FORM docFrom
-        PROPERTIES(objFrom) numberDate###docTo ON CHANGE open###docTo(objFrom) SHOWIF count###docTo(objFrom)
+        PROPERTIES(objFrom) prefix###numberDate###docTo = numberDate###docTo ON CHANGE open###docTo(objFrom) SHOWIF count###docTo(objFrom)
     ;
     DESIGN docFrom {
         footer {
-            MOVE PROPERTY(numberDate###docTo(objFrom));
+            MOVE PROPERTY(prefix###numberDate###docTo);
         }
     }
     EXTEND FORM docFrom##s
-        PROPERTIES(objFrom) READONLY numberDate###docTo
+        PROPERTIES(objFrom) READONLY prefix###numberDate###docTo = numberDate###docTo
     ;
     EXTEND FORM docTo##s
         PROPERTIES(objTo) READONLY numberDate###docFrom##s
@@ -406,7 +406,7 @@ META defineDocLineRelation(docTo, docFrom, docFromLine, captTo, captFrom, objTo,
 END
 
 META defineDocLineRelation(docTo, docFrom, captTo, captFrom, objTo, objFrom)
-    @defineDocLineRelation(docTo, docFrom, docFrom##Line, captTo, captFrom, objTo, objFrom);
+    @defineDocLineRelation(docTo, docFrom, docFrom##Line, captTo, captFrom, objTo, objFrom, );
 END
 META defineDocDiscount (doc)
     discount 'Discount, %' = DATA NUMERIC[5,2] (###doc##Line);

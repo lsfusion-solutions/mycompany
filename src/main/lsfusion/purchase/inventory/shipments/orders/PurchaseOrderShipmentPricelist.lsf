@@ -1,0 +1,58 @@
+MODULE PurchaseOrderShipmentPricelist;
+
+REQUIRE PurchaseOrderShipment, PurchasePricelistValue, PurchaseOrderSearch,
+        ShipmentFilter;
+
+NAMESPACE Purchase;
+
+createOrders 'Create orders' () {
+    IF NOT shipmentLocation() THEN {
+        MESSAGE 'No location selected (source)';
+        RETURN;
+    }
+    
+    NEWSESSION NESTED (selected[Shipment]) {
+        LOCAL NESTED toOrder = NUMERIC[16,3] (Product);
+        toOrder(Product p) <- GROUP SUM toReserve(ShipmentLine l) IF selected(shipment(l)) AND
+                                                                     NOT orderLine(l) AND
+                                                                     location(l) = shipmentLocation() AND
+                                                                     product(l) = p;
+        
+        FOR [GROUP SUM 1 IF toOrder(Product p) BY vendorA(p)] (Partner p) DO NEWSESSION 
+            NEW o = Order {
+                location(o) <- shipmentLocation();
+                vendor(o) <- p;
+                FOR toOrder(Product pr) AND vendorA(pr) = p INLINE NEW l = OrderLine DO {
+                    order(l) <- o;
+                    item(l) <- pr;
+                    quantity(l) <- toOrder(pr);
+                }
+                orderLine(ShipmentLine l) <- lastOrderLine(o, product(l)) WHERE selected(shipment(l)) AND location(l) = shipmentLocation() AND
+                                                                                vendorA(product(l)) = p;
+                SHOW order OBJECTS o = o DOCKED;
+            }
+
+        IF [GROUP SUM 1 IF toOrder(Product p) AND NOT vendorA(p)]() THEN NEWSESSION
+            NEW o = Order {
+                location(o) <- shipmentLocation();
+                FOR toOrder(Product pr) AND NOT vendorA(pr) INLINE NEW l = OrderLine DO {
+                    order(l) <- o;
+                    item(l) <- pr;
+                    quantity(l) <- toOrder(pr);
+                }
+                orderLine(ShipmentLine l) <- lastOrderLine(o, product(l)) WHERE selected(shipment(l)) AND location(l) = shipmentLocation() AND
+                                                                                NOT vendorA(product(l));
+                SHOW order OBJECTS o = o DOCKED;
+            }
+    }
+}
+
+EXTEND FORM shipments
+    PROPERTIES() createOrders SHOWIF countSelectedOrders()
+;
+
+DESIGN shipments {
+    actions {
+        MOVE PROPERTY(createOrders()) { alignment = STRETCH; }
+    }
+}
