@@ -76,6 +76,10 @@ WHEN SET(locked(Order o)) DO {
     DELETE Shipment s WHERE s = reserveShipment(o) AND toReserve(s);
 }
 
+overShipPartially (ShipmentLine to, ShipmentLine from) +{
+    orderLine(to) <- orderLine(from);
+}
+
 FORM orderShipmentShow 'Shipments'
     OBJECTS ol = OrderLine
     

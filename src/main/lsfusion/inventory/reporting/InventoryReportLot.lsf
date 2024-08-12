@@ -4,16 +4,14 @@ REQUIRE InventoryReport, InvLedgerLot, Lot, ProductLot;
 
 NAMESPACE Inventory;
 
-onHandDateTime 'Balance as of date' (Location ll, Lot l) = onHandA(ll, l, selectedDateTime());
-
 EXTEND FORM inventoryReport   
     OBJECTS lotH = Lot
     PROPERTIES(lotH) READONLY id
-    PROPERTIES(l, lotH) READONLY SHOWIF NOT selectedDateTime() onHand
-    PROPERTIES(l, lotH) READONLY SHOWIF selectedDateTime() onHandDateTime
+    PROPERTIES(l, lotH) READONLY SHOWIF NOT dt IS DATETIME onHand
+    PROPERTIES(l, lotH, dt) READONLY SHOWIF dt IS DATETIME onHandA
     
-    FILTERS product(lotH) = p AND IF selectedDateTime() THEN onHandDateTime(l, lotH) ELSE 
-                    onHand(l, lotH)    
+    FILTERS product(lotH) = p AND 
+            (IF dt THEN onHandA(l, lotH, dt) ELSE onHand(l, lotH))    
 ;
 
 DESIGN inventoryReport {

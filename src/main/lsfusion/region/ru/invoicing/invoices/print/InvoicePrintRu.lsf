@@ -7,9 +7,11 @@ NAMESPACE Invoicing;
 
 innCompany (Invoice i) = inn(company(i));
 okpoCompany (Invoice i) = okpo(company(i));
+kppCompany (Invoice i) = kpp(company(i));
 
 innCustomer (Invoice i) = inn(customer(i));
 okpoCustomer (Invoice i) = okpo(customer(i));
+kppCustomer (Invoice i) = kpp(customer(i));
 
 legalCodeUom (InvoiceLine l) = legalCode(uom(l));
 
@@ -18,7 +20,7 @@ correspondentAccountCompany (Invoice l) = correspondentAccount(bankCompanyAccoun
 idCustomsDeclaration(InvoiceLine l) = id(customsDeclaration(item(l), company(invoice(l)), dateTime(invoice(l))));
 
 EXTEND FORM printInvoice
-    PROPERTIES(o) innCustomer, okpoCustomer, innCompany, correspondentAccountCompany
+    PROPERTIES(o) innCompany, okpoCompany, kppCompany, innCustomer, okpoCustomer, kppCustomer, correspondentAccountCompany
     
     PROPERTIES(l) legalCodeUom, idCustomsDeclaration
     PROPERTIES nameSalesUom = namePackUom(l) IF packQuantity(l), packQuantity(l), packRatio = NUMERIC[16,3](quantity(l) / packQuantity(l))

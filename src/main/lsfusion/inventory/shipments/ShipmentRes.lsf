@@ -5,10 +5,10 @@ REQUIRE ShipmentDone, ResLedger;
 NAMESPACE Inventory;
 
 ledgerReserved = ABSTRACT NUMERIC[16,3] (ShipmentLine);
-toReserve (ShipmentLine l) = reserved(l) (-) ledgerReserved(l);
+lineReserved (ShipmentLine l) = reserved(l) (-) ledgerReserved(l);
 
 CLASS ShipmentResLedger 'Shipment' : ResLedger;
-resLedger = AGGR ShipmentResLedger WHERE toReserve(ShipmentLine line) > 0 AND toReserve(shipment(line));
+resLedger = AGGR ShipmentResLedger WHERE lineReserved(ShipmentLine line) > 0 AND toReserve(shipment(line));
 
 type(ShipmentResLedger l) += nameType(shipment(line(l)));
 
@@ -18,7 +18,7 @@ number(ShipmentResLedger r) += number(shipment(line(r)));
 location(ShipmentResLedger r) += location(shipment(line(r)));
 
 product(ShipmentResLedger r) += product(line(r));
-reserved(ShipmentResLedger r) += toReserve(line(r));
+reserved(ShipmentResLedger r) += lineReserved(line(r));
 
 partner(ShipmentResLedger r) += customer(shipment(line(r)));
 

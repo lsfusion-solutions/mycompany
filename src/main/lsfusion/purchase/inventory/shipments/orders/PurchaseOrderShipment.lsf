@@ -1,0 +1,24 @@
+MODULE PurchaseOrderShipment;
+
+REQUIRE PurchaseOrder, ShipmentDone;
+
+NAMESPACE Purchase;
+
+@defineDocLineRelation(order, shipment, shipmentLine, 'Purchase order', 'Shipment', o, s, purchase);
+
+EXTEND FORM order
+    OBJECTS sh = Shipment
+    PROPERTIES(sh) READONLY number, scheduledDateTime, imagedNameStatus BACKGROUND colorStatus(sh), nameType, executionDateTime
+    PROPERTIES(sh) NEWSESSION EDIT GRID
+    FILTERS in(o, sh)
+;
+
+DESIGN order {
+    relatedDoc {
+        MOVE BOX(sh) {
+            caption = badged('Shipments', countShipments(o));
+            GRID(sh) { size = (100, -1); }
+        }
+        REMOVE TOOLBARSYSTEM(sh);
+    }
+}
