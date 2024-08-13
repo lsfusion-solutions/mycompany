@@ -27,6 +27,8 @@ level 'Level' (Location child, Location parent) =
    RECURSION 1l IF child IS Location AND parent = child
         STEP 2l IF parent = parent($parent) MATERIALIZED;
 
+level 'Level' (Location child)  = GROUP SUM 1 IF level(child, Location parent) MATERIALIZED;
+
 isChild (Location child, Location parent) = TRUE IF level(child, parent);
 
 countChildren (Location parent) = GROUP SUM 1 IF parent(Location child) = parent;
@@ -115,8 +117,6 @@ FORM locations 'Locations'
     FILTERGROUP activeTree
         FILTER '{Active}' active(lt) DEFAULT
 
-    LIST Location OBJECT l
-    
     EVENTS ON CHANGE lt { SEEK locations.l = lt; }
 ;
 
@@ -127,11 +127,48 @@ DESIGN locations {
         tabbed = TRUE;
         NEW list {
             caption = 'List';
-            MOVE BOX(l);
+            MOVE BOX(l) { caption = ''; }
         }
         NEW tree {
             caption = 'Tree';
-            MOVE BOX(TREE locations);
+            MOVE BOX(TREE locations) { caption = ''; }
+        }
+    }
+}
+
+FORM dialogLocations 'Locations'
+    OBJECTS l = Location BACKGROUND background(l)
+    PROPERTIES(l) READONLY name, address, level
+    ORDERS level(l), name(l)
+
+    FILTERGROUP active
+        FILTER '{Active}' active(l) DEFAULT
+
+    TREE locations lt = Location PARENT parent(lt)
+    PROPERTIES(lt) READONLY name, address
+    ORDERS name(lt)
+
+    FILTERGROUP activeTree
+        FILTER '{Active}' active(lt) DEFAULT
+
+    LIST Location OBJECT l
+
+    EVENTS ON CHANGE lt { SEEK locations.l = lt; }
+;
+
+DESIGN dialogLocations {
+    OBJECTS {
+        tabbed = TRUE;
+        NEW list {
+            caption = 'List';
+            MOVE BOX(l) { 
+                caption = '';
+                PROPERTY(level(l)) { hide = TRUE; }
+            }
+        }
+        NEW tree {
+            caption = 'Tree';
+            MOVE BOX(TREE locations) { caption = ''; }
         }
     }
 }
