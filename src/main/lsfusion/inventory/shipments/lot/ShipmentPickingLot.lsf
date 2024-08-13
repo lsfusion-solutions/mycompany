@@ -9,6 +9,7 @@ quantity 'Qty' = DATA NUMERIC[16,3] (ShipmentLine, Location, Lot);
 picked 'Picked' (ShipmentLine sl, Lot l) = GROUP SUM quantity(sl, Location ll, l);
 ledgerDone(ShipmentLine rl, Lot l) += picked(rl, l);
 
+pickedLot 'Picked' (ShipmentLine sl, Location ll) = GROUP SUM quantity(sl, ll, Lot lt);
 pickedLot 'Picked' (ShipmentLine sl) = GROUP SUM quantity(sl, Location ll, Lot lt);
 
 quantity(ShipmentPickingInv sl, Lot l) += quantity(line(sl), location(sl), l);
@@ -17,6 +18,8 @@ select 'Select' (ShipmentLine sl, Location l) {
     quantity(sl, Location ll, Lot lt) <- done(sl, lt) IF ll = l;
     done(sl, Location ll) <- doneLot(sl) IF ll = l;
 }
+
+extraPickingFilter (ShipmentLine l, Location lt) += TRUE IF pickedLot(l);
 
 EXTEND FORM shipment
     PROPERTIES(l, loc) select TOOLBAR
