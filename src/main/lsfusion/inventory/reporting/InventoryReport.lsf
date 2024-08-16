@@ -37,7 +37,7 @@ FORM inventoryReport 'Inventory report'
 
     FILTERGROUP rowFilter
         FILTER 'On hand'
-            IF dt THEN onHandA(l, p, dt) ELSE 
+            IF dt IS DATETIME THEN onHandA(l, p, dt) ELSE 
                 (IF singleLocation() THEN onHandRec(l, p) ELSE onHand(l, p)) DEFAULT
         FILTER '{Received}' dateReceived(l, p)
                 
@@ -69,8 +69,8 @@ FORM inventoryReport 'Inventory report'
     PROPERTIES READONLY 'Location' = canonicalName(ll), 'Product' = name(rp), value(rp, a) COLUMNS (a) HEADER name(a),
                         level1(rp), level2(rp), level3(rp), level4(rp), 'Canonical group' = canonicalNameCategory(rp)
     PROPERTIES(ll, rp) READONLY dateReceived, dateShipped
-    PROPERTIES READONLY MEASURE reserved(ll, rp), available(ll, rp), onHand 'On hand' = IF dt THEN onHandA(ll, rp, dt) ELSE onHand(ll, rp)
-    FILTERS IF dt THEN onHandA(ll, rp, dt) ELSE onHand(ll, rp),
+    PROPERTIES READONLY MEASURE reserved(ll, rp), available(ll, rp), onHand 'On hand' = IF dt IS DATETIME THEN onHandA(ll, rp, dt) ELSE onHand(ll, rp)
+    FILTERS IF dt IS DATETIME THEN onHandA(ll, rp, dt) ELSE onHand(ll, rp),
             accessGranted(ll)
 ;
 

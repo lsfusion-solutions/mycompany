@@ -44,16 +44,16 @@ locations 'Locations' (Lot l) = GROUP CONCAT name(Location ll) IF onHand(ll, l) 
 onHandLot 'On hand (lots)' (Location ll, Product p) = GROUP SUM onHand(ll, Lot l) IF product(l) = p;
 
 onHand 'On hand' (Location ll, Lot l, DATETIME dt) = 
-                                                            inQuantity(ll, l, dt) (-) outQuantity(ll, l, dt) IF dt;
+                                                            inQuantity(ll, l, dt) (-) outQuantity(ll, l, dt) IF dt IS DATETIME;
 
 onHandLot 'On hand (lots)' (Location ll, Product p, DATETIME dt) = GROUP SUM onHand(ll, Lot l, dt) IF product(l) = p;                                                            
 
 onHandA 'On hand' (Location ll, Lot l, DATETIME dt) = 
-                                                            inQuantityA(ll, l, dt) (-) outQuantityA(ll, l, dt) IF dt;
+                                                            inQuantityA(ll, l, dt) (-) outQuantityA(ll, l, dt) IF dt IS DATETIME;
 prevOnHandA (Location ll, Lot l, DATETIME dt) = PREV(onHandA(ll, l, dt));
 
 onHandB 'On hand' (Location ll, Lot l, DATETIME dt) = 
-                                                            inQuantityB(ll, l, dt) (-) outQuantityB(ll, l, dt) IF dt;
+                                                            inQuantityB(ll, l, dt) (-) outQuantityB(ll, l, dt) IF dt IS DATETIME;
 prevOnHandB (Location ll, Lot l, DATETIME dt) = PREV(onHandB(ll, l, dt));
 
 FORM invLedgerItemLot 'Lots'

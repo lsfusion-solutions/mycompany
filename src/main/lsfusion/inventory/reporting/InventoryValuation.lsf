@@ -18,7 +18,7 @@ FORM inventoryValuation 'Inventory valuation'
     PROPERTIES recalculateCost() DRAW lp TOOLBAR
     FILTERS accessGranted(l)
     FILTERGROUP rowFilter
-        FILTER 'On hand' IF dt THEN costQuantity(l, p, dt) ELSE costQuantity(l, p)
+        FILTER 'On hand' IF dt IS DATETIME THEN costQuantity(l, p, dt) ELSE costQuantity(l, p)
         FILTER 'Moved' countLedger(l, p)
         
     OBJECTS ol = OutCostLedger
@@ -41,11 +41,11 @@ FORM inventoryValuation 'Inventory valuation'
     PROPERTIES READONLY 'Location' = canonicalName(location), 'Product' = name(product), 
                         level1(product), level2(product), level3(product), level4(product), 'Canonical group' = canonicalNameCategory(product)
 
-    PROPERTIES READONLY costQuantity '{Quantity}' = IF dt THEN costQuantity(location, product, dt) ELSE costQuantity(location, product) MEASURE,
-                        costPrice 'Unit cost' = IF dt THEN costPrice(location, product, dt) ELSE costPrice(location, product),
-                        costAmount 'Cost' = IF dt THEN costAmount(location, product, dt) ELSE costAmount(location, product) MEASURE
+    PROPERTIES READONLY costQuantity '{Quantity}' = IF dt IS DATETIME THEN costQuantity(location, product, dt) ELSE costQuantity(location, product) MEASURE,
+                        costPrice 'Unit cost' = IF dt IS DATETIME THEN costPrice(location, product, dt) ELSE costPrice(location, product),
+                        costAmount 'Cost' = IF dt IS DATETIME THEN costAmount(location, product, dt) ELSE costAmount(location, product) MEASURE
     
-    FILTERS IF dt THEN costQuantity(location, product, dt) ELSE costQuantity(location, product)
+    FILTERS IF dt IS DATETIME THEN costQuantity(location, product, dt) ELSE costQuantity(location, product)
 ;
 
 DESIGN inventoryValuation {
