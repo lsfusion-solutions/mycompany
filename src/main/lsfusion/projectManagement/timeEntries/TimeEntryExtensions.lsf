@@ -1,0 +1,170 @@
+MODULE TimeEntryExtensions;
+
+REQUIRE TimeEntry, Project, ProjectTimeEntry, TimeEntryHours;
+
+NAMESPACE ProjectManagement;
+
+// Добавляем новые поля для процентов и дополнительных сотрудников
+percent 'Процент' = DATA NUMERIC[5,2] (TimeEntry);
+employee2 'Сотрудник 2' = DATA Employee (TimeEntry);
+percent2 'Процент 2' = DATA NUMERIC[5,2] (TimeEntry);
+employee3 'Сотрудник 3' = DATA Employee (TimeEntry);
+percent3 'Процент 3' = DATA NUMERIC[5,2] (TimeEntry);
+employee4 'Сотрудник 4' = DATA Employee (TimeEntry);
+percent4 'Процент 4' = DATA NUMERIC[5,2] (TimeEntry);
+
+// Определяем уникальные имена для дополнительных сотрудников
+nameEmployee2 'Сотрудник 2' (TimeEntry t) = MasterData.name(employee2(t));
+nameEmployee3 'Сотрудник 3' (TimeEntry t) = MasterData.name(employee3(t));
+nameEmployee4 'Сотрудник 4' (TimeEntry t) = MasterData.name(employee4(t));
+
+// Создаем новое поле descriptionText типа TEXT
+descriptionText 'Описание' = DATA TEXT (TimeEntry);
+
+// Добавляем поле номенклатуры
+item 'Номенклатура' = DATA Item (TimeEntry);
+nameItem 'Номенклатура' (TimeEntry t) = MasterData.name(item(t));
+
+// Расширяем форму timeEntry для добавления новых полей
+EXTEND FORM timeEntry
+    PROPERTIES(t) percent, nameEmployee2, percent2, nameEmployee3, percent3, nameEmployee4, percent4, descriptionText, nameItem;
+
+DESIGN timeEntry {
+    OBJECTS {
+        MOVE pane {
+            // Скрываем старые поля описания и шаблона
+            REMOVE PROPERTY(nameTimeEntryHours(t));
+            REMOVE PROPERTY(description(t));
+
+            // Строка с номенклатурой
+            NEW itemPane {
+                horizontal = TRUE;
+                alignment = STRETCH;
+                MOVE PROPERTY(nameItem(t)) {
+                    captionWidth = 100;
+                    valueWidth = 150;
+                    alignment = START;
+                }
+            }
+
+            // Строка с первым сотрудником и процентом
+            NEW employeeAndPercentPane1 {
+                horizontal = TRUE;
+                alignment = STRETCH;
+                MOVE PROPERTY(nameEmployee(t)) {
+                    captionWidth = 100;
+                    valueWidth = 145;
+                    alignment = START;
+                }
+                MOVE PROPERTY(percent(t)) {
+                    caption = '%';
+                    captionWidth = 20;
+                    valueWidth = 55;
+                    alignment = START;
+                }
+            }
+
+            // Строка с сотрудником 2 и процентом 2
+            NEW employeeAndPercentPane2 {
+                horizontal = TRUE;
+                alignment = STRETCH;
+                MOVE PROPERTY(nameEmployee2(t)) {
+                    captionWidth = 100;
+                    valueWidth = 150;
+                    alignment = START;
+                }
+                MOVE PROPERTY(percent2(t)) {
+                    caption = '%';
+                    captionWidth = 20;
+                    valueWidth = 50;
+                    alignment = START;
+                }
+            }
+
+            // Строка с сотрудником 3 и процентом 3
+            NEW employeeAndPercentPane3 {
+                horizontal = TRUE;
+                alignment = STRETCH;
+                MOVE PROPERTY(nameEmployee3(t)) {
+                    captionWidth = 100;
+                    valueWidth = 150;
+                    alignment = START;
+                }
+                MOVE PROPERTY(percent3(t)) {
+                    caption = '%';
+                    captionWidth = 20;
+                    valueWidth = 50;
+                    alignment = START;
+                }
+            }
+
+            // Строка с сотрудником 4 и процентом 4
+            NEW employeeAndPercentPane4 {
+                horizontal = TRUE;
+                alignment = STRETCH;
+                MOVE PROPERTY(nameEmployee4(t)) {
+                    captionWidth = 100;
+                    valueWidth = 150;
+                    alignment = START;
+                }
+                MOVE PROPERTY(percent4(t)) {
+                    caption = '%';
+                    captionWidth = 20;
+                    valueWidth = 50;
+                    alignment = START;
+                }
+            }
+
+            // Строка с проектом
+            NEW projectPane {
+                horizontal = TRUE;
+                alignment = STRETCH;
+                MOVE PROPERTY(nameProject(t)) {
+                    captionWidth = 100;
+                    valueWidth = 150;
+                    alignment = START;
+                }
+            }
+
+            // Строка с количеством часов
+            NEW hoursPane {
+                horizontal = TRUE;
+                alignment = STRETCH;
+                MOVE PROPERTY(hours(t)) {
+                    caption = 'Часов';
+                    captionWidth = 100;
+                    valueWidth = 150;
+                    alignment = START;
+                }
+            }
+
+            // Строка с датой и типом
+            NEW dateAndTypePane {
+                horizontal = TRUE;
+                alignment = STRETCH;
+                MOVE PROPERTY(date(t)) {
+                    caption = 'Дата';
+                    captionWidth = 100;
+                    valueWidth = 150;
+                    alignment = START;
+                }
+                MOVE PROPERTY(nameType(t)) {
+                    caption = 'Тип';
+                    captionWidth = 100;
+                    valueWidth = 150;
+                    alignment = START;
+                }
+            }
+
+            // Строка с новым описанием типа TEXT
+            MOVE PROPERTY(descriptionText(t)) {
+                captionWidth = 100;  // Устанавливаем ширину подписи, как у других полей
+                valueWidth = 450;    // Увеличиваем ширину до нужного размера
+                charWidth = 40;
+                charHeight = 5;      // Высота в 5 строк
+                alignment = STRETCH; // Растягиваем поле по горизонтали
+                flex = 1;            // Коэффициент для растяжения
+            }
+        }
+    }
+}
