@@ -1,6 +1,6 @@
 MODULE TimeEntryExtensions;
 
-REQUIRE TimeEntry, Project, ProjectTimeEntry, TimeEntryHours;
+REQUIRE TimeEntry, Project, ProjectTimeEntry, TimeEntryHours, ItemSales, Employee;
 
 NAMESPACE ProjectManagement;
 
@@ -21,31 +21,53 @@ nameEmployee4 'Сотрудник 4' (TimeEntry t) = MasterData.name(employee4(t
 // Создаем новое поле descriptionText типа TEXT
 descriptionText 'Описание' = DATA TEXT (TimeEntry);
 
-// Добавляем поле номенклатуры
-item 'Номенклатура' = DATA Item (TimeEntry);
-nameItem 'Номенклатура' (TimeEntry t) = MasterData.name(item(t));
+// Новый класс для строк отметки времени
+CLASS TimeEntryLine;
 
-// Расширяем форму timeEntry для добавления новых полей
+// Связь строки отметки времени с основной записью отметки времени
+timeEntry = DATA TimeEntry (TimeEntryLine) NONULL DELETE;
+
+// Вид работ (номенклатура)
+workType 'Вид работ' = DATA Item (TimeEntryLine) NONULL;
+nameWorkType 'Вид работ' (TimeEntryLine l) = name(workType(l));
+
+// Количество часов
+hours 'Количество часов' = DATA NUMERIC[16,3] (TimeEntryLine);
+
+// Количество (например, количество единиц работы, выполненной за это время)
+quantity 'Количество' = DATA NUMERIC[16,3] (TimeEntryLine);
+
+// Определение свойства salesQuantity для номенклатуры
+salesQuantity 'Доступное количество для продажи' (Item i) = DATA NUMERIC[16,3] (Item);
+
+// Автоматическое заполнение количества, если требуется
+defaultWorkQuantity = ABSTRACT CASE NUMERIC[16,3] (TimeEntryLine);
+WHEN LOCAL SETCHANGED(workType(TimeEntryLine l)) AND NOT CHANGED(quantity(l)) DO quantity(l) <- defaultWorkQuantity(l);
+
+// Использование свойства salesQuantity для автозаполнения
+defaultWorkQuantity(TimeEntryLine l) += WHEN salesQuantity(workType(l)) THEN salesQuantity(workType(l));
+
+// Создание свойства для суммирования часов по строкам номенклатуры
+totalHours 'Суммарное количество часов' (TimeEntry t) =
+    GROUP SUM hours(TimeEntryLine l) IF timeEntry(l) = t;
+
+// Использование инструкции <- WHEN для записи суммы часов в основное свойство
+hours(TimeEntry t) <- totalHours(t) WHEN CHANGED(totalHours(t));
+
+// Расширяем форму timeEntry для добавления новых полей и строк номенклатуры
 EXTEND FORM timeEntry
-    PROPERTIES(t) percent, nameEmployee2, percent2, nameEmployee3, percent3, nameEmployee4, percent4, descriptionText, nameItem;
+    PROPERTIES(t) percent, nameEmployee2, percent2, nameEmployee3, percent3, nameEmployee4, percent4, descriptionText, totalHours
+    OBJECTS l = TimeEntryLine
+    PROPERTIES(l) nameWorkType, hours, quantity
+    PROPERTIES(l) NEW, DELETE
+    FILTERS timeEntry(l) = t;
 
 DESIGN timeEntry {
     OBJECTS {
         MOVE pane {
-            // Скрываем старые поля описания и шаблона
-            REMOVE PROPERTY(nameTimeEntryHours(t));
-            REMOVE PROPERTY(description(t));
-
-            // Строка с номенклатурой
-            NEW itemPane {
-                horizontal = TRUE;
-                alignment = STRETCH;
-                MOVE PROPERTY(nameItem(t)) {
-                    captionWidth = 100;
-                    valueWidth = 150;
-                    alignment = START;
-                }
-            }
+            REMOVE PROPERTY(hours(t));  // Удаляем старое свойство "Часов" с формы
+            REMOVE PROPERTY(nameTimeEntryHours(t));  // Удаляем поле "Шаблон"
+            REMOVE PROPERTY(description(t));  // Удаляем старое поле с описанием
 
             // Строка с первым сотрудником и процентом
             NEW employeeAndPercentPane1 {
@@ -126,15 +148,15 @@ DESIGN timeEntry {
                 }
             }
 
-            // Строка с количеством часов
+            // Строка с суммарными часами
             NEW hoursPane {
                 horizontal = TRUE;
                 alignment = STRETCH;
-                MOVE PROPERTY(hours(t)) {
-                    caption = 'Часов';
+                MOVE PROPERTY(totalHours(t)) {  // Отображаемое свойство для суммы часов
+                    caption = 'Суммарное количество часов';
                     captionWidth = 100;
                     valueWidth = 150;
-                    alignment = START;
+                    alignment = CENTER;  // Центрируем значение в поле
                 }
             }
 
@@ -158,12 +180,23 @@ DESIGN timeEntry {
 
             // Строка с новым описанием типа TEXT
             MOVE PROPERTY(descriptionText(t)) {
-                captionWidth = 100;  // Устанавливаем ширину подписи, как у других полей
-                valueWidth = 450;    // Увеличиваем ширину до нужного размера
+                captionWidth = 100;
+                valueWidth = 450;
                 charWidth = 40;
-                charHeight = 5;      // Высота в 5 строк
-                alignment = STRETCH; // Растягиваем поле по горизонтали
-                flex = 1;            // Коэффициент для растяжения
+                charHeight = 5;
+                alignment = STRETCH;
+                flex = 1;
+            }
+
+            // Панель для строк с выбором номенклатуры, количеством часов и количеством
+            NEW workEntry {
+                caption = 'Вид работ';  // Устанавливаем только заголовок "Вид работ"
+                alignment = STRETCH;
+                MOVE BOX(l) {
+                    PROPERTY(nameWorkType(l)) { notNull = TRUE; }
+                    PROPERTY(hours(l)) { caption = 'Количество часов'; }
+                    PROPERTY(quantity(l)) { caption = 'Количество'; }
+                }
             }
         }
     }
