@@ -4,8 +4,29 @@ REQUIRE AdjustmentCanceled, CostLedger, CostLocation;
 
 NAMESPACE Inventory;
 
+// data cost
+showPrice 'Show cost price' = DATA BOOLEAN (Adjustment);
+EXTEND FORM adjustment PROPERTIES(a) showPrice;
+DESIGN adjustment {
+    headerLeft {
+        MOVE PROPERTY(showPrice(a));
+    }
+}
+
+cost 'Cost' = ABSTRACT CASE NUMERIC[14,2] (AdjustmentLine);
+
+price 'Unit cost' = DATA NUMERIC[14,2] (AdjustmentLine);
+cost (AdjustmentLine l) += WHEN price(l) THEN NUMERIC[14,2](difference(l) * price(l));
+
+EXTEND FORM adjustment
+    PROPERTIES(l) SHOWIF showPrice(a) BACKGROUND RGB(255,212,212) IF price(l) AND NOT difference(l) > 0 
+                  price
+;
+
+cost (InvAdjustment l) = cost(line(l)) IF quantity(l) > 0;
+
 CLASS AdjustmentCostLedger 'Adjustment' : OutCostLedger;
-adjustmentLedger = AGGR AdjustmentCostLedger WHERE quantity(InvAdjustment line) AND active(adjustment(line));
+adjustmentLedger = AGGR AdjustmentCostLedger WHERE quantity(InvAdjustment line) AND NOT cost(line) AND active(adjustment(line));
 
 type(AdjustmentCostLedger l) += nameType(adjustment(line(l)));
 
@@ -18,3 +39,20 @@ product(AdjustmentCostLedger l) += product(line(l));
 quantity(AdjustmentCostLedger l) += -quantity(line(l));
 
 edit(AdjustmentCostLedger l) + { edit(line(l)); }
+
+CLASS AdjustmentInCostLedger 'Adjustment' : InCostLedger;
+adjustmentInLedger = AGGR AdjustmentInCostLedger WHERE cost(InvAdjustment line) AND active(adjustment(line));
+
+type(AdjustmentInCostLedger l) += nameType(adjustment(line(l)));
+
+dateTime(AdjustmentInCostLedger l) += dateTime(adjustment(line(l)));
+number(AdjustmentInCostLedger l) += number(adjustment(line(l)));
+
+location(AdjustmentInCostLedger l) += costLocation(location(line(l)));
+
+product(AdjustmentInCostLedger l) += product(line(l));
+quantity(AdjustmentInCostLedger l) += quantity(line(l));
+
+calcAmount(AdjustmentInCostLedger l) += cost(line(l));
+
+edit(AdjustmentInCostLedger l) + { edit(line(l)); }
