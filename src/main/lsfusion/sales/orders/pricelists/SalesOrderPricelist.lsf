@@ -27,7 +27,7 @@ priceType (OrderLine l) = priceType(order(l));
 
 CONSTRAINT type(Order i) AND priceType(i) AND NOT taxValid(type(i), priceType(i))
            CHECKED BY priceType[Order]
-           MESSAGE 'For implementation, a price type that is not valid for the type has been selected, (not) including taxes'; 
+           MESSAGE 'For the order, a price type that is not valid for the type has been selected, (not) including taxes'; 
 
 WHEN LOCAL CHANGED(customer(Order o)) OR CHANGED(type(o)) DO 
     priceType(o) <- OVERRIDE priceType(customer(o)), priceType(type(o));
