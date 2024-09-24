@@ -135,10 +135,14 @@ WHEN LOCAL SETCHANGED(item(InvoiceLine l)) AND NOT CHANGED(price(l)) DO price(l)
 
 defaultPrice (InvoiceLine l) += WHEN salesPrice(item(l)) THEN salesPrice(item(l)); 
 
+calcAmount (InvoiceLine l) = NUMERIC[14,2](quantity(l) * price(l));
+
 @defineDocDiscount(invoice);
 
 @defineTaxCalc(invoice, i, sales, resultPrice);
 taxIncluded (InvoiceLine l) += taxIncluded(type(invoice(l)));
+
+discountAmount 'Discount amount' (InvoiceLine l) = calcAmount(l) (-) untaxedAmount(l);
 
 // Line properties
 type (InvoiceLine l) = type(invoice(l));
