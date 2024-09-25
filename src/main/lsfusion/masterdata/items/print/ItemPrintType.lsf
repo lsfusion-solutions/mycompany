@@ -35,10 +35,10 @@ format = DATA TemplateFormat (PrintItemType);
 nameFormat 'Format' (PrintItemType t) = name(format(t));
 
 // category
-set 'On' = DATA BOOLEAN (PrintItemType, Category);
+set 'Incl.' = DATA BOOLEAN (PrintItemType, Category);
 
 countCategory (PrintItemType t) = GROUP SUM 1 IF set(t, Category c) MATERIALIZED;
-set 'On' (PrintItemType t, Item i) = (GROUP LAST set(t, Category pc) ORDER level(category(i), pc)) OR (i IS Item AND t IS PrintItemType AND NOT countCategory(t));
+set 'Incl.' (PrintItemType t, Item i) = (GROUP LAST set(t, Category pc) ORDER level(category(i), pc)) OR (i IS Item AND t IS PrintItemType AND NOT countCategory(t));
 
 countPrintType 'Number of templates' (Item i) = GROUP SUM 1 IF set(PrintItemType pt, i); 
 

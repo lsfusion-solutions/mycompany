@@ -27,16 +27,16 @@ fromAccumulated 'Sold to a client from' = DATA NUMERIC[14,2] (Discount);
 fromAccumulatedPreviousMonth 'Sold to a client in the past month from' = DATA NUMERIC[14,2] (Discount);
 
 // item
-in 'On' = DATA BOOLEAN (Discount, Category);
+in 'Incl.' = DATA BOOLEAN (Discount, Category);
 set (Discount d, Category c) = GROUP LAST in(d, Category cp) ORDER level(c, cp) MATERIALIZED;
 categories 'Categories' (Discount d) = GROUP CONCAT name(Category c) IF in(d, c), ',' ORDER name(c), c CHARWIDTH 20;
 
-in 'On' = DATA BOOLEAN (Discount, Item);
+in 'Incl.' = DATA BOOLEAN (Discount, Item);
 set (Discount d, Item i) = in(d, i) OR set(d, category(i));
 items '{Items}' (Discount d) = GROUP CONCAT name(Item i) IF in(d, i), ',' ORDER name(i), i CHARWIDTH 30;
 
 // pricetype
-in 'On' = DATA BOOLEAN (Discount, PriceType);
+in 'Incl.' = DATA BOOLEAN (Discount, PriceType);
 countPriceType (Discount d) = GROUP SUM 1 IF in(d, PriceType t) MATERIALIZED;
 
 // discount

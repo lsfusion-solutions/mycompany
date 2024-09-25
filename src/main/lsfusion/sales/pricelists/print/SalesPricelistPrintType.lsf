@@ -35,13 +35,13 @@ format = DATA TemplateFormat (PrintPricelistType);
 nameFormat 'Format' (PrintPricelistType t) = name(format(t));
 
 // category
-set 'On' = DATA BOOLEAN (PrintPricelistType, Category);
+set 'Incl.' = DATA BOOLEAN (PrintPricelistType, Category);
 
 countCategory (PrintPricelistType t) = GROUP SUM 1 IF set(t, Category c) MATERIALIZED;
-set 'On' (PrintPricelistType t, Item i) = (GROUP LAST set(t, Category pc) ORDER level(category(i), pc)) OR NOT countCategory(t);
+set 'Incl.' (PrintPricelistType t, Item i) = (GROUP LAST set(t, Category pc) ORDER level(category(i), pc)) OR NOT countCategory(t);
 
 // pricetype
-set 'On' = DATA BOOLEAN (PrintPricelistType, PriceType);
+set 'Incl.' = DATA BOOLEAN (PrintPricelistType, PriceType);
 
 index 'Index' (PrintPricelistType t, PriceType pt) = PARTITION SUM 1 IF set(t, pt) ORDER pt BY t MATERIALIZED; 
 priceType (PrintPricelistType t, INTEGER i) = GROUP MAX PriceType pt IF index(t, pt) = i; 

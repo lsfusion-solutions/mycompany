@@ -7,10 +7,10 @@ NAMESPACE Inventory;
 quantity 'Qty' = ABSTRACT NUMERIC[16,3] (InvLedger, Lot) MATERIALIZED;
 quantityLot 'Number of lots' (InvLedger rl) = GROUP SUM quantity(rl, Lot l);
 
-inQuantity 'Number of received' (Location ll, Lot l) = GROUP SUM quantity(InvLedger il, Lot lt) 
+inQuantity 'Received' (Location ll, Lot l) = GROUP SUM quantity(InvLedger il, Lot lt) 
                                                     IF active(il) AND toLocation(il) = ll AND lt = l MATERIALIZED;
                                                     
-inQuantity 'Number of received'(Location ll, Lot l, DATETIME dt) = inQuantity(ll, l) (-)
+inQuantity 'Received' (Location ll, Lot l, DATETIME dt) = inQuantity(ll, l) (-)
     GROUP SUM quantity(InvLedger il, Lot lt)  IF active(il) AND toLocation(il) = ll AND lt = l AND dateTime(il) > dt;
     
 inQuantityA (Location ll, Lot l, DATETIME dt) = inQuantity(ll, l) (-)
