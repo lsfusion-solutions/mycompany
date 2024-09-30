@@ -8,12 +8,17 @@ NAMESPACE Inventory;
 
 @defineDocBarCodeLot (shipment, product, done);
 
-@defineDocDesignLotTab(shipment, done, product, linesTab);
+@defineDocLot (shipment, product, initialDemand, initialDemand, ' (initial demand)');
+
+initialDemandOrDone(ShipmentLine sl, Lot l) = initialDemand(sl, l) OR done(sl, l);
+@defineDocDesignLotTab(shipment, ShipmentLine, done, product, l, linesTab, initialDemandOrDone);
        
 onHandLast 'On hand' (ShipmentLine sl, Lot l) = PREV(onHand(location(shipment(sl)), l));
 
-EXTEND FORM shipment 
-    PROPERTIES (l, lotL) BEFORE done(l, lotL) onHandLast READONLY;
+EXTEND FORM shipment
+    PROPERTIES (l, lotL) BEFORE done(l, lotL) onHandLast READONLY, 
+                                              initialDemand
+;
 
 //ledger
 ledgerDone = ABSTRACT NUMERIC[16,3] (ShipmentLine, Lot);
