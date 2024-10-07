@@ -4,14 +4,17 @@ REQUIRE Location, Employee;
 
 NAMESPACE Inventory;
 
-hasAccess 'Has access' = DATA BOOLEAN (Employee, Location); 
+hasAccess 'Has access' = DATA BOOLEAN (Employee, Location);
 
+hasChildAccess (Employee e, Location l) = GROUP LAST hasAccess(e, Location cl) ORDER DESC level(cl, l);
 hasParentAccess (Employee e, Location l) = GROUP LAST hasAccess(e, Location pl) ORDER DESC level(l, pl); 
 
 countLocationAccess (Employee e) = GROUP SUM 1 IF hasAccess(e, Location l) MATERIALIZED PREREAD;
 
+accessChildGranted (Employee e, Location l) = hasChildAccess(e, l) OR NOT countLocationAccess(e);
 accessGranted (Employee e, Location l) = hasParentAccess(e, l) OR NOT countLocationAccess(e);
 
+accessChildGranted (Location l) = l IS Location AND accessChildGranted(currentUser(), l);
 accessGranted (Location l) = l IS Location AND accessGranted(currentUser(), l);
 accessDenied (Location l) = l IS Location AND currentUser() IS Employee AND NOT accessGranted(l);
 
