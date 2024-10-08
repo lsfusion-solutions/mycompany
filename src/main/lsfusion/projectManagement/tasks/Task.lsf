@@ -2,7 +2,7 @@ MODULE Task;
 
 REQUIRE ProjectManagementSettings, Employee,
         Doc, FileUtils,
-        TaskStatus, TaskPriority, TaskTag;
+        TaskType, TaskStatus, TaskPriority, TaskTag;
 
 PRIORITY MasterData;
 
@@ -31,6 +31,9 @@ nameStatus 'Status' (Task t) = name(status(t));
 closed 'Closed' (Task t) = closed(status(t));
 opened 'Opened' (Task t) = t IS Task AND NOT closed(t);
 
+type 'Type' = DATA TaskType (Task);
+nameType 'Type' (Task t) = name(type(t));
+
 priority 'Priority' = DATA TaskPriority (Task);
 namePriority 'Priority' (Task t) = name(priority(t));
 idColorPriority (Task t) = idColor(priority(t));
@@ -42,8 +45,8 @@ tags 'Tags' (Task t) = GROUP CONCAT name(TaskTag tg) IF in(t, tg), ', ' ORDER na
 FORM task 'Task'
     OBJECTS t = Task PANEL
     PROPERTIES(t) name, nameStatus, 
-                  nameAuthor, nameAssignedTo, 
-                  namePriority, tags, 
+                  nameAuthor, nameAssignedTo,
+                  nameType, namePriority, tags, 
                   deadline, description
 
     EDIT Task OBJECT t
@@ -63,6 +66,7 @@ DESIGN task {
                 alignment = STRETCH;
                 MOVE PROPERTY(nameAuthor(t));
                 MOVE PROPERTY(nameAssignedTo(t));
+                MOVE PROPERTY(nameType(t));
                 MOVE PROPERTY(namePriority(t));
                 MOVE PROPERTY(tags(t));
                 MOVE PROPERTY(deadline(t));
@@ -83,7 +87,7 @@ DESIGN task {
 FORM tasks '{Tasks}'
     OBJECTS t = Task
     PROPERTIES(t) BACKGROUND rgbColorPriority(t) READONLY 
-                  name, nameAuthor, nameAssignedTo, nameStatus, namePriority, tags, deadline, closed
+                  name, nameAuthor, nameAssignedTo, nameStatus, nameType, namePriority, tags, deadline, closed
     PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
 
     FILTERGROUP active
@@ -100,6 +104,10 @@ FORM tasks '{Tasks}'
 @defineDocObjectsForm(tasks, t, '{Tasks}');
 
 @defineObjectFiles(task, t, 'Task file');
+
+DESIGN tasks {
+    PROPERTY(tags(t)) { valueHeight = 18; }
+}
 
 NAVIGATOR {
     operations {

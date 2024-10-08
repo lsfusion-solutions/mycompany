@@ -68,11 +68,13 @@ function taskKanban() {
                             controller.changeObject(task, true, taskCard);
                         });
 
-                        if (task.nameProject) {
+                        if (task.nameProject || task.nameType) {
                             let taskHeader = document.createElement("h5");
                             taskHeader.classList.add("task-kanban-card-header");
                             taskHeader.classList.add("card-header");
-                            taskHeader.innerHTML = task.nameProject;
+                            taskHeader.innerHTML = (task.nameType ? task.nameType : "") +
+                                                   (task.nameProject && task.nameType ? " : " : "") +
+                                                   (task.nameProject ? task.nameProject : "");
                             taskCard.appendChild(taskHeader);
                         }
 
