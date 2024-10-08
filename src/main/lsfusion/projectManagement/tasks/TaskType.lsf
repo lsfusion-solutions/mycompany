@@ -43,3 +43,9 @@ DESIGN options {
         MOVE BOX(tt) { caption = 'Task types'; }
     }
 }
+
+// default type
+countTaskTypes 'Number of types' () = GROUP SUM 1 IF t IS TaskType;
+firstTaskType = GROUP LAST TaskType r ORDER DESC r WHERE r IS TaskType;
+
+defaultTaskType = firstTaskType() IF countTaskTypes() = 1;

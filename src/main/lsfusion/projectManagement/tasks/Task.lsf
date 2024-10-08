@@ -12,7 +12,7 @@ CLASS Task 'Task';
 
 readonly = ABSTRACT CASE BOOLEAN (Task);
 
-name '{Name}' = DATA ISTRING (Task) CHARWIDTH 30;
+name '{Name}' = DATA ISTRING (Task) CHARWIDTH 30 IN id;
 
 author 'Author' = DATA Employee (Task);
 nameAuthor 'Author' (Task t) = name(author(t));
@@ -26,13 +26,15 @@ deadline 'Deadline' = DATA DATE (Task);
 description 'Description' = DATA RICHTEXT (Task) CHARWIDTH 20;
 
 status 'Status' = DATA TaskStatus (Task);
-nameStatus 'Status' (Task t) = name(status(t));
+nameStatus 'Status' (Task t) = name(status(t)) IN id;
 
 closed 'Closed' (Task t) = closed(status(t));
 opened 'Opened' (Task t) = t IS Task AND NOT closed(t);
 
 type 'Type' = DATA TaskType (Task);
-nameType 'Type' (Task t) = name(type(t));
+nameType 'Type' (Task t) = name(type(t)) IN id;
+
+WHEN LOCAL SET(Task t IS Task) AND NOT CHANGED(type(t)) DO type(t) <- defaultTaskType();
 
 priority 'Priority' = DATA TaskPriority (Task);
 namePriority 'Priority' (Task t) = name(priority(t));
@@ -85,8 +87,8 @@ DESIGN task {
 
 
 FORM tasks '{Tasks}'
-    OBJECTS t = Task
-    PROPERTIES(t) BACKGROUND rgbColorPriority(t) READONLY 
+    OBJECTS t = Task BACKGROUND rgbColorPriority(t)
+    PROPERTIES(t) READONLY 
                   name, nameAuthor, nameAssignedTo, nameStatus, nameType, namePriority, tags, deadline, closed
     PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
 
