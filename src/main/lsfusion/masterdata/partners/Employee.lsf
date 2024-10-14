@@ -109,10 +109,23 @@ DESIGN employee {
 
 FORM employees 'Employees'
     OBJECTS e = Employee
-    PROPERTIES(e) READONLY  name, login, namePosition, nameLegalEntity
+    PROPERTIES(e) READONLY name, login, namePosition, nameLegalEntity
     PROPERTIES(e) NEWSESSION NEW, EDIT, DELETE
+    FILTERGROUP active
+        FILTER '{Active}' active(e) 'F10' DEFAULT
+        FILTER 'Archived' archived(e) 'F9'
+;
 
-   LIST Employee OBJECT e
+FORM dialogEmployees 'Employees'
+    OBJECTS e = Employee
+    PROPERTIES(e) READONLY name, login, namePosition, nameLegalEntity
+    ORDERS name(e)
+
+    FILTERGROUP active
+        FILTER '{Active}' active(e) 'F10' DEFAULT
+        FILTER 'Archived' archived(e) 'F9'
+
+    LIST Employee OBJECT e
 ;
 
 NAVIGATOR {
