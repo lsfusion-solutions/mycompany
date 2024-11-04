@@ -42,7 +42,7 @@ META defineDocObjectsForm (form, obj, title)
 END
 
 META defineDocStatus (doc, title)
-    CLASS ###doc##Status title##' status' {
+    CLASS ###doc##Status title {
         draft 'Draft'
     }
     
@@ -59,7 +59,22 @@ META defineDocStatus (doc, title)
     
     status(###doc d) += WHEN d IS ###doc THEN ###doc##Status.draft;
     
+    readonly 'Read-only' = DATA BOOLEAN (###doc##Status);
+
     readonly = ABSTRACT CASE BOOLEAN (###doc);
+    readonly (###doc d) += WHEN readonly(status(d)) THEN TRUE;
+
+    EXTEND FORM options
+        OBJECTS doc##st = ###doc##Status
+        PROPERTIES(doc##st) READONLY imagedName, color
+        PROPERTIES(doc##st) readonly
+    ;
+    
+    DESIGN options {
+        tabbedPane {
+            MOVE BOX(doc##st);
+        }
+    }
 END
 
 META defineDocStatusForm (doc, let, beforeProp)

@@ -8,7 +8,7 @@ NAMESPACE Inventory;
 
 CLASS Receipt 'Receipt';
 
-@defineDocStatus(receipt, 'Receipt');
+@defineDocStatus(receipt, 'Receipt status');
 
 immediate 'Unplanned' = DATA BOOLEAN (Receipt);
 
@@ -103,14 +103,16 @@ FORM receiptLines 'Receipt lines'
 
 FORM receipt 'Receipt'
     OBJECTS r = Receipt PANEL
-    PROPERTIES(r) nameType, scheduledDateTime, number, 
+    PROPERTIES(r) READONLYIF readonly(r)
+                  nameType, scheduledDateTime, number, 
                   nameVendor, nameLocation,
                   vendorReference, note
 
     OBJECTS l = ReceiptLine
-    PROPERTIES(l) index READONLY, nameProduct, nameUom, idBarCodeProduct, idProduct, referenceProduct,
-                  initialDemand SHOWIF NOT immediate(r) BACKGROUND IF status(receipt(l)) = ReceiptStatus.draft THEN RGB(198,230,247)
-    PROPERTIES(l) NEW, DELETE        
+    PROPERTIES(l) READONLYIF readonly(r)
+                  index READONLY, nameProduct, nameUom, idBarCodeProduct, idProduct, referenceProduct,
+                  initialDemand SHOWIF NOT immediate(r) BACKGROUND IF status(receipt(l)) = ReceiptStatus.draft THEN RGB(198,230,247),
+                  NEW, DELETE        
     FILTERS receipt(l) = r
    
     EDIT Receipt OBJECT r

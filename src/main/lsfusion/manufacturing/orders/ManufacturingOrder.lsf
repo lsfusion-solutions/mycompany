@@ -8,7 +8,7 @@ NAMESPACE Manufacturing;
 
 CLASS ManufacturingOrder 'Manufacturing order';
 
-@defineDocStatus(manufacturingOrder, 'Manufacturing order');
+@defineDocStatus(manufacturingOrder, 'Manufacturing order status');
 
 type 'Type' = DATA ManufacturingOrderType (ManufacturingOrder) NONULL;
 nameType 'Type' (ManufacturingOrder o) = name(type(o));
@@ -130,16 +130,19 @@ edit (ConsumedLine l) + { edit(manufacturingOrder(l)); }
 FORM manufacturingOrder 'Manufacturing order'
     OBJECTS o = ManufacturingOrder PANEL 
     PROPERTIES(o) READONLY unbuild
-    PROPERTIES(o) nameType, scheduledDateTime, number, nameCompany, nameResponsible, 
+    PROPERTIES(o) READONLYIF readonly(o)
+                  nameType, scheduledDateTime, number, nameCompany, nameResponsible, 
                   nameItem, toManufacture, nameUom, 
                   descriptionBom, nameMaterialsLocation 
     
     OBJECTS c = ConsumedLine
-    PROPERTIES(c) index READONLY, nameItem, description, nameUom, idBarCodeItem, idItem, toConsume, NEW, DELETE
+    PROPERTIES(c) READONLYIF readonly(o)
+                  index READONLY, nameItem, description, nameUom, idBarCodeItem, idItem, toConsume, NEW, DELETE
     FILTERS manufacturingOrder(c) = o
 
     OBJECTS l = FinishedLine
-    PROPERTIES(l) index READONLY, nameItem, nameUom, idBarCodeItem, idItem, toProduce, costRatio, 
+    PROPERTIES(l) READONLYIF readonly(o)
+                  index READONLY, nameItem, nameUom, idBarCodeItem, idItem, toProduce, costRatio, 
                   NEW, DELETE
     FILTERS manufacturingOrder(l) = o
     

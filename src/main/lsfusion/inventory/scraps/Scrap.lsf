@@ -8,7 +8,7 @@ NAMESPACE Inventory;
 
 CLASS Scrap 'Scrap';
 
-@defineDocStatus(scrap, 'Scrap');
+@defineDocStatus(scrap, 'Scrap status');
 
 // type
 type 'Type' = DATA ScrapType (Scrap) NONULL;
@@ -53,10 +53,11 @@ quantity 'Qty' = DATA NUMERIC[16,3] (ScrapLine);
 
 FORM scrap 'Scrap'
     OBJECTS s = Scrap PANEL 
-    PROPERTIES(s) nameType, dateTime, number, nameLocation, note
+    PROPERTIES(s) READONLYIF readonly(s) nameType, dateTime, number, nameLocation, note
     
     OBJECTS l = ScrapLine
-    PROPERTIES(l) index, nameProduct, nameUom, idBarCodeProduct, idProduct, referenceProduct, quantity, NEW, DELETE
+    PROPERTIES(l) READONLYIF readonly(s)
+                  index, nameProduct, nameUom, idBarCodeProduct, idProduct, referenceProduct, quantity, NEW, DELETE
     FILTERS scrap(l) = s
     
     EDIT Scrap OBJECT s

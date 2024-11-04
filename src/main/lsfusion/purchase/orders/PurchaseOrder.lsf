@@ -11,7 +11,7 @@ NAMESPACE Purchase;
 
 CLASS Order 'Purchase order';
 
-@defineDocStatus(order, 'Purchase order');
+@defineDocStatus(order, 'Purchase order status');
 
 // type
 type 'Type' = DATA OrderType (Order) NONULL;
@@ -134,7 +134,8 @@ edit (OrderLine l) + { edit(order(l)); }
 
 FORM order 'Purchase order'
     OBJECTS o = Order PANEL
-    PROPERTIES(o) nameType, dateTime, number, 
+    PROPERTIES(o) READONLYIF readonly(o)
+                  nameType, dateTime, number, 
                   nameVendor, nameCompany, nameLocation, nameCurrency,
                   namePaymentTerms,
                   scheduledDateTime,
@@ -143,13 +144,14 @@ FORM order 'Purchase order'
     PROPERTIES(o) READONLY untaxedAmount, taxAmount, amount
                  
     OBJECTS l = OrderLine
-    PROPERTIES(l) index, 
+    PROPERTIES(l) READONLYIF readonly(o)
+                  index, 
                   nameItem ON CHANGE {
                       INPUT i = item(l) LIST name(i) ACTIONS 'add' { newProduct(STRING(i)); } DO item(l) <- i;
                   },
                   description, nameUom, idBarCodeItem, idItem, referenceItem, 
-                  quantity, price, untaxedAmount, taxes
-    PROPERTIES(l) NEW, DELETE
+                  quantity, price, untaxedAmount, taxes,
+                  NEW, DELETE
     FILTERS order(l) = o
      
     EDIT Order OBJECT o    

@@ -8,7 +8,7 @@ NAMESPACE Inventory;
 
 CLASS Shipment 'Shipment';
 
-@defineDocStatus(shipment, 'Shipment');
+@defineDocStatus(shipment, 'Shipment status');
 
 immediate 'Unplanned' = DATA BOOLEAN (Shipment);
 
@@ -124,15 +124,17 @@ FORM shipmentLines 'Shipping lines'
 
 FORM shipment 'Shipment'
     OBJECTS s = Shipment PANEL 
-    PROPERTIES(s) nameType, scheduledDateTime, number, 
+    PROPERTIES(s) READONLYIF readonly(s)
+                  nameType, scheduledDateTime, number, 
                   nameCustomer SHOWIF NOT isTransfer(type(s)), nameDepartment SHOWIF countDepartment(customer(s)), 
                   nameLocation, nameToLocation SHOWIF isTransfer(type(s)),
                   deliveryAddress, customerReference, note
                   
     OBJECTS l = ShipmentLine
-    PROPERTIES(l) index READONLY, nameProduct, nameUom, idBarCodeProduct, idProduct, referenceProduct, 
-                  initialDemand SHOWIF NOT immediate(s) BACKGROUND IF status(shipment(l)) = ShipmentStatus.draft THEN RGB(198,230,247) 
-    PROPERTIES(l) NEW, DELETE
+    PROPERTIES(l) READONLYIF readonly(s)
+                  index READONLY, nameProduct, nameUom, idBarCodeProduct, idProduct, referenceProduct, 
+                  initialDemand SHOWIF NOT immediate(s) BACKGROUND IF status(shipment(l)) = ShipmentStatus.draft THEN RGB(198,230,247), 
+                  NEW, DELETE
     FILTERS shipment(l) = s
              
     EDIT Shipment OBJECT s
