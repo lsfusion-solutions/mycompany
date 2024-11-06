@@ -61,7 +61,7 @@ META defineDocStatus (doc, title)
     
     readonly 'Read-only' = DATA BOOLEAN (###doc##Status);
 
-    readonly = ABSTRACT CASE BOOLEAN (###doc);
+    readonly = ABSTRACT CASE BOOLEAN (###doc) MATERIALIZED;
     readonly (###doc d) += WHEN readonly(status(d)) THEN TRUE;
 
     EXTEND FORM options
@@ -443,9 +443,9 @@ META defineDocDiscount (doc)
     
 END
 
-META defineDocDiscountForm (doc)
+META defineDocDiscountForm (doc, let)
     EXTEND FORM doc
-        PROPERTIES(l) AFTER price(l) discount, discountPrice ON CHANGE changeDiscountPrice(l)
+        PROPERTIES(l) READONLYIF readonly(let) AFTER price(l) discount, discountPrice ON CHANGE changeDiscountPrice(l)
     ;
 END
 

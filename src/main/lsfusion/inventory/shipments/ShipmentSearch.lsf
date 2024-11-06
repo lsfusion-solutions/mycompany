@@ -20,7 +20,8 @@ lastShipmentLine (Shipment s, Product p) = GROUP LAST ShipmentLine l ORDER l BY 
 // initial demand
 @defineDocSearchAction(shipment, product, initialDemand, 'Initial demand');
 EXTEND FORM shipment
-    PROPERTIES(s, itm) SHOWIF NOT immediate(s) initialDemand ON CHANGE changeInitialDemand(s, itm)
+    PROPERTIES(s, itm) READONLYIF readonly(s) SHOWIF NOT immediate(s) 
+                       initialDemand ON CHANGE changeInitialDemand(s, itm)
 ;
 
 DESIGN shipment {
@@ -30,7 +31,8 @@ DESIGN shipment {
 // done
 @defineDocSearchAction(shipment, product, done, 'Done');
 EXTEND FORM shipment
-    PROPERTIES(s, itm) SHOWIF immediate(s) done ON CHANGE changeDone(s, itm)
+    PROPERTIES(s, itm) READONLYIF readonly(s) SHOWIF immediate(s) 
+                       done ON CHANGE changeDone(s, itm)
 ;
 
 DESIGN shipment {

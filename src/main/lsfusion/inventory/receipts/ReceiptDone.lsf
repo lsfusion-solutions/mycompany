@@ -52,10 +52,10 @@ toValidate (Receipt r) = status(r) = ReceiptStatus.ready OR (immediate(r) AND st
 EXTEND FORM receipt
     PROPERTIES(r) validate SHOWIF toValidate(r), 
                   done,
-                  setDone DRAW l TOOLBAR SHOWIF status(r) = ReceiptStatus.ready,
-                  executionDateTime SHOWIF done(r)
+                  setDone DRAW l TOOLBAR SHOWIF status(r) = ReceiptStatus.ready DISABLEIF readonly(r),
+                  executionDateTime SHOWIF done(r) READONLYIF readonly(r)
     
-    PROPERTIES(l) done BACKGROUND RGB(198,230,247) IF toValidate(r)
+    PROPERTIES(l) READONLYIF readonly(r) done BACKGROUND RGB(198,230,247) IF toValidate(r)
 ;
 
 DESIGN receipt {

@@ -151,7 +151,7 @@ NAVIGATOR {
 }
 
 // meta
-META defineDocSalesDiscount(doc)
+META defineDocSalesDiscount(doc, let)
     salesDiscount = DATA Discount (###doc##Line);
     nameSalesDiscount 'Discount' (###doc##Line l) = name(salesDiscount(l)) CHARWIDTH 10;
     
@@ -160,7 +160,7 @@ META defineDocSalesDiscount(doc)
     } 
     
     EXTEND FORM doc
-        PROPERTIES(l) nameSalesDiscount BEFORE discount(l) ON CHANGE changeSalesDiscount(l)
+        PROPERTIES(l) READONLYIF readonly(let) nameSalesDiscount BEFORE discount(l) ON CHANGE changeSalesDiscount(l)
     ;
     
     WHEN LOCAL CHANGED(salesDiscount(###doc##Line l)) AND NOT priceType(salesDiscount(l)) AND NOT CHANGED(discount(l)) DO

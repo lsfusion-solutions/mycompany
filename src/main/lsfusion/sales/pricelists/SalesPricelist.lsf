@@ -113,17 +113,18 @@ note 'Note' (PricelistLine prl) = note(pricelist(prl));
 
 FORM pricelist 'Pricelist'
     OBJECTS p = Pricelist PANEL
-    PROPERTIES(p) nameType, number, startDateTime, endDateTime, note,
+    PROPERTIES(p) READONLYIF readonly(p)
+                  nameType, number, startDateTime, endDateTime, note,
                   priceListTypes ON CHANGE { SHOW chooseTypes OBJECTS pr = p; }
 
     OBJECTS t = PriceType
     FILTERS editIn(p, t) 
    
     OBJECTS l = PricelistLine
-    PROPERTIES(l) index READONLY, nameItem, nameUom, idBarCodeItem, idItem, referenceItem, nameSalesTax, cost SHOWIF showCost(type(p)) READONLY
-    PROPERTIES    markup(l, t) COLUMNS 'p' (t) HEADER name(t) + ', %' SHOWIF showMarkup(type(p), t) ON CHANGE changeMarkup(l, t)
-    PROPERTIES    price(l, t) COLUMNS 'p' (t) HEADER name(t) 
-    PROPERTIES(l) NEW, DELETE 
+    PROPERTIES(l) READONLYIF readonly(p) index READONLY, nameItem, nameUom, idBarCodeItem, idItem, referenceItem, nameSalesTax, cost SHOWIF showCost(type(p)) READONLY
+    PROPERTIES    READONLYIF readonly(p) markup(l, t) COLUMNS 'p' (t) HEADER name(t) + ', %' SHOWIF showMarkup(type(p), t) ON CHANGE changeMarkup(l, t)
+    PROPERTIES    READONLYIF readonly(p) price(l, t) COLUMNS 'p' (t) HEADER name(t) 
+    PROPERTIES(l) READONLYIF readonly(p) NEW, DELETE 
     FILTERS pricelist(l) = p 
 
     EDIT Pricelist OBJECT p

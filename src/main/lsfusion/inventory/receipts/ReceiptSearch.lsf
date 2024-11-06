@@ -18,13 +18,15 @@ lastReceiptLine (Receipt i, Product p) = GROUP LAST ReceiptLine l ORDER l BY rec
 // initial demand
 @defineDocSearchAction(receipt, product, initialDemand, 'Initial demand');
 EXTEND FORM receipt
-    PROPERTIES(r, itm) SHOWIF NOT immediate(r) initialDemand ON CHANGE changeInitialDemand(r, itm)
+    PROPERTIES(r, itm) READONLYIF readonly(r) SHOWIF NOT immediate(r) 
+                       initialDemand ON CHANGE changeInitialDemand(r, itm)
 ;        
 
 // done
 @defineDocSearchAction(receipt, product, done, 'Done');
 EXTEND FORM receipt
-    PROPERTIES(r, itm) SHOWIF immediate(r) done ON CHANGE changeDone(r, itm)
+    PROPERTIES(r, itm) READONLYIF readonly(r) SHOWIF immediate(r) 
+                       done ON CHANGE changeDone(r, itm)
 ;
 
 // barcode

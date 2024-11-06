@@ -61,10 +61,10 @@ toValidate (Shipment s) = status(s) = ShipmentStatus.ready OR (immediate(s) AND 
 EXTEND FORM shipment
     PROPERTIES(s) validate SHOWIF toValidate(s), 
                   done,
-                  setDone DRAW l TOOLBAR SHOWIF status(s) = ShipmentStatus.ready,
-                  executionDateTime SHOWIF done(s)
+                  setDone DRAW l TOOLBAR SHOWIF status(s) = ShipmentStatus.ready DISABLEIF readonly(s),
+                  executionDateTime SHOWIF done(s) READONLYIF readonly(s)
     
-    PROPERTIES(l) done BACKGROUND RGB(198,230,247) IF toValidate(s)
+    PROPERTIES(l) READONLYIF readonly(s) done BACKGROUND RGB(198,230,247) IF toValidate(s)
 ;
 
 DESIGN shipment {                               
