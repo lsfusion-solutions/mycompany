@@ -152,7 +152,7 @@ function shiftSchedule() {
                           if (dragShift) {
                               controller.changeProperty("assignedTo", dragShift, employee.id == "0" ? null : employee.id);
                               const dt = new Date(date);
-                              controller.changeDateProperty("date", dragShift, dt.getFullYear(), dt.getMonth() + 1, dt.getDate());
+                              controller.changeProperty("date", dragShift, dt);
                               dragShift = null;
                           }
                           if (dragTemplate) {
