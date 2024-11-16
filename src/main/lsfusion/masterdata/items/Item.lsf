@@ -20,11 +20,11 @@ dataName '{Name}' = DATA ISTRING[200] (Item) IN id NONULL CHARWIDTH 20;
 prefixName 'Prefix' = ABSTRACT STRING (Item);
 suffixName 'Suffix' = ABSTRACT STRING (Item);
 
-categoryPrefix 'Prefix' = DATA STRING (Category) CHARWIDTH 15;
-EXTEND FORM category PROPERTIES(c) categoryPrefix;
-DESIGN category { params { MOVE PROPERTY(categoryPrefix(c)); } }
+namePrefix 'Prefix' = DATA STRING (Category) CHARWIDTH 15;
+EXTEND FORM category PROPERTIES(c) namePrefix;
+DESIGN category { params { MOVE PROPERTY(namePrefix(c)); } }
 
-name 'Name (full)' (Item i) = CONCAT ' ', categoryPrefix(category(i)), prefixName(i), dataName(i), suffixName(i) CHARWIDTH 30 MATERIALIZED INDEXED;
+name 'Name (full)' (Item i) = CONCAT ' ', namePrefix(category(i)), prefixName(i), dataName(i), suffixName(i) CHARWIDTH 30 MATERIALIZED INDEXED;
 
 reference 'Reference' = DATA STRING[50] (Item) CHARWIDTH 10 INDEXED;
 itemReference (STRING[50] ref) = GROUP MIN Item i BY reference(i); 
