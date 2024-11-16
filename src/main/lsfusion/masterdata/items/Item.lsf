@@ -11,21 +11,25 @@ class 'Type' (Item i) = objectClassName(i) IF i IS Item CHARWIDTH 6;
 
 @defineID(item, '{Items}', 'NM', 6);
 
+category 'Category' = DATA Category (Item) NONULL INDEXED;
+idCategory 'Category code' (Item i) = id(category(i));
+nameCategory 'Category' (Item i) = name(category(i));
+canonicalNameCategory 'Category (full)' (Item i) = canonicalName(category(i));
+
 dataName '{Name}' = DATA ISTRING[200] (Item) IN id NONULL CHARWIDTH 20;
 prefixName 'Prefix' = ABSTRACT STRING (Item);
 suffixName 'Suffix' = ABSTRACT STRING (Item);
 
-name 'Name (full)' (Item i) = CONCAT ' ', prefixName(i), dataName(i), suffixName(i) CHARWIDTH 30 MATERIALIZED INDEXED;
+categoryPrefix 'Prefix' = DATA STRING (Category) CHARWIDTH 15;
+EXTEND FORM category PROPERTIES(c) categoryPrefix;
+DESIGN category { params { MOVE PROPERTY(categoryPrefix(c)); } }
+
+name 'Name (full)' (Item i) = CONCAT ' ', categoryPrefix(category(i)), prefixName(i), dataName(i), suffixName(i) CHARWIDTH 30 MATERIALIZED INDEXED;
 
 reference 'Reference' = DATA STRING[50] (Item) CHARWIDTH 10 INDEXED;
 itemReference (STRING[50] ref) = GROUP MIN Item i BY reference(i); 
 
 description 'Description' = DATA TEXT (Item);
-
-category 'Category' = DATA Category (Item) NONULL INDEXED;
-idCategory 'Category code' (Item i) = id(category(i));
-nameCategory 'Category' (Item i) = name(category(i));
-canonicalNameCategory 'Category (full)' (Item i) = canonicalName(category(i));
 
 // uom
 uom = DATA Uom (Item);
