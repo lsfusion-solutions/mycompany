@@ -1,0 +1,62 @@
+MODULE ApplicationHire;
+
+REQUIRE Application;
+
+PRIORITY MasterData;
+
+NAMESPACE HumanResources;
+
+hireStatus = DATA ApplicationStatus ();
+
+hired 'Hired' (ApplicationStatus s) = hireStatus() = s;
+
+EXTEND FORM applicationStatus PROPERTIES(o) hired;
+EXTEND FORM options PROPERTIES(as) READONLY hired;
+
+hired 'Hired' (Application a) = hired(status(a));
+
+employee 'Employee' = DATA Employee (Application);
+nameEmployee 'Employee' (Application a) = name(employee(a));
+
+application = GROUP AGGR Application a BY employee(a);
+
+hire 'Hire' (Application a) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    NEWSESSION {
+        status(a) <- hireStatus();
+        NEW e = Employee {
+            firstName(e) <- firstName(a);
+            lastName(e) <- lastName(a);
+            middleName(e) <- middleName(a);
+            
+            phone(e) <- phone(a);
+            email(e) <- email(a);
+            
+            position(e) <- position(a);
+            
+            legalEntity(e) <- company(a);
+            
+            employee(a) <- e;
+            
+            SHOW employee OBJECTS e = e DOCKED; 
+        }
+    }
+}
+
+EXTEND FORM application
+    PROPERTIES(a) hire SHOWIF hireStatus() AND NOT closed(a)
+
+    PROPERTIES(a) nameEmployee SHOWIF hired(a)
+;
+
+DESIGN application {
+    actions {
+        MOVE PROPERTY(hire(a)) { valueClass = 'btn-success'; }
+    }
+    
+    summary {
+        MOVE PROPERTY(nameEmployee(a)) FIRST;
+    }
+}

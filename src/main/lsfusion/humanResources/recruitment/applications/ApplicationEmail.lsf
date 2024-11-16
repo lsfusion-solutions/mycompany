@@ -1,0 +1,137 @@
+MODULE ApplicationEmail;
+
+REQUIRE Application, Email;
+
+NAMESPACE HumanResources;
+
+applicationsAccount = DATA Account ();
+nameApplicationsAccount 'Account for applications' = name(applicationsAccount());
+
+EXTEND FORM options PROPERTIES nameApplicationsAccount();
+
+DESIGN options { 
+    commons { 
+        MOVE PROPERTY(nameApplicationsAccount()); 
+    } 
+}
+
+ignoredApplication 'Ignored' = DATA BOOLEAN (Email);
+application = DATA Application (Email) INDEXED;
+countEmail (Application a) = GROUP SUM 1 IF application(Email e) = a;
+
+applicationEmail (Email e) = OVERRIDE application(e), applicationEmail(fromAddress(e));
+
+openApplication 'Application' (Email e) {
+    NEWSESSION {
+        SHOW application OBJECTS a = applicationEmail(e) DOCKED;
+    }
+}
+
+processedApplication (Email e) = ignoredApplication(e) OR application(e);
+readyApplication (Email e) = account(e) = applicationsAccount() AND NOT processedApplication(e) MATERIALIZED INDEXED;
+
+countReadyApplication = GROUP SUM 1 IF readyApplication(Email e);
+
+createApplicationFiles(Application a, Email e) {
+    FOR email(AttachmentEmail ae) = e NEW af = ApplicationFile DO {
+        application(af) <- a;
+        file(af) <- RAWFILE(file(ae));
+
+        name(af) <- name(ae);
+        extension(af) <- extension(file(ae));
+    }
+}
+
+createApplication 'Create' (Email e) {
+    NEWSESSION {
+        NEW a = Application {
+            ignoredApplication(e) <- NULL;
+            application(e) <- a;
+            
+            subject(a) <- ISTRING[200](subject(e));
+            description(a) <- message(e);
+            
+            email(a) <- fromAddress(e);
+
+            createApplicationFiles(a, e);
+           
+            SHOW application OBJECTS a = a DOCKED;
+        }
+    }
+}
+
+attachApplication 'Attach' (Email e) {
+    NEWSESSION {
+        FOR Application a = applicationEmail(fromAddress(e)) DO {  
+            ignoredApplication(e) <- NULL;
+            application(e) <- applicationEmail(fromAddress(e));
+
+            createApplicationFiles(a, e);
+
+            SHOW application OBJECTS a = a DOCKED;
+        }
+    }
+}
+
+EXTEND FORM applications
+    OBJECTS e = Email
+    PROPERTIES(e) openEMLFile GRID
+    PROPERTIES(e) READONLY subject, fromAddress, dateTimeSent, dateTimeReceived,
+                           message PANEL
+    PROPERTIES(e) ignoredApplication ON CHANGE { NEWSESSION { INPUT b = ignoredApplication(e) CHANGE; APPLY; } }
+    PROPERTIES(e) openApplication GRID DISABLEIF NOT applicationEmail(e)
+    PROPERTIES(e) TOOLBAR
+                  createApplication SHOWIF NOT applicationEmail(e),
+                  attachApplication SHOWIF NOT application(e) AND applicationEmail(e)
+    FILTERS account(e) = applicationsAccount()
+
+    FILTERGROUP toProcess
+        FILTER 'Ready' readyApplication(e) 'F8' DEFAULT
+    
+    OBJECTS ea = AttachmentEmail
+    PROPERTIES(ea) name READONLY, openFile GRID
+    FILTERS email(ea) = e
+;
+
+DESIGN applications {
+    tabbedPane {
+        NEW email {
+            caption = badged('Email', countReadyApplication());
+            showIf = applicationsAccount();
+            NEW emailPane { 
+                fill = 1;
+                horizontal = TRUE;
+                MOVE BOX(e);
+                NEW emailDetails {
+                    fill = 1;
+                    MOVE PROPERTY(message(e)) { fill = 10; caption = ''; }
+                    MOVE BOX(ea) {
+                        GRID(ea) { size = (100, -1); }
+                    }
+                }
+            }
+        }
+    }
+}
+
+EXTEND FORM application
+    OBJECTS em = Email
+    PROPERTIES(em) openEMLFile GRID
+    PROPERTIES(em) READONLY subject, fromAddress, dateTimeSent, dateTimeReceived,
+                  message PANEL
+    FILTERS application(em) = a
+;
+
+DESIGN application {
+    details {
+        NEW email {
+            caption = badged('Email', countEmail(a));
+            NEW emailPane {
+                fill = 1;
+                horizontal = TRUE;
+                MOVE BOX(em);
+                MOVE PROPERTY(message(em)) { fill = 1; valueHeight = -1; caption = ''; }
+            }
+        }
+    }
+}

@@ -1,0 +1,50 @@
+MODULE ApplicationPosition;
+
+REQUIRE Application;
+
+NAMESPACE HumanResources;
+
+countApplication (Position p) = GROUP SUM 1 IF position(Application a) = p AND [FILTER applications.a](a);
+countApplication (ApplicationStatus s) = GROUP SUM 1 IF status(Application a) = s AND [FILTER applications.a](a);
+countApplication (Position p, ApplicationStatus s) = GROUP SUM 1 IF position(Application a) = p AND status(a) = s AND [FILTER applications.a](a);
+
+EXTEND FORM applications
+    OBJECTS pas = ApplicationStatus
+    FILTERS countApplication(pas)
+    
+    OBJECTS p = Position
+    PROPERTIES(p) READONLY name
+    PROPERTIES READONLY countApplication(p, pas) COLUMNS (pas) HEADER name(pas)
+    FILTERS countApplication(p)
+    
+    OBJECTS pa = Application
+    PROPERTIES(pa) READONLY
+                        dateTime, subject, nameStatus,
+                        firstName, lastName, middleName,
+                        phone, email,
+                        interviewers, nameRecruiter, availability, tags,
+                        nameDepartment,
+                        expectedSalary, proposedSalary
+    PROPERTIES(pa) NEWSESSION EDIT
+    
+    FILTERS position(pa) = p,
+            [FILTER applications.a](pa)
+    
+    FILTERGROUP positionStatus
+        FILTER 'By status' status(pa) = pas DEFAULT
+;
+
+DESIGN applications {
+    tabbedPane {
+        NEW position {
+            caption = 'By position';
+            NEW positionPane {
+                fill = 1;
+                horizontal = TRUE;
+                MOVE BOX(p);
+                MOVE BOX(pa);
+            }
+        }
+    }
+    
+}

@@ -1,0 +1,92 @@
+MODULE ApplicationRefuse;
+
+REQUIRE Application;
+
+NAMESPACE HumanResources;
+
+CLASS RefuseReason 'Refuse reason';
+name '{Name}' = DATA ISTRING[100] (RefuseReason) NONULL CHARWIDTH 15;
+
+emailTemplate 'Email template' = DATA RICHTEXT (RefuseReason);
+
+FORM refuseReason 'Refuse reason'
+    OBJECTS o = RefuseReason PANEL
+    PROPERTIES(o) name, emailTemplate
+
+    EDIT RefuseReason OBJECT o;
+;
+
+DESIGN refuseReason {
+    OBJECTS {
+        MOVE PROPERTY(emailTemplate(o)) {
+            panelCaptionVertical = TRUE;
+            fill = 1;
+        }
+    }
+}
+
+FORM refuseReasons 'Refuse reasons'
+    OBJECTS o = RefuseReason
+    PROPERTIES(o) READONLY name
+    LIST RefuseReason OBJECT o
+;
+
+EXTEND FORM options
+    OBJECTS rr = RefuseReason
+    PROPERTIES(rr) READONLY name
+    PROPERTIES(rr) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(rr) { caption = 'Refuse reasons'; }
+    }
+}
+
+refuseStatus = DATA ApplicationStatus ();
+
+refused 'Refused' (ApplicationStatus s) = refuseStatus() = s;
+
+EXTEND FORM applicationStatus PROPERTIES(o) refused;
+EXTEND FORM options PROPERTIES(as) READONLY refused;
+
+refused 'Refused' (Application a) = refused(status(a));
+
+refuseReason = DATA RefuseReason (Application);
+nameRefuseReason 'Refuse reason' (Application a) = name(refuseReason(a));
+
+refuse 'Refuse' (Application a) {
+    APPLY;
+    IF canceled() THEN RETURN;
+    
+    DIALOG refuseReasons OBJECTS o INPUT DO {
+        NEWSESSION {
+            refuseReason(a) <- o;
+            status(a) <- refuseStatus();
+            APPLY;
+            
+            IF NOT canceled() AND emailTemplate(o) THEN
+                EMAIL
+                    SUBJECT subject(a)
+                    TO email(a)
+                    BODY emailTemplate(o);
+        }
+    }
+    
+}
+
+EXTEND FORM application
+    PROPERTIES(a) refuse SHOWIF refuseStatus() AND NOT closed(a)
+    
+    PROPERTIES(a) nameRefuseReason SHOWIF refused(a)
+;
+
+DESIGN application {
+    actions {
+        MOVE PROPERTY(refuse(a)) { valueClass = 'btn-danger'; }
+    }
+
+    summary {
+        MOVE PROPERTY(nameRefuseReason(a)) FIRST;
+    }
+}

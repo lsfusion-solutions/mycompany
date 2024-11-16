@@ -1,6 +1,6 @@
 MODULE Individual;
 
-REQUIRE Partner, MasterData, LegalEntity, Position, DocTemplate, Icon;
+REQUIRE Partner, MasterData, LegalEntity, DepartmentPartner, Position, DocTemplate, Icon;
 
 NAMESPACE MasterData;
 
@@ -13,6 +13,13 @@ middleName 'Middle name' = DATA ISTRING[30] (Individual);
 legalEntity = DATA LegalEntity (Individual);
 idLegalEntity 'Legal entity' (Individual i) = id(legalEntity(i));
 nameLegalEntity 'Legal entity' (Individual i) = name(legalEntity(i));
+
+department = DATA Department (Individual);
+nameDepartment (Individual i) = name(department(i));
+
+CONSTRAINT department(Individual i) AND NOT legalEntity(i) = partner(department(i))
+    CHECKED BY department[Individual]
+    MESSAGE 'The legal entity of the individual does not match the legal entity of the department';
 
 countIndividual (Partner p) = GROUP SUM 1 IF legalEntity(Individual i) = p;  
 

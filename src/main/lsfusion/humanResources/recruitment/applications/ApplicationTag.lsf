@@ -1,0 +1,45 @@
+MODULE ApplicationTag;
+
+REQUIRE HumanResourcesSettings, Color;
+
+NAMESPACE HumanResources;
+
+CLASS ApplicationTag 'Application tag';
+name '{Name}' = DATA ISTRING[50] (ApplicationTag) NONULL CHARWIDTH 15;
+
+id '{ID}' = DATA STRING[20] (ApplicationTag);
+applicationTag = GROUP AGGR ApplicationTag t BY id(t);
+
+FORM applicationTag 'Application tag'
+    OBJECTS o = ApplicationTag PANEL
+    PROPERTIES(o) name, id
+
+    EDIT ApplicationTag OBJECT o;
+;
+
+DESIGN applicationTag {
+    OBJECTS {
+        NEW tabbedPane {
+            fill = 1;
+            tabbed = TRUE;
+        }
+    }
+}
+
+FORM applicationTags 'Application tags'
+    OBJECTS o = ApplicationTag
+    PROPERTIES(o) READONLY name, id
+    LIST ApplicationTag OBJECT o
+;
+
+EXTEND FORM options
+    OBJECTS tg = ApplicationTag
+    PROPERTIES(tg) READONLY name, id
+    PROPERTIES(tg) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(tg) { caption = 'Application tags'; }
+    }
+}

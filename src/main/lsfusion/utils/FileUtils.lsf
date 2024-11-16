@@ -4,6 +4,9 @@ NAMESPACE Utils;
 
 uploadFile 'Upload' = DATA LOCAL NAMEDFILE ();
 
+previewPdfFile = DATA LOCAL NESTED PDFFILE();
+previewImageFile = DATA LOCAL NESTED IMAGEFILE();
+
 META defineObjectFilesForm(object, form, fobj)
     EXTEND FORM form
         OBJECTS of = ###object##File
@@ -28,12 +31,49 @@ META defineObjectFilesForm(object, form, fobj)
 
     DESIGN form {
         details {
-            MOVE BOX(of) {
+            NEW files {
                 caption = badged('Files', countFiles(fobj));
+                MOVE BOX(of) { caption = ''; }
                 MOVE PROPERTY(inputFile);
             }
         }
     }
+    
+    // preview
+    
+    EXTEND FORM form
+        PROPERTIES() READONLY previewPdfFile SHOWIF previewPdfFile(), previewImageFile SHOWIF previewImageFile()
+
+        EVENTS ON CHANGE of {
+            IF lower(extension(of)) = 'jpg' OR lower(extension(of)) = 'jpeg' OR lower(extension(of)) = 'png' OR lower(extension(of)) = 'bmp' THEN {
+                previewPdfFile() <- NULL;
+                previewImageFile() <- IMAGEFILE(file(of));
+            }
+            IF lower(extension(of)) = 'pdf' THEN {
+                previewPdfFile() <- PDFFILE(file(of));
+                previewImageFile() <- NULL;
+            }
+            IF lower(extension(of)) = 'doc' OR lower(extension(of)) = 'docx' THEN {
+                TRY {
+                    wordToPdf(file(of));
+                } CATCH {}
+                previewPdfFile() <- exportPdfFile();
+                previewImageFile() <- NULL;
+            }
+        }
+    ;
+
+    DESIGN form {
+        files {
+            horizontal = TRUE;
+            NEW preview {
+                fill = 4;
+                MOVE PROPERTY(previewPdfFile()) { fill = 1; size = (100, 100); caption = ''; }
+                MOVE PROPERTY(previewImageFile()) { fill = 1; size = (100, 100); caption = ''; }
+            }
+        }
+    }
+
 END
 
 META defineObjectFiles(object, fobj, classCaption)
@@ -61,7 +101,7 @@ META defineObjectFiles(object, fobj, classCaption)
 
     countFiles 'Files' (###object i) = GROUP SUM 1 IF object(###object##File f) = i;
 
-    index '{Index}' (###object##File f) = PARTITION SUM 1 ORDER f BY object(f) MATERIALIZED;
+    index '{Index}' (###object##File f) = PARTITION SUM 1 ORDER f BY object(f) MATERIALIZED CHARWIDTH 3;
     file (###object o, INTEGER i) = GROUP MIN ###object##File f IF object(f) = o AND index(f) = i;
     openFile(###object o, INTEGER i) { open(file(o, i)); }
     

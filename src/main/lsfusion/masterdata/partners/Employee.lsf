@@ -6,6 +6,8 @@ NAMESPACE MasterData;
 
 CLASS Employee 'Employee' : Individual, CustomUser;
 
+name (Employee e) = name[Partner](e) IF e IS Employee; 
+
 WHEN CHANGED(firstName(Employee e)) DO firstName[Contact](e) <- firstName(e);
 WHEN CHANGED(lastName(Employee e)) DO lastName[Contact](e) <- lastName(e);
 WHEN CHANGED(email(Employee e)) DO email[Contact](e) <- email(e);
@@ -32,7 +34,7 @@ photo = DATA IMAGEFILE (Employee);
 FORM employee 'Employee'
     OBJECTS e = Employee PANEL
     PROPERTIES(e) id, login, sha256Password ON CHANGE changeSHA256Password(e), photo, isLocked, archived, 
-                  nameLegalEntity, lastName, firstName, middleName, namePosition, email, phone, address, city, state,
+                  nameLegalEntity, nameDepartment, lastName, firstName, middleName, namePosition, email, phone, address, city, state,
                   zip, birthday, nameMainRole
     
     OBJECTS ur = UserRole
@@ -70,7 +72,8 @@ DESIGN employee {
                 NEW info {
                     alignment = STRETCH;
                     caption = '{authentication.custom.user.info}';
-                    MOVE PROPERTY(nameLegalEntity(e)) { notNull = TRUE; }  
+                    MOVE PROPERTY(nameLegalEntity(e)) { notNull = TRUE; }
+                    MOVE PROPERTY(nameDepartment(e));
                     MOVE PROPERTY(lastName(e));
                     MOVE PROPERTY(firstName(e));
                     MOVE PROPERTY(middleName(e));
