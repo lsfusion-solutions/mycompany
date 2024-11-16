@@ -41,28 +41,32 @@ META defineDocObjectsForm (form, obj, title)
     }
 END
 
-META defineDocStatus (doc, title)
+META defineDocStatus (doc, title, firstStatus, firstStatusCapt)
     CLASS ###doc##Status title {
-        draft 'Draft'
+        firstStatus firstStatusCapt
     }
     
     name '{First_name}' (###doc##Status s) = staticCaption(s) IF s IS ###doc##Status CHARWIDTH 12;
     imagedName '{First_name}' (###doc##Status s) = imagedCaption(s) IF s IS ###doc##Status CHARWIDTH 12;
 
     color 'Color' = ABSTRACT CASE COLOR (###doc##Status) MATERIALIZED;
-    color (###doc##Status s) += WHEN s = ###doc##Status.draft THEN RGB(187,242,210);
+    color (###doc##Status s) += WHEN s = ###doc##Status.firstStatus THEN RGB(187,242,210);
 
     status 'Status' = ABSTRACT CASE ###doc##Status (###doc) MATERIALIZED INDEXED;
     nameStatus 'Status' (###doc d) = name(status(d));
     imagedNameStatus 'Status' (###doc d) = imagedName(status(d));
     colorStatus 'Color' (###doc d) = color(status(d));
     
-    status(###doc d) += WHEN d IS ###doc THEN ###doc##Status.draft;
+    status(###doc d) += WHEN d IS ###doc THEN ###doc##Status.firstStatus;
     
     readonly 'Read-only' = DATA BOOLEAN (###doc##Status);
 
     readonly = ABSTRACT CASE BOOLEAN (###doc) MATERIALIZED;
     readonly (###doc d) += WHEN readonly(status(d)) THEN TRUE;
+
+    closed = ABSTRACT CASE BOOLEAN (###doc##Status) MATERIALIZED;
+    closed 'Closed' (###doc d) = closed(status(d));
+    opened 'Opened' (###doc d) = d IS ###doc AND NOT closed(d) MATERIALIZED INDEXED;
 
     EXTEND FORM options
         OBJECTS doc##st = ###doc##Status
@@ -77,11 +81,15 @@ META defineDocStatus (doc, title)
     }
 END
 
-META defineDocStatusForm (doc, let, beforeProp)
+META defineDocStatus (doc, title)
+    @defineDocStatus (doc, title, draft, 'Draft');
+END
+
+META defineDocStatusForm (doc, let, beforeProp, firstStatus, firstStatusCapt)
     EXTEND FORM doc##s
         PROPERTIES(##let) READONLY imagedNameStatus BACKGROUND colorStatus(##let) BEFORE beforeProp(##let)
         FILTERGROUP status
-            FILTER 'Draft' status(##let) = ###doc##Status.draft
+            FILTER firstStatusCapt status(##let) = ###doc##Status.firstStatus
     ;
     
     DESIGN doc##s {
@@ -118,6 +126,10 @@ META defineDocStatusForm (doc, let, beforeProp)
             }
         }    
     } 
+END
+
+META defineDocStatusForm (doc, let, beforeProp)
+    @defineDocStatusForm(doc, let, beforeProp, draft, 'Draft');
 END
 
 META defineDocStatusForm (doc, let)

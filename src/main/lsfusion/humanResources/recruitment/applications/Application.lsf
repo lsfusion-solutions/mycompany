@@ -1,17 +1,17 @@
 MODULE Application;
 
 REQUIRE Employee, Department, 
-        ApplicationTag, ApplicationStatus, 
+        ApplicationTag, 
         Doc, FileUtils;
 
 PRIORITY MasterData;
 
 NAMESPACE HumanResources;
 
-CLASS Application 'Application';
+CLASS Application '{Application}';
 TABLE application(Application);
 
-readonly = ABSTRACT CASE BOOLEAN (Application);
+@defineDocStatus(application, 'Application status', new, 'New');
 
 dateTime 'Date' = DATA DATETIME (Application) NONULL IN id;
 WHEN LOCAL SET (Application a IS Application) AND NOT CHANGED(dateTime(b)) DO dateTime(b) <- currentDateTime();
@@ -30,6 +30,8 @@ interviewers 'Interviewers' (Application a) = GROUP CONCAT name(Employee e) IF i
 
 recruiter = DATA Employee (Application);
 nameRecruiter 'Recruiter' (Application i) = name(recruiter(i));
+
+recruiter(Application a) <- currentUser() WHEN SET(a IS Application);
 
 availability 'Availability' = DATA DATE (Application);
 
@@ -53,26 +55,16 @@ proposedSalary 'Proposed salary' = DATA NUMERIC[14,2] (Application);
 
 description 'Description' = DATA HTMLTEXT (Application);
 
-status 'Status' = DATA ApplicationStatus (Application) NONULL;
-nameStatus 'Status' (Application t) = name(status(t)) IN id;
-
-closed 'Closed' (Application a) = closed(status(a));
-opened 'Opened' (Application a) = a IS Application AND NOT closed(a) MATERIALIZED;
-
-INDEX opened(Application a), email(a);
 INDEX position(Application a), status(a);
-INDEX status(Application a);
 
 applicationEmail (ISTRING[400] email) = GROUP AGGR Application a BY email(a);
 
-status (Application a) <- firstApplicationStatus() WHEN SET(a IS Application);
-
 summary 'Summary' = DATA RICHTEXT (Application);
 
-FORM application 'Application'
+FORM application '{Application}'
     OBJECTS a = Application PANEL
-    PROPERTIES(a) dateTime, subject, namePosition, nameDepartment, 
-                  nameStatus SELECT 'buttonGroup',
+    PROPERTIES(a) READONLYIF readonly(a)
+                  dateTime, subject, namePosition, nameDepartment, 
                   firstName, lastName, middleName,
                   phone, email,
                   interviewers, nameRecruiter, availability, tags,
@@ -83,52 +75,39 @@ FORM application 'Application'
 ;
 
 DESIGN application {
-    caption = badged('Application', CONCAT ' ', firstName(a), lastName(a));
+    caption = badged('{Application}', CONCAT ' ', firstName(a), lastName(a));
 
     OBJECTS {
-        NEW header {
-            NEW statusActions {
-                horizontal = TRUE;
-                alignment = STRETCH;
-                NEW actions {
-                    horizontal = TRUE;
-                }
-                NEW statusPane {
-                    fill = 1;
-                    MOVE PROPERTY(nameStatus(a)) { flex = 0; alignment = END; notNull = TRUE; }
-                }
+        NEW main {
+            horizontal = TRUE;
+            alignment = STRETCH;
+            MOVE PROPERTY(dateTime(a));
+            MOVE PROPERTY(subject(a)) { flex = 3; }
+            MOVE PROPERTY(namePosition(a)) { flex = 1; }
+            MOVE PROPERTY(nameDepartment(a)) { flex = 1; }
+        }
+        NEW params {
+            caption = 'Parameters';
+            horizontal = TRUE;
+            alignment = STRETCH;
+            NEW name {
+                MOVE PROPERTY(firstName(a));
+                MOVE PROPERTY(lastName(a));
+                MOVE PROPERTY(middleName(a));
             }
-            NEW main {
-                horizontal = TRUE;
-                alignment = STRETCH;
-                MOVE PROPERTY(dateTime(a));
-                MOVE PROPERTY(subject(a)) { flex = 3; }
-                MOVE PROPERTY(namePosition(a)) { flex = 1; }
-                MOVE PROPERTY(nameDepartment(a)) { flex = 1; }
+            NEW contact {
+                MOVE PROPERTY(phone(a));
+                MOVE PROPERTY(email(a));
+                MOVE PROPERTY(availability(a));
             }
-            NEW params {
-                caption = 'Parameters';
-                horizontal = TRUE;
-                alignment = STRETCH;
-                NEW name {
-                    MOVE PROPERTY(firstName(a));
-                    MOVE PROPERTY(lastName(a));
-                    MOVE PROPERTY(middleName(a));
-                }
-                NEW contact {
-                    MOVE PROPERTY(phone(a));
-                    MOVE PROPERTY(email(a));
-                    MOVE PROPERTY(availability(a));
-                }
-                NEW process {
-                    MOVE PROPERTY(nameRecruiter(a));
-                    MOVE PROPERTY(interviewers(a));
-                    MOVE PROPERTY(tags(a));
-                }
-                NEW finance {
-                    MOVE PROPERTY(expectedSalary(a));
-                    MOVE PROPERTY(proposedSalary(a));
-                }
+            NEW process {
+                MOVE PROPERTY(nameRecruiter(a));
+                MOVE PROPERTY(interviewers(a));
+                MOVE PROPERTY(tags(a));
+            }
+            NEW finance {
+                MOVE PROPERTY(expectedSalary(a));
+                MOVE PROPERTY(proposedSalary(a));
             }
         }
         NEW details {
@@ -150,7 +129,7 @@ DESIGN application {
 FORM applications 'Applications'
     OBJECTS a = Application
     PROPERTIES(a) READONLY 
-                  dateTime, subject, nameStatus,
+                  dateTime, subject,
                   firstName, lastName, middleName,
                   phone, email,
                   interviewers, nameRecruiter, availability, tags,
@@ -167,6 +146,7 @@ FORM applications 'Applications'
 ;
 
 @defineDocObjectsForm(applications, a, 'Applications');
+@defineDocStatusForm(application, a, dateTime, new, 'New');
 
 @defineObjectFiles(application, a, 'Application file');
 

@@ -6,14 +6,15 @@ PRIORITY MasterData;
 
 NAMESPACE HumanResources;
 
-hireStatus = DATA ApplicationStatus ();
+EXTEND CLASS ApplicationStatus {
+    hired 'Hired'
+}
+hired 'Hired' = DATA BOOLEAN (Application);
 
-hired 'Hired' (ApplicationStatus s) = hireStatus() = s;
+status(Application i) += WHEN hired(i) THEN ApplicationStatus.hired;
+color(ApplicationStatus i) += WHEN i = ApplicationStatus.hired THEN RGB(212,212,255);
 
-EXTEND FORM applicationStatus PROPERTIES(o) hired;
-EXTEND FORM options PROPERTIES(as) READONLY hired;
-
-hired 'Hired' (Application a) = hired(status(a));
+closed(ApplicationStatus a) += WHEN a = ApplicationStatus.hired THEN TRUE;
 
 employee 'Employee' = DATA Employee (Application);
 nameEmployee 'Employee' (Application a) = name(employee(a));
@@ -25,7 +26,7 @@ hire 'Hire' (Application a) {
     IF canceled() THEN RETURN;
 
     NEWSESSION {
-        status(a) <- hireStatus();
+        hired(a) <- TRUE;
         NEW e = Employee {
             firstName(e) <- firstName(a);
             lastName(e) <- lastName(a);
@@ -35,6 +36,7 @@ hire 'Hire' (Application a) {
             email(e) <- email(a);
             
             position(e) <- position(a);
+            department(e) <- department(a);
             
             legalEntity(e) <- company(a);
             
@@ -46,17 +48,29 @@ hire 'Hire' (Application a) {
 }
 
 EXTEND FORM application
-    PROPERTIES(a) hire SHOWIF hireStatus() AND NOT closed(a)
+    PROPERTIES(a) hire SHOWIF NOT closed(a), hired
 
     PROPERTIES(a) nameEmployee SHOWIF hired(a)
 ;
 
 DESIGN application {
-    actions {
+    primaryActions {
         MOVE PROPERTY(hire(a)) { valueClass = 'btn-success'; }
     }
-    
+
+    statusGroup {
+        MOVE PROPERTY(hired(a)) {
+            valueClass = 'btn-check';
+            captionClass = 'btn btn-outline-primary btn-arrow-right';
+        }
+    }
+
     summary {
         MOVE PROPERTY(nameEmployee(a)) FIRST;
     }
 }
+
+EXTEND FORM applications
+    EXTEND FILTERGROUP status
+        FILTER 'Hired' status(a) = ApplicationStatus.hired
+;
