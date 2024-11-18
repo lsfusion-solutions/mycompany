@@ -14,7 +14,7 @@ TABLE application(Application);
 @defineDocStatus(application, 'Application status', new, 'New');
 
 dateTime 'Date' = DATA DATETIME (Application) NONULL IN id;
-WHEN LOCAL SET (Application a IS Application) AND NOT CHANGED(dateTime(b)) DO dateTime(b) <- currentDateTime();
+WHEN LOCAL SET (Application a IS Application) AND NOT CHANGED(dateTime(a)) DO dateTime(a) <- currentDateTime();
 
 subject '{Subject}' = DATA ISTRING[200] (Application) CHARWIDTH 20 IN id;
 
@@ -24,9 +24,6 @@ middleName 'Middle name' = DATA ISTRING[30] (Application);
 
 phone 'Phone' = DATA ISTRING[100] (Application) CHARWIDTH 10;
 email 'Email' = DATA ISTRING[400] (Application) CHARWIDTH 20 REGEXP '[\\-!#-\'*+\\/-9=?A-Z^-~]+(\\.[\\-!#-\'*+\\/-9=?A-Z^-~]+)*@[0-9A-Za-z]([0-9A-Za-z\\-]\{0,61\}[0-9A-Za-z])?(\\.[0-9A-Za-z]([0-9A-Za-z\\-]\{0,61\}[0-9A-Za-z])?)+' '{authentication.email.contact.incorrect}' IN id;
-
-interview = DATA BOOLEAN (Application, Employee);
-interviewers 'Interviewers' (Application a) = GROUP CONCAT name(Employee e) IF interview(a, e), ', ' ORDER e CHARWIDTH 20;
 
 recruiter = DATA Employee (Application);
 nameRecruiter 'Recruiter' (Application i) = name(recruiter(i));
@@ -67,7 +64,7 @@ FORM application '{Application}'
                   dateTime, subject, namePosition, nameDepartment, 
                   firstName, lastName, middleName,
                   phone, email,
-                  interviewers, nameRecruiter, availability, tags,
+                  nameRecruiter, availability, tags,
                   expectedSalary, proposedSalary,
                   description READONLY SHOWIF description(a), summary
     
@@ -102,7 +99,6 @@ DESIGN application {
             }
             NEW process {
                 MOVE PROPERTY(nameRecruiter(a));
-                MOVE PROPERTY(interviewers(a));
                 MOVE PROPERTY(tags(a));
             }
             NEW finance {
@@ -132,7 +128,7 @@ FORM applications 'Applications'
                   dateTime, subject,
                   firstName, lastName, middleName,
                   phone, email,
-                  interviewers, nameRecruiter, availability, tags,
+                  nameRecruiter, availability, tags,
                   namePosition, nameDepartment,
                   expectedSalary, proposedSalary
 
@@ -151,7 +147,6 @@ FORM applications 'Applications'
 @defineObjectFiles(application, a, 'Application file');
 
 DESIGN applications {
-    PROPERTY(interviewers(a)) { valueHeight = 18; }
     PROPERTY(tags(a)) { valueHeight = 18; }
 }
 
