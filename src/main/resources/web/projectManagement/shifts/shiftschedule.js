@@ -43,9 +43,10 @@ function shiftSchedule() {
             }
 
             dates = list.reduce(function (r, a) {
-                            r[a.date] = r[a.date] || {};
-                            r[a.date][a.assignedTo || "0"] = r[a.date][a.assignedTo || "0"] || [];
-                            r[a.date][a.assignedTo || "0"].push(a);
+                            let date = moment(a.date).toISOString(true).substring(0, 10);
+                            r[date] = r[date] || {};
+                            r[date][a.assignedTo || "0"] = r[date][a.assignedTo || "0"] || [];
+                            r[date][a.assignedTo || "0"].push(a);
                             return r;
                         }, dates);
 

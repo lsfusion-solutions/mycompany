@@ -128,7 +128,7 @@ function taskKanban() {
                             let taskDeadline = document.createElement("div");
                             taskDeadline.classList.add("task-kanban-card-deadline");
                             taskDeadline.classList.add("card-footer");
-                            taskDeadline.innerHTML = task.deadline;
+                            taskDeadline.innerHTML = moment(task.deadline).toISOString(true).substring(0, 10);
                             taskCard.appendChild(taskDeadline);
                         }
 
