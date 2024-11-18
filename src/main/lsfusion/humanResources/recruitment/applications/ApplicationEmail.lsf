@@ -146,3 +146,17 @@ DESIGN application {
         }
     }
 }
+
+writeEmail 'Write an email' (Application a) {
+    open(HTMLLINK('mailto:' + CONCAT '', email(a), '?subject=' + subject(a)));
+}
+
+EXTEND FORM application
+    PROPERTIES(a) writeEmail SHOWIF email(a)
+;
+
+DESIGN application {
+    secondaryActions {
+        MOVE PROPERTY(writeEmail(a)) { valueClass = 'btn-secondary'; }
+    }
+}
