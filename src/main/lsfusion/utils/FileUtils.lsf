@@ -45,20 +45,19 @@ META defineObjectFilesForm(object, form, fobj)
         PROPERTIES() READONLY previewPdfFile SHOWIF previewPdfFile(), previewImageFile SHOWIF previewImageFile()
 
         EVENTS ON CHANGE of {
+            previewPdfFile() <- NULL;
+            previewImageFile() <- NULL;
             IF lower(extension(of)) = 'jpg' OR lower(extension(of)) = 'jpeg' OR lower(extension(of)) = 'png' OR lower(extension(of)) = 'bmp' THEN {
-                previewPdfFile() <- NULL;
                 previewImageFile() <- IMAGEFILE(file(of));
             }
             IF lower(extension(of)) = 'pdf' THEN {
                 previewPdfFile() <- PDFFILE(file(of));
-                previewImageFile() <- NULL;
             }
             IF lower(extension(of)) = 'doc' OR lower(extension(of)) = 'docx' THEN {
                 TRY {
                     wordToPdf(file(of));
                 } CATCH {}
                 previewPdfFile() <- exportPdfFile();
-                previewImageFile() <- NULL;
             }
         }
     ;
