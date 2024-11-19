@@ -42,7 +42,7 @@ META defineObjectFilesForm(object, form, fobj)
     // preview
     
     EXTEND FORM form
-        PROPERTIES() READONLY previewPdfFile SHOWIF previewPdfFile(), previewImageFile SHOWIF previewImageFile()
+        PROPERTIES() READONLY previewPdfFile SHOWIF previewPdfFile(), previewImageFile SHOWIF NOT previewPdfFile()
 
         EVENTS ON CHANGE of {
             previewPdfFile() <- NULL;
@@ -87,7 +87,7 @@ META defineObjectFiles(object, fobj, classCaption)
     extension 'Extension' = DATA ISTRING (###object##File) CHARWIDTH 5;
     nameExtension (###object##File f) = CONCAT '.', name(f), extension(f);
 
-    description 'Description' = DATA ISTRING (###object##File) CHARWIDTH 30;
+    description 'Description' = DATA ISTRING (###object##File) CHARWIDTH 20;
 
     dateTime 'Date' = DATA DATETIME (###object##File);
     dateTime(###object##File f) <- currentDateTime() WHEN SET(f IS ###object##File);
