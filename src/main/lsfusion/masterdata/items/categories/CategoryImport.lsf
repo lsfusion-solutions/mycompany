@@ -27,7 +27,7 @@ categoryImport 'Import categories' () {
     INPUT f = EXCELFILE DO {
         NEWSESSION {
             IMPORT XLS HEADER FROM f TO id = A, name = B, parent = C, namePrefix = D;
-            FOR imported(INTEGER i) DO NEW c = Category {
+            FOR imported(INTEGER i) AND NOT category(id(i)) DO NEW c = Category {
                 id(c) <- id(i);
             }
             
