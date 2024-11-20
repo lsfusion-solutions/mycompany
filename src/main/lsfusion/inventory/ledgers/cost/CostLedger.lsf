@@ -24,11 +24,11 @@ INDEX location(CostLedger l), product(l), dateTime(l), l;
 
 CLASS InCostLedger 'Cost ledger (income)' : CostLedger;
 
-quantity '{Quantity}' = ABSTRACT NUMERIC[16,3] (InCostLedger);
+quantity '{Quantity}' = ABSTRACT NUMERIC[16,3] (InCostLedger) MATERIALIZED;
 
 dataAmount 'Amount (primary)' = DATA NUMERIC[14,2] (InCostLedger);
 calcAmount 'Amount (calculated)' = ABSTRACT NUMERIC[14,2] (InCostLedger);
-amount '{Amount}' (InCostLedger l) = OVERRIDE dataAmount(l), calcAmount(l); 
+amount '{Amount}' (InCostLedger l) = OVERRIDE dataAmount(l), calcAmount(l) MATERIALIZED;
 
 price 'Price' (InCostLedger il) = amount(il) / quantity(il);
 
@@ -41,6 +41,8 @@ price 'Price' (OutCostLedger il) = amount(il) / quantity(il);
 
 signedQuantity '{Quantity}' (CostLedger l) = MULTI quantity[InCostLedger](l), -quantity[OutCostLedger](l) MATERIALIZED;
 signedAmount '{Amount}' (CostLedger l) = MULTI amount[InCostLedger](l), -amount[OutCostLedger](l) MATERIALIZED;
+
+price 'Price' (CostLedger l) = signedAmount(l) / signedQuantity(l);
 
 negSignedQuantity (CostLedger l) = -signedQuantity(l);
 
@@ -71,7 +73,7 @@ overCost 'Cost' (Item i, DATETIME dt) = NUMERIC[14,2](OVERRIDE costPrice(i, dt),
 
 quantity 'Spent' = DATA NUMERIC[16,3] (OutCostLedger, InCostLedger);
 costed 'Spent' (InCostLedger il) = GROUP SUM quantity(OutCostLedger ol, il) MATERIALIZED;
-notCosted 'Not spent' (InCostLedger il) = quantity(il) (-) costed(il) MATERIALIZED; 
+toCost (InCostLedger il) = OVERRIDE quantity(il) (-) costed(il), 0.0 IF il IS InCostLedger MATERIALIZED;
 
 costed 'Spent' (OutCostLedger ol) = GROUP SUM quantity(ol, InCostLedger il) MATERIALIZED;
 
@@ -98,7 +100,7 @@ calculateCost () {
         iteration(OutCostLedger l) <- ordered(l) = i;
         
         quantity(OutCostLedger ol, InCostLedger il) <- (PARTITION UNGROUP negSignedQuantity
-                                                                  LIMIT STRICT (OVERRIDE notCosted(il), 0.0 IF il IS InCostLedger) IF location(ol) = location(il) 
+                                                                  LIMIT STRICT toCost(il) IF location(ol) = location(il) 
                                                                                      AND product(ol) = product(il) 
 //                                                                                     AND dateTime(il) <= dateTime(ol) 
                                                                   ORDER dateTime(il), il
@@ -106,19 +108,23 @@ calculateCost () {
                                                        WHERE iteration(ol) AND signedQuantity(ol) <= 0;
                                                        
         quantity(OutCostLedger ol, InCostLedger il) <- -(PARTITION UNGROUP signedQuantity
-                                                                   LIMIT STRICT (OVERRIDE costed(il), 0.0 IF il IS InCostLedger) IF location(ol) = location(il) 
+                                                                   LIMIT STRICT toCost(il) IF location(ol) = location(il) 
                                                                                      AND product(ol) = product(il) 
 //                                                                                     AND dateTime(il) <= dateTime(ol) 
                                                                    ORDER DESC dateTime(il), il
                                                                    BY ol)
                                                        WHERE iteration(ol) AND signedQuantity(ol) > 0;
 
-        amount (OutCostLedger ol) <- NUMERIC[14,2](negSignedQuantity(ol) * costPrice(location(ol), product(ol), dateTime(ol)))
-            WHERE iteration(ol) AND costingMethod(product(ol)) = CostingMethod.avco;
+        IF GROUP SUM 1 IF iteration(OutCostLedger ol) AND costingMethod(product(ol)) = CostingMethod.avco THEN {
+            amount (OutCostLedger ol) <- NUMERIC[14,2](negSignedQuantity(ol) * costPrice(location(ol), product(ol), dateTime(ol)))
+                WHERE iteration(ol) AND costingMethod(product(ol)) = CostingMethod.avco;
+        }
     }
-    
-    amount (OutCostLedger ol) <- NUMERIC[14,2](GROUP SUM quantity(ol, InCostLedger il) * price(il)) 
-        WHERE calcCost(ol) AND costingMethod(product(ol)) = CostingMethod.fifo;
+
+    IF GROUP SUM 1 IF calcCost(OutCostLedger ol) AND costingMethod(product(ol)) = CostingMethod.fifo THEN {
+        amount (OutCostLedger ol) <- NUMERIC[14,2](GROUP SUM quantity(ol, InCostLedger il) * price(il))
+            WHERE calcCost(ol) AND costingMethod(product(ol)) = CostingMethod.fifo;
+    }
 }
 
 ON {
