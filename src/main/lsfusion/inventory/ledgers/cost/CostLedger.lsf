@@ -71,7 +71,7 @@ overCost 'Cost' (Item i, DATETIME dt) = NUMERIC[14,2](OVERRIDE costPrice(i, dt),
 
 quantity 'Spent' = DATA NUMERIC[16,3] (OutCostLedger, InCostLedger);
 costed 'Spent' (InCostLedger il) = GROUP SUM quantity(OutCostLedger ol, il) MATERIALIZED;
-notCosted 'Not spent' (InCostLedger il) = quantity(il) (-) costed(il) MATERIALIZED; 
+toCost (InCostLedger il) = OVERRIDE quantity(il) (-) costed(il), 0.0 IF il IS InCostLedger MATERIALIZED;
 
 costed 'Spent' (OutCostLedger ol) = GROUP SUM quantity(ol, InCostLedger il) MATERIALIZED;
 
@@ -98,7 +98,7 @@ calculateCost () {
         iteration(OutCostLedger l) <- ordered(l) = i;
         
         quantity(OutCostLedger ol, InCostLedger il) <- (PARTITION UNGROUP negSignedQuantity
-                                                                  LIMIT STRICT (OVERRIDE notCosted(il), 0.0 IF il IS InCostLedger) IF location(ol) = location(il) 
+                                                                  LIMIT STRICT toCost(il) IF location(ol) = location(il) 
                                                                                      AND product(ol) = product(il) 
 //                                                                                     AND dateTime(il) <= dateTime(ol) 
                                                                   ORDER dateTime(il), il
@@ -106,7 +106,7 @@ calculateCost () {
                                                        WHERE iteration(ol) AND signedQuantity(ol) <= 0;
                                                        
         quantity(OutCostLedger ol, InCostLedger il) <- -(PARTITION UNGROUP signedQuantity
-                                                                   LIMIT STRICT (OVERRIDE costed(il), 0.0 IF il IS InCostLedger) IF location(ol) = location(il) 
+                                                                   LIMIT STRICT toCost(il) IF location(ol) = location(il) 
                                                                                      AND product(ol) = product(il) 
 //                                                                                     AND dateTime(il) <= dateTime(ol) 
                                                                    ORDER DESC dateTime(il), il
