@@ -1,0 +1,59 @@
+MODULE RegonZaloguj;
+
+REQUIRE MasterData;
+
+NAMESPACE Regon;
+
+customEndpoint 'Endpoint' = DATA STRING ();
+endpoint = OVERRIDE customEndpoint(), 'https://wyszukiwarkaregon.stat.gov.pl/wsBIR/UslugaBIRzewnPubl.svc';
+
+// Zaloguj
+
+GROUP soapHeader EXTID 'soap:Header';
+GROUP soapBody EXTID 'soap:Body';
+GROUP zaloguj EXTID 'ns:Zaloguj' : soapBody;
+
+kluczUzytkownika 'Klucz użytkownika' = DATA STRING();
+
+EXTEND FORM integrationData
+    PROPERTIES() customEndpoint, kluczUzytkownika
+;
+
+DESIGN integrationData {
+    pane {
+        NEW regon {
+            caption = 'Regon';
+            MOVE PROPERTY(customEndpoint());
+            MOVE PROPERTY(kluczUzytkownika());
+        }
+    }
+}
+
+FORM zalugojRequest FORMEXTID 'soap=http://www.w3.org/2003/05/soap-envelope:Envelope'
+    PROPERTIES ATTR ='http://CIS/BIR/PUBL/2014/07' EXTID 'xmlns:ns'
+
+    PROPERTIES ATTR IN soapHeader ='http://www.w3.org/2005/08/addressing' EXTID 'xmlns:wsa'
+    PROPERTIES IN soapHeader endpoint() EXTID 'wsa:To', ='http://CIS/BIR/PUBL/2014/07/IUslugaBIRzewnPubl/Zaloguj' EXTID 'wsa:Action'
+
+    PROPERTIES() IN zaloguj kluczUzytkownika EXTID 'ns:pKluczUzytkownika'
+;
+
+GROUP sBody EXTID 's:Body';
+GROUP zalogujResponse EXTID '=http://CIS/BIR/PUBL/2014/07:ZalogujResponse' : sBody;
+
+zalogujResult = DATA LOCAL STRING();
+
+FORM zalugojResponse FORMEXTID 's=http://www.w3.org/2003/05/soap-envelope:Envelope'
+    PROPERTIES() IN zalogujResponse zalogujResult EXTID ':ZalogujResult'
+;
+
+zaloguj() {
+    LOCAL headers = TEXT(TEXT);
+    headers('Content-Type') <- 'application/soap+xml;charset=UTF-8';
+
+    LOCAL response = FILE();
+    EXPORT zalugojRequest XML;
+    EXTERNAL HTTP POST endpoint() HEADERS headers PARAMS exportFile() TO response;
+
+    IMPORT zalugojResponse XML FROM response();
+}

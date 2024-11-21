@@ -1,0 +1,100 @@
+MODULE RegonDaneSzukajPodmity;
+
+REQUIRE RegonZaloguj, Utils;
+
+NAMESPACE Regon;
+
+GROUP daneSzukajPodmioty EXTID 'ns=http://CIS/BIR/PUBL/2014/07:DaneSzukajPodmioty' : soapBody;
+GROUP pParametryWyszukiwania EXTID 'ns:pParametryWyszukiwania' : daneSzukajPodmioty;
+
+krs = DATA LOCAL STRING();
+krsy = DATA LOCAL STRING();
+nip = DATA LOCAL STRING();
+nipy = DATA LOCAL STRING();
+regon = DATA LOCAL STRING();
+regony14zn = DATA LOCAL STRING();
+regony9zn = DATA LOCAL STRING();
+
+FORM daneSzukajPodmiotyRequest FORMEXTID 'soap=http://www.w3.org/2003/05/soap-envelope:Envelope'
+    PROPERTIES ATTR ='http://CIS/BIR/PUBL/2014/07' EXTID 'xmlns:ns'
+    PROPERTIES ATTR ='http://CIS/BIR/PUBL/2014/07/DataContract' EXTID 'xmlns:dat'
+
+    PROPERTIES ATTR IN soapHeader ='http://www.w3.org/2005/08/addressing' EXTID 'xmlns:wsa'
+    PROPERTIES IN soapHeader endpoint() EXTID 'wsa:To', ='http://CIS/BIR/PUBL/2014/07/IUslugaBIRzewnPubl/DaneSzukajPodmioty' EXTID 'wsa:Action'
+
+    PROPERTIES() IN pParametryWyszukiwania
+        krs EXTID 'dat:Krs',
+        krsy EXTID 'dat:Krsy',
+        nip EXTID 'dat:Nip',
+        nipy EXTID 'dat:Nipy',
+        regon EXTID 'dat:Regon',
+        regony14zn EXTID 'dat:Regony14zn',
+        regony9zn EXTID 'dat:Regony9zn'
+;
+
+GROUP daneSzukajPodmiotyResponse EXTID '=http://CIS/BIR/PUBL/2014/07:DaneSzukajPodmiotyResponse' : sBody;
+
+daneSzukajPodmiotyResult = DATA LOCAL STRING();
+
+FORM daneSzukajPodmiotyResponse FORMEXTID 's=http://www.w3.org/2003/05/soap-envelope:Envelope'
+    PROPERTIES() IN daneSzukajPodmiotyResponse daneSzukajPodmiotyResult EXTID ':DaneSzukajPodmiotyResult'
+;
+
+GROUP dane;
+
+statusNip = DATA LOCAL STRING();
+nazwa = DATA LOCAL STRING();
+wojewodztwo = DATA LOCAL STRING();
+powiat = DATA LOCAL STRING();
+gmina = DATA LOCAL STRING();
+miejscowosc = DATA LOCAL STRING();
+kodPocztowy = DATA LOCAL STRING();
+ulica = DATA LOCAL STRING();
+nrNieruchomosci = DATA LOCAL STRING();
+nrLokalu = DATA LOCAL STRING();
+typ = DATA LOCAL STRING();
+silosID = DATA LOCAL STRING();
+dataZakonczeniaDzialalnosci = DATA LOCAL STRING();
+miejscowoscPoczty = DATA LOCAL STRING();
+
+FORM daneSzukajPodmioty FORMEXTID 'root'
+    PROPERTIES() IN dane regon EXTID 'Regon',
+        nip EXTID 'Nip',
+        statusNip EXTID 'StatusNip',
+        nazwa EXTID 'Nazwa',
+        wojewodztwo EXTID 'Wojewodztwo',
+        powiat EXTID 'Powiat',
+        gmina EXTID 'Gmina',
+        miejscowosc EXTID 'Miejscowosc',
+        kodPocztowy EXTID 'KodPocztowy',
+        ulica EXTID 'Ulica',
+        nrNieruchomosci EXTID 'NrNieruchomosci',
+        nrLokalu EXTID 'NrLokalu',
+        typ EXTID 'Typ',
+        silosID EXTID 'SilosID',
+        dataZakonczeniaDzialalnosci EXTID 'DataZakonczeniaDzialalnosci',
+        miejscowoscPoczty EXTID 'MiejscowoscPoczty'
+;
+
+daneSzukajPodmioty() {
+    LOCAL headers = TEXT(TEXT);
+    headers('Content-Type') <- 'application/soap+xml;charset=UTF-8';
+
+    zaloguj();
+    headers('sid') <- zalogujResult();
+
+    LOCAL response = FILE();
+    EXPORT daneSzukajPodmiotyRequest XML;
+    EXTERNAL HTTP POST endpoint() HEADERS headers PARAMS exportFile() TO response;
+
+    IMPORT daneSzukajPodmiotyResponse XML FROM response();
+
+    stringToFile(daneSzukajPodmiotyResult());
+    
+    IMPORT daneSzukajPodmioty XML FROM resultFile();
+}
+
+// usage (fill kluczuzytkownika) :
+// nip() <- '23042093499';
+// daneSzukajPodmioty();
+// MESSAGE nazwa();
