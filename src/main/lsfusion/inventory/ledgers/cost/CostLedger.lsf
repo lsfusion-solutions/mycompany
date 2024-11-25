@@ -113,28 +113,34 @@ calculateCost () {
                                                BY product[CostLedger](ledger);
 
     FOR iterate(INTEGER i, 1, (GROUP MAX ordered(OutCostLedger ledger))) DO {
-        LOCAL iteration = BOOLEAN (OutCostLedger);
-        iteration(OutCostLedger l) <- ordered(l) = i;
+        LOCAL iterationN = BOOLEAN (OutCostLedger);
+        iterationN(OutCostLedger l) <- ordered(l) = i AND signedQuantity(l) <= 0;
         
         quantity(OutCostLedger ol, InCostLedger il) <- (PARTITION UNGROUP negSignedQuantity
                                                                   LIMIT STRICT toCost(il) IF location[CostLedger](ol) = location(il) 
-                                                                                     AND product[CostLedger](ol) = product(il) 
+                                                                                     AND product[CostLedger](ol) = product(il)
+                                                                                     AND iterationN(ol)
 //                                                                                     AND dateTime(il) <= dateTime(ol) 
                                                                   ORDER dateTime(il), il
                                                                   BY ol)
-                                                       WHERE iteration(ol) AND signedQuantity(ol) <= 0;
-                                                       
-        quantity(OutCostLedger ol, InCostLedger il) <- -(PARTITION UNGROUP signedQuantity
-                                                                   LIMIT STRICT toCost(il) IF location[CostLedger](ol) = location(il) 
-                                                                                     AND product[CostLedger](ol) = product(il) 
-//                                                                                     AND dateTime(il) <= dateTime(ol) 
-                                                                   ORDER DESC dateTime(il), il
-                                                                   BY ol)
-                                                       WHERE iteration(ol) AND signedQuantity(ol) > 0;
+                                                       WHERE iterationN(ol);
 
-        IF GROUP SUM 1 IF iteration(OutCostLedger ol) AND costingMethod(product[CostLedger](ol)) = CostingMethod.avco THEN {
+        LOCAL iterationP = BOOLEAN (OutCostLedger);
+        iterationP(OutCostLedger l) <- ordered(l) = i AND signedQuantity(l) > 0;
+        
+        IF GROUP SUM 1 IF iterationP(OutCostLedger ol) THEN 
+            quantity(OutCostLedger ol, InCostLedger il) <- -(PARTITION UNGROUP signedQuantity
+                                                                       LIMIT STRICT toCost(il) IF location[CostLedger](ol) = location(il) 
+                                                                                         AND product[CostLedger](ol) = product(il)
+                                                                                         AND iterationP(ol)
+    //                                                                                     AND dateTime(il) <= dateTime(ol)
+                                                                       ORDER DESC dateTime(il), il
+                                                                       BY ol)
+                                                           WHERE iterationP(ol);
+
+        IF GROUP SUM 1 IF (iterationN(OutCostLedger ol) OR iterationP(ol)) AND costingMethod(product[CostLedger](ol)) = CostingMethod.avco THEN {
             amount (OutCostLedger ol) <- NUMERIC[14,2](negSignedQuantity(ol) * costPrice(location[CostLedger](ol), product[CostLedger](ol), dateTime[CostLedger](ol)))
-                WHERE iteration(ol) AND costingMethod(product[CostLedger](ol)) = CostingMethod.avco;
+                WHERE (iterationN(ol) OR iterationP(ol)) AND costingMethod(product[CostLedger](ol)) = CostingMethod.avco;
         }
     }
 
