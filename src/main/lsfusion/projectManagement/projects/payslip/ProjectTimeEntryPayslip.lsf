@@ -1,0 +1,74 @@
+MODULE ProjectTimeEntryPayslip;
+
+REQUIRE ProjectTimeEntry, ProjectPayslipLedger, PayslipBatch;
+
+NAMESPACE ProjectManagement;
+
+// salary
+rateSalary 'Salary per hour' (TimeEntry e) = ABSTRACT NUMERIC[10,2] (TimeEntry);
+salary 'Salary' (TimeEntry e) = round2(hours(e) * rateSalary(e));
+
+salary 'Salary' (Employee e, Project p, DATE from, DATE to) =
+    GROUP SUM salary(TimeEntry te) IF employee(te) = e AND project(te) = p AND date(te) >= from AND date(te) <= to;
+salary 'Salary' (Employee e, Project p, INTERVAL[DATE] i) = salary(e, p, from(i), to(i));
+
+salary 'Salary' (Employee e, DATE from, DATE to) =
+    GROUP SUM salary(TimeEntry te) IF employee(te) = e AND date(te) >= from AND date(te) <= to;
+salary 'Salary' (Employee e, INTERVAL[DATE] i) = salary(e, from(i), to(i));
+
+
+
+timeEntryPayslipCategory = DATA PayslipCategory ();
+isTimeEntry 'Time entry' (PayslipCategory c) = timeEntryPayslipCategory() = c;
+
+EXTEND FORM payslipCategory
+    PROPERTIES(c) isTimeEntry
+;
+
+@definePayslipDetail(timeEntry, 'Payslip line');
+
+project = DATA Project (PayslipTimeEntry);
+project (PayslipTimeEntry pe) += project(pe);
+
+INDEX project(PayslipTimeEntry p), payslip(p);
+
+payslipTimeEntry = DATA PayslipTimeEntry (TimeEntry) INDEXED;
+payslip 'Payslip' (TimeEntry e) = payslip(payslipTimeEntry(e)) MATERIALIZED INDEXED;
+countTimeEntry 'Time entries' (Payslip p) = GROUP SUM 1 IF payslip(TimeEntry e) = p;
+
+numberPayslip 'Payslip' (TimeEntry e) = number(payslip(e));
+EXTEND FORM timeEntries PROPERTIES(t) READONLY numberPayslip;
+
+payslipTimeEntry = GROUP AGGR PayslipTimeEntry pt BY payslip(pt), project(pt);
+
+generate (Payslip p) + {
+    FOR hours(employee(p), Project pt, period(p)) AND NOT payslipTimeEntry(p, pt) DO NEW pe = PayslipTimeEntry {
+        payslip(pe) <- p;
+        project(pe) <- pt;
+        category(pe) <- timeEntryPayslipCategory();
+    }
+    FOR PayslipTimeEntry pe = payslipTimeEntry(p, Project pt) DO {
+        quantity(pe) <- hours(employee(p), pt, period(p));
+        total(pe) <- salary(employee(p), pt, period(p));
+    }
+    
+    DELETE PayslipTimeEntry pe WHERE payslip(pe) = p AND NOT hours(employee(p), project(pe), period(p)) AND project(pe);
+
+    payslipTimeEntry(TimeEntry e) <- payslipTimeEntry(p, project(e)) WHERE employee(e) = employee(p) AND date(e) >= startDate(p) AND date(e) <= endDate(p) AND project(e);
+}
+
+EXTEND FORM payslip
+    OBJECTS te = TimeEntry
+    PROPERTIES(te) READONLY date, hours, nameType, description, nameProject, rateSalary, salary
+    ORDERS date(te)
+    PROPERTIES(te) NEWSESSION EDIT
+    FILTERS payslip(te) = p
+;
+
+DESIGN payslip {
+    details {
+        MOVE BOX(te) {
+            caption = badged('Time entries', countTimeEntry(p));
+        }
+    }
+}

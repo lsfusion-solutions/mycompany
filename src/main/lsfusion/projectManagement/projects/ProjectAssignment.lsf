@@ -46,6 +46,9 @@ INDEX project(ProjectAssignment a), employee(a), role(a), fromDate(a), a;
 assignment (Project p, Employee e, ProjectRole r, DATE d) = 
     GROUP LAST ProjectAssignment a ORDER fromDate(a), a WHERE active(a, d) BY project(a), employee(a), role(a);
 
+assignment (Project p, Employee e, DATE d) =
+    GROUP LAST ProjectAssignment a ORDER fromDate(a), a WHERE active(a, d) BY project(a), employee(a);
+
 TABLE projectEmployeeRole (Project, Employee, ProjectRole);
 assignment (Project p, Employee e, ProjectRole r) = assignment(p, e, r, currentDate()) MATERIALIZED;
 

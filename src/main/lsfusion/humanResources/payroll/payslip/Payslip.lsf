@@ -1,0 +1,103 @@
+MODULE Payslip;
+
+REQUIRE HumanResourcesSettings, Employee;
+
+PRIORITY HumanResources, MasterData;
+
+NAMESPACE Payroll;
+
+CLASS Payslip 'Payslip';
+
+@defineNumber(payslip, 'Payslips', 'SLP');
+
+period 'Period' = DATA INTERVAL[DATE] (Payslip);
+
+startDate 'Start date' (Payslip p) = from(period(p)) MATERIALIZED INDEXED;
+endDate 'End date' (Payslip p) = to(period(p)) MATERIALIZED;
+
+employee 'Employee' = DATA Employee (Payslip) NONULL;
+nameEmployee 'Employee' (Payslip o) = name(employee(o));
+firstNameEmployee '{First_name}' (Payslip o) = firstName(employee(o));
+lastNameEmployee 'Surname' (Payslip o) = lastName(employee(o));
+namePositionEmployee 'Position' (Payslip o) = namePosition(employee(o));
+
+company 'Company' = DATA Company (Payslip) NONULL;
+nameCompany 'Company' (Payslip o) = name(company(o));
+WHEN LOCAL SET(Payslip p IS Payslip) AND NOT CHANGED(company(p)) DO company(p) <- defaultCompany();
+
+payslip = GROUP AGGR Payslip p BY period(p), employee(p), company(p);
+
+FORM payslip 'Payslip'
+    OBJECTS p = Payslip PANEL
+    PROPERTIES(p) number, period, nameEmployee, nameCompany
+    
+    EDIT Payslip OBJECT p
+;
+
+DESIGN payslip {
+    caption = badged('Payslip', number(p));
+    OBJECTS {
+        NEW actions {
+            caption = 'Actions';
+            horizontal = TRUE;
+            alignment = STRETCH;
+        }
+        NEW header {
+            NEW headerRow1 {
+                horizontal = TRUE;
+                alignment = STRETCH;
+                MOVE PROPERTY(number(p))  { notNull = TRUE; }
+                MOVE PROPERTY(period(p));
+            }
+            MOVE PROPERTY(nameEmployee(p)) { notNull = TRUE; alignment = STRETCH; }
+            MOVE PROPERTY(nameCompany(p)) { alignment = STRETCH; }
+        }
+        NEW details {
+            fill = 1;
+            tabbed = TRUE;
+        }
+    }
+}
+
+FORM payslips 'Payslips'
+    OBJECTS p = Payslip
+    PROPERTIES(p) READONLY number, startDate, endDate, firstNameEmployee, lastNameEmployee, namePositionEmployee, nameCompany
+    PROPERTIES(p) NEWSESSION NEW, EDIT, DELETE
+    
+    LIST Payslip OBJECT p
+;
+
+NAVIGATOR {
+    operations {
+        NEW payslips;
+    }
+}
+
+// copy
+clone ABSTRACT LIST (Payslip, Payslip);
+clone (Payslip to, Payslip from) + {
+    period(to) <- period(from);
+    employee(to) <- employee(from);
+    company(to) <- company(from);
+}
+
+copy 'Copy' (Payslip p) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    NEWSESSION {
+        NEW np = Payslip {
+            clone(np, p);
+
+            SHOW payslip OBJECTS p = np  DOCKED;
+        }
+    }
+}
+
+EXTEND FORM payslip PROPERTIES copy(p);
+
+DESIGN payslip {
+    actions {
+        MOVE PROPERTY(copy(p));
+    }
+}

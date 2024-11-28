@@ -1,0 +1,29 @@
+MODULE PayslipLineBatch;
+
+REQUIRE PayslipLine, PayslipBatch;
+
+NAMESPACE Payroll;
+
+changeTotal (Payslip p, PayslipCategory c) {
+    INPUT n = total(p, c) DO
+        IF n OR description(line(p, c)) THEN {
+            IF NOT line(p, c) THEN NEW pl = PayslipLine {
+                payslip(pl) <- p;
+                category(pl) <- c;
+            }
+            total(line(p, c)) <- n;
+        } ELSE
+            DELETE PayslipLine pl WHERE payslip(pl) = p AND category(pl) = c;
+}
+
+EXTEND FORM payslipBatch
+    OBJECTS c = PayslipCategory BEFORE p
+    PROPERTIES(c) index
+    ORDERS index(c)
+    
+    PROPERTIES(p, c) total COLUMNS (c) HEADER name(c) READONLYIF readonly(c) ON CHANGE changeTotal(p, c)
+;
+
+DESIGN payslipBatch {
+    REMOVE BOX(c);
+}

@@ -1,0 +1,85 @@
+MODULE PayslipLedger;
+
+REQUIRE Payslip, PayslipCategory;
+
+PRIORITY MasterData;
+
+NAMESPACE Payroll;
+
+CLASS ABSTRACT PayslipLedger 'Payslip ledger';
+TABLE payslipLedger (PayslipLedger);
+
+payslip = ABSTRACT Payslip (PayslipLedger) MATERIALIZED INDEXED;
+number 'Number' (PayslipLedger l) = number(payslip(l));
+period 'Date' (PayslipLedger l) = period(payslip(l));
+startDate 'Start date' (PayslipLedger l) = startDate(payslip(l));
+endDate 'End date' (PayslipLedger l) = endDate(payslip(l));
+
+employee (PayslipLedger l) = employee(payslip(l));
+nameEmployee 'Employee' (PayslipLedger l) = name(employee(l));
+
+category 'Category' = ABSTRACT PayslipCategory (PayslipLedger) MATERIALIZED;
+nameCategory 'Category' (PayslipLedger l) = name(category(l));
+deduction 'Deduction' (PayslipLedger l) = deduction(category(l));
+skip 'Skip' (PayslipLedger l) = skip(category(l));
+hide 'Hide' (PayslipLedger l) = hide(category(l));
+
+description 'Description' = ABSTRACT ISTRING (PayslipLedger) MATERIALIZED CHARWIDTH 15;
+
+quantity 'Qty' = ABSTRACT NUMERIC[8,2] (PayslipLedger);
+
+amount 'Amount' = ABSTRACT NUMERIC[10,2] (PayslipLedger);
+
+total 'Total' = ABSTRACT NUMERIC[16,2] (PayslipLedger);
+signedTotal 'Total' (PayslipLedger l) = NUMERIC[16,2](total(l) * (IF deduction(l) THEN -1 ELSE 1));
+
+total 'Total' (Payslip p, PayslipCategory c) = GROUP SUM total(PayslipLedger l) IF payslip(l) = p AND category(l) = c; 
+
+netWage 'Net wage' (Payslip p) = GROUP SUM signedTotal(PayslipLedger l) IF payslip(l) = p AND NOT skip(l) MATERIALIZED;
+
+EXTEND FORM payslip
+    OBJECTS pl = PayslipLedger
+    PROPERTIES(pl) BACKGROUND RGB(255,212,212) IF deduction(pl) 
+                   nameCategory, quantity, amount, total FOOTER netWage(p), description
+    PROPERTIES(pl) DELETE
+    FILTERS payslip(pl) = p AND NOT hide(pl)
+;
+
+DESIGN payslip {
+    details {
+        MOVE BOX(pl) {
+            caption = 'Salary computation';
+        }
+    }
+}
+
+EXTEND FORM payslips
+    PROPERTIES(p) netWage
+;
+
+META definePayslipDetail (prop, caption)
+    CLASS Payslip###prop caption : PayslipLedger;
+    
+    payslip 'Payslip' = DATA Payslip (Payslip###prop) NONULL DELETE INDEXED;
+    
+    category 'Category' = DATA PayslipCategory (Payslip###prop);
+    nameCategory 'Category' (Payslip###prop l) = name(category(l));
+    
+    quantity 'Qty' = DATA NUMERIC[8,2] (Payslip###prop);
+    
+    amount 'Amount' = DATA NUMERIC[10,2] (Payslip###prop);
+    
+    total 'Total' = DATA NUMERIC[12,2] (Payslip###prop);
+    
+    WHEN LOCAL CHANGED(quantity(Payslip###prop l)) OR CHANGED(amount(l)) AND NOT CHANGED(total(l)) DO
+        total(l) <- round2(quantity(l) * amount(l));
+
+    WHEN LOCAL CHANGED(total(Payslip###prop l)) AND NOT CHANGED(amount(l)) DO
+        amount(l) <- round2(total(l) / quantity(l));
+    
+    payslip(Payslip###prop l) += payslip(l);
+    category(Payslip###prop l) += category(l);
+    quantity(Payslip###prop l) += quantity(l);
+    amount(Payslip###prop l) += amount(l);
+    total(Payslip###prop l) += total(l);
+END
