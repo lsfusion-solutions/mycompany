@@ -36,6 +36,8 @@ generate 'Generate' (PayslipBatch b) {
     FOR legalEntity(Employee e) = company(b) AND active(e) AND NOT payslip(period(b), e, company(b)) DO NEW p = Payslip {
         batch(p) <- b;
         employee(p) <- e;
+        period(p) <- period(b);
+        company(p) <- company(b);
     }
     FOR batch(Payslip p) = b INLINE DO
         generate(p);
