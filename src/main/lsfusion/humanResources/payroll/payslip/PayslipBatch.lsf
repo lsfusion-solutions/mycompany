@@ -33,7 +33,7 @@ WHEN LOCAL CHANGED(company(batch(Payslip p))) AND batch(p) AND NOT CHANGED(compa
 generate ABSTRACT LIST (Payslip);
 
 generate 'Generate' (PayslipBatch b) {
-    FOR legalEntity(Employee e) = company(b) AND active(e) AND NOT payslip(period(b), e, company(b)) DO NEW p = Payslip {
+    FOR legalEntity(Employee e AS Employee) = company(b) AND active(e) AND NOT payslip(period(b), e, company(b)) DO NEW p = Payslip {
         batch(p) <- b;
         employee(p) <- e;
         period(p) <- period(b);
