@@ -1,0 +1,19 @@
+MODULE ApplicationCall;
+
+REQUIRE Application, Call;
+
+NAMESPACE HumanResources;
+
+call 'Call' (Application a) {
+    call(phone(a));
+}
+
+EXTEND FORM application
+    PROPERTIES(a) call SHOWIF callAvailable() AND phone(a)
+;
+
+DESIGN application {
+    secondaryActions {
+        MOVE PROPERTY(call(a)) { valueClass = 'btn-info'; }
+    }
+}

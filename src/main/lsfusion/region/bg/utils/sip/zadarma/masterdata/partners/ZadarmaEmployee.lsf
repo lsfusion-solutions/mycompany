@@ -1,0 +1,20 @@
+MODULE ZadarmaEmployee;
+
+REQUIRE ZadarmaPBX, Employee;
+
+NAMESPACE Zadarma;
+
+employee 'Employee' = DATA Employee (PBXNumber);
+nameEmployee 'Employee' (PBXNumber n) = name(employee(n));
+
+EXTEND FORM integrationData
+    PROPERTIES(pbxN) nameEmployee
+;
+
+pbxNumber (Employee e) = GROUP AGGR PBXNumber n BY employee(n);
+
+currentPBXNumber () = pbxNumber(currentUser());
+loginCurrentPBXNumber () = login(currentPBXNumber());
+idCurrentPBXNumber () = id(currentPBXNumber());
+
+
