@@ -1,10 +1,10 @@
 MODULE ApplicationCall;
 
-REQUIRE Application, Call;
+REQUIRE Application, EmployeeCall;
 
 NAMESPACE HumanResources;
 
-call 'Call' (Application a) {
+call 'Call to' (Application a) {
     call(phone(a));
 }
 
@@ -15,5 +15,35 @@ EXTEND FORM application
 DESIGN application {
     secondaryActions {
         MOVE PROPERTY(call(a)) { valueClass = 'btn-info'; }
+    }
+}
+
+@defineObjectCall(application, application, a, details);
+
+start (Call c) +{
+    IF NOT outgoing(c) THEN {
+        FOR Application a = openApplicationPhone(caller(c)) DO {
+            application(c) <- a;
+            redirect(c) <- recruiter(a);
+            callerName(c) <- name(a); 
+        }
+    }
+}
+
+internal (Call c, Employee e) +{
+    FOR Application a = application(c) AND pushConnection(e) DO {
+        NEWTHREAD {
+            SHOW application OBJECTS a = a DOCKED NOWAIT;
+        } TO exportInteger;
+        pushNotify(pushConnection(e), 
+                   notification('Incoming call', 
+                       JSON FROM body = (CONCAT ' : ', '{Application}', name(a))), 
+                   action(exportInteger()));
+    }
+}
+
+answer (Call c, Employee e) +{
+    FOR Application a = application(c) DO {
+        employee(c) <- e;
     }
 }

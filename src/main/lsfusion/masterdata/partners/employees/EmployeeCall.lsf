@@ -1,0 +1,34 @@
+MODULE EmployeeCall;
+
+REQUIRE Employee, Call;
+
+NAMESPACE MasterData;
+
+redirect = DATA Employee (Call) INDEXED;
+nameRedirect 'Redirect' (Call c) = name(redirect(c));
+
+employee = DATA Employee (Call) INDEXED;
+nameEmployee 'Employee' (Call c) = name(employee(c));
+
+internal ABSTRACT LIST (Call, Employee);
+answer ABSTRACT LIST (Call, Employee);
+
+META defineObjectCall (object, form, fobj, container)
+    object = DATA ###object (Call) INDEXED;
+    countCall (###object o) = GROUP SUM 1 IF object(Call c) = o;
+
+    EXTEND FORM form
+        OBJECTS c = Call
+        PROPERTIES(c) READONLY BACKGROUND RGB(255,212,255) IF outgoing(c) 
+                      id, startedAt, caller, recipient, callerName, nameRedirect, nameEmployee, duration, result
+        FILTERS object(c) = fobj
+    ;
+
+    DESIGN form {
+        container {
+            MOVE BOX(c) {
+                caption = badged('Calls', countCall(fobj));
+            }
+        }
+    }
+END

@@ -22,7 +22,11 @@ firstName '{First_name}' = DATA ISTRING[30] (Application) IN id;
 lastName 'Surname' = DATA ISTRING[30] (Application) IN id;
 middleName 'Middle name' = DATA ISTRING[30] (Application);
 
+name '{Name}' (Application a) = CONCAT ' ', lastName(a), firstName(a), middleName(a) CHARWIDTH 25;
+
 phone 'Phone' = DATA ISTRING[100] (Application) CHARWIDTH 10;
+openApplicationPhone (ISTRING[100] phone) = GROUP LAST Application a ORDER a WHERE opened(a) AND replace(phone(a), '+() ', '') = replace(phone, '+() ', '');
+
 email 'Email' = DATA ISTRING[400] (Application) CHARWIDTH 20 REGEXP '[\\-!#-\'*+\\/-9=?A-Z^-~]+(\\.[\\-!#-\'*+\\/-9=?A-Z^-~]+)*@[0-9A-Za-z]([0-9A-Za-z\\-]\{0,61\}[0-9A-Za-z])?(\\.[0-9A-Za-z]([0-9A-Za-z\\-]\{0,61\}[0-9A-Za-z])?)+' '{authentication.email.contact.incorrect}' IN id;
 
 recruiter = DATA Employee (Application);
