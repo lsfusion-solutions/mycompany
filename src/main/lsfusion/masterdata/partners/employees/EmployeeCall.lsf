@@ -7,14 +7,12 @@ NAMESPACE MasterData;
 redirect = DATA Employee (Call) INDEXED;
 nameRedirect 'Redirect' (Call c) = name(redirect(c));
 
-employee = DATA Employee (Call) INDEXED;
-nameEmployee 'Employee' (Call c) = name(employee(c));
-
 internal ABSTRACT LIST (Call, Employee);
 answer ABSTRACT LIST (Call, Employee);
 
 META defineObjectCall (object, form, fobj, container)
     object = DATA ###object (Call) INDEXED;
+    name###object 'Employee' (Call c) = name(object(c));
     countCall (###object o) = GROUP SUM 1 IF object(Call c) = o;
 
     EXTEND FORM form
@@ -32,3 +30,5 @@ META defineObjectCall (object, form, fobj, container)
         }
     }
 END
+
+@defineObjectCall(employee, employee, e, details);

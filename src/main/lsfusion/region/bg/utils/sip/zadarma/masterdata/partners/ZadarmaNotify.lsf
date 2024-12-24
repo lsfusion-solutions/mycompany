@@ -39,6 +39,19 @@ notifyEnd (STRING pbx_call_id, INTEGER duration, STRING disposition) {
     }
 }
 
+notifyOutStart (STRING pbx_call_id, STRING caller_id, STRING destination, STRING internal) {
+    NEW c = Call {
+        id(c) <- pbx_call_id;
+        caller(c) <- ISTRING[100](caller_id);
+        recipient(c) <- ISTRING[100](destination);
+        
+        outgoing(c) <- TRUE;
+        employee(c) <- employee(pbxNumber(internal));
+        
+        start(c);
+    }
+}
+
 notify (STRING zd_echo, 
         STRING event, STRING call_start, STRING pbx_call_id, STRING caller_id, STRING called_did,
         STRING internal, STRING transfer_from, STRING transfer_type, STRING destination,
@@ -69,6 +82,12 @@ notify (STRING zd_echo,
             notifyAnswer(pbx_call_id, internal);
         }
         IF event = 'NOTIFY_END' THEN {
+            notifyEnd(pbx_call_id, duration, disposition);
+        }
+        IF event = 'NOTIFY_OUT_START' THEN {
+            notifyOutStart(pbx_call_id, caller_id, destination, internal);
+        }
+        IF event = 'NOTIFY_OUT_END' THEN {
             notifyEnd(pbx_call_id, duration, disposition);
         }
         APPLY;

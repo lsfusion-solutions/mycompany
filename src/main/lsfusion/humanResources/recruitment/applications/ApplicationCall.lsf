@@ -21,7 +21,11 @@ DESIGN application {
 @defineObjectCall(application, application, a, details);
 
 start (Call c) +{
-    IF NOT outgoing(c) THEN {
+    IF outgoing(c) THEN {
+        FOR Application a = openApplicationPhone(recipient(c)) DO {
+            application(c) <- a;
+        }
+    } ELSE {
         FOR Application a = openApplicationPhone(caller(c)) DO {
             application(c) <- a;
             redirect(c) <- recruiter(a);
