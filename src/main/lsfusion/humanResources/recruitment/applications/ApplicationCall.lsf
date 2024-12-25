@@ -18,7 +18,10 @@ DESIGN application {
     }
 }
 
-@defineObjectCall(application, application, a, details);
+@defineObjectCall(application, '{Application}', application, a, details);
+
+openApplicationPhone (ISTRING[100] phone) = 
+    GROUP LAST Application a ORDER a WHERE opened(a) AND match(phone(a), phone);
 
 start (Call c) +{
     IF outgoing(c) THEN {
@@ -43,11 +46,5 @@ internal (Call c, Employee e) +{
                    notification('Incoming call', 
                        JSON FROM body = (CONCAT ' : ', '{Application}', name(a))), 
                    action(exportInteger()));
-    }
-}
-
-answer (Call c, Employee e) +{
-    FOR Application a = application(c) DO {
-        employee(c) <- e;
     }
 }

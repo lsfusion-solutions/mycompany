@@ -1,9 +1,51 @@
 MODULE IndividualCall;
 
-REQUIRE Individual, PartnerCall;
+REQUIRE Individual, PartnerCall, EmployeeCall;
 
 NAMESPACE MasterData;
 
 EXTEND FORM partner
     PROPERTIES(em) call SHOWIF callAvailable() AND phone(em) TOOLBAR
 ;
+
+redirectCall = DATA Employee (Partner);
+nameRedirectCall 'Redirect' (Partner p) = name(redirectCall(p));
+
+EXTEND FORM partner
+    PROPERTIES(p) nameRedirectCall
+;
+
+DESIGN partner {
+    callsHeader {
+        MOVE PROPERTY(nameRedirectCall(p));
+    }
+}
+
+partnerPhone (ISTRING[100] phone) =
+    GROUP LAST Partner p ORDER p WHERE match(phone(p), phone);
+
+start (Call c) +{
+    IF outgoing(c) THEN {
+        FOR Partner p = partnerPhone(recipient(c)) DO {
+            partner(c) <- p;
+        }
+    } ELSE {
+        FOR Partner p = partnerPhone(caller(c)) DO {
+            partner(c) <- p;
+            redirect(c) <- OVERRIDE redirectCall(p), redirectCall(legalEntity(p));
+            callerName(c) <- ISTRING[100](contactName(p));
+        }
+    }
+}
+
+internal (Call c, Employee e) +{
+    FOR Partner p = partner(c) AND pushConnection(e) DO {
+        NEWTHREAD {
+            SHOW partner OBJECTS p = p DOCKED NOWAIT;
+        } TO exportInteger;
+        pushNotify(pushConnection(e),
+            notification('Incoming call',
+                JSON FROM body = (CONCAT ' : ', 'Partner', contactName(p))),
+            action(exportInteger()));
+    }
+}
