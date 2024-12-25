@@ -36,14 +36,6 @@ priceListTypes 'Price types' (Pricelist pricelist) =
 
 WHEN LOCAL CHANGED (type(Pricelist pl)) DO editIn(pl, PriceType pt) <- in(type(pl), pt);
 
-FORM chooseTypes 'Selection of price types'
-    OBJECTS pr = Pricelist PANEL 
-    
-    OBJECTS t = PriceType
-    PROPERTIES(t) READONLY name 
-    PROPERTIES(pr, t) editIn[Pricelist,PriceType]
-;
-
 // lines
 CLASS PricelistLine 'Pricelist line';
 
@@ -68,6 +60,12 @@ WHEN LOCAL SETCHANGED(item(PricelistLine l)) AND NOT CHANGED(cost(l)) DO cost(l)
 
 markup 'Markup' = DATA NUMERIC[10,2] (PricelistLine, PriceType);
 price 'Price' = DATA NUMERIC[10,2] (PricelistLine, PriceType);
+
+WHEN SETCHANGED(price(PricelistLine l, PriceType t)) AND NOT editIn(pricelist(l), t) DO
+    price(l, t) <- NULL;
+
+WHEN DROPPED(editIn(Pricelist p, PriceType t)) DO
+    price(PricelistLine l, t) <- NULL WHERE pricelist(l) = p;
 
 CONSTRAINT DROPPED(PriceType t IS PriceType) AND PREV(price(PricelistLine l, t))
     MESSAGE 'It is forbidden to delete the types of prices for which there are prices';
@@ -115,7 +113,7 @@ FORM pricelist 'Pricelist'
     OBJECTS p = Pricelist PANEL
     PROPERTIES(p) READONLYIF readonly(p)
                   nameType, number, startDateTime, endDateTime, note,
-                  priceListTypes ON CHANGE { SHOW chooseTypes OBJECTS pr = p; }
+                  priceListTypes// ON CHANGE { SHOW chooseTypes OBJECTS pr = p; }
 
     OBJECTS t = PriceType
     FILTERS editIn(p, t) 

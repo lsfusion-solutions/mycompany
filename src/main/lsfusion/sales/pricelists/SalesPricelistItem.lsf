@@ -10,12 +10,12 @@ EXTEND FORM item
     
     OBJECTS pt = PriceType
     PROPERTIES (pt) READONLY name
-    PROPERTIES(pt, i, dprl) priceB
+    PROPERTIES(pt, i, dprl) READONLY priceB, numberPricelist
 
     OBJECTS pll = PricelistLine 
     PROPERTIES(pll) READONLY number, startDateTime, endDateTime, imagedNameStatus, nameType, note                    
     PROPERTIES(pll, pt) price HEADER name(pt) BACKGROUND RGB(187,242,210) IF startDateTime(pll) > dprl
-    FILTERS item(pll) = i, 
+    FILTERS item(pll) = primary(i), 
             editIn(pll, pt)
     ORDERS startDateTime(pll) DESC
 ;
