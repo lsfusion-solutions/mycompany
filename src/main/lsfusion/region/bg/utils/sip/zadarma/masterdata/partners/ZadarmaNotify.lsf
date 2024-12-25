@@ -30,10 +30,12 @@ notifyAnswer (STRING pbx_call_id, STRING internal) {
     }
 }
 
-notifyEnd (STRING pbx_call_id, INTEGER duration, STRING disposition) {
+notifyEnd (STRING pbx_call_id, INTEGER duration, STRING disposition, INTEGER is_recorded) {
     FOR id(Call c) = pbx_call_id DO {
         duration(c) <- duration;
         result(c) <- disposition;
+        
+        recorded(c) <- is_recorded = 1;
         
         end(c);
     }
@@ -82,13 +84,13 @@ notify (STRING zd_echo,
             notifyAnswer(pbx_call_id, internal);
         }
         IF event = 'NOTIFY_END' THEN {
-            notifyEnd(pbx_call_id, duration, disposition);
+            notifyEnd(pbx_call_id, duration, disposition, is_recorded);
         }
         IF event = 'NOTIFY_OUT_START' THEN {
             notifyOutStart(pbx_call_id, caller_id, destination, internal);
         }
         IF event = 'NOTIFY_OUT_END' THEN {
-            notifyEnd(pbx_call_id, duration, disposition);
+            notifyEnd(pbx_call_id, duration, disposition, is_recorded);
         }
         APPLY;
         IF canceled() THEN {
