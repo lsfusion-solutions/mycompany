@@ -47,7 +47,7 @@ FORM continuePrint
 ;
 continuePrint(Pos p) {
     generateUUID();
-    EXPORT reportX JSON CHARSET 'UTF-8';
+    EXPORT continuePrint JSON CHARSET 'UTF-8';
     TRY {
         EXTERNAL HTTP CLIENT 'http://' + hostname(p) + ':16732/requests' PARAMS exportFile();
     } CATCH {
@@ -72,8 +72,10 @@ openShift(Session s) {
     EXPORT openShift JSON CHARSET 'UTF-8';
     TRY {
         EXTERNAL HTTP CLIENT 'http://' + hostname(pos(s)) + ':16732/requests' PARAMS exportFile();
-        fiscalOpenSession(s) <- TRUE;
-        APPLY;
+        NEWSESSION {
+            fiscalOpenSession(s) <- TRUE;
+            APPLY;
+        }
     } CATCH
         CASE
             WHEN statusHttp() > 299 THEN
@@ -95,8 +97,10 @@ closeShift(Session s) {
     EXPORT closeShift JSON CHARSET 'UTF-8';
     TRY {
         EXTERNAL HTTP CLIENT 'http://' + hostname(pos(s)) + ':16732/requests' PARAMS exportFile();
-        fiscalCloseSession(s) <- TRUE;
-        APPLY;
+        NEWSESSION {
+            fiscalCloseSession(s) <- TRUE;
+            APPLY;
+        }
     }
     CATCH
         CASE
@@ -122,8 +126,10 @@ cashIn(IncomingPayment i) {
     EXPORT cashIn OBJECTS i = i JSON CHARSET 'UTF-8';
     TRY {
         EXTERNAL HTTP CLIENT 'http://' + hostname(pos(session(i))) + ':16732/requests' PARAMS exportFile();
-        fiscal(i) <- TRUE;
-        APPLY;
+        NEWSESSION {
+            fiscal(i) <- TRUE;
+            APPLY;
+        }
     } CATCH
         CASE
             WHEN statusHttp() > 299 THEN
@@ -148,8 +154,10 @@ cashOut(OutgoingPayment o) {
     EXPORT cashOut OBJECTS o = o JSON CHARSET 'UTF-8';
     TRY {
         EXTERNAL HTTP CLIENT 'http://' + hostname(pos(session(o))) + ':16732/requests' PARAMS exportFile();
-        fiscal(o) <- TRUE;
-        APPLY;
+        NEWSESSION {
+            fiscal(o) <- TRUE;
+            APPLY;
+        }
     } CATCH
         CASE
             WHEN statusHttp() > 299 THEN
