@@ -26,6 +26,8 @@ namePartnerAccount 'Partner account' (Payment p) = name(partnerAccount(p));
 companyAccount = ABSTRACT Account (Payment) MATERIALIZED;
 nameCompanyAccount 'Company account' (Payment p) = name(companyAccount(p));
 
+INDEX companyAccount(Payment p), dateTime(p);
+
 signedAmount '{Amount}' = ABSTRACT NUMERIC[14,2] (Payment) MATERIALIZED;
 
 note 'Note' = ABSTRACT ISTRING[50] (Payment) MATERIALIZED;
@@ -33,7 +35,10 @@ reference 'Reference' = ABSTRACT ISTRING[50] (Payment) MATERIALIZED;
 
 // balance
 
-balance 'On hand' (Account a) = GROUP SUM signedAmount(Payment p) IF companyAccount(p) = a AND active(p) MATERIALIZED;
+balance 'Balance' (Account a) = GROUP SUM signedAmount(Payment p) IF companyAccount(p) = a AND active(p) MATERIALIZED;
+
+balanceA 'Balance' (Account a, DATETIME d) = balance(a) (-)
+    GROUP SUM signedAmount(Payment p) IF companyAccount(p) = a AND active(p) AND dateTime(p) > d;
 
 CONSTRAINT balance(Account a) < 0 AND NOT allowNegative(a)
     MESSAGE 'Account / cash balance cannot be negative';
@@ -46,13 +51,19 @@ FORM payments 'Payments'
                            signedAmount, note, reference   
     PROPERTIES(p) NEWSESSION EDIT
     FILTERS active(p)
-    
+
+    OBJECTS dt = DATETIME PANEL NULL
+    PROPERTIES(dt) dateTime 'Select date' = VALUE
+
     OBJECTS a = Account
-    PROPERTIES(a) READONLY nameType, name, nameAccountHolder, note, balance 
+    PROPERTIES(a) READONLY nameType, name, nameAccountHolder, note
+    PROPERTIES(a) SHOWIF NOT dt IS DATETIME READONLY balance
+    PROPERTIES(a, dt) SHOWIF dt IS DATETIME READONLY balanceA
     FILTERS holder(a) IS Company
     
     OBJECTS pa = Payment
-    PROPERTIES(pa) READONLY nameType, dateTime, number, 
+    PROPERTIES(pa) BACKGROUND RGB(212,255,212) IF dateTime(pa) > dt 
+                            READONLY nameType, dateTime, number, 
                             namePartner, namePartnerAccount, 
                             nameCompany, nameCompanyAccount, 
                             signedAmount, note, reference   
@@ -71,6 +82,10 @@ DESIGN payments {
             }
             NEW accounts {
                 caption = 'Accounts';
+                NEW accountHeader {
+                    horizontal = TRUE;
+                    MOVE PROPERTY (dateTime);
+                }
                 MOVE BOX(a);
                 MOVE BOX(pa);
             }
