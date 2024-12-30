@@ -117,23 +117,23 @@ DESIGN inventoryReport {
 
 @defineBarCodeSeek(inventoryReport, p, lp);
 
-//@defineItemAttributeForm(inventoryReport, p, lp){
-//    hasAttributeFilter (ItemAttribute ia, ItemAttributeValue v) = GROUP SUM 1 IF attribute(Item i, ia) = v AND [FILTER inventoryReport.p](i);
-//    EXTEND FORM inventoryReport
-//        OBJECTS ia = ItemAttribute BEFORE lp
-//        PROPERTIES name(ia) READONLY, 
-//                   value(ia) ON CHANGE { 
-//                        DIALOG childValues OBJECTS a = ia, c = c, v = attributeFilter(ia) CHANGE LIST value(v) FILTERS hasAttributeFilter(ia, v);
-//                   }
-//        FILTERS NOT notMatchAttributeFilter(p)
-//        FILTERS GROUP SUM 1 IF set(ia, Category cc) AND (level(cc, c) OR level(c, cc))
-//    ;
-//};
-//DESIGN inventoryReport {
-//    filterTabs {
-//        MOVE BOX(ia) { caption = 'Attributes'; }
-//    }
-//}
+@defineItemAttributeForm(inventoryReport, p, lp){
+    hasAttributeFilter (ItemAttribute ia, ItemAttributeValue v) = GROUP SUM 1 IF attribute(Item i, ia) = v AND [FILTER inventoryReport.p](i);
+    EXTEND FORM inventoryReport
+        OBJECTS ia = ItemAttribute BEFORE lp
+        PROPERTIES name(ia) READONLY, 
+                   value(ia) ON CHANGE { 
+                        DIALOG childValues OBJECTS a = ia, c = c, v = attributeFilter(ia) CHANGE LIST value(v) FILTERS hasAttributeFilter(ia, v);
+                   }
+        FILTERS NOT notMatchAttributeFilter(p)
+        FILTERS GROUP SUM 1 IF set(ia, Category cc) AND (level(cc, c) OR level(c, cc))
+    ;
+};
+DESIGN inventoryReport {
+    filterTabs {
+        MOVE BOX(ia) { caption = 'Attributes'; }
+    }
+}
 
 NAVIGATOR {
     reporting {
