@@ -39,6 +39,8 @@ items '{Items}' (Discount d) = GROUP CONCAT name(Item i) IF in(d, i), ',' ORDER 
 in 'Incl.' = DATA BOOLEAN (Discount, PriceType);
 countPriceType (Discount d) = GROUP SUM 1 IF in(d, PriceType t) MATERIALIZED;
 
+priceTypes 'Price types' (Discount d) = GROUP CONCAT name(PriceType t) IF in(d, t), ',' ORDER name(t), t CHARWIDTH 30;
+
 // discount
 discount 'Discount, %' = DATA NUMERIC[5,2] (Discount);
 
@@ -135,7 +137,7 @@ FORM discounts 'Discounts'
                            fromAmount, fromQuantity,
                            fromAccumulatedPreviousMonth, fromAccumulated,
                            discount, namePriceType,
-                           categories, items
+                           categories, items, priceTypes
     PROPERTIES(d) NEWSESSION NEW, EDIT, DELETE
     
     FILTERGROUP active
@@ -156,6 +158,7 @@ META defineDocSalesDiscount(doc, let)
     nameSalesDiscount 'Discount' (###doc##Line l) = name(salesDiscount(l)) CHARWIDTH 10;
     
     changeSalesDiscount(###doc##Line l) {
+        processDiscountPrice(l);
         DIALOG selectDiscount OBJECTS l = l, d = salesDiscount(l) CHANGE;
     } 
     

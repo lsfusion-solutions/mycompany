@@ -65,6 +65,9 @@ FORM values 'Values'
             valid(v, c) OR NOT countCategory(v)
 ;
 
+matches (ItemAttributeValue v, Category c) =
+    valid(v, c) OR (GROUP SUM 1 IF set(v, Category cc) AND level(cc, c)) OR NOT countCategory(v);
+
 FORM childValues 'Values'
     OBJECTS a = ItemAttribute PANEL, c = Category PANEL 
 
@@ -73,7 +76,7 @@ FORM childValues 'Values'
     PROPERTIES newValue(a) DRAW v TOOLBAR 
     PROPERTIES(v) NEWSESSION EDIT, DELETE
     FILTERS itemAttribute(v) = a,
-            valid(v, c) OR (GROUP SUM 1 IF set(v, Category cc) AND level(cc, c)) OR NOT countCategory(v)
+            matches(v, c)
 ;
 
 FORM attributes 'Attributes'
