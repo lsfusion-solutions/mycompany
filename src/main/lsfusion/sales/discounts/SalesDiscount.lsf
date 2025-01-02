@@ -30,10 +30,15 @@ fromAccumulatedPreviousMonth 'Sold to a client in the past month from' = DATA NU
 in 'Incl.' = DATA BOOLEAN (Discount, Category);
 set (Discount d, Category c) = GROUP LAST in(d, Category cp) ORDER level(c, cp) MATERIALIZED;
 categories 'Categories' (Discount d) = GROUP CONCAT name(Category c) IF in(d, c), ',' ORDER name(c), c CHARWIDTH 20;
+countCategory 'Categories' (Discount d) = GROUP SUM 1 IF in(d, Category c);
 
 in 'Incl.' = DATA BOOLEAN (Discount, Item);
 set (Discount d, Item i) = in(d, i) OR set(d, category(i));
 items '{Items}' (Discount d) = GROUP CONCAT name(Item i) IF in(d, i), ',' ORDER name(i), i CHARWIDTH 30;
+countItem '{Items}' (Discount d) = GROUP SUM 1 IF in(d, Item i);
+
+CONSTRAINT Discount d IS Discount AND NOT countCategory(d) AND NOT countItem(d)
+    MESSAGE 'No items selected for discount';
 
 // pricetype
 in 'Incl.' = DATA BOOLEAN (Discount, PriceType);

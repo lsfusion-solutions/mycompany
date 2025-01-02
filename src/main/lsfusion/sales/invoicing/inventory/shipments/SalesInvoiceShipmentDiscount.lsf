@@ -1,0 +1,12 @@
+MODULE SalesInvoiceShipmentDiscount;
+
+REQUIRE InvoiceShipment, SalesDiscountInvoice, SalesDiscountLocation;
+
+NAMESPACE Sales;
+
+location(InvoiceLine l) += Invoicing.location(l);
+
+WHEN LOCAL (CHANGED(Invoicing.location(InvoiceLine l))) AND 
+    NOT noRecalcDiscountAutoInvoice() AND NOT manual(salesDiscount(l)) INLINE DO {
+    processDiscountSales(l);
+}

@@ -88,15 +88,22 @@ META defineDocSalesDiscountLine (doc, caption, NS)
     
     noRecalcDiscountAuto###doc caption = DATA BOOLEAN () PREREAD;
     EXTEND FORM options PROPERTIES() noRecalcDiscountAuto###doc;
-    
+
+    processDiscountSales ABSTRACT LIST (###doc##Line);
+    processDiscountSales (###doc##Line l) +{
+        processDiscountPrice(l);
+
+        salesDiscount(l) <- minSalesDiscountAuto(l);
+    }
+
     WHEN LOCAL (CHANGED(NS.dateTime(###doc##Line l)) OR CHANGED(NS.quantity(l)) OR CHANGED(fullAmount(doc(l))) OR 
                 CHANGED(NS.customer(l)) OR CHANGED(NS.item(l)) OR CHANGED(NS.price(l)) OR CHANGED(NS.type(l))) AND 
                 NOT noRecalcDiscountAuto###doc() AND NOT manual(salesDiscount(l)) INLINE DO {
-        processDiscountPrice(l);
-        salesDiscount(l) <- minSalesDiscountAuto(l);
+        processDiscountSales(l);
     }
         
     recalcDiscountAuto 'Calculate discounts' (###doc d) {
-        salesDiscount(###doc##Line l) <- minSalesDiscountAuto(l) WHERE doc(l) = d AND NOT manual(salesDiscount(l));
+        FOR doc(###doc##Line l) = d AND NOT manual(salesDiscount(l)) INLINE DO
+            processDiscountSales(l);
     }
 END
