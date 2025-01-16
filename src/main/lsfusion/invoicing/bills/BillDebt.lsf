@@ -57,5 +57,6 @@ EXTEND FORM bills
 ;
 
 // auto set done
-WHEN SET(amount[Debt](Bill b) = paid(b)) DO done(b) <- TRUE;
-WHEN DROPPED(amount[Debt](Bill b) = paid(b)) DO done(b) <- NULL;
+skipSetDone = ABSTRACT BOOLEAN (Bill);
+WHEN SET(amount[Debt](Bill b) = paid(b)) AND NOT skipSetDone(b) DO done(b) <- TRUE;
+WHEN DROPPED(amount[Debt](Bill b) = paid(b)) AND NOT skipSetDone(b) DO done(b) <- NULL;

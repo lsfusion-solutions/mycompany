@@ -58,5 +58,6 @@ EXTEND FORM invoices
 ;
 
 // auto set done
-WHEN SET(amount[Debt](Invoice i) = paid(i)) DO done(i) <- TRUE;
-WHEN DROPPED(amount[Debt](Invoice i) = paid(i)) DO done(i) <- NULL;
+skipSetDone = ABSTRACT BOOLEAN (Invoice);
+WHEN SET(amount[Debt](Invoice i) = paid(i)) AND NOT skipSetDone(i) DO done(i) <- TRUE;
+WHEN DROPPED(amount[Debt](Invoice i) = paid(i)) AND NOT skipSetDone(i) DO done(i) <- NULL;
