@@ -4,9 +4,12 @@ REQUIRE MasterData, Partner;
 
 NAMESPACE MasterData;
 
+notVendor 'Not vendor' = DATA BOOLEAN (PartnerType);
+EXTEND FORM options PROPERTIES(prtp) notVendor;
+
 isVendor 'Vendor' = DATA BOOLEAN (Partner);
 
-isVendor(Partner p) <- TRUE WHEN SET(p IS Partner);
+isVendor(Partner p) <- NOT notVendor(type(p)) WHEN SET(p IS Partner);
 
 EXTEND FORM partners
     PROPERTIES(p) READONLYIF isReadonly() isVendor
