@@ -1,0 +1,40 @@
+MODULE SalesDiscountPartner;
+
+REQUIRE SalesDiscountLine, PartnerTag;
+
+NAMESPACE Sales;
+
+in 'Incl.' = DATA BOOLEAN (Discount, PartnerTag);
+countPartnerTag (Discount d) = GROUP SUM 1 IF in(d, PartnerTag t) MATERIALIZED;
+
+tags 'Partner tags' (Discount d) = GROUP CONCAT name(PartnerTag t) IF in(d, t), ',' ORDER name(t), t CHARWIDTH 30;
+
+EXTEND FORM discount
+    OBJECTS pt = PartnerTag
+    PROPERTIES(pt) READONLY name
+    PROPERTIES in(d, pt)
+    
+    OBJECTS pr = Partner
+    PROPERTIES(pr) READONLY name, id, nameType
+    FILTERS in(pr, pt)
+;
+
+DESIGN discount {
+    details {
+        NEW partners {
+            caption = 'Partners';
+            horizontal = TRUE;
+            MOVE BOX(pt);
+            MOVE BOX(pr) { fill = 2; }
+        }
+    }
+}
+
+processDiscount (SalesDiscountLine l) + {
+    set(l, Discount d) <- NULL WHERE set(l, d) AND 
+        countPartnerTag(d) AND NOT GROUP SUM 1 IF in(d, PartnerTag pt) AND in(customer(l), pt);
+}
+
+EXTEND FORM discounts
+    PROPERTIES(d) READONLY tags
+;
