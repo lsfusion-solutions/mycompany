@@ -7,10 +7,12 @@ NAMESPACE Inventory;
 @defineDocSearchTab(receipt, product);
 EXTEND FORM receipt FILTERS canBePurchased(itm);
 
+onHand 'On hand' (Receipt r, Product p) = prevOnHandRec(location(r), p);
+expected 'Expected' (Receipt r, Product p) = prevExpectedRec(location(r), p);
 available 'Available' (Receipt r, Product p) = prevAvailableRec(location(r), p);
 
 EXTEND FORM receipt
-    PROPERTIES(r, itm) READONLY available
+    PROPERTIES(r, itm) READONLY onHand, expected, available
 ;
 
 lastReceiptLine (Receipt i, Product p) = GROUP LAST ReceiptLine l ORDER l BY receipt(l), product(l);

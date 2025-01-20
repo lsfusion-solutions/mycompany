@@ -7,10 +7,12 @@ NAMESPACE Purchase;
 @defineDocSearch(order, item, quantity, 'Quantity', o, canBePurchased);
 
 // available
+onHand 'On hand' (Order o, Product p) = prevOnHandRec(location(o), p);
+expected 'Expected' (Order o, Product p) = prevExpectedRec(location(o), p);
 available 'Available' (Order o, Product p) = prevAvailableRec(location(o), p); 
 
 EXTEND FORM order
-    PROPERTIES(o, itm) READONLY available
+    PROPERTIES(o, itm) READONLY onHand, expected, available
 ;
 
 // last

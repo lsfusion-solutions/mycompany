@@ -25,7 +25,7 @@ FORM inventoryReport 'Inventory report'
     OBJECTS lp = (l = Location, p = Product)
     PROPERTIES READONLY 'Location' = canonicalName(l) SHOWIF NOT singleLocation() 
     PROPERTIES(p) READONLY 'Product' = name, nameUom, idBarCode, id, reference
-    PROPERTIES(l, p) READONLY reserved, available
+    PROPERTIES(l, p) READONLY expected, reserved, available
     PROPERTIES(l, p) SHOWIF NOT dt IS DATETIME READONLY onHand, onHandRec
     PROPERTIES(l, p, dt) SHOWIF dt IS DATETIME READONLY onHandA 
     PROPERTIES(l, p) READONLY dateReceived, dateShipped
@@ -70,7 +70,7 @@ FORM inventoryReport 'Inventory report'
     PROPERTIES READONLY 'Location' = canonicalName(ll), 'Product' = name(rp), value(rp, a) COLUMNS (a) HEADER name(a),
                         level1(rp), level2(rp), level3(rp), level4(rp), 'Canonical group' = canonicalNameCategory(rp)
     PROPERTIES(ll, rp) READONLY dateReceived, dateShipped
-    PROPERTIES READONLY MEASURE reserved(ll, rp), available(ll, rp), onHand 'On hand' = IF dt IS DATETIME THEN onHandA(ll, rp, dt) ELSE onHand(ll, rp)
+    PROPERTIES READONLY MEASURE expected(ll, rp), reserved(ll, rp), available(ll, rp), onHand 'On hand' = IF dt IS DATETIME THEN onHandA(ll, rp, dt) ELSE onHand(ll, rp)
     FILTERS IF dt IS DATETIME THEN onHandA(ll, rp, dt) ELSE onHand(ll, rp),
             accessGranted(ll)
 ;

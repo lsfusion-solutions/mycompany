@@ -7,10 +7,12 @@ NAMESPACE Inventory;
 @defineDocSearchTab(shipment, product);
 EXTEND FORM shipment FILTERS canBeSold(itm);
 
+onHand 'On hand' (Shipment s, Product p) = prevOnHandRec(location(s), p);
+expected 'Expected' (Shipment s, Product p) = prevExpectedRec(location(s), p);
 available 'Available' (Shipment s, Product p) = prevAvailableRec(location(s), p); 
 
 EXTEND FORM shipment
-    PROPERTIES(s, itm) READONLY available
+    PROPERTIES(s, itm) READONLY onHand, expected, available
     FILTERGROUP available
         FILTER 'Available' available(s, itm) 'F5' DEFAULT
 ;

@@ -20,8 +20,10 @@ countReserved (Shipment s) = GROUP SUM 1 IF reserved(ShipmentLine l) AND shipmen
 linesReserved (Shipment s) = GROUP SUM 1 IF reserved(ShipmentLine l) = initialDemand(l) AND shipment(l) = s;
 reserved (Shipment s) = linesReserved(s) = countLines(s);
 
-toReserve (ShipmentLine l) = initialDemand(l) (-) reserved(l); 
+toReserve (ShipmentLine l) = initialDemand(l) (-) reserved(l);
 
+onHand 'On hand' (ShipmentLine l) = prevOnHandRec(location(shipment(l)), product(l));
+expected 'Expected' (ShipmentLine l) = prevExpectedRec(location(shipment(l)), product(l));
 available 'Available' (ShipmentLine l) = prevAvailableRec(location(shipment(l)), product(l)) (+) PREV(reserved(l)); 
 
 extraCheckAvailability ABSTRACT (Shipment);
@@ -83,7 +85,7 @@ EXTEND FORM shipment
                   unreserve SHOWIF toReserve(s) AND countReserved(s), 
                   ready 
        
-    PROPERTIES(l) READONLY available, reserved SHOWIF NOT immediate(s)
+    PROPERTIES(l) READONLY onHand, expected, available, reserved SHOWIF NOT immediate(s)
 ;
 
 DESIGN shipment {
