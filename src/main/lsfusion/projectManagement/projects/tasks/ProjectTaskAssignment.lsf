@@ -1,0 +1,20 @@
+MODULE ProjectTaskAssignment;
+
+REQUIRE ProjectTask, ProjectAssignment;
+
+NAMESPACE ProjectManagement;
+
+EXTEND FORM tasks
+    FILTERS assigned(project(t), currentUser()) OR accessAllProjects(currentUser())
+;
+
+CONSTRAINT ((SET(Task t IS Task) AND NOT project(t)) OR DROPPED(project(t))) AND NOT accessAllProjects(currentUser())
+    MESSAGE 'No project selected for the task';
+
+WHEN LOCAL SET(Task t IS Task) AND defaultProject(currentUser()) DO
+    project(t) <- defaultProject(currentUser());
+
+onCreate(Task t) +{
+    IF NOT accessAllProjects(currentUser()) AND NOT project(t) THEN
+        project(t) <- calcDefaultProject(currentUser());
+}

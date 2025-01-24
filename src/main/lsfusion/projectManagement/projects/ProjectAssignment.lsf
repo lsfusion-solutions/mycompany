@@ -9,11 +9,15 @@ NAMESPACE ProjectManagement;
 CLASS ProjectAssignment 'Project assignment';
 
 project 'Project' = DATA Project (ProjectAssignment) NONULL DELETE;
+nameProject 'Project' (ProjectAssignment a) = name(project(a));
 countAssignments = GROUP SUM 1 BY project(ProjectAssignment a) MATERIALIZED;
 
 employee 'Employee' = DATA Employee (ProjectAssignment) NONULL INDEXED;
 nameEmployee 'Employee' (ProjectAssignment a) = name(employee(a));
 countAssignments = GROUP SUM 1 BY employee(ProjectAssignment a) MATERIALIZED;
+
+accessToAllProjects 'Access to all projects' = DATA BOOLEAN (Employee);
+accessAllProjects (Employee e) = accessToAllProjects(e) OR NOT countAssignments(e); 
 
 role 'Project role' = DATA ProjectRole (ProjectAssignment);
 nameRole 'Project role' (ProjectAssignment a) = name(role(a));
@@ -83,6 +87,35 @@ DESIGN project {
             caption = badged('Employees', countEmployees(p));
             MOVE PROPERTY(date);
             MOVE BOX(pe);       
+        }
+    }
+}
+
+EXTEND FORM projects
+    FILTERS assigned(p, currentUser()) OR accessAllProjects(currentUser())
+;
+
+EXTEND FORM dialogProjects
+    FILTERS assigned(p, currentUser()) OR accessAllProjects(currentUser())
+;
+
+EXTEND FORM employee
+    PROPERTIES(e) accessToAllProjects
+    
+    OBJECTS pa = ProjectAssignment
+    PROPERTIES(pa) nameProject, nameRole, fromDate, toDate, NEW, DELETE
+    FILTERS employee(pa) = e 
+
+    FILTERGROUP active
+        FILTER 'Active' active(pa)
+;
+
+DESIGN employee {
+    details {
+        NEW projects {
+            caption = badged('Projects', countAssignments(e));
+            MOVE PROPERTY(accessToAllProjects(e));
+            MOVE BOX(pa) { caption = ''; }
         }
     }
 }
