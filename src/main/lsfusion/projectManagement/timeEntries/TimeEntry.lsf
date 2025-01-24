@@ -16,7 +16,8 @@ hours 'Hours' = DATA NUMERIC[8,2] (TimeEntry);
 
 employee 'Employee' = DATA Employee (TimeEntry) NONULL;
 nameEmployee 'Employee' (TimeEntry t) = name(employee(t));
-WHEN SET(TimeEntry t IS TimeEntry) AND NOT employee(t) AND currentUser() IS Employee DO employee(t) <- currentUser();
+WHEN LOCAL SET(TimeEntry t IS TimeEntry) AND NOT employee(t) AND currentUser() IS Employee DO 
+    employee(t) <- currentUser();
 
 type 'Type' = DATA TimeEntryType (TimeEntry);
 nameType 'Type' (TimeEntry e) = name(type(e));

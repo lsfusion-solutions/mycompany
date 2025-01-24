@@ -16,9 +16,6 @@ employee 'Employee' = DATA Employee (ProjectAssignment) NONULL INDEXED;
 nameEmployee 'Employee' (ProjectAssignment a) = name(employee(a));
 countAssignments = GROUP SUM 1 BY employee(ProjectAssignment a) MATERIALIZED;
 
-accessToAllProjects 'Access to all projects' = DATA BOOLEAN (Employee);
-accessAllProjects (Employee e) = accessToAllProjects(e) OR NOT countAssignments(e); 
-
 role 'Project role' = DATA ProjectRole (ProjectAssignment);
 nameRole 'Project role' (ProjectAssignment a) = name(role(a));
 
@@ -91,12 +88,21 @@ DESIGN project {
     }
 }
 
+accessToAllProjects 'Access to all projects' = DATA BOOLEAN (Employee);
+
+accessAllProjects = ABSTRACT VALUE BOOLEAN (CustomUser) MATERIALIZED;
+accessAllProjects(Employee e) += accessToAllProjects(e);
+accessAllProjects(CustomUser u) += u IS CustomUser AND NOT countAssignments(u);
+
+hasAccess = ABSTRACT VALUE BOOLEAN (Project, CustomUser);
+hasAccess (Project p, CustomUser u) += TRUE IF assigned(p, u);
+
 EXTEND FORM projects
-    FILTERS assigned(p, currentUser()) OR accessAllProjects(currentUser())
+    FILTERS hasAccess(p, currentUser()) OR accessAllProjects(currentUser())
 ;
 
 EXTEND FORM dialogProjects
-    FILTERS assigned(p, currentUser()) OR accessAllProjects(currentUser())
+    FILTERS hasAccess(p, currentUser()) OR accessAllProjects(currentUser())
 ;
 
 EXTEND FORM employee
