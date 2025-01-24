@@ -1,0 +1,55 @@
+MODULE TaskTimeEntry;
+
+REQUIRE Task, TimeEntry;
+
+NAMESPACE TaskManagement;
+
+task = DATA Task (TimeEntry);
+nameTask '{Task}' (TimeEntry e) = name(task(e));
+
+countTimeEntry 'Time entries' (Task t) = GROUP SUM 1 IF task(TimeEntry te) = t MATERIALIZED;
+hoursTimeEntry 'Hours' (Task t) = GROUP SUM hours(TimeEntry te) IF task(te) = t MATERIALIZED;
+
+EXTEND FORM timeEntry
+    PROPERTIES(t) nameTask
+;
+
+DESIGN timeEntry {
+    header {
+        MOVE PROPERTY(nameTask(t));
+    }
+}
+
+EXTEND FORM timeEntries
+    PROPERTIES(t) READONLY nameTask
+;
+
+newTimeEntry 'Time entry' (Task t) {
+    NEWSESSION {
+        NEW te = TimeEntry {
+            task(te) <- t;
+            SHOW timeEntry OBJECTS t = te;
+        }
+    }
+}
+
+EXTEND FORM task
+    OBJECTS te = TimeEntry
+    PROPERTIES(te) nameEmployee, date, hours, nameType, description, NEW, DELETE
+    FILTERS task(te) = t
+;
+
+DESIGN task {
+    details {
+        NEW timeEntries {
+            caption = badged('Time entries', '(' + countTimeEntry(t) + ')' + '(' + hoursTimeEntry(t) + ')');
+            MOVE BOX(te) { caption = ''; }
+        }
+    }
+}
+
+EXTEND FORM tasks
+    PROPERTIES(t) READONLY countTimeEntry, hoursTimeEntry
+    
+    PROPERTIES(t) newTimeEntry TOOLBAR
+;

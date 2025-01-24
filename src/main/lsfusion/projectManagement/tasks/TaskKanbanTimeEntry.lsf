@@ -1,0 +1,24 @@
+MODULE TaskKanbanTimeEntry;
+
+REQUIRE TaskKanban, TaskTimeEntry;
+
+PRIORITY MasterData;
+
+NAMESPACE ProjectManagement;
+
+EXTEND FORM tasks
+    PROPERTIES(tt) hoursTimeEntry PANEL
+    
+    PROPERTIES(tt) newTimeEntry SHOWIF PREV(tt IS Task)
+;
+
+DESIGN tasks {
+    GRID(tt) {
+        NEW timeEntry {
+            horizontal = TRUE;
+            alignment = STRETCH;
+            MOVE PROPERTY(hoursTimeEntry(tt));
+            MOVE PROPERTY(newTimeEntry(tt));
+        }
+    }
+}

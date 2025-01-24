@@ -1,0 +1,16 @@
+MODULE ProjectTaskTimeEntry;
+
+REQUIRE ProjectTask, ProjectTimeEntry, TaskTimeEntry;
+
+NAMESPACE ProjectManagement;
+
+WHEN LOCAL SETCHANGED(task(TimeEntry t)) AND project(task(t)) DO
+    project(t) <- project(task(t));
+
+CONSTRAINT project(TimeEntry t) AND task(t) AND NOT project(t) = project(task(t))
+    CHECKED BY task[TimeEntry]
+    MESSAGE 'The time entry task does not match the project';
+
+EXTEND FORM project
+    PROPERTIES(te) nameTask
+;

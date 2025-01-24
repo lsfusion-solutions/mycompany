@@ -8,8 +8,8 @@ project = DATA Project (TimeEntry);
 nameProject 'Project' (TimeEntry e) = name(project(e));
 nameCustomer 'Partner' (TimeEntry e) = namePartner(project(e));
 
-countTimeEntry 'Time entries' (Project p) = GROUP SUM 1 IF project(TimeEntry t) = p;  
-hoursTimeEntry 'Hours' (Project p) = GROUP SUM hours(TimeEntry t) IF project(t) = p;  
+countTimeEntry 'Time entries' (Project p) = GROUP SUM 1 IF project(TimeEntry t) = p MATERIALIZED;  
+hoursTimeEntry 'Hours' (Project p) = GROUP SUM hours(TimeEntry t) IF project(t) = p MATERIALIZED;  
 
 INDEX project(TimeEntry e), date(e), employee(e);
 
