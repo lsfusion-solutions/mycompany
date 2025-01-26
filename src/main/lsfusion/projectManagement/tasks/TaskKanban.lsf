@@ -16,11 +16,14 @@ currentOrder (Task t) =  order(currentUser(), t);
 
 createTask() {
     INPUT id = LONG DO {
-        NEW tt = Task {
-            FOR LONG(TaskStatus s AS TaskStatus) = id DO 
-                status(tt) <- s;
-            order(currentUser(), tt) <- -LONG(tt);
-            onCreate(tt);
+        NEWSESSION {
+            NEW tt = Task {
+                FOR LONG(TaskStatus s AS TaskStatus) = id DO
+                    status(tt) <- s;
+                order(currentUser(), tt) <- -LONG(tt);
+                onCreate(tt);
+                SHOW task OBJECTS t = tt DOCKED;
+            }
         }
     }
 }
@@ -56,7 +59,7 @@ EXTEND FORM tasks
 
     PROPERTIES(tt) PANEL pnameProject = nameProject, pname = name, pnameType = nameType, pnamePriority = namePriority, ptags = tags, 
                          pnameAssignedTo = nameAssignedTo, pdeadline = deadline, pdescription = description,
-                         edit = EDIT, delete = DELETE
+                         edit = EDIT NEWSESSION, delete = DELETE
 ;
 
 DESIGN tasks {
