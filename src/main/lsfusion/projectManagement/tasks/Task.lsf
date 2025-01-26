@@ -12,43 +12,11 @@ CLASS Task '{Task}';
 
 readonly = ABSTRACT CASE BOOLEAN (Task);
 
-@defineID(task, '{Tasks}', '', 6){
-    id '{ID}' = DATA STRING[50] (Task) IN id CHARWIDTH 6 INDEXED;
-    task (STRING[50] id) = GROUP AGGR Task o BY id(o);
-    
-    numeratorTask = DATA Numerator();
-    nameNumeratorTask 'Numerator - {Tasks}' = name(numeratorTask());
-    
-    loadDefaultNumerators () + {
-        NEW n = Numerator {
-            name(n) <- '{Tasks}';
-            series(n) <- '';
-            minValue(n) <- 1;
-            maxValue(n) <- 999999;
-            stringLength(n) <- 6;
-            numeratorTask() <- n;
-        }
-    }
-    
-    EXTEND FORM options 
-        PROPERTIES nameNumeratorTask()
-    ;
-    
-    DESIGN options {
-        commons {
-            MOVE PROPERTY(nameNumeratorTask());
-        }
-    }
-    
-    WHEN SETCHANGED(Task o IS Task AND numeratorTask() AND NOT id(o)) DO {
-        id(o) <- CONCAT '', series(numeratorTask()), curStringValue(numeratorTask());
-        incrementValueSession(numeratorTask());   
-    }
-};
+@defineID(task, '{Tasks}', '', 6);
 
 name '{Name}' = DATA ISTRING (Task) CHARWIDTH 30 IN id;
 
-idName '{Name}' (Task t) = CONCAT ' ', '#' + id(t), name(t);  
+idName '{Name}' (Task t) = CONCAT ' ', '#' + id(t), name(t);
 
 author 'Author' = DATA Employee (Task);
 nameAuthor 'Author' (Task t) = name(author(t));
@@ -84,10 +52,10 @@ onCreate ABSTRACT LIST (Task);
 
 FORM task '{Task}'
     OBJECTS t = Task PANEL
-    PROPERTIES(t) id, name, nameStatus, 
-                  nameAuthor, nameAssignedTo,
-                  nameType, namePriority, tags, 
-                  deadline, description
+    PROPERTIES(t) id, name, nameStatus,
+        nameAuthor, nameAssignedTo,
+        nameType, namePriority, tags,
+        deadline, description
 
     EDIT Task OBJECT t
 ;
@@ -124,11 +92,19 @@ DESIGN task {
     }
 }
 
+@defineObjectHistory(task);
+@defineHistoryProperty(task, name, '{Name}');
+@defineHistoryProperty(task, status, 'Status', nameStatus);
+@defineHistoryProperty(task, assignedTo, 'Assigned to', nameAssignedTo);
+@defineHistoryProperty(task, deadline, 'Deadline');
+@defineHistoryProperty(task, priority, 'Priority', namePriority);
+@defineHistoryProperty(task, type, 'Type', nameType);
+@defineDocHistoryForm(task, task, t);
 
 FORM tasks '{Tasks}'
     OBJECTS t = Task BACKGROUND rgbColorPriority(t)
-    PROPERTIES(t) READONLY 
-                  id, name, nameAuthor, nameAssignedTo, nameStatus, nameType, namePriority, tags, deadline, closed
+    PROPERTIES(t) READONLY
+    id, name, nameAuthor, nameAssignedTo, nameStatus, nameType, namePriority, tags, deadline, closed
     PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
 
     FILTERGROUP active
@@ -138,168 +114,13 @@ FORM tasks '{Tasks}'
     FILTERGROUP my
         FILTER 'My tasks' author(t) = currentUser() 'F6'
         FILTER 'Assigned to me' assignedTo(t) = currentUser() 'F5'
-    
+
     LIST Task OBJECT t
 ;
 
-@defineDocObjectsForm(tasks, t, '{Tasks}'){
-    DESIGN tasks {
-        OBJECTS {
-            NEW pane {
-                fill = 1;
-                horizontal = TRUE;
-                NEW tabbedPane {
-                    tabbed = TRUE;
-                    fill = 1000;
-                    MOVE BOX(t) { caption = '{Tasks}'; }
-                }
-                NEW rightPane {
-                    tabbed = TRUE;
-//                    width = 230;
-                    fill = 1;
-                    NEW filters {
-                        caption = 'Filters';
-                        alignment = STRETCH;
-                        MOVE FILTERGROUPS(t) {
-                            horizontal = FALSE;
-                            alignment = STRETCH;
-                        }
-                    }
-                    NEW actions {
-                        alignment = STRETCH;
-                        caption = 'Actions';
-                        NEW statuses {
-                            alignment = STRETCH;
-                            caption = 'Change status';
-                        }
-                    }
-                }
-            }
-        }
-    }
-};
+@defineDocObjectsForm(tasks, t, '{Tasks}');
 
-@defineObjectFiles(task, t, 'Task file'){
-
-    CLASS TaskFile 'Task file';
-
-    task = DATA Task (TaskFile) INDEXED NONULL DELETE;
-
-    file = DATA RAWFILE (TaskFile);
-
-    name '{Name}' = DATA ISTRING (TaskFile) CHARWIDTH 15;
-    extension 'Extension' = DATA ISTRING (TaskFile) CHARWIDTH 5;
-    nameExtension (TaskFile f) = CONCAT '.', name(f), extension(f);
-
-    description 'Description' = DATA ISTRING (TaskFile) CHARWIDTH 20;
-
-    dateTime 'Date' = DATA DATETIME (TaskFile);
-    dateTime(TaskFile f) <- currentDateTime() WHEN SET(f IS TaskFile);
-
-    user = DATA User (TaskFile);
-    nameUser 'User' (TaskFile f) = name(user(f));
-    user(TaskFile f) <- currentUser() WHEN SET(f IS TaskFile);
-
-    open 'Open' (TaskFile f) { open(file(f), nameExtension(f)); } IMAGE 'open.png';
-
-    countFiles 'Files' (Task i) = GROUP SUM 1 IF task(TaskFile f) = i;
-
-    index '{Index}' (TaskFile f) = PARTITION SUM 1 ORDER f BY task(f) MATERIALIZED CHARWIDTH 3;
-    file (Task o, INTEGER i) = GROUP MIN TaskFile f IF task(f) = o AND index(f) = i;
-    openFile(Task o, INTEGER i) { open(file(o, i)); }
-    
-    file1 (Task o) = file(o, 1);
-    file2 (Task o) = file(o, 2);
-    file3 (Task o) = file(o, 3);
-    openFile1 'File 1' (Task o) { openFile(o, 1); }
-    openFile2 'File 2' (Task o) { openFile(o, 2); }
-    openFile3 'File 3' (Task o) { openFile(o, 3); }
-
-    firstFile (Task i) = GROUP MIN TaskFile f IF task(f) = i;
-    openFirstFile 'Open' (Task i) { open(firstFile(i)); }
-    openFiles 'Open' (Task i) {
-        FOR task(TaskFile f) = i DO
-            open(f);
-    }
-
-    newFile 'File' (Task o) {
-        INPUT uf = NAMEDFILE DO NEW uof = TaskFile {
-            task(uof) <- o;
-            file(uof) <- RAWFILE(uf);
-            name(uof) <- name(uf);
-            extension(uof) <- extension(uf);
-        }
-    } IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
-
-    @defineObjectFilesForm(task, task, t){
-    EXTEND FORM task
-        OBJECTS of = TaskFile
-        PROPERTIES(of) READONLY index
-        PROPERTIES(of) READONLYIF readonly(t) name, extension, description
-        PROPERTIES(of) READONLY nameUser, dateTime
-        PROPERTIES(of) GRID open, DELETE READONLYIF readonly(t)
-        FILTERS task(of) = t
-
-        PROPERTIES(t) newFile DRAW of TOOLBAR READONLYIF readonly(t)
-        PROPERTIES inputFile = '' CUSTOM 'inputFile' ON CHANGE {
-            INPUT f = JSON DO
-                IMPORT JSON FROM f FIELDS() STRING name, STRING extension, STRING data DO 
-                    IF NOT readonly(t) THEN NEW uof = TaskFile {
-                        task(uof) <- t;
-                        file(uof) <- decode(data, 'base64');
-                        name(uof) <- name;
-                        extension(uof) <- extension;
-                    }
-        }
-    ;
-
-    DESIGN task {
-        details {
-            NEW files {
-                caption = badged('Files', countFiles(t));
-                MOVE BOX(of) { caption = ''; }
-                MOVE PROPERTY(inputFile);
-            }
-        }
-    }
-    
-    // preview
-    
-    EXTEND FORM task
-        PROPERTIES() READONLY previewPdfFile SHOWIF previewPdfFile(), previewImageFile SHOWIF NOT previewPdfFile()
-
-        EVENTS ON CHANGE of {
-            previewPdfFile() <- NULL;
-            previewImageFile() <- NULL;
-            IF lower(extension(of)) = 'jpg' OR lower(extension(of)) = 'jpeg' OR lower(extension(of)) = 'png' OR lower(extension(of)) = 'bmp' THEN {
-                previewImageFile() <- IMAGEFILE(file(of));
-            }
-            IF lower(extension(of)) = 'pdf' THEN {
-                previewPdfFile() <- PDFFILE(file(of));
-            }
-            IF lower(extension(of)) = 'doc' OR lower(extension(of)) = 'docx' THEN {
-                TRY {
-                    wordToPdf(file(of));
-                } CATCH {}
-                previewPdfFile() <- exportPdfFile();
-            }
-        }
-    ;
-
-    DESIGN task {
-        files {
-            horizontal = TRUE;
-            NEW preview {
-                fill = 4;
-                MOVE PROPERTY(previewPdfFile()) { fill = 1; size = (100, 100); caption = ''; }
-                MOVE PROPERTY(previewImageFile()) { fill = 1; size = (100, 100); caption = ''; }
-            }
-        }
-    }
-
-};
-
-};
+@defineObjectFiles(task, t, 'Task file');
 
 DESIGN tasks {
     PROPERTY(tags(t)) { valueHeight = 18; }

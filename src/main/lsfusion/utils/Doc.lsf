@@ -279,22 +279,27 @@ META defineDocHistoryLineProperty(doc, docLine, prop, capt, descrProp)
     }
 END
 
-META defineDocHistoryHeader(doc, let, dateProp)
-    CLASS ###doc##History 'Change history';
+META defineObjectHistory(obj)
+    CLASS ###obj##History 'Change history';
 
-    doc = DATA ###doc (###doc##History) INDEXED;
-    countHistories (###doc d) = GROUP SUM 1 IF doc(###doc##History h) = d;
+    obj = DATA ###obj (###obj##History) INDEXED;
+    countHistories (###obj d) = GROUP SUM 1 IF obj(###obj##History h) = d;
+
+    dateTime 'Date' = DATA DATETIME (###obj##History);
+
+    user = DATA User (###obj##History);
+    nameUser 'User' (###obj##History l) = name(user(l));
+
+    computer = DATA Computer (###obj##History);
+    hostnameComputer 'Computer' (###obj##History l) = hostname(computer(l)) CHARWIDTH 10;
+
+    type 'Type' = DATA ISTRING[100] (###obj##History) CHARWIDTH 15;
+    description 'Description' = DATA TEXT (###obj##History);
+END
+
+META defineDocHistoryHeader(doc, dateProp)
     
-    dateTime 'Date' = DATA DATETIME (###doc##History);
-
-    user = DATA User (###doc##History);
-    nameUser 'User' (###doc##History l) = name(user(l));
-
-    computer = DATA Computer (###doc##History);
-    hostnameComputer 'Computer' (###doc##History l) = hostname(computer(l)) CHARWIDTH 10;
-
-    type 'Type' = DATA ISTRING[100] (###doc##History) CHARWIDTH 15;
-    description 'Description' = DATA TEXT (###doc##History);
+    @defineObjectHistory(doc);
 
     @defineHistoryProperty(doc, status, 'Status', nameStatus);
 
@@ -373,7 +378,7 @@ END
 
 META defineDocHistory(doc, let, class, dateProp)
 
-    @defineDocHistoryHeader(doc, ##let, dateProp);
+    @defineDocHistoryHeader(doc, dateProp);
     @defineDocHistoryLine(doc, class);
     @defineDocHistoryForm(doc, doc, let);
 
