@@ -295,10 +295,18 @@ META defineObjectHistory(obj)
 
     type 'Type' = DATA ISTRING[100] (###obj##History) CHARWIDTH 15;
     description 'Description' = DATA TEXT (###obj##History);
+
+    firstHistory (###obj d) = GROUP LAST ###obj##History h ORDER DESC h WHERE obj(h) = d MATERIALIZED;
+    nameUserFirstHistory 'Created by' (###obj d) = nameUser(firstHistory(d));
+    dateTimeFirstHistory 'Created at' (###obj d) = dateTime(firstHistory(d));
+    
+    lastHistory (###obj d) = GROUP LAST ###obj##History h ORDER h WHERE obj(h) = d MATERIALIZED;
+    nameUserLastHistory 'Last modified by' (###obj d) = nameUser(lastHistory(d));
+    dateTimeLastHistory 'Last modified at' (###obj d) = dateTime(lastHistory(d));
 END
 
 META defineDocHistoryHeader(doc, dateProp)
-    
+
     @defineObjectHistory(doc);
 
     @defineHistoryProperty(doc, status, 'Status', nameStatus);
@@ -374,6 +382,10 @@ META defineDocHistoryForm(doc, form, let)
             }
         }
     }
+    
+    EXTEND FORM form##s
+        PROPERTIES(let) nameUserFirstHistory, dateTimeFirstHistory, nameUserLastHistory, dateTimeLastHistory
+    ;
 END
 
 META defineDocHistory(doc, let, class, dateProp)

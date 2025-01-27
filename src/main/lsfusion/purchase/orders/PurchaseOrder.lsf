@@ -121,7 +121,7 @@ WHEN LOCAL CHANGED (item(OrderLine ol)) DO {
 imagedNameStatus 'Status' (OrderLine l) = imagedNameStatus(order(l)); 
 type (OrderLine l) = type(order(l)); 
 
-dateTime 'Created by' (OrderLine l) = dateTime(order(l));
+dateTime 'Date' (OrderLine l) = dateTime(order(l));
 number 'Number' (OrderLine l) = number(order(l)) IN id;
 numberDate 'Description' (OrderLine l) = numberDate(order(l));
 
@@ -231,9 +231,6 @@ DESIGN order {
     }        
 }
 
-@defineDocHistory(order, o, item);
-@defineDocHistoryLineProperty(order, OrderLine, quantity, 'Qty', nameItem);
-
 background = ABSTRACT CASE COLOR (Order);
 FORM orders 'Purchase orders'
     OBJECTS o = Order BACKGROUND background(o)
@@ -247,6 +244,9 @@ FORM orders 'Purchase orders'
 ;
 
 @extendFormEditable(orders);
+
+@defineDocHistory(order, o, item);
+@defineDocHistoryLineProperty(order, OrderLine, quantity, 'Qty', nameItem);
 
 @defineDocObjectsForm(orders, o, 'Purchase orders');
 @defineDocStatusForm(order, o);
