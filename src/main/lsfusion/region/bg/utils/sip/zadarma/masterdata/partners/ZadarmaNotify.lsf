@@ -42,15 +42,17 @@ notifyEnd (STRING pbx_call_id, INTEGER duration, STRING disposition, INTEGER is_
 }
 
 notifyOutStart (STRING pbx_call_id, STRING caller_id, STRING destination, STRING internal) {
-    NEW c = Call {
-        id(c) <- pbx_call_id;
-        caller(c) <- ISTRING[100](caller_id);
-        recipient(c) <- ISTRING[100](destination);
-        
-        outgoing(c) <- TRUE;
-        employee(c) <- employee(pbxNumber(internal));
-        
-        start(c);
+    IF NOT caller_id = '0' THEN { // not an internal outgoing call
+        NEW c = Call {
+            id(c) <- pbx_call_id;
+            caller(c) <- ISTRING[100](caller_id);
+            recipient(c) <- ISTRING[100](destination);
+
+            outgoing(c) <- TRUE;
+            employee(c) <- employee(pbxNumber(internal));
+
+            start(c);
+        }
     }
 }
 
