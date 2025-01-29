@@ -1,7 +1,7 @@
 MODULE Task;
 
 REQUIRE ProjectManagementSettings, Employee,
-        Doc, FileUtils,
+        Doc, FileUtils, Comments,
         TaskType, TaskStatus, TaskPriority, TaskTag;
 
 PRIORITY MasterData;
@@ -62,31 +62,41 @@ FORM task '{Task}'
 
 DESIGN task {
     OBJECTS {
-        NEW header {
-            NEW main {
-                horizontal = TRUE;
-                alignment = STRETCH;
-                MOVE PROPERTY(id(t)) { flex = 0; };
-                MOVE PROPERTY(name(t)) { flex = 1; fontSize = 16; }
-            }
-            NEW params {
-                lines = 2;
-                alignment = STRETCH;
-                MOVE PROPERTY(nameStatus(t));
-                MOVE PROPERTY(nameAuthor(t));
-                MOVE PROPERTY(nameAssignedTo(t));
-                MOVE PROPERTY(nameType(t));
-                MOVE PROPERTY(namePriority(t));
-                MOVE PROPERTY(tags(t));
-                MOVE PROPERTY(deadline(t));
-            }
-        }
-        NEW details {
-            tabbed = TRUE;
+        NEW pane {
+            horizontal = TRUE;
             fill = 1;
-            NEW description {
-                caption = 'Description';
-                MOVE PROPERTY(description(t)) { caption = ''; fill = 1; }
+            NEW leftPane {
+                fill = 1;
+                NEW header {
+                    NEW main {
+                        horizontal = TRUE;
+                        alignment = STRETCH;
+                        MOVE PROPERTY(id(t)) { flex = 0; };
+                        MOVE PROPERTY(name(t)) { flex = 1; fontSize = 16; }
+                    }
+                    NEW params {
+                        lines = 2;
+                        alignment = STRETCH;
+                        MOVE PROPERTY(nameStatus(t));
+                        MOVE PROPERTY(nameAuthor(t));
+                        MOVE PROPERTY(nameAssignedTo(t));
+                        MOVE PROPERTY(nameType(t));
+                        MOVE PROPERTY(namePriority(t));
+                        MOVE PROPERTY(tags(t));
+                        MOVE PROPERTY(deadline(t));
+                    }
+                }
+                NEW details {
+                    tabbed = TRUE;
+                    fill = 1;
+                    NEW description {
+                        caption = 'Description';
+                        MOVE PROPERTY(description(t)) { caption = ''; fill = 1; }
+                    }
+                }
+            }
+            NEW rightPane {
+                fill = 1;
             }
         }
     }
@@ -121,6 +131,8 @@ FORM tasks '{Tasks}'
 @defineDocObjectsForm(tasks, t, '{Tasks}');
 
 @defineObjectFiles(task, t, 'Task file');
+
+@defineObjectComments(task, t, rightPane);
 
 DESIGN tasks {
     PROPERTY(tags(t)) { valueHeight = 18; }

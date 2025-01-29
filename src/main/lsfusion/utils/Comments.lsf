@@ -1,0 +1,91 @@
+MODULE Comments;
+
+REQUIRE SystemEvents;
+
+NAMESPACE Utils;
+
+onWebClientInit() + {
+    onWebClientInit('comments.js') <- 1;
+    onWebClientInit('comments.css') <- 1;
+}
+inputComment '' = DATA LOCAL RICHTEXT ();
+
+META defineObjectComments (obj, let, container)
+    CLASS ###obj##Comment 'Comment';
+    
+    obj = DATA ###obj (###obj##Comment) NONULL DELETE;
+    countComment (###obj e) = GROUP SUM 1 IF obj(###obj##Comment c) = e MATERIALIZED;
+    lastComment (###obj e) = GROUP LAST ###obj##Comment c ORDER c BY obj(c) MATERIALIZED;
+    
+    dateTime 'Date' = DATA DATETIME (###obj##Comment);
+    dateTime(###obj##Comment f) <- currentDateTime() WHEN SET(f IS ###obj##Comment);
+    
+    user = DATA User (###obj##Comment);
+    nameUser 'User' (###obj##Comment f) = name(user(f));
+    user(###obj##Comment f) <- currentUser() WHEN SET(f IS ###obj##Comment);
+    
+    text 'Text' = DATA RICHTEXT (###obj##Comment);
+    
+    FORM edit###obj##Comment 'Comment'
+        OBJECTS c = ###obj##Comment PANEL
+        PROPERTIES(c) '' = text
+    ;
+    
+    DESIGN edit###obj##Comment {
+        size = (640, 480);
+        OBJECTS {
+            MOVE PROPERTY(text(c)) { fill = 1; }
+        }
+    }
+    
+    EXTEND FORM obj
+        OBJECTS cmt = ###obj##Comment CUSTOM 'comments'
+        PROPERTIES id = VALUE(cmt)
+        PROPERTIES(cmt) nameUser, dateTime, text
+        PROPERTIES(cmt) edit ON CHANGE {
+            SHOW edit###obj##Comment OBJECTS c = cmt;
+        },
+            delete = DELETE
+        ORDERS id DESC
+        FILTERS obj(cmt) = let
+    ;
+    
+    newComment 'Add' (###obj t) {
+        IF inputComment() THEN
+            NEW nc = ###obj##Comment {
+                obj(nc) <- t;
+                text(nc) <- inputComment();
+                inputComment() <- NULL;
+            }
+    }
+    
+    EXTEND FORM obj
+        PROPERTIES inputComment(), newComment(let)
+    ;
+    
+    DESIGN obj {
+        container {
+            NEW comments {
+                fill = 1;
+                caption = badged('Comments', countComment(let));
+                NEW inputComment {
+                    horizontal = TRUE;
+                    alignment = STRETCH;
+                    MOVE PROPERTY(inputComment()) {
+                        valueHeight = -1;
+                        fill = 3;
+                    }
+                    MOVE PROPERTY(newComment(let)) {
+                        fill = 1;
+                    }
+                }
+                MOVE GRID(cmt) {
+                    height = 200;
+                    width = 400;
+                    fill = 1;
+                }
+                REMOVE BOX(cmt);
+            }
+        }
+    }
+END
