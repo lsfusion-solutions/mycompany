@@ -22,9 +22,10 @@ sourceCurrency (Bill b) += currency(b);
 sourceAmount (Bill b) += amount(b);
 
 // pay
-pay 'Match' (Bill b, OutgoingDebt d) {
+pay 'Match' ABSTRACT (Bill, OutgoingDebt) CHANGEMOUSE 'DBLCLK';
+pay (Bill b, OutgoingDebt d) + {
     paid(b, d) <- left(b, d) (+) paid(b, d);
-} CHANGEMOUSE 'DBLCLK';
+}
 
 EXTEND FORM bill
     PROPERTIES(b) paid

@@ -22,9 +22,10 @@ sourceCurrency (Invoice i) += currency(i);
 sourceAmount (Invoice i) += amount(i);
 
 // pay
-pay 'Match' (IncomingDebt d, Invoice i) {
+pay 'Match' ABSTRACT (IncomingDebt, Invoice) CHANGEMOUSE 'DBLCLK'; 
+pay (IncomingDebt d, Invoice i) +{
     paid(d, i) <- left(d, i) (+) paid(d, i);
-} CHANGEMOUSE 'DBLCLK';
+}
 
 EXTEND FORM invoice
     PROPERTIES(i) READONLY paid  
