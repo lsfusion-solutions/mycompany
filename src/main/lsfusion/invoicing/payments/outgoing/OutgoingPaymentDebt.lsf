@@ -21,9 +21,10 @@ sourceCurrency (OutgoingPayment p) += currency(p);
 sourceAmount (OutgoingPayment p) += amount(p);
 
 // pay
-pay 'Match' (IncomingDebt d, OutgoingPayment p) {
+pay 'Match' ABSTRACT LIST (IncomingDebt, OutgoingPayment) CHANGEMOUSE 'DBLCLK';
+pay (IncomingDebt d, OutgoingPayment p) +{
     paid(d, p) <- left(d, p) (+) paid(d, p);
-} CHANGEMOUSE 'DBLCLK';
+}
 
 EXTEND FORM outgoingPayment
     OBJECTS d = IncomingDebt

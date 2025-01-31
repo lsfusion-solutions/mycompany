@@ -21,15 +21,10 @@ sourceCurrency (IncomingPayment p) += currency(p);
 sourceAmount (IncomingPayment p) += amount(p);
 
 // pay
-pay 'Match' (IncomingPayment p, OutgoingDebt d) {
-    APPLY; 
-    IF canceled() THEN RETURN;
-    
-    NEWSESSION {
-        paid(p, d) <- left(p, d) (+) paid(p, d);
-        APPLY;
-    }
-} CHANGEMOUSE 'DBLCLK';
+pay 'Match' ABSTRACT LIST (IncomingPayment, OutgoingDebt) CHANGEMOUSE 'DBLCLK'; 
+pay (IncomingPayment p, OutgoingDebt d) +{
+    paid(p, d) <- left(p, d) (+) paid(p, d);
+}
 
 EXTEND FORM incomingPayment
     OBJECTS d = OutgoingDebt
