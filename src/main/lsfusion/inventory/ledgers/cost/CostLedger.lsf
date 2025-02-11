@@ -76,7 +76,8 @@ costQuantity '{Quantity}' (Location l, Product p, DATETIME dt) =
     costQuantity(l, p) (-) (GROUP SUM signedQuantity(CostLedger cl) IF location(cl) = l AND product(cl) = p AND dateTime(cl) >= dt);
 costAmount 'Cost' (Location l, Product p, DATETIME dt) = 
     costAmount(l, p) (-) (GROUP SUM signedAmount(CostLedger cl) IF location(cl) = l AND product(cl) = p AND dateTime(cl) >= dt);
-costPrice 'Unit cost' (Location l, Product p, DATETIME dt) = costAmount(l, p, dt) / costQuantity(l, p, dt); 
+costPrice 'Unit cost' (Location l, Product p, DATETIME dt) = costAmount(l, p, dt) / costQuantity(l, p, dt);
+prevCostPrice 'Unit cost' (Location l, Product p, DATETIME dt) = PREV(costPrice(l, p, dt));
 
 costQuantity '{Quantity}' (Product p) = GROUP SUM costQuantity(Location l, p);
 costAmount 'Cost' (Product p) = GROUP SUM costAmount(Location l, p);

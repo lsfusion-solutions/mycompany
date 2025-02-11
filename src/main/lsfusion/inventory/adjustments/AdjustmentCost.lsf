@@ -13,12 +13,16 @@ DESIGN adjustment {
     }
 }
 
+currentCostPrice 'Current unit cost' (AdjustmentLine l) = prevCostPrice(location(l), product(l), dateTime(l));
+
 cost 'Cost' = ABSTRACT CASE NUMERIC[14,2] (AdjustmentLine);
 
 price 'Unit cost' = DATA NUMERIC[14,2] (AdjustmentLine);
 cost (AdjustmentLine l) += WHEN price(l) THEN NUMERIC[14,2](difference(l) * price(l));
 
 EXTEND FORM adjustment
+    PROPERTIES(l) READONLY SHOWIF showPrice(a) currentCostPrice BEFORE theoreticalQuantity(l)
+    
     PROPERTIES(l) READONLYIF readonly(a) SHOWIF showPrice(a) BACKGROUND RGB(255,212,212) IF price(l) AND NOT difference(l) > 0 
                   price
 ;
