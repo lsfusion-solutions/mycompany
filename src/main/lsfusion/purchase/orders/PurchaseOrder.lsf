@@ -13,9 +13,12 @@ CLASS Order 'Purchase order';
 
 @defineDocStatus(order, 'Purchase order status');
 
+property = ABSTRACT VALUE ISTRING (Order, STRING);
+
 // type
 type 'Type' = DATA OrderType (Order) NONULL;
 nameType 'Type' (Order s) = name(type(s));
+property (Order o, STRING p) += nameType(o) IF p = 'Type';
 
 WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(type(o)) DO type(o) <- defaultOrderType(); 
 
@@ -29,6 +32,7 @@ numberDate 'Description' (Order o) = number(o) + ' (' + dateTime(o) + ')' IN id;
 
 vendor 'Vendor' = DATA Partner (Order) NONULL;
 nameVendor 'Vendor' (Order o) = name(vendor(o));
+property (Order o, STRING p) += nameType(o) IF p = 'Vendor';
 
 CONSTRAINT vendor(Order o) AND NOT isVendor(vendor(o))
                 CHECKED BY vendor[Order]
@@ -44,32 +48,39 @@ WHEN LOCAL CHANGED(vendor(Order o)) AND NOT CHANGED(paymentTerms(o)) DO paymentT
 
 // Shipping information
 scheduledDateTime 'Scheduled date' = DATA DATETIME (Order) IN id;
-scheduledDateTime(Order o) <- currentDateTime() WHEN SET(o IS Order);   
+scheduledDateTime(Order o) <- currentDateTime() WHEN SET(o IS Order);
+property (Order o, STRING p) += ISTRING(scheduledDateTime(o)) IF p = 'Scheduled date';
 
 // company
 company 'Company' = DATA Company (Order) NONULL;
 nameCompany 'Company' (Order o) = name(company(o));
 WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(company(o)) DO company(o) <- defaultCompany();
+property (Order o, STRING p) += ISTRING(nameCompany(o)) IF p = 'Company';
 
 // location
 location = DATA Location (Order);
 nameLocation 'Location' (Order o) = name(location(o));
 CONSTRAINT SETCHANGED(location(Order o)) AND internalUse(location(o)) CHECKED BY location[Order]
     MESSAGE 'The selected location is for internal use';
+property (Order o, STRING p) += ISTRING(nameLocation(o)) IF p = 'Location';
 
 // currency
 currency = DATA Currency (Order);
 nameCurrency 'Currency' (Order o) = name(currency(o));
+property (Order o, STRING p) += ISTRING(nameCurrency(o)) IF p = 'Currency';
 
 WHEN LOCAL SETCHANGED(type(Order o)) AND currency(type(o)) AND NOT CHANGED(currency(o)) DO currency(o) <- currency(type(o));  
 
 // Purchase information
 representative 'Our representative' = DATA Employee (Order);
 nameRepresentative 'Our representative' (Order o) = MasterData.name(representative(o));
+property (Order o, STRING p) += ISTRING(nameRepresentative(o)) IF p = 'Our representative';
 
 representative(Order o) <- currentUser() IF currentUser() IS Employee WHEN SET(o IS Order);
 
 vendorReference 'Vendor reference' = DATA STRING[30] (Order) INDEXED;
+property (Order o, STRING p) += ISTRING(vendorReference(o)) IF p = 'Vendor reference';
+
 note 'Note' = DATA ISTRING (Order) CHARWIDTH 20;
 
 details 'Details' = DATA RICHTEXT (Order);
@@ -231,6 +242,11 @@ DESIGN order {
     }        
 }
 
+showOrder (LONG id) {
+    FOR LONG(Order o AS Order) = id DO
+        SHOW order OBJECTS o = o DOCKED;
+} @@api;
+
 background = ABSTRACT CASE COLOR (Order);
 FORM orders 'Purchase orders'
     OBJECTS o = Order BACKGROUND background(o)
@@ -246,6 +262,7 @@ FORM orders 'Purchase orders'
 @extendFormEditable(orders);
 
 @defineDocHistory(order, o, item);
+@defineHistoryProperty(order, location, 'Location', nameLocation);
 @defineDocHistoryLineProperty(order, OrderLine, quantity, 'Qty', nameItem);
 
 @defineDocObjectsForm(orders, o, 'Purchase orders');
@@ -254,6 +271,7 @@ FORM orders 'Purchase orders'
 @defineDocLocationAccess(order, o);
 
 @defineObjectComments(order, o, details);
+@defineObjectCommentsHistory(order);
 
 @defineObjectFiles(order, o, 'Purchase order file');
 

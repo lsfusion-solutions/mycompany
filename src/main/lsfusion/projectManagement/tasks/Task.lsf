@@ -18,14 +18,20 @@ name '{Name}' = DATA ISTRING (Task) CHARWIDTH 30 IN id;
 
 idName '{Name}' (Task t) = CONCAT ' ', '#' + id(t), name(t);
 
+prefixName = ABSTRACT VALUE ISTRING (Task);
+property = ABSTRACT VALUE ISTRING (Task, STRING);
+
 author 'Author' = DATA Employee (Task);
 nameAuthor 'Author' (Task t) = name(author(t));
 WHEN LOCAL SET(Task t IS Task) AND NOT author(t) AND currentUser() IS Employee DO author(t) <- currentUser();
+property (Task t, STRING p) += nameAuthor(t) IF p = 'Author';
 
 assignedTo 'Assigned to' = DATA Employee (Task);
 nameAssignedTo 'Assigned to' (Task t) = name(assignedTo(t));
+property (Task t, STRING p) += nameAssignedTo(t) IF p = 'Assigned to';
 
 deadline 'Deadline' = DATA DATE (Task);
+property (Task t, STRING p) += ISTRING(deadline(t)) IF p = 'Deadline';
 
 description 'Description' = DATA RICHTEXT (Task) CHARWIDTH 20;
 
@@ -44,9 +50,11 @@ priority 'Priority' = DATA TaskPriority (Task);
 namePriority 'Priority' (Task t) = name(priority(t));
 idColorPriority (Task t) = idColor(priority(t));
 rgbColorPriority (Task t) = rgbColor(priority(t));
+property (Task t, STRING p) += namePriority(t) IF p = 'Priority';
 
 in 'Incl.' = DATA BOOLEAN (Task, TaskTag);
 tags 'Tags' (Task t) = GROUP CONCAT name(TaskTag tg) IF in(t, tg), ', ' ORDER name(tg), tg;
+property (Task t, STRING p) += tags(t) IF p = 'Tags';
 
 onCreate ABSTRACT LIST (Task);
 
@@ -102,6 +110,11 @@ DESIGN task {
     }
 }
 
+showTask (LONG id) {
+    FOR LONG(Task t AS Task) = id DO
+        SHOW task OBJECTS t = t DOCKED;
+} @@api;
+
 FORM tasks '{Tasks}'
     OBJECTS t = Task BACKGROUND rgbColorPriority(t)
     PROPERTIES(t) READONLY
@@ -133,6 +146,12 @@ FORM tasks '{Tasks}'
 @defineObjectFiles(task, t, 'Task file');
 
 @defineObjectComments(task, t, rightPane);
+@defineObjectCommentsHistory(task);
+
+WHEN [GROUP SUM 1 IF SET(TaskHistory th IS TaskHistory) BY task(th)](Task t) AND NOT [GROUP SUM 1 IF SET(TaskComment tc IS TaskComment) BY task(tc)](t) DO
+    NEW tc = TaskComment {
+        task(tc) <- t;
+    }
 
 DESIGN tasks {
     PROPERTY(tags(t)) { valueHeight = 18; }

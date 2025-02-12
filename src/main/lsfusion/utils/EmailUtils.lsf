@@ -1,0 +1,47 @@
+MODULE EmailUtils;
+
+REQUIRE Employee, Comments;
+
+NAMESPACE Utils;
+
+DESIGN editProfile {
+    OBJECTS {
+        NEW notifications {
+            caption = 'Notifications';
+        }
+    }    
+}
+
+DESIGN employee {
+    details {
+        NEW notifications {
+            caption = 'Notifications';
+        }
+    }
+}
+
+META defineObjectNotifyComments(obj, capt, NS)
+    notify###obj capt = DATA BOOLEAN (Contact);
+    EXTEND FORM employee PROPERTIES(e) NS###notify###obj = notify###obj;
+    DESIGN employee { notifications { MOVE PROPERTY(NS###notify###obj); } }
+
+    EXTEND FORM editProfile PROPERTIES(u) NS###notify###obj = notify###obj;
+    DESIGN editProfile { notifications { MOVE PROPERTY(NS###notify###obj); } }
+
+    notify = ABSTRACT VALUE BOOLEAN (###obj, Contact);
+    notify (###obj t, Contact c) += TRUE IF GROUP SUM 1 IF user(###obj##Comment tc) = c;
+
+    WHEN SET(###obj##Comment tc IS ###obj##Comment) AND
+        notify(obj(tc), Contact c) AND
+        notify###obj(c) AND
+        NOT user(tc) = c DO {
+        EMAIL
+            SUBJECT subject(obj(tc))
+            TO email(c)
+            BODY CONCAT '<div style="height : 1px; border-bottom : 1px solid #C4C4C4; margin-bottom : 1em"></div>',
+                        'Modified by' + ' ' + nameUser(tc),
+                        html(tc),
+                        body(obj(tc));
+        ;
+    }
+END

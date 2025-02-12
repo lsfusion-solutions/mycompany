@@ -256,14 +256,14 @@ DESIGN System.options {
 }
 
 META defineHistoryProperty(obj, prop, capt, nameProp)
-    WHEN SETCHANGED(prop(###obj let)) AND NOT disableHistory() DO {
+    WHEN CHANGED(prop(###obj let)) AND NOT DROPPED(let IS ###obj) AND NOT disableHistory() DO {
         NEW l = ###obj##History {
             obj(l) <- let;
             dateTime(l) <- currentDateTime();
             user(l) <- currentUser();
             computer(l) <- currentComputer();
             type(l) <- capt;
-            description (l) <- CONCAT ' -> ', PREV(nameProp(let)), nameProp(let);
+            description (l) <- CONCAT ' -> ', PREV(nameProp(let)), (OVERRIDE ISTRING(nameProp(let)), '');
         }
     }
 END

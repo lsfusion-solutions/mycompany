@@ -11,9 +11,12 @@ CLASS Order 'Sales order';
 
 @defineDocStatus(order, 'Sales order status');
 
+property = ABSTRACT VALUE ISTRING (Order, STRING);
+
 // type
 type 'Type' = DATA OrderType (Order) NONULL;
 nameType 'Type' (Order s) = name(type(s));
+property (Order o, STRING p) += nameType(o) IF p = 'Type';
 
 WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(type(o)) DO type(o) <- defaultOrderType(); 
 
@@ -29,6 +32,7 @@ numberDate 'Description' (Order o) = number(o) + ' (' + dateTime(o) + ')' IN id;
 customer 'Customer' = DATA Partner (Order) NONULL;
 nameCustomer 'Customer' (Order o) = name(customer(o)) IN id;
 addressCsvCustomer 'Customer address' (Order o) = addressCsv(customer(o));
+property (Order o, STRING p) += nameCustomer(o) IF p = 'Customer';
 
 CONSTRAINT customer(Order o) AND NOT isCustomer(customer(o))
                 CHECKED BY customer[Order]
@@ -53,6 +57,7 @@ WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(company(o)) DO company(o) <- de
 // Shipping information
 scheduledDateTime 'Scheduled date' = DATA DATETIME (Order) IN id;
 scheduledDateTime(Order o) <- currentDateTime() WHEN SET(o IS Order);
+property (Order o, STRING p) += ISTRING(scheduledDateTime(o)) IF p = 'Scheduled date';
 
 scheduledDate 'Scheduled date' (Order o) = DATE(scheduledDateTime(o));
 
@@ -65,20 +70,25 @@ location = DATA Location (Order) PREREAD;
 nameLocation 'Location' (Order o) = name(location(o));
 CONSTRAINT SETCHANGED(location(Order o)) AND internalUse(location(o)) CHECKED BY location[Order]
     MESSAGE 'The selected location is for internal use';
+property (Order o, STRING p) += nameLocation(o) IF p = 'Location';
 
 // currency
 currency = DATA Currency (Order);
 nameCurrency 'Currency' (Order o) = name(currency(o));
+property (Order o, STRING p) += nameCurrency(o) IF p = 'Currency';
 
 WHEN LOCAL SETCHANGED(type(Order o)) AND currency(type(o)) AND NOT CHANGED(currency(o)) DO currency(o) <- currency(type(o));  
 
 // Sales information
 representative 'Our representative' = DATA Employee (Order);
 nameRepresentative 'Our representative' (Order o)= MasterData.name(representative(o));
+property (Order o, STRING p) += nameRepresentative(o) IF p = 'Our representative';
 
 representative(Order o) <- currentUser() IF currentUser() IS Employee WHEN SET(o IS Order);
 
 customerReference '{Customer_reference}' = DATA STRING[30] (Order) INDEXED;
+property (Order o, STRING p) += customerReference(o) IF p = '{Customer_reference}';
+
 note 'Note' = DATA ISTRING (Order) CHARWIDTH 20;
 
 details 'Details' = DATA RICHTEXT (Order);
@@ -256,6 +266,11 @@ DESIGN order {
     }            
 }
 
+showOrder (LONG id) {
+    FOR LONG(Order o AS Order) = id DO
+        SHOW order OBJECTS o = o DOCKED;
+} @@api;
+
 @defineDocDiscountForm(order, o);
 
 background = ABSTRACT CASE COLOR (Order);
@@ -276,6 +291,7 @@ FORM orders 'Sales orders'
 @extendFormEditable(orders);
 
 @defineDocHistory(order, o, item);
+@defineHistoryProperty(order, location, 'Location', nameLocation);
 @defineDocHistoryLineProperty(order, OrderLine, quantity, 'Qty', nameItem);
 
 @defineDocObjectsForm(orders, o, 'Sales orders');

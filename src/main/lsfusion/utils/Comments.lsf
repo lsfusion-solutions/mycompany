@@ -26,6 +26,9 @@ META defineObjectComments (obj, let, container)
     
     text 'Text' = DATA RICHTEXT (###obj##Comment);
     
+    header = ABSTRACT VALUE HTMLTEXT (###obj##Comment);
+    html (###obj##Comment c) = CONCAT '', header(c), text(c);
+    
     FORM edit###obj##Comment 'Comment'
         OBJECTS c = ###obj##Comment PANEL
         PROPERTIES(c) '' = text
@@ -41,7 +44,7 @@ META defineObjectComments (obj, let, container)
     EXTEND FORM obj
         OBJECTS cmt = ###obj##Comment CUSTOM 'comments'
         PROPERTIES id = VALUE(cmt)
-        PROPERTIES(cmt) nameUser, dateTime, text
+        PROPERTIES(cmt) nameUser, dateTime, text = html
         PROPERTIES(cmt) edit ON CHANGE {
             SHOW edit###obj##Comment OBJECTS c = cmt;
         },
@@ -61,6 +64,8 @@ META defineObjectComments (obj, let, container)
     
     EXTEND FORM obj
         PROPERTIES inputComment(), newComment(let)
+        
+        EVENTS ON APPLY { newComment(let); }
     ;
     
     DESIGN obj {
@@ -88,4 +93,14 @@ META defineObjectComments (obj, let, container)
             }
         }
     }
+END
+
+META defineObjectCommentsHistory(obj)
+    comment = DATA ###obj##Comment (###obj##History) INDEXED;
+
+    changes (###obj##Comment tc) = HTMLTEXT('<ul style="color:#959595">' + (GROUP CONCAT ('<li>' + type(###obj##History th) + ' : ' + description(th) + '</li>') IF comment(th) = tc, '' ORDER th) + '</ul>');
+    header (###obj##Comment tc) += changes(tc);
+
+    WHEN SET(###obj##Comment tc IS ###obj##Comment) AND SET(###obj##History th IS ###obj##History) DO
+        comment(th) <- tc;
 END
