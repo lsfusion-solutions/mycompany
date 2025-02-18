@@ -1,0 +1,50 @@
+MODULE LeadCustomer;
+
+REQUIRE Lead;
+
+NAMESPACE CRM;
+
+createLegalEntity 'Create Legal entity' (Lead l) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    NEWSESSION {
+        NEW le = LegalEntity {
+            
+            name(le) <- legalEntityName(l);
+            
+            phone(le) <- phone(l);
+            email(le) <- email(l);
+            
+            address(le) <- address(l);
+            city(le) <- city(l);
+            state(le) <- state(l);
+            zip(le) <- zip(l);
+
+            website(le) <- website(l);
+            
+            IF firstName(l) OR lastName(l) THEN NEW i = Individual {
+                legalEntity(i) <- le;
+                
+                firstName(i) <- firstName(l);
+                lastName(i) <- lastName(l);
+                middleName(i) <- middleName(l);
+                
+                position(i) <- position(l);
+            }
+            
+            customer(l) <- le;
+            SHOW partner OBJECTS p = le DOCKED;
+        }
+    }
+}
+
+EXTEND FORM lead
+    PROPERTIES(l) createLegalEntity SHOWIF NOT customer(l)
+;
+
+DESIGN lead {
+    secondaryActions {
+        MOVE PROPERTY(createLegalEntity(l)) { valueClass = 'btn-secondary'; }
+    }
+}

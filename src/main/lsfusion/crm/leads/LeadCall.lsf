@@ -1,0 +1,16 @@
+MODULE LeadCall;
+
+REQUIRE Lead, EmployeeCall;
+
+NAMESPACE CRM;
+
+@defineObjectCall(lead, 'Lead', lead, l, details);
+
+@defineObjectCallTo(lead, l);
+
+openLeadPhone (ISTRING[100] phone) =
+    GROUP LAST Lead l ORDER l WHERE opened(l) AND match(phone(l), phone);
+
+callerName (Lead l) = CONCAT ' ', name(l), '(' + 'Lead' + ')';
+
+@defineObjectHooks(lead, l, 'Lead', openLeadPhone, salesPerson, callerName);

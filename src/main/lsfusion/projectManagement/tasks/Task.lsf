@@ -60,10 +60,10 @@ onCreate ABSTRACT LIST (Task);
 
 FORM task '{Task}'
     OBJECTS t = Task PANEL
-    PROPERTIES(t) id, name, nameStatus,
-        nameAuthor, nameAssignedTo,
-        nameType, namePriority, tags,
-        deadline, description
+    PROPERTIES(t) id, name, nameStatus SELECT 'buttonGroup',
+                  nameAuthor, nameAssignedTo,
+                  nameType, namePriority, tags,
+                  deadline, description
 
     EDIT Task OBJECT t
 ;
@@ -76,6 +76,7 @@ DESIGN task {
             NEW leftPane {
                 fill = 1;
                 NEW header {
+                    alignment = STRETCH;
                     NEW main {
                         horizontal = TRUE;
                         alignment = STRETCH;
@@ -85,7 +86,6 @@ DESIGN task {
                     NEW params {
                         lines = 2;
                         alignment = STRETCH;
-                        MOVE PROPERTY(nameStatus(t));
                         MOVE PROPERTY(nameAuthor(t));
                         MOVE PROPERTY(nameAssignedTo(t));
                         MOVE PROPERTY(nameType(t));
@@ -110,6 +110,13 @@ DESIGN task {
     }
 }
 
+@defineFormStatusContainer(task);
+DESIGN task {
+    status {
+        MOVE PROPERTY(nameStatus(t));
+    }
+}
+
 showTask (LONG id) {
     FOR LONG(Task t AS Task) = id DO
         SHOW task OBJECTS t = t DOCKED;
@@ -117,8 +124,9 @@ showTask (LONG id) {
 
 FORM tasks '{Tasks}'
     OBJECTS t = Task BACKGROUND rgbColorPriority(t)
-    PROPERTIES(t) READONLY
-    id, name, nameAuthor, nameAssignedTo, nameStatus, nameType, namePriority, tags, deadline, closed
+    PROPERTIES(t) READONLY id, name, nameAuthor, nameAssignedTo, 
+                           nameStatus, nameType, namePriority, 
+                           tags, deadline, closed
     PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
 
     FILTERGROUP active

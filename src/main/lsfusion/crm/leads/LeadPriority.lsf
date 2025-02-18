@@ -1,0 +1,50 @@
+MODULE LeadPriority;
+
+REQUIRE CRMSettings, Color;
+
+NAMESPACE CRM;
+
+CLASS LeadPriority 'Lead priority';
+name '{Name}' = DATA ISTRING[50] (LeadPriority) NONULL CHARWIDTH 15;
+
+id '{ID}' = DATA STRING[20] (LeadPriority);
+leadPriority = GROUP AGGR LeadPriority t BY id(t);
+
+color 'Color' = DATA Color (LeadPriority);
+nameColor 'Color' (LeadPriority p) = name(color(p));
+idColor 'Color' (LeadPriority p) = id(color(p));
+rgbColor 'Color' (LeadPriority p) = rgb(color(p));
+
+FORM leadPriority 'Lead priority'
+    OBJECTS o = LeadPriority PANEL
+    PROPERTIES(o) name, id, nameColor
+
+    EDIT LeadPriority OBJECT o;
+;
+
+DESIGN leadPriority {
+    OBJECTS {
+        NEW tabbedPane {
+            fill = 1;
+            tabbed = TRUE;
+        }
+    }
+}
+
+FORM leadPriorityes 'Lead priorities'
+    OBJECTS o = LeadPriority
+    PROPERTIES(o) READONLY name, id, nameColor
+    LIST LeadPriority OBJECT o
+;
+
+EXTEND FORM options
+    OBJECTS tp = LeadPriority
+    PROPERTIES(tp) READONLY name, id, nameColor
+    PROPERTIES(tp) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(tp) { caption = 'Lead priorities'; }
+    }
+}

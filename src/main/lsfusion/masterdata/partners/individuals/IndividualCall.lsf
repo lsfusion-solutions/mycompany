@@ -24,28 +24,6 @@ DESIGN partner {
 partnerPhone (ISTRING[100] phone) =
     GROUP LAST Partner p ORDER p WHERE match(phone(p), phone);
 
-start (Call c) +{
-    IF outgoing(c) THEN {
-        FOR Partner p = partnerPhone(recipient(c)) DO {
-            partner(c) <- p;
-        }
-    } ELSE {
-        FOR Partner p = partnerPhone(caller(c)) DO {
-            partner(c) <- p;
-            redirect(c) <- OVERRIDE redirectCall(p), redirectCall(legalEntity(p));
-            callerName(c) <- ISTRING[100](contactName(p));
-        }
-    }
-}
+individualRedirectCall (Partner p) = OVERRIDE redirectCall(p), redirectCall(legalEntity(p));
 
-internal (Call c, Employee e) +{
-    FOR Partner p = partner(c) AND pushConnection(e) DO {
-        NEWTHREAD {
-            SHOW partner OBJECTS p = p DOCKED NOWAIT;
-        } TO exportInteger;
-        pushNotify(pushConnection(e),
-            notification('Incoming call',
-                JSON FROM body = (CONCAT ' : ', 'Partner', contactName(p))),
-            action(exportInteger()));
-    }
-}
+@defineObjectHooks(partner, p, '{Application}', partnerPhone, individualRedirectCall, contactName);

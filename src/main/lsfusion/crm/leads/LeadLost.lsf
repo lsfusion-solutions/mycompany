@@ -1,0 +1,73 @@
+MODULE LeadLost;
+
+REQUIRE Lead;
+
+NAMESPACE CRM;
+
+CLASS LostReason 'Lost reason';
+name '{Name}' = DATA ISTRING[100] (LostReason) NONULL CHARWIDTH 15;
+
+FORM lostReason 'Lost reason'
+    OBJECTS o = LostReason PANEL
+    PROPERTIES(o) name
+
+    EDIT LostReason OBJECT o;
+;
+
+FORM lostReasons 'Lost reasons'
+    OBJECTS o = LostReason
+    PROPERTIES(o) READONLY name
+    LIST LostReason OBJECT o
+;
+
+EXTEND FORM options
+    OBJECTS lr = LostReason
+    PROPERTIES(lr) READONLY name
+    PROPERTIES(lr) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(lr) { caption = 'Lost reasons'; }
+    }
+}
+
+lostLeadStatus = DATA LeadStatus ();
+lost 'Lost' (LeadStatus l) = lostLeadStatus() = l;
+
+EXTEND FORM leadStatus
+    PROPERTIES(o) lost
+;
+
+lostReason = DATA LostReason (Lead);
+nameLostReason 'Lost reason' (Lead l) = name(lostReason(l));
+
+setLost 'Lost' (Lead l) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    DIALOG lostReasons OBJECTS o INPUT DO {
+        NEWSESSION {
+            lostReason(l) <- o;
+            status(l) <- lostLeadStatus();
+            APPLY;
+        }
+    }
+
+}
+
+EXTEND FORM lead
+    PROPERTIES(l) setLost SHOWIF NOT closed(l)
+    
+    PROPERTIES(l) nameLostReason SHOWIF status(l) = lostLeadStatus()
+;
+
+DESIGN lead {
+    secondaryActions {
+        MOVE PROPERTY(setLost(l)) { valueClass = 'btn-danger'; }
+    }
+
+    params {
+        MOVE PROPERTY(nameLostReason(l)) FIRST;
+    }
+}

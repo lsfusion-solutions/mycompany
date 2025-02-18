@@ -1,0 +1,238 @@
+MODULE Lead;
+
+REQUIRE CRMSettings, Employee,
+        Doc, FileUtils, Comments,
+        LeadPriority, LeadTag, LeadStatus;
+
+NAMESPACE CRM;
+
+CLASS Lead '{Lead}';
+
+readonly = ABSTRACT CASE BOOLEAN (Lead);
+
+dateTime 'Date' = DATA DATETIME (Lead) NONULL IN id;
+WHEN LOCAL SET (Lead l IS Lead) AND NOT CHANGED(dateTime(l)) DO dateTime(l) <- currentDateTime();
+
+@defineID(lead, 'Leads', '', 6);
+
+name '{Name}' = DATA ISTRING (Lead) CHARWIDTH 30 IN id;
+
+idName '{Name}' (Lead l) = CONCAT ' ', '#' + id(l), name(l);
+
+prefixName = ABSTRACT VALUE ISTRING (Lead);
+property = ABSTRACT VALUE ISTRING (Lead, STRING);
+
+customer 'Customer' = DATA Partner (Lead);
+nameCustomer 'Customer' (Lead l) = name(customer(l));
+property (Lead l, STRING p) += nameCustomer(l) IF p = 'Customer';
+
+salesPerson 'Sales person' = DATA Employee (Lead);
+nameSalesPerson 'Sales person' (Lead l) = name(salesPerson(l));
+WHEN LOCAL SET(Lead l IS Lead) AND NOT salesPerson(l) AND currentUser() IS Employee DO salesPerson(l) <- currentUser();
+property (Lead l, STRING p) += nameSalesPerson(l) IF p = 'Sales person';
+
+expectedClosing 'Expected closing' = DATA DATE (Lead);
+property (Lead l, STRING p) += ISTRING(expectedClosing(l)) IF p = 'Expected closing';
+
+description 'Description' = DATA RICHTEXT (Lead) CHARWIDTH 20;
+
+status 'Status' = DATA LeadStatus (Lead);
+nameStatus 'Status' (Lead l) = name(status(l)) IN id;
+
+closed 'Closed' (Lead l) = closed(status(l));
+opened 'Opened' (Lead l) = l IS Lead AND NOT closed(l);
+
+priority 'Priority' = DATA LeadPriority (Lead);
+namePriority 'Priority' (Lead l) = name(priority(l));
+idColorPriority (Lead l) = idColor(priority(l));
+rgbColorPriority (Lead l) = rgbColor(priority(l));
+property (Lead l, STRING p) += namePriority(l) IF p = 'Priority';
+
+in 'Incl.' = DATA BOOLEAN (Lead, LeadTag);
+tags 'Tags' (Lead l) = GROUP CONCAT name(LeadTag tg) IF in(l, tg), ', ' ORDER name(tg), tg;
+property (Lead l, STRING p) += tags(l) IF p = 'Tags';
+
+// revenue
+
+expectedRevenue 'Expected revenue' = DATA NUMERIC[12,2] (Lead);
+probability 'Probability' = DATA NUMERIC[6,2] (Lead);
+
+// company
+phone 'Phone' = DATA ISTRING[100] (Lead) CHARWIDTH 12;
+email 'Email' = DATA ISTRING[400] (Lead) CHARWIDTH 20 REGEXP '[\\-!#-\'*+\\/-9=?A-Z^-~]+(\\.[\\-!#-\'*+\\/-9=?A-Z^-~]+)*@[0-9A-Za-z]([0-9A-Za-z\\-]\{0,61\}[0-9A-Za-z])?(\\.[0-9A-Za-z]([0-9A-Za-z\\-]\{0,61\}[0-9A-Za-z])?)+' '{authentication.email.contact.incorrect}' IN id;
+
+address 'Address' = DATA ISTRING[150] (Lead) CHARWIDTH 30;
+city 'City' = DATA ISTRING[50] (Lead) CHARWIDTH 12;
+state 'State' = DATA ISTRING[50] (Lead) CHARWIDTH 12;
+zip 'Postcode' = DATA ISTRING[10] (Lead);
+
+addressCsv 'Address' (Lead l) = CONCAT ', ', address(l), city(l), state(l) IF NOT state(l) = city(l), zip(l);
+addressLines 'Address' (Lead l) = CONCAT '\n ', address(l), city(l), state(l) IF NOT state(l) = city(l), zip(l);
+
+website 'Web site' = DATA ISTRING[30] (Lead);
+
+legalEntityName 'Legal entity name' = DATA ISTRING[50] (Lead) CHARWIDTH 15;
+
+// contact
+firstName '{First_name}' = DATA ISTRING[30] (Lead);
+lastName 'Surname' = DATA ISTRING[30] (Lead);
+middleName 'Middle name' = DATA ISTRING[30] (Lead);
+
+position = DATA Position (Lead);
+namePosition 'Position' (Lead l) = name(position(l));
+
+FORM lead '{Lead}'
+    OBJECTS l = Lead PANEL
+    PROPERTIES(l) id, name, nameStatus SELECT 'buttonGroup',
+                  dateTime, expectedRevenue, probability, expectedClosing,
+                  nameCustomer, nameSalesPerson, 
+                  namePriority, tags, 
+                  phone, email,
+                  description,
+                  address, city, state, zip, 
+                  legalEntityName, website,
+                  firstName, lastName, middleName, namePosition
+
+    EDIT Lead OBJECT l
+;
+
+DESIGN lead {
+    OBJECTS {
+        NEW pane {
+            horizontal = TRUE;
+            fill = 1;
+            NEW leftPane {
+                fill = 1;
+                width = 200;
+                NEW header {
+                    alignment = STRETCH;
+                    NEW main {
+                        horizontal = TRUE;
+                        alignment = STRETCH;
+                        MOVE PROPERTY(id(l)) { flex = 0; };
+                        MOVE PROPERTY(name(l)) { flex = 1; fontSize = 16; }
+                    }
+                    NEW revenue {
+                        horizontal = TRUE;
+                        MOVE PROPERTY(dateTime(l));
+                        MOVE PROPERTY(expectedRevenue(l));
+                        MOVE PROPERTY(probability(l));
+                        MOVE PROPERTY(expectedClosing(l));
+                    }
+                    NEW params {
+                        lines = 2;
+                        alignment = STRETCH;
+                        MOVE PROPERTY(nameCustomer(l));
+                        MOVE PROPERTY(email(l));
+                        MOVE PROPERTY(phone(l));
+                        MOVE PROPERTY(nameSalesPerson(l));
+                        MOVE PROPERTY(namePriority(l));
+                        MOVE PROPERTY(tags(l));
+                    }
+                }
+                NEW details {
+                    tabbed = TRUE;
+                    fill = 1;
+                    NEW description {
+                        caption = 'Description';
+                        MOVE PROPERTY(description(l)) { caption = ''; fill = 1; }
+                    }
+                    NEW otherInformation {
+                        caption = 'Other information';
+                        lines = 2;
+                        MOVE PROPERTY(legalEntityName(l));
+                        MOVE PROPERTY(website(l));
+                        
+                        NEW address {
+                            alignment = STRETCH;
+                            MOVE PROPERTY(address(l));
+                            MOVE PROPERTY(city(l));
+                            MOVE PROPERTY(state(l));
+                            MOVE PROPERTY(zip(l));
+                        }
+                        
+                        NEW contact {
+                            alignment = STRETCH;
+                            MOVE PROPERTY(firstName(l));
+                            MOVE PROPERTY(lastName(l));
+                            MOVE PROPERTY(middleName(l));
+                            MOVE PROPERTY(namePosition(l));
+                        }
+                    }
+                }
+            }
+            NEW rightPane {
+                fill = 1;
+                NEW relatedDoc {
+                    tabbed = TRUE;
+                    alignment = STRETCH;
+                }
+            }
+        }
+    }
+}
+
+@defineFormStatusContainer(lead);
+DESIGN lead {
+    status {
+        MOVE PROPERTY(nameStatus(l));
+    }
+}
+
+showLead (LONG id) {
+    FOR LONG(Lead l AS Lead) = id DO
+        SHOW lead OBJECTS l = l DOCKED;
+} @@api;
+
+FORM leads '{Leads}'
+    OBJECTS l = Lead BACKGROUND rgbColorPriority(l)
+    PROPERTIES(l) READONLY dateTime, id, name, nameStatus,
+                           nameCustomer, nameSalesPerson,
+                           namePriority, tags, expectedClosing,
+                           phone, email,
+                           expectedRevenue, probability,
+                           address, city, state, zip,
+                           legalEntityName, website,
+                           firstName, lastName, middleName, namePosition
+    PROPERTIES(l) NEWSESSION NEW, EDIT, DELETE
+
+    FILTERGROUP active
+        FILTER 'Opened' opened(l) 'F8' DEFAULT
+        FILTER 'Closed' closed(l) 'F7'
+
+    FILTERGROUP my
+        FILTER 'My leads' salesPerson(l) = currentUser() 'F6'
+
+    LIST Lead OBJECT l
+;
+
+@defineDocObjectsForm(leads, l, 'Leads');
+    
+@defineObjectHistory(lead);
+@defineHistoryProperty(lead, name, '{Name}');
+@defineHistoryProperty(lead, status, 'Status', nameStatus);
+@defineHistoryProperty(lead, customer, 'Customer', nameCustomer);
+@defineHistoryProperty(lead, salesPerson, 'Sales person', nameSalesPerson);
+@defineHistoryProperty(lead, expectedClosing, 'Expected closing');
+@defineHistoryProperty(lead, priority, 'Priority', namePriority);
+@defineDocHistoryForm(lead, lead, l);
+
+@defineObjectFiles(lead, l, 'Lead file');
+
+@defineObjectComments(lead, l, rightPane);
+@defineObjectCommentsHistory(lead);
+
+WHEN [GROUP SUM 1 IF SET(LeadHistory lh IS LeadHistory) BY lead(lh)](Lead l) AND NOT [GROUP SUM 1 IF SET(LeadComment lc IS LeadComment) BY lead(lc)](l) DO
+    NEW tc = LeadComment {
+        lead(tc) <- l;
+    }
+
+DESIGN leads {
+    PROPERTY(tags(l)) { valueHeight = 18; }
+}
+
+NAVIGATOR {
+    operations {
+        NEW leads;
+    }
+}

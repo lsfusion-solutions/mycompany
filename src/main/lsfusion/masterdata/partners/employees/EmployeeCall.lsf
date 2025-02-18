@@ -40,6 +40,50 @@ END
 
 @defineObjectCall(partner, 'Partner', partner, p, tabs);
 
+META defineObjectCallTo (object, let)
+    call 'Call to' (###object l) {
+        call(phone(l));
+    }
+
+    EXTEND FORM object
+        PROPERTIES(let) call SHOWIF callAvailable() AND phone(let)
+    ;
+
+    DESIGN object {
+        secondaryActions {
+            MOVE PROPERTY(call(let)) { valueClass = 'btn-info'; }
+        }
+    }
+END
+
+META defineObjectHooks (object, let, capt, findProp, redirectProp, hintProp)
+    start (Call c) +{
+        IF outgoing(c) THEN {
+            FOR ###object l = findProp(recipient(c)) DO {
+                object(c) <- l;
+            }
+        } ELSE {
+            FOR ###object l = findProp(caller(c)) DO {
+                object(c) <- l;
+                redirect(c) <- redirectProp(l);
+                callerName(c) <- hintProp(l);
+            }
+        }
+    }
+
+    internal (Call c, Employee e) +{
+        FOR ###object l = object(c) AND pushConnection(e) DO {
+            NEWTHREAD {
+                SHOW object OBJECTS let = l DOCKED NOWAIT;
+            } TO exportInteger;
+            pushNotify(pushConnection(e),
+                notification('Incoming call',
+                    JSON FROM body = hintProp(l)),
+                action(exportInteger()));
+        }
+    }
+END
+
 answer (Call c, Employee e) +{
     employee(c) <- e;
 }

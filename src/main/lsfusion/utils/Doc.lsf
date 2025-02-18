@@ -91,6 +91,32 @@ META defineDocStatus (doc, title)
     @defineDocStatus (doc, title, draft, 'Draft');
 END
 
+META defineFormStatusContainer (form)
+    DESIGN form {
+        NEW statusPane FIRST {
+            horizontal = TRUE;
+            alignment = STRETCH;
+            NEW statusActions {
+                horizontal = TRUE;
+                flex = 1;
+                NEW primaryActions {
+                    horizontal = TRUE;
+                }
+                NEW secondaryActions {
+                    horizontal = TRUE;
+                }
+            }
+            NEW statusContainer {
+                fill = 1;
+                NEW status {
+                    alignment = END;
+                    horizontal = TRUE;
+                }
+            }
+        }
+    }
+END
+
 META defineDocStatusForm (doc, let, beforeProp, firstStatus, firstStatusCapt)
     EXTEND FORM doc##s
         PROPERTIES(##let) READONLY imagedNameStatus BACKGROUND colorStatus(##let) BEFORE beforeProp(##let)
@@ -108,34 +134,17 @@ META defineDocStatusForm (doc, let, beforeProp, firstStatus, firstStatusCapt)
         PROPERTIES(##let) READONLY imagedNameStatus BACKGROUND colorStatus(##let)
     ;
     
+    @defineFormStatusContainer(doc);
+        
     DESIGN doc {
-        NEW statusPane FIRST {
-            horizontal = TRUE;
-            alignment = STRETCH;                          
-            NEW statusActions {
-                horizontal = TRUE;                    
-                flex = 1; 
-                NEW primaryActions {
-                    horizontal = TRUE;
-                }
-                NEW secondaryActions {
-                    horizontal = TRUE;
-                }           
+        status {
+            MOVE PROPERTY(imagedNameStatus(##let));
+            NEW statusGroup {
+                custom = '';
+                class = 'btn-group';
             }
-            NEW statusContainer {
-                fill = 1;
-                NEW status {
-                    alignment = END;
-                    horizontal = TRUE;
-                    MOVE PROPERTY(imagedNameStatus(##let));
-                    NEW statusGroup {
-                        custom = '';
-                        class = 'btn-group';
-                    }
-                }
-            }
-        }    
-    } 
+        }
+    }
 END
 
 META defineDocStatusForm (doc, let, beforeProp)

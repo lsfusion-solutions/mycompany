@@ -4,47 +4,13 @@ REQUIRE Application, EmployeeCall;
 
 NAMESPACE HumanResources;
 
-call 'Call to' (Application a) {
-    call(phone(a));
-}
-
-EXTEND FORM application
-    PROPERTIES(a) call SHOWIF callAvailable() AND phone(a)
-;
-
-DESIGN application {
-    secondaryActions {
-        MOVE PROPERTY(call(a)) { valueClass = 'btn-info'; }
-    }
-}
-
 @defineObjectCall(application, '{Application}', application, a, details);
+
+@defineObjectCallTo(application, a);
 
 openApplicationPhone (ISTRING[100] phone) = 
     GROUP LAST Application a ORDER a WHERE opened(a) AND match(phone(a), phone);
 
-start (Call c) +{
-    IF outgoing(c) THEN {
-        FOR Application a = openApplicationPhone(recipient(c)) DO {
-            application(c) <- a;
-        }
-    } ELSE {
-        FOR Application a = openApplicationPhone(caller(c)) DO {
-            application(c) <- a;
-            redirect(c) <- recruiter(a);
-            callerName(c) <- CONCAT ' ', name(a), '(' + '{Application}' + ')'; 
-        }
-    }
-}
+callerName (Application a) = CONCAT ' ', name(a), '(' + '{Application}' + ')';
 
-internal (Call c, Employee e) +{
-    FOR Application a = application(c) AND pushConnection(e) DO {
-        NEWTHREAD {
-            SHOW application OBJECTS a = a DOCKED NOWAIT;
-        } TO exportInteger;
-        pushNotify(pushConnection(e), 
-                   notification('Incoming call', 
-                       JSON FROM body = (CONCAT ' : ', '{Application}', name(a))), 
-                   action(exportInteger()));
-    }
-}
+@defineObjectHooks(application, a, '{Application}', openApplicationPhone, recruiter, callerName);
