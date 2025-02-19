@@ -78,48 +78,61 @@ DESIGN application {
     caption = badged('{Application}', CONCAT ' ', firstName(a), lastName(a));
 
     OBJECTS {
-        NEW main {
+        NEW pane {
             horizontal = TRUE;
-            alignment = STRETCH;
-            MOVE PROPERTY(dateTime(a));
-            MOVE PROPERTY(subject(a)) { flex = 3; }
-            MOVE PROPERTY(namePosition(a)) { flex = 1; }
-            MOVE PROPERTY(nameDepartment(a)) { flex = 1; }
-        }
-        NEW params {
-            caption = 'Parameters';
-            horizontal = TRUE;
-            alignment = STRETCH;
-            NEW name {
-                MOVE PROPERTY(firstName(a));
-                MOVE PROPERTY(lastName(a));
-                MOVE PROPERTY(middleName(a));
-            }
-            NEW contact {
-                MOVE PROPERTY(phone(a));
-                MOVE PROPERTY(email(a));
-                MOVE PROPERTY(availability(a));
-            }
-            NEW process {
-                MOVE PROPERTY(nameRecruiter(a));
-                MOVE PROPERTY(tags(a));
-            }
-            NEW finance {
-                MOVE PROPERTY(expectedSalary(a));
-                MOVE PROPERTY(proposedSalary(a));
-            }
-        }
-        NEW details {
-            tabbed = TRUE;
             fill = 1;
-            NEW description {
-                caption = 'Description';
-                height = 100;
-                MOVE PROPERTY(description(a)) { caption = ''; fill = 1; valueHeight = -1; }
+            NEW leftPane {
+                fill = 1;
+                width = 200;
+
+                NEW main {
+                    horizontal = TRUE;
+                    alignment = STRETCH;
+                    MOVE PROPERTY(dateTime(a));
+                    MOVE PROPERTY(subject(a)) { flex = 3; }
+                    MOVE PROPERTY(namePosition(a)) { flex = 1; }
+                    MOVE PROPERTY(nameDepartment(a)) { flex = 1; }
+                }
+                NEW params {
+                    caption = 'Parameters';
+                    horizontal = TRUE;
+                    alignment = STRETCH;
+                    NEW name {
+                        MOVE PROPERTY(firstName(a));
+                        MOVE PROPERTY(lastName(a));
+                        MOVE PROPERTY(middleName(a));
+                    }
+                    NEW contact {
+                        MOVE PROPERTY(phone(a));
+                        MOVE PROPERTY(email(a));
+                        MOVE PROPERTY(availability(a));
+                    }
+                    NEW process {
+                        MOVE PROPERTY(nameRecruiter(a));
+                        MOVE PROPERTY(tags(a));
+                    }
+                    NEW finance {
+                        MOVE PROPERTY(expectedSalary(a));
+                        MOVE PROPERTY(proposedSalary(a));
+                    }
+                }
+                NEW details {
+                    tabbed = TRUE;
+                    fill = 1;
+                    NEW description {
+                        caption = 'Description';
+                        height = 100;
+                        MOVE PROPERTY(description(a)) { caption = ''; fill = 1; valueHeight = -1; }
+                    }
+                    NEW summary {
+                        caption = 'Summary';
+                        MOVE PROPERTY(summary(a)) { caption = ''; fill = 1; valueHeight = -1; }
+                    }
+                }
             }
-            NEW summary {
-                caption = 'Summary';
-                MOVE PROPERTY(summary(a)) { caption = ''; fill = 1; valueHeight = -1; }
+            NEW rightPane {
+                fill = 1;
+                width = 200;
             }
         }
     }
@@ -148,7 +161,7 @@ FORM applications 'Applications'
 @defineDocObjectsForm(applications, a, 'Applications');
 @defineDocStatusForm(application, a, dateTime, new, 'New');
 
-@defineObjectComments(application, a, details);
+@defineObjectComments(application, a, rightPane);
 
 @defineObjectFiles(application, a, 'Application file');
 
