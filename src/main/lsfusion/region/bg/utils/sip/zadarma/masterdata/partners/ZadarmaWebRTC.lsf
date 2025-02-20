@@ -33,13 +33,15 @@ EXTEND FORM integrationData
 loadWebRTC INTERNAL CLIENT 'zadarmaLoadWebRTC' (STRING, STRING);
 
 onWebClientInit() + {
-    IF currentPBXNumber() THEN {
-        onWebClientInit('zadarma.js') <- 1;
-    }
+    onWebClientInit('zadarma.js') <- 1;
 }
 onWebClientLoad() + {
     IF currentPBXNumber() THEN {
         apiGetWebRTCKey(currentPBXNumber());
+
+        INTERNAL CLIENT WAIT 'https://my.zadarma.com/webphoneWebRTCWidget/v9/js/loader-phone-lib.js?sub_v=1';
+        INTERNAL CLIENT WAIT 'https://my.zadarma.com/webphoneWebRTCWidget/v9/js/loader-phone-fn.js?sub_v=1';
+
         loadWebRTC(webRTCKey(currentPBXNumber()), loginCurrentPBXNumber());
     }
 }
