@@ -220,12 +220,12 @@ FORM leads '{Leads}'
 @defineObjectFiles(lead, l, 'Lead file');
 
 @defineObjectComments(lead, l, rightPane);
-@defineObjectCommentsHistory(lead);
 
-WHEN [GROUP SUM 1 IF SET(LeadHistory lh IS LeadHistory) BY lead(lh)](Lead l) AND NOT [GROUP SUM 1 IF SET(LeadComment lc IS LeadComment) BY lead(lc)](l) DO
-    NEW tc = LeadComment {
-        lead(tc) <- l;
-    }
+@defineObjectCommentsHistory(lead);
+@defineObjectCommentsCreate(lead, history);
+
+@defineObjectCommentsFiles(lead, CRM);
+@defineObjectCommentsCreate(lead, file);
 
 DESIGN leads {
     PROPERTY(tags(l)) { valueHeight = 18; }

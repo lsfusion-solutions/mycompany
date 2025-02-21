@@ -156,10 +156,11 @@ FORM tasks '{Tasks}'
 @defineObjectComments(task, t, rightPane);
 @defineObjectCommentsHistory(task);
 
-WHEN [GROUP SUM 1 IF SET(TaskHistory th IS TaskHistory) BY task(th)](Task t) AND NOT [GROUP SUM 1 IF SET(TaskComment tc IS TaskComment) BY task(tc)](t) DO
-    NEW tc = TaskComment {
-        task(tc) <- t;
-    }
+@defineObjectCommentsCreate(task, history);
+
+@defineObjectCommentsFiles(task, ProjectManagement);
+
+@defineObjectCommentsCreate(task, file);
 
 DESIGN tasks {
     PROPERTY(tags(t)) { valueHeight = 18; }
