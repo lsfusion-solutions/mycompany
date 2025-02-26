@@ -11,6 +11,7 @@ id '{ID}' = DATA STRING[20] (LeadStatus);
 leadStatus = GROUP AGGR LeadStatus t BY id(t);
 
 sortingOrder 'Sorting order' = DATA INTEGER (LeadStatus);
+index 'Index' (LeadStatus s) = PARTITION SUM 1 IF s IS LeadStatus ORDER sortingOrder(s), s;
 
 closed 'Closed' = DATA BOOLEAN (LeadStatus);
 

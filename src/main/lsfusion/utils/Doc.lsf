@@ -64,6 +64,9 @@ META defineDocStatus (doc, title, firstStatus, firstStatusCapt)
     colorStatus 'Color' (###doc d) = color(status(d));
     
     status(###doc d) += WHEN d IS ###doc THEN ###doc##Status.firstStatus;
+
+    sortingOrder 'Sorting order' = ABSTRACT INTEGER (###doc##Status) MATERIALIZED;
+    index 'Index' (###doc##Status s) = PARTITION SUM 1 IF s IS ###doc##Status ORDER sortingOrder(s), s;
     
     readonly 'Read-only' = DATA BOOLEAN (###doc##Status);
 
@@ -153,6 +156,93 @@ END
 
 META defineDocStatusForm (doc, let)
     @defineDocStatusForm(doc, let, nameType);
+END
+
+META defineDocStatusChange (obj, capt)
+    CLASS ###obj##StatusChange capt;
+
+    obj = DATA ###obj (###obj##StatusChange);
+    countStatusChange (###obj o) = GROUP SUM 1 IF obj(###obj##StatusChange sc) = o;
+    
+    dateTime 'Date' = DATA DATETIME (###obj##StatusChange);
+    dateTime(###obj##StatusChange sc) <- currentDateTime() WHEN SET(sc IS ###obj##StatusChange);
+
+    INDEX obj(###obj##StatusChange sc), dateTime(sc), sc;
+
+    user 'User' = DATA User (###obj##StatusChange);
+    nameUser 'User' (###obj##StatusChange sc) = name(user(sc));
+    user(###obj##StatusChange sc) <- currentUser() WHEN SET(sc IS ###obj##StatusChange);
+
+    status 'Status' = DATA ###obj##Status (###obj##StatusChange);
+    nameStatus 'Status' (###obj##StatusChange sc) = name(status(sc));
+
+    previous (###obj##StatusChange c) = PARTITION PREV c ORDER dateTime(c), c BY obj(c);
+    dateTimePrevious (###obj##StatusChange c) = dateTime(previous(c));
+    secondsBefore (###obj##StatusChange c) = subtractSeconds(dateTimePrevious(c), dateTime(c));
+    hoursBefore 'Hours before' (###obj##StatusChange c) = round2(secondsBefore(c) / 3600);
+
+    nameUserPrevious (###obj##StatusChange c) = nameUser(previous(c));
+    
+    next (###obj##StatusChange c) = PARTITION PREV c ORDER DESC dateTime(c), c BY obj(c);
+    dateTimeNext  (###obj##StatusChange c) = dateTime(next(c));
+    secondsAfter (###obj##StatusChange c) = subtractSeconds(dateTime(c), dateTimeNext(c));
+    hoursAfter 'Hours after' (###obj##StatusChange c) = round2(secondsAfter(c) / 3600);
+    
+    nameUserNext (###obj##StatusChange c) = nameUser(next(c));
+        
+    lastChange (###obj o, ###obj###Status s) = GROUP LAST ###obj##StatusChange sc ORDER dateTime(sc), sc BY obj(sc), status(sc);
+        
+    dateTimeLastChange 'Date' (###obj o, ###obj###Status s) = dateTime(lastChange(o, s));
+    nameUserLastChange 'User' (###obj o, ###obj###Status s) = nameUser(lastChange(o, s));
+
+    secondsBefore (###obj o, ###obj###Status s) = GROUP SUM secondsBefore(###obj##StatusChange sc) IF obj(sc) = o AND status(sc) = s;
+    hoursBefore 'Hours before' (###obj o, ###obj###Status s) = round2(secondsBefore(o, s) / 3600);
+
+    secondsAfter (###obj o, ###obj###Status s) = GROUP SUM secondsAfter(###obj##StatusChange sc) IF obj(sc) = o AND status(sc) = s;
+    hoursAfter 'Hours after' (###obj o, ###obj###Status s) = round2(secondsAfter(o, s) / 3600);
+        
+    WHEN SETCHANGED(status(###obj o)) DO 
+        NEW sc = ###obj##StatusChange {
+            obj(sc) <- o;
+            status(sc) <- status(o);
+        }
+END
+
+META defineDocStatusChangeForm (doc, let, capt)
+    EXTEND FORM doc
+        OBJECTS stch = ###doc##StatusChange
+        PROPERTIES(stch) READONLY dateTime, nameUser, hoursBefore, nameStatus, hoursAfter
+        FILTERS doc(stch) = let
+    ;
+    
+    DESIGN doc {
+        details {
+            MOVE BOX(stch) { 
+                caption = badged('Status change', countStatusChange(let));
+            }
+        }
+    }
+    
+    EXTEND FORM doc##s
+        OBJECTS let##st = ###doc##Status BEFORE let
+        PROPERTIES sortingOrder(let##st)
+        ORDERS sortingOrder(let##st)
+        
+        PROPERTIES(let, let##st) READONLY COLUMNS 'status' (let##st) BACKGROUND RGB(224,224,224) IF mod(index(let##st), 2) = 0
+            hoursBefore HEADER name(let##st) + '\n(' + 'Hours before' + ')', 
+            dateTimeLastChange HEADER name(let##st) + '\n(' + 'Date' + ')', 
+            nameUserLastChange HEADER name(let##st) + '\n(' + 'User' + ')', 
+            hoursAfter HEADER name(let##st) + '\n(' + 'Hours after' + ')'
+    ;
+    
+    DESIGN doc##s {
+        REMOVE BOX(let##st);
+        
+        PROPERTY(hoursBefore(let, let##st)) { hide = TRUE; }
+        PROPERTY(dateTimeLastChange(let, let##st)) { hide = TRUE; }
+        PROPERTY(nameUserLastChange(let, let##st)) { hide = TRUE; }
+        PROPERTY(hoursAfter(let, let##st)) { hide = TRUE; }
+    }
 END
 
 META defineDocSearchAction (doc, docLine, it, fun, capt)
