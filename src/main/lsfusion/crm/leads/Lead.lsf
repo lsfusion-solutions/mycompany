@@ -22,9 +22,11 @@ idName '{Name}' (Lead l) = CONCAT ' ', '#' + id(l), name(l);
 prefixName = ABSTRACT VALUE ISTRING (Lead);
 property = ABSTRACT VALUE ISTRING (Lead, STRING);
 
-customer 'Customer' = DATA Partner (Lead);
+customer 'Customer' = DATA Partner (Lead) INDEXED;
 nameCustomer 'Customer' (Lead l) = name(customer(l));
 property (Lead l, STRING p) += nameCustomer(l) IF p = 'Customer';
+
+countLeads (Partner p) = GROUP SUM 1 IF customer(Lead l) = p;  
 
 salesPerson 'Sales person' = DATA Employee (Lead);
 nameSalesPerson 'Sales person' (Lead l) = name(salesPerson(l));
@@ -66,7 +68,7 @@ city 'City' = DATA ISTRING[50] (Lead) CHARWIDTH 12;
 state 'State' = DATA ISTRING[50] (Lead) CHARWIDTH 12;
 zip 'Postcode' = DATA ISTRING[10] (Lead);
 
-addressCsv 'Address' (Lead l) = CONCAT ', ', address(l), city(l), state(l) IF NOT state(l) = city(l), zip(l);
+addressCsv 'Address' (Lead l) = CONCAT ', ', address(l), city(l), state(l) IF NOT state(l) = city(l), zip(l) CHARWIDTH 20;
 addressLines 'Address' (Lead l) = CONCAT '\n ', address(l), city(l), state(l) IF NOT state(l) = city(l), zip(l);
 
 website 'Web site' = DATA ISTRING[30] (Lead);
