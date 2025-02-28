@@ -63,6 +63,8 @@ probability 'Probability' = DATA NUMERIC[6,2] (Lead);
 phone 'Phone' = DATA ISTRING[100] (Lead) CHARWIDTH 12;
 email 'Email' = DATA ISTRING[400] (Lead) CHARWIDTH 20 REGEXP '[\\-!#-\'*+\\/-9=?A-Z^-~]+(\\.[\\-!#-\'*+\\/-9=?A-Z^-~]+)*@[0-9A-Za-z]([0-9A-Za-z\\-]\{0,61\}[0-9A-Za-z])?(\\.[0-9A-Za-z]([0-9A-Za-z\\-]\{0,61\}[0-9A-Za-z])?)+' '{authentication.email.contact.incorrect}' IN id;
 
+leadEmail (ISTRING[400] email) = GROUP MAX Lead l BY email(l);
+
 address 'Address' = DATA ISTRING[150] (Lead) CHARWIDTH 30;
 city 'City' = DATA ISTRING[50] (Lead) CHARWIDTH 12;
 state 'State' = DATA ISTRING[50] (Lead) CHARWIDTH 12;
@@ -104,8 +106,8 @@ DESIGN lead {
             horizontal = TRUE;
             fill = 1;
             NEW leftPane {
-                fill = 1;
-                width = 200;
+                fill = 2;
+                width = 400;
                 NEW header {
                     alignment = STRETCH;
                     NEW main {
@@ -165,6 +167,7 @@ DESIGN lead {
             }
             NEW rightPane {
                 fill = 1;
+                width = 200;
                 NEW relatedDoc {
                     tabbed = TRUE;
                     alignment = STRETCH;

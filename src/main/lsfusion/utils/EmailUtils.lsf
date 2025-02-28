@@ -20,6 +20,16 @@ DESIGN employee {
     }
 }
 
+emailAccount = DATA Account (Employee);
+nameEmailAccount 'E-mail account' (Employee e) = name(emailAccount(e));
+
+EXTEND FORM employee PROPERTIES(e) nameEmailAccount;
+DESIGN employee {
+    info {
+        MOVE PROPERTY(nameEmailAccount(e));
+    }
+}
+
 META defineObjectNotifyComments(obj, capt, NS)
     notify###obj capt = DATA BOOLEAN (Contact);
     EXTEND FORM employee PROPERTIES(e) NS###notify###obj = notify###obj;
@@ -44,4 +54,186 @@ META defineObjectNotifyComments(obj, capt, NS)
                         body(obj(tc));
         ;
     }
+END
+
+META defineObjectEmailAccount (obj, capt)
+    obj##Account = DATA Account ();
+    name###obj##Account capt = name(obj##Account());
+
+    EXTEND FORM options PROPERTIES name###obj##Account();
+
+    DESIGN options {
+        commons {
+            MOVE PROPERTY(name###obj##Account());
+        }
+    }
+    
+    match###obj (Account a, CustomUser u) = emailAccount(currentUser()) = a OR a = obj##Account();
+END
+
+META defineObjectEmail (obj, capt, let)
+    
+    ignored###obj 'Ignored' = DATA BOOLEAN (Email);
+    obj = DATA ###obj (Email) INDEXED;
+    countEmail (###obj o) = GROUP SUM 1 IF obj(Email e) = o;
+
+    obj##Email (Email e) = OVERRIDE obj(e), obj##Email(fromAddress(e));
+
+    open###obj capt (Email e) {
+        NEWSESSION {
+            SHOW obj OBJECTS let = obj##Email(e) DOCKED;
+        }
+    }
+
+    processed###obj (Email e) = ignored###obj(e) OR obj(e);
+    ready###obj (Email e) = match###obj(account(e), currentUser()) AND NOT processed###obj(e);
+
+    countReady###obj = GROUP SUM 1 IF ready###obj(Email e);
+    
+END
+
+META defineObjectEmailActions (obj, let, nameProp)
+    
+    create###obj##Files(###obj o, Email e) {
+        FOR email(AttachmentEmail ae) = e NEW af = ###obj##File DO {
+            obj(af) <- o;
+            file(af) <- RAWFILE(file(ae));
+
+            name(af) <- name(ae);
+            extension(af) <- extension(file(ae));
+        }
+    }
+
+    fill ABSTRACT LIST (Email, ###obj);
+
+    create###obj 'Create' (Email e) {
+        NEWSESSION {
+            NEW o = ###obj {
+                ignored###obj(e) <- NULL;
+                obj(e) <- o;
+
+                nameProp(o) <- ISTRING[200](subject(e));
+                description(o) <- message(e);
+
+                email(o) <- fromAddress(e);
+
+                create###obj##Files(o, e);
+                
+                fill(e, o);
+
+                SHOW obj OBJECTS let = o DOCKED;
+            }
+        }
+    }
+
+    attach###obj 'Attach' (Email e) {
+        NEWSESSION {
+            FOR ###obj o = obj##Email(fromAddress(e)) DO {
+                ignored###obj(e) <- NULL;
+                obj(e) <- obj##Email(fromAddress(e));
+
+                create###obj##Files(o, e);
+
+                SHOW obj OBJECTS let = o DOCKED;
+            }
+        }
+    }
+
+    writeEmail 'Write an email' (###obj o) {
+        open(HTMLLINK('mailto:' + CONCAT '', email(o), '?subject=' + nameProp(o)));
+    }
+
+END
+
+META defineObjectEmailDashboard (obj, form)
+    
+    EXTEND FORM form
+        OBJECTS e = Email
+        PROPERTIES(e) openEMLFile GRID
+        PROPERTIES(e) READONLY idFolder, subject, fromAddress, dateTimeSent, dateTimeReceived,
+                               message PANEL
+        PROPERTIES(e) ignored###obj ON CHANGE { NEWSESSION { INPUT b = ignored###obj(e) CHANGE; APPLY; } }
+        PROPERTIES(e) open###obj GRID DISABLEIF NOT obj##Email(e)
+        PROPERTIES(e) TOOLBAR
+                      create###obj SHOWIF NOT obj##Email(e),
+                      attach###obj SHOWIF NOT obj(e) AND obj##Email(e)
+        FILTERS match###obj(account(e), currentUser())
+
+        FILTERGROUP toProcess
+            FILTER 'Ready' ready###obj(e) 'F8' DEFAULT
+
+        OBJECTS ea = AttachmentEmail
+        PROPERTIES(ea) name READONLY, openFile GRID
+        FILTERS email(ea) = e
+    ;
+
+    DESIGN form {
+        tabbedPane {
+            NEW email {
+                caption = badged('Email', countReady###obj());
+                showIf = obj##Account() OR emailAccount(currentUser());
+                NEW emailPane {
+                    fill = 1;
+                    horizontal = TRUE;
+                    MOVE BOX(e);
+                    NEW emailDetails {
+                        fill = 1;
+                        NEW emailMessage {
+                            fill = 10;
+                            height = 100;
+                            MOVE PROPERTY(message(e)) { fill = 10; caption = ''; valueHeight = -1; }
+                        }
+                        MOVE BOX(ea) {
+                            GRID(ea) { size = (100, -1); }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+END
+
+META defineObjectEmailForm (obj, let)
+    
+    EXTEND FORM obj
+        OBJECTS em = Email
+        PROPERTIES(em) openEMLFile GRID
+        PROPERTIES(em) READONLY idFolder, subject, fromAddress, dateTimeSent, dateTimeReceived,
+                                message PANEL
+        PROPERTIES(em) reply TOOLBAR
+        FILTERS obj(em) = let
+    ;
+
+    DESIGN obj {
+        details {
+            NEW email {
+                caption = badged('Email', countEmail(let));
+                NEW emailPane {
+                    fill = 1;
+                    horizontal = TRUE;
+                    MOVE BOX(em);
+                    NEW emailRight {
+                        fill = 1;
+                        NEW emailMessage {
+                            fill = 1;
+                            height = 100;
+                            MOVE PROPERTY(message(em)) { fill = 1; valueHeight = -1; caption = ''; }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    EXTEND FORM obj
+        PROPERTIES(let) writeEmail SHOWIF email(let)
+    ;
+
+    DESIGN obj {
+        secondaryActions {
+            MOVE PROPERTY(writeEmail(let)) { valueClass = 'btn-secondary'; }
+        }
+    }
+    
 END
