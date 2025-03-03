@@ -70,3 +70,16 @@ recPositiveAvailable 'Disallow reserving more than available' (Location child) =
 
 CONSTRAINT SET(available (Location ll, Product p) < 0) AND recPositiveAvailable(ll) 
             MESSAGE 'Available balance cannot be negative';
+
+EXTEND FORM location
+    PROPERTIES(l) positiveAvailable
+;
+DESIGN location {
+    params {
+        MOVE PROPERTY(positiveAvailable(l));
+    }
+}
+
+EXTEND FORM locations
+    PROPERTIES(l) READONLY recPositiveAvailable
+;
