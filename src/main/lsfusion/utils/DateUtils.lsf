@@ -37,13 +37,13 @@ END
 
 // aggregations
 
-META defineDateAggregation(cls, prefix, caption)
-    prefix###nameDOW caption##'Day of week' (cls o) = extractDOWName(prefix###date(o));
-    prefix###week caption##'Week' (cls o) = extractWeek(prefix###date(o));
+META defineDateAggregation(cls, prefix, dateProp, caption)
+    prefix###nameDOW caption##'Day of week' (cls o) = extractDOWName(dateProp(o));
+    prefix###week caption##'Week' (cls o) = extractWeek(dateProp(o));
     
-    prefix###numberMonth caption##'Month number' (cls o) = extractMonthNumber(prefix###date(o));
-    prefix###nameMonth caption##'Month' (cls o) = extractMonthName(prefix###date(o));
-    prefix###year caption##'Year' (cls o) = extractYear(prefix###date(o));
+    prefix###numberMonth caption##'Month number' (cls o) = extractMonthNumber(dateProp(o));
+    prefix###nameMonth caption##'Month' (cls o) = extractMonthName(dateProp(o));
+    prefix###year caption##'Year' (cls o) = extractYear(dateProp(o));
 END
 
 META defineDateAggregation(obj)
@@ -53,7 +53,7 @@ END
 META defineDateTimeAggregation(cls, prefix, caption)
     prefix###date caption##'Date' (cls o) = DATE(prefix###dateTime(o));
     
-    @defineDateAggregation(cls, prefix, caption);
+    @defineDateAggregation(cls, prefix, prefix###date, caption);
 
     prefix###minute caption##'Minute' (cls o) = extractMinute(prefix###dateTime(o));
     prefix###hour caption##'Hour' (cls o) = extractHour(prefix###dateTime(o));
@@ -63,21 +63,21 @@ META defineDateTimeAggregation(obj)
     @defineDateTimeAggregation(obj, , );
 END
 
-META defineDateAggregationForm(form, let, prefix)
+META defineDateAggregationForm(form, let, dateProp, prefix)
     EXTEND FORM form
-        PROPERTIES(let) READONLY AFTER prefix###date(let) prefix###nameDOW, prefix###week, prefix###numberMonth, prefix###nameMonth, prefix###year
+        PROPERTIES(let) READONLY AFTER dateProp(let) prefix###nameDOW, prefix###week, prefix###numberMonth, prefix###nameMonth, prefix###year
     ;
 END
 
 META defineDateAggregationForm(form, let)
-    @defineDateAggregationForm(form, let, );
+    @defineDateAggregationForm(form, let, prefix###date, );
 END
 
 META defineDateTimeAggregationForm(form, let, prefix)
     EXTEND FORM form
         PROPERTIES(let) READONLY AFTER prefix###dateTime(let) prefix###minute, prefix###hour, prefix###date
     ;
-    @defineDateAggregationForm(form, let, prefix);
+    @defineDateAggregationForm(form, let, prefix###date, prefix);
 END
 
 META defineDateTimeAggregationForm(form, let)

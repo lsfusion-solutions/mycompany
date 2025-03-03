@@ -29,8 +29,30 @@ DESIGN manufacturingOrderReport {
     }
 }
 
-@defineDateTimeAggregationForm(manufacturingOrderReport, o, scheduled);
-@defineDateFilterForm(manufacturingOrderReport, o, scheduled);
+@defineDateTimeAggregationForm(manufacturingOrderReport, o, scheduled){
+    EXTEND FORM manufacturingOrderReport
+        PROPERTIES(o) READONLY AFTER scheduledDateTime(o) scheduledMinute, scheduledHour, scheduledDate
+    ;
+    @defineDateAggregationForm(manufacturingOrderReport, o, scheduledDate, scheduled){
+    EXTEND FORM manufacturingOrderReport
+        PROPERTIES(o) READONLY AFTER scheduledDate(o) scheduledNameDOW, scheduledWeek, scheduledNumberMonth, scheduledNameMonth, scheduledYear
+    ;
+};
+};
+@defineDateFilterForm(manufacturingOrderReport, o, scheduled){
+    EXTEND FORM manufacturingOrderReport
+        OBJECTS dates = INTERVAL[DATE] BEFORE o PANEL NULL
+        PROPERTIES filterDates 'Date interval' = VALUE(dates)
+
+        FILTERS NOT scheduledDate(o) < from(dates), NOT scheduledDate(o) > to(dates)
+    ;
+    
+    DESIGN manufacturingOrderReport {
+        filters {
+            MOVE PROPERTY(filterDates);
+        }
+    }
+};
 
 NAVIGATOR {
     manufacturing {

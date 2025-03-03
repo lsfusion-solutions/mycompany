@@ -1,0 +1,74 @@
+MODULE LeadReport;
+
+REQUIRE Lead;
+
+NAMESPACE CRM;
+
+FORM leadReport 'Lead report'
+    OBJECTS l = Lead PIVOT
+    PROPERTIES(l) READONLY 
+                  id, name, nameStatus,
+                  dateTime, probability, expectedClosing,
+                  nameCustomer, nameSalesPerson,
+                  namePriority, tags,
+                  phone, email,
+                  description,
+                  address, city, state, zip,
+                  legalEntityName, website,
+                  firstName, lastName, middleName, namePosition
+
+    PROPERTIES(l) READONLY MEASURE
+        expectedRevenue
+;
+
+DESIGN leadReport {
+    OBJECTS {
+        NEW filters FIRST {
+            caption = 'Filters';
+            horizontal = TRUE;
+        }
+    }
+}
+
+
+@defineDateTimeAggregationForm(leadReport, l){
+    @defineDateTimeAggregationForm(leadReport, l, ){
+    EXTEND FORM leadReport
+        PROPERTIES(l) READONLY AFTER dateTime(l) minute, hour, date
+    ;
+    @defineDateAggregationForm(leadReport, l, date, ){
+    EXTEND FORM leadReport
+        PROPERTIES(l) READONLY AFTER date(l) nameDOW, week, numberMonth, nameMonth, year
+    ;
+};
+};
+};
+
+@defineDateAggregationForm(leadReport, l, expectedClosing, expectedClosing){
+    EXTEND FORM leadReport
+        PROPERTIES(l) READONLY AFTER expectedClosing(l) expectedClosingNameDOW, expectedClosingWeek, expectedClosingNumberMonth, expectedClosingNameMonth, expectedClosingYear
+    ;
+};
+
+@defineDateFilterForm(leadReport, l){
+    @defineDateFilterForm(leadReport, l, ){
+    EXTEND FORM leadReport
+        OBJECTS dates = INTERVAL[DATE] BEFORE l PANEL NULL
+        PROPERTIES filterDates 'Date interval' = VALUE(dates)
+
+        FILTERS NOT date(l) < from(dates), NOT date(l) > to(dates)
+    ;
+    
+    DESIGN leadReport {
+        filters {
+            MOVE PROPERTY(filterDates);
+        }
+    }
+};
+};
+
+NAVIGATOR {
+    reporting {
+        NEW leadReport;
+    }
+}
