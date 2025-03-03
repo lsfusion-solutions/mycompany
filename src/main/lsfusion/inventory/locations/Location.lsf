@@ -22,7 +22,11 @@ nameParent 'Parent' (Location l) = name(parent(l));
 
 rootLocation() = GROUP MIN Location l AS Location IF NOT parent(l);
 
-CONSTRAINT [GROUP SUM 1 IF Location l IS Location AND NOT parent(l)]() > 1
+prohibitMultipleRootCategories 'Prohibit multiple root locations' = DATA BOOLEAN ();
+EXTEND FORM options PROPERTIES prohibitMultipleRootCategories();
+DESIGN options { commons { MOVE PROPERTY(prohibitMultipleRootCategories()); } }
+
+CONSTRAINT [GROUP SUM 1 IF Location l IS Location AND NOT parent(l)]() > 1 AND prohibitMultipleRootCategories() 
     MESSAGE 'Parent location is not specified';
 
 CONSTRAINT DROPPED(Location l IS Location) AND PREV(parent(Location cl) = l)
