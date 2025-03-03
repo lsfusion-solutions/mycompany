@@ -85,9 +85,9 @@ onHandAFromLocation 'On hand after (source)' (InvLedger inv) = onHandA(fromLocat
 onHandAToLocation 'On hand after (destination)' (InvLedger inv)= onHandA(toLocation(inv), product(inv), dateTime(inv));                                               
 
 // constraint
-positiveOnHand 'Prohibiting negative balances' = DATA BOOLEAN (Location);
+positiveOnHand 'Disallow negative inventory' = DATA BOOLEAN (Location);
             
-recPositiveOnHand 'Prohibiting negative balances' (Location child) = 
+recPositiveOnHand 'Disallow negative inventory' (Location child) = 
     GROUP LAST positiveOnHand(Location parent) ORDER DESC level(child, parent) 
     WHERE positiveOnHand(parent) MATERIALIZED CHARWIDTH 15;
                                                       
