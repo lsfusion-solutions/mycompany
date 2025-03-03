@@ -20,6 +20,11 @@ parent 'Parent' = DATA Location (Location);
 idParent 'Parent ID' (Location l) = id(parent(l));
 nameParent 'Parent' (Location l) = name(parent(l));
 
+rootLocation() = GROUP MIN Location l AS Location IF NOT parent(l);
+
+CONSTRAINT [GROUP SUM 1 IF Location l IS Location AND NOT parent(l)]() > 1
+    MESSAGE 'Parent location is not specified';
+
 CONSTRAINT DROPPED(Location l IS Location) AND PREV(parent(Location cl) = l)
         MESSAGE 'You cannot delete a storage location that has subordinate warehouses';
 
@@ -78,7 +83,7 @@ DESIGN location {
                 MOVE PROPERTY(internalUse(l));
                 MOVE PROPERTY(archived(l));
             }
-            MOVE PROPERTY(canonicalNameParent(l));
+            MOVE PROPERTY(canonicalNameParent(l)) { notNull = TRUE; }
             MOVE PROPERTY(nameCompany(l));
             NEW address {
                 alignment = STRETCH;
