@@ -1,7 +1,7 @@
 MODULE Lead;
 
 REQUIRE CRMSettings, Employee, DateUtils,
-        Doc, FileUtils, Comments,
+        Doc, FileUtils, Comments, Activity,
         LeadPriority, LeadTag, LeadStatus;
 
 NAMESPACE CRM;
@@ -12,57 +12,9 @@ readonly = ABSTRACT CASE BOOLEAN (Lead);
 
 dateTime 'Date' = DATA DATETIME (Lead) NONULL IN id;
 WHEN LOCAL SET (Lead l IS Lead) AND NOT CHANGED(dateTime(l)) DO dateTime(l) <- currentDateTime();
-@defineDateTimeAggregation(Lead){
-    @defineDateTimeAggregation(Lead, , ){
-    date 'Date' (Lead o) = DATE(dateTime(o));
-    
-    @defineDateAggregation(Lead, , date, ){
-    nameDOW 'Day of week' (Lead o) = extractDOWName(date(o));
-    week 'Week' (Lead o) = extractWeek(date(o));
-    
-    numberMonth 'Month number' (Lead o) = extractMonthNumber(date(o));
-    nameMonth 'Month' (Lead o) = extractMonthName(date(o));
-    year 'Year' (Lead o) = extractYear(date(o));
-};
+@defineDateTimeAggregation(Lead);
 
-    minute 'Minute' (Lead o) = extractMinute(dateTime(o));
-    hour 'Hour' (Lead o) = extractHour(dateTime(o));
-};
-};
-
-@defineID(lead, 'Leads', '', 6){
-    id '{ID}' = DATA STRING[50] (Lead) IN id CHARWIDTH 6 INDEXED;
-    lead (STRING[50] id) = GROUP AGGR Lead o BY id(o);
-    
-    numeratorLead = DATA Numerator();
-    nameNumeratorLead 'Numerator - Leads' = name(numeratorLead());
-    
-    loadDefaultNumerators () + {
-        NEW n = Numerator {
-            name(n) <- 'Leads';
-            series(n) <- '';
-            minValue(n) <- 1;
-            maxValue(n) <- 999999;
-            stringLength(n) <- 6;
-            numeratorLead() <- n;
-        }
-    }
-    
-    EXTEND FORM options 
-        PROPERTIES nameNumeratorLead()
-    ;
-    
-    DESIGN options {
-        commons {
-            MOVE PROPERTY(nameNumeratorLead());
-        }
-    }
-    
-    WHEN SETCHANGED(Lead o IS Lead AND numeratorLead() AND NOT id(o)) DO {
-        id(o) <- CONCAT '', series(numeratorLead()), curStringValue(numeratorLead());
-        incrementValueSession(numeratorLead());   
-    }
-};
+@defineID(lead, 'Leads', '', 6);
 
 name '{Name}' = DATA ISTRING (Lead) CHARWIDTH 30 IN id;
 
@@ -83,14 +35,7 @@ WHEN LOCAL SET(Lead l IS Lead) AND NOT salesPerson(l) AND currentUser() IS Emplo
 property (Lead l, STRING p) += nameSalesPerson(l) IF p = 'Sales person';
 
 expectedClosing 'Expected closing' = DATA DATE (Lead);
-@defineDateAggregation(Lead, expectedClosing, expectedClosing, 'Expected closing '){
-    expectedClosingNameDOW 'Expected closing Day of week' (Lead o) = extractDOWName(expectedClosing(o));
-    expectedClosingWeek 'Expected closing Week' (Lead o) = extractWeek(expectedClosing(o));
-    
-    expectedClosingNumberMonth 'Expected closing Month number' (Lead o) = extractMonthNumber(expectedClosing(o));
-    expectedClosingNameMonth 'Expected closing Month' (Lead o) = extractMonthName(expectedClosing(o));
-    expectedClosingYear 'Expected closing Year' (Lead o) = extractYear(expectedClosing(o));
-};
+@defineDateAggregation(Lead, expectedClosing, expectedClosing, 'Expected closing ');
 property (Lead l, STRING p) += ISTRING(expectedClosing(l)) IF p = 'Expected closing';
 
 description 'Description' = DATA RICHTEXT (Lead) CHARWIDTH 20;
@@ -234,31 +179,7 @@ DESIGN lead {
     }
 }
 
-@defineFormStatusContainer(lead){
-    DESIGN lead {
-        NEW statusPane FIRST {
-            horizontal = TRUE;
-            alignment = STRETCH;
-            NEW statusActions {
-                horizontal = TRUE;
-                flex = 1;
-                NEW primaryActions {
-                    horizontal = TRUE;
-                }
-                NEW secondaryActions {
-                    horizontal = TRUE;
-                }
-            }
-            NEW statusContainer {
-                fill = 1;
-                NEW status {
-                    alignment = END;
-                    horizontal = TRUE;
-                }
-            }
-        }
-    }
-};
+@defineFormStatusContainer(lead);
 DESIGN lead {
     status {
         MOVE PROPERTY(nameStatus(l));
@@ -292,508 +213,33 @@ FORM leads '{Leads}'
     LIST Lead OBJECT l
 ;
 
-@defineDocObjectsForm(leads, l, 'Leads'){
-    DESIGN leads {
-        OBJECTS {
-            NEW pane {
-                fill = 1;
-                horizontal = TRUE;
-                NEW tabbedPane {
-                    tabbed = TRUE;
-                    fill = 1000;
-                    MOVE BOX(l) { caption = 'Leads'; }
-                }
-                NEW rightPane {
-                    tabbed = TRUE;
-//                    width = 230;
-                    fill = 1;
-                    NEW filters {
-                        caption = 'Filters';
-                        alignment = STRETCH;
-                        MOVE FILTERGROUPS(l) {
-                            horizontal = FALSE;
-                            alignment = STRETCH;
-                        }
-                    }
-                    NEW actions {
-                        alignment = STRETCH;
-                        caption = 'Actions';
-                        NEW statuses {
-                            alignment = STRETCH;
-                            caption = 'Change status';
-                        }
-                    }
-                }
-            }
-        }
-    }
-};
+@defineDocObjectsForm(leads, l, 'Leads');
     
-@defineObjectHistory(lead){
-    CLASS LeadHistory 'Change history';
+@defineObjectHistory(lead);
+@defineHistoryProperty(lead, name, '{Name}');
+@defineHistoryProperty(lead, status, 'Status', nameStatus);
+@defineHistoryProperty(lead, customer, 'Customer', nameCustomer);
+@defineHistoryProperty(lead, salesPerson, 'Sales person', nameSalesPerson);
+@defineHistoryProperty(lead, expectedClosing, 'Expected closing');
+@defineHistoryProperty(lead, priority, 'Priority', namePriority);
+@defineDocHistoryForm(lead, lead, l);
 
-    lead = DATA Lead (LeadHistory) INDEXED;
-    countHistories (Lead d) = GROUP SUM 1 IF lead(LeadHistory h) = d;
+@defineObjectFiles(lead, l, 'Lead file');
 
-    dateTime 'Date' = DATA DATETIME (LeadHistory);
+@defineObjectActivity(lead, l, rightPane, name);
 
-    user = DATA User (LeadHistory);
-    nameUser 'User' (LeadHistory l) = name(user(l));
+@defineObjectComments(lead, l, rightPane);
 
-    computer = DATA Computer (LeadHistory);
-    hostnameComputer 'Computer' (LeadHistory l) = hostname(computer(l)) CHARWIDTH 10;
+@defineObjectCommentsHistory(lead);
+@defineObjectCommentsCreate(lead, history);
 
-    type 'Type' = DATA ISTRING[100] (LeadHistory) CHARWIDTH 15;
-    description 'Description' = DATA TEXT (LeadHistory);
+@defineObjectCommentsFiles(lead, CRM);
+@defineObjectCommentsCreate(lead, file);
 
-    firstHistory (Lead d) = GROUP LAST LeadHistory h ORDER DESC h WHERE lead(h) = d MATERIALIZED;
-    nameUserFirstHistory 'Created by' (Lead d) = nameUser(firstHistory(d));
-    dateTimeFirstHistory 'Created at' (Lead d) = dateTime(firstHistory(d));
-    
-    lastHistory (Lead d) = GROUP LAST LeadHistory h ORDER h WHERE lead(h) = d MATERIALIZED;
-    nameUserLastHistory 'Last modified by' (Lead d) = nameUser(lastHistory(d));
-    dateTimeLastHistory 'Last modified at' (Lead d) = dateTime(lastHistory(d));
-};
-@defineHistoryProperty(lead, name, '{Name}'){
-    @defineHistoryProperty(lead, name, '{Name}', name){
-    WHEN CHANGED(name(Lead let)) AND NOT DROPPED(let IS Lead) AND NOT disableHistory() DO {
-        NEW l = LeadHistory {
-            lead(l) <- let;
-            dateTime(l) <- currentDateTime();
-            user(l) <- currentUser();
-            computer(l) <- currentComputer();
-            type(l) <- '{Name}';
-            description (l) <- CONCAT ' -> ', PREV(name(let)), (OVERRIDE ISTRING(name(let)), '');
-        }
-    }
-};
-};
-@defineHistoryProperty(lead, status, 'Status', nameStatus){
-    WHEN CHANGED(status(Lead let)) AND NOT DROPPED(let IS Lead) AND NOT disableHistory() DO {
-        NEW l = LeadHistory {
-            lead(l) <- let;
-            dateTime(l) <- currentDateTime();
-            user(l) <- currentUser();
-            computer(l) <- currentComputer();
-            type(l) <- 'Status';
-            description (l) <- CONCAT ' -> ', PREV(nameStatus(let)), (OVERRIDE ISTRING(nameStatus(let)), '');
-        }
-    }
-};
-@defineHistoryProperty(lead, customer, 'Customer', nameCustomer){
-    WHEN CHANGED(customer(Lead let)) AND NOT DROPPED(let IS Lead) AND NOT disableHistory() DO {
-        NEW l = LeadHistory {
-            lead(l) <- let;
-            dateTime(l) <- currentDateTime();
-            user(l) <- currentUser();
-            computer(l) <- currentComputer();
-            type(l) <- 'Customer';
-            description (l) <- CONCAT ' -> ', PREV(nameCustomer(let)), (OVERRIDE ISTRING(nameCustomer(let)), '');
-        }
-    }
-};
-@defineHistoryProperty(lead, salesPerson, 'Sales person', nameSalesPerson){
-    WHEN CHANGED(salesPerson(Lead let)) AND NOT DROPPED(let IS Lead) AND NOT disableHistory() DO {
-        NEW l = LeadHistory {
-            lead(l) <- let;
-            dateTime(l) <- currentDateTime();
-            user(l) <- currentUser();
-            computer(l) <- currentComputer();
-            type(l) <- 'Sales person';
-            description (l) <- CONCAT ' -> ', PREV(nameSalesPerson(let)), (OVERRIDE ISTRING(nameSalesPerson(let)), '');
-        }
-    }
-};
-@defineHistoryProperty(lead, expectedClosing, 'Expected closing'){
-    @defineHistoryProperty(lead, expectedClosing, 'Expected closing', expectedClosing){
-    WHEN CHANGED(expectedClosing(Lead let)) AND NOT DROPPED(let IS Lead) AND NOT disableHistory() DO {
-        NEW l = LeadHistory {
-            lead(l) <- let;
-            dateTime(l) <- currentDateTime();
-            user(l) <- currentUser();
-            computer(l) <- currentComputer();
-            type(l) <- 'Expected closing';
-            description (l) <- CONCAT ' -> ', PREV(expectedClosing(let)), (OVERRIDE ISTRING(expectedClosing(let)), '');
-        }
-    }
-};
-};
-@defineHistoryProperty(lead, priority, 'Priority', namePriority){
-    WHEN CHANGED(priority(Lead let)) AND NOT DROPPED(let IS Lead) AND NOT disableHistory() DO {
-        NEW l = LeadHistory {
-            lead(l) <- let;
-            dateTime(l) <- currentDateTime();
-            user(l) <- currentUser();
-            computer(l) <- currentComputer();
-            type(l) <- 'Priority';
-            description (l) <- CONCAT ' -> ', PREV(namePriority(let)), (OVERRIDE ISTRING(namePriority(let)), '');
-        }
-    }
-};
-@defineDocHistoryForm(lead, lead, l){
-    EXTEND FORM lead
-        OBJECTS leadl = LeadHistory
-        PROPERTIES(leadl) READONLY dateTime, nameUser, hostnameComputer, type, description, pdescription = description PANEL
-        FILTERS lead(leadl) = l
-    ;
+@defineObjectCommentsActivity(lead);
 
-    DESIGN lead {
-        details {
-            NEW history {
-                caption = badged('History', countHistories(l));
-                fill = 1;
-                horizontal = TRUE;
-                MOVE BOX(leadl) {
-                    fill = 2;
-                    caption = '';
-                    PROPERTY(description(leadl)) { valueHeight = 18; }
-                }
-                MOVE PROPERTY(pdescription) { panelCaptionVertical = TRUE; fill = 1; }
-            }
-        }
-    }
-    
-    EXTEND FORM leads
-        PROPERTIES(l) nameUserFirstHistory, dateTimeFirstHistory, nameUserLastHistory, dateTimeLastHistory
-    ;
-};
-
-@defineObjectFiles(lead, l, 'Lead file'){
-
-    CLASS LeadFile 'Lead file';
-
-    lead = DATA Lead (LeadFile) INDEXED NONULL DELETE;
-
-    file = DATA RAWFILE (LeadFile);
-
-    name '{Name}' = DATA ISTRING (LeadFile) CHARWIDTH 15;
-    extension 'Extension' = DATA ISTRING (LeadFile) CHARWIDTH 5;
-    nameExtension (LeadFile f) = CONCAT '.', name(f), extension(f);
-
-    description 'Description' = DATA ISTRING (LeadFile) CHARWIDTH 20;
-
-    dateTime 'Date' = DATA DATETIME (LeadFile);
-    dateTime(LeadFile f) <- currentDateTime() WHEN SET(f IS LeadFile);
-
-    user = DATA User (LeadFile);
-    nameUser 'User' (LeadFile f) = name(user(f));
-    user(LeadFile f) <- currentUser() WHEN SET(f IS LeadFile);
-
-    open 'Open' (LeadFile f) { open(file(f), nameExtension(f)); } IMAGE 'open.png';
-
-    countFiles 'Files' (Lead i) = GROUP SUM 1 IF lead(LeadFile f) = i;
-
-    index '{Index}' (LeadFile f) = PARTITION SUM 1 ORDER f BY lead(f) MATERIALIZED CHARWIDTH 3;
-    file (Lead o, INTEGER i) = GROUP MIN LeadFile f IF lead(f) = o AND index(f) = i;
-    openFile(Lead o, INTEGER i) { open(file(o, i)); }
-    
-    file1 (Lead o) = file(o, 1);
-    file2 (Lead o) = file(o, 2);
-    file3 (Lead o) = file(o, 3);
-    openFile1 'File 1' (Lead o) { openFile(o, 1); }
-    openFile2 'File 2' (Lead o) { openFile(o, 2); }
-    openFile3 'File 3' (Lead o) { openFile(o, 3); }
-
-    firstFile (Lead i) = GROUP MIN LeadFile f IF lead(f) = i;
-    openFirstFile 'Open' (Lead i) { open(firstFile(i)); }
-    openFiles 'Open' (Lead i) {
-        FOR lead(LeadFile f) = i DO
-            open(f);
-    }
-
-    newFile 'File' (Lead o) {
-        INPUT uf = NAMEDFILE DO NEW uof = LeadFile {
-            lead(uof) <- o;
-            file(uof) <- RAWFILE(uf);
-            name(uof) <- name(uf);
-            extension(uof) <- extension(uf);
-        }
-    } IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
-        
-    downloadLeadFile (LONG id) {
-        FOR LONG(LeadFile f AS LeadFile) = id DO {
-            exportNamedFile() <- namedFile(file(f), name(f), extension(f));
-        } 
-    } @@api;
-        
-    @defineObjectFilesForm(lead, lead, l){
-    EXTEND FORM lead
-        OBJECTS of = LeadFile
-        PROPERTIES(of) READONLY index
-        PROPERTIES(of) READONLYIF readonly(l) name, extension, description
-        PROPERTIES(of) READONLY nameUser, dateTime
-        PROPERTIES(of) GRID open, DELETE READONLYIF readonly(l)
-        FILTERS lead(of) = l
-
-        PROPERTIES(l) newFile DRAW of TOOLBAR READONLYIF readonly(l)
-        PROPERTIES inputFile = '' CUSTOM 'inputFile' ON CHANGE {
-            INPUT f = JSON DO
-                IMPORT JSON FROM f FIELDS() STRING name, STRING extension, STRING data DO 
-                    IF NOT readonly(l) THEN NEW uof = LeadFile {
-                        lead(uof) <- l;
-                        file(uof) <- decode(data, 'base64');
-                        name(uof) <- name;
-                        extension(uof) <- extension;
-                    }
-        }
-    ;
-
-    DESIGN lead {
-        details {
-            NEW files {
-                caption = badged('Files', countFiles(l));
-                MOVE BOX(of) { width = 600; caption = ''; }
-                MOVE PROPERTY(inputFile);
-            }
-        }
-    }
-    
-    // preview
-    
-    EXTEND FORM lead
-        PROPERTIES() READONLY previewPdfFile SHOWIF previewPdfFile(), previewImageFile SHOWIF NOT previewPdfFile()
-
-        EVENTS ON CHANGE of {
-            previewPdfFile() <- NULL;
-            previewImageFile() <- NULL;
-            IF lower(extension(of)) = 'jpg' OR lower(extension(of)) = 'jpeg' OR lower(extension(of)) = 'png' OR lower(extension(of)) = 'bmp' THEN {
-                previewImageFile() <- IMAGEFILE(file(of));
-            }
-            IF lower(extension(of)) = 'pdf' THEN {
-                previewPdfFile() <- PDFFILE(file(of));
-            }
-            IF lower(extension(of)) = 'doc' OR lower(extension(of)) = 'docx' THEN {
-                TRY {
-                    wordToPdf(file(of));
-                } CATCH {}
-                previewPdfFile() <- exportPdfFile();
-            }
-        }
-    ;
-
-    DESIGN lead {
-        files {
-            horizontal = TRUE;
-            height = 300;
-            NEW preview {
-                width = 300;
-                height = 600;
-                fill = 4;
-                MOVE PROPERTY(previewPdfFile()) { fill = 1; size = (100, 100); caption = ''; }
-                MOVE PROPERTY(previewImageFile()) { fill = 1; size = (100, 100); caption = ''; }
-            }
-        }
-    }
-
-};
-
-};
-
-@defineObjectComments(lead, l, rightPane){
-    CLASS LeadComment 'Comment';
-    
-    lead = DATA Lead (LeadComment) NONULL DELETE;
-    countComment (Lead e) = GROUP SUM 1 IF lead(LeadComment c) = e MATERIALIZED;
-    lastComment (Lead e) = GROUP LAST LeadComment c ORDER c BY lead(c) MATERIALIZED;
-    
-    dateTime 'Date' = DATA DATETIME (LeadComment);
-    dateTime(LeadComment f) <- currentDateTime() WHEN SET(f IS LeadComment);
-    
-    user = DATA User (LeadComment);
-    nameUser 'User' (LeadComment f) = name(user(f));
-    user(LeadComment f) <- currentUser() WHEN SET(f IS LeadComment);
-    
-    text 'Text' = DATA RICHTEXT (LeadComment);
-    
-    header = ABSTRACT VALUE HTMLTEXT (LeadComment);
-    footer = ABSTRACT VALUE HTMLTEXT (LeadComment);
-    html (LeadComment c) = CONCAT '', header(c), text(c), footer(c);
-    
-    FORM editLeadComment 'Comment'
-        OBJECTS c = LeadComment PANEL
-        PROPERTIES(c) '' = text
-    ;
-    
-    DESIGN editLeadComment {
-        size = (640, 480);
-        OBJECTS {
-            MOVE PROPERTY(text(c)) { fill = 1; }
-        }
-    }
-    
-    EXTEND FORM lead
-        OBJECTS cmt = LeadComment CUSTOM 'comments'
-        PROPERTIES id = VALUE(cmt)
-        PROPERTIES(cmt) nameUser, dateTime, text = html
-        PROPERTIES(cmt) edit ON CHANGE {
-            SHOW editLeadComment OBJECTS c = cmt;
-        },
-            delete = DELETE
-        ORDERS id DESC
-        FILTERS lead(cmt) = l
-    ;
-    
-    newComment 'Add' (Lead t) {
-        IF inputComment() THEN
-            NEW nc = LeadComment {
-                lead(nc) <- t;
-                text(nc) <- inputComment();
-                inputComment() <- NULL;
-            }
-    }
-    
-    EXTEND FORM lead
-        PROPERTIES inputComment(), newComment(l)
-        
-        EVENTS ON APPLY { newComment(l); }
-    ;
-    
-    DESIGN lead {
-        rightPane {
-            NEW comments {
-                fill = 1;
-                caption = badged('Comments', countComment(l));
-                NEW inputComment {
-                    horizontal = TRUE;
-                    alignment = STRETCH;
-                    MOVE PROPERTY(inputComment()) {
-                        valueHeight = -1;
-                        fill = 1;
-                    }
-                    MOVE PROPERTY(newComment(l)) {
-                        alignment = STRETCH;
-                    }
-                }
-                MOVE GRID(cmt) {
-                    height = 200;
-                    width = 400;
-                    fill = 1;
-                }
-                REMOVE BOX(cmt);
-            }
-        }
-    }
-};
-
-@defineObjectCommentsHistory(lead){
-    comment = DATA LeadComment (LeadHistory) INDEXED;
-
-    changes (LeadComment tc) = HTMLTEXT('<ul style="color:#959595">' + (GROUP CONCAT ('<li>' + type(LeadHistory th) + ' : ' + description(th) + '</li>') IF comment(th) = tc, '' ORDER th) + '</ul>');
-    header (LeadComment tc) += changes(tc);
-
-    WHEN SET(LeadComment tc IS LeadComment) AND SET(LeadHistory th IS LeadHistory) DO
-        comment(th) <- tc;
-};
-@defineObjectCommentsCreate(lead, history){
-    WHEN [GROUP SUM 1 IF SET(LeadHistory th IS LeadHistory) BY lead(th)](Lead t) AND NOT [GROUP SUM 1 IF SET(LeadComment tc IS LeadComment) BY lead(tc)](t) DO
-        NEW tc = LeadComment {
-            lead(tc) <- t;
-        }
-};
-
-@defineObjectCommentsFiles(lead, CRM){
-    comment = DATA LeadComment (LeadFile) INDEXED;
-
-    files (LeadComment tc) = HTMLTEXT('<ul style="color:#959595">' + 
-        (GROUP CONCAT ('<li><a target="_blank" href="' + contextUrl('/exec/CRM.downloadLeadFile?id=' + LeadFile tf) + '">' + nameExtension(tf) + '</a></li>') 
-                      IF comment(tf) = tc, '' ORDER tf) + '</ul>');
-    footer (LeadComment tc) += files(tc);
-
-    WHEN SET(LeadComment tc IS LeadComment) AND SET(LeadFile tf IS LeadFile) DO
-        comment(tf) <- tc;
-};
-@defineObjectCommentsCreate(lead, file){
-    WHEN [GROUP SUM 1 IF SET(LeadFile th IS LeadFile) BY lead(th)](Lead t) AND NOT [GROUP SUM 1 IF SET(LeadComment tc IS LeadComment) BY lead(tc)](t) DO
-        NEW tc = LeadComment {
-            lead(tc) <- t;
-        }
-};
-
-@defineDocStatusChange(lead, 'Lead'){
-    CLASS LeadStatusChange 'Lead';
-
-    lead = DATA Lead (LeadStatusChange);
-    countStatusChange (Lead o) = GROUP SUM 1 IF lead(LeadStatusChange sc) = o;
-    
-    dateTime 'Date' = DATA DATETIME (LeadStatusChange);
-    dateTime(LeadStatusChange sc) <- currentDateTime() WHEN SET(sc IS LeadStatusChange);
-
-    INDEX lead(LeadStatusChange sc), dateTime(sc), sc;
-
-    user 'User' = DATA User (LeadStatusChange);
-    nameUser 'User' (LeadStatusChange sc) = name(user(sc));
-    user(LeadStatusChange sc) <- currentUser() WHEN SET(sc IS LeadStatusChange);
-
-    status 'Status' = DATA LeadStatus (LeadStatusChange);
-    nameStatus 'Status' (LeadStatusChange sc) = name(status(sc));
-
-    previous (LeadStatusChange c) = PARTITION PREV c ORDER dateTime(c), c BY lead(c);
-    dateTimePrevious (LeadStatusChange c) = dateTime(previous(c));
-    secondsBefore (LeadStatusChange c) = subtractSeconds(dateTimePrevious(c), dateTime(c));
-    hoursBefore 'Hours before' (LeadStatusChange c) = round2(secondsBefore(c) / 3600);
-
-    nameUserPrevious (LeadStatusChange c) = nameUser(previous(c));
-    
-    next (LeadStatusChange c) = PARTITION PREV c ORDER DESC dateTime(c), c BY lead(c);
-    dateTimeNext  (LeadStatusChange c) = dateTime(next(c));
-    secondsAfter (LeadStatusChange c) = subtractSeconds(dateTime(c), dateTimeNext(c));
-    hoursAfter 'Hours after' (LeadStatusChange c) = round2(secondsAfter(c) / 3600);
-    
-    nameUserNext (LeadStatusChange c) = nameUser(next(c));
-        
-    lastChange (Lead o, LeadStatus s) = GROUP LAST LeadStatusChange sc ORDER dateTime(sc), sc BY lead(sc), status(sc);
-        
-    dateTimeLastChange 'Date' (Lead o, LeadStatus s) = dateTime(lastChange(o, s));
-    nameUserLastChange 'User' (Lead o, LeadStatus s) = nameUser(lastChange(o, s));
-
-    secondsBefore (Lead o, LeadStatus s) = GROUP SUM secondsBefore(LeadStatusChange sc) IF lead(sc) = o AND status(sc) = s;
-    hoursBefore 'Hours before' (Lead o, LeadStatus s) = round2(secondsBefore(o, s) / 3600);
-
-    secondsAfter (Lead o, LeadStatus s) = GROUP SUM secondsAfter(LeadStatusChange sc) IF lead(sc) = o AND status(sc) = s;
-    hoursAfter 'Hours after' (Lead o, LeadStatus s) = round2(secondsAfter(o, s) / 3600);
-        
-    WHEN SETCHANGED(status(Lead o)) DO 
-        NEW sc = LeadStatusChange {
-            lead(sc) <- o;
-            status(sc) <- status(o);
-        }
-};
-@defineDocStatusChangeForm(lead, l, 'Lead'){
-    EXTEND FORM lead
-        OBJECTS stch = LeadStatusChange
-        PROPERTIES(stch) READONLY dateTime, nameUser, hoursBefore, nameStatus, hoursAfter
-        FILTERS lead(stch) = l
-    ;
-    
-    DESIGN lead {
-        details {
-            MOVE BOX(stch) { 
-                caption = badged('Status change', countStatusChange(l));
-            }
-        }
-    }
-    
-    EXTEND FORM leads
-        OBJECTS lst = LeadStatus BEFORE l
-        PROPERTIES sortingOrder(lst)
-        ORDERS sortingOrder(lst)
-        
-        PROPERTIES(l, lst) READONLY COLUMNS 'status' (lst) BACKGROUND RGB(224,224,224) IF mod(index(lst), 2) = 0
-            hoursBefore HEADER name(lst) + '\n(' + 'Hours before' + ')', 
-            dateTimeLastChange HEADER name(lst) + '\n(' + 'Date' + ')', 
-            nameUserLastChange HEADER name(lst) + '\n(' + 'User' + ')', 
-            hoursAfter HEADER name(lst) + '\n(' + 'Hours after' + ')'
-    ;
-    
-    DESIGN leads {
-        REMOVE BOX(lst);
-        
-        PROPERTY(hoursBefore(l, lst)) { hide = TRUE; }
-        PROPERTY(dateTimeLastChange(l, lst)) { hide = TRUE; }
-        PROPERTY(nameUserLastChange(l, lst)) { hide = TRUE; }
-        PROPERTY(hoursAfter(l, lst)) { hide = TRUE; }
-    }
-};
+@defineDocStatusChange(lead, 'Lead');
+@defineDocStatusChangeForm(lead, l, 'Lead');
 
 DESIGN leads {
     PROPERTY(tags(l)) { valueHeight = 18; }

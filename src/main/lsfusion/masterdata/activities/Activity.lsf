@@ -1,0 +1,181 @@
+MODULE Activity;
+
+REQUIRE Employee, ActivityType;
+
+NAMESPACE MasterData;
+
+CLASS Activity 'Activity';
+
+type 'Type' = DATA ActivityType (Activity);
+nameType 'Type' (Activity a) = name(type(a));
+
+dueDate 'Due date' = DATA DATE (Activity);
+dueDate (Activity a) <- sum(currentDate(), 7) WHEN SET(a IS Activity);
+
+daysLeft (Activity a) = daysBetweenDates(dueDate(a), currentDate());
+
+name '{Name}' = DATA ISTRING (Activity);
+
+assignedTo 'Assigned to' = DATA Employee (Activity);
+nameAssignedTo 'Assigned to' (Activity a) = name(assignedTo(a));
+assignedTo (Activity a) <- currentUser() WHEN SET(a IS Activity);
+
+// object
+CLASS ABSTRACT ActivityObject;
+name '{Name}' = ABSTRACT ISTRING (ActivityObject) CHARWIDTH 30;
+
+object 'Object' = DATA ActivityObject (Activity) INDEXED;
+nameObject 'Object' (Activity a) = name(object(a));
+
+countActivity (ActivityObject o) = GROUP SUM 1 IF object(Activity a) = o;
+
+description 'Description' = DATA RICHTEXT (Activity);
+
+feedback 'Feedback' = DATA RICHTEXT (Activity);
+
+done 'Done' = DATA BOOLEAN (Activity);
+opened 'Opened' (Activity a) = a IS Activity AND NOT done(a); 
+
+countOpenedActivity (ActivityObject o) = GROUP SUM 1 IF object(Activity a) = o AND opened(a);
+
+FORM activity 'Activity'
+    OBJECTS a = Activity PANEL
+    PROPERTIES(a) nameType, dueDate, name, nameAssignedTo, nameObject,
+                  done, description, feedback
+    
+    EDIT Activity OBJECT a  
+;
+
+DESIGN activity {
+    size = (800, 600);
+
+    OBJECTS {
+        NEW header {
+            lines = 2;
+            MOVE PROPERTY(nameType(a));
+            MOVE PROPERTY(dueDate(a));
+            MOVE PROPERTY(name(a));
+            MOVE PROPERTY(nameAssignedTo(a));
+            MOVE PROPERTY(nameObject(a));
+            MOVE PROPERTY(done(a));
+        }
+        NEW details {
+            horizontal = TRUE;
+            fill = 1;
+            MOVE PROPERTY(description(a)) {
+                panelCaptionVertical = TRUE;
+                fill = 2;
+            }
+            MOVE PROPERTY(feedback(a)) {
+                panelCaptionVertical = TRUE;
+                fill = 1;
+            }
+        }
+    }
+}
+
+FORM activities 'Activities'
+    OBJECTS a = Activity CALENDAR
+    PROPERTIES(a) date = dueDate
+    PROPERTIES(a) READONLY nameType, name, nameAssignedTo, nameObject, done
+    PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE
+
+    FILTERGROUP active
+        FILTER 'Opened' NOT done(a) DEFAULT
+    
+    FILTERGROUP my
+        FILTER 'Assigned to me' assignedTo(a) = currentUser() 'F5' DEFAULT
+    
+    LIST Activity OBJECT a
+;
+
+NAVIGATOR {
+    masterData {
+        NEW activities;
+    }
+}
+
+onWebClientInit() + {
+    onWebClientInit('activities.js') <- 1;
+    onWebClientInit('activities.css') <- 1;
+}
+
+FORM inputFeedback 'Feedback'
+    OBJECTS f = RICHTEXT PANEL
+    PROPERTIES(f) text '' = VALUE
+;
+
+DESIGN inputFeedback {
+    size = (600, 400);
+    OBJECTS {
+        MOVE PROPERTY(text) {
+            fill = 1;
+        }
+    }
+}
+
+META defineObjectActivity (obj, let, container, nameProp)
+    
+    EXTEND CLASS ###obj : ActivityObject;
+    name(###obj o) += nameProp(o);
+
+    EXTEND FORM obj
+        OBJECTS act = Activity CUSTOM 'activities'
+        PROPERTIES(act) nameType, dueDate, daysLeft, name, nameAssignedTo, description, done
+        PROPERTIES setDone = {
+                        DIALOG inputFeedback OBJECTS f INPUT NOMANAGESESSION DO {
+                            done(act) <- TRUE;
+                            feedback(act) <- f;
+                        } },
+                   editAct = edit(act) ON CHANGE {
+                        SHOW activity OBJECTS a = act FLOAT;
+                   },
+                   deleteAct = DELETE(act)
+        ORDERS dueDate(act)
+        FILTERS object(act) = let,
+            NOT PREV(done(act))
+    ;
+
+    newActivity 'Add' (###obj o, ActivityType t) {
+        NESTEDSESSION {
+            NEW na = Activity {
+                object(na) <- o;
+                type(na) <- t;
+                DIALOG activity OBJECTS a = na FLOAT;
+            }
+        }
+    } IMAGE 'add.png';
+
+    EXTEND FORM obj
+        OBJECTS at = ActivityType BEFORE let
+
+        PROPERTIES newActivity(let, at) COLUMNS (at) HEADER name(at)
+    ;
+
+    DESIGN obj {
+        container {
+            NEW activities {
+                showIf = countActivityTypes();
+                alignment = STRETCH;
+                caption = badged('Activities', countOpenedActivity(let));
+                MOVE PROPERTY(newActivity(let, at));
+                MOVE GRID(act) {
+                    width = 400;
+                    flex = 0;
+                }
+                REMOVE BOX(act);
+            }
+        }
+    }
+
+END
+
+META defineObjectCommentsActivity (obj)
+    
+    WHEN SET(done(Activity a)) AND ###obj o = object(a) AND o IS ###obj DO NEW oc = ###obj##Comment {
+        obj(oc) <- o;
+        text(oc) <- CONCAT '', '<h5>' + (CONCAT ' : ', nameType(a), name(a)) + '</h5>',
+            (CONCAT '<b>' + 'Description' + ' :</b>', (feedback(a) IF feedback(a) != ''), description(a));
+    }
+    
+END

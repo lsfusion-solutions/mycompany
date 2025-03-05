@@ -31,41 +31,11 @@ DESIGN leadReport {
 }
 
 
-@defineDateTimeAggregationForm(leadReport, l){
-    @defineDateTimeAggregationForm(leadReport, l, ){
-    EXTEND FORM leadReport
-        PROPERTIES(l) READONLY AFTER dateTime(l) minute, hour, date
-    ;
-    @defineDateAggregationForm(leadReport, l, date, ){
-    EXTEND FORM leadReport
-        PROPERTIES(l) READONLY AFTER date(l) nameDOW, week, numberMonth, nameMonth, year
-    ;
-};
-};
-};
+@defineDateTimeAggregationForm(leadReport, l);
 
-@defineDateAggregationForm(leadReport, l, expectedClosing, expectedClosing){
-    EXTEND FORM leadReport
-        PROPERTIES(l) READONLY AFTER expectedClosing(l) expectedClosingNameDOW, expectedClosingWeek, expectedClosingNumberMonth, expectedClosingNameMonth, expectedClosingYear
-    ;
-};
+@defineDateAggregationForm(leadReport, l, expectedClosing, expectedClosing);
 
-@defineDateFilterForm(leadReport, l){
-    @defineDateFilterForm(leadReport, l, ){
-    EXTEND FORM leadReport
-        OBJECTS dates = INTERVAL[DATE] BEFORE l PANEL NULL
-        PROPERTIES filterDates 'Date interval' = VALUE(dates)
-
-        FILTERS NOT date(l) < from(dates), NOT date(l) > to(dates)
-    ;
-    
-    DESIGN leadReport {
-        filters {
-            MOVE PROPERTY(filterDates);
-        }
-    }
-};
-};
+@defineDateFilterForm(leadReport, l);
 
 NAVIGATOR {
     reporting {
