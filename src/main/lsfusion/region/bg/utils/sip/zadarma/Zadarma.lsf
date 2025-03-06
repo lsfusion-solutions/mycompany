@@ -5,18 +5,19 @@ REQUIRE System, SQLUtils;
 NAMESPACE Zadarma;
 
 // REQUIRE ZadarmaNotify, ZadarmaPBX, ZadarmaEmployeeCall, ZadarmaWebRTC, ZadarmaRecord
-
+// Notify : https://<url to mycompany>/exec/Zadarma.notify
 // require pgcrypto extension for the database :
 
 onStarted() +{
     runSQL('CREATE EXTENSION IF NOT EXISTS pgcrypto;'); 
 }
 
+customUrl 'Url' = DATA STRING ();
 apiKey 'Key' = DATA STRING () CHARWIDTH 40;
 apiSecret 'Secret' = DATA STRING () CHARWIDTH 40;
 
 EXTEND FORM integrationData
-    PROPERTIES() apiKey, apiSecret
+    PROPERTIES() customUrl, apiKey, apiSecret
 ;
 
 DESIGN integrationData {
@@ -25,6 +26,7 @@ DESIGN integrationData {
             caption = 'Zadarma';
             NEW header {
                 lines = 3;
+                MOVE PROPERTY(customUrl());
                 MOVE PROPERTY(apiKey());
                 MOVE PROPERTY(apiSecret());
             }
@@ -48,5 +50,5 @@ apiGet (STRING method, STRING params) {
     LOCAL headers = STRING (STRING);
     headers(STRING s) <- apiKey() + ':' + apiAuthKey(method, (OVERRIDE params, ''), apiSecret()) IF s = 'Authorization';
     
-    EXTERNAL HTTP GET 'https://api.zadarma.com' + method + '?' + params HEADERS headers NOENCODE TO apiResponse;
+    EXTERNAL HTTP GET (OVERRIDE customUrl(), 'https://api.zadarma.com') + method + '?' + params HEADERS headers NOENCODE TO apiResponse;
 }
