@@ -25,7 +25,10 @@ CLASS ABSTRACT ActivityObject;
 name '{Name}' = ABSTRACT ISTRING (ActivityObject) CHARWIDTH 30;
 
 object 'Object' = DATA ActivityObject (Activity) INDEXED;
+typeObject 'Object type' (Activity a) = objectClassName(object(a));
 nameObject 'Object' (Activity a) = name(object(a));
+
+editObject '->' (Object a) { NEWSESSION { edit(object(a)); } }
 
 countActivity (ActivityObject o) = GROUP SUM 1 IF object(Activity a) = o;
 
@@ -77,7 +80,9 @@ DESIGN activity {
 FORM activities 'Activities'
     OBJECTS a = Activity CALENDAR
     PROPERTIES(a) date = dueDate
-    PROPERTIES(a) READONLY nameType, name, nameAssignedTo, nameObject, done
+    PROPERTIES(a) READONLY nameType, name, nameObject, nameAssignedTo, done
+    PROPERTIES(a) READONLY PANEL pnameType = nameType, pname = name, pdescription = description
+    PROPERTIES(a) peditObject = editObject HEADER CONCAT ' : ', typeObject(a), nameObject(a)
     PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE
 
     FILTERGROUP active
@@ -88,6 +93,19 @@ FORM activities 'Activities'
     
     LIST Activity OBJECT a
 ;
+
+DESIGN activities {
+    GRID(a) {
+        size = (600, 400);
+        MOVE PROPERTY(pnameType);
+        MOVE PROPERTY(pname);
+        MOVE PROPERTY(peditObject);
+        MOVE PROPERTY(pdescription) {
+            panelCaptionVertical = TRUE;
+            fill = 1;
+        }
+    }
+}
 
 NAVIGATOR {
     masterData {
