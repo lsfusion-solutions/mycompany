@@ -14,7 +14,7 @@ jsonTags (Lead l) = JSON FROM name(LeadTag tg), idColor(tg) WHERE in(l, tg);
 order = DATA LONG (CustomUser, Lead);
 currentOrder (Lead l) =  order(currentUser(), l);
 
-createLead() {
+createLeadStatus() {
     INPUT id = LONG DO {
         NEWSESSION {
             NEW ll = Lead {
@@ -54,7 +54,7 @@ EXTEND FORM leads
 
     FILTERS [FILTER leads.l](ll)
 
-    PROPERTIES() createLead
+    PROPERTIES() createLeadStatus
 
     PROPERTIES(ll) PANEL pname = name, pnameCustomer = nameCustomer, pexpectedRevenue = expectedRevenue, 
                          pnamePriority = namePriority, ptags = tags,
@@ -88,7 +88,7 @@ DESIGN leads {
                     alignment = STRETCH;
                 }
             }
-            REMOVE PROPERTY(createLead());
+            REMOVE PROPERTY(createLeadStatus());
             REMOVE BOX(ll);
         }
     }

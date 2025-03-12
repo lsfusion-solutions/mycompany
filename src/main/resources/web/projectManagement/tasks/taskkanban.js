@@ -50,7 +50,7 @@ function taskKanban() {
                 statusHeader.appendChild(statusNew);
 
                 statusNew.addEventListener("click", function() {
-                    controller.changeProperty("createTask", null, status.id);
+                    controller.changeProperty("createTaskStatus", null, status.id);
                 });
 
                 let statusBody = document.createElement("div");

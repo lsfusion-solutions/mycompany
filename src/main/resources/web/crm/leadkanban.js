@@ -50,7 +50,7 @@ function leadKanban() {
                 statusHeader.appendChild(statusNew);
 
                 statusNew.addEventListener("click", function() {
-                    controller.changeProperty("createLead", null, status.id);
+                    controller.changeProperty("createLeadStatus", null, status.id);
                 });
 
                 let statusBody = document.createElement("div");

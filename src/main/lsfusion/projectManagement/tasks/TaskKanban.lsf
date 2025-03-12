@@ -14,7 +14,7 @@ jsonTags (Task t) = JSON FROM name(TaskTag tg), idColor(tg) WHERE in(t, tg);
 order = DATA LONG (CustomUser, Task);
 currentOrder (Task t) =  order(currentUser(), t);
 
-createTask() {
+createTaskStatus() {
     INPUT id = LONG DO {
         NEWSESSION {
             NEW tt = Task {
@@ -55,7 +55,7 @@ EXTEND FORM tasks
 
     FILTERS [FILTER tasks.t](tt)
     
-    PROPERTIES() createTask
+    PROPERTIES() createTaskStatus
 
     PROPERTIES(tt) PANEL pnameProject = nameProject, pname = name, pnameType = nameType, pnamePriority = namePriority, ptags = tags, 
                          pnameAssignedTo = nameAssignedTo, pdeadline = deadline, pdescription = description,
@@ -88,7 +88,7 @@ DESIGN tasks {
                     alignment = STRETCH;
                 }
             }
-            REMOVE PROPERTY(createTask());
+            REMOVE PROPERTY(createTaskStatus());
             REMOVE BOX(tt);
         }
     }
