@@ -2,7 +2,7 @@ MODULE Lead;
 
 REQUIRE CRMSettings, Employee, DateUtils,
         Doc, FileUtils, Comments, Activity,
-        LeadPriority, LeadTag, LeadStatus;
+        LeadType, LeadPriority, LeadTag, LeadStatus;
 
 NAMESPACE CRM;
 
@@ -51,6 +51,12 @@ status (Lead l) <- firstLeadStatus() WHEN SET(l IS Lead);
 closed 'Closed' (Lead l) = closed(status(l));
 opened 'Opened' (Lead l) = l IS Lead AND NOT closed(l);
 
+type 'Type' = DATA LeadType (Lead);
+nameType 'Type' (Lead t) = name(type(t)) IN id;
+property (Lead l, STRING p) += nameType(l) IF p = 'Type';
+
+WHEN LOCAL SET(Lead t IS Lead) AND NOT CHANGED(type(t)) DO type(t) <- defaultLeadType();
+
 priority 'Priority' = DATA LeadPriority (Lead);
 namePriority 'Priority' (Lead l) = name(priority(l));
 idColorPriority (Lead l) = idColor(priority(l));
@@ -96,7 +102,7 @@ FORM lead '{Lead}'
     OBJECTS l = Lead PANEL
     PROPERTIES(l) id, name, nameStatus SELECT 'buttonGroup',
                   dateTime, expectedRevenue, probability, expectedClosing,
-                  nameCustomer, nameSalesPerson, 
+                  nameType, nameCustomer, nameSalesPerson, 
                   namePriority, tags, 
                   phone, email,
                   description,
@@ -133,6 +139,7 @@ DESIGN lead {
                     NEW params {
                         lines = 2;
                         alignment = STRETCH;
+                        MOVE PROPERTY(nameType(l));
                         MOVE PROPERTY(nameCustomer(l));
                         MOVE PROPERTY(email(l));
                         MOVE PROPERTY(phone(l));
@@ -199,7 +206,7 @@ showLead (LONG id) {
 FORM leads '{Leads}'
     OBJECTS l = Lead BACKGROUND rgbColorPriority(l)
     PROPERTIES(l) READONLY dateTime, id, name, nameStatus,
-                           nameCustomer, nameSalesPerson,
+                           nameType, nameCustomer, nameSalesPerson,
                            namePriority, tags, expectedClosing,
                            phone, email,
                            expectedRevenue, probability,
@@ -223,6 +230,7 @@ FORM leads '{Leads}'
 @defineObjectHistory(lead);
 @defineHistoryProperty(lead, name, '{Name}');
 @defineHistoryProperty(lead, status, 'Status', nameStatus);
+@defineHistoryProperty(lead, type, 'Type', nameType);
 @defineHistoryProperty(lead, customer, 'Customer', nameCustomer);
 @defineHistoryProperty(lead, salesPerson, 'Sales person', nameSalesPerson);
 @defineHistoryProperty(lead, expectedClosing, 'Expected closing');
@@ -260,6 +268,7 @@ NAVIGATOR {
 clone ABSTRACT LIST (Lead, Lead);
 clone (Lead to, Lead from) + {
     name(to) <- name(from);
+    type(to) <- type(from);
     customer(to) <- customer(from);
     salesPerson(to) <- salesPerson(from);
     

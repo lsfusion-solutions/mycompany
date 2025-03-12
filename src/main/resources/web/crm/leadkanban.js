@@ -68,11 +68,13 @@ function leadKanban() {
                             controller.changeObject(lead, true, leadCard);
                         });
 
-                        if (lead.name) {
+                        if (lead.name || lead.nameType) {
                             let leadHeader = document.createElement("h5");
                             leadHeader.classList.add("lead-kanban-card-header");
                             leadHeader.classList.add("card-header");
-                            leadHeader.innerHTML = lead.name;
+                            leadHeader.innerHTML = (lead.nameType ? lead.nameType : "") +
+                                (lead.name && lead.nameType ? " : " : "") +
+                                (lead.name ? lead.name : "");
                             leadCard.appendChild(leadHeader);
                         }
 
