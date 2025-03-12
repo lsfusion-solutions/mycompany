@@ -42,6 +42,7 @@ description 'Description' = DATA RICHTEXT (Lead) CHARWIDTH 20;
 
 status 'Status' = DATA LeadStatus (Lead);
 nameStatus 'Status' (Lead l) = name(status(l)) IN id;
+status (Lead l) <- firstLeadStatus() WHEN SET(l IS Lead);
 
 closed 'Closed' (Lead l) = closed(status(l));
 opened 'Opened' (Lead l) = l IS Lead AND NOT closed(l);
@@ -248,5 +249,54 @@ DESIGN leads {
 NAVIGATOR {
     operations {
         NEW leads;
+    }
+}
+
+// copy
+clone ABSTRACT LIST (Lead, Lead);
+clone (Lead to, Lead from) + {
+    name(to) <- name(from);
+    customer(to) <- customer(from);
+    salesPerson(to) <- salesPerson(from);
+    
+    description(to) <- description(from);
+    priority(to) <- priority(from);
+    
+    in(to, LeadTag t) <- in(from, t);
+
+    expectedRevenue(to) <- expectedRevenue(from);
+    probability(to) <- probability(from);
+
+    phone(to) <- phone(from);
+    email(to) <- email(from);
+    
+    address(to) <- address(from);
+    city(to) <- city(from);
+    state(to) <- state(from);
+    zip(to) <- zip(from);
+    
+    website(to) <- website(from);
+    legalEntityName(to) <- legalEntityName(from);
+
+    firstName(to) <- firstName(from);
+    lastName(to) <- lastName(from);
+    middleName(to) <- middleName(from);
+
+    position(to) <- position(from);
+}
+
+copy 'Copy' (Lead from)  {
+    NEWSESSION {
+        NEW to = Lead {
+            clone(to, from);
+            SHOW lead OBJECTS l = to DOCKED;
+        }
+    }
+}
+EXTEND FORM lead PROPERTIES(l) copy;
+
+DESIGN lead {
+    secondaryActions {
+        MOVE PROPERTY(copy(l)) { valueClass = 'btn-secondary'; }
     }
 }
