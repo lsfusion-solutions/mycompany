@@ -27,6 +27,7 @@ name '{Name}' = ABSTRACT ISTRING (ActivityObject) CHARWIDTH 30;
 object 'Object' = DATA ActivityObject (Activity) INDEXED;
 typeObject 'Object type' (Activity a) = objectClassName(object(a));
 nameObject 'Object' (Activity a) = name(object(a));
+typeNameObject 'Object' (Activity a) = CONCAT ' : ', typeObject(a), nameObject(a);
 
 editObject '->' (Object a) { NEWSESSION { edit(object(a)); } }
 
@@ -114,9 +115,10 @@ FORM activities 'Activities'
 
     OBJECTS a = Activity CALENDAR
     PROPERTIES(a) date = dueDate
-    PROPERTIES(a) READONLY nameType, name, nameObject, nameAssignedTo, done
+    PROPERTIES READONLY name = HTML(CONCAT ' ', '<b>' + nameType(a) + '</b>', name(a), '- <i>' + typeNameObject(a) + '</i>')
+    PROPERTIES(a) READONLY nameType, gname = name, nameObject, nameAssignedTo, done
     PROPERTIES(a) READONLY PANEL pnameType = nameType, pname = name, pdescription = description
-    PROPERTIES(a) peditObject = editObject HEADER CONCAT ' : ', typeObject(a), nameObject(a)
+    PROPERTIES(a) peditObject = editObject HEADER typeNameObject(a)
     PROPERTIES(a) PANEL setDone, edit = EDIT, delete = DELETE
 
     FILTERGROUP active

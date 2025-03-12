@@ -34,6 +34,8 @@ nameCustomer 'Customer' (Order o) = name(customer(o)) IN id;
 addressCsvCustomer 'Customer address' (Order o) = addressCsv(customer(o));
 property (Order o, STRING p) += nameCustomer(o) IF p = 'Customer';
 
+numberDateCustomer (Order o) = CONCAT ' ', numberDate(o), '(' + nameCustomer(o) + ')';
+
 CONSTRAINT customer(Order o) AND NOT isCustomer(customer(o))
                 CHECKED BY customer[Order]
                 MESSAGE 'The partner of the sales order must be a customer';
@@ -299,7 +301,7 @@ FORM orders 'Sales orders'
 @defineDocLinesCount(order, o);
 @defineDocLocationAccess(order, o);
 
-@defineObjectActivity(order, o, details, numberDate);
+@defineObjectActivity(order, o, details, numberDateCustomer);
 
 @defineObjectComments(order, o, details);
 

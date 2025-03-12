@@ -23,9 +23,13 @@ idName '{Name}' (Lead l) = CONCAT ' ', '#' + id(l), name(l);
 prefixName = ABSTRACT VALUE ISTRING (Lead);
 property = ABSTRACT VALUE ISTRING (Lead, STRING);
 
+fullName (Lead l) = CONCAT ' - ', prefixName(l), name(l);
+
 customer 'Customer' = DATA Partner (Lead) INDEXED;
 nameCustomer 'Customer' (Lead l) = name(customer(l));
 property (Lead l, STRING p) += nameCustomer(l) IF p = 'Customer';
+
+prefixName (Lead l) += nameCustomer(l);
 
 countLeads (Partner p) = GROUP SUM 1 IF customer(Lead l) = p;  
 
@@ -227,7 +231,7 @@ FORM leads '{Leads}'
 
 @defineObjectFiles(lead, l, 'Lead file');
 
-@defineObjectActivity(lead, l, rightPane, name);
+@defineObjectActivity(lead, l, rightPane, fullName);
 
 @defineObjectComments(lead, l, rightPane);
 

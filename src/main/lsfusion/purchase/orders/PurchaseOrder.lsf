@@ -35,6 +35,8 @@ vendor 'Vendor' = DATA Partner (Order) NONULL;
 nameVendor 'Vendor' (Order o) = name(vendor(o));
 property (Order o, STRING p) += nameType(o) IF p = 'Vendor';
 
+numberDateVendor (Order o) = CONCAT ' ', numberDate(o), '(' + nameVendor(o) + ')';
+
 CONSTRAINT vendor(Order o) AND NOT isVendor(vendor(o))
                 CHECKED BY vendor[Order]
                 MESSAGE 'The partner of the purchase order  must be a vendor';
@@ -271,7 +273,7 @@ FORM orders 'Purchase orders'
 @defineDocLinesCount(order, o);
 @defineDocLocationAccess(order, o);
 
-@defineObjectActivity(order, o, details, numberDate);
+@defineObjectActivity(order, o, details, numberDateVendor);
 
 @defineObjectComments(order, o, details);
 @defineObjectCommentsHistory(order);

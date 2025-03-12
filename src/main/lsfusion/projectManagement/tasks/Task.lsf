@@ -21,6 +21,8 @@ idName '{Name}' (Task t) = CONCAT ' ', '#' + id(t), name(t);
 prefixName = ABSTRACT VALUE ISTRING (Task);
 property = ABSTRACT VALUE ISTRING (Task, STRING);
 
+fullName (Task t) = CONCAT ' - ', prefixName(t), name(t);
+
 author 'Author' = DATA Employee (Task);
 nameAuthor 'Author' (Task t) = name(author(t));
 WHEN LOCAL SET(Task t IS Task) AND NOT author(t) AND currentUser() IS Employee DO author(t) <- currentUser();
@@ -153,7 +155,7 @@ FORM tasks '{Tasks}'
 
 @defineObjectFiles(task, t, 'Task file');
 
-@defineObjectActivity(task, t, rightPane, name);
+@defineObjectActivity(task, t, rightPane, fullName);
 
 @defineObjectComments(task, t, rightPane);
 @defineObjectCommentsHistory(task);
