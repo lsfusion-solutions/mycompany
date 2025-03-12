@@ -77,46 +77,14 @@ DESIGN activity {
     }
 }
 
-FORM activities 'Activities'
-    OBJECTS a = Activity CALENDAR
-    PROPERTIES(a) date = dueDate
-    PROPERTIES(a) READONLY nameType, name, nameObject, nameAssignedTo, done
-    PROPERTIES(a) READONLY PANEL pnameType = nameType, pname = name, pdescription = description
-    PROPERTIES(a) peditObject = editObject HEADER CONCAT ' : ', typeObject(a), nameObject(a)
-    PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE
-
-    FILTERGROUP active
-        FILTER 'Opened' NOT done(a) DEFAULT
-    
-    FILTERGROUP my
-        FILTER 'Assigned to me' assignedTo(a) = currentUser() 'F5' DEFAULT
-    
-    LIST Activity OBJECT a
-;
-
-DESIGN activities {
-    GRID(a) {
-        size = (600, 400);
-        MOVE PROPERTY(pnameType);
-        MOVE PROPERTY(pname);
-        MOVE PROPERTY(peditObject);
-        MOVE PROPERTY(pdescription) {
-            panelCaptionVertical = TRUE;
-            fill = 1;
+newActivity 'Add' (ActivityType t) {
+    NESTEDSESSION {
+        NEW na = Activity {
+            type(na) <- t;
+            DIALOG activity OBJECTS a = na FLOAT;
         }
     }
-}
-
-NAVIGATOR {
-    masterData {
-        NEW activities;
-    }
-}
-
-onWebClientInit() + {
-    onWebClientInit('activities.js') <- 1;
-    onWebClientInit('activities.css') <- 1;
-}
+} IMAGE 'add.png';
 
 FORM inputFeedback 'Feedback'
     OBJECTS f = RICHTEXT PANEL
@@ -132,6 +100,70 @@ DESIGN inputFeedback {
     }
 }
 
+setDone 'Done' (Activity act) {
+    DIALOG inputFeedback OBJECTS f INPUT NOMANAGESESSION DO {
+        done(act) <- TRUE;
+        feedback(act) <- f;
+    }
+}
+
+FORM activities 'Activities'
+    OBJECTS at = ActivityType
+
+    PROPERTIES newActivity(at) COLUMNS (at) HEADER name(at)
+
+    OBJECTS a = Activity CALENDAR
+    PROPERTIES(a) date = dueDate
+    PROPERTIES(a) READONLY nameType, name, nameObject, nameAssignedTo, done
+    PROPERTIES(a) READONLY PANEL pnameType = nameType, pname = name, pdescription = description
+    PROPERTIES(a) peditObject = editObject HEADER CONCAT ' : ', typeObject(a), nameObject(a)
+    PROPERTIES(a) PANEL setDone, edit = EDIT, delete = DELETE
+
+    FILTERGROUP active
+        FILTER 'Opened' NOT done(a) DEFAULT
+    
+    FILTERGROUP my
+        FILTER 'Assigned to me' assignedTo(a) = currentUser() 'F5' DEFAULT
+    
+    LIST Activity OBJECT a
+;
+
+DESIGN activities {
+    OBJECTS {
+        NEW header FIRST {
+            MOVE PROPERTY(newActivity(at));
+        }
+        GRID(a) {
+            size = (600, 400);
+            MOVE PROPERTY(pnameType);
+            MOVE PROPERTY(pname);
+            MOVE PROPERTY(peditObject);
+            MOVE PROPERTY(pdescription) {
+                panelCaptionVertical = TRUE;
+                fill = 1;
+            }
+            NEW actions {
+                horizontal = TRUE;
+                alignment = STRETCH;
+                MOVE PROPERTY(setDone(a));
+                MOVE PROPERTY(edit);
+                MOVE PROPERTY(delete);
+            }
+        }
+    }
+}
+
+NAVIGATOR {
+    masterData {
+        NEW activities;
+    }
+}
+
+onWebClientInit() + {
+    onWebClientInit('activities.js') <- 1;
+    onWebClientInit('activities.css') <- 1;
+}
+
 META defineObjectActivity (obj, let, container, nameProp)
     
     EXTEND CLASS ###obj : ActivityObject;
@@ -140,11 +172,7 @@ META defineObjectActivity (obj, let, container, nameProp)
     EXTEND FORM obj
         OBJECTS act = Activity CUSTOM 'activities'
         PROPERTIES(act) nameType, dueDate, daysLeft, name, nameAssignedTo, description, done
-        PROPERTIES setDone = {
-                        DIALOG inputFeedback OBJECTS f INPUT NOMANAGESESSION DO {
-                            done(act) <- TRUE;
-                            feedback(act) <- f;
-                        } },
+        PROPERTIES setDone(act),
                    editAct = edit(act) ON CHANGE {
                         SHOW activity OBJECTS a = act FLOAT;
                    },
