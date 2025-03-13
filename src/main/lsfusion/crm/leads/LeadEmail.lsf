@@ -1,6 +1,6 @@
 MODULE LeadEmail;
 
-REQUIRE Lead, EmailUtils;
+REQUIRE Lead, EmailUtils, EmailTemplate;
 
 NAMESPACE CRM;
 
@@ -18,20 +18,296 @@ body(Lead l) += HTMLTEXT (CONCAT '',
     description(l)
     );
 
-@defineObjectNotifyComments(lead, 'Leads', );
+@defineObjectNotifyComments(lead, 'Leads', ){
+    notifyLead 'Leads' = DATA BOOLEAN (Contact);
+    EXTEND FORM employee PROPERTIES(e) notifyLead = notifyLead;
+    DESIGN employee { notifications { MOVE PROPERTY(notifyLead); } }
+
+    EXTEND FORM editProfile PROPERTIES(u) notifyLead = notifyLead;
+    DESIGN editProfile { notifications { MOVE PROPERTY(notifyLead); } }
+
+    notify = ABSTRACT VALUE BOOLEAN (Lead, Contact);
+    notify (Lead t, Contact c) += TRUE IF GROUP SUM 1 IF user(LeadComment tc) = c AND lead(tc) = t;
+
+    WHEN SET(LeadComment tc IS LeadComment) AND
+        notify(lead(tc), Contact c) AND
+        notifyLead(c) AND
+        NOT user(tc) = c DO {
+        EMAIL
+            SUBJECT subject(lead(tc))
+            TO email(c)
+            BODY CONCAT '<div style="height : 1px; border-bottom : 1px solid #C4C4C4; margin-bottom : 1em"></div>',
+                        'Modified by' + ' ' + nameUser(tc),
+                        html(tc),
+                        body(lead(tc));
+        ;
+    }
+};
 
 notify (Lead l, Contact c) += salesPerson(l) = c;
 
-@defineObjectEmailAccount(lead, 'Account for leads');
+@defineObjectEmailAccount(lead, 'Account for leads'){
+    leadAccount = DATA Account ();
+    nameLeadAccount 'Account for leads' = name(leadAccount());
 
-@defineObjectEmail(lead, 'Lead', l);
+    EXTEND FORM options PROPERTIES nameLeadAccount();
 
-@defineObjectEmailActions(lead, l, name);
+    DESIGN options {
+        commons {
+            MOVE PROPERTY(nameLeadAccount());
+        }
+    }
+    
+    matchLead (Account a, CustomUser u) = emailAccount(currentUser()) = a OR a = leadAccount();
+};
+
+@defineObjectEmail(lead, 'Lead', l){
+    
+    ignoredLead 'Ignored' = DATA BOOLEAN (Email);
+    lead = DATA Lead (Email) INDEXED;
+    countEmail (Lead o) = GROUP SUM 1 IF lead(Email e) = o;
+
+    leadEmail (Email e) = OVERRIDE lead(e), leadEmail(fromAddress(e));
+
+    openLead 'Lead' (Email e) {
+        NEWSESSION {
+            SHOW lead OBJECTS l = leadEmail(e) DOCKED;
+        }
+    }
+
+    processedLead (Email e) = ignoredLead(e) OR lead(e);
+    readyLead (Email e) = matchLead(account(e), currentUser()) AND NOT processedLead(e);
+
+    countReadyLead = GROUP SUM 1 IF readyLead(Email e);
+    
+};
+
+@defineObjectEmailActions(lead, l, name){
+    
+    createLeadFiles(Lead o, Email e) {
+        FOR email(AttachmentEmail ae) = e NEW af = LeadFile DO {
+            lead(af) <- o;
+            file(af) <- RAWFILE(file(ae));
+
+            name(af) <- name(ae);
+            extension(af) <- extension(file(ae));
+        }
+    }
+
+    fill ABSTRACT LIST (Email, Lead);
+
+    createLead 'Create' (Email e) {
+        NEWSESSION {
+            NEW o = Lead {
+                ignoredLead(e) <- NULL;
+                lead(e) <- o;
+
+                name(o) <- ISTRING[200](subject(e));
+                description(o) <- message(e);
+
+                email(o) <- fromAddress(e);
+
+                createLeadFiles(o, e);
+                
+                fill(e, o);
+
+                SHOW lead OBJECTS l = o DOCKED;
+            }
+        }
+    }
+
+    attachLead 'Attach' (Email e) {
+        NEWSESSION {
+            FOR Lead o = leadEmail(fromAddress(e)) DO {
+                ignoredLead(e) <- NULL;
+                lead(e) <- leadEmail(fromAddress(e));
+
+                createLeadFiles(o, e);
+
+                SHOW lead OBJECTS l = o DOCKED;
+            }
+        }
+    }
+
+};
+
+@defineObjectEmailTemplate(lead, l, 'Leads', name){
+
+    templateValueLead = ABSTRACT TEXT (STRING);
+
+    skip = ABSTRACT VALUE BOOLEAN (EmailTemplate, Lead);
+    countTemplate (Lead o) = GROUP SUM 1 IF EmailTemplate t IS EmailTemplate AND NOT skip(t, o);
+
+    EXTEND FORM emailTemplate
+        OBJECTS leadTE 'Template' = STRING
+        PROPERTIES idLead '{ID}' = '\{\{' + leadTE + '\}\}'
+        FILTERS GROUP SUM 1 IF property(Lead o, leadTE)
+    ;
+
+    DESIGN emailTemplate {
+        tabbedPane {
+            NEW leadPane {
+                caption = 'Leads';
+                horizontal = TRUE;
+                MOVE BOX(leadTE);
+            }
+        }
+    }
+
+    writeEmail 'Write an email' (Lead o) {
+        IF countTemplate(o) THEN {
+            DIALOG dialogTemplate OBJECTS t INPUT FILTERS NOT skip(t, o) DO {
+                LOCAL subject = STRING();
+                subject() <- subject(t);
+                FOR property(o, STRING id) = STRING value DO subject() <- replace(subject(), '\{\{' + id + '\}\}', value);
+
+                LOCAL message = STRING();
+                message() <- message(t);
+                FOR property(o, STRING id) = STRING value DO message() <- replace(message(), '\{\{' + id + '\}\}', value);
+
+                writeMessage(email(o), Authentication.email(currentUser()), subject(), message());
+                RETURN;
+            }
+        }
+        open(HTMLLINK('mailto:' + CONCAT '', email(o), '?subject=' + name(o)));
+    }
+
+    EXTEND FORM lead
+        PROPERTIES(l) writeEmail SHOWIF email(l)
+    ;
+
+    DESIGN lead {
+        secondaryActions {
+            MOVE PROPERTY(writeEmail(l)) { valueClass = 'btn-secondary'; }
+        }
+    }
+
+};
+
+@defineObjectEmailTemplateFilter(lead, type){
+
+    in 'Incl.' = DATA BOOLEAN (EmailTemplate, LeadType);
+    countTemplate (LeadType t) = GROUP SUM 1 IF in(EmailTemplate e, t);
+
+    EXTEND FORM emailTemplate
+        OBJECTS leadType = LeadType
+        PROPERTIES(leadType) READONLY name
+        PROPERTIES               in(t, leadType)
+    ;
+
+    DESIGN emailTemplate {
+        leadPane {
+            MOVE BOX(leadType);
+        }
+    }
+
+    skip (EmailTemplate t, Lead o) += NOT in(t, type(o));
+};
+@defineObjectEmailTemplateFilter(lead, status){
+
+    in 'Incl.' = DATA BOOLEAN (EmailTemplate, LeadStatus);
+    countTemplate (LeadStatus t) = GROUP SUM 1 IF in(EmailTemplate e, t);
+
+    EXTEND FORM emailTemplate
+        OBJECTS leadStatus = LeadStatus
+        PROPERTIES(leadStatus) READONLY name
+        PROPERTIES               in(t, leadStatus)
+    ;
+
+    DESIGN emailTemplate {
+        leadPane {
+            MOVE BOX(leadStatus);
+        }
+    }
+
+    skip (EmailTemplate t, Lead o) += NOT in(t, status(o));
+};
 
 fill (Email e, Lead o) +{
     customer(o) <- partnerEmail(fromAddress(e));
 }
 
-@defineObjectEmailDashboard(lead, leads);
+@defineObjectEmailDashboard(lead, leads){
+    
+    EXTEND FORM leads
+        OBJECTS e = Email
+        PROPERTIES(e) openEMLFile GRID
+        PROPERTIES(e) READONLY // nameAccount, idFolder, 
+                               subject, fromAddress, dateTimeSent, dateTimeReceived,
+                               message PANEL
+        PROPERTIES(e) ignoredLead ON CHANGE { NEWSESSION { INPUT b = ignoredLead(e) CHANGE; APPLY; } }
+        PROPERTIES(e) openLead GRID DISABLEIF NOT leadEmail(e)
+        PROPERTIES(e) TOOLBAR
+                      createLead SHOWIF NOT leadEmail(e),
+                      attachLead SHOWIF NOT lead(e) AND leadEmail(e)
+        FILTERS matchLead(account(e), currentUser())
 
-@defineObjectEmailForm(lead, l);
+        FILTERGROUP toProcess
+            FILTER 'Ready' readyLead(e) 'F8' DEFAULT
+
+        OBJECTS ea = AttachmentEmail
+        PROPERTIES(ea) name READONLY, openFile GRID
+        FILTERS email(ea) = e
+    ;
+
+    DESIGN leads {
+        tabbedPane {
+            NEW email {
+                caption = badged('Email', countReadyLead());
+                showIf = leadAccount() OR emailAccount(currentUser());
+                NEW emailPane {
+                    fill = 1;
+                    horizontal = TRUE;
+                    MOVE BOX(e);
+                    NEW emailDetails {
+                        fill = 1;
+                        NEW emailMessage {
+                            fill = 10;
+                            height = 100;
+                            MOVE PROPERTY(message(e)) { fill = 10; caption = ''; valueHeight = -1; }
+                        }
+                        MOVE BOX(ea) {
+                            GRID(ea) { size = (100, -1); }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+};
+
+@defineObjectEmailForm(lead, l){
+    
+    EXTEND FORM lead
+        OBJECTS em = Email
+        PROPERTIES(em) openEMLFile GRID
+        PROPERTIES(em) READONLY // nameAccount, idFolder, 
+                                subject, fromAddress, dateTimeSent, dateTimeReceived,
+                                message PANEL
+//        PROPERTIES(em) reply TOOLBAR
+        FILTERS lead(em) = l
+    ;
+
+    DESIGN lead {
+        details {
+            NEW email {
+                caption = badged('Email', countEmail(l));
+                NEW emailPane {
+                    fill = 1;
+                    horizontal = TRUE;
+                    MOVE BOX(em);
+                    NEW emailRight {
+                        fill = 1;
+                        NEW emailMessage {
+                            fill = 1;
+                            height = 100;
+                            MOVE PROPERTY(message(em)) { fill = 1; valueHeight = -1; caption = ''; }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+};

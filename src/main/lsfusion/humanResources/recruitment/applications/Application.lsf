@@ -13,6 +13,8 @@ TABLE application(Application);
 
 @defineDocStatus(application, 'Application status', new, 'New');
 
+property = ABSTRACT VALUE ISTRING (Application, STRING);
+
 dateTime 'Date' = DATA DATETIME (Application) NONULL IN id;
 WHEN LOCAL SET (Application a IS Application) AND NOT CHANGED(dateTime(a)) DO dateTime(a) <- currentDateTime();
 
@@ -22,6 +24,10 @@ firstName '{First_name}' = DATA ISTRING[30] (Application) IN id;
 lastName 'Surname' = DATA ISTRING[30] (Application) IN id;
 middleName 'Middle name' = DATA ISTRING[30] (Application);
 
+property (Application a, STRING p) += firstName(a) IF p = '{First_name}';
+property (Application a, STRING p) += lastName(a) IF p = 'Surname';
+property (Application a, STRING p) += middleName(a) IF p = 'Middle name';
+
 name '{Name}' (Application a) = CONCAT ' ', lastName(a), firstName(a), middleName(a) CHARWIDTH 25;
 
 phone 'Phone' = DATA ISTRING[100] (Application) CHARWIDTH 12;
@@ -30,6 +36,7 @@ email 'Email' = DATA ISTRING[400] (Application) CHARWIDTH 20 REGEXP '[\\-!#-\'*+
 
 recruiter = DATA Employee (Application);
 nameRecruiter 'Recruiter' (Application i) = name(recruiter(i));
+property (Application a, STRING p) += nameRecruiter(a) IF p = 'Recruiter';
 
 recruiter(Application a) <- currentUser() WHEN SET(a IS Application);
 
@@ -40,9 +47,11 @@ tags 'Tags' (Application t) = GROUP CONCAT name(ApplicationTag tg) IF in(t, tg),
 
 position = DATA Position (Application);
 namePosition 'Position' (Application i) = name(position(i));
+property (Application a, STRING p) += namePosition(a) IF p = 'Position';
 
 department = DATA Department (Application);
 nameDepartment 'Department' (Application i) = name(department(i));
+property (Application a, STRING p) += nameDepartment(a) IF p = 'Department';
 
 CONSTRAINT department(Application a) AND NOT partner(department(a)) IS Company
     CHECKED BY department[Application]
