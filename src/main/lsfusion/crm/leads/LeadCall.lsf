@@ -14,3 +14,69 @@ openLeadPhone (ISTRING[100] phone) =
 callerName (Lead l) = CONCAT ' ', name(l), '(' + 'Lead' + ')';
 
 @defineObjectHooks(lead, l, 'Lead', openLeadPhone, salesPerson, callerName);
+
+// dashboard
+ignoredLead 'Ignored' = DATA BOOLEAN (Call);
+
+leadCall (Call c) = OVERRIDE lead(c), leadPhone(caller(c));
+
+openLead 'Lead' (Call c) {
+    NEWSESSION {
+        SHOW lead OBJECTS l = leadCall(c) DOCKED;
+    }
+}
+
+createLead 'Create' (Call c) {
+    NEWSESSION {
+        NEW o = Lead {
+            ignoredLead(c) <- NULL;
+            lead(c) <- o;
+            
+            phone(o) <- caller(c);
+            
+            salesPerson(o) <- employee(c);
+
+            SHOW lead OBJECTS l = o DOCKED;
+        }
+    }
+}
+
+attachLead 'Attach' (Call c) {
+    NEWSESSION {
+        FOR Lead o = leadPhone(caller(c)) DO {
+            ignoredLead(c) <- NULL;
+            lead(c) <- leadPhone(caller(c));
+
+            SHOW lead OBJECTS l = o DOCKED;
+        }
+    }
+}
+
+
+readyLead (Call c) = ignoredLead(c) OR lead(c);
+countReadyLeadCall = GROUP SUM 1 IF readyLead(Call c) AND employee(c) = currentUser();
+
+EXTEND FORM leads
+    OBJECTS call = Call
+    PROPERTIES(call) BACKGROUND RGB(255,212,255) IF outgoing(call)
+                     id, startedAt, caller, recipient, callerName, nameRedirect, nameEmployee, duration, result
+    PROPERTIES(call) requestRecord GRID DISABLEIF NOT recorded(call)
+    PROPERTIES(call) ignoredLead ON CHANGE { NEWSESSION { INPUT b = ignoredLead(call) CHANGE; APPLY; } }
+    PROPERTIES(call) openLead GRID DISABLEIF NOT leadCall(call)
+    PROPERTIES(call) TOOLBAR
+                            createLead SHOWIF NOT leadCall(call),
+                            attachLead SHOWIF NOT lead(call) AND leadCall(call)
+    FILTERS employee(call) = currentUser()
+
+    FILTERGROUP toProcess
+        FILTER 'Ready' readyLead(call) 'F8' DEFAULT
+;
+
+DESIGN leads {
+    tabbedPane {
+        NEW call {
+            caption = badged('Calls', countReadyLeadCall());
+            MOVE BOX(call) { caption = ''; }
+        }
+    }
+}
