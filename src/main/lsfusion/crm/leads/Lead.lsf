@@ -46,7 +46,6 @@ description 'Description' = DATA RICHTEXT (Lead) CHARWIDTH 20;
 
 status 'Status' = DATA LeadStatus (Lead);
 nameStatus 'Status' (Lead l) = name(status(l)) IN id;
-status (Lead l) <- firstLeadStatus() WHEN SET(l IS Lead);
 
 closed 'Closed' (Lead l) = closed(status(l));
 opened 'Opened' (Lead l) = l IS Lead AND NOT closed(l);
@@ -56,6 +55,12 @@ nameType 'Type' (Lead t) = name(type(t)) IN id;
 property (Lead l, STRING p) += nameType(l) IF p = 'Type';
 
 WHEN LOCAL SET(Lead t IS Lead) AND NOT CHANGED(type(t)) DO type(t) <- defaultLeadType();
+
+status (Lead l) <- OVERRIDE firstLeadStatus(type(l)), firstLeadStatus() WHEN SET(l IS Lead) OR SETCHANGED(type(l));
+
+CONSTRAINT SETCHANGED(status(Lead l)) AND type(l) AND NOT allow(type(l), status(l))
+    CHECKED BY status[Lead]
+    MESSAGE 'Status is not allowed for the selected type';
 
 priority 'Priority' = DATA LeadPriority (Lead);
 namePriority 'Priority' (Lead l) = name(priority(l));
