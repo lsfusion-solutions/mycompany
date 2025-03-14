@@ -6,7 +6,8 @@ PRIORITY MasterData;
 
 NAMESPACE CRM;
 
-leadStatuses () = JSON FROM id = LeadStatus s, name(s) WHERE s IS LeadStatus AND NOT closed(s) ORDER sortingOrder(s), s;
+leadStatuses () = JSON FROM id = LeadStatus s, name(s) WHERE s IS LeadStatus AND NOT closed(s) AND (allow(leadType(), s) OR NOT leadType())
+                               ORDER sortingOrder(s), s;
 leadEmployees () = JSON FROM id = Employee e, name(e) WHERE name(e);
 
 jsonTags (Lead l) = JSON FROM name(LeadTag tg), idColor(tg) WHERE in(l, tg);

@@ -12,93 +12,12 @@ CLASS Task '{Task}';
 
 readonly = ABSTRACT CASE BOOLEAN (Task);
 
-@defineID(task, '{Tasks}', '', 6){
-    id '{ID}' = DATA STRING[50] (Task) IN id CHARWIDTH 6 INDEXED;
-    task (STRING[50] id) = GROUP AGGR Task o BY id(o);
-    
-    numeratorTask = DATA Numerator();
-    nameNumeratorTask 'Numerator - {Tasks}' = name(numeratorTask());
-    
-    loadDefaultNumerators () + {
-        NEW n = Numerator {
-            name(n) <- '{Tasks}';
-            series(n) <- '';
-            minValue(n) <- 1;
-            maxValue(n) <- 999999;
-            stringLength(n) <- 6;
-            numeratorTask() <- n;
-        }
-    }
-    
-    EXTEND FORM options 
-        PROPERTIES nameNumeratorTask()
-    ;
-    
-    DESIGN options {
-        commons {
-            MOVE PROPERTY(nameNumeratorTask());
-        }
-    }
-    
-    WHEN SETCHANGED(Task o IS Task AND numeratorTask() AND NOT id(o)) DO {
-        id(o) <- CONCAT '', series(numeratorTask()), curStringValue(numeratorTask());
-        incrementValueSession(numeratorTask());   
-    }
-};
+@defineID(task, '{Tasks}', '', 6);
 
-@definePropertyObject(task){
-    property = ABSTRACT VALUE ISTRING (Task, STRING);
-    propertyTask = ABSTRACT VALUE BOOLEAN (STRING);
-    propertyLongTask = ABSTRACT VALUE BOOLEAN (STRING);
-
-    htmlShortListProperties (Task o) = 
-        '<ul style="color:#959595">' + 
-            (GROUP CONCAT ('<li>' + STRING p + ' : ' + property(o, p) + '</li>') IF NOT propertyLongTask(p), '' 
-                   ORDER p) + 
-        '</ul>';
-    
-    @defineHistoryObject(task){
-    CLASS TaskHistory 'Change history';
-
-    task = DATA Task (TaskHistory) INDEXED;
-    countHistories (Task d) = GROUP SUM 1 IF task(TaskHistory h) = d;
-
-    dateTime 'Date' = DATA DATETIME (TaskHistory);
-
-    user = DATA User (TaskHistory);
-    nameUser 'User' (TaskHistory l) = name(user(l));
-
-    computer = DATA Computer (TaskHistory);
-    hostnameComputer 'Computer' (TaskHistory l) = hostname(computer(l)) CHARWIDTH 10;
-
-    type 'Type' = DATA ISTRING[100] (TaskHistory) CHARWIDTH 15;
-    description 'Description' = DATA TEXT (TaskHistory);
-
-    firstHistory (Task d) = GROUP LAST TaskHistory h ORDER DESC h WHERE task(h) = d MATERIALIZED;
-    nameUserFirstHistory 'Created by' (Task d) = nameUser(firstHistory(d));
-    dateTimeFirstHistory 'Created at' (Task d) = dateTime(firstHistory(d));
-
-    lastHistory (Task d) = GROUP LAST TaskHistory h ORDER h WHERE task(h) = d MATERIALIZED;
-    nameUserLastHistory 'Last modified by' (Task d) = nameUser(lastHistory(d));
-    dateTimeLastHistory 'Last modified at' (Task d) = dateTime(lastHistory(d));
-};
-};
+@definePropertyObject(task);
 
 name '{Name}' = DATA ISTRING (Task) CHARWIDTH 30 IN id;
-@definePropertyValue(task, name, '{Name}'){
-    @definePropertyValue(task, name, '{Name}', name){
-        WHEN CHANGED(name(Task let)) AND NOT DROPPED(let IS Task) AND NOT disableHistory() DO {
-            NEW l = TaskHistory {
-                task(l) <- let;
-                dateTime(l) <- currentDateTime();
-                user(l) <- currentUser();
-                computer(l) <- currentComputer();
-                type(l) <- '{Name}';
-                description (l) <- CONCAT ' -> ', PREV(name(let)), (OVERRIDE ISTRING(name(let)), '');
-            }
-        }
-    };
-};
+@definePropertyValue(task, name, '{Name}');
 propertyLongTask (STRING p) += p = '{Name}';
 
 idName '{Name}' (Task t) = CONCAT ' ', '#' + id(t), name(t);
@@ -110,84 +29,27 @@ fullName (Task t) = CONCAT ' - ', prefixName(t), name(t);
 author 'Author' = DATA Employee (Task);
 nameAuthor 'Author' (Task t) = name(author(t));
 WHEN LOCAL SET(Task t IS Task) AND NOT author(t) AND currentUser() IS Employee DO author(t) <- currentUser();
-@definePropertyValue(task, author, 'Author', nameAuthor){
-    WHEN CHANGED(status(Task let)) AND NOT DROPPED(let IS Task) AND NOT disableHistory() DO {
-        NEW l = TaskHistory {
-            task(l) <- let;
-            dateTime(l) <- currentDateTime();
-            user(l) <- currentUser();
-            computer(l) <- currentComputer();
-            type(l) <- 'Status';
-            description (l) <- CONCAT ' -> ', PREV(nameStatus(let)), (OVERRIDE ISTRING(nameStatus(let)), '');
-        }
-    }
-};
+@definePropertyValue(task, author, 'Author', nameAuthor);
 
 assignedTo 'Assigned to' = DATA Employee (Task);
 nameAssignedTo 'Assigned to' (Task t) = name(assignedTo(t));
-@definePropertyValue(task, assignedTo, 'Assigned to', nameAssignedTo){
-    WHEN CHANGED(assignedTo(Task let)) AND NOT DROPPED(let IS Task) AND NOT disableHistory() DO {
-        NEW l = TaskHistory {
-            task(l) <- let;
-            dateTime(l) <- currentDateTime();
-            user(l) <- currentUser();
-            computer(l) <- currentComputer();
-            type(l) <- 'Assigned to';
-            description (l) <- CONCAT ' -> ', PREV(nameAssignedTo(let)), (OVERRIDE ISTRING(nameAssignedTo(let)), '');
-        }
-    }
-};
+@definePropertyValue(task, assignedTo, 'Assigned to', nameAssignedTo);
 
 deadline 'Deadline' = DATA DATE (Task);
-@definePropertyValue(task, deadline, 'Deadline'){
-    @definePropertyValue(task, deadline, 'Deadline', deadline){
-        WHEN CHANGED(deadline(Task let)) AND NOT DROPPED(let IS Task) AND NOT disableHistory() DO {
-            NEW l = TaskHistory {
-                task(l) <- let;
-                dateTime(l) <- currentDateTime();
-                user(l) <- currentUser();
-                computer(l) <- currentComputer();
-                type(l) <- 'Deadline';
-                description (l) <- CONCAT ' -> ', PREV(deadline(let)), (OVERRIDE ISTRING(deadline(let)), '');
-            }
-        }
-    };
-};
+@definePropertyValue(task, deadline, 'Deadline');
 
 description 'Description' = DATA RICHTEXT (Task) CHARWIDTH 20;
 
 status 'Status' = DATA TaskStatus (Task);
 nameStatus 'Status' (Task t) = name(status(t)) IN id;
-@definePropertyValue(task, status, 'Status', nameStatus){
-    WHEN CHANGED(status(Task let)) AND NOT DROPPED(let IS Task) AND NOT disableHistory() DO {
-        NEW l = TaskHistory {
-            task(l) <- let;
-            dateTime(l) <- currentDateTime();
-            user(l) <- currentUser();
-            computer(l) <- currentComputer();
-            type(l) <- 'Status';
-            description (l) <- CONCAT ' -> ', PREV(nameStatus(let)), (OVERRIDE ISTRING(nameStatus(let)), '');
-        }
-    }
-};
+@definePropertyValue(task, status, 'Status', nameStatus);
 
 closed 'Closed' (Task t) = closed(status(t));
 opened 'Opened' (Task t) = t IS Task AND NOT closed(t);
 
 type 'Type' = DATA TaskType (Task);
 nameType 'Type' (Task t) = name(type(t)) IN id;
-@definePropertyValue(task, type, 'Type', nameType){
-    WHEN CHANGED(type(Task let)) AND NOT DROPPED(let IS Task) AND NOT disableHistory() DO {
-        NEW l = TaskHistory {
-            task(l) <- let;
-            dateTime(l) <- currentDateTime();
-            user(l) <- currentUser();
-            computer(l) <- currentComputer();
-            type(l) <- 'Type';
-            description (l) <- CONCAT ' -> ', PREV(nameType(let)), (OVERRIDE ISTRING(nameType(let)), '');
-        }
-    }
-};
+@definePropertyValue(task, type, 'Type', nameType);
 
 WHEN LOCAL SET(Task t IS Task) AND NOT CHANGED(type(t)) DO type(t) <- defaultTaskType();
 
@@ -195,33 +57,11 @@ priority 'Priority' = DATA TaskPriority (Task);
 namePriority 'Priority' (Task t) = name(priority(t));
 idColorPriority (Task t) = idColor(priority(t));
 rgbColorPriority (Task t) = rgbColor(priority(t));
-@definePropertyValue(task, priority, 'Priority', namePriority){
-    WHEN CHANGED(priority(Task let)) AND NOT DROPPED(let IS Task) AND NOT disableHistory() DO {
-        NEW l = TaskHistory {
-            task(l) <- let;
-            dateTime(l) <- currentDateTime();
-            user(l) <- currentUser();
-            computer(l) <- currentComputer();
-            type(l) <- 'Priority';
-            description (l) <- CONCAT ' -> ', PREV(namePriority(let)), (OVERRIDE ISTRING(namePriority(let)), '');
-        }
-    }
-};
+@definePropertyValue(task, priority, 'Priority', namePriority);
 
 in 'Incl.' = DATA BOOLEAN (Task, TaskTag);
 tags 'Tags' (Task t) = GROUP CONCAT name(TaskTag tg) IF in(t, tg), ', ' ORDER name(tg), tg;
-@definePropertyValue(task, tags, 'Tags'){
-    WHEN CHANGED(priority(Task let)) AND NOT DROPPED(let IS Task) AND NOT disableHistory() DO {
-        NEW l = TaskHistory {
-            task(l) <- let;
-            dateTime(l) <- currentDateTime();
-            user(l) <- currentUser();
-            computer(l) <- currentComputer();
-            type(l) <- 'Priority';
-            description (l) <- CONCAT ' -> ', PREV(namePriority(let)), (OVERRIDE ISTRING(namePriority(let)), '');
-        }
-    }
-};
+@definePropertyValue(task, tags, 'Tags');
 
 onCreate ABSTRACT LIST (Task);
 
@@ -277,31 +117,7 @@ DESIGN task {
     }
 }
 
-@defineFormStatusContainer(task){
-    DESIGN task {
-        NEW statusPane FIRST {
-            horizontal = TRUE;
-            alignment = STRETCH;
-            NEW statusActions {
-                horizontal = TRUE;
-                flex = 1;
-                NEW primaryActions {
-                    horizontal = TRUE;
-                }
-                NEW secondaryActions {
-                    horizontal = TRUE;
-                }
-            }
-            NEW statusContainer {
-                fill = 1;
-                NEW status {
-                    alignment = END;
-                    horizontal = TRUE;
-                }
-            }
-        }
-    }
-};
+@defineFormStatusContainer(task);
 DESIGN task {
     status {
         MOVE PROPERTY(nameStatus(t));
@@ -331,470 +147,27 @@ FORM tasks '{Tasks}'
     LIST Task OBJECT t
 ;
 
-@defineHistoryForm(task, task, t){
-    EXTEND FORM task
-        OBJECTS taskl = TaskHistory
-        PROPERTIES(taskl) READONLY dateTime, nameUser, hostnameComputer, type, description, pdescription = description PANEL
-        FILTERS task(taskl) = t
-    ;
+@defineHistoryForm(task, task, t);
 
-    DESIGN task {
-        details {
-            NEW history {
-                caption = badged('History', countHistories(t));
-                fill = 1;
-                horizontal = TRUE;
-                MOVE BOX(taskl) {
-                    fill = 2;
-                    caption = '';
-                    PROPERTY(description(taskl)) { valueHeight = 18; }
-                }
-                MOVE PROPERTY(pdescription) { panelCaptionVertical = TRUE; fill = 1; }
-            }
-        }
-    }
+@defineDocObjectsForm(tasks, t, '{Tasks}');
 
-    EXTEND FORM tasks
-        PROPERTIES(t) nameUserFirstHistory, dateTimeFirstHistory, nameUserLastHistory, dateTimeLastHistory
-    ;
-};
+@defineObjectFiles(task, t, 'Task file');
 
-@defineDocObjectsForm(tasks, t, '{Tasks}'){
-    DESIGN tasks {
-        OBJECTS {
-            NEW pane {
-                fill = 1;
-                horizontal = TRUE;
-                NEW tabbedPane {
-                    tabbed = TRUE;
-                    fill = 1000;
-                    MOVE BOX(t) { caption = '{Tasks}'; }
-                }
-                NEW rightPane {
-                    tabbed = TRUE;
-//                    width = 230;
-                    fill = 1;
-                    NEW filters {
-                        caption = 'Filters';
-                        alignment = STRETCH;
-                        MOVE FILTERGROUPS(t) {
-                            horizontal = FALSE;
-                            alignment = STRETCH;
-                        }
-                    }
-                    NEW actions {
-                        alignment = STRETCH;
-                        caption = 'Actions';
-                        NEW statuses {
-                            alignment = STRETCH;
-                            caption = 'Change status';
-                        }
-                    }
-                }
-            }
-        }
-    }
-};
+@defineObjectActivity(task, t, rightPane, fullName);
 
-@defineObjectFiles(task, t, 'Task file'){
+@defineObjectComments(task, t, rightPane);
+@defineObjectCommentsHistory(task);
 
-    CLASS TaskFile 'Task file';
+@defineObjectCommentsCreate(task, history);
 
-    task = DATA Task (TaskFile) INDEXED NONULL DELETE;
+@defineObjectCommentsFiles(task, ProjectManagement);
 
-    file = DATA RAWFILE (TaskFile);
+@defineObjectCommentsCreate(task, file);
 
-    name '{Name}' = DATA ISTRING (TaskFile) CHARWIDTH 15;
-    extension 'Extension' = DATA ISTRING (TaskFile) CHARWIDTH 5;
-    nameExtension (TaskFile f) = CONCAT '.', name(f), extension(f);
+@defineObjectCommentsActivity(task);
 
-    description 'Description' = DATA ISTRING (TaskFile) CHARWIDTH 20;
-
-    dateTime 'Date' = DATA DATETIME (TaskFile);
-    dateTime(TaskFile f) <- currentDateTime() WHEN SET(f IS TaskFile);
-
-    user = DATA User (TaskFile);
-    nameUser 'User' (TaskFile f) = name(user(f));
-    user(TaskFile f) <- currentUser() WHEN SET(f IS TaskFile);
-
-    open 'Open' (TaskFile f) { open(file(f), nameExtension(f)); } IMAGE 'open.png';
-
-    countFiles 'Files' (Task i) = GROUP SUM 1 IF task(TaskFile f) = i;
-
-    index '{Index}' (TaskFile f) = PARTITION SUM 1 ORDER f BY task(f) MATERIALIZED CHARWIDTH 3;
-    file (Task o, INTEGER i) = GROUP MIN TaskFile f IF task(f) = o AND index(f) = i;
-    openFile(Task o, INTEGER i) { open(file(o, i)); }
-    
-    file1 (Task o) = file(o, 1);
-    file2 (Task o) = file(o, 2);
-    file3 (Task o) = file(o, 3);
-    openFile1 'File 1' (Task o) { openFile(o, 1); }
-    openFile2 'File 2' (Task o) { openFile(o, 2); }
-    openFile3 'File 3' (Task o) { openFile(o, 3); }
-
-    firstFile (Task i) = GROUP MIN TaskFile f IF task(f) = i;
-    openFirstFile 'Open' (Task i) { open(firstFile(i)); }
-    openFiles 'Open' (Task i) {
-        FOR task(TaskFile f) = i DO
-            open(f);
-    }
-
-    newFile 'File' (Task o) {
-        INPUT uf = NAMEDFILE DO NEW uof = TaskFile {
-            task(uof) <- o;
-            file(uof) <- RAWFILE(uf);
-            name(uof) <- name(uf);
-            extension(uof) <- extension(uf);
-        }
-    } IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
-        
-    downloadTaskFile (LONG id) {
-        FOR LONG(TaskFile f AS TaskFile) = id DO {
-            exportNamedFile() <- namedFile(file(f), name(f), extension(f));
-        } 
-    } @@api;
-        
-    @defineObjectFilesForm(task, task, t){
-    EXTEND FORM task
-        OBJECTS of = TaskFile
-        PROPERTIES(of) READONLY index
-        PROPERTIES(of) READONLYIF readonly(t) name, extension, description
-        PROPERTIES(of) READONLY nameUser, dateTime
-        PROPERTIES(of) GRID open, DELETE READONLYIF readonly(t)
-        FILTERS task(of) = t
-
-        PROPERTIES(t) newFile DRAW of TOOLBAR READONLYIF readonly(t)
-        PROPERTIES inputFile = '' CUSTOM 'inputFile' ON CHANGE {
-            INPUT f = JSON DO
-                IMPORT JSON FROM f FIELDS() STRING name, STRING extension, STRING data DO 
-                    IF NOT readonly(t) THEN NEW uof = TaskFile {
-                        task(uof) <- t;
-                        file(uof) <- decode(data, 'base64');
-                        name(uof) <- name;
-                        extension(uof) <- extension;
-                    }
-        }
-    ;
-
-    DESIGN task {
-        details {
-            NEW files {
-                caption = badged('Files', countFiles(t));
-                MOVE BOX(of) { width = 600; caption = ''; }
-                MOVE PROPERTY(inputFile);
-            }
-        }
-    }
-    
-    // preview
-    
-    EXTEND FORM task
-        PROPERTIES() READONLY previewPdfFile SHOWIF previewPdfFile(), previewImageFile SHOWIF NOT previewPdfFile()
-
-        EVENTS ON CHANGE of {
-            previewPdfFile() <- NULL;
-            previewImageFile() <- NULL;
-            IF lower(extension(of)) = 'jpg' OR lower(extension(of)) = 'jpeg' OR lower(extension(of)) = 'png' OR lower(extension(of)) = 'bmp' THEN {
-                previewImageFile() <- IMAGEFILE(file(of));
-            }
-            IF lower(extension(of)) = 'pdf' THEN {
-                previewPdfFile() <- PDFFILE(file(of));
-            }
-            IF lower(extension(of)) = 'doc' OR lower(extension(of)) = 'docx' THEN {
-                TRY {
-                    wordToPdf(file(of));
-                } CATCH {}
-                previewPdfFile() <- exportPdfFile();
-            }
-        }
-    ;
-
-    DESIGN task {
-        files {
-            horizontal = TRUE;
-            height = 300;
-            NEW preview {
-                width = 300;
-                height = 600;
-                fill = 4;
-                MOVE PROPERTY(previewPdfFile()) { fill = 1; size = (100, 100); caption = ''; }
-                MOVE PROPERTY(previewImageFile()) { fill = 1; size = (100, 100); caption = ''; }
-            }
-        }
-    }
-
-};
-
-};
-
-@defineObjectActivity(task, t, rightPane, fullName){
-    
-    EXTEND CLASS Task : ActivityObject;
-    name(Task o) += fullName(o);
-
-    EXTEND FORM task
-        OBJECTS act = Activity CUSTOM 'activities'
-        PROPERTIES(act) nameType, dueDate, daysLeft, name, nameAssignedTo, description, done
-        PROPERTIES setDone(act),
-                   editAct = edit(act) ON CHANGE {
-                        SHOW activity OBJECTS a = act FLOAT;
-                   },
-                   deleteAct = DELETE(act)
-        ORDERS dueDate(act)
-        FILTERS object(act) = t,
-            NOT PREV(done(act))
-    ;
-
-    newActivity 'Add' (Task o, ActivityType t) {
-        NESTEDSESSION {
-            NEW na = Activity {
-                object(na) <- o;
-                type(na) <- t;
-                DIALOG activity OBJECTS a = na FLOAT;
-            }
-        }
-    } IMAGE 'add.png';
-
-    EXTEND FORM task
-        OBJECTS at = ActivityType BEFORE t
-
-        PROPERTIES newActivity(t, at) COLUMNS (at) HEADER name(at)
-    ;
-
-    DESIGN task {
-        rightPane {
-            NEW activities {
-                showIf = countActivityTypes();
-                alignment = STRETCH;
-                caption = badged('Activities', countOpenedActivity(t));
-                MOVE PROPERTY(newActivity(t, at));
-                MOVE GRID(act) {
-                    width = 400;
-                    flex = 0;
-                }
-                REMOVE BOX(act);
-            }
-        }
-    }
-
-};
-
-@defineObjectComments(task, t, rightPane){
-    CLASS TaskComment 'Comment';
-    
-    task = DATA Task (TaskComment) NONULL DELETE;
-    countComment (Task e) = GROUP SUM 1 IF task(TaskComment c) = e MATERIALIZED;
-    lastComment (Task e) = GROUP LAST TaskComment c ORDER c BY task(c) MATERIALIZED;
-    
-    dateTime 'Date' = DATA DATETIME (TaskComment);
-    dateTime(TaskComment f) <- currentDateTime() WHEN SET(f IS TaskComment);
-    
-    user = DATA User (TaskComment);
-    nameUser 'User' (TaskComment f) = name(user(f));
-    user(TaskComment f) <- currentUser() WHEN SET(f IS TaskComment);
-    
-    text 'Text' = DATA RICHTEXT (TaskComment);
-    
-    header = ABSTRACT VALUE HTMLTEXT (TaskComment);
-    footer = ABSTRACT VALUE HTMLTEXT (TaskComment);
-    html (TaskComment c) = CONCAT '', header(c), text(c), footer(c);
-    
-    FORM editTaskComment 'Comment'
-        OBJECTS c = TaskComment PANEL
-        PROPERTIES(c) '' = text
-    ;
-    
-    DESIGN editTaskComment {
-        size = (640, 480);
-        OBJECTS {
-            MOVE PROPERTY(text(c)) { fill = 1; }
-        }
-    }
-    
-    EXTEND FORM task
-        OBJECTS cmt = TaskComment CUSTOM 'comments'
-        PROPERTIES id = VALUE(cmt)
-        PROPERTIES(cmt) nameUser, dateTime, text = html
-        PROPERTIES(cmt) edit ON CHANGE {
-            SHOW editTaskComment OBJECTS c = cmt;
-        },
-            delete = DELETE
-        ORDERS id DESC
-        FILTERS task(cmt) = t
-    ;
-    
-    newComment 'Add' (Task t) {
-        IF inputComment() THEN
-            NEW nc = TaskComment {
-                task(nc) <- t;
-                text(nc) <- inputComment();
-                inputComment() <- NULL;
-            }
-    }
-    
-    EXTEND FORM task
-        PROPERTIES inputComment(), newComment(t)
-        
-        EVENTS ON APPLY { newComment(t); }
-    ;
-    
-    DESIGN task {
-        rightPane {
-            NEW comments {
-                fill = 1;
-                caption = badged('Comments', countComment(t));
-                NEW inputComment {
-                    horizontal = TRUE;
-                    alignment = STRETCH;
-                    MOVE PROPERTY(inputComment()) {
-                        valueHeight = -1;
-                        fill = 1;
-                    }
-                    MOVE PROPERTY(newComment(t)) {
-                        alignment = STRETCH;
-                    }
-                }
-                MOVE GRID(cmt) {
-                    height = 200;
-                    width = 400;
-                    fill = 1;
-                }
-                REMOVE BOX(cmt);
-            }
-        }
-    }
-};
-@defineObjectCommentsHistory(task){
-    comment = DATA TaskComment (TaskHistory) INDEXED;
-
-    changes (TaskComment tc) = HTMLTEXT('<ul style="color:#959595">' + (GROUP CONCAT ('<li>' + type(TaskHistory th) + ' : ' + description(th) + '</li>') IF comment(th) = tc, '' ORDER th) + '</ul>');
-    header (TaskComment tc) += changes(tc);
-
-    WHEN SET(TaskComment tc IS TaskComment) AND SET(TaskHistory th IS TaskHistory) DO
-        comment(th) <- tc;
-};
-
-@defineObjectCommentsCreate(task, history){
-    WHEN [GROUP SUM 1 IF SET(TaskHistory th IS TaskHistory) BY task(th)](Task t) AND NOT [GROUP SUM 1 IF SET(TaskComment tc IS TaskComment) BY task(tc)](t) DO
-        NEW tc = TaskComment {
-            task(tc) <- t;
-        }
-};
-
-@defineObjectCommentsFiles(task, ProjectManagement){
-    comment = DATA TaskComment (TaskFile) INDEXED;
-
-    files (TaskComment tc) = HTMLTEXT('<ul style="color:#959595">' + 
-        (GROUP CONCAT ('<li><a target="_blank" href="' + contextUrl('/exec/ProjectManagement.downloadTaskFile?id=' + TaskFile tf) + '">' + nameExtension(tf) + '</a></li>') 
-                      IF comment(tf) = tc, '' ORDER tf) + '</ul>');
-    footer (TaskComment tc) += files(tc);
-
-    WHEN SET(TaskComment tc IS TaskComment) AND SET(TaskFile tf IS TaskFile) DO
-        comment(tf) <- tc;
-};
-
-@defineObjectCommentsCreate(task, file){
-    WHEN [GROUP SUM 1 IF SET(TaskFile th IS TaskFile) BY task(th)](Task t) AND NOT [GROUP SUM 1 IF SET(TaskComment tc IS TaskComment) BY task(tc)](t) DO
-        NEW tc = TaskComment {
-            task(tc) <- t;
-        }
-};
-
-@defineObjectCommentsActivity(task){
-    
-    WHEN SET(done(Activity a)) AND Task o = object(a) AND o IS Task DO NEW oc = TaskComment {
-        task(oc) <- o;
-        text(oc) <- CONCAT '', '<h5>' + (CONCAT ' : ', nameType(a), name(a)) + '</h5>',
-            (CONCAT '<b>' + 'Description' + ' :</b>', (feedback(a) IF feedback(a) != ''), description(a));
-    }
-    
-};
-
-@defineDocStatusChange(task, 'Task'){
-    CLASS TaskStatusChange 'Task';
-
-    task = DATA Task (TaskStatusChange);
-    countStatusChange (Task o) = GROUP SUM 1 IF task(TaskStatusChange sc) = o;
-    
-    dateTime 'Date' = DATA DATETIME (TaskStatusChange);
-    dateTime(TaskStatusChange sc) <- currentDateTime() WHEN SET(sc IS TaskStatusChange);
-
-    INDEX task(TaskStatusChange sc), dateTime(sc), sc;
-
-    user 'User' = DATA User (TaskStatusChange);
-    nameUser 'User' (TaskStatusChange sc) = name(user(sc));
-    user(TaskStatusChange sc) <- currentUser() WHEN SET(sc IS TaskStatusChange);
-
-    status 'Status' = DATA TaskStatus (TaskStatusChange);
-    nameStatus 'Status' (TaskStatusChange sc) = name(status(sc));
-
-    previous (TaskStatusChange c) = PARTITION PREV c ORDER dateTime(c), c BY task(c);
-    dateTimePrevious (TaskStatusChange c) = dateTime(previous(c));
-    secondsBefore (TaskStatusChange c) = subtractSeconds(dateTimePrevious(c), dateTime(c));
-    hoursBefore 'Hours before' (TaskStatusChange c) = round2(secondsBefore(c) / 3600);
-
-    nameUserPrevious (TaskStatusChange c) = nameUser(previous(c));
-    
-    next (TaskStatusChange c) = PARTITION PREV c ORDER DESC dateTime(c), c BY task(c);
-    dateTimeNext  (TaskStatusChange c) = dateTime(next(c));
-    secondsAfter (TaskStatusChange c) = subtractSeconds(dateTime(c), dateTimeNext(c));
-    hoursAfter 'Hours after' (TaskStatusChange c) = round2(secondsAfter(c) / 3600);
-    
-    nameUserNext (TaskStatusChange c) = nameUser(next(c));
-        
-    lastChange (Task o, TaskStatus s) = GROUP LAST TaskStatusChange sc ORDER dateTime(sc), sc BY task(sc), status(sc);
-        
-    dateTimeLastChange 'Date' (Task o, TaskStatus s) = dateTime(lastChange(o, s));
-    nameUserLastChange 'User' (Task o, TaskStatus s) = nameUser(lastChange(o, s));
-
-    secondsBefore (Task o, TaskStatus s) = GROUP SUM secondsBefore(TaskStatusChange sc) IF task(sc) = o AND status(sc) = s;
-    hoursBefore 'Hours before' (Task o, TaskStatus s) = round2(secondsBefore(o, s) / 3600);
-
-    secondsAfter (Task o, TaskStatus s) = GROUP SUM secondsAfter(TaskStatusChange sc) IF task(sc) = o AND status(sc) = s;
-    hoursAfter 'Hours after' (Task o, TaskStatus s) = round2(secondsAfter(o, s) / 3600);
-        
-    WHEN SETCHANGED(status(Task o)) DO 
-        NEW sc = TaskStatusChange {
-            task(sc) <- o;
-            status(sc) <- status(o);
-        }
-};
-@defineDocStatusChangeForm(task, t, 'Task'){
-    EXTEND FORM task
-        OBJECTS stch = TaskStatusChange
-        PROPERTIES(stch) READONLY dateTime, nameUser, hoursBefore, nameStatus, hoursAfter
-        FILTERS task(stch) = t
-    ;
-    
-    DESIGN task {
-        details {
-            MOVE BOX(stch) { 
-                caption = badged('Status change', countStatusChange(t));
-            }
-        }
-    }
-    
-    EXTEND FORM tasks
-        OBJECTS tst = TaskStatus BEFORE t
-        PROPERTIES sortingOrder(tst)
-        ORDERS sortingOrder(tst)
-        
-        PROPERTIES(t, tst) READONLY COLUMNS 'status' (tst) BACKGROUND RGB(224,224,224) IF mod(index(tst), 2) = 0
-            hoursBefore HEADER name(tst) + '\n(' + 'Hours before' + ')', 
-            dateTimeLastChange HEADER name(tst) + '\n(' + 'Date' + ')', 
-            nameUserLastChange HEADER name(tst) + '\n(' + 'User' + ')', 
-            hoursAfter HEADER name(tst) + '\n(' + 'Hours after' + ')'
-    ;
-    
-    DESIGN tasks {
-        REMOVE BOX(tst);
-        
-        PROPERTY(hoursBefore(t, tst)) { hide = TRUE; }
-        PROPERTY(dateTimeLastChange(t, tst)) { hide = TRUE; }
-        PROPERTY(nameUserLastChange(t, tst)) { hide = TRUE; }
-        PROPERTY(hoursAfter(t, tst)) { hide = TRUE; }
-    }
-};
+@defineDocStatusChange(task, 'Task');
+@defineDocStatusChangeForm(task, t, 'Task');
 
 DESIGN tasks {
     PROPERTY(tags(t)) { valueHeight = 18; }
