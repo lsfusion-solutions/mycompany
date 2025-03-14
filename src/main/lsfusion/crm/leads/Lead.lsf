@@ -225,6 +225,8 @@ nameStatus 'Status' (Lead l) = name(status(l)) IN id;
 };
 };
 
+status (Lead l) <- firstLeadStatus() WHEN SET(l IS Lead);
+
 closed 'Closed' (Lead l) = closed(status(l));
 opened 'Opened' (Lead l) = l IS Lead AND NOT closed(l);
 
@@ -250,7 +252,8 @@ nameType 'Type' (Lead t) = name(type(t)) IN id;
 
 WHEN LOCAL SET(Lead t IS Lead) AND NOT CHANGED(type(t)) DO type(t) <- defaultLeadType();
 
-status (Lead l) <- OVERRIDE firstLeadStatus(type(l)), firstLeadStatus() WHEN SET(l IS Lead) OR SETCHANGED(type(l));
+WHEN LOCAL SETCHANGED(type(Lead l)) AND NOT allow(type(l), status(l)) DO
+    status(l) <- firstLeadStatus(type(l));     
 
 CONSTRAINT SETCHANGED(status(Lead l)) AND type(l) AND NOT allow(type(l), status(l))
     CHECKED BY status[Lead]
