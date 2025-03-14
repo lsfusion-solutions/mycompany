@@ -85,7 +85,7 @@ META defineObjectEmailTemplate (obj, let, capt, nameProp)
     EXTEND FORM emailTemplate
         OBJECTS obj##TE 'Template' = STRING
         PROPERTIES id###obj '{ID}' = '\{\{' + obj###TE + '\}\}'
-        FILTERS GROUP SUM 1 IF property(###obj o, obj##TE)
+        FILTERS property###obj(obj##TE)
     ;
 
     DESIGN emailTemplate {
@@ -96,16 +96,6 @@ META defineObjectEmailTemplate (obj, let, capt, nameProp)
                 MOVE BOX(obj###TE);
             }
         }
-    }
-
-    resultPropertyTemplate = DATA LOCAL STRING();
-    fillPropertyTemplate ABSTRACT LIST (###obj);
-    
-    processPropertyTemplate (###obj o, TEXT t) {
-        resultPropertyTemplate() <- t;
-        FOR property(o, STRING id) = STRING value DO 
-            resultPropertyTemplate() <- replace(resultPropertyTemplate(), '\{\{' + id + '\}\}', value);
-        fillPropertyTemplate(o);
     }
 
     writeEmail 'Write an email' (###obj o) {

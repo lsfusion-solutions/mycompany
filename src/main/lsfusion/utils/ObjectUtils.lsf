@@ -1,0 +1,110 @@
+MODULE ObjectUtils;
+
+NAMESPACE Utils;
+
+META defineHistoryObject(obj)
+    CLASS ###obj##History 'Change history';
+
+    obj = DATA ###obj (###obj##History) INDEXED;
+    countHistories (###obj d) = GROUP SUM 1 IF obj(###obj##History h) = d;
+
+    dateTime 'Date' = DATA DATETIME (###obj##History);
+
+    user = DATA User (###obj##History);
+    nameUser 'User' (###obj##History l) = name(user(l));
+
+    computer = DATA Computer (###obj##History);
+    hostnameComputer 'Computer' (###obj##History l) = hostname(computer(l)) CHARWIDTH 10;
+
+    type 'Type' = DATA ISTRING[100] (###obj##History) CHARWIDTH 15;
+    description 'Description' = DATA TEXT (###obj##History);
+
+    firstHistory (###obj d) = GROUP LAST ###obj##History h ORDER DESC h WHERE obj(h) = d MATERIALIZED;
+    nameUserFirstHistory 'Created by' (###obj d) = nameUser(firstHistory(d));
+    dateTimeFirstHistory 'Created at' (###obj d) = dateTime(firstHistory(d));
+
+    lastHistory (###obj d) = GROUP LAST ###obj##History h ORDER h WHERE obj(h) = d MATERIALIZED;
+    nameUserLastHistory 'Last modified by' (###obj d) = nameUser(lastHistory(d));
+    dateTimeLastHistory 'Last modified at' (###obj d) = dateTime(lastHistory(d));
+END
+
+META defineHistoryProperty(obj, prop, capt, nameProp)
+    WHEN CHANGED(prop(###obj let)) AND NOT DROPPED(let IS ###obj) AND NOT disableHistory() DO {
+        NEW l = ###obj##History {
+            obj(l) <- let;
+            dateTime(l) <- currentDateTime();
+            user(l) <- currentUser();
+            computer(l) <- currentComputer();
+            type(l) <- capt;
+            description (l) <- CONCAT ' -> ', PREV(nameProp(let)), (OVERRIDE ISTRING(nameProp(let)), '');
+        }
+    }
+END
+
+META defineHistoryProperty(obj, prop, capt)
+    @defineHistoryProperty(obj, prop, capt, prop);
+END
+
+META defineHistoryForm(doc, form, let)
+    EXTEND FORM form
+        OBJECTS doc##l = ###doc##History
+        PROPERTIES(doc##l) READONLY dateTime, nameUser, hostnameComputer, type, description, pdescription = description PANEL
+        FILTERS doc(doc##l) = let
+    ;
+
+    DESIGN form {
+        details {
+            NEW history {
+                caption = badged('History', countHistories(let));
+                fill = 1;
+                horizontal = TRUE;
+                MOVE BOX(doc##l) {
+                    fill = 2;
+                    caption = '';
+                    PROPERTY(description(doc##l)) { valueHeight = 18; }
+                }
+                MOVE PROPERTY(pdescription) { panelCaptionVertical = TRUE; fill = 1; }
+            }
+        }
+    }
+
+    EXTEND FORM form##s
+        PROPERTIES(let) nameUserFirstHistory, dateTimeFirstHistory, nameUserLastHistory, dateTimeLastHistory
+    ;
+END
+
+resultPropertyTemplate = DATA LOCAL STRING();
+
+META definePropertyObject (obj)
+    property = ABSTRACT VALUE ISTRING (###obj, STRING);
+    property###obj = ABSTRACT VALUE BOOLEAN (STRING);
+    propertyLong###obj = ABSTRACT VALUE BOOLEAN (STRING);
+
+    fillPropertyTemplate ABSTRACT LIST (###obj);
+
+    processPropertyTemplate (###obj o, TEXT t) {
+        resultPropertyTemplate() <- t;
+        FOR property###obj(STRING id) DO
+            resultPropertyTemplate() <- replace(resultPropertyTemplate(), '\{\{' + id + '\}\}', (OVERRIDE property(o, id), ''));
+        fillPropertyTemplate(o);
+    }
+
+    propertiesHtmlShortList (###obj o) = 
+        '<ul style="color:#959595">' + 
+            (GROUP CONCAT ('<li>' + STRING p + ' : ' + property(o, p) + '</li>') IF NOT propertyLong###obj(p), '' 
+                   ORDER p) + 
+        '</ul>';
+    
+    @defineHistoryObject(obj);
+END
+
+META definePropertyValue (obj, prop, capt, nameProp)
+    property (###obj l, STRING p) += ISTRING(nameProp(l)) IF p = capt;
+    property###obj (STRING p) += p = capt;
+
+    @defineHistoryProperty(obj, prop, capt, nameProp);
+END
+
+META definePropertyValue (obj, prop, capt)
+    @definePropertyValue(obj, prop, capt, prop);
+END

@@ -11,32 +11,236 @@ NAMESPACE HumanResources;
 CLASS Application '{Application}';
 TABLE application(Application);
 
-@defineDocStatus(application, 'Application status', new, 'New');
+@defineDocStatus(application, 'Application status', new, 'New'){
+    CLASS ApplicationStatus 'Application status' {
+        new 'New'
+    }
+    
+    name '{First_name}' (ApplicationStatus s) = staticCaption(s) IF s IS ApplicationStatus CHARWIDTH 12;
+    imagedName '{First_name}' (ApplicationStatus s) = imagedCaption(s) IF s IS ApplicationStatus CHARWIDTH 12;
 
-property = ABSTRACT VALUE ISTRING (Application, STRING);
+    color 'Color' = ABSTRACT CASE COLOR (ApplicationStatus) MATERIALIZED;
+    color (ApplicationStatus s) += WHEN s = ApplicationStatus.new THEN RGB(187,242,210);
+
+    status 'Status' = ABSTRACT CASE ApplicationStatus (Application) MATERIALIZED INDEXED;
+    nameStatus 'Status' (Application d) = name(status(d));
+    imagedNameStatus 'Status' (Application d) = imagedName(status(d));
+    colorStatus 'Color' (Application d) = color(status(d));
+    
+    status(Application d) += WHEN d IS Application THEN ApplicationStatus.new;
+
+    sortingOrder 'Sorting order' = ABSTRACT INTEGER (ApplicationStatus) MATERIALIZED;
+    index 'Index' (ApplicationStatus s) = PARTITION SUM 1 IF s IS ApplicationStatus ORDER sortingOrder(s), s;
+    
+    readonly 'Read-only' = DATA BOOLEAN (ApplicationStatus);
+
+    readonly = ABSTRACT CASE BOOLEAN (Application) MATERIALIZED;
+    readonly (Application d) += WHEN readonly(status(d)) THEN TRUE;
+
+    closed = ABSTRACT CASE BOOLEAN (ApplicationStatus) MATERIALIZED;
+    closed 'Closed' (Application d) = closed(status(d));
+    opened 'Opened' (Application d) = d IS Application AND NOT closed(d) MATERIALIZED INDEXED;
+
+    EXTEND FORM options
+        OBJECTS applicationst = ApplicationStatus
+        PROPERTIES(applicationst) READONLY imagedName, color
+        PROPERTIES(applicationst) readonly
+    ;
+    
+    DESIGN options {
+        tabbedPane {
+            MOVE BOX(applicationst);
+        }
+    }
+};
 
 dateTime 'Date' = DATA DATETIME (Application) NONULL IN id;
 WHEN LOCAL SET (Application a IS Application) AND NOT CHANGED(dateTime(a)) DO dateTime(a) <- currentDateTime();
 
+@definePropertyObject(application){
+    property = ABSTRACT VALUE ISTRING (Application, STRING);
+    propertyApplication = ABSTRACT VALUE BOOLEAN (STRING);
+    propertyLongApplication = ABSTRACT VALUE BOOLEAN (STRING);
+
+    htmlShortListProperties (Application o) = 
+        '<ul style="color:#959595">' + 
+            (GROUP CONCAT ('<li>' + STRING p + ' : ' + property(o, p) + '</li>') IF NOT propertyLongApplication(p), '' 
+                   ORDER p) + 
+        '</ul>';
+    
+    @defineHistoryObject(application){
+    CLASS ApplicationHistory 'Change history';
+
+    application = DATA Application (ApplicationHistory) INDEXED;
+    countHistories (Application d) = GROUP SUM 1 IF application(ApplicationHistory h) = d;
+
+    dateTime 'Date' = DATA DATETIME (ApplicationHistory);
+
+    user = DATA User (ApplicationHistory);
+    nameUser 'User' (ApplicationHistory l) = name(user(l));
+
+    computer = DATA Computer (ApplicationHistory);
+    hostnameComputer 'Computer' (ApplicationHistory l) = hostname(computer(l)) CHARWIDTH 10;
+
+    type 'Type' = DATA ISTRING[100] (ApplicationHistory) CHARWIDTH 15;
+    description 'Description' = DATA TEXT (ApplicationHistory);
+
+    firstHistory (Application d) = GROUP LAST ApplicationHistory h ORDER DESC h WHERE application(h) = d MATERIALIZED;
+    nameUserFirstHistory 'Created by' (Application d) = nameUser(firstHistory(d));
+    dateTimeFirstHistory 'Created at' (Application d) = dateTime(firstHistory(d));
+
+    lastHistory (Application d) = GROUP LAST ApplicationHistory h ORDER h WHERE application(h) = d MATERIALIZED;
+    nameUserLastHistory 'Last modified by' (Application d) = nameUser(lastHistory(d));
+    dateTimeLastHistory 'Last modified at' (Application d) = dateTime(lastHistory(d));
+};
+};
+
 subject '{Subject}' = DATA ISTRING[200] (Application) CHARWIDTH 20 IN id;
+@definePropertyValue(application, subject, '{Subject}'){
+    @definePropertyValue(application, subject, '{Subject}', subject){
+    property (Application l, STRING p) += ISTRING(subject(l)) IF p = '{Subject}';
+    propertyApplication (STRING p) += p = '{Subject}';
+
+    @defineHistoryProperty(application, subject, '{Subject}', subject){
+    WHEN CHANGED(subject(Application let)) AND NOT DROPPED(let IS Application) AND NOT disableHistory() DO {
+        NEW l = ApplicationHistory {
+            application(l) <- let;
+            dateTime(l) <- currentDateTime();
+            user(l) <- currentUser();
+            computer(l) <- currentComputer();
+            type(l) <- '{Subject}';
+            description (l) <- CONCAT ' -> ', PREV(subject(let)), (OVERRIDE ISTRING(subject(let)), '');
+        }
+    }
+};
+};
+};
 
 firstName '{First_name}' = DATA ISTRING[30] (Application) IN id;
 lastName 'Surname' = DATA ISTRING[30] (Application) IN id;
 middleName 'Middle name' = DATA ISTRING[30] (Application);
 
-property (Application a, STRING p) += firstName(a) IF p = '{First_name}';
-property (Application a, STRING p) += lastName(a) IF p = 'Surname';
-property (Application a, STRING p) += middleName(a) IF p = 'Middle name';
+@definePropertyValue(application, firstName, '{First_name}'){
+    @definePropertyValue(application, firstName, '{First_name}', firstName){
+    property (Application l, STRING p) += ISTRING(firstName(l)) IF p = '{First_name}';
+    propertyApplication (STRING p) += p = '{First_name}';
+
+    @defineHistoryProperty(application, firstName, '{First_name}', firstName){
+    WHEN CHANGED(firstName(Application let)) AND NOT DROPPED(let IS Application) AND NOT disableHistory() DO {
+        NEW l = ApplicationHistory {
+            application(l) <- let;
+            dateTime(l) <- currentDateTime();
+            user(l) <- currentUser();
+            computer(l) <- currentComputer();
+            type(l) <- '{First_name}';
+            description (l) <- CONCAT ' -> ', PREV(firstName(let)), (OVERRIDE ISTRING(firstName(let)), '');
+        }
+    }
+};
+};
+};
+@definePropertyValue(application, lastName, 'Surname'){
+    @definePropertyValue(application, lastName, 'Surname', lastName){
+    property (Application l, STRING p) += ISTRING(lastName(l)) IF p = 'Surname';
+    propertyApplication (STRING p) += p = 'Surname';
+
+    @defineHistoryProperty(application, lastName, 'Surname', lastName){
+    WHEN CHANGED(lastName(Application let)) AND NOT DROPPED(let IS Application) AND NOT disableHistory() DO {
+        NEW l = ApplicationHistory {
+            application(l) <- let;
+            dateTime(l) <- currentDateTime();
+            user(l) <- currentUser();
+            computer(l) <- currentComputer();
+            type(l) <- 'Surname';
+            description (l) <- CONCAT ' -> ', PREV(lastName(let)), (OVERRIDE ISTRING(lastName(let)), '');
+        }
+    }
+};
+};
+};
+@definePropertyValue(application, middleName, 'Middle name'){
+    @definePropertyValue(application, middleName, 'Middle name', middleName){
+    property (Application l, STRING p) += ISTRING(middleName(l)) IF p = 'Middle name';
+    propertyApplication (STRING p) += p = 'Middle name';
+
+    @defineHistoryProperty(application, middleName, 'Middle name', middleName){
+    WHEN CHANGED(middleName(Application let)) AND NOT DROPPED(let IS Application) AND NOT disableHistory() DO {
+        NEW l = ApplicationHistory {
+            application(l) <- let;
+            dateTime(l) <- currentDateTime();
+            user(l) <- currentUser();
+            computer(l) <- currentComputer();
+            type(l) <- 'Middle name';
+            description (l) <- CONCAT ' -> ', PREV(middleName(let)), (OVERRIDE ISTRING(middleName(let)), '');
+        }
+    }
+};
+};
+};
 
 name '{Name}' (Application a) = CONCAT ' ', lastName(a), firstName(a), middleName(a) CHARWIDTH 25;
 
 phone 'Phone' = DATA ISTRING[100] (Application) CHARWIDTH 12;
+@definePropertyValue(application, phone, 'Phone'){
+    @definePropertyValue(application, phone, 'Phone', phone){
+    property (Application l, STRING p) += ISTRING(phone(l)) IF p = 'Phone';
+    propertyApplication (STRING p) += p = 'Phone';
+
+    @defineHistoryProperty(application, phone, 'Phone', phone){
+    WHEN CHANGED(phone(Application let)) AND NOT DROPPED(let IS Application) AND NOT disableHistory() DO {
+        NEW l = ApplicationHistory {
+            application(l) <- let;
+            dateTime(l) <- currentDateTime();
+            user(l) <- currentUser();
+            computer(l) <- currentComputer();
+            type(l) <- 'Phone';
+            description (l) <- CONCAT ' -> ', PREV(phone(let)), (OVERRIDE ISTRING(phone(let)), '');
+        }
+    }
+};
+};
+};
 
 email 'Email' = DATA ISTRING[400] (Application) CHARWIDTH 20 REGEXP '[\\-!#-\'*+\\/-9=?A-Z^-~]+(\\.[\\-!#-\'*+\\/-9=?A-Z^-~]+)*@[0-9A-Za-z]([0-9A-Za-z\\-]\{0,61\}[0-9A-Za-z])?(\\.[0-9A-Za-z]([0-9A-Za-z\\-]\{0,61\}[0-9A-Za-z])?)+' '{authentication.email.contact.incorrect}' IN id;
+@definePropertyValue(application, email, 'Email'){
+    @definePropertyValue(application, email, 'Email', email){
+    property (Application l, STRING p) += ISTRING(email(l)) IF p = 'Email';
+    propertyApplication (STRING p) += p = 'Email';
+
+    @defineHistoryProperty(application, email, 'Email', email){
+    WHEN CHANGED(email(Application let)) AND NOT DROPPED(let IS Application) AND NOT disableHistory() DO {
+        NEW l = ApplicationHistory {
+            application(l) <- let;
+            dateTime(l) <- currentDateTime();
+            user(l) <- currentUser();
+            computer(l) <- currentComputer();
+            type(l) <- 'Email';
+            description (l) <- CONCAT ' -> ', PREV(email(let)), (OVERRIDE ISTRING(email(let)), '');
+        }
+    }
+};
+};
+};
 
 recruiter = DATA Employee (Application);
 nameRecruiter 'Recruiter' (Application i) = name(recruiter(i));
-property (Application a, STRING p) += nameRecruiter(a) IF p = 'Recruiter';
+@definePropertyValue(application, recruiter, 'Recruiter', nameRecruiter){
+    property (Application l, STRING p) += ISTRING(nameRecruiter(l)) IF p = 'Recruiter';
+    propertyApplication (STRING p) += p = 'Recruiter';
+
+    @defineHistoryProperty(application, recruiter, 'Recruiter', nameRecruiter){
+    WHEN CHANGED(recruiter(Application let)) AND NOT DROPPED(let IS Application) AND NOT disableHistory() DO {
+        NEW l = ApplicationHistory {
+            application(l) <- let;
+            dateTime(l) <- currentDateTime();
+            user(l) <- currentUser();
+            computer(l) <- currentComputer();
+            type(l) <- 'Recruiter';
+            description (l) <- CONCAT ' -> ', PREV(nameRecruiter(let)), (OVERRIDE ISTRING(nameRecruiter(let)), '');
+        }
+    }
+};
+};
 
 recruiter(Application a) <- currentUser() WHEN SET(a IS Application);
 
@@ -44,14 +248,65 @@ availability 'Availability' = DATA DATE (Application);
 
 in 'Incl.' = DATA BOOLEAN (Application, ApplicationTag);
 tags 'Tags' (Application t) = GROUP CONCAT name(ApplicationTag tg) IF in(t, tg), ', ' ORDER name(tg), tg CHARWIDTH 20;
+@definePropertyValue(application, tags, 'Tags'){
+    @definePropertyValue(application, tags, 'Tags', tags){
+    property (Application l, STRING p) += ISTRING(tags(l)) IF p = 'Tags';
+    propertyApplication (STRING p) += p = 'Tags';
+
+    @defineHistoryProperty(application, tags, 'Tags', tags){
+    WHEN CHANGED(tags(Application let)) AND NOT DROPPED(let IS Application) AND NOT disableHistory() DO {
+        NEW l = ApplicationHistory {
+            application(l) <- let;
+            dateTime(l) <- currentDateTime();
+            user(l) <- currentUser();
+            computer(l) <- currentComputer();
+            type(l) <- 'Tags';
+            description (l) <- CONCAT ' -> ', PREV(tags(let)), (OVERRIDE ISTRING(tags(let)), '');
+        }
+    }
+};
+};
+};
 
 position = DATA Position (Application);
 namePosition 'Position' (Application i) = name(position(i));
-property (Application a, STRING p) += namePosition(a) IF p = 'Position';
+@definePropertyValue(application, position, 'Position', namePosition){
+    property (Application l, STRING p) += ISTRING(namePosition(l)) IF p = 'Position';
+    propertyApplication (STRING p) += p = 'Position';
+
+    @defineHistoryProperty(application, position, 'Position', namePosition){
+    WHEN CHANGED(position(Application let)) AND NOT DROPPED(let IS Application) AND NOT disableHistory() DO {
+        NEW l = ApplicationHistory {
+            application(l) <- let;
+            dateTime(l) <- currentDateTime();
+            user(l) <- currentUser();
+            computer(l) <- currentComputer();
+            type(l) <- 'Position';
+            description (l) <- CONCAT ' -> ', PREV(namePosition(let)), (OVERRIDE ISTRING(namePosition(let)), '');
+        }
+    }
+};
+};
 
 department = DATA Department (Application);
 nameDepartment 'Department' (Application i) = name(department(i));
-property (Application a, STRING p) += nameDepartment(a) IF p = 'Department';
+@definePropertyValue(application, department, 'Department', nameDepartment){
+    property (Application l, STRING p) += ISTRING(nameDepartment(l)) IF p = 'Department';
+    propertyApplication (STRING p) += p = 'Department';
+
+    @defineHistoryProperty(application, department, 'Department', nameDepartment){
+    WHEN CHANGED(department(Application let)) AND NOT DROPPED(let IS Application) AND NOT disableHistory() DO {
+        NEW l = ApplicationHistory {
+            application(l) <- let;
+            dateTime(l) <- currentDateTime();
+            user(l) <- currentUser();
+            computer(l) <- currentComputer();
+            type(l) <- 'Department';
+            description (l) <- CONCAT ' -> ', PREV(nameDepartment(let)), (OVERRIDE ISTRING(nameDepartment(let)), '');
+        }
+    }
+};
+};
 
 CONSTRAINT department(Application a) AND NOT partner(department(a)) IS Company
     CHECKED BY department[Application]
@@ -167,35 +422,522 @@ FORM applications 'Applications'
     LIST Application OBJECT a
 ;
 
-@defineDocObjectsForm(applications, a, 'Applications');
-@defineDocStatusForm(application, a, dateTime, new, 'New');
+@defineDocObjectsForm(applications, a, 'Applications'){
+    DESIGN applications {
+        OBJECTS {
+            NEW pane {
+                fill = 1;
+                horizontal = TRUE;
+                NEW tabbedPane {
+                    tabbed = TRUE;
+                    fill = 1000;
+                    MOVE BOX(a) { caption = 'Applications'; }
+                }
+                NEW rightPane {
+                    tabbed = TRUE;
+//                    width = 230;
+                    fill = 1;
+                    NEW filters {
+                        caption = 'Filters';
+                        alignment = STRETCH;
+                        MOVE FILTERGROUPS(a) {
+                            horizontal = FALSE;
+                            alignment = STRETCH;
+                        }
+                    }
+                    NEW actions {
+                        alignment = STRETCH;
+                        caption = 'Actions';
+                        NEW statuses {
+                            alignment = STRETCH;
+                            caption = 'Change status';
+                        }
+                    }
+                }
+            }
+        }
+    }
+};
+@defineDocStatusForm(application, a, dateTime, new, 'New'){
+    EXTEND FORM applications
+        PROPERTIES(a) READONLY imagedNameStatus BACKGROUND colorStatus(a) BEFORE dateTime(a)
+        FILTERGROUP status
+            FILTER 'New' status(a) = ApplicationStatus.new
+    ;
+    
+    DESIGN applications {
+        filters {
+            MOVE FILTERGROUP(status) { alignment = STRETCH; }
+        }
+    }
+    
+    EXTEND FORM application
+        PROPERTIES(a) READONLY imagedNameStatus BACKGROUND colorStatus(a)
+    ;
+    
+    @defineFormStatusContainer(application){
+    DESIGN application {
+        NEW statusPane FIRST {
+            horizontal = TRUE;
+            alignment = STRETCH;
+            NEW statusActions {
+                horizontal = TRUE;
+                flex = 1;
+                NEW primaryActions {
+                    horizontal = TRUE;
+                }
+                NEW secondaryActions {
+                    horizontal = TRUE;
+                }
+            }
+            NEW statusContainer {
+                fill = 1;
+                NEW status {
+                    alignment = END;
+                    horizontal = TRUE;
+                }
+            }
+        }
+    }
+};
+        
+    DESIGN application {
+        status {
+            MOVE PROPERTY(imagedNameStatus(a));
+            NEW statusGroup {
+                custom = '';
+                class = 'btn-group';
+            }
+        }
+    }
+};
 
-@defineObjectHistory(application);
-@defineHistoryProperty(application, subject, '{Subject}');
-@defineHistoryProperty(application, name, '{Name}');
-@defineHistoryProperty(application, phone, 'Phone');
-@defineHistoryProperty(application, email, 'Email');
-@defineHistoryProperty(application, recruiter, 'Recruiter', nameRecruiter);
-@defineHistoryProperty(application, position, 'Position', namePosition);
-@defineHistoryProperty(application, department, 'Department', nameDepartment);
-@defineDocHistoryForm(application, application, a);
+@defineHistoryForm(application, application, a){
+    EXTEND FORM application
+        OBJECTS applicationl = ApplicationHistory
+        PROPERTIES(applicationl) READONLY dateTime, nameUser, hostnameComputer, type, description, pdescription = description PANEL
+        FILTERS application(applicationl) = a
+    ;
 
-@defineObjectFiles(application, a, 'Application file');
+    DESIGN application {
+        details {
+            NEW history {
+                caption = badged('History', countHistories(a));
+                fill = 1;
+                horizontal = TRUE;
+                MOVE BOX(applicationl) {
+                    fill = 2;
+                    caption = '';
+                    PROPERTY(description(applicationl)) { valueHeight = 18; }
+                }
+                MOVE PROPERTY(pdescription) { panelCaptionVertical = TRUE; fill = 1; }
+            }
+        }
+    }
 
-@defineObjectActivity(application, a, rightPane, name);
+    EXTEND FORM applications
+        PROPERTIES(a) nameUserFirstHistory, dateTimeFirstHistory, nameUserLastHistory, dateTimeLastHistory
+    ;
+};
 
-@defineObjectComments(application, a, rightPane);
+@defineObjectFiles(application, a, 'Application file'){
 
-@defineObjectCommentsHistory(application);
-@defineObjectCommentsCreate(application, history);
+    CLASS ApplicationFile 'Application file';
 
-@defineObjectCommentsFiles(application, HumanResources);
-@defineObjectCommentsCreate(application, file);
+    application = DATA Application (ApplicationFile) INDEXED NONULL DELETE;
 
-@defineObjectCommentsActivity(application);
+    file = DATA RAWFILE (ApplicationFile);
 
-@defineDocStatusChange(application, 'Application');
-@defineDocStatusChangeForm(application, a, 'Application');
+    name '{Name}' = DATA ISTRING (ApplicationFile) CHARWIDTH 15;
+    extension 'Extension' = DATA ISTRING (ApplicationFile) CHARWIDTH 5;
+    nameExtension (ApplicationFile f) = CONCAT '.', name(f), extension(f);
+
+    description 'Description' = DATA ISTRING (ApplicationFile) CHARWIDTH 20;
+
+    dateTime 'Date' = DATA DATETIME (ApplicationFile);
+    dateTime(ApplicationFile f) <- currentDateTime() WHEN SET(f IS ApplicationFile);
+
+    user = DATA User (ApplicationFile);
+    nameUser 'User' (ApplicationFile f) = name(user(f));
+    user(ApplicationFile f) <- currentUser() WHEN SET(f IS ApplicationFile);
+
+    open 'Open' (ApplicationFile f) { open(file(f), nameExtension(f)); } IMAGE 'open.png';
+
+    countFiles 'Files' (Application i) = GROUP SUM 1 IF application(ApplicationFile f) = i;
+
+    index '{Index}' (ApplicationFile f) = PARTITION SUM 1 ORDER f BY application(f) MATERIALIZED CHARWIDTH 3;
+    file (Application o, INTEGER i) = GROUP MIN ApplicationFile f IF application(f) = o AND index(f) = i;
+    openFile(Application o, INTEGER i) { open(file(o, i)); }
+    
+    file1 (Application o) = file(o, 1);
+    file2 (Application o) = file(o, 2);
+    file3 (Application o) = file(o, 3);
+    openFile1 'File 1' (Application o) { openFile(o, 1); }
+    openFile2 'File 2' (Application o) { openFile(o, 2); }
+    openFile3 'File 3' (Application o) { openFile(o, 3); }
+
+    firstFile (Application i) = GROUP MIN ApplicationFile f IF application(f) = i;
+    openFirstFile 'Open' (Application i) { open(firstFile(i)); }
+    openFiles 'Open' (Application i) {
+        FOR application(ApplicationFile f) = i DO
+            open(f);
+    }
+
+    newFile 'File' (Application o) {
+        INPUT uf = NAMEDFILE DO NEW uof = ApplicationFile {
+            application(uof) <- o;
+            file(uof) <- RAWFILE(uf);
+            name(uof) <- name(uf);
+            extension(uof) <- extension(uf);
+        }
+    } IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+        
+    downloadApplicationFile (LONG id) {
+        FOR LONG(ApplicationFile f AS ApplicationFile) = id DO {
+            exportNamedFile() <- namedFile(file(f), name(f), extension(f));
+        } 
+    } @@api;
+        
+    @defineObjectFilesForm(application, application, a){
+    EXTEND FORM application
+        OBJECTS of = ApplicationFile
+        PROPERTIES(of) READONLY index
+        PROPERTIES(of) READONLYIF readonly(a) name, extension, description
+        PROPERTIES(of) READONLY nameUser, dateTime
+        PROPERTIES(of) GRID open, DELETE READONLYIF readonly(a)
+        FILTERS application(of) = a
+
+        PROPERTIES(a) newFile DRAW of TOOLBAR READONLYIF readonly(a)
+        PROPERTIES inputFile = '' CUSTOM 'inputFile' ON CHANGE {
+            INPUT f = JSON DO
+                IMPORT JSON FROM f FIELDS() STRING name, STRING extension, STRING data DO 
+                    IF NOT readonly(a) THEN NEW uof = ApplicationFile {
+                        application(uof) <- a;
+                        file(uof) <- decode(data, 'base64');
+                        name(uof) <- name;
+                        extension(uof) <- extension;
+                    }
+        }
+    ;
+
+    DESIGN application {
+        details {
+            NEW files {
+                caption = badged('Files', countFiles(a));
+                MOVE BOX(of) { width = 600; caption = ''; }
+                MOVE PROPERTY(inputFile);
+            }
+        }
+    }
+    
+    // preview
+    
+    EXTEND FORM application
+        PROPERTIES() READONLY previewPdfFile SHOWIF previewPdfFile(), previewImageFile SHOWIF NOT previewPdfFile()
+
+        EVENTS ON CHANGE of {
+            previewPdfFile() <- NULL;
+            previewImageFile() <- NULL;
+            IF lower(extension(of)) = 'jpg' OR lower(extension(of)) = 'jpeg' OR lower(extension(of)) = 'png' OR lower(extension(of)) = 'bmp' THEN {
+                previewImageFile() <- IMAGEFILE(file(of));
+            }
+            IF lower(extension(of)) = 'pdf' THEN {
+                previewPdfFile() <- PDFFILE(file(of));
+            }
+            IF lower(extension(of)) = 'doc' OR lower(extension(of)) = 'docx' THEN {
+                TRY {
+                    wordToPdf(file(of));
+                } CATCH {}
+                previewPdfFile() <- exportPdfFile();
+            }
+        }
+    ;
+
+    DESIGN application {
+        files {
+            horizontal = TRUE;
+            height = 300;
+            NEW preview {
+                width = 300;
+                height = 600;
+                fill = 4;
+                MOVE PROPERTY(previewPdfFile()) { fill = 1; size = (100, 100); caption = ''; }
+                MOVE PROPERTY(previewImageFile()) { fill = 1; size = (100, 100); caption = ''; }
+            }
+        }
+    }
+
+};
+
+};
+
+@defineObjectActivity(application, a, rightPane, name){
+    
+    EXTEND CLASS Application : ActivityObject;
+    name(Application o) += name(o);
+
+    EXTEND FORM application
+        OBJECTS act = Activity CUSTOM 'activities'
+        PROPERTIES(act) nameType, dueDate, daysLeft, name, nameAssignedTo, description, done
+        PROPERTIES setDone(act),
+                   editAct = edit(act) ON CHANGE {
+                        SHOW activity OBJECTS a = act FLOAT;
+                   },
+                   deleteAct = DELETE(act)
+        ORDERS dueDate(act)
+        FILTERS object(act) = a,
+            NOT PREV(done(act))
+    ;
+
+    newActivity 'Add' (Application o, ActivityType t) {
+        NESTEDSESSION {
+            NEW na = Activity {
+                object(na) <- o;
+                type(na) <- t;
+                DIALOG activity OBJECTS a = na FLOAT;
+            }
+        }
+    } IMAGE 'add.png';
+
+    EXTEND FORM application
+        OBJECTS at = ActivityType BEFORE a
+
+        PROPERTIES newActivity(a, at) COLUMNS (at) HEADER name(at)
+    ;
+
+    DESIGN application {
+        rightPane {
+            NEW activities {
+                showIf = countActivityTypes();
+                alignment = STRETCH;
+                caption = badged('Activities', countOpenedActivity(a));
+                MOVE PROPERTY(newActivity(a, at));
+                MOVE GRID(act) {
+                    width = 400;
+                    flex = 0;
+                }
+                REMOVE BOX(act);
+            }
+        }
+    }
+
+};
+
+@defineObjectComments(application, a, rightPane){
+    CLASS ApplicationComment 'Comment';
+    
+    application = DATA Application (ApplicationComment) NONULL DELETE;
+    countComment (Application e) = GROUP SUM 1 IF application(ApplicationComment c) = e MATERIALIZED;
+    lastComment (Application e) = GROUP LAST ApplicationComment c ORDER c BY application(c) MATERIALIZED;
+    
+    dateTime 'Date' = DATA DATETIME (ApplicationComment);
+    dateTime(ApplicationComment f) <- currentDateTime() WHEN SET(f IS ApplicationComment);
+    
+    user = DATA User (ApplicationComment);
+    nameUser 'User' (ApplicationComment f) = name(user(f));
+    user(ApplicationComment f) <- currentUser() WHEN SET(f IS ApplicationComment);
+    
+    text 'Text' = DATA RICHTEXT (ApplicationComment);
+    
+    header = ABSTRACT VALUE HTMLTEXT (ApplicationComment);
+    footer = ABSTRACT VALUE HTMLTEXT (ApplicationComment);
+    html (ApplicationComment c) = CONCAT '', header(c), text(c), footer(c);
+    
+    FORM editApplicationComment 'Comment'
+        OBJECTS c = ApplicationComment PANEL
+        PROPERTIES(c) '' = text
+    ;
+    
+    DESIGN editApplicationComment {
+        size = (640, 480);
+        OBJECTS {
+            MOVE PROPERTY(text(c)) { fill = 1; }
+        }
+    }
+    
+    EXTEND FORM application
+        OBJECTS cmt = ApplicationComment CUSTOM 'comments'
+        PROPERTIES id = VALUE(cmt)
+        PROPERTIES(cmt) nameUser, dateTime, text = html
+        PROPERTIES(cmt) edit ON CHANGE {
+            SHOW editApplicationComment OBJECTS c = cmt;
+        },
+            delete = DELETE
+        ORDERS id DESC
+        FILTERS application(cmt) = a
+    ;
+    
+    newComment 'Add' (Application t) {
+        IF inputComment() THEN
+            NEW nc = ApplicationComment {
+                application(nc) <- t;
+                text(nc) <- inputComment();
+                inputComment() <- NULL;
+            }
+    }
+    
+    EXTEND FORM application
+        PROPERTIES inputComment(), newComment(a)
+        
+        EVENTS ON APPLY { newComment(a); }
+    ;
+    
+    DESIGN application {
+        rightPane {
+            NEW comments {
+                fill = 1;
+                caption = badged('Comments', countComment(a));
+                NEW inputComment {
+                    horizontal = TRUE;
+                    alignment = STRETCH;
+                    MOVE PROPERTY(inputComment()) {
+                        valueHeight = -1;
+                        fill = 1;
+                    }
+                    MOVE PROPERTY(newComment(a)) {
+                        alignment = STRETCH;
+                    }
+                }
+                MOVE GRID(cmt) {
+                    height = 200;
+                    width = 400;
+                    fill = 1;
+                }
+                REMOVE BOX(cmt);
+            }
+        }
+    }
+};
+
+@defineObjectCommentsHistory(application){
+    comment = DATA ApplicationComment (ApplicationHistory) INDEXED;
+
+    changes (ApplicationComment tc) = HTMLTEXT('<ul style="color:#959595">' + (GROUP CONCAT ('<li>' + type(ApplicationHistory th) + ' : ' + description(th) + '</li>') IF comment(th) = tc, '' ORDER th) + '</ul>');
+    header (ApplicationComment tc) += changes(tc);
+
+    WHEN SET(ApplicationComment tc IS ApplicationComment) AND SET(ApplicationHistory th IS ApplicationHistory) DO
+        comment(th) <- tc;
+};
+@defineObjectCommentsCreate(application, history){
+    WHEN [GROUP SUM 1 IF SET(ApplicationHistory th IS ApplicationHistory) BY application(th)](Application t) AND NOT [GROUP SUM 1 IF SET(ApplicationComment tc IS ApplicationComment) BY application(tc)](t) DO
+        NEW tc = ApplicationComment {
+            application(tc) <- t;
+        }
+};
+
+@defineObjectCommentsFiles(application, HumanResources){
+    comment = DATA ApplicationComment (ApplicationFile) INDEXED;
+
+    files (ApplicationComment tc) = HTMLTEXT('<ul style="color:#959595">' + 
+        (GROUP CONCAT ('<li><a target="_blank" href="' + contextUrl('/exec/HumanResources.downloadApplicationFile?id=' + ApplicationFile tf) + '">' + nameExtension(tf) + '</a></li>') 
+                      IF comment(tf) = tc, '' ORDER tf) + '</ul>');
+    footer (ApplicationComment tc) += files(tc);
+
+    WHEN SET(ApplicationComment tc IS ApplicationComment) AND SET(ApplicationFile tf IS ApplicationFile) DO
+        comment(tf) <- tc;
+};
+@defineObjectCommentsCreate(application, file){
+    WHEN [GROUP SUM 1 IF SET(ApplicationFile th IS ApplicationFile) BY application(th)](Application t) AND NOT [GROUP SUM 1 IF SET(ApplicationComment tc IS ApplicationComment) BY application(tc)](t) DO
+        NEW tc = ApplicationComment {
+            application(tc) <- t;
+        }
+};
+
+@defineObjectCommentsActivity(application){
+    
+    WHEN SET(done(Activity a)) AND Application o = object(a) AND o IS Application DO NEW oc = ApplicationComment {
+        application(oc) <- o;
+        text(oc) <- CONCAT '', '<h5>' + (CONCAT ' : ', nameType(a), name(a)) + '</h5>',
+            (CONCAT '<b>' + 'Description' + ' :</b>', (feedback(a) IF feedback(a) != ''), description(a));
+    }
+    
+};
+
+@defineDocStatusChange(application, 'Application'){
+    CLASS ApplicationStatusChange 'Application';
+
+    application = DATA Application (ApplicationStatusChange);
+    countStatusChange (Application o) = GROUP SUM 1 IF application(ApplicationStatusChange sc) = o;
+    
+    dateTime 'Date' = DATA DATETIME (ApplicationStatusChange);
+    dateTime(ApplicationStatusChange sc) <- currentDateTime() WHEN SET(sc IS ApplicationStatusChange);
+
+    INDEX application(ApplicationStatusChange sc), dateTime(sc), sc;
+
+    user 'User' = DATA User (ApplicationStatusChange);
+    nameUser 'User' (ApplicationStatusChange sc) = name(user(sc));
+    user(ApplicationStatusChange sc) <- currentUser() WHEN SET(sc IS ApplicationStatusChange);
+
+    status 'Status' = DATA ApplicationStatus (ApplicationStatusChange);
+    nameStatus 'Status' (ApplicationStatusChange sc) = name(status(sc));
+
+    previous (ApplicationStatusChange c) = PARTITION PREV c ORDER dateTime(c), c BY application(c);
+    dateTimePrevious (ApplicationStatusChange c) = dateTime(previous(c));
+    secondsBefore (ApplicationStatusChange c) = subtractSeconds(dateTimePrevious(c), dateTime(c));
+    hoursBefore 'Hours before' (ApplicationStatusChange c) = round2(secondsBefore(c) / 3600);
+
+    nameUserPrevious (ApplicationStatusChange c) = nameUser(previous(c));
+    
+    next (ApplicationStatusChange c) = PARTITION PREV c ORDER DESC dateTime(c), c BY application(c);
+    dateTimeNext  (ApplicationStatusChange c) = dateTime(next(c));
+    secondsAfter (ApplicationStatusChange c) = subtractSeconds(dateTime(c), dateTimeNext(c));
+    hoursAfter 'Hours after' (ApplicationStatusChange c) = round2(secondsAfter(c) / 3600);
+    
+    nameUserNext (ApplicationStatusChange c) = nameUser(next(c));
+        
+    lastChange (Application o, ApplicationStatus s) = GROUP LAST ApplicationStatusChange sc ORDER dateTime(sc), sc BY application(sc), status(sc);
+        
+    dateTimeLastChange 'Date' (Application o, ApplicationStatus s) = dateTime(lastChange(o, s));
+    nameUserLastChange 'User' (Application o, ApplicationStatus s) = nameUser(lastChange(o, s));
+
+    secondsBefore (Application o, ApplicationStatus s) = GROUP SUM secondsBefore(ApplicationStatusChange sc) IF application(sc) = o AND status(sc) = s;
+    hoursBefore 'Hours before' (Application o, ApplicationStatus s) = round2(secondsBefore(o, s) / 3600);
+
+    secondsAfter (Application o, ApplicationStatus s) = GROUP SUM secondsAfter(ApplicationStatusChange sc) IF application(sc) = o AND status(sc) = s;
+    hoursAfter 'Hours after' (Application o, ApplicationStatus s) = round2(secondsAfter(o, s) / 3600);
+        
+    WHEN SETCHANGED(status(Application o)) DO 
+        NEW sc = ApplicationStatusChange {
+            application(sc) <- o;
+            status(sc) <- status(o);
+        }
+};
+@defineDocStatusChangeForm(application, a, 'Application'){
+    EXTEND FORM application
+        OBJECTS stch = ApplicationStatusChange
+        PROPERTIES(stch) READONLY dateTime, nameUser, hoursBefore, nameStatus, hoursAfter
+        FILTERS application(stch) = a
+    ;
+    
+    DESIGN application {
+        details {
+            MOVE BOX(stch) { 
+                caption = badged('Status change', countStatusChange(a));
+            }
+        }
+    }
+    
+    EXTEND FORM applications
+        OBJECTS ast = ApplicationStatus BEFORE a
+        PROPERTIES sortingOrder(ast)
+        ORDERS sortingOrder(ast)
+        
+        PROPERTIES(a, ast) READONLY COLUMNS 'status' (ast) BACKGROUND RGB(224,224,224) IF mod(index(ast), 2) = 0
+            hoursBefore HEADER name(ast) + '\n(' + 'Hours before' + ')', 
+            dateTimeLastChange HEADER name(ast) + '\n(' + 'Date' + ')', 
+            nameUserLastChange HEADER name(ast) + '\n(' + 'User' + ')', 
+            hoursAfter HEADER name(ast) + '\n(' + 'Hours after' + ')'
+    ;
+    
+    DESIGN applications {
+        REMOVE BOX(ast);
+        
+        PROPERTY(hoursBefore(a, ast)) { hide = TRUE; }
+        PROPERTY(dateTimeLastChange(a, ast)) { hide = TRUE; }
+        PROPERTY(nameUserLastChange(a, ast)) { hide = TRUE; }
+        PROPERTY(hoursAfter(a, ast)) { hide = TRUE; }
+    }
+};
 
 DESIGN applications {
     PROPERTY(tags(a)) { valueHeight = 18; }

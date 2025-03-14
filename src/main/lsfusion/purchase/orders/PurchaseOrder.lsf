@@ -12,28 +12,213 @@ NAMESPACE Purchase;
 
 CLASS Order 'Purchase order';
 
-@defineDocStatus(order, 'Purchase order status');
+@defineDocStatus(order, 'Purchase order status'){
+    @defineDocStatus (order, 'Purchase order status', draft, 'Draft'){
+    CLASS OrderStatus 'Purchase order status' {
+        draft 'Draft'
+    }
+    
+    name '{First_name}' (OrderStatus s) = staticCaption(s) IF s IS OrderStatus CHARWIDTH 12;
+    imagedName '{First_name}' (OrderStatus s) = imagedCaption(s) IF s IS OrderStatus CHARWIDTH 12;
 
-property = ABSTRACT VALUE ISTRING (Order, STRING);
+    color 'Color' = ABSTRACT CASE COLOR (OrderStatus) MATERIALIZED;
+    color (OrderStatus s) += WHEN s = OrderStatus.draft THEN RGB(187,242,210);
+
+    status 'Status' = ABSTRACT CASE OrderStatus (Order) MATERIALIZED INDEXED;
+    nameStatus 'Status' (Order d) = name(status(d));
+    imagedNameStatus 'Status' (Order d) = imagedName(status(d));
+    colorStatus 'Color' (Order d) = color(status(d));
+    
+    status(Order d) += WHEN d IS Order THEN OrderStatus.draft;
+
+    sortingOrder 'Sorting order' = ABSTRACT INTEGER (OrderStatus) MATERIALIZED;
+    index 'Index' (OrderStatus s) = PARTITION SUM 1 IF s IS OrderStatus ORDER sortingOrder(s), s;
+    
+    readonly 'Read-only' = DATA BOOLEAN (OrderStatus);
+
+    readonly = ABSTRACT CASE BOOLEAN (Order) MATERIALIZED;
+    readonly (Order d) += WHEN readonly(status(d)) THEN TRUE;
+
+    closed = ABSTRACT CASE BOOLEAN (OrderStatus) MATERIALIZED;
+    closed 'Closed' (Order d) = closed(status(d));
+    opened 'Opened' (Order d) = d IS Order AND NOT closed(d) MATERIALIZED INDEXED;
+
+    EXTEND FORM options
+        OBJECTS orderst = OrderStatus
+        PROPERTIES(orderst) READONLY imagedName, color
+        PROPERTIES(orderst) readonly
+    ;
+    
+    DESIGN options {
+        tabbedPane {
+            MOVE BOX(orderst);
+        }
+    }
+};
+};
+
+@definePropertyObject(order){
+    property = ABSTRACT VALUE ISTRING (Order, STRING);
+    propertyOrder = ABSTRACT VALUE BOOLEAN (STRING);
+    propertyLongOrder = ABSTRACT VALUE BOOLEAN (STRING);
+
+    htmlShortListProperties (Order o) = 
+        '<ul style="color:#959595">' + 
+            (GROUP CONCAT ('<li>' + STRING p + ' : ' + property(o, p) + '</li>') IF NOT propertyLongOrder(p), '' 
+                   ORDER p) + 
+        '</ul>';
+    
+    @defineHistoryObject(order){
+    CLASS OrderHistory 'Change history';
+
+    order = DATA Order (OrderHistory) INDEXED;
+    countHistories (Order d) = GROUP SUM 1 IF order(OrderHistory h) = d;
+
+    dateTime 'Date' = DATA DATETIME (OrderHistory);
+
+    user = DATA User (OrderHistory);
+    nameUser 'User' (OrderHistory l) = name(user(l));
+
+    computer = DATA Computer (OrderHistory);
+    hostnameComputer 'Computer' (OrderHistory l) = hostname(computer(l)) CHARWIDTH 10;
+
+    type 'Type' = DATA ISTRING[100] (OrderHistory) CHARWIDTH 15;
+    description 'Description' = DATA TEXT (OrderHistory);
+
+    firstHistory (Order d) = GROUP LAST OrderHistory h ORDER DESC h WHERE order(h) = d MATERIALIZED;
+    nameUserFirstHistory 'Created by' (Order d) = nameUser(firstHistory(d));
+    dateTimeFirstHistory 'Created at' (Order d) = dateTime(firstHistory(d));
+
+    lastHistory (Order d) = GROUP LAST OrderHistory h ORDER h WHERE order(h) = d MATERIALIZED;
+    nameUserLastHistory 'Last modified by' (Order d) = nameUser(lastHistory(d));
+    dateTimeLastHistory 'Last modified at' (Order d) = dateTime(lastHistory(d));
+};
+};
+@definePropertyValue(order, status, 'Status', nameStatus){
+    property (Order l, STRING p) += ISTRING(nameStatus(l)) IF p = 'Status';
+    propertyOrder (STRING p) += p = 'Status';
+
+    @defineHistoryProperty(order, status, 'Status', nameStatus){
+    WHEN CHANGED(status(Order let)) AND NOT DROPPED(let IS Order) AND NOT disableHistory() DO {
+        NEW l = OrderHistory {
+            order(l) <- let;
+            dateTime(l) <- currentDateTime();
+            user(l) <- currentUser();
+            computer(l) <- currentComputer();
+            type(l) <- 'Status';
+            description (l) <- CONCAT ' -> ', PREV(nameStatus(let)), (OVERRIDE ISTRING(nameStatus(let)), '');
+        }
+    }
+};
+};
 
 // type
 type 'Type' = DATA OrderType (Order) NONULL;
 nameType 'Type' (Order s) = name(type(s));
-property (Order o, STRING p) += nameType(o) IF p = 'Type';
+@definePropertyValue(order, type, 'Type', nameType){
+    property (Order l, STRING p) += ISTRING(nameStatus(l)) IF p = 'Status';
+    propertyOrder (STRING p) += p = 'Status';
+
+    @defineHistoryProperty(order, status, 'Status', nameStatus){
+        WHEN CHANGED(status(Order let)) AND NOT DROPPED(let IS Order) AND NOT disableHistory() DO {
+            NEW l = OrderHistory {
+                order(l) <- let;
+                dateTime(l) <- currentDateTime();
+                user(l) <- currentUser();
+                computer(l) <- currentComputer();
+                type(l) <- 'Status';
+                description (l) <- CONCAT ' -> ', PREV(nameStatus(let)), (OVERRIDE ISTRING(nameStatus(let)), '');
+            }
+        }
+    };
+};
 
 WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(type(o)) DO type(o) <- defaultOrderType(); 
 
 dateTime 'Date'  = DATA DATETIME (Order) IN id;
 WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(dateTime(o)) DO { dateTime(o) <- currentDateTime();}
-@defineDateTimeAggregation(Order);
+@defineDateTimeAggregation(Order){
+    @defineDateTimeAggregation(Order, , ){
+    date 'Date' (Order o) = DATE(dateTime(o));
+    
+    @defineDateAggregation(Order, , date, ){
+    nameDOW 'Day of week' (Order o) = extractDOWName(date(o));
+    week 'Week' (Order o) = extractWeek(date(o));
+    
+    numberMonth 'Month number' (Order o) = extractMonthNumber(date(o));
+    nameMonth 'Month' (Order o) = extractMonthName(date(o));
+    year 'Year' (Order o) = extractYear(date(o));
+};
 
-@defineNumberType(order);
+    minute 'Minute' (Order o) = extractMinute(dateTime(o));
+    hour 'Hour' (Order o) = extractHour(dateTime(o));
+};
+};
+@definePropertyValue(order, date, 'Date'){
+    property (Order l, STRING p) += ISTRING(nameStatus(l)) IF p = 'Status';
+    propertyOrder (STRING p) += p = 'Status';
+
+    @defineHistoryProperty(order, status, 'Status', nameStatus){
+        WHEN CHANGED(status(Order let)) AND NOT DROPPED(let IS Order) AND NOT disableHistory() DO {
+            NEW l = OrderHistory {
+                order(l) <- let;
+                dateTime(l) <- currentDateTime();
+                user(l) <- currentUser();
+                computer(l) <- currentComputer();
+                type(l) <- 'Status';
+                description (l) <- CONCAT ' -> ', PREV(nameStatus(let)), (OVERRIDE ISTRING(nameStatus(let)), '');
+            }
+        }
+    };
+};
+
+@defineNumberType(order){
+    number 'Number' = DATA STRING[31] (Order) NONULL CHARWIDTH 10 IN id;
+
+    WHEN SETCHANGED(type(Order o)) AND numerator(type(o)) AND NOT number(o) DO {
+        number(o) <- CONCAT '/', series(numerator(type(o))), curStringValue(numerator(type(o)));
+        incrementValueSession(numerator(type(o)));
+    }
+};
+@definePropertyValue(order, number, 'Number'){
+    property (Order l, STRING p) += ISTRING(nameStatus(l)) IF p = 'Status';
+    propertyOrder (STRING p) += p = 'Status';
+
+    @defineHistoryProperty(order, status, 'Status', nameStatus){
+        WHEN CHANGED(status(Order let)) AND NOT DROPPED(let IS Order) AND NOT disableHistory() DO {
+            NEW l = OrderHistory {
+                order(l) <- let;
+                dateTime(l) <- currentDateTime();
+                user(l) <- currentUser();
+                computer(l) <- currentComputer();
+                type(l) <- 'Status';
+                description (l) <- CONCAT ' -> ', PREV(nameStatus(let)), (OVERRIDE ISTRING(nameStatus(let)), '');
+            }
+        }
+    };
+};
 
 numberDate 'Description' (Order o) = number(o) + ' (' + dateTime(o) + ')' IN id;
 
 vendor 'Vendor' = DATA Partner (Order) NONULL;
 nameVendor 'Vendor' (Order o) = name(vendor(o));
-property (Order o, STRING p) += nameType(o) IF p = 'Vendor';
+@definePropertyValue(order, vendor, 'Vendor', nameVendor){
+    property (Order l, STRING p) += ISTRING(nameStatus(l)) IF p = 'Status';
+    propertyOrder (STRING p) += p = 'Status';
+
+    @defineHistoryProperty(order, status, 'Status', nameStatus){
+        WHEN CHANGED(status(Order let)) AND NOT DROPPED(let IS Order) AND NOT disableHistory() DO {
+            NEW l = OrderHistory {
+                order(l) <- let;
+                dateTime(l) <- currentDateTime();
+                user(l) <- currentUser();
+                computer(l) <- currentComputer();
+                type(l) <- 'Status';
+                description (l) <- CONCAT ' -> ', PREV(nameStatus(let)), (OVERRIDE ISTRING(nameStatus(let)), '');
+            }
+        }
+    };
+};
 
 numberDateVendor (Order o) = CONCAT ' ', numberDate(o), '(' + nameVendor(o) + ')';
 
@@ -52,37 +237,133 @@ WHEN LOCAL CHANGED(vendor(Order o)) AND NOT CHANGED(paymentTerms(o)) DO paymentT
 // Shipping information
 scheduledDateTime 'Scheduled date' = DATA DATETIME (Order) IN id;
 scheduledDateTime(Order o) <- currentDateTime() WHEN SET(o IS Order);
-property (Order o, STRING p) += ISTRING(scheduledDateTime(o)) IF p = 'Scheduled date';
+@definePropertyValue(order, scheduledDateTime, 'Scheduled date'){
+    property (Order l, STRING p) += ISTRING(nameStatus(l)) IF p = 'Status';
+    propertyOrder (STRING p) += p = 'Status';
+
+    @defineHistoryProperty(order, status, 'Status', nameStatus){
+        WHEN CHANGED(status(Order let)) AND NOT DROPPED(let IS Order) AND NOT disableHistory() DO {
+            NEW l = OrderHistory {
+                order(l) <- let;
+                dateTime(l) <- currentDateTime();
+                user(l) <- currentUser();
+                computer(l) <- currentComputer();
+                type(l) <- 'Status';
+                description (l) <- CONCAT ' -> ', PREV(nameStatus(let)), (OVERRIDE ISTRING(nameStatus(let)), '');
+            }
+        }
+    };
+};
 
 // company
 company 'Company' = DATA Company (Order) NONULL;
 nameCompany 'Company' (Order o) = name(company(o));
 WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(company(o)) DO company(o) <- defaultCompany();
-property (Order o, STRING p) += ISTRING(nameCompany(o)) IF p = 'Company';
+@definePropertyValue(order, company, 'Company', nameCompany){
+    property (Order l, STRING p) += ISTRING(nameStatus(l)) IF p = 'Status';
+    propertyOrder (STRING p) += p = 'Status';
+
+    @defineHistoryProperty(order, status, 'Status', nameStatus){
+        WHEN CHANGED(status(Order let)) AND NOT DROPPED(let IS Order) AND NOT disableHistory() DO {
+            NEW l = OrderHistory {
+                order(l) <- let;
+                dateTime(l) <- currentDateTime();
+                user(l) <- currentUser();
+                computer(l) <- currentComputer();
+                type(l) <- 'Status';
+                description (l) <- CONCAT ' -> ', PREV(nameStatus(let)), (OVERRIDE ISTRING(nameStatus(let)), '');
+            }
+        }
+    };
+};
 
 // location
 location = DATA Location (Order);
 nameLocation 'Location' (Order o) = name(location(o));
 CONSTRAINT SETCHANGED(location(Order o)) AND internalUse(location(o)) CHECKED BY location[Order]
     MESSAGE 'The selected location is for internal use';
-property (Order o, STRING p) += ISTRING(nameLocation(o)) IF p = 'Location';
+@definePropertyValue(order, location, 'Location', nameLocation){
+    property (Order l, STRING p) += ISTRING(nameLocation(l)) IF p = 'Location';
+    propertyOrder (STRING p) += p = 'Location';
+
+    @defineHistoryProperty(order, location, 'Location', nameLocation){
+    WHEN CHANGED(location(Order let)) AND NOT DROPPED(let IS Order) AND NOT disableHistory() DO {
+        NEW l = OrderHistory {
+            order(l) <- let;
+            dateTime(l) <- currentDateTime();
+            user(l) <- currentUser();
+            computer(l) <- currentComputer();
+            type(l) <- 'Location';
+            description (l) <- CONCAT ' -> ', PREV(nameLocation(let)), (OVERRIDE ISTRING(nameLocation(let)), '');
+        }
+    }
+};
+};
 
 // currency
 currency = DATA Currency (Order);
 nameCurrency 'Currency' (Order o) = name(currency(o));
-property (Order o, STRING p) += ISTRING(nameCurrency(o)) IF p = 'Currency';
+@definePropertyValue(order, currency, 'Currency', nameCurrency){
+    property (Order l, STRING p) += ISTRING(nameStatus(l)) IF p = 'Status';
+    propertyOrder (STRING p) += p = 'Status';
+
+    @defineHistoryProperty(order, status, 'Status', nameStatus){
+        WHEN CHANGED(status(Order let)) AND NOT DROPPED(let IS Order) AND NOT disableHistory() DO {
+            NEW l = OrderHistory {
+                order(l) <- let;
+                dateTime(l) <- currentDateTime();
+                user(l) <- currentUser();
+                computer(l) <- currentComputer();
+                type(l) <- 'Status';
+                description (l) <- CONCAT ' -> ', PREV(nameStatus(let)), (OVERRIDE ISTRING(nameStatus(let)), '');
+            }
+        }
+    };
+};
 
 WHEN LOCAL SETCHANGED(type(Order o)) AND currency(type(o)) AND NOT CHANGED(currency(o)) DO currency(o) <- currency(type(o));  
 
 // Purchase information
 representative 'Our representative' = DATA Employee (Order);
 nameRepresentative 'Our representative' (Order o) = MasterData.name(representative(o));
-property (Order o, STRING p) += ISTRING(nameRepresentative(o)) IF p = 'Our representative';
+@definePropertyValue(order, representative, 'Our representative', nameRepresentative){
+    property (Order l, STRING p) += ISTRING(nameStatus(l)) IF p = 'Status';
+    propertyOrder (STRING p) += p = 'Status';
+
+    @defineHistoryProperty(order, status, 'Status', nameStatus){
+        WHEN CHANGED(status(Order let)) AND NOT DROPPED(let IS Order) AND NOT disableHistory() DO {
+            NEW l = OrderHistory {
+                order(l) <- let;
+                dateTime(l) <- currentDateTime();
+                user(l) <- currentUser();
+                computer(l) <- currentComputer();
+                type(l) <- 'Status';
+                description (l) <- CONCAT ' -> ', PREV(nameStatus(let)), (OVERRIDE ISTRING(nameStatus(let)), '');
+            }
+        }
+    };
+};
 
 representative(Order o) <- currentUser() IF currentUser() IS Employee WHEN SET(o IS Order);
 
 vendorReference 'Vendor reference' = DATA STRING[30] (Order) INDEXED;
-property (Order o, STRING p) += ISTRING(vendorReference(o)) IF p = 'Vendor reference';
+@definePropertyValue(order, vendorReference, 'Vendor reference'){
+    property (Order l, STRING p) += ISTRING(nameStatus(l)) IF p = 'Status';
+    propertyOrder (STRING p) += p = 'Status';
+
+    @defineHistoryProperty(order, status, 'Status', nameStatus){
+        WHEN CHANGED(status(Order let)) AND NOT DROPPED(let IS Order) AND NOT disableHistory() DO {
+            NEW l = OrderHistory {
+                order(l) <- let;
+                dateTime(l) <- currentDateTime();
+                user(l) <- currentUser();
+                computer(l) <- currentComputer();
+                type(l) <- 'Status';
+                description (l) <- CONCAT ' -> ', PREV(nameStatus(let)), (OVERRIDE ISTRING(nameStatus(let)), '');
+            }
+        }
+    };
+};
 
 note 'Note' = DATA ISTRING (Order) CHARWIDTH 20;
 
@@ -124,7 +405,52 @@ WHEN LOCAL SETCHANGED(item(OrderLine l)) AND NOT CHANGED(price(l)) DO price(l) <
 
 defaultPrice (OrderLine l) += WHEN cost(item(l), DATE(dateTime(order(l)))) THEN cost(item(l)); 
 
-@defineTaxCalc(order, o, purchase);
+@defineTaxCalc(order, o, purchase){
+    @defineTaxCalc(order, o, purchase, price){
+    untaxedAmount '{Amount}'  = DATA NUMERIC[14,2] (OrderLine);
+    
+    WHEN LOCAL CHANGED(quantity(OrderLine l)) OR CHANGED(price(l)) DO {
+        untaxedAmount(l) <- NUMERIC[14,2](quantity(l) * price(l));
+    }
+    
+    // taxes for line
+    in 'Incl.' = DATA BOOLEAN (OrderLine, Tax);
+    WHEN LOCAL CHANGED(item(OrderLine l)) DO
+        in(l, Tax t) <- purchaseIn(item(l), t) WHERE purchaseCountIn(item(l), taxGroup(t));
+
+    WHEN LOCAL SET(in(OrderLine l, Tax t)) DO {
+        in(l, Tax tx) <- NULL WHERE taxGroup(t) = taxGroup(tx) AND NOT t = tx;
+    }
+
+    // amount    
+    taxAmount 'Taxes' (Tax t, OrderLine l) = DATA NUMERIC[14,2] (Tax, OrderLine);
+    
+    taxIncluded = ABSTRACT BOOLEAN (OrderLine);
+    WHEN LOCAL CHANGED(untaxedAmount(OrderLine l) IF in(l, Tax t)) AND value(t) AND NOT CHANGED(taxAmount(t, l)) DO
+        taxAmount (t, l) <- NUMERIC[14,2] (value(t) / (100 (+) (value(t) IF taxIncluded(l))) * untaxedAmount(l));
+    
+    CONSTRAINT (DROPPED(Tax t IS Tax) AND PREV(taxAmount(t, OrderLine l))) 
+                                                            MESSAGE 'You cannot remove tax involved in calculations';
+    
+    taxAmount 'Taxes' (OrderLine l) = GROUP SUM taxAmount(Tax t, l) IF in(l, t);
+    taxPercent 'Taxes,%' (OrderLine l) = GROUP SUM value(Tax t) IF in(l, t);
+    countTaxes (OrderLine l) = GROUP SUM 1 IF in(l, Tax t);
+    taxes 'Taxes' (OrderLine l) = GROUP CONCAT name(Tax t) IF in(l, t), ', ' ORDER t CHARWIDTH 8;
+
+    amount 'Total amount' (OrderLine l) = untaxedAmount(l) (+) (taxAmount(l) IF NOT taxIncluded(l));
+    
+    // taxes for document
+    taxCount (Order o, Tax t) = GROUP SUM 1 IF in(OrderLine l, t) AND order(l) = o;
+    taxAmount 'Tax' (Tax t, Order o) = 
+        GROUP SUM taxAmount(t, OrderLine l) IF order(l) = o AND in(l, t);
+    
+    untaxedAmount '{Amount}' (Order o) = GROUP SUM untaxedAmount(OrderLine l) IF order(l) = o;
+
+    taxAmount 'Tax' (Order o) = GROUP SUM taxAmount(Tax t, o);
+
+    amount 'Total amount' (Order o) = GROUP SUM amount(OrderLine l) IF order(l) = o;
+};
+};
 taxIncluded (OrderLine l) += taxIncluded(type(order(l)));
 
 WHEN LOCAL CHANGED (item(OrderLine ol)) DO {
@@ -262,25 +588,502 @@ FORM orders 'Purchase orders'
     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
 ;
 
-@extendFormEditable(orders);
+@extendFormEditable(orders){
+    EXTEND FORM orders
+        PROPERTIES() isEditable
+    ;
+    DESIGN orders {
+        TOOLBARBOX {
+            MOVE PROPERTY(isEditable()) BEFORE TOOLBARRIGHT;
+        }
+    }
+};
 
-@defineDocHistory(order, o, item);
-@defineHistoryProperty(order, location, 'Location', nameLocation);
-@defineDocHistoryLineProperty(order, OrderLine, quantity, 'Qty', nameItem);
+@defineDocHistoryLine(order, item){
+    @defineDocHistoryLine(order, OrderLine, item){
 
-@defineDocObjectsForm(orders, o, 'Purchase orders');
-@defineDocStatusForm(order, o);
-@defineDocLinesCount(order, o);
-@defineDocLocationAccess(order, o);
+    WHEN SETCHANGED(OrderLine l IS OrderLine) AND order(l) = Order d
+        AND NOT status(d) = OrderStatus.draft AND NOT disableHistory() DO {
+        NEW h = OrderHistory {
+            order(h) <- d;
+            dateTime(h) <- currentDateTime();
+            user(h) <- currentUser();
+            computer(h) <- currentComputer();
+            type(h) <- 'Added line';
+            description (h) <- '' + index(l);
+        }
+    }
 
-@defineObjectActivity(order, o, details, numberDateVendor);
+    WHEN DROPPED(OrderLine l IS OrderLine) AND PREV(order(l)) = Order d
+        AND NOT status(d) = OrderStatus.draft AND NOT disableHistory() DO {
+        NEW h = OrderHistory {
+            order(h) <- d;
+            dateTime(h) <- currentDateTime();
+            user(h) <- currentUser();
+            computer(h) <- currentComputer();
+            type(h) <- 'Removed line';
+            description (h) <- '' + PREV(index(l));
+        }
+    }
 
-@defineObjectComments(order, o, details);
-@defineObjectCommentsHistory(order);
+    WHEN CHANGED(item(OrderLine l)) AND order(l) = Order d
+        AND NOT status(d) = OrderStatus.draft AND NOT disableHistory() DO {
+        NEW h = OrderHistory {
+            order(h) <- d;
+            dateTime(h) <- currentDateTime();
+            user(h) <- currentUser();
+            computer(h) <- currentComputer();
+            type(h) <- 'Product changed';
+            description (h) <- '' + index(l) + (CONCAT ' -> ', PREV(nameItem(l)), nameItem(l));
+        }
+    }
 
-@defineObjectCommentsActivity(order);
+};
+};
+@defineDocHistoryLineProperty(order, OrderLine, quantity, 'Qty', nameItem){
+    WHEN CHANGED(quantity(OrderLine l)) AND order(l) = Order d
+        AND NOT status(d) = OrderStatus.draft AND NOT disableHistory() DO {
+        NEW h = OrderHistory {
+            order(h) <- d;
+            dateTime(h) <- currentDateTime();
+            user(h) <- currentUser();
+            type(h) <- 'Qty';
+            description (h) <- '' + index(l) + '. ' + (CONCAT ', ', nameItem(l), (CONCAT ' -> ', PREV(quantity(l)), quantity(l)));
+        }
+    }
+};
+@defineHistoryForm(order, order, o){
+    EXTEND FORM order
+        OBJECTS orderl = OrderHistory
+        PROPERTIES(orderl) READONLY dateTime, nameUser, hostnameComputer, type, description, pdescription = description PANEL
+        FILTERS order(orderl) = o
+    ;
 
-@defineObjectFiles(order, o, 'Purchase order file');
+    DESIGN order {
+        details {
+            NEW history {
+                caption = badged('History', countHistories(o));
+                fill = 1;
+                horizontal = TRUE;
+                MOVE BOX(orderl) {
+                    fill = 2;
+                    caption = '';
+                    PROPERTY(description(orderl)) { valueHeight = 18; }
+                }
+                MOVE PROPERTY(pdescription) { panelCaptionVertical = TRUE; fill = 1; }
+            }
+        }
+    }
+
+    EXTEND FORM orders
+        PROPERTIES(o) nameUserFirstHistory, dateTimeFirstHistory, nameUserLastHistory, dateTimeLastHistory
+    ;
+};
+
+@defineDocObjectsForm(orders, o, 'Purchase orders'){
+    DESIGN orders {
+        OBJECTS {
+            NEW pane {
+                fill = 1;
+                horizontal = TRUE;
+                NEW tabbedPane {
+                    tabbed = TRUE;
+                    fill = 1000;
+                    MOVE BOX(o) { caption = 'Purchase orders'; }
+                }
+                NEW rightPane {
+                    tabbed = TRUE;
+//                    width = 230;
+                    fill = 1;
+                    NEW filters {
+                        caption = 'Filters';
+                        alignment = STRETCH;
+                        MOVE FILTERGROUPS(o) {
+                            horizontal = FALSE;
+                            alignment = STRETCH;
+                        }
+                    }
+                    NEW actions {
+                        alignment = STRETCH;
+                        caption = 'Actions';
+                        NEW statuses {
+                            alignment = STRETCH;
+                            caption = 'Change status';
+                        }
+                    }
+                }
+            }
+        }
+    }
+};
+@defineDocStatusForm(order, o){
+    @defineDocStatusForm(order, o, nameType){
+    @defineDocStatusForm(order, o, nameType, draft, 'Draft'){
+    EXTEND FORM orders
+        PROPERTIES(o) READONLY imagedNameStatus BACKGROUND colorStatus(o) BEFORE nameType(o)
+        FILTERGROUP status
+            FILTER 'Draft' status(o) = OrderStatus.draft
+    ;
+    
+    DESIGN orders {
+        filters {
+            MOVE FILTERGROUP(status) { alignment = STRETCH; }
+        }
+    }
+    
+    EXTEND FORM order
+        PROPERTIES(o) READONLY imagedNameStatus BACKGROUND colorStatus(o)
+    ;
+    
+    @defineFormStatusContainer(order){
+    DESIGN order {
+        NEW statusPane FIRST {
+            horizontal = TRUE;
+            alignment = STRETCH;
+            NEW statusActions {
+                horizontal = TRUE;
+                flex = 1;
+                NEW primaryActions {
+                    horizontal = TRUE;
+                }
+                NEW secondaryActions {
+                    horizontal = TRUE;
+                }
+            }
+            NEW statusContainer {
+                fill = 1;
+                NEW status {
+                    alignment = END;
+                    horizontal = TRUE;
+                }
+            }
+        }
+    }
+};
+        
+    DESIGN order {
+        status {
+            MOVE PROPERTY(imagedNameStatus(o));
+            NEW statusGroup {
+                custom = '';
+                class = 'btn-group';
+            }
+        }
+    }
+};
+};
+};
+@defineDocLinesCount(order, o){ 
+    countOrderLine 'Number of lines' (Order o) = GROUP SUM 1 IF order(OrderLine l) = o MATERIALIZED;
+    
+    DESIGN order {
+        lines {
+            caption = badged('Lines', countOrderLine(o));
+        }
+    }
+    EXTEND FORM orders PROPERTIES(o) READONLY countOrderLine;
+};
+@defineDocLocationAccess(order, o){
+    @defineDocLocationAccess(order, o, ){
+    WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(location(o)) AND countLocation() = 1 DO
+        location(o) <- firstLocation();
+
+    CONSTRAINT SETCHANGED(location(Order o)) AND accessDenied(location(o)) CHECKED BY location[Order]
+               MESSAGE 'The current user does not have permission to access the selected storage location';
+               
+    EXTEND FORM orders
+        FILTERS accessGranted(location(o)) OR NOT location(o) 
+    ; 
+};
+};
+
+@defineObjectActivity(order, o, details, numberDateVendor){
+    
+    EXTEND CLASS Order : ActivityObject;
+    name(Order o) += numberDateVendor(o);
+
+    EXTEND FORM order
+        OBJECTS act = Activity CUSTOM 'activities'
+        PROPERTIES(act) nameType, dueDate, daysLeft, name, nameAssignedTo, description, done
+        PROPERTIES setDone(act),
+                   editAct = edit(act) ON CHANGE {
+                        SHOW activity OBJECTS a = act FLOAT;
+                   },
+                   deleteAct = DELETE(act)
+        ORDERS dueDate(act)
+        FILTERS object(act) = o,
+            NOT PREV(done(act))
+    ;
+
+    newActivity 'Add' (Order o, ActivityType t) {
+        NESTEDSESSION {
+            NEW na = Activity {
+                object(na) <- o;
+                type(na) <- t;
+                DIALOG activity OBJECTS a = na FLOAT;
+            }
+        }
+    } IMAGE 'add.png';
+
+    EXTEND FORM order
+        OBJECTS at = ActivityType BEFORE o
+
+        PROPERTIES newActivity(o, at) COLUMNS (at) HEADER name(at)
+    ;
+
+    DESIGN order {
+        details {
+            NEW activities {
+                showIf = countActivityTypes();
+                alignment = STRETCH;
+                caption = badged('Activities', countOpenedActivity(o));
+                MOVE PROPERTY(newActivity(o, at));
+                MOVE GRID(act) {
+                    width = 400;
+                    flex = 0;
+                }
+                REMOVE BOX(act);
+            }
+        }
+    }
+
+};
+
+@defineObjectComments(order, o, details){
+    CLASS OrderComment 'Comment';
+    
+    order = DATA Order (OrderComment) NONULL DELETE;
+    countComment (Order e) = GROUP SUM 1 IF order(OrderComment c) = e MATERIALIZED;
+    lastComment (Order e) = GROUP LAST OrderComment c ORDER c BY order(c) MATERIALIZED;
+    
+    dateTime 'Date' = DATA DATETIME (OrderComment);
+    dateTime(OrderComment f) <- currentDateTime() WHEN SET(f IS OrderComment);
+    
+    user = DATA User (OrderComment);
+    nameUser 'User' (OrderComment f) = name(user(f));
+    user(OrderComment f) <- currentUser() WHEN SET(f IS OrderComment);
+    
+    text 'Text' = DATA RICHTEXT (OrderComment);
+    
+    header = ABSTRACT VALUE HTMLTEXT (OrderComment);
+    footer = ABSTRACT VALUE HTMLTEXT (OrderComment);
+    html (OrderComment c) = CONCAT '', header(c), text(c), footer(c);
+    
+    FORM editOrderComment 'Comment'
+        OBJECTS c = OrderComment PANEL
+        PROPERTIES(c) '' = text
+    ;
+    
+    DESIGN editOrderComment {
+        size = (640, 480);
+        OBJECTS {
+            MOVE PROPERTY(text(c)) { fill = 1; }
+        }
+    }
+    
+    EXTEND FORM order
+        OBJECTS cmt = OrderComment CUSTOM 'comments'
+        PROPERTIES id = VALUE(cmt)
+        PROPERTIES(cmt) nameUser, dateTime, text = html
+        PROPERTIES(cmt) edit ON CHANGE {
+            SHOW editOrderComment OBJECTS c = cmt;
+        },
+            delete = DELETE
+        ORDERS id DESC
+        FILTERS order(cmt) = o
+    ;
+    
+    newComment 'Add' (Order t) {
+        IF inputComment() THEN
+            NEW nc = OrderComment {
+                order(nc) <- t;
+                text(nc) <- inputComment();
+                inputComment() <- NULL;
+            }
+    }
+    
+    EXTEND FORM order
+        PROPERTIES inputComment(), newComment(o)
+        
+        EVENTS ON APPLY { newComment(o); }
+    ;
+    
+    DESIGN order {
+        details {
+            NEW comments {
+                fill = 1;
+                caption = badged('Comments', countComment(o));
+                NEW inputComment {
+                    horizontal = TRUE;
+                    alignment = STRETCH;
+                    MOVE PROPERTY(inputComment()) {
+                        valueHeight = -1;
+                        fill = 1;
+                    }
+                    MOVE PROPERTY(newComment(o)) {
+                        alignment = STRETCH;
+                    }
+                }
+                MOVE GRID(cmt) {
+                    height = 200;
+                    width = 400;
+                    fill = 1;
+                }
+                REMOVE BOX(cmt);
+            }
+        }
+    }
+};
+@defineObjectCommentsHistory(order){
+    comment = DATA OrderComment (OrderHistory) INDEXED;
+
+    changes (OrderComment tc) = HTMLTEXT('<ul style="color:#959595">' + (GROUP CONCAT ('<li>' + type(OrderHistory th) + ' : ' + description(th) + '</li>') IF comment(th) = tc, '' ORDER th) + '</ul>');
+    header (OrderComment tc) += changes(tc);
+
+    WHEN SET(OrderComment tc IS OrderComment) AND SET(OrderHistory th IS OrderHistory) DO
+        comment(th) <- tc;
+};
+
+@defineObjectCommentsActivity(order){
+    
+    WHEN SET(done(Activity a)) AND Order o = object(a) AND o IS Order DO NEW oc = OrderComment {
+        order(oc) <- o;
+        text(oc) <- CONCAT '', '<h5>' + (CONCAT ' : ', nameType(a), name(a)) + '</h5>',
+            (CONCAT '<b>' + 'Description' + ' :</b>', (feedback(a) IF feedback(a) != ''), description(a));
+    }
+    
+};
+
+@defineObjectFiles(order, o, 'Purchase order file'){
+
+    CLASS OrderFile 'Purchase order file';
+
+    order = DATA Order (OrderFile) INDEXED NONULL DELETE;
+
+    file = DATA RAWFILE (OrderFile);
+
+    name '{Name}' = DATA ISTRING (OrderFile) CHARWIDTH 15;
+    extension 'Extension' = DATA ISTRING (OrderFile) CHARWIDTH 5;
+    nameExtension (OrderFile f) = CONCAT '.', name(f), extension(f);
+
+    description 'Description' = DATA ISTRING (OrderFile) CHARWIDTH 20;
+
+    dateTime 'Date' = DATA DATETIME (OrderFile);
+    dateTime(OrderFile f) <- currentDateTime() WHEN SET(f IS OrderFile);
+
+    user = DATA User (OrderFile);
+    nameUser 'User' (OrderFile f) = name(user(f));
+    user(OrderFile f) <- currentUser() WHEN SET(f IS OrderFile);
+
+    open 'Open' (OrderFile f) { open(file(f), nameExtension(f)); } IMAGE 'open.png';
+
+    countFiles 'Files' (Order i) = GROUP SUM 1 IF order(OrderFile f) = i;
+
+    index '{Index}' (OrderFile f) = PARTITION SUM 1 ORDER f BY order(f) MATERIALIZED CHARWIDTH 3;
+    file (Order o, INTEGER i) = GROUP MIN OrderFile f IF order(f) = o AND index(f) = i;
+    openFile(Order o, INTEGER i) { open(file(o, i)); }
+    
+    file1 (Order o) = file(o, 1);
+    file2 (Order o) = file(o, 2);
+    file3 (Order o) = file(o, 3);
+    openFile1 'File 1' (Order o) { openFile(o, 1); }
+    openFile2 'File 2' (Order o) { openFile(o, 2); }
+    openFile3 'File 3' (Order o) { openFile(o, 3); }
+
+    firstFile (Order i) = GROUP MIN OrderFile f IF order(f) = i;
+    openFirstFile 'Open' (Order i) { open(firstFile(i)); }
+    openFiles 'Open' (Order i) {
+        FOR order(OrderFile f) = i DO
+            open(f);
+    }
+
+    newFile 'File' (Order o) {
+        INPUT uf = NAMEDFILE DO NEW uof = OrderFile {
+            order(uof) <- o;
+            file(uof) <- RAWFILE(uf);
+            name(uof) <- name(uf);
+            extension(uof) <- extension(uf);
+        }
+    } IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+        
+    downloadOrderFile (LONG id) {
+        FOR LONG(OrderFile f AS OrderFile) = id DO {
+            exportNamedFile() <- namedFile(file(f), name(f), extension(f));
+        } 
+    } @@api;
+        
+    @defineObjectFilesForm(order, order, o){
+    EXTEND FORM order
+        OBJECTS of = OrderFile
+        PROPERTIES(of) READONLY index
+        PROPERTIES(of) READONLYIF readonly(o) name, extension, description
+        PROPERTIES(of) READONLY nameUser, dateTime
+        PROPERTIES(of) GRID open, DELETE READONLYIF readonly(o)
+        FILTERS order(of) = o
+
+        PROPERTIES(o) newFile DRAW of TOOLBAR READONLYIF readonly(o)
+        PROPERTIES inputFile = '' CUSTOM 'inputFile' ON CHANGE {
+            INPUT f = JSON DO
+                IMPORT JSON FROM f FIELDS() STRING name, STRING extension, STRING data DO 
+                    IF NOT readonly(o) THEN NEW uof = OrderFile {
+                        order(uof) <- o;
+                        file(uof) <- decode(data, 'base64');
+                        name(uof) <- name;
+                        extension(uof) <- extension;
+                    }
+        }
+    ;
+
+    DESIGN order {
+        details {
+            NEW files {
+                caption = badged('Files', countFiles(o));
+                MOVE BOX(of) { width = 600; caption = ''; }
+                MOVE PROPERTY(inputFile);
+            }
+        }
+    }
+    
+    // preview
+    
+    EXTEND FORM order
+        PROPERTIES() READONLY previewPdfFile SHOWIF previewPdfFile(), previewImageFile SHOWIF NOT previewPdfFile()
+
+        EVENTS ON CHANGE of {
+            previewPdfFile() <- NULL;
+            previewImageFile() <- NULL;
+            IF lower(extension(of)) = 'jpg' OR lower(extension(of)) = 'jpeg' OR lower(extension(of)) = 'png' OR lower(extension(of)) = 'bmp' THEN {
+                previewImageFile() <- IMAGEFILE(file(of));
+            }
+            IF lower(extension(of)) = 'pdf' THEN {
+                previewPdfFile() <- PDFFILE(file(of));
+            }
+            IF lower(extension(of)) = 'doc' OR lower(extension(of)) = 'docx' THEN {
+                TRY {
+                    wordToPdf(file(of));
+                } CATCH {}
+                previewPdfFile() <- exportPdfFile();
+            }
+        }
+    ;
+
+    DESIGN order {
+        files {
+            horizontal = TRUE;
+            height = 300;
+            NEW preview {
+                width = 300;
+                height = 600;
+                fill = 4;
+                MOVE PROPERTY(previewPdfFile()) { fill = 1; size = (100, 100); caption = ''; }
+                MOVE PROPERTY(previewImageFile()) { fill = 1; size = (100, 100); caption = ''; }
+            }
+        }
+    }
+
+};
+
+};
 
 NAVIGATOR {
     operations {
