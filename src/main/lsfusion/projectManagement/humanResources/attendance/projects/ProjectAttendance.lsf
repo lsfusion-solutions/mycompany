@@ -1,0 +1,43 @@
+MODULE ProjectAttendance;
+
+REQUIRE Project, Attendance;
+
+NAMESPACE ProjectManagement;
+
+project = DATA Project (Attendance) INDEXED;
+nameProject 'Project' (Attendance e) = name(project(e));
+nameCustomer 'Partner' (Attendance e) = namePartner(project(e));
+
+countAttendance 'Attendances' (Project p) = GROUP SUM 1 IF project(Attendance a) = p MATERIALIZED;
+hoursAttendance 'Hours' (Project p) = GROUP SUM hours(Attendance a) IF project(a) = p MATERIALIZED;
+
+EXTEND FORM attendance
+    PROPERTIES(a) nameProject
+;
+
+DESIGN attendance {
+    header {
+        MOVE PROPERTY(nameProject(a));
+    }
+}
+
+EXTEND FORM attendances
+    PROPERTIES(a) READONLY nameProject
+;
+
+EXTEND FORM project
+    OBJECTS at = Attendance
+    PROPERTIES(at) nameEmployee, checkIn, checkOut, hours,
+                   latitude = checkInLatitude, longitude = checkInLongitude,
+                   NEW, DELETE
+    FILTERS project(at) = p
+;
+
+DESIGN project {
+    details {
+        NEW attendances {
+            caption = badged('Attendances', '(' + countAttendance(p) + ')' + '(' + hoursAttendance(p) + ')');
+            MOVE BOX(at) { caption = ''; }
+        }
+    }
+}

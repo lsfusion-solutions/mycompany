@@ -1,0 +1,25 @@
+MODULE ProjectAttendanceMobile;
+
+REQUIRE ProjectAttendance, AttendanceMobile;
+
+NAMESPACE ProjectManagement;
+
+attendanceProject = DATA LOCAL NESTED Project ();
+nameAttendanceProject 'Project' () = name(attendanceProject());
+
+EXTEND FORM attendanceMobile
+    PROPERTIES nameAttendanceProject() SELECT 'dropdown' SHOWIF NOT openedLastAttendance()
+
+    PROPERTIES READONLY nameProject(a)
+;
+
+DESIGN attendanceMobile {
+    OBJECTS {
+        MOVE PROPERTY(nameAttendanceProject()) FIRST { fontSize = 24; };
+        PROPERTY(nameProject(a)) { caption = ''; charWidth = 10; }
+    }
+}
+
+start(Attendance a) + {
+    project(a) <- attendanceProject();
+}

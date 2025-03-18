@@ -35,8 +35,8 @@ checkOutLongitude 'Longitude (Check Out)' = DATA NUMERIC[11,6] (Attendance);
 FORM attendance 'Attendance'
     OBJECTS a = Attendance PANEL
 
-    PROPERTIES(a) READONLY nameEmployee, checkIn, checkOut, hours,
-                           checkInLatitude, checkInLongitude, checkOutLatitude, checkOutLongitude
+    PROPERTIES(a) nameEmployee, checkIn, checkOut, hours,
+                  checkInLatitude, checkInLongitude, checkOutLatitude, checkOutLongitude
     
     EDIT Attendance OBJECT a
 ;
@@ -44,7 +44,6 @@ FORM attendance 'Attendance'
 DESIGN attendance {
     OBJECTS {
         NEW header {
-            alignment = STRETCH;
             lines = 2;
             MOVE PROPERTY(nameEmployee(a));
             MOVE PROPERTY(hours(a));
@@ -96,9 +95,9 @@ workedHoursLastAttendance 'Hours' (Employee e) = workedHours(secondsLastAttendan
 workedHoursLastAttendance 'Hours' () = workedHoursLastAttendance(currentUser());
 
 attendance (Employee e, Month m) = 
-    GROUP SUM seconds(Attendance a) IF employee(a) = e AND extractMonth(checkInDate(a)) = m;
+    round1((GROUP SUM seconds(Attendance a) IF employee(a) = e AND extractMonth(checkInDate(a)) = m) / 3600);
 attendance (Employee e, INTEGER y, INTEGER w) = 
-    GROUP SUM seconds(Attendance a) IF employee(a) = e AND extractYear(checkInDate(a)) = y AND extractWeek(checkInDate(a)) = w;
+    round1((GROUP SUM seconds(Attendance a) IF employee(a) = e AND extractYear(checkInDate(a)) = y AND extractWeek(checkInDate(a)) = w) / 3600);
 
 attendanceThisMonth 'Month' (Employee e) = attendance(e, extractMonth(currentDate()));
 attendanceThisWeek 'Week' (Employee e) = attendance(e, extractYear(currentDate()), extractWeek(currentDate()));

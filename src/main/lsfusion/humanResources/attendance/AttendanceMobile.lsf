@@ -4,15 +4,44 @@ REQUIRE Attendance, Mobile, GeoUtils;
 
 NAMESPACE HumanResources;
 
+FORM attendanceMobile 'Attendance'
+    PROPERTIES() READONLY 'Geolocation' = latitude, '' = longitude
+    PROPERTIES getCurrentPosition = JSON FROM 
+                    timestamp = timestamp(), cacheTimeout = 60, enableHighAccuracy = TRUE, timeout = 5000, maximumAge = 0
+                    CUSTOM 'getCurrentPosition_mc' ON CHANGE changeCurrentPosition_mc()
+
+    OBJECTS a = Attendance
+    PROPERTIES(a) READONLY '' = checkIn, '' = checkOutTime, '' = workedHours
+    ORDERS checkIn(a) DESC
+    FILTERS employee(a) = currentUser()
+    
+    PROPERTIES() READONLY attendanceThisMonth, attendanceThisWeek
+
+    EVENTS ON SCHEDULE PERIOD 60 {
+        timestamp() <- NULL;
+        formRefresh();
+    }
+;
+
+start (Attendance a) ABSTRACT LIST;
+
 start 'Start' () {
-    NEWSESSION NESTED (latitude, longitude) {
+    LOCAL newAttendance = Attendance();
+    
+    NEWSESSION NESTED (latitude, longitude, newAttendance) {
         NEW a = Attendance {
             checkIn(a) <- currentDateTime();
             checkInLatitude(a) <- latitude();
             checkInLongitude(a) <- longitude();
+
+            start(a);
+
+            newAttendance() <- a;
         }
-        APPLY NESTED (latitude, longitude);
+        APPLY NESTED (latitude, longitude, newAttendance);
     }
+    IF newAttendance() THEN 
+        SEEK attendanceMobile.a = newAttendance();
 }
 
 stop 'Stop' () {
@@ -26,28 +55,12 @@ stop 'Stop' () {
     }
 } CONFIRM;
 
-FORM attendanceMobile 'Attendance'
-    PROPERTIES() READONLY 'Geolocation' = latitude, '' = longitude
-    PROPERTIES getCurrentPosition = JSON FROM 
-                    timestamp = timestamp(), cacheTimeout = 60, enableHighAccuracy = TRUE, timeout = 5000, maximumAge = 0
-                    CUSTOM 'getCurrentPosition_mc' ON CHANGE changeCurrentPosition_mc()
-
+EXTEND FORM attendanceMobile
     PROPERTIES start() SHOWIF NOT openedLastAttendance() DISABLEIF NOT latitude() OR NOT longitude(),
                checkInTimeLastAttendance() SHOWIF openedLastAttendance() READONLY,
-               workedHoursLastAttendance() SHOWIF openedLastAttendance() READONLY, 
+               workedHoursLastAttendance() SHOWIF openedLastAttendance() READONLY,
                stop() SHOWIF openedLastAttendance() DISABLEIF NOT latitude() OR NOT longitude()
-    
-    OBJECTS a = Attendance
-    PROPERTIES(a) READONLY '' = checkIn, '' = checkOutTime, '' = workedHours
-    ORDERS checkIn(a) DESC
-    FILTERS employee(a) = currentUser()
-    
-    PROPERTIES() READONLY attendanceThisMonth, attendanceThisWeek
 
-    EVENTS ON SCHEDULE PERIOD 60 {
-        timestamp() <- NULL;
-        formRefresh();
-    }
 ;
 
 DESIGN attendanceMobile {
@@ -69,16 +82,16 @@ DESIGN attendanceMobile {
             MOVE PROPERTY(stop()) { fill = 1; fontSize = 48; focusable = FALSE; }
         }
         MOVE GRID(a) {
-            PROPERTY(checkIn(a)) { pattern = 'dd.MM HH:mm'; fontSize = 24; }
-            PROPERTY(checkOutTime(a)) { fontSize = 24; }
-            PROPERTY(workedHours(a)) { valueAlignmentHorz = END; fontSize = 24; }
+            PROPERTY(checkIn(a)) { pattern = 'dd.MM HH:mm'; fontSize = 18; }
+            PROPERTY(checkOutTime(a)) { fontSize = 18; }
+            PROPERTY(workedHours(a)) { valueAlignmentHorz = END; fontSize = 18; }
         }
         NEW total {
             caption = 'Total';
             alignment = STRETCH;
             horizontal = TRUE;
-            MOVE PROPERTY(attendanceThisMonth());
-            MOVE PROPERTY(attendanceThisWeek());
+            MOVE PROPERTY(attendanceThisMonth()) { fontSize = 18; }
+            MOVE PROPERTY(attendanceThisWeek()) { fontSize = 18; }
         }
         REMOVE BOX(a);
     }
