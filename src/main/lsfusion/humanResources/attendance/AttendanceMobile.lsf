@@ -1,0 +1,97 @@
+MODULE AttendanceMobile;
+
+REQUIRE Attendance, Mobile, GeoUtils;
+
+NAMESPACE HumanResources;
+
+start 'Start' () {
+    NEWSESSION NESTED (latitude, longitude) {
+        NEW a = Attendance {
+            checkIn(a) <- currentDateTime();
+            checkInLatitude(a) <- latitude();
+            checkInLongitude(a) <- longitude();
+        }
+        APPLY NESTED (latitude, longitude);
+    }
+}
+
+stop 'Stop' () {
+    NEWSESSION NESTED (latitude, longitude) {
+        FOR Attendance a = lastAttendance() DO {
+            checkOut(a) <- currentDateTime();
+            checkOutLatitude(a) <- latitude();
+            checkOutLongitude(a) <- longitude();
+        }
+        APPLY NESTED (latitude, longitude);
+    }
+} CONFIRM;
+
+FORM attendanceMobile 'Attendance'
+    PROPERTIES() READONLY 'Geolocation' = latitude, '' = longitude
+    PROPERTIES getCurrentPosition = JSON FROM 
+                    timestamp = timestamp(), cacheTimeout = 60, enableHighAccuracy = TRUE, timeout = 5000, maximumAge = 0
+                    CUSTOM 'getCurrentPosition_mc' ON CHANGE changeCurrentPosition_mc()
+
+    PROPERTIES start() SHOWIF NOT openedLastAttendance() DISABLEIF NOT latitude() OR NOT longitude(),
+               checkInTimeLastAttendance() SHOWIF openedLastAttendance() READONLY,
+               workedHoursLastAttendance() SHOWIF openedLastAttendance() READONLY, 
+               stop() SHOWIF openedLastAttendance() DISABLEIF NOT latitude() OR NOT longitude()
+    
+    OBJECTS a = Attendance
+    PROPERTIES(a) READONLY '' = checkIn, '' = checkOutTime, '' = workedHours
+    ORDERS checkIn(a) DESC
+    FILTERS employee(a) = currentUser()
+    
+    PROPERTIES() READONLY attendanceThisMonth, attendanceThisWeek
+
+    EVENTS ON SCHEDULE PERIOD 60 {
+        timestamp() <- NULL;
+        formRefresh();
+    }
+;
+
+DESIGN attendanceMobile {
+    OBJECTS {
+        class = '';
+        border = FALSE;
+        NEW geolocation {
+            alignment = STRETCH;
+            horizontal = TRUE;
+            MOVE PROPERTY(latitude());
+            MOVE PROPERTY(longitude());
+        }
+        NEW actions {
+            alignment = STRETCH;
+            horizontal = TRUE;
+            MOVE PROPERTY(start()) { fill = 1; fontSize = 48; focusable = FALSE;  }
+            MOVE PROPERTY(checkInTimeLastAttendance()) { flex = 0; panelCaptionVertical = TRUE; fontSize = 24; focusable = FALSE; }
+            MOVE PROPERTY(workedHoursLastAttendance()) { flex = 0; panelCaptionVertical = TRUE; fontSize = 24; focusable = FALSE; }
+            MOVE PROPERTY(stop()) { fill = 1; fontSize = 48; focusable = FALSE; }
+        }
+        MOVE GRID(a) {
+            PROPERTY(checkIn(a)) { pattern = 'dd.MM HH:mm'; fontSize = 24; }
+            PROPERTY(checkOutTime(a)) { fontSize = 24; }
+            PROPERTY(workedHours(a)) { valueAlignmentHorz = END; fontSize = 24; }
+        }
+        NEW total {
+            caption = 'Total';
+            alignment = STRETCH;
+            horizontal = TRUE;
+            MOVE PROPERTY(attendanceThisMonth());
+            MOVE PROPERTY(attendanceThisWeek());
+        }
+        REMOVE BOX(a);
+    }
+    REMOVE TOOLBARBOX;
+}
+
+NAVIGATOR {
+    dashboards {
+        NEW attendanceMobile;
+    }
+}
+
+showMobileForms() + {
+    IF permit(currentUser(), navigatorElementCanonicalName('HumanResources.attendanceMobile')) THEN
+        SHOW attendanceMobile NOWAIT;
+}

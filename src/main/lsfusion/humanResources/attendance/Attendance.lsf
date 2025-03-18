@@ -1,0 +1,107 @@
+MODULE Attendance;
+
+REQUIRE Employee, HumanResourcesSettings;
+
+NAMESPACE HumanResources;
+
+workedHours (INTEGER seconds) =
+    STRING(lpad('' + (seconds / 3600), 2, '0') + ':' + lpad('' + mod(seconds / 60, 60), 2, '0')) CHARWIDTH 5;
+
+CLASS Attendance 'Attendance';
+
+employee 'Employee' = DATA Employee (Attendance) NONULL INDEXED;
+nameEmployee 'Employee' (Attendance a) = name(employee(a));
+employee(Attendance a) <- currentUser() WHEN SET(a IS Attendance);
+
+checkIn 'Check In'= DATA DATETIME (Attendance) NONULL INDEXED;
+checkInDate 'Check In' (Attendance a) = DATE(checkIn(a));
+checkInTime 'Check In' (Attendance a) = TIME(checkIn(a));
+
+checkOut 'Check Out' = DATA DATETIME (Attendance);
+checkOutDate 'Check Out' (Attendance a) = DATE(checkOut(a));
+checkOutTime 'Check Out' (Attendance a) = TIME(checkOut(a));
+
+seconds (Attendance a) = subtractSeconds(checkIn(a), checkOut(a));
+
+hours 'Hours' (Attendance a) = round1(seconds(a) / 3600);
+workedHours 'Hours' (Attendance a) = workedHours(seconds(a));
+
+checkInLatitude 'Latitude (Check In)'= DATA NUMERIC[11,6] (Attendance);
+checkInLongitude 'Longitude (Check In)' = DATA NUMERIC[11,6] (Attendance);
+
+checkOutLatitude 'Latitude (Check Out)'= DATA NUMERIC[11,6] (Attendance);
+checkOutLongitude 'Longitude (Check Out)' = DATA NUMERIC[11,6] (Attendance); 
+
+FORM attendance 'Attendance'
+    OBJECTS a = Attendance PANEL
+
+    PROPERTIES(a) READONLY nameEmployee, checkIn, checkOut, hours,
+                           checkInLatitude, checkInLongitude, checkOutLatitude, checkOutLongitude
+    
+    EDIT Attendance OBJECT a
+;
+
+DESIGN attendance {
+    OBJECTS {
+        NEW header {
+            alignment = STRETCH;
+            lines = 2;
+            MOVE PROPERTY(nameEmployee(a));
+            MOVE PROPERTY(hours(a));
+        }
+        NEW checkIn {
+            caption = 'Check In';
+            MOVE PROPERTY(checkIn(a));
+            MOVE PROPERTY(checkInLatitude(a));
+            MOVE PROPERTY(checkInLongitude(a));
+        }
+        NEW checkOut {
+            caption = 'Check Out';
+            MOVE PROPERTY(checkOut(a));
+            MOVE PROPERTY(checkOutLatitude(a));
+            MOVE PROPERTY(checkOutLongitude(a));
+        }
+    }
+}
+
+FORM attendances 'Attendances'
+    OBJECTS a = Attendance
+    PROPERTIES(a) READONLY name = nameEmployee, checkIn, checkOut, hours, 
+                           latitude = checkInLatitude, longitude = checkInLongitude, checkOutLatitude, checkOutLongitude
+    PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE
+
+    FILTERGROUP active
+        FILTER 'Opened' NOT checkOut(a) 'F8' DEFAULT
+        FILTER 'Closed' checkOut(a) 'F7'
+;
+
+NAVIGATOR {
+    operations {
+        NEW attendances;
+    }    
+}
+
+// actions
+lastAttendance (Employee e) = GROUP LAST Attendance a IF employee(a) = e ORDER checkIn(a), a;
+checkOutLastAttendance (Employee e) = checkOut(lastAttendance(e));
+
+lastAttendance () = lastAttendance(currentUser());
+checkInTimeLastAttendance 'Check In' () = checkInTime(lastAttendance());
+checkOutLastAttendance () = checkOut(lastAttendance());
+openedLastAttendance () = lastAttendance() AND NOT checkOutLastAttendance();
+
+secondsLastAttendance (Employee e) = subtractSeconds(checkIn(lastAttendance(e)), currentDateTime());
+
+workedHoursLastAttendance 'Hours' (Employee e) = workedHours(secondsLastAttendance(e)); 
+workedHoursLastAttendance 'Hours' () = workedHoursLastAttendance(currentUser());
+
+attendance (Employee e, Month m) = 
+    GROUP SUM seconds(Attendance a) IF employee(a) = e AND extractMonth(checkInDate(a)) = m;
+attendance (Employee e, INTEGER y, INTEGER w) = 
+    GROUP SUM seconds(Attendance a) IF employee(a) = e AND extractYear(checkInDate(a)) = y AND extractWeek(checkInDate(a)) = w;
+
+attendanceThisMonth 'Month' (Employee e) = attendance(e, extractMonth(currentDate()));
+attendanceThisWeek 'Week' (Employee e) = attendance(e, extractYear(currentDate()), extractWeek(currentDate()));
+
+attendanceThisMonth 'Month' () = attendanceThisMonth(currentUser());
+attendanceThisWeek 'Week' () = attendanceThisWeek(currentUser());
