@@ -63,6 +63,8 @@ assigned (Project p, Employee e, DATE d) = GROUP SUM 1 IF active(ProjectAssignme
 assigned (Project p, Employee e) = assigned(p, e, currentDate()) MATERIALIZED;
 countEmployees (Project p) = GROUP SUM 1 IF assigned(p, Employee e);
 
+assigned (Employee e, DATE from, DATE to) = GROUP SUM 1 IF fromDate(ProjectAssignment a) <= to AND NOT toDate(a) < from AND employee(a) = e;
+
 calcDefaultProject (Employee e) = GROUP LAST Project p ORDER p WHERE assigned(p, e);
 countProjects (Employee e) = GROUP SUM 1 IF assigned(Project p, e);
 
