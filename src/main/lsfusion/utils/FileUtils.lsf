@@ -89,6 +89,9 @@ META defineObjectFiles(object, fobj, classCaption)
     name '{Name}' = DATA ISTRING (###object##File) CHARWIDTH 15;
     extension 'Extension' = DATA ISTRING (###object##File) CHARWIDTH 5;
     nameExtension (###object##File f) = CONCAT '.', name(f), extension(f);
+    
+    fileExtension (###object##File f) = file(file(f), extension(f));
+    namedFile (###object##File f) = namedFile(file(f), name(f), extension(f));
 
     description 'Description' = DATA ISTRING (###object##File) CHARWIDTH 20;
 
@@ -132,7 +135,7 @@ META defineObjectFiles(object, fobj, classCaption)
         
     download###object##File (LONG id) {
         FOR LONG(###object##File f AS ###object##File) = id DO {
-            exportNamedFile() <- namedFile(file(f), name(f), extension(f));
+            exportNamedFile() <- namedFile(f);
         } 
     } @@api;
         
