@@ -1,6 +1,6 @@
 MODULE Activity;
 
-REQUIRE Employee, ActivityType;
+REQUIRE Employee, ActivityType, Doc;
 
 NAMESPACE MasterData;
 
@@ -125,9 +125,9 @@ FORM activities 'Activities'
     PROPERTIES newActivity(at) COLUMNS (at) HEADER name(at)
 
     OBJECTS a = Activity CALENDAR
-    PROPERTIES(a) date = dueDate, time
-    PROPERTIES READONLY name = HTML(CONCAT ' ', period(a),  '<b>' + nameType(a) + '</b>', name(a), '- <i>' + typeNameObject(a) + '</i>')
-    PROPERTIES(a) READONLY nameType, gname = name, nameObject, nameAssignedTo, done
+    PROPERTIES(a) READONLY BACKGROUND RGB(224,255,224) IF done(a)
+                           date = dueDate CHANGEABLE, time, till,
+                           nameType, gname = name, nameObject, nameAssignedTo, done
     PROPERTIES(a) READONLY PANEL pnameType = nameType, pname = name, pdescription = description
     PROPERTIES(a) peditObject = editObject HEADER typeNameObject(a)
     PROPERTIES(a) PANEL setDone, edit = EDIT, delete = DELETE
@@ -136,35 +136,63 @@ FORM activities 'Activities'
     FILTERGROUP active
         FILTER 'Opened' NOT done(a) DEFAULT
     
-    FILTERGROUP my
-        FILTER 'Assigned to me' assignedTo(a) = currentUser() 'F5' DEFAULT
-    
     LIST Activity OBJECT a
 ;
 
 DESIGN activities {
     OBJECTS {
-        NEW header FIRST {
-            MOVE PROPERTY(newActivity(at));
-        }
-        GRID(a) {
-            size = (600, 400);
-            MOVE PROPERTY(pnameType);
-            MOVE PROPERTY(pname);
-            MOVE PROPERTY(peditObject);
-            MOVE PROPERTY(pdescription) {
-                panelCaptionVertical = TRUE;
-                fill = 1;
-            }
+        NEW header {
+            alignment = STRETCH;
+            horizontal = TRUE;
             NEW actions {
-                horizontal = TRUE;
+                fill = 1;
+                MOVE PROPERTY(newActivity(at));
+            }
+            NEW filters {
                 alignment = STRETCH;
-                MOVE PROPERTY(setDone(a));
-                MOVE PROPERTY(edit);
-                MOVE PROPERTY(delete);
+                horizontal = TRUE;
+                MOVE FILTERGROUPS(a);
+            }
+        }
+        MOVE BOX(a) {
+            caption = '';
+            GRID(a) {
+                size = (600, 400);
+                MOVE PROPERTY(pnameType);
+                MOVE PROPERTY(pname);
+                MOVE PROPERTY(peditObject);
+                MOVE PROPERTY(pdescription) {
+                    panelCaptionVertical = TRUE;
+                    fill = 1;
+                }
+                NEW panelActions {
+                    horizontal = TRUE;
+                    alignment = STRETCH;
+                    MOVE PROPERTY(setDone(a));
+                    MOVE PROPERTY(edit);
+                    MOVE PROPERTY(delete);
+                }
             }
         }
     }
+}
+
+@defineDocFilter(activities, activity, ActivityType, type, a, 'Type', type);
+@defineDocFilter(activities, activity, Employee, assignedTo, a, 'Assigned to', assignedTo);
+
+EXTEND FORM activities
+    PROPERTIES READONLY name = HTML(CONCAT ' ', 
+                period(a),  
+                '<b>' + nameType(a) + '</b>' IF NOT activityType(),
+                '<u>' + nameAssignedTo(a) + '</u>' IF NOT activityAssignedTo(),
+                name(a), 
+                '- <i>' + typeNameObject(a) + '</i>')
+
+    EVENTS ON INIT { activityAssignedTo() <- currentUser(); }
+;
+
+DESIGN activities {
+    PROPERTY(name) { charWidth = 50;}
 }
 
 NAVIGATOR {
