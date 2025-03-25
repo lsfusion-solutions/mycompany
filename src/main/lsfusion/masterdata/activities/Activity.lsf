@@ -14,6 +14,11 @@ dueDate (Activity a) <- sum(currentDate(), 7) WHEN SET(a IS Activity);
 
 daysLeft (Activity a) = daysBetweenDates(dueDate(a), currentDate());
 
+time 'Time' = DATA TIME (Activity);
+till 'Till' = DATA TIME (Activity);
+
+period (Activity a) = CONCAT '-', toChar(time(a), 'HH24:MI'), toChar(till(a), 'HH24:MI');
+
 name '{Name}' = DATA ISTRING (Activity);
 
 assignedTo 'Assigned to' = DATA Employee (Activity);
@@ -44,7 +49,8 @@ countOpenedActivity (ActivityObject o) = GROUP SUM 1 IF object(Activity a) = o A
 
 FORM activity 'Activity'
     OBJECTS a = Activity PANEL
-    PROPERTIES(a) nameType, dueDate, name, nameAssignedTo, nameObject,
+    PROPERTIES(a) nameType, name, nameAssignedTo, nameObject,
+                  dueDate, time SHOWIF time(type(a)), till SHOWIF till(type(a)),
                   done, description, feedback
     
     EDIT Activity OBJECT a  
@@ -57,7 +63,12 @@ DESIGN activity {
         NEW header {
             lines = 2;
             MOVE PROPERTY(nameType(a));
-            MOVE PROPERTY(dueDate(a));
+            NEW time {
+                horizontal = TRUE;
+                MOVE PROPERTY(dueDate(a));
+                MOVE PROPERTY(time(a));
+                MOVE PROPERTY(till(a));
+            }
             MOVE PROPERTY(name(a));
             MOVE PROPERTY(nameAssignedTo(a));
             MOVE PROPERTY(nameObject(a));
@@ -114,12 +125,13 @@ FORM activities 'Activities'
     PROPERTIES newActivity(at) COLUMNS (at) HEADER name(at)
 
     OBJECTS a = Activity CALENDAR
-    PROPERTIES(a) date = dueDate
-    PROPERTIES READONLY name = HTML(CONCAT ' ', '<b>' + nameType(a) + '</b>', name(a), '- <i>' + typeNameObject(a) + '</i>')
+    PROPERTIES(a) date = dueDate, time
+    PROPERTIES READONLY name = HTML(CONCAT ' ', period(a),  '<b>' + nameType(a) + '</b>', name(a), '- <i>' + typeNameObject(a) + '</i>')
     PROPERTIES(a) READONLY nameType, gname = name, nameObject, nameAssignedTo, done
     PROPERTIES(a) READONLY PANEL pnameType = nameType, pname = name, pdescription = description
     PROPERTIES(a) peditObject = editObject HEADER typeNameObject(a)
     PROPERTIES(a) PANEL setDone, edit = EDIT, delete = DELETE
+    ORDERS date, time(a)
 
     FILTERGROUP active
         FILTER 'Opened' NOT done(a) DEFAULT
