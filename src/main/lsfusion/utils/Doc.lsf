@@ -179,14 +179,14 @@ META defineDocStatusChange (obj, capt)
     previous (###obj##StatusChange c) = PARTITION PREV c ORDER dateTime(c), c BY obj(c);
     dateTimePrevious (###obj##StatusChange c) = dateTime(previous(c));
     secondsBefore (###obj##StatusChange c) = subtractSeconds(dateTimePrevious(c), dateTime(c));
-    hoursBefore 'Hours before' (###obj##StatusChange c) = round2(secondsBefore(c) / 3600);
+    hoursBefore 'Hours before' (###obj##StatusChange c) = round2(secondsBefore(c) / 3600.0);
 
     nameUserPrevious (###obj##StatusChange c) = nameUser(previous(c));
     
     next (###obj##StatusChange c) = PARTITION PREV c ORDER DESC dateTime(c), c BY obj(c);
     dateTimeNext  (###obj##StatusChange c) = dateTime(next(c));
     secondsAfter (###obj##StatusChange c) = subtractSeconds(dateTime(c), dateTimeNext(c));
-    hoursAfter 'Hours after' (###obj##StatusChange c) = round2(secondsAfter(c) / 3600);
+    hoursAfter 'Hours after' (###obj##StatusChange c) = round2(secondsAfter(c) / 3600.0);
     
     nameUserNext (###obj##StatusChange c) = nameUser(next(c));
         
@@ -196,10 +196,10 @@ META defineDocStatusChange (obj, capt)
     nameUserLastChange 'User' (###obj o, ###obj###Status s) = nameUser(lastChange(o, s));
 
     secondsBefore (###obj o, ###obj###Status s) = GROUP SUM secondsBefore(###obj##StatusChange sc) IF obj(sc) = o AND status(sc) = s;
-    hoursBefore 'Hours before' (###obj o, ###obj###Status s) = round2(secondsBefore(o, s) / 3600);
+    hoursBefore 'Hours before' (###obj o, ###obj###Status s) = round2(secondsBefore(o, s) / 3600.0);
 
     secondsAfter (###obj o, ###obj###Status s) = GROUP SUM secondsAfter(###obj##StatusChange sc) IF obj(sc) = o AND status(sc) = s;
-    hoursAfter 'Hours after' (###obj o, ###obj###Status s) = round2(secondsAfter(o, s) / 3600);
+    hoursAfter 'Hours after' (###obj o, ###obj###Status s) = round2(secondsAfter(o, s) / 3600.0);
         
     WHEN SETCHANGED(status(###obj o)) DO 
         NEW sc = ###obj##StatusChange {

@@ -11,6 +11,9 @@ nameCustomer 'Partner' (Attendance e) = namePartner(project(e));
 countAttendance 'Attendances' (Project p) = GROUP SUM 1 IF project(Attendance a) = p MATERIALIZED;
 hoursAttendance 'Hours' (Project p) = GROUP SUM hours(Attendance a) IF project(a) = p MATERIALIZED;
 
+hoursAttendance 'Hours' (Project p, Employee e, DATE d) = 
+    GROUP SUM hours(Attendance a) IF project(a) = p AND employee(a) = e AND checkInDate(a) = d;
+
 EXTEND FORM attendance
     PROPERTIES(a) nameProject
 ;

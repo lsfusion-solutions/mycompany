@@ -23,7 +23,7 @@ checkOutTime 'Check Out' (Attendance a) = TIME(checkOut(a));
 
 seconds (Attendance a) = subtractSeconds(checkIn(a), checkOut(a));
 
-hours 'Hours' (Attendance a) = round1(seconds(a) / 3600);
+hours 'Hours' (Attendance a) = round1(seconds(a) / 3600.0);
 workedHours 'Hours' (Attendance a) = workedHours(seconds(a));
 
 checkInLatitude 'Latitude (Check In)'= DATA NUMERIC[11,6] (Attendance);
@@ -95,9 +95,9 @@ workedHoursLastAttendance 'Hours' (Employee e) = workedHours(secondsLastAttendan
 workedHoursLastAttendance 'Hours' () = workedHoursLastAttendance(currentUser());
 
 attendance (Employee e, Month m) = 
-    round1((GROUP SUM seconds(Attendance a) IF employee(a) = e AND extractMonth(checkInDate(a)) = m) / 3600);
+    round1((GROUP SUM seconds(Attendance a) IF employee(a) = e AND extractMonth(checkInDate(a)) = m) / 3600.0);
 attendance (Employee e, INTEGER y, INTEGER w) = 
-    round1((GROUP SUM seconds(Attendance a) IF employee(a) = e AND extractYear(checkInDate(a)) = y AND extractWeek(checkInDate(a)) = w) / 3600);
+    round1((GROUP SUM seconds(Attendance a) IF employee(a) = e AND extractYear(checkInDate(a)) = y AND extractWeek(checkInDate(a)) = w) / 3600.0);
 
 attendanceThisMonth 'Month' (Employee e) = attendance(e, extractMonth(currentDate()));
 attendanceThisWeek 'Week' (Employee e) = attendance(e, extractYear(currentDate()), extractWeek(currentDate()));
