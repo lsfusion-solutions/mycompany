@@ -1,0 +1,67 @@
+MODULE ShipmentPickingTask;
+
+REQUIRE ShipmentDone, ShipmentSearch, PickingTask;
+
+NAMESPACE Inventory;
+
+// type
+pickingTask 'Picking task' = DATA BOOLEAN (ShipmentType);
+EXTEND FORM shipmentType PROPERTIES(o) pickingTask;
+
+pickingTask 'Picking task' (Shipment s) = DATA BOOLEAN (Shipment);
+pickingTask (Shipment s) <- pickingTask(type(s)) WHEN CHANGED(type(s));
+
+CLASS ShipmentPickingTask 'Picking task' : PickingTask;
+shipmentPickingTask = AGGR ShipmentPickingTask WHERE pickingTask(Shipment shipment) AND ready(shipment);
+
+dateTime(ShipmentPickingTask t) += scheduledDateTime(shipment(t));
+number(ShipmentPickingTask t) += number(shipment(t));
+
+partner(ShipmentPickingTask t) += customer(shipment(t));
+
+location(ShipmentPickingTask t) += location(shipment(t));
+
+quantity(ShipmentPickingTask t, Product p) += initialDemand(shipment(t), p);
+
+donePicking 'Picking' (Shipment s) = done(shipmentPickingTask(s));
+
+setDone (ShipmentPickingTask t) +{
+    FOR picked(t, Product p) AND NOT lastShipmentLine(shipment(t), p) NEW l = ShipmentLine DO {
+        shipment(l) <- shipment(t);
+        product(l) <- p;
+    } 
+    done(ShipmentLine l) <- picked(t, product(l)) WHERE shipment(l) = shipment(t) AND l = lastShipmentLine(shipment(t), product(l));
+}
+
+EXTEND FORM shipment
+    PROPERTIES(s) pickingTask SHOWIF pickingTask(type(s))
+
+    OBJECTS spt = ShipmentPickingTask PANEL
+    PROPERTIES(spt) done, markAsDone SHOWIF NOT done(spt)
+    FILTERS shipmentPickingTask(s) = spt
+    
+    OBJECTS pl = PickingLine
+    PROPERTIES(pl) READONLY dateTime, nameUser 
+    PROPERTIES(pl) READONLYIF done(spt) nameProduct, idBarCodeProduct, quantity
+    PROPERTIES(pl) READONLYIF done(spt) NEW, DELETE
+    FILTERS task(pl) = spt
+;
+
+DESIGN shipment {
+    details {
+        NEW picking {
+            caption = badged('Picking', countLines(spt));
+            NEW pickingHeader {
+                horizontal = TRUE;
+                MOVE PROPERTY(pickingTask(s));
+                MOVE PROPERTY(done(spt));
+                MOVE PROPERTY(markAsDone(spt));
+            }
+            MOVE BOX(pl) { caption = ''; }                
+        }
+    }
+}
+
+EXTEND FORM shipments
+    PROPERTIES(s) READONLY donePicking
+;

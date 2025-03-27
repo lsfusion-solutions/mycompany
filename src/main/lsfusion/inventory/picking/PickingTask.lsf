@@ -1,0 +1,80 @@
+MODULE PickingTask;
+
+REQUIRE InventorySettings, Location, Partner, Product, BarCode;
+
+NAMESPACE Inventroy;
+
+CLASS ABSTRACT PickingTask 'Picking task';
+TABLE pickingTask (PickingTask);
+
+dateTime 'Date' = ABSTRACT DATETIME (PickingTask) MATERIALIZED INDEXED;
+number 'Number' = ABSTRACT STRING[31] (PickingTask) CHARWIDTH 10 MATERIALIZED;
+
+partner = ABSTRACT Partner (PickingTask) MATERIALIZED;
+namePartner 'Partner' (PickingTask t) = name(partner(t));
+
+location = ABSTRACT Location (PickingTask) MATERIALIZED;
+
+done 'Done' = DATA BOOLEAN (PickingTask);
+
+INDEX done(PickingTask t), dateTime(t);
+
+setDone ABSTRACT LIST (PickingTask);
+
+markAsDone 'Mark as Done' (PickingTask t) {
+    APPLY;
+    IF canceled() THEN CANCEL;
+    
+    NEWSESSION {
+        done(t) <- TRUE;
+        setDone(t);
+        APPLY;
+    }
+} CONFIRM;
+
+// product
+
+quantity 'Quantity' = ABSTRACT NUMERIC[16,3] (PickingTask, Product);
+
+// extra description
+property = ABSTRACT VALUE ISTRING (PickingTask, Product, STRING);
+propertiesHtmlList (PickingTask t, Product p) =
+    HTML('<ul>' +
+        (GROUP CONCAT ('<li><div style="color:#959595">' + STRING pr + '</div>' + property(t, p, pr) + '</li>'), ''
+        ORDER pr) +
+        '</ul>');
+
+property(PickingTask t, Product p, STRING pr) += nameCategory(p) IF t IS PickingTask AND pr = 'Category';
+property(PickingTask t, Product p, STRING pr) += nameUom(p) IF t IS PickingTask AND pr = 'UoM';
+property(PickingTask t, Product p, STRING pr) += nameCountryOrigin(p) IF t IS PickingTask AND pr = 'Country of origin';
+// lines
+
+CLASS PickingLine 'Picking line';
+TABLE pickingLine (PickingLine);
+
+task 'Picking task' = DATA PickingTask (PickingLine) NONULL;
+countLines (PickingTask t) = GROUP SUM 1 IF task(PickingLine l) = t;
+
+product 'Product' (PickingLine l) = DATA Product (PickingLine) NONULL;
+nameProduct 'Product' (PickingLine l) = name(product(l));
+idBarCodeProduct 'Barcode' (PickingLine l) = idBarCode(product(l));
+
+quantity 'Quantity' = DATA NUMERIC[16,3] (PickingLine);
+
+picked (PickingTask t, Product p) = GROUP SUM quantity(PickingLine l) IF task(l) = t AND product(l) = p;
+left 'Left' (PickingTask t, Product p) = quantity(t, p) (-) picked(t, p);
+
+user = DATA CustomUser (PickingLine);
+nameUser 'User' (PickingLine s) = name(user(s));
+user(PickingLine s) <- currentUser() WHEN SET(s IS PickingLine);
+
+dateTime 'Date' = DATA DATETIME (PickingLine);
+dateTime(PickingLine s) <- currentDateTime() WHEN SET(s IS PickingLine);
+time 'Time' (PickingLine s) = TIME(dateTime(s));
+
+FORM pickingTasks 'Picking tasks'
+    OBJECTS t = PickingTask
+    PROPERTIES(t) READONLY dateTime, number, namePartner
+    
+    LIST PickingTask OBJECT t
+;

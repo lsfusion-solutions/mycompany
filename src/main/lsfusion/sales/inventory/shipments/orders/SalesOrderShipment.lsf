@@ -13,6 +13,9 @@ EXTEND FORM orderType PROPERTIES nameShipmentType(o);
 // relation
 @defineDocLineRelation(order, shipment, '{Order}', 'Shipment', o, s);
 
+priceOrder 'Price' (ShipmentLine l) = price(orderLine(l));
+discountPriceOrder 'Discount price' (ShipmentLine l) = discountPrice(orderLine(l));
+
 reserved 'Reserved' (OrderLine ol) = 
     GROUP SUM reserved(ShipmentLine rl) IF orderLine(rl) = ol AND toReserve(shipment(rl));
 

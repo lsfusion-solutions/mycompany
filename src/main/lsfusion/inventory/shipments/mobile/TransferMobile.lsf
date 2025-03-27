@@ -69,36 +69,23 @@ DESIGN transferMobile {
 @defineCategoryFilter(transferMobile, p, filters);
 
 // keyboard
-setQuantity(Product p, INTEGER n) { quantity(p) <- n IF n > 0; }
-
-increaseQuantity '+' (Product p) { quantity(p) <- quantity(p) (+) 1; }
-decreaseQuantity '-' (Product p) { quantity(p) <- quantity(p) (-) 1; }
-
-setOnHandQuantity '#' (Location l, Product p) { quantity(p) <- onHand(l, p); } CHANGEMOUSE 'DBLCLCK';
-
-EXTEND FORM transferMobile
-    PROPERTIES(p) increaseQuantity, decreaseQuantity
-    
-    PROPERTIES(l, p) setOnHandQuantity 
-;
-
 DESIGN transferMobile {
     OBJECTS {
-        NEW quantityActions {
-            horizontal = TRUE;
-            alignment = STRETCH;
-            NEW searchKeyboard {
-                fill = 1;
-                lines = 5;
-            }
-            MOVE PROPERTY(increaseQuantity(p)) { fill = 1; focusable = FALSE; }
-            MOVE PROPERTY(decreaseQuantity(p)) { fill = 1; focusable = FALSE; }
-            MOVE PROPERTY(setOnHandQuantity(l, p)) { fill = 1; focusable = FALSE; }
-        }
+        NEW quantityPane { alignment = STRETCH; }
     }
 }
+@defineKeyboardQuantity(transferMobile, Product, p, quantityPane, 16);
 
-@defineKeyboard(transferMobile, Product, p, searchKeyboard, 16, setQuantity);
+setOnHandQuantity '#' (Location l, Product p) { quantity(p) <- onHand(l, p); };
+
+EXTEND FORM transferMobile
+    PROPERTIES(l, p) setOnHandQuantity
+;
+DESIGN transferMobile {
+    quantityActions {
+        MOVE PROPERTY(setOnHandQuantity(l, p)) { fill = 1; fontSize = 16; focusable = FALSE; }
+    }
+}
 
 // actions
 createTransfer 'Move' (ShipmentType t, Location from) {
