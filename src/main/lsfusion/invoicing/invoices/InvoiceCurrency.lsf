@@ -19,6 +19,9 @@ WHEN LOCAL SETCHANGED(type(Invoice b)) AND currency(type(b)) AND NOT CHANGED(cur
 currency (InvoiceLine l) = currency(invoice(l));
 nameCurrency 'Currency' (InvoiceLine l) = nameCurrency(invoice(l));
 
+currencyDate = ABSTRACT VALUE DATE (Invoice);
+currencyDate(Invoice i) += date(i);
+
 EXTEND FORM invoice
     PROPERTIES(i) nameCurrency
 ;
@@ -39,7 +42,7 @@ clone (Invoice to, Invoice from) + {
 
 // exchange rate
 
-rate1 (Invoice b) = rate1(currency(b), date(b));
+rate1 (Invoice i) = rate1(currency(i), currencyDate(i));
 rate1 (InvoiceLine l) = rate1(invoice(l));
 
 currencyAmount 'Currency base amount' (InvoiceLine l) = NUMERIC[14,2](amount(l) * rate1(l));
