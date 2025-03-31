@@ -32,7 +32,8 @@ function activities() {
 
                 let dueDate = document.createElement("div")
                 dueDate.classList.add("activity-due-date");
-                dueDate.innerHTML = activity.dueDate;
+                dueDate.setAttribute("title", activity.dueDate);
+                dueDate.innerHTML = activity.textDateDuration;
                 activityHeader.appendChild(dueDate);
 
                 let type = document.createElement("div")

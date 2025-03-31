@@ -1,6 +1,6 @@
 MODULE Activity;
 
-REQUIRE Employee, ActivityType, Doc;
+REQUIRE Employee, ActivityType, Doc, DateUtils;
 
 NAMESPACE MasterData;
 
@@ -13,6 +13,8 @@ dueDate 'Due date' = DATA DATE (Activity);
 dueDate (Activity a) <- sum(currentDate(), 7) WHEN SET(a IS Activity);
 
 daysLeft (Activity a) = daysBetweenDates(dueDate(a), currentDate());
+
+textDateDuration (Activity a) = textDateDuration(dueDate(a));
 
 time 'Time' = DATA TIME (Activity);
 till 'Till' = DATA TIME (Activity);
@@ -213,7 +215,7 @@ META defineObjectActivity (obj, let, container, nameProp)
 
     EXTEND FORM obj
         OBJECTS act = Activity CUSTOM 'activities'
-        PROPERTIES(act) nameType, dueDate, daysLeft, name, nameAssignedTo, description, done
+        PROPERTIES(act) nameType, dueDate, textDateDuration, daysLeft, name, nameAssignedTo, description, done
         PROPERTIES setDone(act),
                    editAct = edit(act) ON CHANGE {
                         SHOW activity OBJECTS a = act FLOAT;

@@ -25,7 +25,8 @@ function comments() {
 
                 let time = document.createElement("div")
                 time.classList.add("comments-time");
-                time.innerHTML = comment.dateTime;
+                time.innerHTML = comment.textTimeDuration;
+                time.setAttribute("title", comment.dateTime);
                 statusHeader.appendChild(time);
 
                 let editButton = document.createElement("button");

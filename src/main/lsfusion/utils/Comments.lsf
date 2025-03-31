@@ -1,6 +1,6 @@
 MODULE Comments;
 
-REQUIRE SystemEvents;
+REQUIRE SystemEvents, DateUtils;
 
 NAMESPACE Utils;
 
@@ -19,6 +19,8 @@ META defineObjectComments (obj, let, container)
     
     dateTime 'Date' = DATA DATETIME (###obj##Comment);
     dateTime(###obj##Comment f) <- currentDateTime() WHEN SET(f IS ###obj##Comment);
+
+    textTimeDuration (###obj##Comment c) = textTimeDuration(dateTime(c));
     
     user = DATA User (###obj##Comment);
     nameUser 'User' (###obj##Comment f) = name(user(f));
@@ -45,7 +47,7 @@ META defineObjectComments (obj, let, container)
     EXTEND FORM obj
         OBJECTS cmt = ###obj##Comment CUSTOM 'comments'
         PROPERTIES id = VALUE(cmt)
-        PROPERTIES(cmt) nameUser, dateTime, text = html
+        PROPERTIES(cmt) nameUser, textTimeDuration, dateTime, text = html
         PROPERTIES(cmt) edit ON CHANGE {
             SHOW edit###obj##Comment OBJECTS c = cmt;
         },
