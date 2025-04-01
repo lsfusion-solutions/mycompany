@@ -5,8 +5,10 @@ REQUIRE Time, Utils;
 NAMESPACE Utils;
 
 secondsTimeDuration = FORMULA LONG 'abs(extract (\'epoch\' from (LOCALTIMESTAMP - ($1)))::bigint)';
-wordsTimeDuration = FORMULA STRING 'CASE WHEN ($1) < 60 THEN ($1)||\'s\' WHEN ($1)/60 < 60 THEN ($1)/60||\'m\' WHEN ($1)/3600 < 24 THEN ($1)/3600||\'h\' WHEN ($1)/86400 < 30 THEN ($1)/86400||\'d\' WHEN ($1)/2592000 < 12 THEN ($1)/2592000||\'m\' ELSE ($1)/31536000||\'y\' END';
-textTimeDuration (DATETIME dt) = CONCAT '', '{In} ' IF currentDateTime() < dt, wordsTimeDuration(secondsTimeDuration(dt)), ' {ago}' IF currentDateTime() >= dt;
+wordsTimeDuration = FORMULA STRING 'CASE WHEN ($1) < 60 THEN ($1)||\'s\' WHEN ($1)/60 < 60 THEN ($1)/60||\'m\' WHEN ($1)/3600 < 24 THEN ($1)/3600||\'h\' WHEN ($1)/86400 < 30 THEN ($1)/86400||\'d\' WHEN ($1)/2592000 < 12 THEN ($1)/2592000||\'n\' ELSE ($1)/31536000||\'y\' END';
+wordsI18nTimeDuration (LONG s) = replace(replace(replace(replace(replace(replace(wordsTimeDuration(s), r's', '{second_fl}'), r'm', '{minute_fl}'), r'h', '{hour_fl}'), r'd', '{day_fl}'), r'n', '{month_fl}'), r'y', '{year_fl}');
+
+textTimeDuration (DATETIME dt) = CONCAT '', '{In} ' IF currentDateTime() < dt, wordsI18nTimeDuration(secondsTimeDuration(dt)), ' {ago}' IF currentDateTime() >= dt;
 
 wordsDateDuration = FORMULA STRING 'CASE WHEN ($1) < 30 THEN ($1)||\'d\' WHEN ($1)/30 < 12 THEN ($1)/30||\'m\' ELSE ($1)/360||\'y\' END';
 textDateDuration (DATE d) = CONCAT '', '{In} ' IF currentDate() < d, (IF currentDate() = d THEN 'Today' ELSE wordsDateDuration(abs(daysBetweenDates(d, currentDate())))), ' {ago}' IF currentDate() > d;
