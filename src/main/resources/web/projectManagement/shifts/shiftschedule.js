@@ -98,6 +98,9 @@ function shiftSchedule() {
             element.scheduleTable.appendChild(body);
 
             for (const employee of employees) {
+                if (!employee) {
+                    continue;
+                }
                 let row = document.createElement("tr");
                 row.classList.add("shift-schedule-row");
 
