@@ -215,13 +215,17 @@ DESIGN manufacturingOrder {
 }
 
 @defineDocHistoryHeader(manufacturingOrder, scheduledDateTime);
+@defineHistoryProperty(manufacturingOrder, item, 'Item', nameItem);
+@defineHistoryProperty(manufacturingOrder, company, 'Company', nameCompany);
+@defineHistoryProperty(manufacturingOrder, responsible, 'Responsible', nameResponsible);
+
+@defineHistoryProperty(manufacturingOrder, toManufacture, '{Manufacture}');
 
 @defineDocHistoryLine(manufacturingOrder, ConsumedLine, item);
 @defineDocHistoryLineProperty(manufacturingOrder, ConsumedLine, toConsume, 'To consume', nameItem);
 
 @defineDocHistoryLine(manufacturingOrder, FinishedLine, item);
 @defineDocHistoryLineProperty(manufacturingOrder, FinishedLine, toProduce, '{Manufacture}', nameItem);
-
 
 background = ABSTRACT CASE COLOR (ManufacturingOrder);
 
@@ -244,6 +248,8 @@ FORM manufacturingOrders 'Manufacturing orders'
 @defineDocObjectsForm(manufacturingOrders, o, 'Orders');
 @defineDocStatusForm(manufacturingOrder, o);
 @defineDocLocationAccess(manufacturingOrder, o, materials);
+
+@defineHistoryForm(manufacturingOrder, manufacturingOrder, o);
 
 @defineObjectComments(manufacturingOrder, o, details);
 

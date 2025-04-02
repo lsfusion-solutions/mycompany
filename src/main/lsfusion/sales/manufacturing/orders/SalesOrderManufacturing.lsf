@@ -50,6 +50,8 @@ EXTEND FORM manufacturingOrders
     PROPERTIES(o) READONLY numberDateSalesOrder
 ;
 
+fill ABSTRACT LIST (ManufacturingOrder, OrderLine);
+
 newManufacturingOrder (OrderLine l) {
     NEW o = ManufacturingOrder { 
         orderLine(o) <- l;
@@ -64,6 +66,8 @@ newManufacturingOrder (OrderLine l) {
         bom(o) <- bom(l);
         
         fillByQuantity(o, quantity(l));
+        
+        fill(o, l);
     }
 }
 
