@@ -1,0 +1,11 @@
+MODULE SalesOrderManufacturingReport;
+
+REQUIRE SalesOrderManufacturing, ManufacturingOrderReport;
+
+NAMESPACE Sales;
+
+markupAmount 'Markup' (ManufacturingOrder o) = untaxedAmount(o) (-) totalCost(o);
+
+EXTEND FORM manufacturingOrderReport
+    PROPERTIES(o) READONLY MEASURE markupAmount, untaxedAmount, taxAmount, amount
+;
