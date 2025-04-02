@@ -1,0 +1,44 @@
+MODULE ManufacturingOrderScrap;
+
+REQUIRE ManufacturingOrderDone, Scrap;
+
+NAMESPACE Manufacturing;
+
+scrapType = DATA ScrapType (ManufacturingOrderType);
+nameScrapType 'Scrap type' (ManufacturingOrderType t) = name(scrapType(t));
+EXTEND FORM manufacturingOrderType PROPERTIES nameScrapType(o);
+
+@defineDocRelation(manufacturingOrder, scrap, 'Manufacturing order', 'Scrap', o, s, );
+
+scrap 'Scrap' (ManufacturingOrder o) {
+    NEWSESSION {
+        NEW s = Scrap {
+            manufacturingOrder(s) <- o;
+            location(s) <- materialsLocation(o);
+            SHOW scrap OBJECTS s = s DOCKED;
+        }
+    }
+}
+
+EXTEND FORM manufacturingOrder
+    PROPERTIES(o) scrap SHOWIF scrapType(type(o))
+
+    OBJECTS sc = Scrap
+    PROPERTIES(sc) READONLY number, dateTime, imagedNameStatus BACKGROUND colorStatus(sc), nameType
+    PROPERTIES(sc) NEWSESSION EDIT GRID
+    FILTERS manufacturingOrder(sc) = o
+;
+
+DESIGN manufacturingOrder {
+    secondaryActions {
+        MOVE PROPERTY (scrap(o)) { valueClass = 'btn-warning'; }
+    }
+
+    relatedDoc {
+        MOVE BOX(sc) {
+            caption = badged('Scraps', countScraps(o));
+            GRID(sc) { size = (100, -1); }
+        }
+        REMOVE TOOLBARSYSTEM(sc);
+    }
+}

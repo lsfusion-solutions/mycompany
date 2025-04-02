@@ -457,6 +457,30 @@ META defineDocRelation(docTo, docFrom, captTo, captFrom, objTo, objFrom)
     ;
 END
 
+META defineDocRelation(docTo, docFrom, captTo, captFrom, objTo, objFrom, prefix)
+    docTo = DATA ###docTo (###docFrom) INDEXED;
+
+    count###docFrom##s (###docTo i) = GROUP SUM 1 IF docTo(###docFrom s) = i MATERIALIZED;
+
+    numberDate###docTo captTo (###docFrom s) = numberDate(docTo(s));
+    numberDate###docFrom##s captFrom (###docTo s) = GROUP CONCAT numberDate(###docFrom i) IF docTo(i) = s, ',' ORDER i CHARWIDTH 30;
+
+    EXTEND FORM docFrom
+        PROPERTIES(objFrom) prefix###numberDate###docTo = numberDate###docTo
+    ;
+    DESIGN docFrom {
+        footer {
+            MOVE PROPERTY(prefix###numberDate###docTo);
+        }
+    }
+    EXTEND FORM docFrom##s
+        PROPERTIES(objFrom) READONLY prefix###numberDate###docTo = numberDate###docTo
+    ;
+    EXTEND FORM docTo##s
+        PROPERTIES(objTo) READONLY numberDate###docFrom##s
+    ;
+END
+
 META defineDocLineRelation(docTo, docFrom, docFromLine, captTo, captFrom, objTo, objFrom, prefix)
     docTo##Line = DATA ###docTo##Line (###docFromLine) INDEXED;
     
