@@ -557,14 +557,12 @@ META defineDocLinesCount(doc, d)
     EXTEND FORM doc##s PROPERTIES(d) READONLY count###doc###Line;
 END
 
-META defineDocFilter(form, doc, cls, property, obj, capt, filterProperty)
+META defineDocFilterProperty(form, doc, cls, property, obj, capt, filterProperty)
     doc###property = DATA LOCAL NESTED cls ();
     name###doc###property capt = name(doc###property());
 
     EXTEND FORM form
         PROPERTIES() name###doc###property
-
-        FILTERS filterProperty(obj) = doc###property() OR NOT doc###property()
     ;
 
     DESIGN form {
@@ -572,7 +570,14 @@ META defineDocFilter(form, doc, cls, property, obj, capt, filterProperty)
             MOVE PROPERTY(name###doc###property()) { caption = ''; placeholder = capt; };
         }
     }
+END
+
+META defineDocFilter(form, doc, cls, property, obj, capt, filterProperty)
+    @defineDocFilterProperty(form, doc, cls, property, obj, capt, filterProperty);
     
+    EXTEND FORM form
+        FILTERS filterProperty(obj) = doc###property() OR NOT doc###property()
+    ;
 END
 
 META defineDocFilter(doc, cls, property, obj, capt, filterProperty)
