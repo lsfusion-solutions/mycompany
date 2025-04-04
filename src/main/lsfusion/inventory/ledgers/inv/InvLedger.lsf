@@ -10,6 +10,7 @@ class 'Type' (InvLedger l) = objectClassName(l) IF l IS InvLedger CHARWIDTH 15;
 type 'Type' = ABSTRACT ISTRING[100] (InvLedger) CHARWIDTH 20 MATERIALIZED;
 
 active '{Active}' = ABSTRACT BOOLEAN (InvLedger) MATERIALIZED;
+notAccepted 'Not accepted' = ABSTRACT BOOLEAN (InvLedger) MATERIALIZED;
 dateTime 'Time' = ABSTRACT DATETIME (InvLedger) MATERIALIZED;
 number 'Number' = ABSTRACT STRING[31] (InvLedger) MATERIALIZED;
 
@@ -33,13 +34,13 @@ namePartner 'Partner' (InvLedger l) = name(partner(l));
 
 // result  
 inQuantity 'Received' (Location ll, Product p) = GROUP SUM quantity(InvLedger l) 
-                                                    IF active(l) AND toLocation(l) = ll AND product(l) = p MATERIALIZED;
+                                                    IF active(l) AND NOT notAccepted(l) AND toLocation(l) = ll AND product(l) = p MATERIALIZED;
                                                     
 inQuantityA (Location ll, Product p, DATETIME dt) = inQuantity(ll, p) (-)
-    GROUP SUM quantity(InvLedger l)  IF active(l) AND toLocation(l) = ll AND product(l) = p AND dateTime(l) > dt;
+    GROUP SUM quantity(InvLedger l)  IF active(l) AND NOT notAccepted(l) AND toLocation(l) = ll AND product(l) = p AND dateTime(l) > dt;
 
 inQuantityB (Location ll, Product p, DATETIME dt) = inQuantity(ll, p) (-)
-    GROUP SUM quantity(InvLedger l)  IF active(l) AND toLocation(l) = ll AND product(l) = p AND dateTime(l) >= dt;
+    GROUP SUM quantity(InvLedger l)  IF active(l) AND NOT notAccepted(l) AND toLocation(l) = ll AND product(l) = p AND dateTime(l) >= dt;
                                    
 outQuantity 'Quantity (sent)' (Location ll, Product p) = GROUP SUM quantity(InvLedger l) 
                                                     IF active(l) AND fromLocation(l) = ll AND product(l) = p MATERIALIZED;
@@ -71,11 +72,11 @@ locations 'Locations' (Location l, Product p) = GROUP CONCAT name(Location child
 
 // dates
 dateReceived 'Last receipt date' (Location l, Product p) = 
-    GROUP LAST dateTime(InvLedger il) ORDER dateTime(il), il WHERE toLocation(il) = l AND product(il) = p MATERIALIZED;
+    GROUP LAST dateTime(InvLedger il) ORDER dateTime(il), il WHERE active(il) AND NOT notAccepted(il) AND toLocation(il) = l AND product(il) = p MATERIALIZED;
 prevDateReceived (Location l, Product p) = PREV(dateReceived(l, p));
     
 dateShipped 'Last shipment date' (Location l, Product p) = 
-    GROUP LAST dateTime(InvLedger il) ORDER dateTime(il), il WHERE fromLocation(il) = l AND product(il) = p;
+    GROUP LAST dateTime(InvLedger il) ORDER dateTime(il), il WHERE active(il) AND fromLocation(il) = l AND product(il) = p;
     
 datePrevOperation(Location l, Product p, DATETIME dt) = 
     GROUP LAST dateTime(InvLedger il) ORDER dateTime(il), il 

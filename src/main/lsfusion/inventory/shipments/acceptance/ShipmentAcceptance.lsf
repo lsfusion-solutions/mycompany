@@ -1,0 +1,58 @@
+MODULE ShipmentAcceptance;
+
+REQUIRE ShipmentDone;
+
+NAMESPACE Inventory;
+
+EXTEND CLASS ShipmentStatus {
+    accepted 'Accepted'
+}
+accepted 'Accepted' = DATA BOOLEAN (Shipment);
+
+status(Shipment s) += WHEN accepted(s) THEN ShipmentStatus.accepted;
+
+acceptanceConfirmation 'Acceptance confirmation' = DATA BOOLEAN (Shipment);
+WHEN LOCAL CHANGED(toLocation(Shipment s)) DO 
+    acceptanceConfirmation(s) <- toLocation(s) AND NOT accessGranted(toLocation(s));
+
+accept 'Accept' (Shipment s) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    NEWSESSION {
+        accepted(s) <- TRUE;
+        APPLY;
+    }
+}
+
+toAccept (Shipment s) = status(s) = ShipmentStatus.done AND acceptanceConfirmation(s);
+
+readonly (Shipment s) += WHEN done(s) AND NOT accessGranted(location(s)) THEN TRUE;
+
+EXTEND FORM shipment
+    PROPERTIES(s) accept SHOWIF toAccept(s) AND accessGranted(toLocation(s)),
+                  accepted SHOWIF acceptanceConfirmation(s) READONLYIF NOT accessGranted(toLocation(s)),
+                  acceptanceConfirmation SHOWIF toLocation(s) READONLYIF readonly(s)
+;
+
+DESIGN shipment {
+    primaryActions {
+        MOVE PROPERTY(accept(s)) FIRST { valueClass = 'btn-primary'; }
+    }
+    statusGroup {
+        MOVE PROPERTY(accepted(s)) {
+            valueClass = 'btn-check';
+            captionClass = 'btn btn-outline-primary btn-arrow-right';
+        }
+    }
+    headerRight {
+        MOVE PROPERTY(acceptanceConfirmation(s)) AFTER PROPERTY(nameToLocation(s));
+    }
+}
+
+EXTEND FORM shipments
+    EXTEND FILTERGROUP status
+        FILTER 'Accepted' status(s) = ShipmentStatus.accepted
+;
+
+@defineSelectionAction(shipments, Shipment, accept, 'Accept', statuses);

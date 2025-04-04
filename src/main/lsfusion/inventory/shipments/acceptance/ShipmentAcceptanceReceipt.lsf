@@ -1,0 +1,31 @@
+MODULE ShipmentAcceptanceReceipt;
+
+REQUIRE ShipmentAcceptance, Receipt;
+
+NAMESPACE Inventory;
+
+EXTEND FORM receipts
+    OBJECTS s = Shipment BACKGROUND background(s)
+    PROPERTIES(s) READONLY
+                number, scheduledDateTime, executionDateTime, nameCustomer,
+                imagedNameStatus BACKGROUND colorStatus(s), nameType,
+                nameLocation, nameToLocation,
+                note, countLines
+    
+    FILTERS done(s), 
+            acceptanceConfirmation(s),
+            accessGranted(toLocation(s)) OR NOT toLocation(s)
+    
+    FILTERGROUP notAccepted
+        FILTER 'Not accepted' NOT accepted(s) DEFAULT 
+        
+    PROPERTIES(s) NEWSESSION EDIT
+;
+
+DESIGN receipts {
+    tabbedPane {
+        MOVE BOX(s) {
+            caption = 'Acceptance confirmation';
+        }
+    }
+}
