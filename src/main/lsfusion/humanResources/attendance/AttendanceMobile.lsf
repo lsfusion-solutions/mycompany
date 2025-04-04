@@ -5,9 +5,10 @@ REQUIRE Attendance, Mobile, GeoUtils;
 NAMESPACE HumanResources;
 
 FORM attendanceMobile 'Attendance'
+    PROPERTIES '' = error() SHOWIF error() 
     PROPERTIES() READONLY 'Geolocation' = latitude, '' = longitude
-    PROPERTIES getCurrentPosition = JSON FROM 
-                    timestamp = timestamp(), cacheTimeout = 60, enableHighAccuracy = TRUE, timeout = 5000, maximumAge = 0
+    PROPERTIES getCurrentPosition = OVERRIDE getCurrentPositionOptions(), (JSON FROM 
+                    timestamp = timestamp(), cacheTimeout = 60, enableHighAccuracy = TRUE, timeout = 5000, maximumAge = 0)
                     CUSTOM 'getCurrentPosition_mc' ON CHANGE changeCurrentPosition_mc()
 
     OBJECTS a = Attendance
@@ -67,6 +68,10 @@ DESIGN attendanceMobile {
     OBJECTS {
         class = '';
         border = FALSE;
+        MOVE PROPERTY(error()) {
+            alignment = STRETCH;
+            background = #FFAAAA;
+        }
         NEW geolocation {
             alignment = STRETCH;
             horizontal = TRUE;

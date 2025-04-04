@@ -8,6 +8,7 @@ function getCurrentPosition_mc() {
                 navigator.geolocation.getCurrentPosition(function (pos) {
                     controller.changeValue(pos);
                 }, function (err) {
+                    controller.changeValue({ timestamp : Date.now(), errorCode : err.code, errorMessage : err.message });
                     console.warn(`ERROR(${err.code}): ${err.message}`);
                     // controller.changeValue(err);
                 }, options);

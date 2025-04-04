@@ -5,16 +5,24 @@ REQUIRE SystemEvents;
 NAMESPACE GeoUtils;
 
 // to delete
+getCurrentPositionOptions = DATA JSON ();
 
 timestamp = DATA LOCAL LONG ();
 latitude = DATA LOCAL NUMERIC[11,6] ();
 longitude = DATA LOCAL NUMERIC[11,6] ();
+
+errorCode = DATA LOCAL STRING ();
+errorMessage = DATA LOCAL STRING ();
+
+error = CONCAT ' : ', errorCode(), errorMessage();
 
 changeCurrentPosition_mc () {
     INPUT pos = JSON DO {
         LOCAL coords = JSON ();
         IMPORT JSON FROM pos TO() timestamp, coords;
         IMPORT JSON FROM coords() TO() latitude, longitude;
+
+        IMPORT JSON FROM pos TO() errorCode, errorMessage;
     }
 }
 
