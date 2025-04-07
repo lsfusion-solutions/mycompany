@@ -28,8 +28,12 @@ nameSourceCurrency 'Source currency' (Debt d) = name(sourceCurrency(d));
 
 sourceAmount 'Source amount' = ABSTRACT VALUE NUMERIC[14,2] (Debt) MATERIALIZED;
 
+skipConvertingDebtToDefaultCurrency 'Skip converting debt to default currency' = DATA BOOLEAN ();
+EXTEND FORM options PROPERTIES() skipConvertingDebtToDefaultCurrency;
+DESIGN options { commons { MOVE PROPERTY(skipConvertingDebtToDefaultCurrency()); } }
+
 currency = ABSTRACT VALUE Currency (Debt) MATERIALIZED;
-currency (Debt d) += defaultCurrency() IF d IS Debt;
+currency (Debt d) += defaultCurrency() IF d IS Debt AND NOT skipConvertingDebtToDefaultCurrency();
 
 rate1 (Debt d, DATE dt) = rate1(currency(d), (OVERRIDE sourceCurrency(d), defaultCurrency()), dt);
 rate1 'Rate' (Debt d) = rate1(d, date(d));
