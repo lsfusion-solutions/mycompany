@@ -1,6 +1,6 @@
 MODULE SalesPricelistBill;
 
-REQUIRE BillReady, SalesPricelistDone;
+REQUIRE BillReady, SalesPricelistDone, BillCurrency;
 
 NAMESPACE Sales;
 
@@ -26,7 +26,7 @@ newPricelist (Bill b) {
             pricelist(pl) <- r;
             item(pl) <- item(l);
             billLine(pl) <- l;
-            cost(pl) <- price(l) IF setPriceToCost(type(b));
+            cost(pl) <- NUMERIC[14,2](price(l) * rate1(currency(b), date(b))) IF setPriceToCost(type(b));
             fill(pl, l);
         }
         
