@@ -41,6 +41,9 @@ FORM inventoryReport 'Inventory report'
             IF dt IS DATETIME THEN onHandA(l, p, dt) ELSE 
                 (IF singleLocation() THEN onHandRec(l, p) ELSE onHand(l, p)) DEFAULT
         FILTER '{Received}' dateReceived(l, p)
+        FILTER 'Expected' expected(l, p)
+        FILTER 'Reserved' reserved(l, p)
+        FILTER 'Available' available(l, p)
                 
     OBJECTS il = InvLedger
     PROPERTIES(il) READONLY class, type, dateTime, number, namePartner,
