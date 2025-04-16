@@ -1,0 +1,89 @@
+MODULE EmployeePrint;
+
+REQUIRE EmployeePrintType;
+
+NAMESPACE MasterData;
+
+toPrint 'Incl.' = DATA LOCAL BOOLEAN (Employee);
+
+set (PrintEmployeeType t, Employee e) = e IS Employee AND t IS PrintEmployeeType; 
+
+FORM printEmployee 'Employee'
+    OBJECTS pt = PrintEmployeeType PANEL
+    PROPERTIES(pt) name
+    REPORT OVERRIDE file(pt), file(RAWFILE(template(pt)), 'path')
+
+    OBJECTS e = Employee
+    PROPERTIES(e) id, login, photo,
+                  name, lastName, firstName, middleName,
+                  nameLegalEntity, nameDepartment, namePosition, 
+                  email, phone, address, city, state,
+                  zip, birthday
+    ORDERS name(e)
+    FILTERS toPrint(e), set(pt, e)
+;
+
+print (PrintEmployeeType pt) {
+    CASE EXCLUSIVE
+        WHEN format(pt) = TemplateFormat.pdf THEN
+            PRINT printEmployee OBJECTS pt = pt PDF;
+        WHEN format(pt) = TemplateFormat.docx THEN
+            PRINT printEmployee OBJECTS pt = pt DOCX;
+        WHEN format(pt) = TemplateFormat.xlsx THEN
+            PRINT printEmployee OBJECTS pt = pt XLSX;
+        WHEN format(pt) = TemplateFormat.rtf THEN
+            PRINT printEmployee OBJECTS pt = pt RTF;
+        WHEN format(pt) = TemplateFormat.html THEN
+            PRINT printEmployee OBJECTS pt = pt HTML;
+        WHEN format(pt) = TemplateFormat.noPreview THEN
+            PRINT printEmployee OBJECTS pt = pt NOPREVIEW;
+        ELSE
+            PRINT printEmployee OBJECTS pt = pt;
+}
+
+FORM printEmployeeParams 'Print options'
+    OBJECTS t = PrintEmployeeType
+    PROPERTIES(t) READONLY name
+
+    OBJECTS e = Employee
+    PROPERTIES(e) READONLY name, login, namePosition, nameLegalEntity
+    PROPERTIES(e) toPrint
+    ORDERS name(e)
+    FILTERS active(e)
+
+    FILTERGROUP print
+        FILTER 'To print' toPrint(e) DEFAULT
+;
+
+DESIGN printEmployeeParams {
+    OBJECTS {
+        NEW pane {
+            fill = 1;
+            MOVE BOX(t);
+            MOVE BOX(e) {
+                fill = 4;
+            }
+        }
+    }
+}
+
+printEmployee () {
+    DIALOG printEmployeeParams OBJECTS t INPUT DOCKED DO {
+        print(t);
+    }
+}
+
+print 'Print' (Employee e) {
+    toPrint(Employee ee) <- ee = e;
+    printEmployee();
+}
+
+EXTEND FORM employee
+    PROPERTIES(e) print SHOWIF countPrintEmployeeTypes()
+;
+
+DESIGN employee {
+    secondaryActions {
+        MOVE PROPERTY(print(e));
+    }
+}
