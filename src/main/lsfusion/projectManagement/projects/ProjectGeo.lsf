@@ -58,6 +58,22 @@ addressLines 'Address' (Project p) = CONCAT '\n ', address(p), city(p), state(p)
     }
 };
 
+EXTEND FORM project
+    PROPERTIES(p) address, city, state, zip
+;
+
+DESIGN project {
+    geo {
+        NEW address FIRST {
+            horizontal = TRUE;
+            MOVE PROPERTY(address(p));
+            MOVE PROPERTY(city(p));
+            MOVE PROPERTY(state(p));
+            MOVE PROPERTY(zip(p));
+        }
+    }
+}
+
 EXTEND FORM projects
     PROPERTIES(p) READONLYIF isReadonly() latitude, longitude
 ;
