@@ -8,6 +8,8 @@ META defineObjectMap(object, lobj, container)
     latitude 'Latitude'= DATA NUMERIC[11,6] (###object);
     longitude 'Longitude' = DATA NUMERIC[11,6] (###object);
 
+    afterInputGoogleAddress ABSTRACT LIST (###object, STRING[150]);
+    
     inputGoogleAddress (###object p) {
         INPUT a = STRING[150] CUSTOM 'googleAutocomplete' DO {
             address(p) <- getWord(a, ',', 1);
@@ -18,6 +20,8 @@ META defineObjectMap(object, lobj, container)
 
             latitude(p) <- readLatitude();
             longitude(p) <- readLongitude();
+
+            afterInputGoogleAddress(p, a);
         }
     }
 
