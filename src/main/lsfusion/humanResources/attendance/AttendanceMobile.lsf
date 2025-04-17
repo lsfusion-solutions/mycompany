@@ -5,19 +5,11 @@ REQUIRE Attendance, Mobile, GeoUtils;
 NAMESPACE HumanResources;
 
 FORM attendanceMobile 'Attendance'
-    PROPERTIES '' = error() SHOWIF error() 
-    PROPERTIES() READONLY 'Geolocation' = latitude, '' = longitude
-    PROPERTIES getCurrentPosition = OVERRIDE getCurrentPositionOptions(), (JSON FROM 
-                    timestamp = timestamp(), cacheTimeout = 60, enableHighAccuracy = TRUE, timeout = 5000, maximumAge = 0)
-                    CUSTOM 'getCurrentPosition_mc' ON CHANGE changeCurrentPosition_mc()
-
     OBJECTS a = Attendance
     PROPERTIES(a) READONLY '' = checkIn, '' = checkOutTime, '' = workedHours
     ORDERS checkIn(a) DESC
     FILTERS employee(a) = currentUser()
     
-    PROPERTIES() READONLY attendanceThisMonth, attendanceThisWeek
-
     EVENTS ON SCHEDULE PERIOD 60 {
         timestamp() <- NULL;
         formRefresh();
@@ -26,11 +18,13 @@ FORM attendanceMobile 'Attendance'
 
 start (Attendance a) ABSTRACT LIST;
 
-start '{Start}' () {
+start '{Start}' (Employee e) {
     LOCAL newAttendance = Attendance();
     
     NEWSESSION NESTED (latitude, longitude, newAttendance) {
         NEW a = Attendance {
+            employee(a) <- e;
+            
             checkIn(a) <- currentDateTime();
             checkInLatitude(a) <- latitude();
             checkInLongitude(a) <- longitude();
@@ -45,46 +39,47 @@ start '{Start}' () {
         SEEK attendanceMobile.a = newAttendance();
 }
 
-stop '{Stop}' () {
+stop (Attendance a) ABSTRACT LIST;
+
+stop '{Stop}' (Employee e) {
     NEWSESSION NESTED (latitude, longitude) {
-        FOR Attendance a = lastAttendance() DO {
+        FOR Attendance a = lastAttendance(e) DO {
             checkOut(a) <- currentDateTime();
             checkOutLatitude(a) <- latitude();
             checkOutLongitude(a) <- longitude();
+            
+            stop(a);
         }
         APPLY NESTED (latitude, longitude);
     }
 } CONFIRM;
 
 EXTEND FORM attendanceMobile
-    PROPERTIES start() SHOWIF NOT openedLastAttendance() DISABLEIF NOT latitude() OR NOT longitude(),
-               checkInTimeLastAttendance() SHOWIF openedLastAttendance() READONLY,
-               workedHoursLastAttendance() SHOWIF openedLastAttendance() READONLY,
-               stop() SHOWIF openedLastAttendance() DISABLEIF NOT latitude() OR NOT longitude()
+    OBJECTS e = Employee PANEL
+    FILTERS e = currentUser()
+    
+    PROPERTIES start(e) SHOWIF NOT openedLastAttendance(e) DISABLEIF NOT latitude() OR NOT longitude(),
+               checkInTimeLastAttendance(e) SHOWIF openedLastAttendance(e) READONLY,
+               workedHoursLastAttendance(e) SHOWIF openedLastAttendance(e) READONLY,
+               stop(e) SHOWIF openedLastAttendance(e) DISABLEIF NOT latitude() OR NOT longitude()
 
+    PROPERTIES(e) READONLY attendanceThisMonth, attendanceThisWeek
 ;
 
 DESIGN attendanceMobile {
     OBJECTS {
         class = '';
         border = FALSE;
-        MOVE PROPERTY(error()) {
+        NEW geoContainer {
             alignment = STRETCH;
-            background = #FFAAAA;
-        }
-        NEW geolocation {
-            alignment = STRETCH;
-            horizontal = TRUE;
-            MOVE PROPERTY(latitude());
-            MOVE PROPERTY(longitude());
         }
         NEW actions {
             alignment = STRETCH;
             horizontal = TRUE;
-            MOVE PROPERTY(start()) { fill = 1; fontSize = 48; focusable = FALSE;  }
-            MOVE PROPERTY(checkInTimeLastAttendance()) { flex = 0; panelCaptionVertical = TRUE; fontSize = 24; focusable = FALSE; }
-            MOVE PROPERTY(workedHoursLastAttendance()) { flex = 0; panelCaptionVertical = TRUE; fontSize = 24; focusable = FALSE; }
-            MOVE PROPERTY(stop()) { fill = 1; fontSize = 48; focusable = FALSE; }
+            MOVE PROPERTY(start(e)) { fill = 1; fontSize = 48; focusable = FALSE;  }
+            MOVE PROPERTY(checkInTimeLastAttendance(e)) { flex = 0; panelCaptionVertical = TRUE; fontSize = 24; focusable = FALSE; }
+            MOVE PROPERTY(workedHoursLastAttendance(e)) { flex = 0; panelCaptionVertical = TRUE; fontSize = 24; focusable = FALSE; }
+            MOVE PROPERTY(stop(e)) { fill = 1; fontSize = 48; focusable = FALSE; }
         }
         MOVE GRID(a) {
             PROPERTY(checkIn(a)) { pattern = 'dd.MM HH:mm'; fontSize = 18; }
@@ -95,13 +90,36 @@ DESIGN attendanceMobile {
             caption = 'Total';
             alignment = STRETCH;
             horizontal = TRUE;
-            MOVE PROPERTY(attendanceThisMonth()) { fontSize = 18; }
-            MOVE PROPERTY(attendanceThisWeek()) { fontSize = 18; }
+            MOVE PROPERTY(attendanceThisMonth(e)) { fontSize = 18; }
+            MOVE PROPERTY(attendanceThisWeek(e)) { fontSize = 18; }
         }
         REMOVE BOX(a);
     }
     REMOVE TOOLBARBOX;
 }
+
+@defineGeolocationForm(attendanceMobile, geoContainer){
+    EXTEND FORM attendanceMobile 
+        PROPERTIES '' = error() SHOWIF error()
+        PROPERTIES() READONLY 'Geolocation' = latitude, '' = longitude
+        PROPERTIES getCurrentPosition '' = getCurrentPosition() CUSTOM 'getCurrentPosition_mc' ON CHANGE changeCurrentPosition_mc()
+    ;
+    
+    DESIGN attendanceMobile {
+        geoContainer {
+            MOVE PROPERTY(error()) {
+                alignment = STRETCH;
+                background = #FFAAAA;
+            }
+            NEW geolocation {
+                alignment = STRETCH;
+                horizontal = TRUE;
+                MOVE PROPERTY(latitude());
+                MOVE PROPERTY(longitude());
+            }
+        }            
+    }
+};
 
 NAVIGATOR {
     dashboards {

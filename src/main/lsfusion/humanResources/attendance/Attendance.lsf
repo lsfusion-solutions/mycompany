@@ -8,6 +8,7 @@ workedHours (INTEGER seconds) =
     STRING(lpad('' + (seconds / 3600), 2, '0') + ':' + lpad('' + mod(seconds / 60, 60), 2, '0')) CHARWIDTH 5;
 
 CLASS Attendance 'Attendance';
+TABLE attendance(Attendance);
 
 employee 'Employee' = DATA Employee (Attendance) NONULL INDEXED;
 nameEmployee 'Employee' (Attendance a) = name(employee(a));
@@ -17,7 +18,7 @@ checkIn 'Check In'= DATA DATETIME (Attendance) NONULL INDEXED;
 checkInDate 'Check In' (Attendance a) = DATE(checkIn(a)) MATERIALIZED INDEXED;
 checkInTime 'Check In' (Attendance a) = TIME(checkIn(a));
 
-checkOut 'Check Out' = DATA DATETIME (Attendance);
+checkOut 'Check Out' = DATA DATETIME (Attendance) INDEXED;
 checkOutDate 'Check Out' (Attendance a) = DATE(checkOut(a));
 checkOutTime 'Check Out' (Attendance a) = TIME(checkOut(a));
 
@@ -32,11 +33,16 @@ checkInLongitude 'Longitude (Check In)' = DATA NUMERIC[11,6] (Attendance);
 checkOutLatitude 'Latitude (Check Out)'= DATA NUMERIC[11,6] (Attendance);
 checkOutLongitude 'Longitude (Check Out)' = DATA NUMERIC[11,6] (Attendance); 
 
+TABLE attendanceFile (Attendance);
+checkInPhoto = DATA IMAGEFILE (Attendance) TABLE attendanceFile;
+checkOutPhoto = DATA IMAGEFILE (Attendance) TABLE attendanceFile;
+
 FORM attendance 'Attendance'
     OBJECTS a = Attendance PANEL
 
     PROPERTIES(a) nameEmployee, checkIn, checkOut, hours,
-                  checkInLatitude, checkInLongitude, checkOutLatitude, checkOutLongitude
+                  checkInLatitude, checkInLongitude, checkOutLatitude, checkOutLongitude,
+                  '' = checkInPhoto SHOWIF checkInPhoto(a), '' = checkOutPhoto SHOWIF checkOutPhoto(a)
     
     EDIT Attendance OBJECT a
 ;
@@ -50,15 +56,23 @@ DESIGN attendance {
         }
         NEW checkIn {
             caption = 'Check In';
-            MOVE PROPERTY(checkIn(a));
-            MOVE PROPERTY(checkInLatitude(a));
-            MOVE PROPERTY(checkInLongitude(a));
+            horizontal = TRUE;
+            NEW checkInData {
+                MOVE PROPERTY(checkIn(a));
+                MOVE PROPERTY(checkInLatitude(a));
+                MOVE PROPERTY(checkInLongitude(a));
+            }
+            MOVE PROPERTY(checkInPhoto(a)) { alignment = STRETCH; width = 300; }
         }
         NEW checkOut {
             caption = 'Check Out';
-            MOVE PROPERTY(checkOut(a));
-            MOVE PROPERTY(checkOutLatitude(a));
-            MOVE PROPERTY(checkOutLongitude(a));
+            horizontal = TRUE;
+            NEW checkOutData {
+                MOVE PROPERTY(checkOut(a));
+                MOVE PROPERTY(checkOutLatitude(a));
+                MOVE PROPERTY(checkOutLongitude(a));
+            }
+            MOVE PROPERTY(checkOutPhoto(a)) { alignment = STRETCH; width = 300; }
         }
     }
 }
@@ -84,10 +98,8 @@ NAVIGATOR {
 lastAttendance (Employee e) = GROUP LAST Attendance a IF employee(a) = e ORDER checkIn(a), a;
 checkOutLastAttendance (Employee e) = checkOut(lastAttendance(e));
 
-lastAttendance () = lastAttendance(currentUser());
-checkInTimeLastAttendance 'Check In' () = checkInTime(lastAttendance());
-checkOutLastAttendance () = checkOut(lastAttendance());
-openedLastAttendance () = lastAttendance() AND NOT checkOutLastAttendance();
+checkInTimeLastAttendance 'Check In' (Employee e) = checkInTime(lastAttendance(e));
+openedLastAttendance (Employee e) = lastAttendance(e) AND NOT checkOutLastAttendance(e);
 
 secondsLastAttendance (Employee e) = subtractSeconds(checkIn(lastAttendance(e)), currentDateTime());
 
