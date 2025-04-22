@@ -119,13 +119,23 @@ attendanceThisWeek 'Week' () = attendanceThisWeek(currentUser());
 
 // employee
 attendanceWithoutGeolocation 'Attendance without geolocation' = DATA BOOLEAN (Employee);
-EXTEND FORM employee PROPERTIES(e) attendanceWithoutGeolocation;
+EXTEND FORM employee 
+    PROPERTIES(e) attendanceWithoutGeolocation
+    
+    OBJECTS at = Attendance
+    PROPERTIES(at) READONLY checkIn, checkOut, hours,
+                            latitude = checkInLatitude, longitude = checkInLongitude
+    FILTERS employee(at) = e
+;
 
 DESIGN employee {
     details {
         NEW attendance {
             caption = 'Attendance';
             MOVE PROPERTY(attendanceWithoutGeolocation(e));
+            MOVE BOX(at) {
+                caption = '';
+            }
         }
     }
 }
