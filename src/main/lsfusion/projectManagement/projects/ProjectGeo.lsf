@@ -12,51 +12,7 @@ zip 'Postcode' = DATA ISTRING[10] (Project);
 addressCsv 'Address' (Project p) = CONCAT ', ', address(p), city(p), state(p) IF NOT state(p) = city(p), zip(p) CHARWIDTH 20;
 addressLines 'Address' (Project p) = CONCAT '\n ', address(p), city(p), state(p) IF NOT state(p) = city(p), zip(p);
 
-@defineObjectMap(project, p, details){
-    latitude 'Latitude'= DATA NUMERIC[11,6] (Project);
-    longitude 'Longitude' = DATA NUMERIC[11,6] (Project);
-        
-    inputGoogleAddress (Project p) {
-        INPUT a = STRING[150] CUSTOM 'googleAutocomplete' DO {
-            address(p) <- getWord(a, ',', 1);
-            city(p) <- getWord(a, ',', 2);
-            state(p) <- getWord(a, ',', 3);
-
-            getCoordinates(a);
-
-            latitude(p) <- readLatitude();
-            longitude(p) <- readLongitude();
-        }
-    }
-
-    EXTEND FORM project
-        PROPERTIES addressCsv(p) ON CHANGE inputGoogleAddress(p) SHOWIF apiKey(MapProvider.google)
-        PROPERTIES(p) latitude, longitude
-
-        OBJECTS pg = Project MAP
-        PROPERTIES(pg) name READONLY, latitude, longitude
-        PROPERTIES fitBounds = TRUE IF pg IS Project
-        FILTERS pg = p
-    ;
-
-    DESIGN project {
-        details {
-            NEW geo {
-                caption = 'Coordinates';
-                MOVE PROPERTY(addressCsv(p)) { alignment = STRETCH; }
-                NEW coordinates {
-                    horizontal = TRUE;
-                    MOVE PROPERTY(latitude(p));
-                    MOVE PROPERTY(longitude(p));
-                }
-                MOVE BOX(pg) {
-                    height = 300;
-                    caption = '';
-                }
-            }
-        }
-    }
-};
+@defineObjectMap(project, p, details);
 
 EXTEND FORM project
     PROPERTIES(p) address, city, state, zip
