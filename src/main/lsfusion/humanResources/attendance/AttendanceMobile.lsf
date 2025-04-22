@@ -58,10 +58,10 @@ EXTEND FORM attendanceMobile
     OBJECTS e = Employee PANEL
     FILTERS e = currentUser()
     
-    PROPERTIES start(e) SHOWIF NOT openedLastAttendance(e) DISABLEIF NOT latitude() OR NOT longitude(),
+    PROPERTIES start(e) SHOWIF NOT openedLastAttendance(e) DISABLEIF (NOT latitude() OR NOT longitude()) AND NOT attendanceWithoutGeolocation(currentUser()),
                checkInTimeLastAttendance(e) SHOWIF openedLastAttendance(e) READONLY,
                workedHoursLastAttendance(e) SHOWIF openedLastAttendance(e) READONLY,
-               stop(e) SHOWIF openedLastAttendance(e) DISABLEIF NOT latitude() OR NOT longitude()
+               stop(e) SHOWIF openedLastAttendance(e) DISABLEIF (NOT latitude() OR NOT longitude()) AND NOT attendanceWithoutGeolocation(currentUser())
 
     PROPERTIES(e) READONLY attendanceThisMonth, attendanceThisWeek
 ;

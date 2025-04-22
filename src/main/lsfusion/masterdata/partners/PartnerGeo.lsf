@@ -1,12 +1,15 @@
 MODULE PartnerGeo;
 
-REQUIRE Partner, Geo;
+REQUIRE Partner, Geo, GeoUtils;
 
 NAMESPACE MasterData;
 
 META defineObjectMap(object, lobj, container)
     latitude 'Latitude'= DATA NUMERIC[11,6] (###object);
     longitude 'Longitude' = DATA NUMERIC[11,6] (###object);
+
+    distance (###object p) = abs(longitude(p) - longitude()) + abs(latitude(p) - latitude());
+    near(###object p) = distance(p) <= (OVERRIDE distanceAccuracy(), 0.001);
 
     afterInputGoogleAddress ABSTRACT LIST (###object, STRING[150]);
     

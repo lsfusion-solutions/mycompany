@@ -1,6 +1,6 @@
 MODULE ProjectAttendanceMobile;
 
-REQUIRE ProjectAttendance, AttendanceMobile;
+REQUIRE ProjectAttendance, AttendanceMobile, ProjectGeo;
 
 NAMESPACE ProjectManagement;
 
@@ -27,3 +27,22 @@ DESIGN attendanceMobile {
 start(Attendance a) + {
     project(a) <- attendanceProject();
 }
+
+// geo
+
+attendanceNear (Project p, CustomUser u) = near(p) AND NOT skipAttendance(p, u);
+
+countAttendanceNearProject (CustomUser u) = GROUP SUM 1 IF attendanceNear(Project p, u);
+maxAttendanceNearProject (CustomUser u) = GROUP MAX Project p IF attendanceNear(p, u);
+
+CONSTRAINT attendanceProject() AND NOT attendanceNear(attendanceProject(), currentUser()) AND NOT attendanceWithoutGeolocation(currentUser())
+    CHECKED BY attendanceProject[]
+    MESSAGE '';
+
+META defineAttendanceProjectDefault(form, prop)
+    WHEN LOCAL FORMS form SETCHANGED(latitude()) OR SETCHANGED(longitude()) DO
+        IF countAttendanceNearProject(currentUser()) = 1 THEN
+            prop() <- maxAttendanceNearProject(currentUser());
+END
+
+@defineAttendanceProjectDefault(attendanceMobile, attendanceProject);

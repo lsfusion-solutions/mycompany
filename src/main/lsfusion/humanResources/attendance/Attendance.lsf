@@ -116,3 +116,16 @@ attendanceThisWeek 'Week' (Employee e) = attendance(e, extractYear(currentDate()
 
 attendanceThisMonth 'Month' () = attendanceThisMonth(currentUser());
 attendanceThisWeek 'Week' () = attendanceThisWeek(currentUser());
+
+// employee
+attendanceWithoutGeolocation 'Attendance without geolocation' = DATA BOOLEAN (Employee);
+EXTEND FORM employee PROPERTIES(e) attendanceWithoutGeolocation;
+
+DESIGN employee {
+    details {
+        NEW attendance {
+            caption = 'Attendance';
+            MOVE PROPERTY(attendanceWithoutGeolocation(e));
+        }
+    }
+}
