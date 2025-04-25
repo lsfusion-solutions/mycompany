@@ -7,10 +7,10 @@ NAMESPACE Inventory;
 quantity 'Qty' = ABSTRACT NUMERIC[16,3] (InvLedger, Lot) MATERIALIZED;
 quantityLot 'Number of lots' (InvLedger rl) = GROUP SUM quantity(rl, Lot l);
 
-inQuantity 'Number of received' (Location ll, Lot l) = GROUP SUM quantity(InvLedger il, Lot lt) 
+inQuantity 'Received' (Location ll, Lot l) = GROUP SUM quantity(InvLedger il, Lot lt) 
                                                     IF active(il) AND toLocation(il) = ll AND lt = l MATERIALIZED;
                                                     
-inQuantity 'Number of received'(Location ll, Lot l, DATETIME dt) = inQuantity(ll, l) (-)
+inQuantity 'Received' (Location ll, Lot l, DATETIME dt) = inQuantity(ll, l) (-)
     GROUP SUM quantity(InvLedger il, Lot lt)  IF active(il) AND toLocation(il) = ll AND lt = l AND dateTime(il) > dt;
     
 inQuantityA (Location ll, Lot l, DATETIME dt) = inQuantity(ll, l) (-)
@@ -44,16 +44,16 @@ locations 'Locations' (Lot l) = GROUP CONCAT name(Location ll) IF onHand(ll, l) 
 onHandLot 'On hand (lots)' (Location ll, Product p) = GROUP SUM onHand(ll, Lot l) IF product(l) = p;
 
 onHand 'On hand' (Location ll, Lot l, DATETIME dt) = 
-                                                            inQuantity(ll, l, dt) (-) outQuantity(ll, l, dt) IF dt;
+                                                            inQuantity(ll, l, dt) (-) outQuantity(ll, l, dt) IF dt IS DATETIME;
 
 onHandLot 'On hand (lots)' (Location ll, Product p, DATETIME dt) = GROUP SUM onHand(ll, Lot l, dt) IF product(l) = p;                                                            
 
 onHandA 'On hand' (Location ll, Lot l, DATETIME dt) = 
-                                                            inQuantityA(ll, l, dt) (-) outQuantityA(ll, l, dt) IF dt;
+                                                            inQuantityA(ll, l, dt) (-) outQuantityA(ll, l, dt) IF dt IS DATETIME;
 prevOnHandA (Location ll, Lot l, DATETIME dt) = PREV(onHandA(ll, l, dt));
 
 onHandB 'On hand' (Location ll, Lot l, DATETIME dt) = 
-                                                            inQuantityB(ll, l, dt) (-) outQuantityB(ll, l, dt) IF dt;
+                                                            inQuantityB(ll, l, dt) (-) outQuantityB(ll, l, dt) IF dt IS DATETIME;
 prevOnHandB (Location ll, Lot l, DATETIME dt) = PREV(onHandB(ll, l, dt));
 
 FORM invLedgerItemLot 'Lots'

@@ -1,0 +1,128 @@
+MODULE Comments;
+
+REQUIRE SystemEvents, DateUtils;
+
+NAMESPACE Utils;
+
+onWebClientInit() + {
+    onWebClientInit('comments.js') <- 1;
+    onWebClientInit('comments.css') <- 1;
+}
+inputComment '' = DATA LOCAL RICHTEXT ();
+
+META defineObjectComments (obj, let, container)
+    CLASS ###obj##Comment 'Comment';
+    
+    obj = DATA ###obj (###obj##Comment) NONULL DELETE;
+    countComment (###obj e) = GROUP SUM 1 IF obj(###obj##Comment c) = e MATERIALIZED;
+    lastComment (###obj e) = GROUP LAST ###obj##Comment c ORDER c BY obj(c) MATERIALIZED;
+    
+    dateTime 'Date' = DATA DATETIME (###obj##Comment);
+    dateTime(###obj##Comment f) <- currentDateTime() WHEN SET(f IS ###obj##Comment);
+
+    textTimeDuration (###obj##Comment c) = textTimeDuration(dateTime(c));
+    
+    user = DATA User (###obj##Comment);
+    nameUser 'User' (###obj##Comment f) = name(user(f));
+    user(###obj##Comment f) <- currentUser() WHEN SET(f IS ###obj##Comment);
+    
+    text 'Text' = DATA RICHTEXT (###obj##Comment);
+    
+    header = ABSTRACT VALUE HTMLTEXT (###obj##Comment);
+    footer = ABSTRACT VALUE HTMLTEXT (###obj##Comment);
+    html (###obj##Comment c) = CONCAT '', header(c), text(c), footer(c);
+    
+    FORM edit###obj##Comment 'Comment'
+        OBJECTS c = ###obj##Comment PANEL
+        PROPERTIES(c) '' = text
+    ;
+    
+    DESIGN edit###obj##Comment {
+        size = (640, 480);
+        OBJECTS {
+            MOVE PROPERTY(text(c)) { fill = 1; }
+        }
+    }
+    
+    EXTEND FORM obj
+        OBJECTS cmt = ###obj##Comment CUSTOM 'comments'
+        PROPERTIES id = VALUE(cmt)
+        PROPERTIES(cmt) nameUser, textTimeDuration, dateTime, text = html
+        PROPERTIES(cmt) edit ON CHANGE {
+            SHOW edit###obj##Comment OBJECTS c = cmt;
+        },
+            delete = DELETE
+        ORDERS id DESC
+        FILTERS obj(cmt) = let
+    ;
+    
+    newComment 'Add' (###obj t) {
+        IF inputComment() THEN
+            NEW nc = ###obj##Comment {
+                obj(nc) <- t;
+                text(nc) <- inputComment();
+                inputComment() <- NULL;
+            }
+    }
+    
+    EXTEND FORM obj
+        PROPERTIES inputComment(), newComment(let)
+        
+        EVENTS ON APPLY { newComment(let); }
+    ;
+    
+    DESIGN obj {
+        container {
+            NEW comments {
+                fill = 1;
+                caption = badged('Comments', countComment(let));
+                NEW inputComment {
+                    horizontal = TRUE;
+                    alignment = STRETCH;
+                    MOVE PROPERTY(inputComment()) {
+                        valueHeight = -1;
+                        fill = 1;
+                    }
+                    MOVE PROPERTY(newComment(let)) {
+                        alignment = STRETCH;
+                    }
+                }
+                MOVE GRID(cmt) {
+                    height = 200;
+                    width = 400;
+                    fill = 1;
+                }
+                REMOVE BOX(cmt);
+            }
+        }
+    }
+END
+
+META defineObjectCommentsHistory(obj)
+    comment = DATA ###obj##Comment (###obj##History) INDEXED;
+
+    changes (###obj##Comment tc) = HTMLTEXT('<ul style="color:#959595">' + (GROUP CONCAT ('<li>' + type(###obj##History th) + ' : ' + description(th) + '</li>') IF comment(th) = tc, '' ORDER th) + '</ul>');
+    header (###obj##Comment tc) += changes(tc);
+
+    WHEN SET(###obj##Comment tc IS ###obj##Comment) AND SET(###obj##History th IS ###obj##History) DO
+        comment(th) <- tc;
+END
+
+META defineObjectCommentsFiles(obj, NS)
+    comment = DATA ###obj##Comment (###obj##File) INDEXED;
+
+    files (###obj##Comment tc) = HTMLTEXT('<ul style="color:#959595">' + 
+        (GROUP CONCAT ('<li><a target="_blank" href="' + contextUrl('/exec/'##NS##'.download'###obj##'File?id=' + ###obj##File tf) + '">' + nameExtension(tf) + '</a></li>') 
+                      IF comment(tf) = tc, '' ORDER tf) + '</ul>');
+    footer (###obj##Comment tc) += files(tc);
+
+    WHEN SET(###obj##Comment tc IS ###obj##Comment) AND SET(###obj##File tf IS ###obj##File) DO
+        comment(tf) <- tc;
+END
+
+META defineObjectCommentsCreate(obj, class)
+    WHEN [GROUP SUM 1 IF SET(###obj###class th IS ###obj###class) BY obj(th)](###obj t) AND NOT [GROUP SUM 1 IF SET(###obj##Comment tc IS ###obj##Comment) BY obj(tc)](t) DO
+        NEW tc = ###obj##Comment {
+            obj(tc) <- t;
+        }
+END

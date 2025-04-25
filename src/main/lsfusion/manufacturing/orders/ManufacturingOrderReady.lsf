@@ -22,8 +22,14 @@ countReservedLines (ManufacturingOrder m) = GROUP SUM 1 IF reserved(ConsumedLine
 linesReserved (ManufacturingOrder m) = GROUP SUM 1 IF reserved(ConsumedLine l) = toConsume(l) AND manufacturingOrder(l) = m;
 reserved (ManufacturingOrder m) = linesReserved(m) = countReservedLines(m);
 
+onHand 'On hand' (ConsumedLine l) =
+    prevOnHand(materialsLocation(manufacturingOrder(l)), item(l) AS Product);
+
+expected 'Expected' (ConsumedLine l) =
+    prevExpected(materialsLocation(manufacturingOrder(l)), item(l) AS Product);
+
 available 'Available' (ConsumedLine l) = 
-    prevAvailable(materialsLocation(manufacturingOrder(l)), item(l) AS Product) (+) PREV(reserved(l)); 
+    prevAvailable(materialsLocation(manufacturingOrder(l)), item(l) AS Product) (+) PREV(reserved(l));
 
 checkAvailability 'Check availability' (ManufacturingOrder m) {
     APPLY; 
@@ -53,7 +59,7 @@ EXTEND FORM manufacturingOrder
                   unreserve SHOWIF (status(o) = ManufacturingOrderStatus.waiting OR status(o) = ManufacturingOrderStatus.ready) AND countReservedLines(o),
                   ready
     
-    PROPERTIES(c) READONLY available, reserved
+    PROPERTIES(c) READONLY onHand, expected, available, reserved
 ;
 
 DESIGN manufacturingOrder {

@@ -1,0 +1,35 @@
+MODULE ProjectGeo;
+
+REQUIRE Project, PartnerGeo, GeoUtils;
+
+NAMESPACE ProjectManagement;
+
+address 'Address' = DATA ISTRING[150] (Project) CHARWIDTH 30;
+city 'City' = DATA ISTRING[50] (Project) CHARWIDTH 12;
+state 'State' = DATA ISTRING[50] (Project) CHARWIDTH 12;
+zip 'Postcode' = DATA ISTRING[10] (Project);
+
+addressCsv 'Address' (Project p) = CONCAT ', ', address(p), city(p), state(p) IF NOT state(p) = city(p), zip(p) CHARWIDTH 20;
+addressLines 'Address' (Project p) = CONCAT '\n ', address(p), city(p), state(p) IF NOT state(p) = city(p), zip(p);
+
+@defineObjectMap(project, p, details);
+
+EXTEND FORM project
+    PROPERTIES(p) address, city, state, zip
+;
+
+DESIGN project {
+    geo {
+        NEW address FIRST {
+            horizontal = TRUE;
+            MOVE PROPERTY(address(p));
+            MOVE PROPERTY(city(p));
+            MOVE PROPERTY(state(p));
+            MOVE PROPERTY(zip(p));
+        }
+    }
+}
+
+EXTEND FORM projects
+    PROPERTIES(p) READONLYIF isReadonly() latitude, longitude
+;

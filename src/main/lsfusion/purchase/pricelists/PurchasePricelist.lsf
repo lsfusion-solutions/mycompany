@@ -6,7 +6,7 @@ NAMESPACE Purchase;
 
 CLASS Pricelist 'Vendor pricelist';
 
-@defineDocStatus(pricelist, 'Vendor pricelist');
+@defineDocStatus(pricelist, 'Vendor pricelist status');
 
 startDateTime 'Start date' = DATA DATETIME (Pricelist);
 startDateTime(Pricelist l) <- currentDateTime() WHEN SET(l IS Pricelist);
@@ -59,16 +59,17 @@ note 'Note' (PricelistLine prl) = note(pricelist(prl));
 
 FORM pricelist 'Vendor pricelist'
     OBJECTS p = Pricelist PANEL
-    PROPERTIES(p) number, startDateTime, endDateTime, nameVendor, note
+    PROPERTIES(p) READONLYIF readonly(p) number, startDateTime, endDateTime, nameVendor, note
     
     OBJECTS l = PricelistLine
-    PROPERTIES(l) index READONLY,
+    PROPERTIES(l) READONLYIF readonly(p)
+                  index READONLY,
                   nameItem ON CHANGE {
                       INPUT i = item(l) LIST name(i) ACTIONS 'add' { newProduct(STRING(i)); } DO item(l) <- i;
                   },
                   nameUom READONLY, vendorName, vendorReference,
-                  idBarCodeItem, idItem, referenceItem, price
-    PROPERTIES(l) NEW, DELETE 
+                  idBarCodeItem, idItem, referenceItem, price,
+                  NEW, DELETE 
     FILTERS pricelist(l) = p
     
     EDIT Pricelist OBJECT p
@@ -133,6 +134,8 @@ DESIGN pricelists {
 
 @defineDocStatusForm(pricelist, p, note);
 @defineDocLinesCount(pricelist, p);
+
+@defineObjectComments(pricelist, p, details);
 
 NAVIGATOR {
     operations {

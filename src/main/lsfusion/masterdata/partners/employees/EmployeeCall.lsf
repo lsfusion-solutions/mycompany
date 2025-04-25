@@ -1,0 +1,89 @@
+MODULE EmployeeCall;
+
+REQUIRE Employee, Call;
+
+NAMESPACE MasterData;
+
+redirect = DATA Employee (Call) INDEXED;
+nameRedirect 'Redirect' (Call c) = name(redirect(c));
+
+internal ABSTRACT LIST (Call, Employee);
+answer ABSTRACT LIST (Call, Employee);
+
+META defineObjectCall (object, capt, form, fobj, container)
+    object = DATA ###object (Call) INDEXED;
+    name###object capt (Call c) = name(object(c));
+    countCall (###object o) = GROUP SUM 1 IF object(Call c) = o;
+
+    EXTEND FORM form
+        OBJECTS call = Call
+        PROPERTIES(call) READONLY BACKGROUND RGB(255,212,255) IF outgoing(call) 
+                      id, startedAt, caller, recipient, callerName, nameRedirect, nameEmployee, duration, result
+        PROPERTIES(call) requestRecord GRID DISABLEIF NOT recorded(call)
+        FILTERS object(call) = fobj
+    ;
+
+    DESIGN form {
+        container {
+            NEW calls {
+                caption = badged('Calls', countCall(fobj));
+                NEW callsHeader {
+                    horizontal = TRUE;
+                }
+                MOVE BOX(call) { caption = ''; }
+            }
+        }
+    }
+END
+
+@defineObjectCall(employee, 'Employee',  employee, e, details);
+
+@defineObjectCall(partner, 'Partner', partner, p, tabs);
+
+META defineObjectCallTo (object, let)
+    call 'Call to' (###object l) {
+        call(phone(l));
+    }
+
+    EXTEND FORM object
+        PROPERTIES(let) call SHOWIF callAvailable() AND phone(let)
+    ;
+
+    DESIGN object {
+        secondaryActions {
+            MOVE PROPERTY(call(let)) { valueClass = 'btn-info'; }
+        }
+    }
+END
+
+META defineObjectHooks (object, let, capt, findProp, redirectProp, hintProp)
+    start (Call c) +{
+        IF outgoing(c) THEN {
+            FOR ###object l = findProp(recipient(c)) DO {
+                object(c) <- l;
+            }
+        } ELSE {
+            FOR ###object l = findProp(caller(c)) DO {
+                object(c) <- l;
+                redirect(c) <- redirectProp(l);
+                callerName(c) <- hintProp(l);
+            }
+        }
+    }
+
+    internal (Call c, Employee e) +{
+        FOR ###object l = object(c) AND pushConnection(e) DO {
+            NEWTHREAD {
+                SHOW object OBJECTS let = l DOCKED NOWAIT;
+            } TO exportInteger;
+            pushNotify(pushConnection(e),
+                notification('Incoming call',
+                    JSON FROM body = hintProp(l)),
+                action(exportInteger()));
+        }
+    }
+END
+
+answer (Call c, Employee e) +{
+    employee(c) <- e;
+}

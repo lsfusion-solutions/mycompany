@@ -1,0 +1,39 @@
+MODULE SalesDiscountLocation;
+
+REQUIRE SalesDiscountLine, Location;
+
+NAMESPACE Sales;
+
+in 'Incl.' = DATA BOOLEAN (Discount, Location);
+countLocation (Discount d) = GROUP SUM 1 IF in(d, Location l) MATERIALIZED;
+
+set (Discount d, Location c) = GROUP LAST in(d, Location cp) ORDER level(c, cp) MATERIALIZED;
+locations 'Locations' (Discount d) = GROUP CONCAT name(Location c) IF in(d, c), ',' ORDER name(c), c CHARWIDTH 20;
+
+EXTEND FORM discount
+    TREE locations lc = Location PARENT parent(lc)
+    PROPERTIES name(lc) READONLY, 
+               in(d, lc) BACKGROUND (GROUP SUM 1 IF in(d, Location lcc) AND level(lcc, lc))
+    ORDERS name(lc)
+    FILTERGROUP activeLocation
+        FILTER '{Active}' active(lc) DEFAULT
+;
+
+DESIGN discount {
+    details {
+        NEW locations {
+            caption = 'Locations';
+            MOVE BOX(TREE locations);
+        }
+    }
+}
+
+EXTEND FORM discounts
+    PROPERTIES(d) READONLY locations
+;
+
+location = ABSTRACT Location (SalesDiscountLine);
+
+processDiscount (SalesDiscountLine l) + {
+    set(l, Discount d) <- NULL WHERE set(l, d) AND countLocation(d) AND NOT set(d, location(l));
+} 

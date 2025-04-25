@@ -63,9 +63,15 @@ WHEN ([GROUP SUM 1 IF CHANGED(toReceive(OrderLine l)) BY order(l)](Order o) OR S
         DELETE Receipt r WHERE r = reserveReceipt(o); 
 }
 
-WHEN SET(locked(Order o)) DO {
+forbidLockActiveReceipts 'Forbid to lock orders with active receipts' = DATA BOOLEAN (OrderType);
+EXTEND FORM orderType PROPERTIES(o) forbidLockActiveReceipts;
+
+WHEN SET(locked(Order o)) AND NOT forbidLockActiveReceipts(type(o)) DO {
     DELETE Receipt r WHERE r = reserveReceipt(o) AND status(reserveReceipt(o)) = ReceiptStatus.ready;
 }
+
+CONSTRAINT SET(locked(Order o)) AND status(reserveReceipt(o)) = ReceiptStatus.ready AND forbidLockActiveReceipts(type(o))
+    MESSAGE 'It is forbidden to lock orders with active receipts';
 
 FORM orderReceiptShow '{Received}'
     OBJECTS ol = OrderLine

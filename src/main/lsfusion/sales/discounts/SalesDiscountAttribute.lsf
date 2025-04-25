@@ -1,0 +1,56 @@
+MODULE SalesDiscountAttribute;
+
+REQUIRE SalesDiscountLine, ItemAttribute;
+
+NAMESPACE Sales;
+
+in 'Incl.' = DATA BOOLEAN (Discount, ItemAttributeValue);
+
+countValues (Discount d, ItemAttribute a) = GROUP SUM 1 IF in(d, ItemAttributeValue v) AND itemAttribute(v) = a MATERIALIZED;
+
+values 'Values' = 
+    GROUP CONCAT value(ItemAttributeValue v) IF in(Discount d, v), ',' ORDER v BY d, itemAttribute(v);
+
+values 'Attributes' =
+    GROUP CONCAT value(ItemAttributeValue v) IF in(Discount d, v), ',' ORDER v BY d;
+
+FORM selectValues 'Values'
+    OBJECTS d = Discount PANEL, a = ItemAttribute PANEL, c = Category PANEL
+
+    OBJECTS v = ItemAttributeValue
+    PROPERTIES READONLY value(v)
+    PROPERTIES in(d, v)
+    FILTERS itemAttribute(v) = a,
+            matches(v, c)
+;
+
+EXTEND FORM discount
+    TREE categoriesA ca = Category PARENT parent(ca)
+    PROPERTIES name(ca) READONLY
+    ORDERS name(ca)
+    FILTERGROUP activeCategoryA
+        FILTER '{Active}' active(ca) DEFAULT
+
+    OBJECTS ia = ItemAttribute
+    PROPERTIES name(ia) READONLY, values(d, ia) ON CHANGE { DIALOG selectValues OBJECTS d = d, a = ia, c = ca; }
+    FILTERS GROUP SUM 1 IF set(ia, Category cc) AND (level(cc, ca) OR level(ca, cc))
+;
+
+DESIGN discount {
+    details {
+        NEW attributes {
+            caption = 'Attributes';
+            horizontal = TRUE;
+            MOVE BOX(TREE categoriesA);
+            MOVE BOX(ia) { fill = 1; }
+        }
+    }
+}
+
+processDiscount (SalesDiscountLine l) +{
+    set(l, Discount d) <- NULL WHERE set(l, d) AND GROUP SUM 1 IF (countValues(d, ItemAttribute a) AND NOT in(d, attribute(item(l), a))); 
+}
+
+EXTEND FORM discounts
+    PROPERTIES(d) READONLY values
+;

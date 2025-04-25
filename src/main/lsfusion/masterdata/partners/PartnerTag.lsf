@@ -1,0 +1,67 @@
+MODULE PartnerTag;
+
+REQUIRE Partner;
+
+NAMESPACE MasterData;
+
+CLASS PartnerTag 'Partner tag';
+name '{Name}' = DATA ISTRING[50] (PartnerTag) NONULL CHARWIDTH 15;
+
+id '{ID}' = DATA STRING[20] (PartnerTag);
+partnerTag = GROUP AGGR PartnerTag t BY id(t);
+
+FORM partnerTag 'Partner tag'
+    OBJECTS o = PartnerTag PANEL
+    PROPERTIES(o) name, id
+    
+    EDIT PartnerTag OBJECT o;
+;
+
+DESIGN partnerTag {
+    OBJECTS {
+        NEW tabbedPane {
+            fill = 1;
+            tabbed = TRUE;
+        }
+    }
+}
+
+FORM partnerTags 'Partner tags'
+    OBJECTS o = PartnerTag
+    PROPERTIES(o) READONLY name, id
+    LIST PartnerTag OBJECT o
+;
+
+EXTEND FORM options
+    OBJECTS prtg = PartnerTag
+    PROPERTIES(prtg) READONLY name, id
+    PROPERTIES(prtg) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(prtg) { caption = 'Partner tags'; }
+    }
+}
+
+// partner
+in 'Incl.' = DATA BOOLEAN (Partner, PartnerTag);
+tags 'Tags' (Partner p) = GROUP CONCAT name(PartnerTag pg) IF in(p, pg), ', ' ORDER name(pg), pg CHARWIDTH 30;
+
+EXTEND FORM partner
+    PROPERTIES(p) tags
+;
+
+DESIGN partner {
+    headerLeft {
+        MOVE PROPERTY(tags(p));
+    }
+}
+
+EXTEND FORM partners
+    PROPERTIES(p) READONLY tags
+;
+
+EXTEND FORM dialogPartners
+    PROPERTIES(p) READONLY tags
+;

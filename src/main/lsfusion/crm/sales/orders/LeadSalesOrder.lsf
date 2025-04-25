@@ -1,0 +1,91 @@
+MODULE LeadSalesOrder;
+
+REQUIRE Lead, SalesOrderCanceled, LocationEmployee;
+
+NAMESPACE CRM;
+
+orderType = DATA OrderType ();
+nameOrderType 'Order type' () = name(orderType());
+
+EXTEND FORM options PROPERTIES nameOrderType();
+DESIGN options { commons { MOVE PROPERTY(nameOrderType()); } }
+
+// lines
+lead 'Lead' = DATA Lead (Order) INDEXED;
+nameLead 'Lead' (Order o) = name(lead(o));
+
+countOrders (Lead l) = GROUP SUM 1 IF lead(Order o) = l MATERIALIZED;
+numberDateOrders 'Orders' (Lead l) = GROUP CONCAT numberDate(Order o) IF lead(o) = l, ',' ORDER o CHARWIDTH 30;
+
+// form
+openLead (Order o) {
+    edit(lead(o)); 
+}
+EXTEND FORM order
+    PROPERTIES(o) nameLead ON CHANGE openLead(o) SHOWIF lead(o)
+;
+DESIGN order {
+    footer {
+        MOVE PROPERTY(nameLead(o));
+    }
+}
+EXTEND FORM orders
+    PROPERTIES(o) READONLY nameLead
+;
+EXTEND FORM leads
+    PROPERTIES(l) READONLY numberDateOrders
+;
+
+fill ABSTRACT LIST (Order, Lead);
+leadOrderCreated = DATA LOCAL Order ();
+newOrder (Lead l) {
+    NEW o = Order {
+        lead(o) <- l;
+        
+        customer(o) <- customer(l);
+
+        type(o) <- orderType();
+
+        deliveryAddress(o) <- addressCsv(l);
+
+        fill(o, l);
+
+        leadOrderCreated() <- o;
+    }
+}
+
+createOrder 'Create Order' (Lead l) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    NEWSESSION {
+        newOrder(l);
+        SHOW order OBJECTS o = leadOrderCreated() DOCKED;
+    }
+}
+
+EXTEND FORM lead
+    PROPERTIES(l) createOrder SHOWIF orderType()
+
+    OBJECTS o = Order
+    PROPERTIES(o) READONLY number, dateTime, imagedNameStatus BACKGROUND colorStatus(o), nameType, scheduledDateTime, amount
+    PROPERTIES(o) NEWSESSION EDIT GRID
+    FILTERS lead(o) = l
+;
+
+DESIGN lead {
+    secondaryActions {
+        MOVE PROPERTY(createOrder(l)) { valueClass = 'btn-secondary'; }
+    }
+    relatedDoc {
+        MOVE BOX(o) {
+            showIf = countOrders(l);
+            caption = badged('Orders', countOrders(l));
+            GRID(o) {
+                width = 100;
+                autoSize = TRUE;
+            }
+        }
+        REMOVE TOOLBARSYSTEM(o);
+    }
+}

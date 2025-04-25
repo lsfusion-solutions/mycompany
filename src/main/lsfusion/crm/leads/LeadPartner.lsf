@@ -1,0 +1,30 @@
+MODULE LeadPartner;
+
+REQUIRE Lead;
+
+NAMESPACE CRM;
+
+newLead 'Lead' (Partner p) {
+    NESTEDSESSION {
+        NEW l = Lead {
+            customer(l) <- p;
+            DIALOG lead OBJECTS l = l DOCKED DO seek(l);
+        }
+    }
+} IMAGE 'add.png';
+
+EXTEND FORM partner
+    OBJECTS ld = Lead
+    PROPERTIES(ld) READONLY dateTime, id, name, nameStatus, nameSalesPerson, namePriority, tags, 
+                            expectedClosing, expectedRevenue
+    PROPERTIES newLead(p) DRAW ld TOOLBAR
+    PROPERTIES(ld) NESTEDSESSION EDIT, DELETE
+
+    FILTERS customer(ld) = p
+;
+
+DESIGN partner {
+    tabs {
+        MOVE BOX(ld) { caption = badged('Leads', countLeads(p)); }
+    }
+}

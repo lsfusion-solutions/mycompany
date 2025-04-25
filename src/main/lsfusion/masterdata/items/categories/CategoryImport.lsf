@@ -1,6 +1,6 @@
 MODULE CategoryImport;
 
-REQUIRE Category;
+REQUIRE Category, Item;
 
 NAMESPACE MasterData;
 
@@ -13,7 +13,7 @@ categoryExport 'Export categories' () {
             }
         }
         LOCAL f = EXCELFILE ();
-        EXPORT XLSX HEADER FROM '{ID}' = id(Category c), '{Name}' = name(c), 'ParentID' = idParent(c) TO f;        
+        EXPORT XLSX HEADER FROM '{ID}' = id(Category c), '{Name}' = name(c), 'ParentID' = idParent(c), 'Prefix' = namePrefix(c) TO f;        
         open(f());
     }
 }
@@ -22,17 +22,19 @@ categoryImport 'Import categories' () {
     LOCAL id = STRING[50] (INTEGER);
     LOCAL name = ISTRING[50] (INTEGER);
     LOCAL parent = ISTRING[50] (INTEGER);
+    LOCAL namePrefix = STRING (INTEGER);
     
     INPUT f = EXCELFILE DO {
         NEWSESSION {
-            IMPORT XLS HEADER FROM f TO id = A, name = B, parent = C;
-            FOR imported(INTEGER i) DO NEW c = Category {
+            IMPORT XLS HEADER FROM f TO id = A, name = B, parent = C, namePrefix = D;
+            FOR imported(INTEGER i) AND NOT category(id(i)) DO NEW c = Category {
                 id(c) <- id(i);
-                name(c) <- name(i);
             }
             
             FOR imported(INTEGER i) AND id(Category c) = id(i) DO {
+                name(c) <- name(i);
                 parent(c) <- category(parent(i));
+                namePrefix(c) <- namePrefix(i);
             }
             APPLY;
             MESSAGE 'Import completed';

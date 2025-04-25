@@ -1,0 +1,44 @@
+MODULE LeadReport;
+
+REQUIRE Lead;
+
+NAMESPACE CRM;
+
+FORM leadReport 'Lead report'
+    OBJECTS l = Lead PIVOT
+    PROPERTIES(l) READONLY 
+                  id, name, nameStatus,
+                  dateTime, probability, expectedClosing,
+                  nameCustomer, nameSalesPerson,
+                  namePriority, tags,
+                  phone, email,
+                  description,
+                  address, city, state, zip,
+                  legalEntityName, website,
+                  firstName, lastName, middleName, namePosition
+
+    PROPERTIES(l) READONLY MEASURE
+        expectedRevenue
+;
+
+DESIGN leadReport {
+    OBJECTS {
+        NEW filters FIRST {
+            caption = 'Filters';
+            horizontal = TRUE;
+        }
+    }
+}
+
+
+@defineDateTimeAggregationForm(leadReport, l);
+
+@defineDateAggregationForm(leadReport, l, expectedClosing, expectedClosing);
+
+@defineDateFilterForm(leadReport, l);
+
+NAVIGATOR {
+    reporting {
+        NEW leadReport;
+    }
+}

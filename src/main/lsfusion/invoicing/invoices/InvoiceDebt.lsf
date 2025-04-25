@@ -22,20 +22,21 @@ sourceCurrency (Invoice i) += currency(i);
 sourceAmount (Invoice i) += amount(i);
 
 // pay
-pay 'Match' (IncomingDebt d, Invoice i) {
+pay 'Match' ABSTRACT LIST (IncomingDebt, Invoice) CHANGEMOUSE 'DBLCLK'; 
+pay (IncomingDebt d, Invoice i) +{
     paid(d, i) <- left(d, i) (+) paid(d, i);
-} CHANGEMOUSE 'DBLCLK';
+}
 
 EXTEND FORM invoice
     PROPERTIES(i) READONLY paid  
 
     OBJECTS d = IncomingDebt
-    PROPERTIES(d) READONLY dateTime, number, class, type
+    PROPERTIES(d) READONLY dateTime, number, class, type, amount
     PROPERTIES paid(d, i)
     FILTERS paid(d, i), active(d)
     
     OBJECTS dd = IncomingDebt
-    PROPERTIES(dd) READONLY dateTime, number, class, type, left
+    PROPERTIES(dd) READONLY dateTime, number, class, type, amount, left
     PROPERTIES pay(dd, i) TOOLBAR
     FILTERS canBePaid(dd, i), active(dd)
 ;
@@ -58,5 +59,6 @@ EXTEND FORM invoices
 ;
 
 // auto set done
-WHEN SET(amount[Debt](Invoice i) = paid(i)) DO done(i) <- TRUE;
-WHEN DROPPED(amount[Debt](Invoice i) = paid(i)) DO done(i) <- NULL;
+skipSetDone = ABSTRACT BOOLEAN (Invoice);
+WHEN SET(amount[Debt](Invoice i) = paid(i)) AND NOT skipSetDone(i) DO done(i) <- TRUE;
+WHEN DROPPED(amount[Debt](Invoice i) = paid(i)) AND NOT skipSetDone(i) DO done(i) <- NULL;

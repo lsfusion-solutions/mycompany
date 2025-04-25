@@ -1,0 +1,62 @@
+MODULE LeadType;
+
+REQUIRE LeadStatus, CRMSettings;
+
+NAMESPACE CRM;
+
+CLASS LeadType 'Lead type';
+name '{Name}' = DATA ISTRING[50] (LeadType) NONULL CHARWIDTH 15;
+
+id '{ID}' = DATA STRING[20] (LeadType);
+leadType = GROUP AGGR LeadType t BY id(t);
+
+in 'Incl.' = DATA BOOLEAN (LeadType, LeadStatus);
+countStatus (LeadType t) = GROUP SUM 1 IF in(t, LeadStatus l) MATERIALIZED;
+
+allow (LeadType t, LeadStatus s) = in(t, s) OR (t IS LeadType AND s IS LeadStatus AND NOT countStatus(t));
+
+FORM leadType 'Lead type'
+    OBJECTS o = LeadType PANEL
+    PROPERTIES(o) name, id
+    
+    OBJECTS s = LeadStatus
+    PROPERTIES(s) READONLY name
+    PROPERTIES             in(o, s)
+
+    EDIT LeadType OBJECT o;
+;
+
+DESIGN leadType {
+    OBJECTS {
+        NEW tabbedPane {
+            fill = 1;
+            tabbed = TRUE;
+        }
+    }
+}
+
+FORM leadTypees 'Lead types'
+    OBJECTS o = LeadType
+    PROPERTIES(o) READONLY name, id
+    LIST LeadType OBJECT o
+;
+
+EXTEND FORM options
+    OBJECTS tt = LeadType
+    PROPERTIES(tt) READONLY name, id
+    PROPERTIES(tt) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(tt) { caption = 'Lead types'; }
+    }
+}
+
+// default type
+countLeadTypes 'Number of types' () = GROUP SUM 1 IF t IS LeadType;
+firstLeadType = GROUP LAST LeadType r ORDER DESC r WHERE r IS LeadType;
+
+defaultLeadType = firstLeadType() IF countLeadTypes() = 1;
+
+firstLeadStatus (LeadType t) = GROUP LAST LeadStatus l ORDER DESC sortingOrder(l), l WHERE allow(t, l) MATERIALIZED;

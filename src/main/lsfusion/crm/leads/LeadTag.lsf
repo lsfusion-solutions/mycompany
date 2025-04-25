@@ -1,0 +1,49 @@
+MODULE LeadTag;
+
+REQUIRE CRMSettings, Color;
+
+NAMESPACE CRM;
+
+CLASS LeadTag 'Lead tag';
+name '{Name}' = DATA ISTRING[50] (LeadTag) NONULL CHARWIDTH 15;
+
+id '{ID}' = DATA STRING[20] (LeadTag);
+leadTag = GROUP AGGR LeadTag t BY id(t);
+
+color 'Color' = DATA Color (LeadTag);
+nameColor 'Color' (LeadTag p) = name(color(p));
+idColor 'Color' (LeadTag p) = id(color(p));
+
+FORM leadTag 'Lead tag'
+    OBJECTS o = LeadTag PANEL
+    PROPERTIES(o) name, id, nameColor
+
+    EDIT LeadTag OBJECT o;
+;
+
+DESIGN leadTag {
+    OBJECTS {
+        NEW tabbedPane {
+            fill = 1;
+            tabbed = TRUE;
+        }
+    }
+}
+
+FORM leadTags 'Lead tags'
+    OBJECTS o = LeadTag
+    PROPERTIES(o) READONLY name, id, nameColor
+    LIST LeadTag OBJECT o
+;
+
+EXTEND FORM options
+    OBJECTS tg = LeadTag
+    PROPERTIES(tg) READONLY name, id, nameColor
+    PROPERTIES(tg) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(tg) { caption = 'Lead tags'; }
+    }
+}

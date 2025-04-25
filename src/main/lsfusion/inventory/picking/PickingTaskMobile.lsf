@@ -1,0 +1,198 @@
+MODULE PickingTaskMobile;
+
+REQUIRE PickingTask, LocationEmployee, ItemImage, Mobile, BarCode, Sound;
+
+NAMESPACE Inventory;
+
+html (PickingTask t) = HTML('<div>' + (CONCAT '&nbsp;',
+    '<u>' + toChar(dateTime(t), 'MM-DD HH24:MI') + '</u>',
+    '<b>' + number(t) + '</b>',
+    '<font size="-2">' + namePartner(t) + '</font>'
+    ) + '</div>');
+
+htmlPicking (Product p) = HTML('<div>' + (CONCAT '&nbsp;', 
+    '<b>' + name(p) + '</b>', 
+    '<font size="-2">' + idBarCode(p) + '</font>'
+    ) + '</div>');
+
+html (PickingLine l) = HTML('<div>' + (CONCAT '&nbsp;',
+    time(l),
+    '<b>' + nameProduct(l) + '</b>',
+    '<font size="-2">' + idBarCodeProduct(l) + '</font>'
+    ) + '</div>');
+
+FORM pickingTasksMobile 'Picking tasks'
+    OBJECTS pt = PickingTask
+    PROPERTIES(pt) READONLY '' = html
+    
+    FILTERS NOT done(pt)
+;
+
+DESIGN pickingTasksMobile {
+    size = (400, 600);
+    OBJECTS {
+        MOVE GRID(pt);
+        REMOVE BOX(pt);
+    }
+    NEW actions {
+        horizontal = TRUE;
+        alignment = STRETCH;
+        MOVE PROPERTY(formOk()) { fill = 1; }
+        MOVE PROPERTY(formClose()) { fill = 1; }
+    }
+    REMOVE TOOLBARBOX;
+}
+
+FORM pickingTaskMobile 'Picking'
+    OBJECTS t = PickingTask PANEL
+    PROPERTIES(t) html ON CHANGE {
+                            DIALOG pickingTasksMobile OBJECTS pt = t INPUT DO {
+                                SEEK pickingTaskMobile.t = pt;
+                            }
+                        },
+                  markAsDone
+    FILTERS NOT done(t),
+            accessGranted(location(t)) OR NOT location(t)
+    
+    OBJECTS p = Product
+    PROPERTIES READONLY '' = htmlPicking(p), '' = left(t, p)
+    PROPERTIES READONLY PANEL '' = image(p) SHOWIF image(p), '' = propertiesHtmlList(t, p)
+    FILTERS left(t, p)
+    
+    OBJECTS l = PickingLine
+    PROPERTIES(l) '' = html READONLY, '' = quantity ON CHANGE { 
+                        INPUT q = quantity(l) DO { 
+                            NEWSESSION { APPLY { quantity(l) <- q; } } 
+                        }
+                    }
+    FILTERS task(l) = t
+;
+
+DESIGN pickingTaskMobile {
+    OBJECTS {
+        class = '';
+        NEW pickingTask {
+            horizontal = TRUE;
+            alignment = STRETCH;
+            MOVE PROPERTY(markAsDone(t)) {
+                alignment = STRETCH;
+            }
+            MOVE PROPERTY(html(t)) {
+                caption = '';
+                alignment = STRETCH;
+            }
+        }
+        MOVE GRID(p) {
+            PROPERTY(htmlPicking(p)) { charWidth = 30; }
+            PROPERTY(left(t, p)) { charWidth = 4; }
+        }
+        REMOVE BOX(p);
+        
+        NEW tabbed {
+            tabbed = TRUE;
+            fill = 1;
+            NEW picked {
+                caption = 'Picked';
+                MOVE GRID(l) {
+                    PROPERTY(html(l)) { charWidth = 30; }
+                    PROPERTY(quantity(l)) { charWidth = 4; }
+                }
+                REMOVE BOX(l);
+            }
+            NEW description {
+                caption = 'Description';
+                horizontal = TRUE;
+                NEW image {
+                    fill = 2;
+                    MOVE PROPERTY(image(p)) {
+                        size = (100, 100); 
+                        fill = 1; 
+                    }
+                }
+                MOVE PROPERTY(propertiesHtmlList(t, p)) { fill = 1; }
+            }
+        }
+    }
+    REMOVE TOOLBARBOX;
+}
+
+pick 'Pick' (PickingTask t, Product p) {
+    NEWSESSION {
+        NEW pl = PickingLine {
+            task(pl) <- t;
+            product(pl) <- p;
+            quantity(pl) <- 1;
+            SEEK pickingTaskMobile.l = pl;
+        }
+        APPLY;
+    }
+}
+
+EXTEND FORM pickingTaskMobile
+    PROPERTIES(t, p) pick
+    
+    PROPERTIES() barCode ON CHANGE {
+        INPUT b = STRING DO
+            FOR Product pb = itemBarCode(b) AS Product DO {
+                IF NOT left(t, pb) THEN {
+                    MESSAGE 'Picked quantity exceeds initial demand';
+                    //                    beep(warningSound(), TRUE);
+                } ELSE
+                    pick(t, pb);
+            } ELSE {
+                MESSAGE 'Barcode not found';
+//                beep(warningSound(), TRUE);
+            }
+    }
+;
+DESIGN pickingTaskMobile {
+    OBJECTS {
+        NEW pickingActions AFTER pickingTask {
+            horizontal = TRUE;
+            alignment = STRETCH;
+            MOVE PROPERTY(barCode()) {
+                caption = '';
+                fill = 1;
+                placeholder = 'Barcode';
+                changeKey = r'SPACE';
+            }
+            MOVE PROPERTY(pick(t, p)) {
+                fontSize = 16;
+                alignment = STRETCH;
+            }
+        }
+    }
+}
+
+// keyboard
+DESIGN pickingTaskMobile {
+    OBJECTS {
+        NEW quantityPane { alignment = STRETCH; }
+    }
+}
+@defineKeyboardQuantityApply(pickingTaskMobile, PickingLine, l, quantityPane, 16);
+
+setDemandQuantity '#' (PickingLine l) { 
+    NEWSESSION { APPLY { quantity(l) <- quantity(task(l), product(l)); } } 
+}
+
+EXTEND FORM pickingTaskMobile
+    PROPERTIES(l) setDemandQuantity
+;
+DESIGN pickingTaskMobile {
+    quantityActions {
+        MOVE PROPERTY(setDemandQuantity(l)) { fill = 1; fontSize = 16; focusable = FALSE; }
+    }
+}
+
+
+NAVIGATOR {
+    dashboards {
+        NEW 'Mobile picking' = pickingTaskMobile;
+    }
+}
+
+showMobileForms() + {
+    IF permit(currentUser(), navigatorElementCanonicalName('Inventory.pickingTaskMobile')) THEN
+        SHOW pickingTaskMobile NOWAIT;
+}

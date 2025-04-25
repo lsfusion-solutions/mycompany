@@ -1,0 +1,19 @@
+MODULE PartnerCall;
+
+REQUIRE Partner, Call;
+
+NAMESPACE MasterData;
+
+call 'Call to' (Partner p) {
+    call(phone(p));
+}
+
+EXTEND FORM partner
+    PROPERTIES(p) call SHOWIF callAvailable() AND phone(p)
+;
+
+DESIGN partner {
+    secondaryActions {
+        MOVE PROPERTY(call(p)) { valueClass = 'btn-info'; }
+    }
+}

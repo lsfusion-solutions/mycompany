@@ -36,7 +36,7 @@ META defineNameFilter(form, obj, container)
     ;
     DESIGN form {
         container {
-            MOVE PROPERTY(nameFilter()) { placeholder = 'Name'; alignment = STRETCH; }
+            MOVE PROPERTY(nameFilter()) { placeholder = '{Name}'; alignment = STRETCH; }
         }
     }
 END
@@ -181,4 +181,58 @@ META defineKeyboardDecimal (form, container, size)
         }
     }
 
+END
+
+META defineKeyboardQuantityForm (form, obj, container, size)
+    EXTEND FORM form
+        PROPERTIES(obj) increaseQuantity, decreaseQuantity
+    ;
+
+    DESIGN form {
+        container {
+            NEW quantityActions {
+                horizontal = TRUE;
+                alignment = STRETCH;
+                NEW searchKeyboard {
+                    fill = 1;
+                    lines = 5;
+                }
+                MOVE PROPERTY(increaseQuantity(obj)) { fill = 1; fontSize = size; focusable = FALSE; }
+                MOVE PROPERTY(decreaseQuantity(obj)) { fill = 1; fontSize = size; focusable = FALSE; }
+            }
+        }
+    }
+END
+
+META defineKeyboardQuantityApply (form, cls, obj, container, size)
+    afterChangeQuantity ABSTRACT LIST (cls);
+    setQuantity(cls o, INTEGER n) { 
+        NEWSESSION { APPLY { quantity(o) <- n IF n > 0; afterChangeQuantity(o); } } 
+    }
+
+    increaseQuantity '+' (cls o) {
+        NEWSESSION { APPLY { quantity(o) <- quantity(o) (+) 1; afterChangeQuantity(o); } } 
+    }
+    decreaseQuantity '-' (cls o) {
+        NEWSESSION { APPLY { quantity(o) <- quantity(o) (-) 1; afterChangeQuantity(o); } }
+    }
+
+    @defineKeyboardQuantityForm(form, obj, container, size);
+    @defineKeyboard(form, cls, obj, searchKeyboard, size, setQuantity);
+END
+
+META defineKeyboardQuantity (form, cls, obj, container, size)
+    setQuantity(cls o, INTEGER n) { 
+        quantity(o) <- n IF n > 0;
+    }
+
+    increaseQuantity '+' (cls o) { 
+        quantity(o) <- quantity(o) (+) 1; 
+    }
+    decreaseQuantity '-' (cls o) { 
+        quantity(o) <- quantity(o) (-) 1; 
+    }
+
+    @defineKeyboardQuantityForm(form, obj, container, size);
+    @defineKeyboard(form, cls, obj, searchKeyboard, size, setQuantity);
 END

@@ -1,0 +1,106 @@
+MODULE LeadKanban;
+
+REQUIRE Lead;
+
+PRIORITY MasterData;
+
+NAMESPACE CRM;
+
+leadStatuses () = JSON FROM id = LeadStatus s, name(s) WHERE s IS LeadStatus AND NOT closed(s) AND (allow(leadType(), s) OR NOT leadType())
+                               ORDER sortingOrder(s), s;
+leadEmployees () = JSON FROM id = Employee e, name(e) WHERE name(e);
+
+jsonTags (Lead l) = JSON FROM name(LeadTag tg), idColor(tg) WHERE in(l, tg);
+
+order = DATA LONG (CustomUser, Lead);
+currentOrder (Lead l) =  order(currentUser(), l);
+
+createLeadStatus() {
+    INPUT id = LONG DO {
+        NEWSESSION {
+            NEW ll = Lead {
+                FOR LONG(LeadStatus s AS LeadStatus) = id DO
+                    status(ll) <- s;
+                order(currentUser(), ll) <- -LONG(ll);
+                SHOW lead OBJECTS l = ll DOCKED;
+            }
+        }
+    }
+}
+
+EXTEND FORM leads
+    OBJECTS ll = Lead CUSTOM 'leadKanban'
+    HEADER JSON FROM employees = leadEmployees(), statuses = leadStatuses()
+    PROPERTIES(ll) name = idName,
+                   tags = jsonTags,
+                   nameType,
+                   nameCustomer,
+                   expectedRevenue,
+                   namePriority,
+                   expectedClosing,
+                   status ON CHANGE {
+                       INPUT ln = LONG DO
+                           FOR LONG(LeadStatus ts AS LeadStatus) = ln DO
+                               status(ll) <- ts;
+                           ELSE
+                               status(ll) <- NULL;
+                   },
+                   idColorPriority,
+                   nameSalesPerson,
+                   currentOrder ON CHANGE {
+                       INPUT ord = INTEGER DO order(currentUser(), ll) <- ord;
+                   }
+
+    ORDERS status(ll), currentOrder(ll)
+    FILTERS opened(ll)
+
+    FILTERS [FILTER leads.l](ll)
+
+    PROPERTIES() createLeadStatus
+
+    PROPERTIES(ll) PANEL pname = name, pnameType = nameType, pnameCustomer = nameCustomer, pexpectedRevenue = expectedRevenue, 
+                         pnamePriority = namePriority, ptags = tags,
+                         pnameSalesPerson = nameSalesPerson, pexpectedClosing = expectedClosing, pdescription = description,
+                         edit = EDIT NEWSESSION, delete = DELETE
+;
+
+DESIGN leads {
+    tabbedPane {
+        NEW kanban FIRST {
+            caption = 'Kanban';
+            MOVE GRID(ll) {
+                size = (400, 200);
+                fill = 1;
+                MOVE PROPERTY(pname) { alignment = STRETCH; }
+                MOVE PROPERTY(pnameType) { alignment = STRETCH; }
+                MOVE PROPERTY(pnameCustomer) { alignment = STRETCH; }
+                MOVE PROPERTY(pexpectedRevenue) { alignment = STRETCH; }
+                MOVE PROPERTY(pnamePriority) { alignment = STRETCH; }
+                MOVE PROPERTY(ptags) { alignment = STRETCH; }
+                MOVE PROPERTY(pnameSalesPerson) { alignment = STRETCH; }
+                MOVE PROPERTY(pexpectedClosing) { alignment = STRETCH; }
+                MOVE PROPERTY(pdescription) {
+                    size = (300, 120);
+                    panelCaptionVertical = TRUE;
+                    alignment = STRETCH;
+                }
+                NEW panelActions {
+                    horizontal = TRUE;
+                    MOVE PROPERTY(edit) { fill = 1; }
+                    MOVE PROPERTY(delete) { fill = 1; }
+                    alignment = STRETCH;
+                }
+            }
+            REMOVE PROPERTY(createLeadStatus());
+            REMOVE BOX(ll);
+        }
+    }
+}
+
+// change interval
+onWebClientInit() + {
+    onWebClientInit('dragula.js') <- 1;
+    onWebClientInit('dragula.css') <- 1;
+    onWebClientInit('leadkanban.js') <- 2;
+    onWebClientInit('leadkanban.css') <- 2;
+}

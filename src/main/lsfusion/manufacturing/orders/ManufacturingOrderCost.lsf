@@ -36,12 +36,15 @@ location(ConsumedInCostLedger l) += costLocation(productsLocation(manufacturingO
 product(ConsumedInCostLedger l) += item(line(l)) AS Product;
 quantity(ConsumedInCostLedger l) += produced(line(l));
 
-cost 'Cost' (ManufacturingOrder o) = GROUP SUM amount(ConsumedOutCostLedger l) IF manufacturingOrder(line(l)) = o;
+cost 'Cost' (ManufacturingOrder o) = GROUP SUM amount(ConsumedOutCostLedger l) IF manufacturingOrder(line(l)) = o MATERIALIZED;
+extraCost 'Extra cost' = ABSTRACT VALUE NUMERIC[14,2] (ManufacturingOrder) MATERIALIZED;
 
-calcAmount (ConsumedInCostLedger l) += NUMERIC[14,2](cost(manufacturingOrder(line(l))) * normalizedCostRatio(line(l)));
+totalCost 'Total cost' (ManufacturingOrder o) = cost(o) (+) extraCost(o);
+
+calcAmount (ConsumedInCostLedger l) += NUMERIC[14,2](totalCost(manufacturingOrder(line(l))) * normalizedCostRatio(line(l)));
 
 edit(ConsumedInCostLedger l) + { edit(line(l)); }
 
 EXTEND FORM manufacturingOrders
-    PROPERTIES(o) READONLY cost
+    PROPERTIES(o) READONLY cost, extraCost, totalCost
 ;

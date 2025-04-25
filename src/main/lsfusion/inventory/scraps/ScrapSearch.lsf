@@ -7,10 +7,12 @@ NAMESPACE Inventory;
 @defineDocSearch(scrap, product, quantity, 'Quantity', s);
 @defineBarCodeSearch(scrap, s, l, quantity);
 
+onHand 'On hand' (Scrap s, Product p) = prevOnHandRec(location(s), p);
+expected 'Expected' (Scrap s, Product p) = prevExpectedRec(location(s), p);
 available 'Available' (Scrap s, Product p) = prevAvailableRec(location(s), p); 
 
 EXTEND FORM scrap
-    PROPERTIES(s, itm) READONLY available
+    PROPERTIES(s, itm) READONLY onHand, expected, available
     FILTERGROUP available
         FILTER 'Available' available(s, itm) 'F5' DEFAULT
 ;

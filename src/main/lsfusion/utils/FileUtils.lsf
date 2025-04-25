@@ -4,6 +4,9 @@ NAMESPACE Utils;
 
 uploadFile 'Upload' = DATA LOCAL NAMEDFILE ();
 
+previewPdfFile = DATA LOCAL NESTED PDFFILE();
+previewImageFile = DATA LOCAL NESTED IMAGEFILE();
+
 META defineObjectFilesForm(object, form, fobj)
     EXTEND FORM form
         OBJECTS of = ###object##File
@@ -28,12 +31,51 @@ META defineObjectFilesForm(object, form, fobj)
 
     DESIGN form {
         details {
-            MOVE BOX(of) {
+            NEW files {
                 caption = badged('Files', countFiles(fobj));
+                MOVE BOX(of) { width = 600; caption = ''; }
                 MOVE PROPERTY(inputFile);
             }
         }
     }
+    
+    // preview
+    
+    EXTEND FORM form
+        PROPERTIES() READONLY previewPdfFile SHOWIF previewPdfFile(), previewImageFile SHOWIF NOT previewPdfFile()
+
+        EVENTS ON CHANGE of {
+            previewPdfFile() <- NULL;
+            previewImageFile() <- NULL;
+            IF lower(extension(of)) = 'jpg' OR lower(extension(of)) = 'jpeg' OR lower(extension(of)) = 'png' OR lower(extension(of)) = 'bmp' THEN {
+                previewImageFile() <- IMAGEFILE(file(of));
+            }
+            IF lower(extension(of)) = 'pdf' THEN {
+                previewPdfFile() <- PDFFILE(file(of));
+            }
+            IF lower(extension(of)) = 'doc' OR lower(extension(of)) = 'docx' THEN {
+                TRY {
+                    wordToPdf(file(of));
+                } CATCH {}
+                previewPdfFile() <- exportPdfFile();
+            }
+        }
+    ;
+
+    DESIGN form {
+        files {
+            horizontal = TRUE;
+            height = 300;
+            NEW preview {
+                width = 300;
+                height = 600;
+                fill = 4;
+                MOVE PROPERTY(previewPdfFile()) { fill = 1; size = (100, 100); caption = ''; }
+                MOVE PROPERTY(previewImageFile()) { fill = 1; size = (100, 100); caption = ''; }
+            }
+        }
+    }
+
 END
 
 META defineObjectFiles(object, fobj, classCaption)
@@ -47,8 +89,11 @@ META defineObjectFiles(object, fobj, classCaption)
     name '{Name}' = DATA ISTRING (###object##File) CHARWIDTH 15;
     extension 'Extension' = DATA ISTRING (###object##File) CHARWIDTH 5;
     nameExtension (###object##File f) = CONCAT '.', name(f), extension(f);
+    
+    fileExtension (###object##File f) = file(file(f), extension(f));
+    namedFile (###object##File f) = namedFile(file(f), name(f), extension(f));
 
-    description 'Description' = DATA ISTRING (###object##File) CHARWIDTH 30;
+    description 'Description' = DATA ISTRING (###object##File) CHARWIDTH 20;
 
     dateTime 'Date' = DATA DATETIME (###object##File);
     dateTime(###object##File f) <- currentDateTime() WHEN SET(f IS ###object##File);
@@ -61,7 +106,7 @@ META defineObjectFiles(object, fobj, classCaption)
 
     countFiles 'Files' (###object i) = GROUP SUM 1 IF object(###object##File f) = i;
 
-    index '{Index}' (###object##File f) = PARTITION SUM 1 ORDER f BY object(f) MATERIALIZED;
+    index '{Index}' (###object##File f) = PARTITION SUM 1 ORDER f BY object(f) MATERIALIZED CHARWIDTH 3;
     file (###object o, INTEGER i) = GROUP MIN ###object##File f IF object(f) = o AND index(f) = i;
     openFile(###object o, INTEGER i) { open(file(o, i)); }
     
@@ -87,7 +132,13 @@ META defineObjectFiles(object, fobj, classCaption)
             extension(uof) <- extension(uf);
         }
     } IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
-
+        
+    download###object##File (LONG id) {
+        FOR LONG(###object##File f AS ###object##File) = id DO {
+            exportNamedFile() <- namedFile(f);
+        } 
+    } @@api;
+        
     @defineObjectFilesForm(object, object, fobj);
 
 END

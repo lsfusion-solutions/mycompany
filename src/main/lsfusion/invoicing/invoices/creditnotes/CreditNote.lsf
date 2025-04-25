@@ -92,8 +92,14 @@ DESIGN invoice {
 }
 
 // returned quantity
+checkReturnedQuantity 'Check returned quantity' = DATA BOOLEAN (InvoiceType);
+EXTEND FORM invoiceType PROPERTIES(o) checkReturnedQuantity;
+
 returned 'Returned' (InvoiceLine il) = 
     GROUP SUM quantity(BillLine bl) IF invoiceLine(bl) = il AND active(bill(bl));
+
+CONSTRAINT SET(returned(InvoiceLine il) > OVERRIDE quantity(il), 0.0) AND checkReturnedQuantity(type(il))
+    MESSAGE 'The returned quantity on the invoice line exceeds the original quantity';
 
 FORM invoiceBillShow 'Refunds'
     OBJECTS il = InvoiceLine

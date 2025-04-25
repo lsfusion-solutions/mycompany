@@ -1,0 +1,30 @@
+MODULE ProjectPayslipLedger;
+
+REQUIRE Project, PayslipLedger;
+
+NAMESPACE ProjectManagement;
+
+project = ABSTRACT Project (PayslipLedger) MATERIALIZED;
+nameProject 'Project' (PayslipLedger l) = name(project(l));
+
+total 'Total' (Payslip p, PayslipCategory c, Project pr) = GROUP SUM total(PayslipLedger l) IF payslip(l) = p AND category(l) = c AND project(l) = pr MATERIALIZED;
+
+EXTEND FORM payslip
+    PROPERTIES(pl) BACKGROUND RGB(255,212,212) IF deduction(pl)
+        nameProject ORDER 
+;
+
+EXTEND FORM project
+    OBJECTS psl = PayslipLedger
+    PROPERTIES(psl) READONLY BACKGROUND RGB(255,212,212) IF deduction(psl)
+                number, period, nameEmployee, nameCategory, quantity, amount, total, description
+    FILTERS project(psl) = p
+;
+
+DESIGN project {
+    details {
+        MOVE BOX(psl) {
+            caption = 'Payslips'; 
+        }
+    }
+}

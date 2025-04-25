@@ -35,8 +35,9 @@ EXTEND FORM pricelist
     FILTERS dt = startDateTime(p)
     
     OBJECTS i = Item
-    PROPERTIES READONLY name(i), nameUom(i), idBarCode(i), id(i), 
-                        overCost(i, dt) SHOWIF showCost(type(p)),
+    PROPERTIES(i) READONLY name, nameUom, idBarCode, id,
+                           nameCategory, level1, level2, level3, level4
+    PROPERTIES READONLY overCost(i, dt) SHOWIF showCost(type(p)),
                         markup(t, i, dt) COLUMNS 'p' (t) HEADER name(t) + ', %' SHOWIF showMarkup(type(p), t),
                         priceB(t, i, dt) COLUMNS 'p' (t) HEADER name(t)
     ORDERS name(i)
@@ -55,6 +56,11 @@ DESIGN pricelist {
             MOVE BOX(TREE categories);
             MOVE BOX(i) { 
                 fill = 2;
+                PROPERTY(nameCategory(i)) { hide = TRUE; }
+                PROPERTY(level1(i)) { hide = TRUE; }
+                PROPERTY(level2(i)) { hide = TRUE; }
+                PROPERTY(level3(i)) { hide = TRUE; }
+                PROPERTY(level4(i)) { hide = TRUE; }
             }
             PROPERTY(markup(t, i, dt)) { background = RGB(212,242,252); }
             PROPERTY(priceB(t, i, dt)) { background = RGB(198,230,247); }
@@ -70,5 +76,6 @@ selectAll 'Select all' (Pricelist pr, Category c) {
 }
 
 EXTEND FORM pricelist
-    PROPERTIES in(i, p) ON CHANGE changeIn(i, p) BEFORE name(i), selectAll(p, c) DRAW i TOOLBAR 
+    PROPERTIES in(i, p) ON CHANGE changeIn(i, p) BEFORE name(i) READONLYIF readonly(p), 
+               selectAll(p, c) DRAW i TOOLBAR DISABLEIF readonly(p)
 ;

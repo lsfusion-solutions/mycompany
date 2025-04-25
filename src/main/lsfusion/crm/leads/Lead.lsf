@@ -1,0 +1,322 @@
+MODULE Lead;
+
+REQUIRE CRMSettings, Employee, DateUtils, ObjectUtils,
+        Doc, FileUtils, Comments, Activity,
+        LeadType, LeadPriority, LeadTag, LeadStatus;
+
+NAMESPACE CRM;
+
+CLASS Lead '{Lead}';
+
+readonly = ABSTRACT CASE BOOLEAN (Lead);
+
+dateTime 'Date' = DATA DATETIME (Lead) NONULL IN id;
+WHEN LOCAL SET (Lead l IS Lead) AND NOT CHANGED(dateTime(l)) DO dateTime(l) <- currentDateTime();
+@defineDateTimeAggregation(Lead);
+
+@defineID(lead, 'Leads', '', 6);
+
+@definePropertyObject(lead);
+
+name '{Name}' = DATA ISTRING (Lead) CHARWIDTH 30 IN id;
+@definePropertyValue(lead, name, '{Name}');
+propertyLongLead (STRING p) += p = '{Name}';
+
+idName '{Name}' (Lead l) = CONCAT ' ', '#' + id(l), name(l);
+
+prefixName = ABSTRACT VALUE ISTRING (Lead);
+fullName (Lead l) = CONCAT ' - ', prefixName(l), name(l);
+
+customer 'Customer' = DATA Partner (Lead) INDEXED;
+nameCustomer 'Customer' (Lead l) = name(customer(l));
+@definePropertyValue(lead, customer, 'Customer', nameCustomer);
+
+prefixName (Lead l) += nameCustomer(l);
+
+countLeads (Partner p) = GROUP SUM 1 IF customer(Lead l) = p;  
+
+salesPerson 'Sales person' = DATA Employee (Lead);
+nameSalesPerson 'Sales person' (Lead l) = name(salesPerson(l));
+WHEN LOCAL SET(Lead l IS Lead) AND NOT salesPerson(l) AND currentUser() IS Employee DO salesPerson(l) <- currentUser();
+@definePropertyValue(lead, salesPerson, 'Sales person', nameSalesPerson);
+
+expectedClosing 'Expected closing' = DATA DATE (Lead);
+@defineDateAggregation(Lead, expectedClosing, expectedClosing, 'Expected closing ');
+@definePropertyValue(lead, expectedClosing, 'Expected closing');
+
+description 'Description' = DATA RICHTEXT (Lead) CHARWIDTH 20;
+
+status 'Status' = DATA LeadStatus (Lead);
+nameStatus 'Status' (Lead l) = name(status(l)) IN id;
+@definePropertyValue(lead, status, 'Status', nameStatus);
+
+status (Lead l) <- firstLeadStatus() WHEN SET(l IS Lead);
+
+closed 'Closed' (Lead l) = closed(status(l));
+opened 'Opened' (Lead l) = l IS Lead AND NOT closed(l);
+
+type 'Type' = DATA LeadType (Lead);
+nameType 'Type' (Lead t) = name(type(t)) IN id;
+@definePropertyValue(lead, type, 'Type', nameType);
+
+WHEN LOCAL SET(Lead t IS Lead) AND NOT CHANGED(type(t)) DO type(t) <- defaultLeadType();
+
+WHEN LOCAL SETCHANGED(type(Lead l)) AND NOT allow(type(l), status(l)) DO
+    status(l) <- firstLeadStatus(type(l));     
+
+CONSTRAINT SETCHANGED(status(Lead l)) AND type(l) AND NOT allow(type(l), status(l))
+    CHECKED BY status[Lead]
+    MESSAGE 'Status is not allowed for the selected type';
+
+priority 'Priority' = DATA LeadPriority (Lead);
+namePriority 'Priority' (Lead l) = name(priority(l));
+idColorPriority (Lead l) = idColor(priority(l));
+rgbColorPriority (Lead l) = rgbColor(priority(l));
+@definePropertyValue(lead, priority, 'Priority', namePriority);
+
+in 'Incl.' = DATA BOOLEAN (Lead, LeadTag);
+tags 'Tags' (Lead l) = GROUP CONCAT name(LeadTag tg) IF in(l, tg), ', ' ORDER name(tg), tg;
+@definePropertyValue(lead, tags, 'Tags');
+
+// revenue
+
+expectedRevenue 'Expected revenue' = DATA NUMERIC[12,2] (Lead);
+probability 'Probability' = DATA NUMERIC[6,2] (Lead);
+
+// company
+phone 'Phone' = DATA ISTRING[100] (Lead) CHARWIDTH 12;
+email 'Email' = DATA ISTRING[400] (Lead) CHARWIDTH 20 REGEXP '[\\-!#-\'*+\\/-9=?A-Z^-~]+(\\.[\\-!#-\'*+\\/-9=?A-Z^-~]+)*@[0-9A-Za-z]([0-9A-Za-z\\-]\{0,61\}[0-9A-Za-z])?(\\.[0-9A-Za-z]([0-9A-Za-z\\-]\{0,61\}[0-9A-Za-z])?)+' '{authentication.email.contact.incorrect}' IN id;
+
+leadPhone (ISTRING[100] phone) = GROUP MAX Lead l BY phone(l);
+leadEmail (ISTRING[400] email) = GROUP MAX Lead l BY email(l);
+
+address 'Address' = DATA ISTRING[150] (Lead) CHARWIDTH 30;
+city 'City' = DATA ISTRING[50] (Lead) CHARWIDTH 12;
+state 'State' = DATA ISTRING[50] (Lead) CHARWIDTH 12;
+zip 'Postcode' = DATA ISTRING[10] (Lead);
+
+addressCsv 'Address' (Lead l) = CONCAT ', ', address(l), city(l), state(l) IF NOT state(l) = city(l), zip(l) CHARWIDTH 20;
+addressLines 'Address' (Lead l) = CONCAT '\n ', address(l), city(l), state(l) IF NOT state(l) = city(l), zip(l);
+
+website 'Web site' = DATA ISTRING[30] (Lead);
+
+legalEntityName 'Legal entity name' = DATA ISTRING[92] (Lead) CHARWIDTH 15;
+
+// contact
+firstName '{First_name}' = DATA ISTRING[30] (Lead);
+lastName 'Surname' = DATA ISTRING[30] (Lead);
+middleName 'Middle name' = DATA ISTRING[30] (Lead);
+
+position = DATA Position (Lead);
+namePosition 'Position' (Lead l) = name(position(l));
+
+FORM lead '{Lead}'
+    OBJECTS l = Lead PANEL
+    PROPERTIES(l) id, name, nameStatus SELECT 'buttonGroup',
+                  dateTime, expectedRevenue, probability, expectedClosing,
+                  nameType, nameCustomer, nameSalesPerson, 
+                  namePriority, tags, 
+                  phone, email,
+                  description,
+                  address, city, state, zip, 
+                  legalEntityName, website,
+                  firstName, lastName, middleName, namePosition
+
+    EDIT Lead OBJECT l
+;
+
+DESIGN lead {
+    OBJECTS {
+        NEW pane {
+            horizontal = TRUE;
+            fill = 1;
+            NEW leftPane {
+                fill = 2;
+                width = 400;
+                NEW header {
+                    alignment = STRETCH;
+                    NEW main {
+                        horizontal = TRUE;
+                        alignment = STRETCH;
+                        MOVE PROPERTY(id(l)) { flex = 0; };
+                        MOVE PROPERTY(name(l)) { flex = 1; fontSize = 16; }
+                    }
+                    NEW revenue {
+                        horizontal = TRUE;
+                        MOVE PROPERTY(dateTime(l));
+                        MOVE PROPERTY(expectedRevenue(l));
+                        MOVE PROPERTY(probability(l));
+                        MOVE PROPERTY(expectedClosing(l));
+                    }
+                    NEW params {
+                        lines = 2;
+                        alignment = STRETCH;
+                        MOVE PROPERTY(nameType(l));
+                        MOVE PROPERTY(nameCustomer(l));
+                        MOVE PROPERTY(email(l));
+                        MOVE PROPERTY(phone(l));
+                        MOVE PROPERTY(nameSalesPerson(l));
+                        MOVE PROPERTY(namePriority(l));
+                        MOVE PROPERTY(tags(l));
+                    }
+                }
+                NEW details {
+                    tabbed = TRUE;
+                    fill = 1;
+                    NEW description {
+                        caption = 'Description';
+                        MOVE PROPERTY(description(l)) { caption = ''; fill = 1; }
+                    }
+                    NEW otherInformation {
+                        caption = 'Other information';
+                        lines = 2;
+                        MOVE PROPERTY(legalEntityName(l));
+                        MOVE PROPERTY(website(l));
+                        
+                        NEW address {
+                            alignment = STRETCH;
+                            MOVE PROPERTY(address(l));
+                            MOVE PROPERTY(city(l));
+                            MOVE PROPERTY(state(l));
+                            MOVE PROPERTY(zip(l));
+                        }
+                        
+                        NEW contact {
+                            alignment = STRETCH;
+                            MOVE PROPERTY(firstName(l));
+                            MOVE PROPERTY(lastName(l));
+                            MOVE PROPERTY(middleName(l));
+                            MOVE PROPERTY(namePosition(l));
+                        }
+                    }
+                }
+            }
+            NEW rightPane {
+                fill = 1;
+                width = 200;
+                NEW relatedDoc {
+                    tabbed = TRUE;
+                    alignment = STRETCH;
+                }
+            }
+        }
+    }
+}
+
+@defineFormStatusContainer(lead);
+DESIGN lead {
+    status {
+        MOVE PROPERTY(nameStatus(l));
+    }
+}
+
+showLead (LONG id) {
+    FOR LONG(Lead l AS Lead) = id DO
+        SHOW lead OBJECTS l = l DOCKED;
+} @@api;
+
+FORM leads '{Leads}'
+    OBJECTS l = Lead BACKGROUND rgbColorPriority(l)
+    PROPERTIES(l) READONLY dateTime, id, name, nameStatus,
+                           nameType, nameCustomer, nameSalesPerson,
+                           namePriority, tags, expectedClosing,
+                           phone, email,
+                           expectedRevenue, probability,
+                           address, city, state, zip,
+                           legalEntityName, website,
+                           firstName, lastName, middleName, namePosition
+    PROPERTIES(l) NEWSESSION NEW, EDIT, DELETE
+
+    FILTERGROUP active
+        FILTER 'Opened' opened(l) 'F8' DEFAULT
+        FILTER 'Closed' closed(l) 'F7'
+
+    FILTERGROUP my
+        FILTER 'My leads' salesPerson(l) = currentUser() 'F6'
+
+    LIST Lead OBJECT l
+;
+
+@defineDocObjectsForm(leads, l, 'Leads');
+    
+@defineHistoryForm(lead, lead, l);
+
+@defineObjectFiles(lead, l, 'Lead file');
+
+@defineObjectActivity(lead, l, rightPane, fullName);
+
+@defineObjectComments(lead, l, rightPane);
+
+@defineObjectCommentsHistory(lead);
+@defineObjectCommentsCreate(lead, history);
+
+@defineObjectCommentsFiles(lead, CRM);
+@defineObjectCommentsCreate(lead, file);
+
+@defineObjectCommentsActivity(lead);
+
+@defineDocStatusChange(lead, 'Lead');
+@defineDocStatusChangeForm(lead, l, 'Lead');
+
+@defineDocFilter(lead, LeadType, type, l, 'Type');
+@defineDocFilter(lead, Employee, salesPerson, l, 'Sales person');
+
+DESIGN leads {
+    PROPERTY(tags(l)) { valueHeight = 18; }
+}
+
+NAVIGATOR {
+    operations {
+        NEW leads;
+    }
+}
+
+// copy
+clone ABSTRACT LIST (Lead, Lead);
+clone (Lead to, Lead from) + {
+    name(to) <- name(from);
+    type(to) <- type(from);
+    customer(to) <- customer(from);
+    salesPerson(to) <- salesPerson(from);
+    
+    description(to) <- description(from);
+    priority(to) <- priority(from);
+    
+    in(to, LeadTag t) <- in(from, t);
+
+    expectedRevenue(to) <- expectedRevenue(from);
+    probability(to) <- probability(from);
+
+    phone(to) <- phone(from);
+    email(to) <- email(from);
+    
+    address(to) <- address(from);
+    city(to) <- city(from);
+    state(to) <- state(from);
+    zip(to) <- zip(from);
+    
+    website(to) <- website(from);
+    legalEntityName(to) <- legalEntityName(from);
+
+    firstName(to) <- firstName(from);
+    lastName(to) <- lastName(from);
+    middleName(to) <- middleName(from);
+
+    position(to) <- position(from);
+}
+
+copy 'Copy' (Lead from)  {
+    NEWSESSION {
+        NEW to = Lead {
+            clone(to, from);
+            SHOW lead OBJECTS l = to DOCKED;
+        }
+    }
+}
+EXTEND FORM lead PROPERTIES(l) copy;
+
+DESIGN lead {
+    secondaryActions {
+        MOVE PROPERTY(copy(l)) { valueClass = 'btn-secondary'; }
+    }
+}

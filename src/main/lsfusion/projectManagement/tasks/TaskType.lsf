@@ -1,0 +1,51 @@
+MODULE TaskType;
+
+REQUIRE ProjectManagementSettings;
+
+NAMESPACE ProjectManagement;
+
+CLASS TaskType 'Task type';
+name '{Name}' = DATA ISTRING[50] (TaskType) NONULL CHARWIDTH 15;
+
+id '{ID}' = DATA STRING[20] (TaskType);
+taskType = GROUP AGGR TaskType t BY id(t);
+
+FORM taskType 'Task type'
+    OBJECTS o = TaskType PANEL
+    PROPERTIES(o) name, id
+
+    EDIT TaskType OBJECT o;
+;
+
+DESIGN taskType {
+    OBJECTS {
+        NEW tabbedPane {
+            fill = 1;
+            tabbed = TRUE;
+        }
+    }
+}
+
+FORM taskTypees 'Task types'
+    OBJECTS o = TaskType
+    PROPERTIES(o) READONLY name, id
+    LIST TaskType OBJECT o
+;
+
+EXTEND FORM options
+    OBJECTS tt = TaskType
+    PROPERTIES(tt) READONLY name, id
+    PROPERTIES(tt) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(tt) { caption = 'Task types'; }
+    }
+}
+
+// default type
+countTaskTypes 'Number of types' () = GROUP SUM 1 IF t IS TaskType;
+firstTaskType = GROUP LAST TaskType r ORDER DESC r WHERE r IS TaskType;
+
+defaultTaskType = firstTaskType() IF countTaskTypes() = 1;

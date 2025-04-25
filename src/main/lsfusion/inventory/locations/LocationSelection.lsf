@@ -1,6 +1,6 @@
 MODULE LocationSelection;
 
-REQUIRE Location, Selection;
+REQUIRE LocationEmployee, Selection;
 
 NAMESPACE Inventory;
 
@@ -13,7 +13,8 @@ FORM dialogLocationsMulti 'Locations'
     PROPERTIES(lt) READONLY name, id
     PROPERTIES(lt) NEWSESSION NEW, EDIT, DELETE
     ORDERS name(lt)
-    FILTERS active(lt)
+    FILTERS active(lt),
+            accessChildGranted(lt)
     
     OBJECTS l = Location BACKGROUND background(l)
     PROPERTIES(l) READONLY
@@ -24,7 +25,8 @@ FORM dialogLocationsMulti 'Locations'
         FILTER 'Children' parent(l) = lt
     
     FILTERS isChild(l, lt),
-            active(l)
+            active(l),
+            accessGranted(l)
 ;
 
 DESIGN dialogLocationsMulti {

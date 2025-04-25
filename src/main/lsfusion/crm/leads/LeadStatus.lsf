@@ -1,0 +1,56 @@
+MODULE LeadStatus;
+
+REQUIRE CRMSettings;
+
+NAMESPACE CRM;
+
+CLASS LeadStatus 'Lead status';
+name '{Name}' = DATA ISTRING[50] (LeadStatus) NONULL CHARWIDTH 15;
+
+id '{ID}' = DATA STRING[20] (LeadStatus);
+leadStatus = GROUP AGGR LeadStatus t BY id(t);
+
+sortingOrder 'Sorting order' = DATA INTEGER (LeadStatus);
+index 'Index' (LeadStatus s) = PARTITION SUM 1 IF s IS LeadStatus ORDER sortingOrder(s), s;
+
+closed 'Closed' = DATA BOOLEAN (LeadStatus);
+
+FORM leadStatus 'Lead status'
+    OBJECTS o = LeadStatus PANEL
+    PROPERTIES(o) name, id, sortingOrder, closed
+
+    EDIT LeadStatus OBJECT o;
+;
+
+DESIGN leadStatus {
+    OBJECTS {
+        NEW tabbedPane {
+            fill = 1;
+            tabbed = TRUE;
+        }
+    }
+}
+
+FORM leadStatuses 'Lead statuses'
+    OBJECTS o = LeadStatus
+    PROPERTIES(o) READONLY name, id, sortingOrder, closed
+    ORDERS sortingOrder(o)
+    
+    LIST LeadStatus OBJECT o
+;
+
+EXTEND FORM options
+    OBJECTS ls = LeadStatus
+    PROPERTIES(ls) READONLY name, id, sortingOrder, closed
+    ORDERS sortingOrder(ls)
+    
+    PROPERTIES(ls) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(ls) { caption = 'Lead statuses'; }
+    }
+}
+
+firstLeadStatus = GROUP LAST LeadStatus l ORDER DESC sortingOrder(l), l WHERE l IS LeadStatus;

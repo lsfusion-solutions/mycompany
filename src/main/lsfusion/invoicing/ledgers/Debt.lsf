@@ -1,12 +1,12 @@
 MODULE Debt;
 
-REQUIRE Partner, Company, Contract, Currency, ExchangeRate, DateUtils;
+REQUIRE Partner, Company, Contract, Currency, ExchangeRate, DateUtils, InvoicingSettings;
 
 NAMESPACE Invoicing;
 
 CLASS ABSTRACT Debt 'Debt';
 active '{Active}' = ABSTRACT BOOLEAN (Debt) MATERIALIZED;
-number 'Number' = ABSTRACT STRING[31] (Debt) MATERIALIZED;
+number 'Number' = ABSTRACT STRING[50] (Debt) CHARWIDTH 10 MATERIALIZED;
 
 dateTime 'Date' = ABSTRACT DATETIME (Debt) MATERIALIZED;
 @defineDateTimeAggregation(Debt);
@@ -26,10 +26,14 @@ contract = ABSTRACT Contract (Debt) MATERIALIZED;
 sourceCurrency = ABSTRACT Currency (Debt) MATERIALIZED;
 nameSourceCurrency 'Source currency' (Debt d) = name(sourceCurrency(d));
 
-sourceAmount 'Source amount' = ABSTRACT NUMERIC[14,2] (Debt) MATERIALIZED;
+sourceAmount 'Source amount' = ABSTRACT VALUE NUMERIC[14,2] (Debt) MATERIALIZED;
+
+skipConvertingDebtToDefaultCurrency 'Skip converting debt to default currency' = DATA BOOLEAN ();
+EXTEND FORM options PROPERTIES() skipConvertingDebtToDefaultCurrency;
+DESIGN options { commons { MOVE PROPERTY(skipConvertingDebtToDefaultCurrency()); } }
 
 currency = ABSTRACT VALUE Currency (Debt) MATERIALIZED;
-currency (Debt d) += defaultCurrency() IF d IS Debt;
+currency (Debt d) += defaultCurrency() IF d IS Debt AND NOT skipConvertingDebtToDefaultCurrency();
 
 rate1 (Debt d, DATE dt) = rate1(currency(d), (OVERRIDE sourceCurrency(d), defaultCurrency()), dt);
 rate1 'Rate' (Debt d) = rate1(d, date(d));

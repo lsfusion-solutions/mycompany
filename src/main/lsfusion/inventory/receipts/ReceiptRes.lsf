@@ -1,0 +1,27 @@
+MODULE ReceiptRes;
+
+REQUIRE ReceiptDone;
+
+NAMESPACE Inventory;
+
+increaseAvailableStock 'Increase available stock' = DATA BOOLEAN (ReceiptType);
+EXTEND FORM receiptType PROPERTIES(o) increaseAvailableStock;
+
+CLASS ReceiptResLedger 'Receipt' : ResLedger;
+resLedger = AGGR ReceiptResLedger WHERE initialDemand(ReceiptLine line) > 0 AND ready(receipt(line)) AND NOT done(receipt(line));
+
+type(ReceiptResLedger l) += nameType(receipt(line(l)));
+
+dateTime(ReceiptResLedger r) += executionDateTime(receipt(line(r)));
+number(ReceiptResLedger r) += number(receipt(line(r)));
+
+location(ReceiptResLedger r) += location(receipt(line(r)));
+
+product(ReceiptResLedger r) += product(line(r));
+reserved(ReceiptResLedger r) += -initialDemand(line(r));
+
+skipAvailable(ReceiptResLedger r) += line(r) AND NOT increaseAvailableStock(type(line(r)));
+
+partner(ReceiptResLedger r) += vendor(receipt(line(r)));
+
+edit (ReceiptResLedger l) + { edit(line(l)); } 

@@ -10,7 +10,6 @@ EXTEND CLASS AdjustmentStatus {
 done 'Done' = DATA BOOLEAN (Adjustment);
 
 status(Adjustment a) += WHEN done(a) THEN AdjustmentStatus.done;
-readonly(Adjustment a) += WHEN done(a) THEN TRUE; 
 
 validate 'Mark as Done' (Adjustment a) {
     APPLY;
@@ -23,7 +22,8 @@ validate 'Mark as Done' (Adjustment a) {
 }
 
 EXTEND FORM adjustment
-    PROPERTIES(a) validate SHOWIF status(a) = AdjustmentStatus.inProgress, done 
+    PROPERTIES(a) validate SHOWIF status(a) = AdjustmentStatus.inProgress, 
+                  done READONLYIF readonly(a) 
 ;
 
 DESIGN adjustment {                               

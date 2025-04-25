@@ -1,0 +1,91 @@
+MODULE LeadInvoice;
+
+REQUIRE Lead, InvoiceCanceled, LocationEmployee;
+
+NAMESPACE CRM;
+
+invoiceType = DATA InvoiceType ();
+nameInvoiceType 'Invoice type' () = name(invoiceType());
+
+EXTEND FORM options PROPERTIES nameInvoiceType();
+DESIGN options { commons { MOVE PROPERTY(nameInvoiceType()); } }
+
+// lines
+lead 'Lead' = DATA Lead (Invoice) INDEXED;
+nameLead 'Lead' (Invoice i) = name(lead(i));
+
+countInvoices (Lead l) = GROUP SUM 1 IF lead(Invoice i) = l MATERIALIZED;
+numberDateInvoices 'Invoices' (Lead l) = GROUP CONCAT numberDate(Invoice i) IF lead(i) = l, ',' ORDER i CHARWIDTH 30;
+
+// form
+openLead (Invoice i) {
+    edit(lead(i)); 
+}
+EXTEND FORM invoice
+    PROPERTIES(i) nameLead ON CHANGE openLead(i) SHOWIF lead(i)
+;
+DESIGN invoice {
+    footer {
+        MOVE PROPERTY(nameLead(i));
+    }
+}
+EXTEND FORM invoices
+    PROPERTIES(i) READONLY nameLead
+;
+EXTEND FORM leads
+    PROPERTIES(l) READONLY numberDateInvoices
+;
+
+fill ABSTRACT LIST (Invoice, Lead);
+leadInvoiceCreated = DATA LOCAL Invoice ();
+newInvoice (Lead l) {
+    NEW i = Invoice {
+        lead(i) <- l;
+        
+        customer(i) <- customer(l);
+
+        type(i) <- invoiceType();
+
+        deliveryAddress(i) <- addressCsv(l);
+
+        fill(i, l);
+
+        leadInvoiceCreated() <- i;
+    }
+}
+
+createInvoice 'Create Invoice' (Lead l) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    NEWSESSION {
+        newInvoice(l);
+        SHOW invoice OBJECTS i = leadInvoiceCreated() DOCKED;
+    }
+}
+
+EXTEND FORM lead
+    PROPERTIES(l) createInvoice SHOWIF invoiceType()
+
+    OBJECTS i = Invoice
+    PROPERTIES(i) READONLY number, dateTime, imagedNameStatus BACKGROUND colorStatus(i), nameType, amount
+    PROPERTIES(i) NEWSESSION EDIT GRID
+    FILTERS lead(i) = l
+;
+
+DESIGN lead {
+    secondaryActions {
+        MOVE PROPERTY(createInvoice(l)) { valueClass = 'btn-secondary'; }
+    }
+    relatedDoc {
+        MOVE BOX(i) {
+            showIf = countInvoices(l);
+            caption = badged('Invoices', countInvoices(l));
+            GRID(i) {
+                width = 100;
+                autoSize = TRUE;
+            }
+        }
+        REMOVE TOOLBARSYSTEM(i);
+    }
+}

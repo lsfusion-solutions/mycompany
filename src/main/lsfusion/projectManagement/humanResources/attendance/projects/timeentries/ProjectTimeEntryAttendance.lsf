@@ -1,0 +1,44 @@
+MODULE ProjectTimeEntryAttendance;
+
+REQUIRE ProjectTimeEntry, ProjectAttendance;
+
+NAMESPACE ProjectManagement;
+
+timeEntry = DATA TimeEntry (Attendance) INDEXED;
+nameTypeTimeEntry 'Time entry' (Attendance a) = nameType(timeEntry(a));
+
+EXTEND FORM attendances
+    PROPERTIES(a) READONLY nameTypeTimeEntry
+;
+
+CONSTRAINT timeEntry(Attendance a) AND NOT
+    ((employee(a) = employee(timeEntry(a))) OR (project(a) = project(timeEntry(a))) OR (checkInDate(a) = date(timeEntry(a))))
+    CHECKED BY timeEntry[Attendance]
+    MESSAGE 'The attendance parameters do not match the time entry';
+
+attendance 'Attendance' = DATA BOOLEAN (TimeEntry);
+EXTEND FORM timeEntries
+    PROPERTIES(t) READONLY attendance
+;
+
+hoursAttendance (TimeEntry t) = round1((GROUP SUM seconds(Attendance a) IF timeEntry(a) = t) / 3600.0);
+WHEN CHANGED(hoursAttendance(TimeEntry t)) AND attendance(t) DO hours(t) <- hoursAttendance(t);
+WHEN DROPPED(hoursAttendance(TimeEntry t)) AND attendance(t) DO DELETE t;
+
+attendanceTimeEntry (DATE d, Employee e, Project p) = GROUP MIN TimeEntry t IF employee(t) = e AND project(t) = p AND date(t) = d AND attendance(t);
+
+attendanceTimeEntryType = DATA TimeEntryType ();
+nameAttendanceTimeEntryType 'Time entry type for attendance' () = name(attendanceTimeEntryType());
+EXTEND FORM options PROPERTIES() nameAttendanceTimeEntryType;
+DESIGN options { commons { MOVE PROPERTY(nameAttendanceTimeEntryType()); } }
+
+WHEN (CHANGED(employee(Attendance a)) OR CHANGED(project(a)) OR CHANGED(checkInDate(a)) OR CHANGED(checkOut(a))) AND seconds(a) DO {
+    IF NOT attendanceTimeEntry(checkInDate(a), employee(a), project(a)) THEN NEW t = TimeEntry {
+        date(t) <- checkInDate(a);
+        employee(t) <- employee(a);
+        project(t) <- project(a);
+        attendance(t) <- TRUE;
+        type(t) <- attendanceTimeEntryType();
+    }
+    timeEntry(a) <- attendanceTimeEntry(checkInDate(a), employee(a), project(a));
+}

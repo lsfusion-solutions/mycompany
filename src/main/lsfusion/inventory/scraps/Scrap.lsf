@@ -8,7 +8,7 @@ NAMESPACE Inventory;
 
 CLASS Scrap 'Scrap';
 
-@defineDocStatus(scrap, 'Scrap');
+@defineDocStatus(scrap, 'Scrap status');
 
 // type
 type 'Type' = DATA ScrapType (Scrap) NONULL;
@@ -53,10 +53,11 @@ quantity 'Qty' = DATA NUMERIC[16,3] (ScrapLine);
 
 FORM scrap 'Scrap'
     OBJECTS s = Scrap PANEL 
-    PROPERTIES(s) nameType, dateTime, number, nameLocation, note
+    PROPERTIES(s) READONLYIF readonly(s) nameType, dateTime, number, nameLocation, note
     
     OBJECTS l = ScrapLine
-    PROPERTIES(l) index, nameProduct, nameUom, idBarCodeProduct, idProduct, referenceProduct, quantity, NEW, DELETE
+    PROPERTIES(l) READONLYIF readonly(s)
+                  index, nameProduct, nameUom, idBarCodeProduct, idProduct, referenceProduct, quantity, NEW, DELETE
     FILTERS scrap(l) = s
     
     EDIT Scrap OBJECT s
@@ -80,14 +81,16 @@ DESIGN scrap {
             }
         }
     }
+    TOOLBARBOX {
+        NEW footer FIRST {
+            horizontal = TRUE;
+        }
+    }
 }
 
 edit (ScrapLine l) + { SHOW scrap OBJECTS s = scrap(l), l = l DOCKED; }
 
-@defineDocHistory(scrap, s, product);
-@defineDocHistoryLineProperty(scrap, ScrapLine, quantity, 'Qty', nameProduct);
-
-FORM scraps 'Scrap'
+FORM scraps 'Scraps'
     OBJECTS s = Scrap 
     PROPERTIES(s) READONLY number, dateTime, nameType, nameLocation, note
     PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
@@ -104,10 +107,15 @@ DESIGN scraps {
     }
 }
 
+@defineDocHistory(scrap, s, product);
+@defineDocHistoryLineProperty(scrap, ScrapLine, quantity, 'Qty', nameProduct);
+
 @defineDocStatusForm(scrap, s);
 @defineDocLinesCount(scrap, s);
 @defineDocLocationAccess(scrap, s);
 @defineDateFilterForm(scraps, s);
+
+@defineObjectComments(scrap, s, details);
 
 NAVIGATOR {
     operations {

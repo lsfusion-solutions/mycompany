@@ -1,0 +1,27 @@
+MODULE ProjectPayslipLine;
+
+REQUIRE ProjectPayslipLedger, PayslipLine;
+
+NAMESPACE ProjectManagement;
+
+project = DATA Project (PayslipLine);
+project (PayslipLine l) += project(l);
+
+line (Payslip p, PayslipCategory c, Project pr) = GROUP MIN PayslipLine l IF payslip(l) = p AND category(l) = c AND project(l) = pr;
+
+changeTotal (Payslip p, PayslipCategory c, Project pr) {
+    INPUT n = total(p, c, pr) DO
+        IF n OR description(line(p, c, pr)) THEN {
+            IF NOT line(p, c, pr) THEN NEW pl = PayslipLine {
+                payslip(pl) <- p;
+                category(pl) <- c;
+                project(pl) <- pr;
+            }
+            total(line(p, c, pr)) <- n;
+        } ELSE
+            DELETE PayslipLine pl WHERE payslip(pl) = p AND category(pl) = c AND project(pl) = pr;
+}
+
+clone(PayslipLine to, PayslipLine from) +{
+    project(to) <- project(from);
+}

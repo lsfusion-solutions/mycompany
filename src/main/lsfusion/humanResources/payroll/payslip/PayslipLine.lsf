@@ -1,0 +1,39 @@
+MODULE PayslipLine;
+
+REQUIRE PayslipLedger;
+
+NAMESPACE Payroll;
+
+@definePayslipDetail(line, 'Payslip line');
+
+line (Payslip p, PayslipCategory c) = GROUP MIN PayslipLine l IF payslip(l) = p AND category(l) = c;
+
+description 'Description' = DATA ISTRING (PayslipLine) CHARWIDTH 15;
+description (PayslipLine l) += description(l);
+
+newLine 'Add' (Payslip p) {
+    NEW l = PayslipLine {
+        payslip(l) <- p;
+        SEEK payslip.pl = l;
+        ACTIVATE PROPERTY payslip.nameCategory(pl);
+    }
+} IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+
+EXTEND FORM payslip
+    PROPERTIES(p) newLine DRAW pl TOOLBAR
+;
+
+clone ABSTRACT LIST (PayslipLine, PayslipLine);
+clone (PayslipLine to, PayslipLine from) + {
+    category(to) <- category(from);
+    quantity(to) <- quantity(from);
+    amount(to) <- amount(from);
+    description(to) <- description(from);
+}
+
+clone (Payslip to, Payslip from) +{
+    FOR payslip(PayslipLine l) = from INLINE NEW nl = PayslipLine DO {
+        payslip(nl) <- to;
+        clone(nl, l);
+    }
+}

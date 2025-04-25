@@ -11,6 +11,8 @@ pricelistLineB (PriceType t, Item i, DATETIME d) =
           ORDER startDateTime(pricelist(prl)), prl;
 
 priceB 'Price' (PriceType t, Item i, DATETIME d) = price(pricelistLineB(t, i, d), t);
+prevPriceB 'Price' (PriceType t, Item i, DATETIME d) = PREV(priceB(t, i, d));
+numberPricelist 'Pricelist' (PriceType t, Item i, DATETIME d) = number(pricelistLineB(t, i, d));
 
 pricelistLineA (PriceType t, Item i, DATETIME d) = 
     GROUP LAST PricelistLine prl IF item(prl) = primary(i) AND price(prl, t) AND done(pricelist(prl)) AND
@@ -23,7 +25,7 @@ startDateTimeA (PriceType t, Item i, DATETIME d) = startDateTime(pricelistLineA(
 overPriceA (PriceType t, Item i, DATETIME d) = OVERRIDE priceA(t, i, d), salesPrice(i);
 
 // prices for lines
-currentPrice (PricelistLine l, PriceType t) = priceB(t, item(l), startDateTime(pricelist(l)));
+currentPrice (PricelistLine l, PriceType t) = prevPriceB(t, item(l), startDateTime(pricelist(l)));
 
 currentPriceColor (PricelistLine l, PriceType t) = 
     IF currentPrice(l, t) < price(l, t) 
@@ -31,6 +33,6 @@ currentPriceColor (PricelistLine l, PriceType t) =
         ELSE IF currentPrice(l, t) > price(l, t) THEN RGB(250,150,157);
 
 EXTEND FORM pricelist
-    PROPERTIES    currentPrice(l, t) COLUMNS 'p' (t) HEADER name(t) + ' ' + '(current)' 
+    PROPERTIES READONLY currentPrice(l, t) COLUMNS 'p' (t) HEADER name(t) + ' ' + '(current)' 
                         SHOWIF showCurrentPrice(type(p), t) AFTER price(l, t) BACKGROUND currentPriceColor(l, t)
 ;

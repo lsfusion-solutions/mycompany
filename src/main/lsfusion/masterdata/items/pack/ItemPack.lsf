@@ -44,7 +44,7 @@ END
 
 META defineDocPack(doc, prefix, item, quantity, let)
 
-    pack 'Show number of seats' = DATA BOOLEAN (###doc##Type);
+    pack 'Show packages' = DATA BOOLEAN (###doc##Type);
     EXTEND FORM doc##Type PROPERTIES(o) pack;
 
     packUom = DATA Uom (###doc##Line);
@@ -69,7 +69,7 @@ META defineDocPack(doc, prefix, item, quantity, let)
     }
     
     EXTEND FORM doc
-        PROPERTIES(l) SHOWIF pack(type(let)) BEFORE quantity(l) BACKGROUND RGB(255,255,212)
+        PROPERTIES(l) READONLYIF readonly(let) SHOWIF pack(type(let)) BEFORE quantity(l) BACKGROUND RGB(255,255,212)
                       namePackUom,
                       packQuantity ON CHANGE changePackQuantity(l),
                       packRatio READONLY
@@ -88,7 +88,7 @@ META defineDocSearchPack(doc, prefix, let)
     }
     
     EXTEND FORM doc
-        PROPERTIES SHOWIF pack(type(let)) BEFORE quantity(let, itm) BACKGROUND RGB(255,255,212)
+        PROPERTIES READONLYIF readonly(let) SHOWIF pack(type(let)) BEFORE quantity(let, itm) BACKGROUND RGB(255,255,212)
                    packQuantity(let, itm) READONLYIF NOT prefix##PackRatio(itm) ON CHANGE changePackQuantity(let, itm),
                    prefix##PackRatio(itm) READONLY
     ;

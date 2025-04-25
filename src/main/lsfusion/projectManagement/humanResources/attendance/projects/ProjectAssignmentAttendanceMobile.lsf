@@ -1,0 +1,11 @@
+MODULE ProjectAssignmentAttendanceMobile;
+
+REQUIRE ProjectAssignment, ProjectAttendanceMobile;
+
+NAMESPACE ProjectManagement;
+
+skipAttendance (Project p, CustomUser u) += NOT assigned(p, u) AND NOT accessAllProjects(u);
+
+CONSTRAINT attendanceProject() AND NOT (assigned(attendanceProject(), currentUser()) OR accessAllProjects(currentUser()))
+    CHECKED BY attendanceProject[]
+    MESSAGE 'Employee is not assigned to the project';

@@ -20,12 +20,23 @@ parent 'Parent' = DATA Location (Location);
 idParent 'Parent ID' (Location l) = id(parent(l));
 nameParent 'Parent' (Location l) = name(parent(l));
 
+rootLocation() = GROUP MIN Location l AS Location IF NOT parent(l);
+
+prohibitMultipleRootCategories 'Prohibit multiple root locations' = DATA BOOLEAN ();
+EXTEND FORM options PROPERTIES prohibitMultipleRootCategories();
+DESIGN options { commons { MOVE PROPERTY(prohibitMultipleRootCategories()); } }
+
+CONSTRAINT [GROUP SUM 1 IF Location l IS Location AND NOT parent(l)]() > 1 AND prohibitMultipleRootCategories() 
+    MESSAGE 'Parent location is not specified';
+
 CONSTRAINT DROPPED(Location l IS Location) AND PREV(parent(Location cl) = l)
         MESSAGE 'You cannot delete a storage location that has subordinate warehouses';
 
 level 'Level' (Location child, Location parent) =
    RECURSION 1l IF child IS Location AND parent = child
         STEP 2l IF parent = parent($parent) MATERIALIZED;
+
+level 'Level' (Location child)  = GROUP SUM 1 IF level(child, Location parent) MATERIALIZED;
 
 isChild (Location child, Location parent) = TRUE IF level(child, parent);
 
@@ -53,7 +64,7 @@ hierarchyCity (Location l) = GROUP LAST city(Location parent) ORDER DESC level(l
 hierarchyState  (Location l) = GROUP LAST state(Location parent) ORDER DESC level(l,parent);
 hierarchyZip  (Location l) = GROUP LAST zip(Location parent) ORDER DESC level(l,parent);
 
-addressCsv 'Address' (Location l) = CONCAT ', ', hierarchyAddress(l), hierarchyCity(l), hierarchyState(l), hierarchyZip(l);
+addressCsv 'Address' (Location l) = CONCAT ', ', hierarchyAddress(l), hierarchyCity(l), hierarchyState(l), hierarchyZip(l) CHARWIDTH 20;
 addressLines 'Address' (Location l) = CONCAT '\n', hierarchyAddress(l), hierarchyCity(l), hierarchyState(l), hierarchyZip(l);
   
 FORM location 'Location'
@@ -67,17 +78,19 @@ FORM location 'Location'
 
 DESIGN location {
     OBJECTS {
-        NEW pane {
+        NEW header {
             NEW id {
+                alignment = STRETCH;
                 horizontal = TRUE;
-                MOVE PROPERTY(name(l));
-                MOVE PROPERTY(id(l));
+                MOVE PROPERTY(name(l)) { charWidth = 50; }
+                MOVE PROPERTY(id(l)) { charWidth = 15; } ;
                 MOVE PROPERTY(internalUse(l));
                 MOVE PROPERTY(archived(l));
             }
-            MOVE PROPERTY(canonicalNameParent(l));
+            MOVE PROPERTY(canonicalNameParent(l)) { notNull = TRUE; }
             MOVE PROPERTY(nameCompany(l));
             NEW address {
+                alignment = STRETCH;
                 lines = 2;
                 MOVE PROPERTY(address(l));
                 MOVE PROPERTY(city(l));
@@ -85,12 +98,13 @@ DESIGN location {
                 MOVE PROPERTY(zip(l));
             }
             NEW params {
+                alignment = STRETCH;
                 lines = 2;
             }
-            NEW tabbedPane {
-                tabbed = TRUE;
-                fill = 1;
-            }
+        }
+        NEW tabbedPane {
+            tabbed = TRUE;
+            fill = 1;
         }
     }
 }
@@ -115,8 +129,6 @@ FORM locations 'Locations'
     FILTERGROUP activeTree
         FILTER '{Active}' active(lt) DEFAULT
 
-    LIST Location OBJECT l
-    
     EVENTS ON CHANGE lt { SEEK locations.l = lt; }
 ;
 
@@ -127,11 +139,48 @@ DESIGN locations {
         tabbed = TRUE;
         NEW list {
             caption = 'List';
-            MOVE BOX(l);
+            MOVE BOX(l) { caption = ''; }
         }
         NEW tree {
             caption = 'Tree';
-            MOVE BOX(TREE locations);
+            MOVE BOX(TREE locations) { caption = ''; }
+        }
+    }
+}
+
+FORM dialogLocations 'Locations'
+    OBJECTS l = Location BACKGROUND background(l)
+    PROPERTIES(l) READONLY name, address, level
+    ORDERS level(l), name(l)
+
+    FILTERGROUP active
+        FILTER '{Active}' active(l) DEFAULT
+
+    TREE locations lt = Location PARENT parent(lt)
+    PROPERTIES(lt) READONLY name, address
+    ORDERS name(lt)
+
+    FILTERGROUP activeTree
+        FILTER '{Active}' active(lt) DEFAULT
+
+    LIST Location OBJECT l
+
+    EVENTS ON CHANGE lt { SEEK locations.l = lt; }
+;
+
+DESIGN dialogLocations {
+    OBJECTS {
+        tabbed = TRUE;
+        NEW list {
+            caption = 'List';
+            MOVE BOX(l) { 
+                caption = '';
+                PROPERTY(level(l)) { hide = TRUE; }
+            }
+        }
+        NEW tree {
+            caption = 'Tree';
+            MOVE BOX(TREE locations) { caption = ''; }
         }
     }
 }

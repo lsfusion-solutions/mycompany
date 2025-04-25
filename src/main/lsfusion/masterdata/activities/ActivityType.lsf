@@ -1,0 +1,50 @@
+MODULE ActivityType;
+
+REQUIRE MasterDataSettings;
+
+NAMESPACE MasterData;
+
+CLASS ActivityType 'Activity type';
+name '{Name}' = DATA ISTRING[50] (ActivityType) NONULL CHARWIDTH 15;
+
+id '{ID}' = DATA STRING[20] (ActivityType);
+activityType = GROUP AGGR ActivityType t BY id(t);
+
+time 'Time' = DATA BOOLEAN (ActivityType);
+till 'Till' = DATA BOOLEAN (ActivityType);
+
+FORM activityType 'Activity type'
+    OBJECTS o = ActivityType PANEL
+    PROPERTIES(o) name, id, time, till SHOWIF time(o)
+
+    EDIT ActivityType OBJECT o;
+;
+
+DESIGN activityType {
+    OBJECTS {
+        NEW tabbedPane {
+            fill = 1;
+            tabbed = TRUE;
+        }
+    }
+}
+
+FORM activityTypees 'Activity types'
+    OBJECTS o = ActivityType
+    PROPERTIES(o) READONLY name, id, time, till
+    LIST ActivityType OBJECT o
+;
+
+EXTEND FORM options
+    OBJECTS at = ActivityType
+    PROPERTIES(at) READONLY name, id, time, till
+    PROPERTIES(at) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(at) { caption = 'Activity types'; }
+    }
+}
+
+countActivityTypes 'Number of types' () = GROUP SUM 1 IF t IS ActivityType;

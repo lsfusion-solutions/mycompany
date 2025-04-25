@@ -14,6 +14,7 @@ FORM inventoryReport 'Inventory report'
     TREE locations lt = Location PARENT parent(lt)
     PROPERTIES READONLY name(lt)
     ORDERS name(lt)
+    FILTERS accessChildGranted(lt)
     
     TREE categories c = Category PARENT parent(c)
     PROPERTIES READONLY name(c)
@@ -24,7 +25,7 @@ FORM inventoryReport 'Inventory report'
     OBJECTS lp = (l = Location, p = Product)
     PROPERTIES READONLY 'Location' = canonicalName(l) SHOWIF NOT singleLocation() 
     PROPERTIES(p) READONLY 'Product' = name, nameUom, idBarCode, id, reference
-    PROPERTIES(l, p) READONLY reserved, available
+    PROPERTIES(l, p) READONLY expected, reserved, available
     PROPERTIES(l, p) SHOWIF NOT dt IS DATETIME READONLY onHand, onHandRec
     PROPERTIES(l, p, dt) SHOWIF dt IS DATETIME READONLY onHandA 
     PROPERTIES(l, p) READONLY dateReceived, dateShipped
@@ -37,9 +38,12 @@ FORM inventoryReport 'Inventory report'
 
     FILTERGROUP rowFilter
         FILTER 'On hand'
-            IF dt THEN onHandA(l, p, dt) ELSE 
+            IF dt IS DATETIME THEN onHandA(l, p, dt) ELSE 
                 (IF singleLocation() THEN onHandRec(l, p) ELSE onHand(l, p)) DEFAULT
         FILTER '{Received}' dateReceived(l, p)
+        FILTER 'Expected' expected(l, p)
+        FILTER 'Reserved' reserved(l, p)
+        FILTER 'Available' available(l, p)
                 
     OBJECTS il = InvLedger
     PROPERTIES(il) READONLY class, type, dateTime, number, namePartner,
@@ -69,8 +73,8 @@ FORM inventoryReport 'Inventory report'
     PROPERTIES READONLY 'Location' = canonicalName(ll), 'Product' = name(rp), value(rp, a) COLUMNS (a) HEADER name(a),
                         level1(rp), level2(rp), level3(rp), level4(rp), 'Canonical group' = canonicalNameCategory(rp)
     PROPERTIES(ll, rp) READONLY dateReceived, dateShipped
-    PROPERTIES READONLY MEASURE reserved(ll, rp), available(ll, rp), onHand 'On hand' = IF dt THEN onHandA(ll, rp, dt) ELSE onHand(ll, rp)
-    FILTERS IF dt THEN onHandA(ll, rp, dt) ELSE onHand(ll, rp),
+    PROPERTIES READONLY MEASURE expected(ll, rp), reserved(ll, rp), available(ll, rp), onHand 'On hand' = IF dt IS DATETIME THEN onHandA(ll, rp, dt) ELSE onHand(ll, rp)
+    FILTERS IF dt IS DATETIME THEN onHandA(ll, rp, dt) ELSE onHand(ll, rp),
             accessGranted(ll)
 ;
 
@@ -104,7 +108,7 @@ DESIGN inventoryReport {
                         MOVE BOX(rl) { caption = 'Reservation ledger'; }
                         NEW image { 
                             caption = 'Picture';
-                            MOVE PROPERTY(image(p)) { caption = ''; fill = 1; } 
+                            MOVE PROPERTY(image(p)) { size = (100, 100); caption = ''; fill = 1; } 
                         }
                     }
                 }               
@@ -116,23 +120,13 @@ DESIGN inventoryReport {
 
 @defineBarCodeSeek(inventoryReport, p, lp);
 
-//@defineItemAttributeForm(inventoryReport, p, lp){
-//    hasAttributeFilter (ItemAttribute ia, ItemAttributeValue v) = GROUP SUM 1 IF attribute(Item i, ia) = v AND [FILTER inventoryReport.p](i);
-//    EXTEND FORM inventoryReport
-//        OBJECTS ia = ItemAttribute BEFORE lp
-//        PROPERTIES name(ia) READONLY, 
-//                   value(ia) ON CHANGE { 
-//                        DIALOG childValues OBJECTS a = ia, c = c, v = attributeFilter(ia) CHANGE LIST value(v) FILTERS hasAttributeFilter(ia, v);
-//                   }
-//        FILTERS NOT notMatchAttributeFilter(p)
-//        FILTERS GROUP SUM 1 IF set(ia, Category cc) AND (level(cc, c) OR level(c, cc))
-//    ;
-//};
-//DESIGN inventoryReport {
-//    filterTabs {
-//        MOVE BOX(ia) { caption = 'Attributes'; }
-//    }
-//}
+@defineItemAttributeForm(inventoryReport, p, lp);
+
+DESIGN inventoryReport {
+    filterTabs {
+        MOVE BOX(ia) { caption = 'Attributes'; }
+    }
+}
 
 NAVIGATOR {
     reporting {

@@ -1,0 +1,62 @@
+MODULE GeoUtils;
+
+REQUIRE SystemEvents;
+
+NAMESPACE GeoUtils;
+
+distanceAccuracy = DATA NUMERIC[11,6] ();
+
+// to delete
+timestamp = DATA LOCAL LONG ();
+latitude = DATA LOCAL NUMERIC[11,6] ();
+longitude = DATA LOCAL NUMERIC[11,6] ();
+
+errorCode = DATA LOCAL STRING ();
+errorMessage = DATA LOCAL STRING ();
+
+error = CONCAT ' : ', errorCode(), errorMessage();
+
+getCurrentPositionOptions = DATA JSON ();
+getCurrentPosition() = OVERRIDE getCurrentPositionOptions(),
+    (JSON FROM timestamp = timestamp(),
+    cacheTimeout = 60,
+    enableHighAccuracy = TRUE,
+    timeout = 5000,
+    maximumAge = 0);
+
+changeCurrentPosition_mc () {
+    INPUT pos = JSON DO {
+        LOCAL coords = JSON ();
+        IMPORT JSON FROM pos TO() timestamp, coords;
+        IMPORT JSON FROM coords() TO() latitude, longitude;
+
+        IMPORT JSON FROM pos TO() errorCode, errorMessage;
+    }
+}
+
+onWebClientInit() + {
+    onWebClientInit('geoutils.js') <- 1;
+}
+
+META defineGeolocationForm(form, container)
+    EXTEND FORM form 
+        PROPERTIES '' = error() SHOWIF error()
+        PROPERTIES() READONLY 'Geolocation' = latitude, '' = longitude
+        PROPERTIES getCurrentPosition '' = getCurrentPosition() CUSTOM 'getCurrentPosition_mc' ON CHANGE changeCurrentPosition_mc()
+    ;
+    
+    DESIGN form {
+        container {
+            MOVE PROPERTY(error()) {
+                alignment = STRETCH;
+                background = #FFAAAA;
+            }
+            NEW geolocation {
+                alignment = STRETCH;
+                horizontal = TRUE;
+                MOVE PROPERTY(latitude());
+                MOVE PROPERTY(longitude());
+            }
+        }            
+    }
+END

@@ -1,0 +1,29 @@
+MODULE IndividualCall;
+
+REQUIRE Individual, PartnerCall, EmployeeCall;
+
+NAMESPACE MasterData;
+
+EXTEND FORM partner
+    PROPERTIES(em) call SHOWIF callAvailable() AND phone(em) TOOLBAR
+;
+
+redirectCall = DATA Employee (Partner);
+nameRedirectCall 'Redirect' (Partner p) = name(redirectCall(p));
+
+EXTEND FORM partner
+    PROPERTIES(p) nameRedirectCall
+;
+
+DESIGN partner {
+    callsHeader {
+        MOVE PROPERTY(nameRedirectCall(p));
+    }
+}
+
+partnerPhone (ISTRING[100] phone) =
+    GROUP LAST Partner p ORDER p WHERE match(phone(p), phone);
+
+individualRedirectCall (Partner p) = OVERRIDE redirectCall(p), redirectCall(legalEntity(p));
+
+@defineObjectHooks(partner, p, '{Application}', partnerPhone, individualRedirectCall, contactName);

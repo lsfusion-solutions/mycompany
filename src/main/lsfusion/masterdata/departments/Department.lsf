@@ -19,7 +19,7 @@ city 'City' = DATA ISTRING[50] (Department) CHARWIDTH 12;
 state 'State' = DATA ISTRING[50] (Department) CHARWIDTH 12;
 zip 'Postcode' = DATA ISTRING[10] (Department);
 
-addressCsv 'Address' (Department a) = CONCAT ', ', address(a), city(a), state(a) IF NOT state(a) = city(a), zip(a);
+addressCsv 'Address' (Department a) = CONCAT ', ', address(a), city(a), state(a) IF NOT state(a) = city(a), zip(a) CHARWIDTH 20;
 addressLines 'Address' (Department a) = CONCAT '\n ', address(a), city(a), state(a) IF NOT state(a) = city(a), zip(a);
 
 FORM department 'Department'
@@ -52,6 +52,10 @@ DESIGN department {
                 }
             }
             NEW headerRight;
+        }
+        NEW tabbedPane {
+            tabbed = TRUE;
+            fill = 1;
         }
     }
 }

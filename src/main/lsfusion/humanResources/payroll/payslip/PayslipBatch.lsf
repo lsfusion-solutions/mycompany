@@ -1,0 +1,137 @@
+MODULE PayslipBatch;
+
+REQUIRE PayslipLedger;
+
+PRIORITY HumanResources, MasterData;
+
+NAMESPACE Payroll;
+
+CLASS PayslipBatch 'Payslip batch';
+
+@defineNumber(payslipBatch, 'Payslip batches', 'SLB');
+
+name '{Name}' = DATA STRING (PayslipBatch) CHARWIDTH 15;
+
+period 'Period' = DATA INTERVAL[DATE] (PayslipBatch) NONULL;
+startDate 'Start date' (PayslipBatch p) = from(period(p));
+endDate 'End date' (PayslipBatch p) = to(period(p));
+
+company 'Company' = DATA Company (PayslipBatch) NONULL;
+nameCompany 'Company' (PayslipBatch o) = name(company(o));
+WHEN LOCAL SET(PayslipBatch p IS PayslipBatch) AND NOT CHANGED(company(p)) DO company(p) <- defaultCompany();
+
+payslipBatch (Company c, INTERVAL[DATE] i) = GROUP MIN PayslipBatch b BY company(b), period(b); 
+
+batch 'Payslip batch' = DATA PayslipBatch (Payslip) INDEXED;
+
+WHEN LOCAL CHANGED(period(batch(Payslip p))) AND batch(p) AND NOT CHANGED(period(p)) DO
+    period(p) <- period(batch(p));
+
+WHEN LOCAL CHANGED(company(batch(Payslip p))) AND batch(p) AND NOT CHANGED(company(p)) DO
+    company(p) <- company(batch(p));
+
+generate ABSTRACT LIST (Payslip);
+
+generate 'Generate' (PayslipBatch b) {
+    FOR legalEntity(Employee e AS Employee) = company(b) AND active(e) AND NOT payslip(period(b), e, company(b)) DO NEW p = Payslip {
+        batch(p) <- b;
+        employee(p) <- e;
+        period(p) <- period(b);
+        company(p) <- company(b);
+    }
+    FOR batch(Payslip p) = b INLINE DO
+        generate(p);
+} CONFIRM;
+
+FORM payslipBatch 'Payslip batch'
+    OBJECTS b = PayslipBatch PANEL
+    PROPERTIES(b) number, period, name, nameCompany
+    
+    OBJECTS p = Payslip
+    PROPERTIES(p) READONLY number, firstNameEmployee, lastNameEmployee, namePositionEmployee, netWage
+    PROPERTIES(p) NEW, EDIT, DELETE
+    FILTERS batch(p) = b
+    
+    PROPERTIES(b) generate
+
+    EDIT PayslipBatch OBJECT b
+;
+
+DESIGN payslipBatch {
+    caption = badged('Payslip batch', number(b));
+    OBJECTS {
+        NEW actions {
+            caption = 'Actions';
+            horizontal = TRUE;
+            alignment = STRETCH;
+            MOVE PROPERTY(generate(b));
+        }
+        NEW header {
+            NEW headerColumns{
+                horizontal = TRUE;
+                NEW headerColumn1 {
+                    alignment = STRETCH;
+                    NEW headerRow1{
+                        horizontal = TRUE;
+                        MOVE PROPERTY(number(b)) { notNull = TRUE; }
+                        MOVE PROPERTY(period(b));
+                    }
+                    MOVE PROPERTY(name(b)) { alignment = STRETCH; }
+                    MOVE PROPERTY(nameCompany(b)) { notNull = TRUE; alignment = STRETCH; }
+                }
+            }
+        }
+        
+        NEW details {
+            fill = 1;
+            tabbed = TRUE;
+            MOVE BOX(p) {
+                caption = 'Payslips';
+            }
+        }
+    }
+}
+
+
+FORM payslipBatches 'Payslip batches'
+    OBJECTS b = PayslipBatch
+    PROPERTIES(b) READONLY number, startDate, endDate, name, nameCompany
+    PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE
+
+    LIST PayslipBatch OBJECT b
+;
+
+NAVIGATOR {
+    operations {
+        NEW payslipBatches;
+    }
+}
+
+// copy
+copy 'Copy' (PayslipBatch b) {
+    APPLY;
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {
+        NEW nb = PayslipBatch {
+            name(nb) <- name(b);
+            company(nb) <- company(b);
+
+            FOR batch(Payslip p) = b DO NEW np = Payslip {
+                batch(np) <- nb;
+                
+                clone(np, p);
+            }
+
+            SHOW payslipBatch OBJECTS b = nb DOCKED;
+        }
+    }
+}
+
+EXTEND FORM payslipBatch PROPERTIES copy(b);
+
+DESIGN payslipBatch {
+    actions {
+        MOVE PROPERTY(copy(b));
+    }
+}

@@ -1,8 +1,14 @@
 MODULE Doc;
 
-REQUIRE Authentication, Time, BarCode, Icon, ItemAttribute;
+REQUIRE SystemEvents, Authentication, Time, BarCode, Icon, ItemAttribute, ObjectUtils;
 
 NAMESPACE Utils;
+
+// remove later
+registerFontDirectories () INTERNAL <{com.lowagie.text.FontFactory.registerDirectories(); }>; 
+onStarted() +{
+    registerFontDirectories();
+}
 
 META defineDocObjectsForm (form, obj, title)
     DESIGN form {
@@ -17,7 +23,7 @@ META defineDocObjectsForm (form, obj, title)
                 }
                 NEW rightPane {
                     tabbed = TRUE;
-                    width = 230;
+//                    width = 230;
                     fill = 1;
                     NEW filters {
                         caption = 'Filters';
@@ -41,32 +47,84 @@ META defineDocObjectsForm (form, obj, title)
     }
 END
 
-META defineDocStatus (doc, title)
-    CLASS ###doc##Status title##' status' {
-        draft 'Draft'
+META defineDocStatus (doc, title, firstStatus, firstStatusCapt)
+    CLASS ###doc##Status title {
+        firstStatus firstStatusCapt
     }
     
     name '{First_name}' (###doc##Status s) = staticCaption(s) IF s IS ###doc##Status CHARWIDTH 12;
     imagedName '{First_name}' (###doc##Status s) = imagedCaption(s) IF s IS ###doc##Status CHARWIDTH 12;
 
     color 'Color' = ABSTRACT CASE COLOR (###doc##Status) MATERIALIZED;
-    color (###doc##Status s) += WHEN s = ###doc##Status.draft THEN RGB(187,242,210);
+    color (###doc##Status s) += WHEN s = ###doc##Status.firstStatus THEN RGB(187,242,210);
 
     status 'Status' = ABSTRACT CASE ###doc##Status (###doc) MATERIALIZED INDEXED;
     nameStatus 'Status' (###doc d) = name(status(d));
     imagedNameStatus 'Status' (###doc d) = imagedName(status(d));
     colorStatus 'Color' (###doc d) = color(status(d));
     
-    status(###doc d) += WHEN d IS ###doc THEN ###doc##Status.draft;
+    status(###doc d) += WHEN d IS ###doc THEN ###doc##Status.firstStatus;
+
+    sortingOrder 'Sorting order' = ABSTRACT INTEGER (###doc##Status) MATERIALIZED;
+    index 'Index' (###doc##Status s) = PARTITION SUM 1 IF s IS ###doc##Status ORDER sortingOrder(s), s;
     
+    readonly 'Read-only' = DATA BOOLEAN (###doc##Status);
+
     readonly = ABSTRACT CASE BOOLEAN (###doc);
+    readonly (###doc d) += WHEN readonly(status(d)) THEN TRUE;
+
+    closed = ABSTRACT CASE BOOLEAN (###doc##Status) MATERIALIZED;
+    closed 'Closed' (###doc d) = closed(status(d));
+    opened 'Opened' (###doc d) = d IS ###doc AND NOT closed(d) MATERIALIZED INDEXED;
+
+    EXTEND FORM options
+        OBJECTS doc##st = ###doc##Status
+        PROPERTIES(doc##st) READONLY imagedName, color
+        PROPERTIES(doc##st) readonly
+    ;
+    
+    DESIGN options {
+        tabbedPane {
+            MOVE BOX(doc##st);
+        }
+    }
 END
 
-META defineDocStatusForm (doc, let, beforeProp)
+META defineDocStatus (doc, title)
+    @defineDocStatus (doc, title, draft, 'Draft');
+END
+
+META defineFormStatusContainer (form)
+    DESIGN form {
+        NEW statusPane FIRST {
+            horizontal = TRUE;
+            alignment = STRETCH;
+            NEW statusActions {
+                horizontal = TRUE;
+                flex = 1;
+                NEW primaryActions {
+                    horizontal = TRUE;
+                }
+                NEW secondaryActions {
+                    horizontal = TRUE;
+                }
+            }
+            NEW statusContainer {
+                fill = 1;
+                NEW status {
+                    alignment = END;
+                    horizontal = TRUE;
+                }
+            }
+        }
+    }
+END
+
+META defineDocStatusForm (doc, let, beforeProp, firstStatus, firstStatusCapt)
     EXTEND FORM doc##s
         PROPERTIES(##let) READONLY imagedNameStatus BACKGROUND colorStatus(##let) BEFORE beforeProp(##let)
         FILTERGROUP status
-            FILTER 'Draft' status(##let) = ###doc##Status.draft
+            FILTER firstStatusCapt status(##let) = ###doc##Status.firstStatus
     ;
     
     DESIGN doc##s {
@@ -79,34 +137,112 @@ META defineDocStatusForm (doc, let, beforeProp)
         PROPERTIES(##let) READONLY imagedNameStatus BACKGROUND colorStatus(##let)
     ;
     
+    @defineFormStatusContainer(doc);
+        
     DESIGN doc {
-        NEW statusPane FIRST {
-            horizontal = TRUE;
-            alignment = STRETCH;                          
-            NEW statusActions {
-                horizontal = TRUE;                    
-                flex = 1; 
-                NEW primaryActions {
-                    horizontal = TRUE;
-                }
-                NEW secondaryActions {
-                    horizontal = TRUE;
-                }           
+        status {
+            MOVE PROPERTY(imagedNameStatus(##let));
+            NEW statusGroup {
+                custom = '';
+                class = 'btn-group';
             }
-            NEW status {
-                horizontal = TRUE;
-                MOVE PROPERTY(imagedNameStatus(##let));
-                NEW statusGroup {
-                    custom = '';
-                    class = 'btn-group';
-                }
-            }
-        }    
-    } 
+        }
+    }
+END
+
+META defineDocStatusForm (doc, let, beforeProp)
+    @defineDocStatusForm(doc, let, beforeProp, draft, 'Draft');
 END
 
 META defineDocStatusForm (doc, let)
     @defineDocStatusForm(doc, let, nameType);
+END
+
+META defineDocStatusChange (obj, capt)
+    CLASS ###obj##StatusChange capt;
+
+    obj = DATA ###obj (###obj##StatusChange);
+    countStatusChange (###obj o) = GROUP SUM 1 IF obj(###obj##StatusChange sc) = o;
+    
+    dateTime 'Date' = DATA DATETIME (###obj##StatusChange);
+    dateTime(###obj##StatusChange sc) <- currentDateTime() WHEN SET(sc IS ###obj##StatusChange);
+
+    INDEX obj(###obj##StatusChange sc), dateTime(sc), sc;
+
+    user 'User' = DATA User (###obj##StatusChange);
+    nameUser 'User' (###obj##StatusChange sc) = name(user(sc));
+    user(###obj##StatusChange sc) <- currentUser() WHEN SET(sc IS ###obj##StatusChange);
+
+    status 'Status' = DATA ###obj##Status (###obj##StatusChange);
+    nameStatus 'Status' (###obj##StatusChange sc) = name(status(sc));
+
+    previous (###obj##StatusChange c) = PARTITION PREV c ORDER dateTime(c), c BY obj(c);
+    dateTimePrevious (###obj##StatusChange c) = dateTime(previous(c));
+    secondsBefore (###obj##StatusChange c) = subtractSeconds(dateTimePrevious(c), dateTime(c));
+    hoursBefore 'Hours before' (###obj##StatusChange c) = round2(secondsBefore(c) / 3600.0);
+
+    nameUserPrevious (###obj##StatusChange c) = nameUser(previous(c));
+    
+    next (###obj##StatusChange c) = PARTITION PREV c ORDER DESC dateTime(c), c BY obj(c);
+    dateTimeNext  (###obj##StatusChange c) = dateTime(next(c));
+    secondsAfter (###obj##StatusChange c) = subtractSeconds(dateTime(c), dateTimeNext(c));
+    hoursAfter 'Hours after' (###obj##StatusChange c) = round2(secondsAfter(c) / 3600.0);
+    
+    nameUserNext (###obj##StatusChange c) = nameUser(next(c));
+        
+    lastChange (###obj o, ###obj###Status s) = GROUP LAST ###obj##StatusChange sc ORDER dateTime(sc), sc BY obj(sc), status(sc);
+        
+    dateTimeLastChange 'Date' (###obj o, ###obj###Status s) = dateTime(lastChange(o, s));
+    nameUserLastChange 'User' (###obj o, ###obj###Status s) = nameUser(lastChange(o, s));
+
+    secondsBefore (###obj o, ###obj###Status s) = GROUP SUM secondsBefore(###obj##StatusChange sc) IF obj(sc) = o AND status(sc) = s;
+    hoursBefore 'Hours before' (###obj o, ###obj###Status s) = round2(secondsBefore(o, s) / 3600.0);
+
+    secondsAfter (###obj o, ###obj###Status s) = GROUP SUM secondsAfter(###obj##StatusChange sc) IF obj(sc) = o AND status(sc) = s;
+    hoursAfter 'Hours after' (###obj o, ###obj###Status s) = round2(secondsAfter(o, s) / 3600.0);
+        
+    WHEN SETCHANGED(status(###obj o)) DO 
+        NEW sc = ###obj##StatusChange {
+            obj(sc) <- o;
+            status(sc) <- status(o);
+        }
+END
+
+META defineDocStatusChangeForm (doc, let, capt)
+    EXTEND FORM doc
+        OBJECTS stch = ###doc##StatusChange
+        PROPERTIES(stch) READONLY dateTime, nameUser, hoursBefore, nameStatus, hoursAfter
+        FILTERS doc(stch) = let
+    ;
+    
+    DESIGN doc {
+        details {
+            MOVE BOX(stch) { 
+                caption = badged('Status change', countStatusChange(let));
+            }
+        }
+    }
+    
+    EXTEND FORM doc##s
+        OBJECTS let##st = ###doc##Status BEFORE let
+        PROPERTIES sortingOrder(let##st)
+        ORDERS sortingOrder(let##st)
+        
+        PROPERTIES(let, let##st) READONLY COLUMNS 'status' (let##st) BACKGROUND RGB(224,224,224) IF mod(index(let##st), 2) = 0
+            hoursBefore HEADER name(let##st) + '\n(' + 'Hours before' + ')', 
+            dateTimeLastChange HEADER name(let##st) + '\n(' + 'Date' + ')', 
+            nameUserLastChange HEADER name(let##st) + '\n(' + 'User' + ')', 
+            hoursAfter HEADER name(let##st) + '\n(' + 'Hours after' + ')'
+    ;
+    
+    DESIGN doc##s {
+        REMOVE BOX(let##st);
+        
+        PROPERTY(hoursBefore(let, let##st)) { hide = TRUE; }
+        PROPERTY(dateTimeLastChange(let, let##st)) { hide = TRUE; }
+        PROPERTY(nameUserLastChange(let, let##st)) { hide = TRUE; }
+        PROPERTY(hoursAfter(let, let##st)) { hide = TRUE; }
+    }
 END
 
 META defineDocSearchAction (doc, docLine, it, fun, capt)
@@ -150,6 +286,7 @@ META defineDocSearchTab (doc, it)
         
         OBJECTS itm = ###it
         PROPERTIES(itm) READONLY name, nameUom, idBarCode, id, reference
+        PROPERTIES(itm) READONLY nameCategory, level1, level2, level3, level4
         PROPERTIES(itm) NEWSESSION EDIT
         ORDERS name(itm)
         FILTERS level(category(itm), c)
@@ -174,6 +311,11 @@ META defineDocSearchTab (doc, it)
                 MOVE BOX(itm) { 
                     fill = 2;
                     caption = '';
+                    PROPERTY(nameCategory(itm)) { hide = TRUE; }
+                    PROPERTY(level1(itm)) { hide = TRUE; }
+                    PROPERTY(level2(itm)) { hide = TRUE; }
+                    PROPERTY(level3(itm)) { hide = TRUE; }
+                    PROPERTY(level4(itm)) { hide = TRUE; }
                 }
             }
         }
@@ -212,23 +354,6 @@ DESIGN System.options {
     }
 }
 
-META defineHistoryProperty(obj, prop, capt, nameProp)
-    WHEN SETCHANGED(prop(###obj let)) AND NOT disableHistory() DO {
-        NEW l = ###obj##History {
-            obj(l) <- let;
-            dateTime(l) <- currentDateTime();
-            user(l) <- currentUser();
-            computer(l) <- currentComputer();
-            type(l) <- capt;
-            description (l) <- CONCAT ' -> ', PREV(nameProp(let)), nameProp(let);
-        }
-    }
-END
-
-META defineHistoryProperty(obj, prop, capt)
-    @defineHistoryProperty(obj, prop, capt, prop);
-END
-
 META defineDocHistoryLineProperty(doc, docLine, prop, capt, descrProp)
     WHEN CHANGED(prop(docLine l)) AND doc(l) = ###doc d
         AND NOT status(d) = ###doc##Status.draft AND NOT disableHistory() DO {
@@ -242,22 +367,9 @@ META defineDocHistoryLineProperty(doc, docLine, prop, capt, descrProp)
     }
 END
 
-META defineDocHistoryHeader(doc, let, dateProp)
-    CLASS ###doc##History 'Change history';
+META defineDocHistoryHeader(doc, dateProp)
 
-    doc = DATA ###doc (###doc##History) INDEXED;
-    countHistories (###doc d) = GROUP SUM 1 IF doc(###doc##History h) = d;
-    
-    dateTime 'Date' = DATA DATETIME (###doc##History);
-
-    user = DATA User (###doc##History);
-    nameUser 'User' (###doc##History l) = name(user(l));
-
-    computer = DATA Computer (###doc##History);
-    hostnameComputer 'Computer' (###doc##History l) = hostname(computer(l)) CHARWIDTH 10;
-
-    type 'Type' = DATA ISTRING[100] (###doc##History) CHARWIDTH 15;
-    description 'Description' = DATA TEXT (###doc##History);
+    @defineHistoryObject(doc);
 
     @defineHistoryProperty(doc, status, 'Status', nameStatus);
 
@@ -310,35 +422,11 @@ META defineDocHistoryLine(doc, class)
     @defineDocHistoryLine(doc, ###doc##Line, class);
 END
 
-META defineDocHistoryForm(doc, form, let)
-    EXTEND FORM form
-        OBJECTS doc##l = ###doc##History
-        PROPERTIES(doc##l) READONLY dateTime, nameUser, hostnameComputer, type, description, pdescription = description PANEL
-        FILTERS doc(doc##l) = let
-    ;
-
-    DESIGN form {
-        details {
-            NEW history {
-                caption = badged('History', countHistories(let));
-                fill = 1;
-                horizontal = TRUE;
-                MOVE BOX(doc##l) {
-                    fill = 2;
-                    caption = '';
-                    PROPERTY(description(doc##l)) { valueHeight = 18; }
-                }
-                MOVE PROPERTY(pdescription) { panelCaptionVertical = TRUE; fill = 1; }
-            }
-        }
-    }
-END
-
 META defineDocHistory(doc, let, class, dateProp)
 
-    @defineDocHistoryHeader(doc, ##let, dateProp);
+    @defineDocHistoryHeader(doc, dateProp);
     @defineDocHistoryLine(doc, class);
-    @defineDocHistoryForm(doc, doc, let);
+    @defineHistoryForm(doc, doc, let);
 
 END
 
@@ -366,6 +454,30 @@ META defineDocRelation(docTo, docFrom, captTo, captFrom, objTo, objFrom)
     }
     EXTEND FORM docFrom##s
         PROPERTIES(objFrom) READONLY numberDate###docTo
+    ;
+END
+
+META defineDocRelation(docTo, docFrom, captTo, captFrom, objTo, objFrom, prefix)
+    docTo = DATA ###docTo (###docFrom) INDEXED;
+
+    count###docFrom##s (###docTo i) = GROUP SUM 1 IF docTo(###docFrom s) = i MATERIALIZED;
+
+    numberDate###docTo captTo (###docFrom s) = numberDate(docTo(s));
+    numberDate###docFrom##s captFrom (###docTo s) = GROUP CONCAT numberDate(###docFrom i) IF docTo(i) = s, ',' ORDER i CHARWIDTH 30;
+
+    EXTEND FORM docFrom
+        PROPERTIES(objFrom) prefix###numberDate###docTo = numberDate###docTo
+    ;
+    DESIGN docFrom {
+        footer {
+            MOVE PROPERTY(prefix###numberDate###docTo);
+        }
+    }
+    EXTEND FORM docFrom##s
+        PROPERTIES(objFrom) READONLY prefix###numberDate###docTo = numberDate###docTo
+    ;
+    EXTEND FORM docTo##s
+        PROPERTIES(objTo) READONLY numberDate###docFrom##s
     ;
 END
 
@@ -428,9 +540,9 @@ META defineDocDiscount (doc)
     
 END
 
-META defineDocDiscountForm (doc)
+META defineDocDiscountForm (doc, let)
     EXTEND FORM doc
-        PROPERTIES(l) AFTER price(l) discount, discountPrice ON CHANGE changeDiscountPrice(l)
+        PROPERTIES(l) READONLYIF readonly(let) AFTER price(l) discount, discountPrice ON CHANGE changeDiscountPrice(l)
     ;
 END
 
@@ -445,14 +557,12 @@ META defineDocLinesCount(doc, d)
     EXTEND FORM doc##s PROPERTIES(d) READONLY count###doc###Line;
 END
 
-META defineDocFilter(form, doc, cls, property, obj, capt, filterProperty)
+META defineDocFilterProperty(form, doc, cls, property, obj, capt, filterProperty)
     doc###property = DATA LOCAL NESTED cls ();
     name###doc###property capt = name(doc###property());
 
     EXTEND FORM form
         PROPERTIES() name###doc###property
-
-        FILTERS filterProperty(obj) = doc###property() OR NOT doc###property()
     ;
 
     DESIGN form {
@@ -460,7 +570,14 @@ META defineDocFilter(form, doc, cls, property, obj, capt, filterProperty)
             MOVE PROPERTY(name###doc###property()) { caption = ''; placeholder = capt; };
         }
     }
+END
+
+META defineDocFilter(form, doc, cls, property, obj, capt, filterProperty)
+    @defineDocFilterProperty(form, doc, cls, property, obj, capt, filterProperty);
     
+    EXTEND FORM form
+        FILTERS filterProperty(obj) = doc###property() OR NOT doc###property()
+    ;
 END
 
 META defineDocFilter(doc, cls, property, obj, capt, filterProperty)

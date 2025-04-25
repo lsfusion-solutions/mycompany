@@ -1,0 +1,16 @@
+MODULE ApplicationCall;
+
+REQUIRE Application, EmployeeCall;
+
+NAMESPACE HumanResources;
+
+@defineObjectCall(application, '{Application}', application, a, details);
+
+@defineObjectCallTo(application, a);
+
+openApplicationPhone (ISTRING[100] phone) = 
+    GROUP LAST Application a ORDER a WHERE opened(a) AND match(phone(a), phone);
+
+callerName (Application a) = CONCAT ' ', name(a), '(' + '{Application}' + ')';
+
+@defineObjectHooks(application, a, '{Application}', openApplicationPhone, recruiter, callerName);

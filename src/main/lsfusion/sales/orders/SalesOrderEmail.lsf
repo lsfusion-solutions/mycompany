@@ -1,0 +1,28 @@
+MODULE SalesOrderEmail;
+
+REQUIRE SalesOrder, EmailUtils;
+
+NAMESPACE Sales;
+
+// html
+subject = ABSTRACT VALUE ISTRING (Order);
+subject (Order t) += CONCAT ' ', '(' + nameStatus(t) + ')', numberDate(t), nameCustomer(t);
+
+info = ABSTRACT VALUE HTMLTEXT (Order);
+info (Order o) += propertiesHtmlShortList(o);
+
+body = ABSTRACT VALUE HTMLTEXT (Order);
+body(Order o) += HTMLTEXT (CONCAT '',
+    '<h1><a href="' + contextUrl('/exec/Sales.showOrder?id=' + o) + '">' + subject(o) + '</a></h1>',
+    info(o),
+    '<table>' + (GROUP CONCAT ('<tr style="border: 1px solid #C4C4C4>' + (CONCAT '',
+        '<td>' + nameItem(OrderLine ol) + '</td>',
+        '<td>' + quantity(ol) + '</td>',
+        '<td>' + price(ol) + '</td>',
+        '<td>' + amount(ol) + '</td>'
+        ) + '</tr>') IF order(ol) = o, '' ORDER ol) + '</table>'
+    );
+
+@defineObjectNotifyComments(order, 'Sales orders', sales);
+
+notify (Order t, Contact c) += representative(t) = c;

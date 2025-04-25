@@ -1,6 +1,6 @@
 MODULE Item;
 
-REQUIRE Category, Uom, MetaNumerator, Icon;
+REQUIRE Category, Uom, MetaNumerator, Icon, Comments;
 
 PRIORITY System;
 
@@ -11,21 +11,25 @@ class 'Type' (Item i) = objectClassName(i) IF i IS Item CHARWIDTH 6;
 
 @defineID(item, '{Items}', 'NM', 6);
 
+category 'Category' = DATA Category (Item) NONULL INDEXED;
+idCategory 'Category code' (Item i) = id(category(i));
+nameCategory 'Category' (Item i) = name(category(i));
+canonicalNameCategory 'Category (full)' (Item i) = canonicalName(category(i));
+
 dataName '{Name}' = DATA ISTRING[200] (Item) IN id NONULL CHARWIDTH 20;
 prefixName 'Prefix' = ABSTRACT STRING (Item);
 suffixName 'Suffix' = ABSTRACT STRING (Item);
 
-name 'Name (full)' (Item i) = CONCAT ' ', prefixName(i), dataName(i), suffixName(i) CHARWIDTH 30 MATERIALIZED INDEXED;
+namePrefix 'Prefix' = DATA STRING (Category) CHARWIDTH 15;
+EXTEND FORM category PROPERTIES(c) namePrefix;
+DESIGN category { params { MOVE PROPERTY(namePrefix(c)); } }
+
+name 'Name (full)' (Item i) = CONCAT ' ', namePrefix(category(i)), prefixName(i), dataName(i), suffixName(i) CHARWIDTH 30 MATERIALIZED INDEXED MATCH;
 
 reference 'Reference' = DATA STRING[50] (Item) CHARWIDTH 10 INDEXED;
 itemReference (STRING[50] ref) = GROUP MIN Item i BY reference(i); 
 
 description 'Description' = DATA TEXT (Item);
-
-category 'Category' = DATA Category (Item) NONULL INDEXED;
-idCategory 'Category code' (Item i) = id(category(i));
-nameCategory 'Category' (Item i) = name(category(i));
-canonicalNameCategory 'Category (full)' (Item i) = canonicalName(category(i));
 
 // uom
 uom = DATA Uom (Item);
@@ -131,6 +135,8 @@ DESIGN item {
     }  
 }
 
+@defineObjectComments(item, i, tabs);
+
 FORM items '{Items}'
     TREE categories c = Category PARENT parent(c)
     PROPERTIES READONLY name(c)
@@ -196,7 +202,7 @@ NAVIGATOR {
 }
 
 DESIGN options {
-    pane {
+    tabbedPane {
         NEW items {
             caption = 'Items';
         }

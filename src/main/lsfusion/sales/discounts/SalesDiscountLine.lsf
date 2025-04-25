@@ -6,7 +6,7 @@ NAMESPACE Sales;
 
 CLASS ABSTRACT SalesDiscountLine;
 
-skip = ABSTRACT BOOLEAN (SalesDiscountLine);
+skip = ABSTRACT VALUE BOOLEAN (SalesDiscountLine);
 
 dateTime = ABSTRACT DATETIME (SalesDiscountLine);
 customer = ABSTRACT Partner (SalesDiscountLine);
@@ -17,22 +17,41 @@ quantity = ABSTRACT NUMERIC[16,3] (SalesDiscountLine);
 price = ABSTRACT NUMERIC[10,2] (SalesDiscountLine);
 amount = ABSTRACT NUMERIC[14,2] (SalesDiscountLine);
 
-matches (Discount d, SalesDiscountLine l) =
-    set(d, primary(item(l))) AND
-    NOT skip(l) AND
-    NOT (countPriceType(d) AND NOT in(d, priceType(l))) AND
-    NOT startDateTime(d) > dateTime(l) AND
-    NOT endDateTime(d) < dateTime(l) AND
-    NOT fromQuantity(d) > quantity(l) AND
-    NOT fromAmount(d) > amount(l) AND
-    NOT fromAccumulated(d) > (OVERRIDE prevTotalSoldAmount(customer(l)), -0.01) AND
-    NOT fromAccumulatedPreviousMonth(d) > (OVERRIDE prevSoldAmountPreviousMonth(customer(l)), 0.0) COMPLEX;
+set = DATA LOCAL BOOLEAN (SalesDiscountLine, Discount);
 
-discountPrice 'Discount price' (Discount d, SalesDiscountLine l) =
-    IF priceType(d) THEN priceA(priceType(d), item(l), dateTime(l)) ELSE NUMERIC[10,2](price(l) * (100.0 - discount(d)) / 100.0); 
+processDiscount ABSTRACT LIST (SalesDiscountLine);
+processDiscount(SalesDiscountLine l) + {
+    set(l, Discount d) <- set(d, primary(item(l))) AND
+        NOT skip(l) AND
+        NOT (countPriceType(d) AND NOT in(d, priceType(l))) AND
+        NOT startDateTime(d) > dateTime(l) AND
+        NOT endDateTime(d) < dateTime(l);
+}
+
+processDiscount (SalesDiscountLine l) + {
+    set(l, Discount d) <- NULL WHERE set(l, d) AND (
+        fromQuantity(d) > quantity(l) OR
+        fromAmount(d) > amount(l) OR
+        fromAccumulated(d) > (OVERRIDE prevTotalSoldAmount(customer(l)), -0.01) OR
+        fromAccumulatedPreviousMonth(d) > (OVERRIDE prevSoldAmountPreviousMonth(customer(l)), 0.0));
+}
+
+price 'Discount price' = DATA LOCAL NUMERIC[10,2] (SalesDiscountLine, Discount);
+
+processDiscountPrice ABSTRACT LIST (SalesDiscountLine);
+processDiscountPrice (SalesDiscountLine l) + {
+    processDiscount(l);
     
+    price (l, Discount d) <-
+        (IF priceType(d) THEN 
+            priceA(priceType(d), item(l), dateTime(l)) 
+        ELSE 
+            NUMERIC[10,2](price(l) * (100.0 - discount(d)) / 100.0))
+        WHERE set(l, d);
+}
+
 minSalesDiscountAuto (SalesDiscountLine l) =
-    GROUP LAST Discount d ORDER DESC discountPrice(d, l) IF matches(d, l) AND NOT manual(d), d; 
+    GROUP LAST Discount d ORDER DESC price(l, d), d WHERE set(l, d) AND NOT manual(d); 
 
 // manual select
 
@@ -41,8 +60,8 @@ FORM selectDiscount 'Discount selection'
     
     OBJECTS d = Discount
     PROPERTIES(d) READONLY name, manual, discount, namePriceType
-    PROPERTIES    READONLY discountPrice(d, l)
-    FILTERS matches(d, l)
+    PROPERTIES    READONLY price(l, d)
+    FILTERS set(l, d)
 ;
 
 // meta
@@ -57,25 +76,34 @@ META defineDocSalesDiscountLine (doc, caption, NS)
     quantity(###doc##Line l) += NS.quantity(l);
     price(###doc##Line l) += NS.price(l);
     
-    fullPrice (###doc##Line l) = price(l) * (IF taxIncluded(l) THEN 1.0 ELSE (100.0 (+) taxPercent(l)) / 100.0);
-    fullAmount (###doc##Line l) = NUMERIC[14,2](quantity(l) * fullPrice(l));
+    fullPrice (###doc##Line l) = NS.price(l) * (IF NS.taxIncluded(l) THEN 1.0 ELSE (100.0 (+) NS.taxPercent(l)) / 100.0);
+    fullAmount (###doc##Line l) = NUMERIC[14,2](NS.quantity(l) * fullPrice(l));
 
-    fullAmount (###doc o) = GROUP SUM NUMERIC[14,2](quantity(###doc##Line l) * price(l) *
-                                                    (IF taxIncluded(l) THEN 1.0 ELSE (100.0 (+) taxPercent(l)) / 100.0)) 
-                                      IF doc(l) = o;
-    discountAmount (###doc o) = fullAmount(o) (-) amount(o);
+    fullAmount (###doc o) = GROUP SUM NUMERIC[14,2](NS.quantity(###doc##Line l) * NS.price(l) *
+                                                    (IF NS.taxIncluded(l) THEN 1.0 ELSE (100.0 (+) NS.taxPercent(l)) / 100.0)) 
+                                      IF NS.doc(l) = o;
+    discountAmount (###doc o) = fullAmount(o) (-) NS.amount(o);
     
     amount(###doc##Line l) += fullAmount(doc(l));
     
     noRecalcDiscountAuto###doc caption = DATA BOOLEAN () PREREAD;
     EXTEND FORM options PROPERTIES() noRecalcDiscountAuto###doc;
-    
-    WHEN LOCAL (CHANGED(dateTime(###doc##Line l)) OR CHANGED(quantity(l)) OR CHANGED(fullAmount(doc(l))) OR 
-                CHANGED(customer(l)) OR CHANGED(item(l)) OR CHANGED(price(l)) OR CHANGED(type(l))) AND 
-                NOT noRecalcDiscountAuto###doc() AND NOT manual(salesDiscount(l)) DO
+
+    processDiscountSales ABSTRACT LIST (###doc##Line);
+    processDiscountSales (###doc##Line l) +{
+        processDiscountPrice(l);
+
         salesDiscount(l) <- minSalesDiscountAuto(l);
-    
+    }
+
+    WHEN LOCAL (CHANGED(NS.dateTime(###doc##Line l)) OR CHANGED(NS.quantity(l)) OR CHANGED(fullAmount(doc(l))) OR 
+                CHANGED(NS.customer(l)) OR CHANGED(NS.item(l)) OR CHANGED(NS.price(l)) OR CHANGED(NS.type(l))) AND 
+                NOT noRecalcDiscountAuto###doc() AND NOT manual(salesDiscount(l)) INLINE DO {
+        processDiscountSales(l);
+    }
+        
     recalcDiscountAuto 'Calculate discounts' (###doc d) {
-        salesDiscount(###doc##Line l) <- minSalesDiscountAuto(l) WHERE doc(l) = d AND NOT manual(salesDiscount(l));
+        FOR doc(###doc##Line l) = d AND NOT manual(salesDiscount(l)) INLINE DO
+            processDiscountSales(l);
     }
 END

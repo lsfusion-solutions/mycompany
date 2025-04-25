@@ -22,19 +22,21 @@ sourceCurrency (Bill b) += currency(b);
 sourceAmount (Bill b) += amount(b);
 
 // pay
-pay 'Match' (Bill b, OutgoingDebt d) {
+pay 'Match' ABSTRACT LIST (Bill, OutgoingDebt) CHANGEMOUSE 'DBLCLK';
+pay (Bill b, OutgoingDebt d) + {
     paid(b, d) <- left(b, d) (+) paid(b, d);
-} CHANGEMOUSE 'DBLCLK';
+}
 
 EXTEND FORM bill
     PROPERTIES(b) paid
     
     OBJECTS d = OutgoingDebt
-    PROPERTIES(d) READONLY dateTime, number, class, type
+    PROPERTIES(d) READONLY dateTime, number, class, type, amount
+    PROPERTIES paid(b, d)
     FILTERS paid(b, d), active(d)
     
     OBJECTS dd = OutgoingDebt
-    PROPERTIES(dd) READONLY dateTime, number, class, type, left
+    PROPERTIES(dd) READONLY dateTime, number, class, type, amount, left
     PROPERTIES pay(b, dd) TOOLBAR
     FILTERS canBePaid(b, dd), active(dd)   
 ;
@@ -57,5 +59,6 @@ EXTEND FORM bills
 ;
 
 // auto set done
-WHEN SET(amount[Debt](Bill b) = paid(b)) DO done(b) <- TRUE;
-WHEN DROPPED(amount[Debt](Bill b) = paid(b)) DO done(b) <- NULL;
+skipSetDone = ABSTRACT BOOLEAN (Bill);
+WHEN SET(amount[Debt](Bill b) = paid(b)) AND NOT skipSetDone(b) DO done(b) <- TRUE;
+WHEN DROPPED(amount[Debt](Bill b) = paid(b)) AND NOT skipSetDone(b) DO done(b) <- NULL;

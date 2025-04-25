@@ -60,6 +60,8 @@ extraValidate (Shipment s) + {
     }
 }
 
+extraPickingFilter = ABSTRACT VALUE BOOLEAN (ShipmentLine, Location);
+
 EXTEND FORM shipment
     OBJECTS loc = Location
     PROPERTIES READONLY name(loc)
@@ -67,7 +69,7 @@ EXTEND FORM shipment
     PROPERTIES          done(l, loc)
 
     FILTERS level(loc, location(shipment(l))), 
-            available(l, loc) OR reserved(l, loc) OR done(l, loc)
+            available(l, loc) OR reserved(l, loc) OR done(l, loc) OR extraPickingFilter(l, loc)
 ;
 
 DESIGN shipment {

@@ -25,7 +25,7 @@ CONSTRAINT receiptLine(ShipmentLine l) AND NOT
     MESSAGE 'The partner and the goods received must match the partner and the returned goods';
     
 EXTEND FORM shipment
-    PROPERTIES(l) numberDateReceiptLine SHOWIF isReturn(s)
+    PROPERTIES(l) READONLYIF readonly(s) numberDateReceiptLine SHOWIF isReturn(s)
 ;
 
 // Shipment
@@ -67,8 +67,14 @@ WHEN LOCAL (SETCHANGED(product(ShipmentLine l)) OR SETCHANGED(customer(l))) AND 
 }
 
 // returned quantity
+checkReturnedQuantity 'Check returned quantity' = DATA BOOLEAN (ReceiptType);
+EXTEND FORM receiptType PROPERTIES(o) checkReturnedQuantity;
+
 returned 'Returned' (ReceiptLine rl) = 
     GROUP SUM done(ShipmentLine sl) IF receiptLine(sl) = rl AND active(shipment(sl));
+
+CONSTRAINT SET(returned(ReceiptLine rl) > OVERRIDE done(rl), 0.0) AND checkReturnedQuantity(type(rl))
+    MESSAGE 'The returned quantity on the receipt line exceeds the original quantity';
 
 FORM receiptShipmentShow 'Refunds'
     OBJECTS rl = ReceiptLine

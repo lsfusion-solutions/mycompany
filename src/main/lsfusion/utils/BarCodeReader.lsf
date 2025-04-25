@@ -1,0 +1,42 @@
+MODULE BarCodeReader;
+
+REQUIRE SystemEvents;
+
+NAMESPACE BarCodeReader;
+
+onWebClientInit() + {
+    onWebClientInit('html5-qrcode.js') <- 1;
+    onWebClientInit('barcodereader.js') <- 2;
+}
+
+barcodeReaderOptions = DATA JSON ();
+
+barcodeReader = OVERRIDE barcodeReaderOptions(), JSON FROM fps = 5, photo = 1; 
+
+decodedText = DATA LOCAL NESTED STRING();
+encodedPhoto = DATA LOCAL NESTED TEXT ();
+photo = IMAGEFILE(decode(encodedPhoto(), 'base64'));
+
+readBarcode () {
+    INPUT json = JSON DO {
+        IMPORT JSON FROM json TO() decodedText, encodedPhoto;
+    }
+}
+
+// usage :
+//FORM readBarcode
+//    PROPERTIES() '' = decodedText, '' = photo
+//    PROPERTIES '' = barcodeReader()  CUSTOM 'barcodeReader' ON CHANGE readBarcode();
+//;
+//
+//DESIGN readBarcode {
+//    OBJECTS {
+//        horizontal = TRUE;
+//        MOVE PROPERTY(barcodeReader()) { fill = 1; width = 300; }
+//        NEW result {
+//            fill = 1;
+//            MOVE PROPERTY(decodedText());
+//            MOVE PROPERTY(photo()) { fill = 1; size = (100, 100); }
+//        }
+//    }
+//}

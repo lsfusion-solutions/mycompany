@@ -1,0 +1,13 @@
+MODULE ProjectAssignmentPayslip;
+
+REQUIRE ProjectAssignment, ProjectTimeEntryPayslip;
+
+NAMESPACE ProjectManagement;
+
+rateSalary 'Salary per hour' = DATA NUMERIC[10,2] (ProjectAssignment);
+
+EXTEND FORM project
+    PROPERTIES(pa) rateSalary
+;
+
+rateSalary (TimeEntry e) += rateSalary(assignment(project(e), employee(e), date(e)));

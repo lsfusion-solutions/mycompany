@@ -60,6 +60,26 @@ DESIGN locationProduct {
     }
 }
 
+EXTEND FORM item
+    OBJECTS lp = Location
+    PROPERTIES(lp) 'Location' = canonicalName SELECTOR, level READONLY
+    PROPERTIES(lp, i) GRID idLocation, nameLocation, canonicalNameLocation 
+    FILTERS NOT internalUse(lp), active(lp)
+    ORDERS level(lp)
+    
+    FILTERGROUP set
+        FILTER 'Not empty' location(lp, i) DEFAULT
+;
+
+DESIGN item {
+    tabs {
+        MOVE BOX(lp) { 
+            caption = 'Location of products';
+            PROPERTY(level(lp)) { hide = TRUE; } 
+        }
+    }
+}
+
 NAVIGATOR {
     settings {
         NEW locationProduct;

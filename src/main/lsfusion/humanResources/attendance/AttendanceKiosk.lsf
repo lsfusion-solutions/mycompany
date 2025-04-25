@@ -1,0 +1,135 @@
+MODULE AttendanceKiosk;
+
+REQUIRE AttendanceMobile, BarCodeReader;
+
+PRIORITY MasterData;
+
+NAMESPACE HumanResources;
+
+lastDecodedText = DATA LOCAL NESTED STRING();
+lastReadBarcodeTime = DATA LOCAL NESTED DATETIME();
+
+start(Attendance a) +{
+    checkInPhoto(a) <- photo();
+}
+
+stop(Attendance a) +{
+    checkOutPhoto(a) <- photo();
+}
+
+FORM attendanceKioskMessage 'Attendance kiosk'
+    OBJECTS e = Employee PANEL NULL
+    PROPERTIES(e) READONLY '' = lastName, '' = firstName, '' = middleName, '' = photo
+
+    OBJECTS c = STRING PANEL NULL
+
+    OBJECTS s = TEXT PANEL NULL
+    PROPERTIES READONLY message '' = HTML('<div style="align-content: center;text-align:center;background:' + c + ';"><font size="+10">' + s + '</font></div>')
+    
+    EVENTS ON SCHEDULE PERIOD 5 {
+        formOk();
+    }
+;
+
+DESIGN attendanceKioskMessage {
+    size = (600, 500);
+    OBJECTS {
+        background = RGB(255,128,128);
+        NEW header {
+            horizontal = TRUE;
+            alignment = STRETCH;
+            NEW info {
+                MOVE PROPERTY(lastName(e)) { fontSize = 32; }
+                MOVE PROPERTY(firstName(e)) { fontSize = 32; }
+                MOVE PROPERTY(middleName(e)) { fontSize = 32; }
+            }
+            NEW photo {
+                fill = 1;
+                MOVE PROPERTY(photo(e)) {
+                    fill = 1;
+                    size = (100, 100);
+                }
+            }
+        }
+        MOVE PROPERTY(message) {
+            fill = 1;
+        }
+        NEW actions {
+            horizontal = TRUE;
+            alignment = STRETCH;
+            MOVE PROPERTY(formOk()) { 
+                fill = 1;
+                fontSize = 32;
+            }
+            MOVE PROPERTY(formClose()) {
+                showIf = e IS Employee;
+                fill = 1;
+                caption = 'Cancel';
+                fontSize = 32;
+            }
+        }
+    }
+    REMOVE TOOLBARBOX;
+}
+
+FORM attendanceKiosk 'Attendance kiosk'
+    PROPERTIES '' = barcodeReader()  CUSTOM 'barcodeReader' ON CHANGE {
+        readBarcode();
+        IF decodedText() AND (NOT decodedText() = lastDecodedText() OR NOT subtractSeconds(lastReadBarcodeTime(), currentDateTime()) < 10) THEN {
+            lastDecodedText() <- decodedText();
+            lastReadBarcodeTime() <- currentDateTime();
+            
+            FOR STRING(Employee ee AS Employee) = decodedText() DO {
+                IF openedLastAttendance(ee) THEN {
+                    DIALOG attendanceKioskMessage OBJECTS e = ee, s = 'Check Out', c = r'#ff6666' DO {
+                        stop(ee);
+                    }
+                } ELSE {
+                    DIALOG attendanceKioskMessage OBJECTS e = ee, s = 'Check In', c = r'#66ff66' FLOAT DO {
+                        start(ee);
+                    }
+                }
+            } ELSE
+                SHOW attendanceKioskMessage OBJECTS s = 'Employee not found', c = r'#ff0000' WAIT FLOAT;
+        }
+    }
+    
+    OBJECTS a = Attendance
+    PROPERTIES(a) READONLY nameEmployee, checkInTime
+    FILTERS abs(checkInLongitude(a) - longitude()) + abs(checkInLatitude(a) - latitude()) <= 0.001,
+            NOT checkOut(a)
+;
+
+DESIGN attendanceKiosk {
+    OBJECTS {
+        class = '';
+        border = FALSE;
+
+        NEW pane {
+            horizontal = TRUE;
+            fill = 1;
+            MOVE PROPERTY(barcodeReader()) { fill = 4; width = 300; }
+            NEW rightPane {
+                fill = 1;
+                width = 300;
+            }
+        }
+    }
+    REMOVE TOOLBARBOX;
+}
+
+@defineGeolocationForm(attendanceKiosk, rightPane);
+
+DESIGN attendanceKiosk {
+    rightPane {
+        MOVE BOX(a) {
+            caption = '';
+        }
+    }    
+}
+
+NAVIGATOR {
+    dashboards {
+        NEW attendanceKiosk;
+    }
+}

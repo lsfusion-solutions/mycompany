@@ -8,7 +8,7 @@ NAMESPACE Inventory;
 
 CLASS Shipment 'Shipment';
 
-@defineDocStatus(shipment, 'Shipment');
+@defineDocStatus(shipment, 'Shipment status');
 
 immediate 'Unplanned' = DATA BOOLEAN (Shipment);
 
@@ -83,6 +83,12 @@ idBarCodeProduct 'Barcode' (ShipmentLine l) = idBarCode(product(l));
 idProduct '{ID}' (ShipmentLine l) = id(product(l));
 referenceProduct 'Reference' (ShipmentLine l) = reference(product(l));
 
+nameCategoryProduct 'Category' (ShipmentLine l) = nameCategory(product(l));
+level1Product 'Category 1' (ShipmentLine l) = level1(product(l));
+level2Product 'Category 2' (ShipmentLine l) = level2(product(l));
+level3Product 'Category 3' (ShipmentLine l) = level3(product(l));
+level4Product 'Category 4' (ShipmentLine l) = level4(product(l));
+
 CONSTRAINT product(ShipmentLine l) AND NOT canBeSold(product(l))
             CHECKED BY product[ShipmentLine] 
             MESSAGE 'This product is not for sale';
@@ -95,7 +101,7 @@ nameUom 'UoM' (ShipmentLine l) = name(uom(l));
 initialDemand 'Initial demand' = DATA NUMERIC[16,3] (ShipmentLine);
 
 CONSTRAINT initialDemand(ShipmentLine l) < 0 OR initialDemand(l) > maxQuantity(type(shipment(l))) AND maxQuantity(type(shipment(l))) 
-    MESSAGE 'The initial amount should be between 0 and the maximum allowed';
+    MESSAGE 'The initial demand should be between 0 and the maximum allowed';
 
 initialDemand 'Initial demand' (Shipment s) = GROUP SUM initialDemand(ShipmentLine l) IF shipment(l) = s;
 
@@ -119,15 +125,17 @@ FORM shipmentLines 'Shipping lines'
 
 FORM shipment 'Shipment'
     OBJECTS s = Shipment PANEL 
-    PROPERTIES(s) nameType, scheduledDateTime, number, 
+    PROPERTIES(s) READONLYIF readonly(s)
+                  nameType, scheduledDateTime, number, 
                   nameCustomer SHOWIF NOT isTransfer(type(s)), nameDepartment SHOWIF countDepartment(customer(s)), 
                   nameLocation, nameToLocation SHOWIF isTransfer(type(s)),
                   deliveryAddress, customerReference, note
                   
     OBJECTS l = ShipmentLine
-    PROPERTIES(l) index READONLY, nameProduct, nameUom, idBarCodeProduct, idProduct, referenceProduct, 
-                  initialDemand SHOWIF NOT immediate(s) BACKGROUND IF status(shipment(l)) = ShipmentStatus.draft THEN RGB(198,230,247) 
-    PROPERTIES(l) NEW, DELETE
+    PROPERTIES(l) READONLYIF readonly(s)
+                  index READONLY, nameProduct, nameUom, idBarCodeProduct, idProduct, referenceProduct, 
+                  initialDemand SHOWIF NOT immediate(s) BACKGROUND IF status(shipment(l)) = ShipmentStatus.draft THEN RGB(198,230,247), 
+                  NEW, DELETE
     FILTERS shipment(l) = s
              
     EDIT Shipment OBJECT s
@@ -193,10 +201,6 @@ DESIGN shipment {
 
 edit (ShipmentLine l) + { SHOW shipment OBJECTS s = shipment(l), l = l DOCKED; }
 
-@defineDocHistory(shipment, s, product, scheduledDateTime);
-@defineDocHistoryLineProperty(shipment, ShipmentLine, initialDemand, 'Initial demand', nameProduct);
-
-
 // shipments
 background = ABSTRACT CASE COLOR (Shipment);
 
@@ -212,9 +216,14 @@ FORM shipments 'Shipments'
 
 @extendFormEditable(shipments);
 
+@defineDocHistory(shipment, s, product, scheduledDateTime);
+@defineDocHistoryLineProperty(shipment, ShipmentLine, initialDemand, 'Initial demand', nameProduct);
+
 @defineDocObjectsForm(shipments, s, 'Shipments');
 @defineDocStatusForm(shipment, s);
 @defineDocLocationAccess(shipment, s);
+
+@defineObjectComments(shipment, s, details);
 
 @defineObjectFiles(shipment, s, 'Shipment file');
 

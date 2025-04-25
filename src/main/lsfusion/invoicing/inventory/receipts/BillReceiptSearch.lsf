@@ -4,8 +4,10 @@ REQUIRE BillReceipt;
 
 NAMESPACE Invoicing;
 
+onHand 'On hand' (Bill b, Product p) = prevOnHandRec(location(b), p);
+expected 'Expected' (Bill b, Product p) = prevExpectedRec(location(b), p);
 available 'Available' (Bill b, Product p) = prevAvailableRec(location(b), p); 
 
 EXTEND FORM bill
-    PROPERTIES(b, itm) READONLY available
+    PROPERTIES(b, itm) READONLY onHand, expected, available
 ;

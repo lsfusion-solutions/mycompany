@@ -24,6 +24,10 @@ WHEN LOCAL CHANGED(item(OrderLine l)) AND manufacturingOrderType(type(Order o))
 orderLine = DATA OrderLine (ManufacturingOrder) INDEXED;
 numberDateSalesOrder 'Sales order' (ManufacturingOrder mo) = numberDate(order(orderLine(mo)));
 
+untaxedAmount '{Amount}' (ManufacturingOrder o) = untaxedAmount(orderLine(o));
+taxAmount 'Taxes' (ManufacturingOrder o) = taxAmount(orderLine(o));
+amount 'Total amount' (ManufacturingOrder o) = amount(orderLine(o));
+
 manufacturingOrder (OrderLine l) = GROUP AGGR ManufacturingOrder mo BY orderLine(mo);
 
 countFreeBomLine (Order o) = GROUP SUM 1 IF order(OrderLine l) = o AND bom(l) AND NOT manufacturingOrder(l);
@@ -50,6 +54,8 @@ EXTEND FORM manufacturingOrders
     PROPERTIES(o) READONLY numberDateSalesOrder
 ;
 
+fill ABSTRACT LIST (ManufacturingOrder, OrderLine);
+
 newManufacturingOrder (OrderLine l) {
     NEW o = ManufacturingOrder { 
         orderLine(o) <- l;
@@ -64,6 +70,8 @@ newManufacturingOrder (OrderLine l) {
         bom(o) <- bom(l);
         
         fillByQuantity(o, quantity(l));
+        
+        fill(o, l);
     }
 }
 

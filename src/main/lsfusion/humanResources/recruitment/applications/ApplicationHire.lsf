@@ -1,0 +1,80 @@
+MODULE ApplicationHire;
+
+REQUIRE ApplicationInterview;
+
+PRIORITY MasterData;
+
+NAMESPACE HumanResources;
+
+EXTEND CLASS ApplicationStatus {
+    hired 'Hired'
+}
+hired 'Hired' = DATA BOOLEAN (Application);
+
+status(Application i) += WHEN hired(i) THEN ApplicationStatus.hired;
+color(ApplicationStatus i) += WHEN i = ApplicationStatus.hired THEN RGB(212,212,255);
+
+closed(ApplicationStatus a) += WHEN a = ApplicationStatus.hired THEN TRUE;
+
+employee 'Employee' = DATA Employee (Application);
+nameEmployee 'Employee' (Application a) = name(employee(a));
+
+application = GROUP AGGR Application a BY employee(a);
+
+fill ABSTRACT LIST (Employee, Application);
+
+hire 'Hire' (Application a) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    NEWSESSION {
+        hired(a) <- TRUE;
+        NEW e = Employee {
+            firstName(e) <- firstName(a);
+            lastName(e) <- lastName(a);
+            middleName(e) <- middleName(a);
+            
+            phone(e) <- phone(a);
+            email(e) <- email(a);
+            
+            position(e) <- position(a);
+            department(e) <- department(a);
+            
+            legalEntity(e) <- company(a);
+            
+            employee(a) <- e;
+            
+            fill(e, a);
+            
+            SHOW employee OBJECTS e = e DOCKED; 
+        }
+    }
+}
+
+EXTEND FORM application
+    PROPERTIES(a) hire SHOWIF NOT closed(a), hired
+
+    PROPERTIES(a) nameEmployee SHOWIF hired(a)
+;
+
+DESIGN application {
+    primaryActions {
+        MOVE PROPERTY(hire(a)) { valueClass = 'btn-success'; }
+    }
+
+    statusGroup {
+        MOVE PROPERTY(hired(a)) {
+            valueClass = 'btn-check';
+            captionClass = 'btn btn-outline-primary btn-arrow-right';
+        }
+    }
+
+    summary {
+        MOVE PROPERTY(nameEmployee(a)) FIRST;
+    }
+}
+
+EXTEND FORM applications
+    EXTEND FILTERGROUP status
+        FILTER 'Hired' status(a) = ApplicationStatus.hired
+;

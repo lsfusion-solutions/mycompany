@@ -15,7 +15,7 @@ selectPosSearch 'Select' (Invoice i, Item it) {
 
 EXTEND FORM posDashboard
     OBJECTS it = Item
-    PROPERTIES(it) READONLY name, idBarCode, id
+    PROPERTIES(it) READONLY name, idBarCode, id, reference
     PROPERTIES(i, it) quantity ON CHANGE { changeQuantity(i, it); 
                                            IF lastInvoiceLine(i, it) THEN 
                                                 SEEK posDashboard.l = lastInvoiceLine(i, it); }, 
@@ -32,7 +32,7 @@ EXTEND FORM posDashboard
             overListPrice(i, it) = filterPrice() OR NOT filterPrice()
 
     FILTERGROUP searchFilter
-        FILTER 'In check' quantity(i, it) 'shift F10'
+        FILTER 'In document' quantity(i, it) 'shift F10'
 ;
 
 DESIGN posDashboard {

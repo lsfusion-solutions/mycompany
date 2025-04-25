@@ -19,6 +19,9 @@ WHEN LOCAL SETCHANGED(type(Bill b)) AND currency(type(b)) AND NOT CHANGED(curren
 currency (BillLine l) = currency(bill(l));
 nameCurrency 'Currency' (BillLine l) = nameCurrency(bill(l));
 
+currencyDate = ABSTRACT VALUE DATE (Bill);
+currencyDate(Bill b) += date(b);
+
 EXTEND FORM bill
     PROPERTIES(b) nameCurrency READONLYIF readonly(b)
 ;
@@ -39,7 +42,7 @@ clone (Bill to, Bill from) + {
 
 // exchange rate
 
-rate1 (Bill b) = rate1(currency(b), date(b));
+rate1 (Bill b) = rate1(currency(b), currencyDate(b));
 rate1 (BillLine l) = rate1(bill(l));
 
 currencyAmount 'Currency base amount' (BillLine l) = NUMERIC[14,2](amount(l) * rate1(l));

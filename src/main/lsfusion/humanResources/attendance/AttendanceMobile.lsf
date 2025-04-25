@@ -1,0 +1,112 @@
+MODULE AttendanceMobile;
+
+REQUIRE Attendance, Mobile, GeoUtils;
+
+NAMESPACE HumanResources;
+
+FORM attendanceMobile 'Attendance'
+    OBJECTS a = Attendance
+    PROPERTIES(a) READONLY '' = checkIn, '' = checkOutTime, '' = workedHours
+    ORDERS checkIn(a) DESC
+    FILTERS employee(a) = currentUser()
+    
+    EVENTS ON SCHEDULE PERIOD 60 {
+        timestamp() <- NULL;
+        formRefresh();
+    }
+;
+
+start (Attendance a) ABSTRACT LIST;
+
+start '{Start}' (Employee e) {
+    LOCAL newAttendance = Attendance();
+    
+    NEWSESSION NESTED (latitude, longitude, newAttendance) {
+        NEW a = Attendance {
+            employee(a) <- e;
+            
+            checkIn(a) <- currentDateTime();
+            checkInLatitude(a) <- latitude();
+            checkInLongitude(a) <- longitude();
+
+            start(a);
+
+            newAttendance() <- a;
+        }
+        APPLY NESTED (latitude, longitude, newAttendance);
+    }
+    IF newAttendance() THEN 
+        SEEK attendanceMobile.a = newAttendance();
+}
+
+stop (Attendance a) ABSTRACT LIST;
+
+stop '{Stop}' (Employee e) {
+    NEWSESSION NESTED (latitude, longitude) {
+        FOR Attendance a = lastAttendance(e) DO {
+            checkOut(a) <- currentDateTime();
+            checkOutLatitude(a) <- latitude();
+            checkOutLongitude(a) <- longitude();
+            
+            stop(a);
+        }
+        APPLY NESTED (latitude, longitude);
+    }
+} CONFIRM;
+
+EXTEND FORM attendanceMobile
+    OBJECTS e = Employee PANEL
+    FILTERS e = currentUser()
+    
+    PROPERTIES start(e) SHOWIF NOT openedLastAttendance(e) DISABLEIF (NOT latitude() OR NOT longitude()) AND NOT attendanceWithoutGeolocation(currentUser()),
+               checkInTimeLastAttendance(e) SHOWIF openedLastAttendance(e) READONLY,
+               workedHoursLastAttendance(e) SHOWIF openedLastAttendance(e) READONLY,
+               stop(e) SHOWIF openedLastAttendance(e) DISABLEIF (NOT latitude() OR NOT longitude()) AND NOT attendanceWithoutGeolocation(currentUser())
+
+    PROPERTIES(e) READONLY attendanceThisMonth, attendanceThisWeek
+;
+
+DESIGN attendanceMobile {
+    OBJECTS {
+        class = '';
+        border = FALSE;
+        NEW geoContainer {
+            alignment = STRETCH;
+        }
+        NEW actions {
+            alignment = STRETCH;
+            horizontal = TRUE;
+            MOVE PROPERTY(start(e)) { fill = 1; fontSize = 48; focusable = FALSE;  }
+            MOVE PROPERTY(checkInTimeLastAttendance(e)) { flex = 0; panelCaptionVertical = TRUE; fontSize = 24; focusable = FALSE; }
+            MOVE PROPERTY(workedHoursLastAttendance(e)) { flex = 0; panelCaptionVertical = TRUE; fontSize = 24; focusable = FALSE; }
+            MOVE PROPERTY(stop(e)) { fill = 1; fontSize = 48; focusable = FALSE; }
+        }
+        MOVE GRID(a) {
+            PROPERTY(checkIn(a)) { pattern = 'dd.MM HH:mm'; fontSize = 18; }
+            PROPERTY(checkOutTime(a)) { fontSize = 18; }
+            PROPERTY(workedHours(a)) { valueAlignmentHorz = END; fontSize = 18; }
+        }
+        NEW total {
+            caption = 'Total';
+            alignment = STRETCH;
+            horizontal = TRUE;
+            MOVE PROPERTY(attendanceThisMonth(e)) { fontSize = 18; }
+            MOVE PROPERTY(attendanceThisWeek(e)) { fontSize = 18; }
+        }
+        REMOVE BOX(a);
+    }
+    REMOVE TOOLBARBOX;
+}
+
+@defineGeolocationForm(attendanceMobile, geoContainer);
+
+NAVIGATOR {
+    dashboards {
+        NEW attendanceMobile;
+    }
+}
+
+showMobileForms() + {
+    IF permit(currentUser(), navigatorElementCanonicalName('HumanResources.attendanceMobile')) THEN
+        SHOW attendanceMobile NOWAIT;
+}

@@ -1,0 +1,147 @@
+MODULE EmailTemplate;
+
+REQUIRE MasterDataSettings, Email;
+
+NAMESPACE Utils;
+
+CLASS EmailTemplate 'Email template';
+
+name '{Name}' = DATA STRING[50] (EmailTemplate);
+subject 'Subject' = DATA STRING (EmailTemplate) CHARWIDTH 30;
+message 'Message' = DATA RICHTEXT (EmailTemplate);
+
+FORM emailTemplate 'Email template'
+    OBJECTS t = EmailTemplate PANEL
+    PROPERTIES(t) name, subject, message
+
+    EDIT EmailTemplate OBJECT t
+;
+
+DESIGN emailTemplate {
+    OBJECTS {
+        NEW header {
+            alignment = STRETCH;
+            horizontal = TRUE;
+            MOVE PROPERTY(name(t)) { flex = 0; }
+            MOVE PROPERTY(subject(t));
+        }
+        NEW tabbedPane {
+            fill = 1;
+            tabbed = TRUE;
+            NEW message {
+                caption = 'Message';
+                fill = 1;
+                MOVE PROPERTY(message(t)) {
+                    fill = 1;
+                    valueClass = 'form-control ql-editor-html';
+                    caption = '';
+                }
+            }
+        }
+    }
+}
+
+FORM dialogTemplate 'Email templates'
+    OBJECTS t = EmailTemplate
+    PROPERTIES(t) READONLY name, subject
+
+    LIST EmailTemplate OBJECT t
+;
+
+EXTEND FORM MasterData.options
+    OBJECTS emtp = EmailTemplate
+    PROPERTIES(emtp) READONLY name, subject
+    PROPERTIES(emtp) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN MasterData.options {
+    tabbedPane {
+        MOVE BOX(emtp) { caption = 'Email templates'; }
+    }
+}
+
+
+// replace to the standard action from Email
+writeMessage (STRING from, STRING to, STRING subject, RICHTEXT message) {
+    NEWSESSION {
+        NEW e = Email {
+            fromAddress(e) <- from;
+            toAddress(e) <- to;
+            subject(e) <- subject;
+            messageText() <- message;
+            DIALOG writeMessage OBJECTS e = e DOCKED NOMANAGESESSION DO {
+                message(e) <- HTMLTEXT(messageText());
+                send(e);
+            }
+        }
+    }
+}
+
+META defineObjectEmailTemplate (obj, let, capt, nameProp)
+
+    skip = ABSTRACT VALUE BOOLEAN (EmailTemplate, ###obj);
+    countTemplate (###obj o) = GROUP SUM 1 IF EmailTemplate t IS EmailTemplate AND NOT skip(t, o);
+
+    EXTEND FORM emailTemplate
+        OBJECTS obj##TE 'Template' = STRING
+        PROPERTIES id###obj '{ID}' = '\{\{' + obj###TE + '\}\}'
+        FILTERS property###obj(obj##TE)
+    ;
+
+    DESIGN emailTemplate {
+        tabbedPane {
+            NEW obj##Pane {
+                caption = capt;
+                horizontal = TRUE;
+                MOVE BOX(obj###TE);
+            }
+        }
+    }
+
+    writeEmail 'Write an email' (###obj o) {
+        IF countTemplate(o) THEN {
+            DIALOG dialogTemplate OBJECTS t INPUT FILTERS NOT skip(t, o) DO {
+                LOCAL subject = STRING();
+                processPropertyTemplate(o, subject(t));
+                subject() <- resultPropertyTemplate();
+
+                processPropertyTemplate(o, message(t));
+
+                writeMessage(email(o), Authentication.email(currentUser()), subject(), resultPropertyTemplate());
+                RETURN;
+            }
+        }
+        open(HTMLLINK('mailto:' + CONCAT '', email(o), '?subject=' + nameProp(o)));
+    }
+
+    EXTEND FORM obj
+        PROPERTIES(let) writeEmail SHOWIF email(let)
+    ;
+
+    DESIGN obj {
+        secondaryActions {
+            MOVE PROPERTY(writeEmail(let)) { valueClass = 'btn-secondary'; }
+        }
+    }
+
+END
+
+META defineObjectEmailTemplateFilter (obj, subj)
+
+    in 'Incl.' = DATA BOOLEAN (EmailTemplate, ###obj###subj);
+    countTemplate (###obj###subj t) = GROUP SUM 1 IF in(EmailTemplate e, t);
+
+    EXTEND FORM emailTemplate
+        OBJECTS obj###subj = ###obj###subj
+        PROPERTIES(obj###subj) READONLY name
+        PROPERTIES               in(t, obj###subj)
+    ;
+
+    DESIGN emailTemplate {
+        obj##Pane {
+            MOVE BOX(obj###subj);
+        }
+    }
+
+    skip (EmailTemplate t, ###obj o) += NOT in(t, subj(o));
+END

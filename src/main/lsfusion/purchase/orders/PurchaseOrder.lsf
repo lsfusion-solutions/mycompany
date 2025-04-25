@@ -1,6 +1,7 @@
 MODULE PurchaseOrder;
 
-REQUIRE Time, MetaNumerator, Employee, Company, Currency, FileUtils, Icon,
+REQUIRE Time, MetaNumerator, Employee, Company, Currency, 
+        FileUtils, Icon, Comments, Activity,
         MetaTax, TaxItem, BarCode, PurchaseOrderType,
         PurchaseSettings, PartnerPurchase, 
         ItemSales, ItemCost,
@@ -11,24 +12,33 @@ NAMESPACE Purchase;
 
 CLASS Order 'Purchase order';
 
-@defineDocStatus(order, 'Purchase order');
+@defineDocStatus(order, 'Purchase order status');
+
+@definePropertyObject(order);
+@definePropertyValue(order, status, 'Status', nameStatus);
 
 // type
 type 'Type' = DATA OrderType (Order) NONULL;
 nameType 'Type' (Order s) = name(type(s));
+@definePropertyValue(order, type, 'Type', nameType);
 
 WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(type(o)) DO type(o) <- defaultOrderType(); 
 
 dateTime 'Date'  = DATA DATETIME (Order) IN id;
 WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(dateTime(o)) DO { dateTime(o) <- currentDateTime();}
 @defineDateTimeAggregation(Order);
+@definePropertyValue(order, date, 'Date');
 
 @defineNumberType(order);
+@definePropertyValue(order, number, 'Number');
 
 numberDate 'Description' (Order o) = number(o) + ' (' + dateTime(o) + ')' IN id;
 
 vendor 'Vendor' = DATA Partner (Order) NONULL;
 nameVendor 'Vendor' (Order o) = name(vendor(o));
+@definePropertyValue(order, vendor, 'Vendor', nameVendor);
+
+numberDateVendor (Order o) = CONCAT ' ', numberDate(o), '(' + nameVendor(o) + ')';
 
 CONSTRAINT vendor(Order o) AND NOT isVendor(vendor(o))
                 CHECKED BY vendor[Order]
@@ -44,32 +54,39 @@ WHEN LOCAL CHANGED(vendor(Order o)) AND NOT CHANGED(paymentTerms(o)) DO paymentT
 
 // Shipping information
 scheduledDateTime 'Scheduled date' = DATA DATETIME (Order) IN id;
-scheduledDateTime(Order o) <- currentDateTime() WHEN SET(o IS Order);   
+scheduledDateTime(Order o) <- currentDateTime() WHEN SET(o IS Order);
+@definePropertyValue(order, scheduledDateTime, 'Scheduled date');
 
 // company
 company 'Company' = DATA Company (Order) NONULL;
 nameCompany 'Company' (Order o) = name(company(o));
 WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(company(o)) DO company(o) <- defaultCompany();
+@definePropertyValue(order, company, 'Company', nameCompany);
 
 // location
 location = DATA Location (Order);
 nameLocation 'Location' (Order o) = name(location(o));
 CONSTRAINT SETCHANGED(location(Order o)) AND internalUse(location(o)) CHECKED BY location[Order]
     MESSAGE 'The selected location is for internal use';
+@definePropertyValue(order, location, 'Location', nameLocation);
 
 // currency
 currency = DATA Currency (Order);
 nameCurrency 'Currency' (Order o) = name(currency(o));
+@definePropertyValue(order, currency, 'Currency', nameCurrency);
 
 WHEN LOCAL SETCHANGED(type(Order o)) AND currency(type(o)) AND NOT CHANGED(currency(o)) DO currency(o) <- currency(type(o));  
 
 // Purchase information
 representative 'Our representative' = DATA Employee (Order);
 nameRepresentative 'Our representative' (Order o) = MasterData.name(representative(o));
+@definePropertyValue(order, representative, 'Our representative', nameRepresentative);
 
 representative(Order o) <- currentUser() IF currentUser() IS Employee WHEN SET(o IS Order);
 
 vendorReference 'Vendor reference' = DATA STRING[30] (Order) INDEXED;
+@definePropertyValue(order, vendorReference, 'Vendor reference');
+
 note 'Note' = DATA ISTRING (Order) CHARWIDTH 20;
 
 details 'Details' = DATA RICHTEXT (Order);
@@ -86,9 +103,15 @@ idBarCodeItem 'Barcode' (OrderLine l) = idBarCode(item(l));
 idItem '{ID}' (OrderLine l) = id(item(l));
 referenceItem 'Reference' (OrderLine l) = reference(item(l));
 
+nameCategoryItem 'Category' (OrderLine l) = nameCategory(item(l));
+level1Item 'Category 1' (OrderLine l) = level1(item(l));
+level2Item 'Category 2' (OrderLine l) = level2(item(l));
+level3Item 'Category 3' (OrderLine l) = level3(item(l));
+level4Item 'Category 4' (OrderLine l) = level4(item(l));
+
 CONSTRAINT item(OrderLine l) AND NOT canBePurchased(item(l))
             CHECKED BY item[OrderLine] 
-            MESSAGE 'The item is not intended for purchase';
+            MESSAGE 'The item is not for purchase';
 
 description 'Description' = DATA ISTRING (OrderLine);
 
@@ -115,7 +138,7 @@ WHEN LOCAL CHANGED (item(OrderLine ol)) DO {
 imagedNameStatus 'Status' (OrderLine l) = imagedNameStatus(order(l)); 
 type (OrderLine l) = type(order(l)); 
 
-dateTime 'Created by' (OrderLine l) = dateTime(order(l));
+dateTime 'Date' (OrderLine l) = dateTime(order(l));
 number 'Number' (OrderLine l) = number(order(l)) IN id;
 numberDate 'Description' (OrderLine l) = numberDate(order(l));
 
@@ -129,7 +152,8 @@ edit (OrderLine l) + { edit(order(l)); }
 
 FORM order 'Purchase order'
     OBJECTS o = Order PANEL
-    PROPERTIES(o) nameType, dateTime, number, 
+    PROPERTIES(o) READONLYIF readonly(o)
+                  nameType, dateTime, number, 
                   nameVendor, nameCompany, nameLocation, nameCurrency,
                   namePaymentTerms,
                   scheduledDateTime,
@@ -138,13 +162,14 @@ FORM order 'Purchase order'
     PROPERTIES(o) READONLY untaxedAmount, taxAmount, amount
                  
     OBJECTS l = OrderLine
-    PROPERTIES(l) index, 
+    PROPERTIES(l) READONLYIF readonly(o)
+                  index, 
                   nameItem ON CHANGE {
                       INPUT i = item(l) LIST name(i) ACTIONS 'add' { newProduct(STRING(i)); } DO item(l) <- i;
                   },
                   description, nameUom, idBarCodeItem, idItem, referenceItem, 
-                  quantity, price, untaxedAmount, taxes
-    PROPERTIES(l) NEW, DELETE
+                  quantity, price, untaxedAmount, taxes,
+                  NEW, DELETE
     FILTERS order(l) = o
      
     EDIT Order OBJECT o    
@@ -223,8 +248,10 @@ DESIGN order {
     }        
 }
 
-@defineDocHistory(order, o, item);
-@defineDocHistoryLineProperty(order, OrderLine, quantity, 'Qty', nameItem);
+showOrder (LONG id) {
+    FOR LONG(Order o AS Order) = id DO
+        SHOW order OBJECTS o = o DOCKED;
+} @@api;
 
 background = ABSTRACT CASE COLOR (Order);
 FORM orders 'Purchase orders'
@@ -240,10 +267,21 @@ FORM orders 'Purchase orders'
 
 @extendFormEditable(orders);
 
+@defineDocHistoryLine(order, item);
+@defineDocHistoryLineProperty(order, OrderLine, quantity, 'Qty', nameItem);
+@defineHistoryForm(order, order, o);
+
 @defineDocObjectsForm(orders, o, 'Purchase orders');
 @defineDocStatusForm(order, o);
 @defineDocLinesCount(order, o);
 @defineDocLocationAccess(order, o);
+
+@defineObjectActivity(order, o, details, numberDateVendor);
+
+@defineObjectComments(order, o, details);
+@defineObjectCommentsHistory(order);
+
+@defineObjectCommentsActivity(order);
 
 @defineObjectFiles(order, o, 'Purchase order file');
 

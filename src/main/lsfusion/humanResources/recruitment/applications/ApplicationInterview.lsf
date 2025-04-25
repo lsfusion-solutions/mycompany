@@ -1,0 +1,109 @@
+MODULE ApplicationInterview;
+
+REQUIRE Application;
+
+NAMESPACE HumanResources;
+
+CLASS Interview 'Interview';
+TABLE interview (Interview);
+
+application = DATA Application (Interview) INDEXED NONULL DELETE;
+countInterview (Application a) = GROUP SUM 1 IF application(Interview i) = a; 
+
+dateTime 'Date' = DATA DATETIME (Interview) NONULL IN id;
+WHEN LOCAL SET (Interview i IS Interview) AND NOT CHANGED(dateTime(i)) DO dateTime(i) <- currentDateTime();
+
+lastInterview (Application a) = GROUP LAST Interview i ORDER dateTime(i), i BY application(i) MATERIALIZED;
+dateTimeLastInterview 'Interview' (Application a) = dateTime(lastInterview(a));
+
+interview 'Interview' (Application a) = TRUE IF lastInterview(a);
+
+in 'Incl.' = DATA BOOLEAN (Interview, Employee);
+interviewers 'Interviewers' (Interview i) = GROUP CONCAT name(Employee e) IF in(i, e), ', ' ORDER e CHARWIDTH 20;
+
+summary 'Summary' = DATA RICHTEXT (Interview);
+
+interviewers 'Interviewers' (Application a) = GROUP CONCAT name(Employee e) IF in(Interview i, e) AND application(i) = a, ', ' ORDER i, e CHARWIDTH 20 MATERIALIZED;
+
+FORM interview 'Interview'
+    OBJECTS i = Interview PANEL
+    PROPERTIES(i) dateTime, interviewers
+    
+    EDIT Interview OBJECT i
+;
+
+DESIGN interview {
+    OBJECTS {
+        MOVE PROPERTY(dateTime(i));
+        MOVE PROPERTY(interviewers(i)) { charWidth = 30; }
+    }
+}
+
+scheduleInterview 'Schedule an interview' (Application a) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    NEWSESSION {
+        NEW i = Interview {
+            application(i) <- a;
+
+            SHOW interview OBJECTS i = i FLOAT;
+        }
+    }
+}
+
+EXTEND FORM application
+    PROPERTIES(a) scheduleInterview SHOWIF NOT closed(a), interview READONLY
+    
+    OBJECTS i = Interview
+    PROPERTIES(i) READONLYIF readonly(a) dateTime, interviewers,
+                                         summary PANEL,
+                                         DELETE
+    FILTERS application(i) = a
+;
+
+DESIGN application {
+    primaryActions {
+        MOVE PROPERTY(scheduleInterview(a)) { valueClass = 'btn-primary'; };
+    }
+
+    statusGroup {
+        MOVE PROPERTY(interview(a)) {
+            valueClass = 'btn-check';
+            captionClass = 'btn btn-outline-primary btn-arrow-right';
+        }
+    }
+
+    details {
+        NEW interview {
+            caption = badged('Interview', countInterview(a));
+            horizontal = TRUE;
+            MOVE BOX(i);
+            MOVE PROPERTY(summary(i)) {
+                fill = 2;
+                caption = '';
+                valueHeight = -1;
+            }
+        }
+    }
+}
+
+EXTEND FORM applications
+    PROPERTIES(a) AFTER nameRecruiter(a) READONLY dateTimeLastInterview, interviewers
+;
+
+DESIGN applications {
+    PROPERTY(interviewers(a)) { valueHeight = 18; }
+}
+
+EXTEND CLASS ApplicationStatus {
+    interview 'Interview'
+}
+
+status(Application i) += WHEN lastInterview(i) THEN ApplicationStatus.interview;
+color(ApplicationStatus i) += WHEN i = ApplicationStatus.interview THEN RGB(212,255,255);
+
+EXTEND FORM applications
+    EXTEND FILTERGROUP status
+        FILTER 'Interview' status(a) = ApplicationStatus.interview
+;

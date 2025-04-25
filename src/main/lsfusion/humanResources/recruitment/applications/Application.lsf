@@ -1,0 +1,205 @@
+MODULE Application;
+
+REQUIRE Employee, Department, Comments, Activity, 
+        ApplicationTag, 
+        Doc, FileUtils;
+
+PRIORITY MasterData;
+
+NAMESPACE HumanResources;
+
+CLASS Application '{Application}';
+TABLE application(Application);
+
+@defineDocStatus(application, 'Application status', new, 'New');
+
+dateTime 'Date' = DATA DATETIME (Application) NONULL IN id;
+WHEN LOCAL SET (Application a IS Application) AND NOT CHANGED(dateTime(a)) DO dateTime(a) <- currentDateTime();
+
+@definePropertyObject(application);
+
+subject '{Subject}' = DATA ISTRING[200] (Application) CHARWIDTH 20 IN id;
+@definePropertyValue(application, subject, '{Subject}');
+
+firstName '{First_name}' = DATA ISTRING[30] (Application) IN id;
+lastName 'Surname' = DATA ISTRING[30] (Application) IN id;
+middleName 'Middle name' = DATA ISTRING[30] (Application);
+
+@definePropertyValue(application, firstName, '{First_name}');
+@definePropertyValue(application, lastName, 'Surname');
+@definePropertyValue(application, middleName, 'Middle name');
+
+name '{Name}' (Application a) = CONCAT ' ', lastName(a), firstName(a), middleName(a) CHARWIDTH 25;
+
+phone 'Phone' = DATA ISTRING[100] (Application) CHARWIDTH 12;
+@definePropertyValue(application, phone, 'Phone');
+
+email 'Email' = DATA ISTRING[400] (Application) CHARWIDTH 20 REGEXP '[\\-!#-\'*+\\/-9=?A-Z^-~]+(\\.[\\-!#-\'*+\\/-9=?A-Z^-~]+)*@[0-9A-Za-z]([0-9A-Za-z\\-]\{0,61\}[0-9A-Za-z])?(\\.[0-9A-Za-z]([0-9A-Za-z\\-]\{0,61\}[0-9A-Za-z])?)+' '{authentication.email.contact.incorrect}' IN id;
+@definePropertyValue(application, email, 'Email');
+
+recruiter = DATA Employee (Application);
+nameRecruiter 'Recruiter' (Application i) = name(recruiter(i));
+@definePropertyValue(application, recruiter, 'Recruiter', nameRecruiter);
+
+recruiter(Application a) <- currentUser() WHEN SET(a IS Application);
+
+availability 'Availability' = DATA DATE (Application);
+
+in 'Incl.' = DATA BOOLEAN (Application, ApplicationTag);
+tags 'Tags' (Application t) = GROUP CONCAT name(ApplicationTag tg) IF in(t, tg), ', ' ORDER name(tg), tg CHARWIDTH 20;
+@definePropertyValue(application, tags, 'Tags');
+
+position = DATA Position (Application);
+namePosition 'Position' (Application i) = name(position(i));
+@definePropertyValue(application, position, 'Position', namePosition);
+
+department = DATA Department (Application);
+nameDepartment 'Department' (Application i) = name(department(i));
+@definePropertyValue(application, department, 'Department', nameDepartment);
+
+CONSTRAINT department(Application a) AND NOT partner(department(a)) IS Company
+    CHECKED BY department[Application]
+    MESSAGE 'Only the company department can be selected in the application';
+
+company 'Company' (Application a) = partner(department(a)) AS Company;
+
+expectedSalary 'Expected salary' = DATA NUMERIC[14,2] (Application);
+proposedSalary 'Proposed salary' = DATA NUMERIC[14,2] (Application);
+
+description 'Description' = DATA HTMLTEXT (Application);
+
+INDEX position(Application a), status(a);
+
+applicationEmail (ISTRING[400] email) = GROUP AGGR Application a BY email(a);
+
+summary 'Summary' = DATA RICHTEXT (Application);
+
+FORM application '{Application}'
+    OBJECTS a = Application PANEL
+    PROPERTIES(a) READONLYIF readonly(a)
+                  dateTime, subject, namePosition, nameDepartment, 
+                  firstName, lastName, middleName,
+                  phone, email,
+                  nameRecruiter, availability, tags,
+                  expectedSalary, proposedSalary,
+                  description READONLY SHOWIF description(a), summary
+    
+    EDIT Application OBJECT a
+;
+
+DESIGN application {
+    caption = badged('{Application}', CONCAT ' ', firstName(a), lastName(a));
+
+    OBJECTS {
+        NEW pane {
+            horizontal = TRUE;
+            fill = 1;
+            NEW leftPane {
+                fill = 1;
+                width = 200;
+
+                NEW main {
+                    horizontal = TRUE;
+                    alignment = STRETCH;
+                    MOVE PROPERTY(dateTime(a));
+                    MOVE PROPERTY(subject(a)) { flex = 3; }
+                    MOVE PROPERTY(namePosition(a)) { flex = 1; }
+                    MOVE PROPERTY(nameDepartment(a)) { flex = 1; }
+                }
+                NEW params {
+                    caption = 'Parameters';
+                    horizontal = TRUE;
+                    alignment = STRETCH;
+                    NEW name {
+                        MOVE PROPERTY(firstName(a));
+                        MOVE PROPERTY(lastName(a));
+                        MOVE PROPERTY(middleName(a));
+                    }
+                    NEW contact {
+                        MOVE PROPERTY(phone(a));
+                        MOVE PROPERTY(email(a));
+                        MOVE PROPERTY(availability(a));
+                    }
+                    NEW process {
+                        MOVE PROPERTY(nameRecruiter(a));
+                        MOVE PROPERTY(tags(a));
+                    }
+                    NEW finance {
+                        MOVE PROPERTY(expectedSalary(a));
+                        MOVE PROPERTY(proposedSalary(a));
+                    }
+                }
+                NEW details {
+                    tabbed = TRUE;
+                    fill = 1;
+                    NEW description {
+                        caption = 'Description';
+                        height = 100;
+                        MOVE PROPERTY(description(a)) { caption = ''; fill = 1; valueHeight = -1; }
+                    }
+                    NEW summary {
+                        caption = 'Summary';
+                        MOVE PROPERTY(summary(a)) { caption = ''; fill = 1; valueHeight = -1; }
+                    }
+                }
+            }
+            NEW rightPane {
+                fill = 1;
+                width = 200;
+            }
+        }
+    }
+}
+
+
+FORM applications 'Applications'
+    OBJECTS a = Application
+    PROPERTIES(a) READONLY 
+                  dateTime, subject,
+                  firstName, lastName, middleName,
+                  phone, email,
+                  nameRecruiter, availability, tags,
+                  namePosition, nameDepartment,
+                  expectedSalary, proposedSalary
+
+    PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE
+
+    FILTERGROUP active
+        FILTER 'Opened' opened(a) DEFAULT
+        FILTER 'Closed' closed(a)
+    
+    LIST Application OBJECT a
+;
+
+@defineDocObjectsForm(applications, a, 'Applications');
+@defineDocStatusForm(application, a, dateTime, new, 'New');
+
+@defineHistoryForm(application, application, a);
+
+@defineObjectFiles(application, a, 'Application file');
+
+@defineObjectActivity(application, a, rightPane, name);
+
+@defineObjectComments(application, a, rightPane);
+
+@defineObjectCommentsHistory(application);
+@defineObjectCommentsCreate(application, history);
+
+@defineObjectCommentsFiles(application, HumanResources);
+@defineObjectCommentsCreate(application, file);
+
+@defineObjectCommentsActivity(application);
+
+@defineDocStatusChange(application, 'Application');
+@defineDocStatusChangeForm(application, a, 'Application');
+
+DESIGN applications {
+    PROPERTY(tags(a)) { valueHeight = 18; }
+}
+
+
+NAVIGATOR {
+    operations {
+        NEW applications;
+    }
+}

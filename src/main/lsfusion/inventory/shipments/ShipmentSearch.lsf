@@ -7,10 +7,12 @@ NAMESPACE Inventory;
 @defineDocSearchTab(shipment, product);
 EXTEND FORM shipment FILTERS canBeSold(itm);
 
+onHand 'On hand' (Shipment s, Product p) = prevOnHandRec(location(s), p);
+expected 'Expected' (Shipment s, Product p) = prevExpectedRec(location(s), p);
 available 'Available' (Shipment s, Product p) = prevAvailableRec(location(s), p); 
 
 EXTEND FORM shipment
-    PROPERTIES(s, itm) READONLY available
+    PROPERTIES(s, itm) READONLY onHand, expected, available
     FILTERGROUP available
         FILTER 'Available' available(s, itm) 'F5' DEFAULT
 ;
@@ -20,7 +22,8 @@ lastShipmentLine (Shipment s, Product p) = GROUP LAST ShipmentLine l ORDER l BY 
 // initial demand
 @defineDocSearchAction(shipment, product, initialDemand, 'Initial demand');
 EXTEND FORM shipment
-    PROPERTIES(s, itm) SHOWIF NOT immediate(s) initialDemand ON CHANGE changeInitialDemand(s, itm)
+    PROPERTIES(s, itm) READONLYIF readonly(s) SHOWIF NOT immediate(s) 
+                       initialDemand ON CHANGE changeInitialDemand(s, itm)
 ;
 
 DESIGN shipment {
@@ -30,7 +33,8 @@ DESIGN shipment {
 // done
 @defineDocSearchAction(shipment, product, done, 'Done');
 EXTEND FORM shipment
-    PROPERTIES(s, itm) SHOWIF immediate(s) done ON CHANGE changeDone(s, itm)
+    PROPERTIES(s, itm) READONLYIF readonly(s) SHOWIF immediate(s) 
+                       done ON CHANGE changeDone(s, itm)
 ;
 
 DESIGN shipment {

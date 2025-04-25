@@ -1,0 +1,11 @@
+MODULE ZadarmaEmployeeCall;
+
+REQUIRE ZadarmaEmployee, Call;
+
+NAMESPACE Zadarma;
+
+callAvailable () += TRUE IF currentPBXNumber();
+call (STRING phone) +{
+    urlEncode(phone, 'UTF-8');
+    apiGet('/v1/request/callback/', 'from=' + idCurrentPBXNumber() + '&to=' + urlEncoded());
+}

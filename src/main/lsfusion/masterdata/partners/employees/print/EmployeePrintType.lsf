@@ -1,0 +1,83 @@
+MODULE EmployeePrintType;
+
+REQUIRE Employee, DocTemplate;
+
+NAMESPACE MasterData;
+
+CLASS PrintEmployeeType 'Employee print template';
+
+name '{Name}' = DATA STRING[50] (PrintEmployeeType);
+
+template 'Template' = DATA STRING (PrintEmployeeType) CHARWIDTH 50;
+
+file = DATA FILE (PrintEmployeeType);
+hasFile (PrintEmployeeType t) = TRUE IF file(t);
+
+hasTemplate (PrintEmployeeType t) = template(t) OR hasFile(t);
+
+openFile 'Open' (PrintEmployeeType t) {
+    IF hasFile(t) THEN {
+        open(file(t));
+    } ELSE IF template(t) THEN {
+        readResource(template(t));
+        open(resourceFile());
+    }
+}
+loadFile 'Upload' (PrintEmployeeType t) { INPUT = file(t) CHANGE; }
+dropFile 'Reset' (PrintEmployeeType t) { file(t) <- NULL; }
+
+format = DATA TemplateFormat (PrintEmployeeType);
+nameFormat 'Format' (PrintEmployeeType t) = name(format(t));
+
+FORM printEmployeeType 'Employee print template'
+    OBJECTS t = PrintEmployeeType PANEL
+    PROPERTIES(t) name,
+                  template SHOWIF NOT hasFile(t), openFile,
+                  loadFile, dropFile SHOWIF hasFile(t),
+                  nameFormat
+
+    EDIT PrintEmployeeType OBJECT t
+;
+
+DESIGN printEmployeeType {
+    OBJECTS {
+        NEW header {
+            NEW general {
+                alignment = STRETCH;
+                horizontal = TRUE;
+                MOVE PROPERTY(name(t));
+            }
+            NEW format {
+                alignment = STRETCH;
+                horizontal = TRUE;
+                MOVE PROPERTY(template(t));
+                MOVE PROPERTY(openFile(t));
+                MOVE PROPERTY(loadFile(t));
+                MOVE PROPERTY(dropFile(t));
+                MOVE PROPERTY(nameFormat(t));
+            }
+        }
+    }
+}
+
+FORM printEmployeeTypes 'Employee print templates'
+    OBJECTS t = PrintEmployeeType
+    PROPERTIES READONLY name(t)
+
+    LIST PrintEmployeeType OBJECT t
+;
+
+EXTEND FORM options
+    OBJECTS pet = PrintEmployeeType
+
+    PROPERTIES READONLY name(pet)
+    PROPERTIES(pet) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(pet);
+    }
+}
+
+countPrintEmployeeTypes 'Number of templates' () = GROUP SUM 1 IF r IS PrintEmployeeType; 

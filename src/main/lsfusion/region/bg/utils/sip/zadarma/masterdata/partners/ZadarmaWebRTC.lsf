@@ -1,0 +1,47 @@
+MODULE ZadarmaWebRTC;
+
+REQUIRE ZadarmaEmployee, Time;
+
+NAMESPACE Zadarma;
+
+webRTCKey 'WebRTC key' = DATA STRING (PBXNumber);
+webRTCKeyTime 'WebRTC time' = DATA DATETIME (PBXNumber);
+
+EXTEND FORM integrationData
+    PROPERTIES(pbxN) READONLY webRTCKey, webRTCKeyTime
+;
+
+apiGetWebRTCKey 'Get WebRTC Key' (PBXNumber n) {
+    IF sumMinutes(webRTCKeyTime(n), 71*60) > currentDateTime() THEN RETURN;
+
+    NEWSESSION {
+        apiGet('/v1/webrtc/get_key/', 'sip=' + login(n));
+
+        LOCAL key = STRING ();
+        IMPORT JSON FROM apiResponse() TO() key;
+        webRTCKey(n) <- key();
+        webRTCKeyTime(n) <- currentDateTime();
+        
+        APPLY;
+    }
+}
+
+EXTEND FORM integrationData
+    PROPERTIES(pbxN) apiGetWebRTCKey TOOLBAR
+;
+
+loadWebRTC INTERNAL CLIENT 'zadarmaLoadWebRTC' (STRING, STRING);
+
+onWebClientInit() + {
+    onWebClientInit('zadarma.js') <- 1;
+}
+onWebClientLoad() + {
+    IF currentPBXNumber() THEN {
+        apiGetWebRTCKey(currentPBXNumber());
+
+        INTERNAL CLIENT WAIT 'https://my.zadarma.com/webphoneWebRTCWidget/v9/js/loader-phone-lib.js?sub_v=1';
+        INTERNAL CLIENT WAIT 'https://my.zadarma.com/webphoneWebRTCWidget/v9/js/loader-phone-fn.js?sub_v=1';
+
+        loadWebRTC(webRTCKey(currentPBXNumber()), loginCurrentPBXNumber());
+    }
+}

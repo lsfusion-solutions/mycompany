@@ -6,6 +6,8 @@ NAMESPACE MasterData;
 
 CLASS Employee 'Employee' : Individual, CustomUser;
 
+name '{Name}' (Employee e) = name[Partner](e) IF e IS Employee CHARWIDTH 15;
+
 WHEN CHANGED(firstName(Employee e)) DO firstName[Contact](e) <- firstName(e);
 WHEN CHANGED(lastName(Employee e)) DO lastName[Contact](e) <- lastName(e);
 WHEN CHANGED(email(Employee e)) DO email[Contact](e) <- email(e);
@@ -32,8 +34,8 @@ photo = DATA IMAGEFILE (Employee);
 FORM employee 'Employee'
     OBJECTS e = Employee PANEL
     PROPERTIES(e) id, login, sha256Password ON CHANGE changeSHA256Password(e), photo, isLocked, archived, 
-                  nameLegalEntity, lastName, firstName, middleName, namePosition, email, phone, address, city, state,
-                  zip, birthday, nameMainRole
+                  nameLegalEntity, nameDepartment, lastName, firstName, middleName, namePosition, email, phone, address, city, state,
+                  zip, birthday
     
     OBJECTS ur = UserRole
     PROPERTIES(ur) READONLY name, sid
@@ -44,6 +46,23 @@ FORM employee 'Employee'
 
 DESIGN employee {
     OBJECTS {
+        NEW statusPane FIRST {
+            horizontal = TRUE;
+            alignment = STRETCH;
+            NEW statusActions {
+                horizontal = TRUE;
+                flex = 1;
+                NEW primaryActions {
+                    horizontal = TRUE;
+                }
+                NEW secondaryActions {
+                    horizontal = TRUE;
+                }
+            }
+            NEW status {
+                horizontal = TRUE;
+            }
+        }
         NEW pane {
             horizontal = TRUE;
             fill = 1;
@@ -70,7 +89,8 @@ DESIGN employee {
                 NEW info {
                     alignment = STRETCH;
                     caption = '{authentication.custom.user.info}';
-                    MOVE PROPERTY(nameLegalEntity(e)) { notNull = TRUE; }  
+                    MOVE PROPERTY(nameLegalEntity(e)) { notNull = TRUE; }
+                    MOVE PROPERTY(nameDepartment(e));
                     MOVE PROPERTY(lastName(e));
                     MOVE PROPERTY(firstName(e));
                     MOVE PROPERTY(middleName(e));
@@ -89,7 +109,6 @@ DESIGN employee {
                 fill = 3;
                 NEW roles {
                     caption = '{security.user.roles}';
-                    MOVE PROPERTY(nameMainRole(e));
                     MOVE BOX(ur) { caption = ''; }
                 }
             }
@@ -109,10 +128,23 @@ DESIGN employee {
 
 FORM employees 'Employees'
     OBJECTS e = Employee
-    PROPERTIES(e) READONLY  name, login, namePosition, nameLegalEntity
+    PROPERTIES(e) READONLY name, login, namePosition, nameLegalEntity
     PROPERTIES(e) NEWSESSION NEW, EDIT, DELETE
+    FILTERGROUP active
+        FILTER '{Active}' active(e) 'F10' DEFAULT
+        FILTER 'Archived' archived(e) 'F9'
+;
 
-   LIST Employee OBJECT e
+FORM dialogEmployees 'Employees'
+    OBJECTS e = Employee
+    PROPERTIES(e) READONLY name, login, namePosition, nameLegalEntity
+    ORDERS name(e)
+
+    FILTERGROUP active
+        FILTER '{Active}' active(e) 'F10' DEFAULT
+        FILTER 'Archived' archived(e) 'F9'
+
+    LIST Employee OBJECT e
 ;
 
 NAVIGATOR {

@@ -50,7 +50,7 @@ function taskKanban() {
                 statusHeader.appendChild(statusNew);
 
                 statusNew.addEventListener("click", function() {
-                    controller.changeProperty("createTask", null, status.id);
+                    controller.changeProperty("createTaskStatus", null, status.id);
                 });
 
                 let statusBody = document.createElement("div");
@@ -68,11 +68,13 @@ function taskKanban() {
                             controller.changeObject(task, true, taskCard);
                         });
 
-                        if (task.nameProject) {
+                        if (task.nameProject || task.nameType) {
                             let taskHeader = document.createElement("h5");
                             taskHeader.classList.add("task-kanban-card-header");
                             taskHeader.classList.add("card-header");
-                            taskHeader.innerHTML = task.nameProject;
+                            taskHeader.innerHTML = (task.nameType ? task.nameType : "") +
+                                                   (task.nameProject && task.nameType ? " : " : "") +
+                                                   (task.nameProject ? task.nameProject : "");
                             taskCard.appendChild(taskHeader);
                         }
 
@@ -126,7 +128,7 @@ function taskKanban() {
                             let taskDeadline = document.createElement("div");
                             taskDeadline.classList.add("task-kanban-card-deadline");
                             taskDeadline.classList.add("card-footer");
-                            taskDeadline.innerHTML = task.deadline;
+                            taskDeadline.innerHTML = moment(task.deadline).toISOString(true).substring(0, 10);
                             taskCard.appendChild(taskDeadline);
                         }
 

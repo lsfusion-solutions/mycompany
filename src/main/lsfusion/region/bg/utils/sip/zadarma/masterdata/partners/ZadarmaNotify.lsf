@@ -1,0 +1,107 @@
+MODULE ZadarmaNotify;
+
+REQUIRE ZadarmaEmployee, EmployeeCall, Utils;
+
+NAMESPACE Zadarma;
+
+notifyResult = DATA LOCAL NESTED FILE ();
+notifyStart (STRING pbx_call_id, STRING caller_id, STRING called_did) {
+    NEW c = Call {
+        id(c) <- pbx_call_id;
+        caller(c) <- ISTRING[100](caller_id);
+        recipient(c) <- ISTRING[100](called_did);
+
+        start(c);
+
+        EXPORT JSON FROM redirect = idPbxNumber(redirect(c)),
+                         caller_name = callerName(c) TO notifyResult;
+    }
+}
+
+notifyInternal (STRING pbx_call_id, STRING internal) {
+    FOR id(Call c) = pbx_call_id AND Employee e = employee(pbxNumber(internal)) DO {
+        internal(c, e);
+    }
+}
+
+notifyAnswer (STRING pbx_call_id, STRING internal) {
+    FOR id(Call c) = pbx_call_id AND Employee e = employee(pbxNumber(internal)) DO {
+        answer(c, e);
+    }
+}
+
+notifyEnd (STRING pbx_call_id, INTEGER duration, STRING disposition, INTEGER is_recorded) {
+    FOR id(Call c) = pbx_call_id DO {
+        duration(c) <- duration;
+        result(c) <- disposition;
+        
+        recorded(c) <- is_recorded = 1;
+        
+        end(c);
+    }
+}
+
+notifyOutStart (STRING pbx_call_id, STRING caller_id, STRING destination, STRING internal) {
+    IF NOT caller_id = '0' THEN { // not an internal outgoing call
+        NEW c = Call {
+            id(c) <- pbx_call_id;
+            caller(c) <- ISTRING[100](caller_id);
+            recipient(c) <- ISTRING[100](destination);
+
+            outgoing(c) <- TRUE;
+            employee(c) <- employee(pbxNumber(internal));
+
+            start(c);
+        }
+    }
+}
+
+notify (STRING zd_echo, 
+        STRING event, STRING call_start, STRING pbx_call_id, STRING caller_id, STRING called_did,
+        STRING internal, STRING transfer_from, STRING transfer_type, STRING destination,
+        INTEGER duration, STRING disposition, STRING last_internal, INTEGER status_code, 
+        INTEGER is_recorded, STRING call_id_with_rec) {
+    logToFile('zadarma', CONCAT ' - ',
+        'zd_echo: ' + zd_echo,
+        'event:' + event, 'call_start: ' + call_start, 'pbx_call_id: ' + pbx_call_id, 'caller_id ' + caller_id, 'called_did: ' + called_did,
+        'internal:' + internal, 'transfer_from: ' + transfer_from, 'transfer_type: ' + transfer_type, 'destination:' + destination,
+        'duration:' + duration, 'disposition: ' + disposition, 'last_internal: ' + last_internal, 'status_code:' + status_code,
+        'is_recorded:' + is_recorded, 'call_id_with_rec: ' + call_id_with_rec
+    );
+    
+    IF zd_echo THEN {
+        stringToFile(zd_echo);
+        exportFile() <- resultFile();
+        RETURN;
+    }
+
+    NEWSESSION {
+        IF event = 'NOTIFY_START' THEN {
+            notifyStart(pbx_call_id, caller_id, called_did);
+        }
+        IF event = 'NOTIFY_INTERNAL' THEN {
+            notifyInternal(pbx_call_id, internal);
+        }
+        IF event = 'NOTIFY_ANSWER' THEN {
+            notifyAnswer(pbx_call_id, internal);
+        }
+        IF event = 'NOTIFY_END' THEN {
+            notifyEnd(pbx_call_id, duration, disposition, is_recorded);
+        }
+        IF event = 'NOTIFY_OUT_START' THEN {
+            notifyOutStart(pbx_call_id, caller_id, destination, internal);
+        }
+        IF event = 'NOTIFY_OUT_END' THEN {
+            notifyEnd(pbx_call_id, duration, disposition, is_recorded);
+        }
+        APPLY;
+        IF canceled() THEN {
+            EXPORT JSON FROM error = applyMessage() TO notifyResult;
+        }
+    }
+        
+    fileToString(notifyResult());
+    logToFile('zadarma', 'Response: ' + resultString());
+    
+    exportFile() <- notifyResult();
+} @@api @@noauth;

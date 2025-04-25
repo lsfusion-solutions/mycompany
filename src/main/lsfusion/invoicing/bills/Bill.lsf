@@ -10,7 +10,7 @@ NAMESPACE Invoicing;
 
 CLASS Bill 'Bill';
 
-@defineDocStatus(bill, 'Bill');
+@defineDocStatus(bill, 'Bill status');
 
 // type
 type 'Type' = DATA BillType (Bill) NONULL;
@@ -100,6 +100,12 @@ idBarCodeItem 'Barcode' (BillLine l) = idBarCode(item(l));
 idItem '{ID}' (BillLine l) = id(item(l));
 referenceItem 'Reference' (BillLine l) = reference(item(l));
 
+nameCategoryItem 'Category' (BillLine l) = nameCategory(item(l));
+level1Item 'Category 1' (BillLine l) = level1(item(l));
+level2Item 'Category 2' (BillLine l) = level2(item(l));
+level3Item 'Category 3' (BillLine l) = level3(item(l));
+level4Item 'Category 4' (BillLine l) = level4(item(l));
+
 countProductLines 'Number of lines with goods' (Bill b) = GROUP SUM 1 IF bill(BillLine l) = b AND item(l) IS Product;
 countServiceLine 'Number of lines with services' (Bill b) = GROUP SUM 1 IF b = bill(BillLine bl) AND item(bl) IS Service;
 
@@ -107,7 +113,7 @@ items '{Items}' (Bill b) = GROUP CONCAT nameItem(BillLine l) IF bill(l) = b, ','
 
 CONSTRAINT item(BillLine l) AND NOT canBePurchased(item(l))
             CHECKED BY item 
-            MESSAGE 'The item is not intended for purchase';
+            MESSAGE 'The item is not for purchase';
 
 uom (BillLine l) = uom(item(l));
 nameUom 'UoM' (BillLine l) = name(uom(l));
@@ -237,10 +243,6 @@ DESIGN bill {
     }
 }
 
-@defineDocHistory(bill, b, item);
-@defineDocHistoryLineProperty(bill, BillLine, quantity, 'Qty', nameItem);
-@defineDocHistoryLineProperty(bill, BillLine, untaxedAmount, '{Amount}', nameItem);
-
 @defineDocSearch(bill, item, quantity, 'Quantity', b, canBePurchased);
 @defineBarCodeSearch(bill, b, l, quantity);
 
@@ -259,10 +261,16 @@ FORM bills 'Bills'
 
 @extendFormEditable(bills);
 
+@defineDocHistory(bill, b, item);
+@defineDocHistoryLineProperty(bill, BillLine, quantity, 'Qty', nameItem);
+@defineDocHistoryLineProperty(bill, BillLine, untaxedAmount, '{Amount}', nameItem);
+
 @defineDocObjectsForm(bills, b, 'Bills');
 @defineDocTaxForm(bill, b);
 @defineDocStatusForm(bill, b);
 @defineDocLinesCount(bill, b);
+
+@defineObjectComments(bill, b, details);
 
 @defineObjectFiles(bill, b, 'Bill file');
 

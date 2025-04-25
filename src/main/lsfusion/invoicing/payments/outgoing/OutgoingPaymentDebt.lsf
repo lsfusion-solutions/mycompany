@@ -1,6 +1,6 @@
 MODULE OutgoingPaymentDebt;
 
-REQUIRE OutgoingPaymentCanceled, OutgoingPaymentContract, Debt;
+REQUIRE OutgoingPaymentCanceled, OutgoingPaymentContract, OutgoingPaymentCurrency, Debt;
 
 NAMESPACE Invoicing;
 
@@ -21,18 +21,19 @@ sourceCurrency (OutgoingPayment p) += currency(p);
 sourceAmount (OutgoingPayment p) += amount(p);
 
 // pay
-pay 'Match' (IncomingDebt d, OutgoingPayment p) {
+pay 'Match' ABSTRACT LIST (IncomingDebt, OutgoingPayment) CHANGEMOUSE 'DBLCLK';
+pay (IncomingDebt d, OutgoingPayment p) +{
     paid(d, p) <- left(d, p) (+) paid(d, p);
-} CHANGEMOUSE 'DBLCLK';
+}
 
 EXTEND FORM outgoingPayment
     OBJECTS d = IncomingDebt
-    PROPERTIES(d) READONLY dateTime, number, class, type
+    PROPERTIES(d) READONLY dateTime, number, class, type, amount
     PROPERTIES paid(d, p)
     FILTERS paid(d, p), active(d)
     
     OBJECTS dd = IncomingDebt
-    PROPERTIES(dd) READONLY dateTime, number, class, type, left
+    PROPERTIES(dd) READONLY dateTime, number, class, type, amount, left
     PROPERTIES pay(dd, p) TOOLBAR
     FILTERS canBePaid(dd, p), active(dd)   
 ;

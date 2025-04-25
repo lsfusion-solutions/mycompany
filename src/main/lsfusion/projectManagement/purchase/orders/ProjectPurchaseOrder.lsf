@@ -11,11 +11,12 @@ EXTEND FORM projectType PROPERTIES purchaseOrderType = nameOrderType(o);
 
 project = DATA Project (Order) INDEXED;
 nameProject 'Project' (Order i) = name(project(i));
+@definePropertyValue(order, project, 'Project', nameProject);
 
 countOrders 'Purchase orders' (Project p) = GROUP SUM 1 IF project(Order i) = p;
 
 EXTEND FORM order
-    PROPERTIES(o) nameProject
+    PROPERTIES(o) READONLYIF readonly(o) nameProject
 ;
 
 DESIGN order {
@@ -73,3 +74,5 @@ EXTEND FORM project
     PROPERTIES(p) createPurchaseOrder 'Add' = createOrder DRAW po TOOLBAR
     PROPERTIES(po) NEWSESSION EDIT, DELETE
 ;
+
+@defineHistoryProperty(order, project, 'Project', nameProject);

@@ -9,6 +9,7 @@ NAMESPACE ProjectManagement;
 CLASS ProjectAssignment 'Project assignment';
 
 project 'Project' = DATA Project (ProjectAssignment) NONULL DELETE;
+nameProject 'Project' (ProjectAssignment a) = name(project(a));
 countAssignments = GROUP SUM 1 BY project(ProjectAssignment a) MATERIALIZED;
 
 employee 'Employee' = DATA Employee (ProjectAssignment) NONULL INDEXED;
@@ -46,6 +47,9 @@ INDEX project(ProjectAssignment a), employee(a), role(a), fromDate(a), a;
 assignment (Project p, Employee e, ProjectRole r, DATE d) = 
     GROUP LAST ProjectAssignment a ORDER fromDate(a), a WHERE active(a, d) BY project(a), employee(a), role(a);
 
+assignment (Project p, Employee e, DATE d) =
+    GROUP LAST ProjectAssignment a ORDER fromDate(a), a WHERE active(a, d) BY project(a), employee(a);
+
 TABLE projectEmployeeRole (Project, Employee, ProjectRole);
 assignment (Project p, Employee e, ProjectRole r) = assignment(p, e, r, currentDate()) MATERIALIZED;
 
@@ -58,6 +62,8 @@ assigned (Project p, Employee e, INTERVAL[DATE] i) = assigned(p, e, from(i), to(
 assigned (Project p, Employee e, DATE d) = GROUP SUM 1 IF active(ProjectAssignment a, d) AND project(a) = p AND employee(a) = e;
 assigned (Project p, Employee e) = assigned(p, e, currentDate()) MATERIALIZED;
 countEmployees (Project p) = GROUP SUM 1 IF assigned(p, Employee e);
+
+assigned (Employee e, DATE from, DATE to) = GROUP SUM 1 IF fromDate(ProjectAssignment a) <= to AND NOT toDate(a) < from AND employee(a) = e;
 
 calcDefaultProject (Employee e) = GROUP LAST Project p ORDER p WHERE assigned(p, e);
 countProjects (Employee e) = GROUP SUM 1 IF assigned(Project p, e);
@@ -80,6 +86,44 @@ DESIGN project {
             caption = badged('Employees', countEmployees(p));
             MOVE PROPERTY(date);
             MOVE BOX(pe);       
+        }
+    }
+}
+
+accessToAllProjects 'Access to all projects' = DATA BOOLEAN (Employee);
+
+accessAllProjects = ABSTRACT VALUE BOOLEAN (CustomUser) MATERIALIZED;
+accessAllProjects(Employee e) += accessToAllProjects(e);
+accessAllProjects(CustomUser u) += u IS CustomUser AND NOT countAssignments(u);
+
+hasAccess = ABSTRACT VALUE BOOLEAN (Project, CustomUser);
+hasAccess (Project p, CustomUser u) += TRUE IF assigned(p, u);
+
+EXTEND FORM projects
+    FILTERS hasAccess(p, currentUser()) OR accessAllProjects(currentUser())
+;
+
+EXTEND FORM dialogProjects
+    FILTERS hasAccess(p, currentUser()) OR accessAllProjects(currentUser())
+;
+
+EXTEND FORM employee
+    PROPERTIES(e) accessToAllProjects
+    
+    OBJECTS pa = ProjectAssignment
+    PROPERTIES(pa) nameProject, nameRole, fromDate, toDate, NEW, DELETE
+    FILTERS employee(pa) = e 
+
+    FILTERGROUP active
+        FILTER 'Active' active(pa)
+;
+
+DESIGN employee {
+    details {
+        NEW projects {
+            caption = badged('Projects', countAssignments(e));
+            MOVE PROPERTY(accessToAllProjects(e));
+            MOVE BOX(pa) { caption = ''; }
         }
     }
 }

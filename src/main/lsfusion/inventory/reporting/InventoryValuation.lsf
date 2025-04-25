@@ -1,13 +1,24 @@
 MODULE InventoryValuation;
 
-REQUIRE CostLedger, LocationEmployee, BarCode;
+REQUIRE CostLedger, LocationEmployee, BarCode, ItemAttribute;
 
 NAMESPACE Inventory;
 
 FORM inventoryValuation 'Inventory valuation'
     OBJECTS dt = DATETIME PANEL NULL
     PROPERTIES(dt) dateTime 'Select date' = VALUE
-    
+
+    TREE locations lt = Location PARENT parent(lt)
+    PROPERTIES READONLY name(lt)
+    ORDERS name(lt)
+    FILTERS accessChildGranted(lt)
+
+    TREE categories c = Category PARENT parent(c)
+    PROPERTIES READONLY name(c)
+    ORDERS name(c)
+    FILTERGROUP activeCategory
+        FILTER '{Active}' active(c) DEFAULT
+
     OBJECTS lp = (l = Location, p = Product)
     PROPERTIES READONLY       nameCostingMethod(p), 'Location' = canonicalName(l)
     PROPERTIES(p) READONLY    'Product' = name, nameUom, idBarCode, id
@@ -16,17 +27,18 @@ FORM inventoryValuation 'Inventory valuation'
     PROPERTIES(p) NEWSESSION EDIT
     PROPERTIES(l, p) recalculateCost GRID
     PROPERTIES recalculateCost() DRAW lp TOOLBAR
-    FILTERS accessGranted(l)
+    FILTERS isChild(l, lt),
+            level(category(p), c),
+            accessGranted(l)
     FILTERGROUP rowFilter
-        FILTER 'On hand' IF dt THEN costQuantity(l, p, dt) ELSE costQuantity(l, p)
+        FILTER 'On hand' IF dt IS DATETIME THEN costQuantity(l, p, dt) ELSE costQuantity(l, p)
         FILTER 'Moved' countLedger(l, p)
         
     OBJECTS ol = OutCostLedger
-    PROPERTIES(ol) READONLY class, type, dateTime, number, nameLocation, nameProduct, quantity, costed, price, amount
+    PROPERTIES(ol) READONLY class, type, dateTime[CostLedger], number, nameLocation, nameProduct, negSignedQuantity, costed, price[CostLedger], amount
     PROPERTIES(ol) NEWSESSION EDIT
-    FILTERS location(ol) = l, product(ol) = p,
-            dateTime(ol) < dt OR NOT dt
-
+    FILTERS location[CostLedger](ol) = l, product[CostLedger](ol) = p,
+            dateTime[CostLedger](ol) < dt OR NOT dt
 
     OBJECTS il = InCostLedger
     PROPERTIES(il) READONLY class, type, dateTime, number, nameLocation, nameProduct, quantity, costed, price, amount
@@ -36,16 +48,17 @@ FORM inventoryValuation 'Inventory valuation'
             dateTime(il) < dt OR NOT dt
     FILTERGROUP filterIn
         FILTER 'Costed' quantity(ol, il)
-    
+
+    OBJECTS a = ItemAttribute
     OBJECTS locProd = (location = Location, product = Product) PIVOT
-    PROPERTIES READONLY 'Location' = canonicalName(location), 'Product' = name(product), 
+    PROPERTIES READONLY 'Location' = canonicalName(location), 'Product' = name(product), value(product, a) COLUMNS (a) HEADER name(a),
                         level1(product), level2(product), level3(product), level4(product), 'Canonical group' = canonicalNameCategory(product)
 
-    PROPERTIES READONLY costQuantity '{Quantity}' = IF dt THEN costQuantity(location, product, dt) ELSE costQuantity(location, product) MEASURE,
-                        costPrice 'Unit cost' = IF dt THEN costPrice(location, product, dt) ELSE costPrice(location, product),
-                        costAmount 'Cost' = IF dt THEN costAmount(location, product, dt) ELSE costAmount(location, product) MEASURE
+    PROPERTIES READONLY costQuantity '{Quantity}' = IF dt IS DATETIME THEN costQuantity(location, product, dt) ELSE costQuantity(location, product) MEASURE,
+                        costPrice 'Unit cost' = IF dt IS DATETIME THEN costPrice(location, product, dt) ELSE costPrice(location, product),
+                        costAmount 'Cost' = IF dt IS DATETIME THEN costAmount(location, product, dt) ELSE costAmount(location, product) MEASURE
     
-    FILTERS IF dt THEN costQuantity(location, product, dt) ELSE costQuantity(location, product)
+    FILTERS IF dt IS DATETIME THEN costQuantity(location, product, dt) ELSE costQuantity(location, product)
 ;
 
 DESIGN inventoryValuation {
@@ -58,7 +71,17 @@ DESIGN inventoryValuation {
             tabbed = TRUE;
             NEW valuation {
                 caption = 'Inventory valuation';
-                MOVE BOX (lp) { caption = ''; }
+                NEW valuationPane {
+                    fill = 2;
+                    horizontal = TRUE;
+                    NEW filterTabs {
+                        fill = 0.3;
+                        tabbed = TRUE;
+                        MOVE BOX(TREE locations) { caption = 'Locations'; }
+                        MOVE BOX(TREE categories) { caption = 'Categories'; }
+                    }
+                    MOVE BOX (lp) { caption = ''; }
+                }
                 NEW details {
                     fill = 1;
                     horizontal = TRUE;
@@ -68,6 +91,14 @@ DESIGN inventoryValuation {
             }
             MOVE BOX (locProd) { caption = '{Pivot}'; }
         }
+    }
+}
+
+@defineItemAttributeForm(inventoryValuation, p, lp);
+
+DESIGN inventoryValuation {
+    filterTabs {
+        MOVE BOX(ia) { caption = 'Attributes'; }
     }
 }
 

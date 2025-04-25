@@ -43,9 +43,10 @@ function shiftSchedule() {
             }
 
             dates = list.reduce(function (r, a) {
-                            r[a.date] = r[a.date] || {};
-                            r[a.date][a.assignedTo || "0"] = r[a.date][a.assignedTo || "0"] || [];
-                            r[a.date][a.assignedTo || "0"].push(a);
+                            let date = moment(a.date).toISOString(true).substring(0, 10);
+                            r[date] = r[date] || {};
+                            r[date][a.assignedTo || "0"] = r[date][a.assignedTo || "0"] || [];
+                            r[date][a.assignedTo || "0"].push(a);
                             return r;
                         }, dates);
 
@@ -97,6 +98,9 @@ function shiftSchedule() {
             element.scheduleTable.appendChild(body);
 
             for (const employee of employees) {
+                if (!employee) {
+                    continue;
+                }
                 let row = document.createElement("tr");
                 row.classList.add("shift-schedule-row");
 
@@ -152,7 +156,7 @@ function shiftSchedule() {
                           if (dragShift) {
                               controller.changeProperty("assignedTo", dragShift, employee.id == "0" ? null : employee.id);
                               const dt = new Date(date);
-                              controller.changeDateProperty("date", dragShift, dt.getFullYear(), dt.getMonth() + 1, dt.getDate());
+                              controller.changeProperty("date", dragShift, dt);
                               dragShift = null;
                           }
                           if (dragTemplate) {

@@ -27,7 +27,7 @@ priceType (InvoiceLine l) = priceType(invoice(l));
 
 CONSTRAINT type(Invoice i) AND priceType(i) AND NOT taxValid(type(i), priceType(i))
            CHECKED BY priceType[Invoice]
-           MESSAGE 'For implementation, a price type that is not valid for the type has been selected, (not) including taxes'; 
+           MESSAGE 'For the invoice, a price type that is not valid for the type has been selected, (not) including taxes'; 
 
 WHEN LOCAL CHANGED(customer(Invoice o)) OR CHANGED(type(o)) DO 
     priceType(o) <- OVERRIDE priceType(customer(o)), priceType(type(o));

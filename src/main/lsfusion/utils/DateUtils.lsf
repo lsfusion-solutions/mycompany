@@ -1,8 +1,17 @@
 MODULE DateUtils;
 
-REQUIRE Time;
+REQUIRE Time, Utils;
 
 NAMESPACE Utils;
+
+secondsTimeDuration = FORMULA LONG 'abs(extract (\'epoch\' from (LOCALTIMESTAMP - ($1)))::bigint)';
+wordsTimeDuration = FORMULA STRING 'CASE WHEN ($1) < 60 THEN ($1)||\'s\' WHEN ($1)/60 < 60 THEN ($1)/60||\'m\' WHEN ($1)/3600 < 24 THEN ($1)/3600||\'h\' WHEN ($1)/86400 < 30 THEN ($1)/86400||\'d\' WHEN ($1)/2592000 < 12 THEN ($1)/2592000||\'n\' ELSE ($1)/31536000||\'y\' END';
+wordsI18nTimeDuration (LONG s) = replace(replace(replace(replace(replace(replace(wordsTimeDuration(s), r's', '{second_fl}'), r'm', '{minute_fl}'), r'h', '{hour_fl}'), r'd', '{day_fl}'), r'n', '{month_fl}'), r'y', '{year_fl}');
+
+textTimeDuration (DATETIME dt) = CONCAT '', '{In} ' IF currentDateTime() < dt, wordsI18nTimeDuration(secondsTimeDuration(dt)), ' {ago}' IF currentDateTime() >= dt;
+
+wordsDateDuration = FORMULA STRING 'CASE WHEN ($1) < 30 THEN ($1)||\'d\' WHEN ($1)/30 < 12 THEN ($1)/30||\'m\' ELSE ($1)/360||\'y\' END';
+textDateDuration (DATE d) = CONCAT '', '{In} ' IF currentDate() < d, (IF currentDate() = d THEN 'Today' ELSE wordsDateDuration(abs(daysBetweenDates(d, currentDate())))), ' {ago}' IF currentDate() > d;
 
 days (INTERVAL[DATE] i) = daysBetweenDates(to(i), from(i)) + 1;
 prevMonthInterval (INTERVAL[DATE] i) =
@@ -37,13 +46,14 @@ END
 
 // aggregations
 
-META defineDateAggregation(cls, prefix, caption)
-    prefix###nameDOW caption##'Day of week' (cls o) = extractDOWName(prefix###date(o));
-    prefix###week caption##'Week' (cls o) = extractWeek(prefix###date(o));
+META defineDateAggregation(cls, prefix, dateProp, caption)
+    prefix###numberDOW caption##'Day of week number' (cls o) = extractDOWNumber(dateProp(o));
+    prefix###nameDOW caption##'Day of week' (cls o) = extractDOWName(dateProp(o));
+    prefix###week caption##'Week' (cls o) = extractWeek(dateProp(o));
     
-    prefix###numberMonth caption##'Month number' (cls o) = extractMonthNumber(prefix###date(o));
-    prefix###nameMonth caption##'Month' (cls o) = extractMonthName(prefix###date(o));
-    prefix###year caption##'Year' (cls o) = extractYear(prefix###date(o));
+    prefix###numberMonth caption##'Month number' (cls o) = extractMonthNumber(dateProp(o));
+    prefix###nameMonth caption##'Month' (cls o) = extractMonthName(dateProp(o));
+    prefix###year caption##'Year' (cls o) = extractYear(dateProp(o));
 END
 
 META defineDateAggregation(obj)
@@ -53,7 +63,7 @@ END
 META defineDateTimeAggregation(cls, prefix, caption)
     prefix###date caption##'Date' (cls o) = DATE(prefix###dateTime(o));
     
-    @defineDateAggregation(cls, prefix, caption);
+    @defineDateAggregation(cls, prefix, prefix###date, caption);
 
     prefix###minute caption##'Minute' (cls o) = extractMinute(prefix###dateTime(o));
     prefix###hour caption##'Hour' (cls o) = extractHour(prefix###dateTime(o));
@@ -63,21 +73,21 @@ META defineDateTimeAggregation(obj)
     @defineDateTimeAggregation(obj, , );
 END
 
-META defineDateAggregationForm(form, let, prefix)
+META defineDateAggregationForm(form, let, dateProp, prefix)
     EXTEND FORM form
-        PROPERTIES(let) READONLY AFTER prefix###date(let) prefix###nameDOW, prefix###week, prefix###numberMonth, prefix###nameMonth, prefix###year
+        PROPERTIES(let) READONLY AFTER dateProp(let) prefix###numberDOW, prefix###nameDOW, prefix###week, prefix###numberMonth, prefix###nameMonth, prefix###year
     ;
 END
 
 META defineDateAggregationForm(form, let)
-    @defineDateAggregationForm(form, let, );
+    @defineDateAggregationForm(form, let, prefix###date, );
 END
 
 META defineDateTimeAggregationForm(form, let, prefix)
     EXTEND FORM form
         PROPERTIES(let) READONLY AFTER prefix###dateTime(let) prefix###minute, prefix###hour, prefix###date
     ;
-    @defineDateAggregationForm(form, let, prefix);
+    @defineDateAggregationForm(form, let, prefix###date, prefix);
 END
 
 META defineDateTimeAggregationForm(form, let)

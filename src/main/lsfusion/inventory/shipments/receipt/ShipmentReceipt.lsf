@@ -58,8 +58,14 @@ DESIGN shipment {
 }
 
 // returned quantity
+checkReturnedQuantity 'Check returned quantity' = DATA BOOLEAN (ShipmentType);
+EXTEND FORM shipmentType PROPERTIES(o) checkReturnedQuantity;
+
 returned 'Returned' (ShipmentLine sl) = 
     GROUP SUM done(ReceiptLine rl) IF shipmentLine(rl) = sl AND active(receipt(rl)) MATERIALIZED;
+
+CONSTRAINT SET(returned(ShipmentLine sl) > OVERRIDE done(sl), 0.0) AND checkReturnedQuantity(type(sl))
+    MESSAGE 'The returned quantity on the shipment line exceeds the original quantity';
 
 toReturn (ShipmentLine sl) = done(sl) - OVERRIDE returned(sl), 0;
 

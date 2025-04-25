@@ -1,0 +1,54 @@
+MODULE Zadarma;
+
+REQUIRE System, SQLUtils;
+
+NAMESPACE Zadarma;
+
+// REQUIRE ZadarmaNotify, ZadarmaPBX, ZadarmaEmployeeCall, ZadarmaWebRTC, ZadarmaRecord
+// Notify : https://<url to mycompany>/exec/Zadarma.notify
+// require pgcrypto extension for the database :
+
+onStarted() +{
+    runSQL('CREATE EXTENSION IF NOT EXISTS pgcrypto;'); 
+}
+
+customUrl 'Url' = DATA STRING ();
+apiKey 'Key' = DATA STRING () CHARWIDTH 40;
+apiSecret 'Secret' = DATA STRING () CHARWIDTH 40;
+
+EXTEND FORM integrationData
+    PROPERTIES() customUrl, apiKey, apiSecret
+;
+
+DESIGN integrationData {
+    pane {
+        NEW zadarma {
+            caption = 'Zadarma';
+            NEW header {
+                lines = 3;
+                MOVE PROPERTY(customUrl());
+                MOVE PROPERTY(apiKey());
+                MOVE PROPERTY(apiSecret());
+            }
+            NEW zadarmaPane {
+                fill = 1;
+                tabbed = TRUE;
+            }
+        }
+    }
+}
+
+apiAuthKey (STRING method, STRING params, STRING secret) =
+    FORMULA STRING 'encode(convert_to(encode(hmac(($1)||($2)||md5($2),($3),\'sha1\'::text),\'hex\'::text),\'UTF8\'),\'base64\')';
+
+authorizationKey (STRING method, STRING params) =
+    apiKey() + ':' + apiAuthKey(method, (OVERRIDE params, ''), apiSecret());
+
+apiResponse = DATA FILE ();
+
+apiGet (STRING method, STRING params) {
+    LOCAL headers = STRING (STRING);
+    headers(STRING s) <- apiKey() + ':' + apiAuthKey(method, (OVERRIDE params, ''), apiSecret()) IF s = 'Authorization';
+    
+    EXTERNAL HTTP GET (OVERRIDE customUrl(), 'https://api.zadarma.com') + method + '?' + params HEADERS headers NOENCODE TO apiResponse;
+}

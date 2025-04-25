@@ -1,0 +1,15 @@
+MODULE ProjectTimeEntryAssignment;
+
+REQUIRE ProjectTimeEntry, ProjectAssignment;
+
+NAMESPACE ProjectManagement;
+
+EXTEND FORM timeEntries
+    FILTERS hasAccess(project(t), currentUser()) OR accessAllProjects(currentUser())
+;
+
+CONSTRAINT ((SET(TimeEntry t IS TimeEntry) AND NOT project(t)) OR (DROPPED(project(t)) AND t IS TimeEntry)) AND NOT accessAllProjects(employee(t))
+    MESSAGE 'No project selected for the time entry';
+
+WHEN LOCAL SET(TimeEntry e IS TimeEntry) AND defaultProject(currentUser()) DO
+    project(e) <- defaultProject(currentUser());

@@ -10,7 +10,7 @@ class 'Type' (ResLedger l) = objectClassName(l) IF l IS ResLedger CHARWIDTH 15;
 type 'Type' = ABSTRACT ISTRING[100] (ResLedger) CHARWIDTH 20 MATERIALIZED;
 
 dateTime 'Time' = ABSTRACT DATETIME (ResLedger) MATERIALIZED;
-number 'Number' = ABSTRACT STRING[31] (ResLedger);
+number 'Number' = ABSTRACT STRING[50] (ResLedger) CHARWIDTH 10 MATERIALIZED;
 
 location 'Source location' = ABSTRACT Location (ResLedger) MATERIALIZED;
 nameLocation 'Source location' (ResLedger r) = name(location(r));
@@ -26,18 +26,60 @@ reserved 'Reserved quantity' = ABSTRACT NUMERIC[16,3] (ResLedger) MATERIALIZED;
 partner 'Partner' = ABSTRACT Partner (ResLedger) MATERIALIZED;
 namePartner 'Partner' (ResLedger l) = name(partner(l));
 
+expected 'Expected' (Location l, Product p) =
+    GROUP SUM -reserved(ResLedger sl) IF reserved(sl) < 0 AND
+                                         location(sl) = l
+                                         AND product(sl) = p MATERIALIZED;
+prevExpected 'Expected' (Location ll, Product p) = PREV(expected(ll, p));
+
+expectedRec 'Expected (including nested)' (Location l, Product p) =
+    GROUP SUM expected(Location child, p) IF level(child, l) MATERIALIZED;
+prevExpectedRec 'Expected' (Location ll, Product p) = PREV(expectedRec(ll, p));
+
 reserved 'Reserved' (Location l, Product p) = 
-    GROUP SUM reserved(ResLedger sl) IF location(sl) = l 
-                                        AND product(sl) = p MATERIALIZED; 
+    GROUP SUM reserved(ResLedger sl) IF reserved(sl) > 0 AND
+                                        location(sl) = l 
+                                        AND product(sl) = p MATERIALIZED;
 
 reservedRec 'Reserved (including nested)' (Location l, Product p) = 
     GROUP SUM reserved(Location child, p) IF level(child, l) MATERIALIZED;
-                                        
-available 'Available' (Location ll, Product p) = onHand(ll,p) (-) reserved(ll,p);
+
+// available
+skipAvailable 'Skip' = ABSTRACT BOOLEAN (ResLedger) MATERIALIZED;
+
+planned 'Planned' (Location l, Product p) =
+    GROUP SUM reserved(ResLedger sl) IF NOT skipAvailable(sl) AND
+                                        location(sl) = l
+                                        AND product(sl) = p MATERIALIZED;
+
+plannedRec 'Planned (including nested)' (Location l, Product p) =
+    GROUP SUM planned(Location child, p) IF level(child, l) MATERIALIZED;
+
+available 'Available' (Location ll, Product p) = onHand(ll,p) (-) planned(ll,p);
 prevAvailable 'Available' (Location ll, Product p) = PREV(available(ll, p)); 
 
-availableRec 'Available' (Location ll, Product p) = onHandRec(ll,p) (-) reservedRec(ll,p);
-prevAvailableRec 'Available' (Location ll, Product p) = PREV(availableRec(ll, p)); 
+availableRec 'Available' (Location ll, Product p) = onHandRec(ll,p) (-) plannedRec(ll,p);
+prevAvailableRec 'Available' (Location ll, Product p) = PREV(availableRec(ll, p));
 
-CONSTRAINT SET(available (Location ll, Product p) < 0) AND recPositiveOnHand(ll) 
+// constraint
+positiveAvailable 'Disallow reserving more than available' = DATA BOOLEAN (Location);
+
+recPositiveAvailable 'Disallow reserving more than available' (Location child) =
+    GROUP LAST positiveAvailable(Location parent) ORDER DESC level(child, parent)
+          WHERE positiveAvailable(parent) MATERIALIZED CHARWIDTH 15;
+
+CONSTRAINT SET(available (Location ll, Product p) < 0) AND recPositiveAvailable(ll) 
             MESSAGE 'Available balance cannot be negative';
+
+EXTEND FORM location
+    PROPERTIES(l) positiveAvailable
+;
+DESIGN location {
+    params {
+        MOVE PROPERTY(positiveAvailable(l));
+    }
+}
+
+EXTEND FORM locations
+    PROPERTIES(l) READONLY recPositiveAvailable
+;

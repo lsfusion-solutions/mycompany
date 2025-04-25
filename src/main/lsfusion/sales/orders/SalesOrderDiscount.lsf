@@ -1,13 +1,19 @@
 MODULE SalesOrderDiscount;
 
-REQUIRE SalesOrderPricelist, SalesDiscountLine;
+REQUIRE SalesOrderPricelist, SalesDiscountLine, SalesDiscountLocation;
 
 NAMESPACE Sales;
 
-@defineDocSalesDiscount(order);
+@defineDocSalesDiscount(order, o);
 
 @defineDocSalesDiscountLine(order, 'Do not automatically calculate discounts in order', Sales);
 
+location(OrderLine l) += Sales.location(l);
+WHEN LOCAL (CHANGED(Sales.location(OrderLine l))) AND
+    NOT noRecalcDiscountAutoOrder() AND NOT manual(salesDiscount(l)) INLINE DO {
+    processDiscountSales(l);
+}
+
 EXTEND FORM order
-    PROPERTIES recalcDiscountAuto(o) DRAW l TOOLBAR
+    PROPERTIES DISABLEIF readonly(o) recalcDiscountAuto(o) DRAW l TOOLBAR
 ;

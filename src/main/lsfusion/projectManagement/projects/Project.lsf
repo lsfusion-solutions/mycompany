@@ -1,11 +1,12 @@
 MODULE Project;
 
-REQUIRE FileUtils, MetaNumerator, Authentication, Icon, Doc,
+REQUIRE FileUtils, MetaNumerator, Authentication, Icon, Doc, Comments,
         ProjectManagementSettings, ProjectStatus, ProjectType, Company, Employee;
 
 NAMESPACE ProjectManagement;
 
 CLASS Project 'Project';
+TABLE project(Project);
 
 readonly = ABSTRACT CASE BOOLEAN (Project);
 
@@ -15,7 +16,7 @@ type(Project p) <- defaultProjectType() WHEN SET(p IS Project);
 
 @defineNumberType(project);
 
-name '{Name}' = DATA STRING (Project) CHARWIDTH 20 IN id;
+name '{Name}' = DATA STRING (Project) CHARWIDTH 15 IN id;
 
 company 'Company' = DATA Company (Project);
 nameCompany 'Company' (Project p) = name(company(p));
@@ -122,6 +123,8 @@ FORM projects 'Projects'
 ;
 
 @defineDocObjectsForm(projects, p, '{Projects}');
+
+@defineObjectComments(project, p, details);
 
 @defineObjectFiles(project, p, 'Project file');
 

@@ -1,0 +1,105 @@
+MODULE ApplicationRefuse;
+
+REQUIRE ApplicationHire;
+
+NAMESPACE HumanResources;
+
+CLASS RefuseReason 'Refuse reason';
+name '{Name}' = DATA ISTRING[100] (RefuseReason) NONULL CHARWIDTH 15;
+
+emailTemplate 'Email template' = DATA RICHTEXT (RefuseReason);
+
+FORM refuseReason 'Refuse reason'
+    OBJECTS o = RefuseReason PANEL
+    PROPERTIES(o) name, emailTemplate
+
+    EDIT RefuseReason OBJECT o;
+;
+
+DESIGN refuseReason {
+    OBJECTS {
+        MOVE PROPERTY(emailTemplate(o)) {
+            panelCaptionVertical = TRUE;
+            fill = 1;
+        }
+    }
+}
+
+FORM refuseReasons 'Refuse reasons'
+    OBJECTS o = RefuseReason
+    PROPERTIES(o) READONLY name
+    LIST RefuseReason OBJECT o
+;
+
+EXTEND FORM options
+    OBJECTS rr = RefuseReason
+    PROPERTIES(rr) READONLY name
+    PROPERTIES(rr) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(rr) { caption = 'Refuse reasons'; }
+    }
+}
+
+EXTEND CLASS ApplicationStatus {
+    refused 'Refused'
+}
+refused 'Refused' = DATA BOOLEAN (Application);
+
+status(Application i) += WHEN refused(i) THEN ApplicationStatus.refused;
+color(ApplicationStatus i) += WHEN i = ApplicationStatus.refused THEN RGB(255,212,212);
+
+closed(ApplicationStatus a) += WHEN a = ApplicationStatus.refused THEN TRUE;
+
+refuseReason = DATA RefuseReason (Application);
+nameRefuseReason 'Refuse reason' (Application a) = name(refuseReason(a));
+
+refuse 'Refuse' (Application a) {
+    APPLY;
+    IF canceled() THEN RETURN;
+    
+    DIALOG refuseReasons OBJECTS o INPUT DO {
+        NEWSESSION {
+            refuseReason(a) <- o;
+            refused(a) <- TRUE; 
+            APPLY;
+            
+            IF NOT canceled() AND emailTemplate(o) THEN
+                EMAIL
+                    SUBJECT subject(a)
+                    TO email(a)
+                    BODY emailTemplate(o);
+        }
+    }
+    
+}
+
+EXTEND FORM application
+    PROPERTIES(a) refuse SHOWIF NOT closed(a), refused
+    
+    PROPERTIES(a) nameRefuseReason SHOWIF refused(a)
+;
+
+DESIGN application {
+    secondaryActions {
+        MOVE PROPERTY(refuse(a)) { valueClass = 'btn-danger'; }
+    }
+
+    statusGroup {
+        MOVE PROPERTY(refused(a)) {
+            valueClass = 'btn-check';
+            captionClass = 'btn btn-outline-primary btn-arrow-right';
+        }
+    }
+
+    summary {
+        MOVE PROPERTY(nameRefuseReason(a)) FIRST;
+    }
+}
+
+EXTEND FORM applications
+    EXTEND FILTERGROUP status
+        FILTER 'Refused' status(a) = ApplicationStatus.refused
+;

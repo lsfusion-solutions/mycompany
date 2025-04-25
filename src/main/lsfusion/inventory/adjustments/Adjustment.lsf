@@ -1,6 +1,6 @@
 MODULE Adjustment;
 
-REQUIRE InventorySettings, LocationEmployee, 
+REQUIRE InventorySettings, LocationEmployee, Comments, 
         Product, InvLedger, DateUtils,
         Company, BarCode, Doc;
                                   
@@ -8,7 +8,7 @@ NAMESPACE Inventory;
 
 CLASS Adjustment 'Adjustment';
 
-@defineDocStatus(adjustment, 'Adjustment');
+@defineDocStatus(adjustment, 'Adjustment status');
 
 dateTime 'Date' = DATA DATETIME (Adjustment) IN id;
 WHEN LOCAL SET(Adjustment a IS Adjustment) AND NOT CHANGED(dateTime(a)) DO dateTime(a) <- currentDateTime();
@@ -90,7 +90,7 @@ nameLocation 'Location' (AdjustmentLine l) = canonicalName(location(l));
 WHEN LOCAL SETCHANGED(location(adjustment(AdjustmentLine l))) AND NOT location(l) DO location(l) <- location(adjustment(l));
 
 CONSTRAINT location(AdjustmentLine l) AND NOT level(location(l), location(adjustment(l))) CHECKED BY location[AdjustmentLine]
-    MESSAGE 'The inventory line storage location is not a descendant of the document storage location';
+    MESSAGE 'The adjustment line location is not a descendant of the document location';
 
 lastAdjustmentLine (Adjustment a, Product p, Location l) = 
     GROUP LAST AdjustmentLine al ORDER al BY adjustment(al), product(al), location(al);
@@ -117,8 +117,8 @@ FORM adjustment 'Adjustment'
     OBJECTS a = Adjustment PANEL 
     PROPERTIES(a) READONLYIF readonly(a)
                   dateTime, number, 
-                  nameLocation, nameType, nameCategory SHOWIF type(a) = AdjustmentType.category
-    PROPERTIES(a) note 
+                  nameLocation, nameType, nameCategory SHOWIF type(a) = AdjustmentType.category,
+                  note 
     
     OBJECTS l = AdjustmentLine
     PROPERTIES(l) READONLYIF readonly(a) 
@@ -172,9 +172,6 @@ DESIGN adjustment {
 
 edit (AdjustmentLine l) + { SHOW adjustment OBJECTS a = adjustment(l), l = l DOCKED; }
 
-@defineDocHistory(adjustment, a, product);
-@defineDocHistoryLineProperty(adjustment, AdjustmentLine, theoreticalQuantity, 'Theoretical quantity', nameProduct);
-
 FORM adjustments 'Adjustments'
     OBJECTS a = Adjustment
     PROPERTIES(a) READONLY number, dateTime, nameType, nameLocation, nameCategory, note, theoreticalQuantity
@@ -186,9 +183,14 @@ FORM adjustments 'Adjustments'
 
 @defineDocObjectsForm(adjustments, a, 'Adjustments');
 
+@defineDocHistory(adjustment, a, product);
+@defineDocHistoryLineProperty(adjustment, AdjustmentLine, theoreticalQuantity, 'Theoretical quantity', nameProduct);
+
 @defineDocStatusForm(adjustment, a);
 @defineDocLinesCount(adjustment, a);
 @defineDocLocationAccess(adjustment, a);
+
+@defineObjectComments(adjustment, a, details);
 
 NAVIGATOR {
     operations {

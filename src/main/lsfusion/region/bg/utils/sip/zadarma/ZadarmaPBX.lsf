@@ -1,0 +1,73 @@
+MODULE ZadarmaPBX;
+
+REQUIRE Zadarma;
+
+NAMESPACE Zadarma;
+
+//{"status":"success","pbx_id":486594,"numbers":[100,101,102]}
+
+pbxID 'PBX ID' = DATA STRING[20]();
+
+CLASS PBXNumber 'PBX number';
+
+id '{ID}' = DATA STRING[10] (PBXNumber);
+pbxNumber (STRING[10] id) = GROUP AGGR PBXNumber pn BY id(pn);
+
+login (PBXNumber n) = pbxID() + '-' + id(n);
+
+EXTEND FORM integrationData
+    PROPERTIES() pbxID READONLY 
+    
+    OBJECTS pbxN = PBXNumber
+    PROPERTIES(pbxN) READONLY id
+;
+
+DESIGN integrationData {
+    zadarmaPane {
+        NEW zadarmaPBX {
+            caption = 'PBX';
+            NEW zadarmaPBXHeader {
+                horizontal = TRUE;
+                MOVE PROPERTY(pbxID());
+            }
+            MOVE BOX(pbxN);
+        }
+    }
+}
+
+// import
+numbers = DATA LOCAL STRING[10](INTEGER);
+pbx_id = DATA LOCAL STRING[20]();
+
+FORM getPBX
+    PROPERTIES() pbx_id
+
+    OBJECTS numbers = INTEGER
+    PROPERTIES(numbers) numbers EXTID 'value'
+    FILTERS imported(numbers)
+;
+
+apiGetPBX 'Get PBX' () {
+    NEWSESSION {
+        apiGet('/v1/pbx/internal/', '');
+
+        IMPORT getPBX JSON FROM apiResponse();
+
+        pbxID() <- pbx_id();
+        FOR imported(INTEGER number) AND NOT pbxNumber(numbers(number)) DO NEW p = PBXNumber {
+            id(p) <- numbers(number);
+        }
+        
+        APPLY;
+    }
+}
+
+EXTEND FORM integrationData
+    PROPERTIES() apiGetPBX
+;
+
+DESIGN integrationData {
+    zadarmaPBXHeader {
+        MOVE PROPERTY(apiGetPBX());
+    }
+}

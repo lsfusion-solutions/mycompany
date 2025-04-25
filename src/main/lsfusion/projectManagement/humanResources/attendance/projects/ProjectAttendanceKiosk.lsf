@@ -1,0 +1,33 @@
+MODULE ProjectAttendanceKiosk;
+
+REQUIRE ProjectAttendanceMobile, AttendanceKiosk;
+
+NAMESPACE ProjectManagement;
+
+EXTEND FORM attendanceKiosk
+    PROPERTIES nameAttendanceProject() SELECT 'dropdown'
+;
+
+DESIGN attendanceKiosk {
+    rightPane {
+        MOVE PROPERTY(nameAttendanceProject()) AFTER geolocation;
+    }
+}
+
+EXTEND FORM attendanceKiosk
+    PROPERTIES(a) READONLY nameProject
+;
+
+EXTEND FORM attendanceKioskMessage
+    PROPERTIES() READONLY '' = nameAttendanceProject
+;
+
+DESIGN attendanceKioskMessage {
+    info {
+        MOVE PROPERTY(nameAttendanceProject()) {
+            fontSize = 32;
+        }
+    }
+}
+
+@defineAttendanceProjectDefault(attendanceKiosk, attendanceProject);

@@ -1,0 +1,17 @@
+MODULE TaskFilter;
+
+REQUIRE Task;
+
+NAMESPACE ProjectManagement;
+
+@defineDocFilter(task, TaskType, type, t, 'Task type');
+@defineDocFilter(task, TaskPriority, priority, t, 'Task priority');
+
+@defineDocFilter(task, Employee, author, t, 'Author');
+@defineDocFilter(task, Employee, assignedTo, t, 'Assigned to');
+
+@defineDocFilterProperty(tasks, task, TaskTag, tag, t, 'Tag', tag);
+
+EXTEND FORM tasks
+    FILTERS in(t, taskTag()) OR NOT taskTag()
+;

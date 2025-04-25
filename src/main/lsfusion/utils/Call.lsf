@@ -1,0 +1,36 @@
+MODULE Call;
+
+REQUIRE Employee, Utils;
+
+NAMESPACE Utils;
+
+callAvailable = ABSTRACT VALUE BOOLEAN ();
+call ABSTRACT (STRING); 
+
+CLASS Call 'Call';
+TABLE call (Call);
+
+id '{ID}' = DATA STRING (Call) INDEXED;
+call = GROUP AGGR Call c BY id(c); 
+
+startedAt 'Started' = DATA DATETIME (Call);
+startedAt (Call c) <- currentDateTime() WHEN SET(c IS Call);
+
+outgoing 'Outgoing' = DATA BOOLEAN (Call);
+
+caller 'Caller' = DATA ISTRING[100] (Call);
+recipient 'Recipient' = DATA ISTRING[100] (Call);
+
+callerName 'Caller name' = DATA ISTRING[100] (Call); 
+
+duration 'Duration' = DATA INTEGER (Call);
+
+result 'Result' = DATA STRING (Call);
+
+match (STRING phone, STRING number) = replace(phone, '+() -', '') = replace(number, '+() -', '');
+
+start ABSTRACT LIST (Call);
+end ABSTRACT LIST (Call);
+
+recorded 'Recorded' = DATA BOOLEAN (Call);
+requestRecord 'Request record' ABSTRACT LIST (Call); 

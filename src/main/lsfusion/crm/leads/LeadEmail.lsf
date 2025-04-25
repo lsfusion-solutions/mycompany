@@ -1,0 +1,42 @@
+MODULE LeadEmail;
+
+REQUIRE Lead, EmailUtils, EmailTemplate;
+
+NAMESPACE CRM;
+
+// html
+subject = ABSTRACT VALUE ISTRING (Lead);
+subject (Lead l) += CONCAT ' - ', prefixName(l), (CONCAT ' ', '(' + nameStatus(l) + ')', idName(l));
+
+info = ABSTRACT VALUE HTMLTEXT (Lead);
+info (Lead l) += propertiesHtmlShortList(l);
+
+body = ABSTRACT VALUE HTMLTEXT (Lead);
+body(Lead l) += HTMLTEXT (CONCAT '',
+    '<h1><a href="' + contextUrl('/exec/CRM.showLead?id=' + l) + '">' + subject(l) + '</a></h1>',
+    info(l),
+    description(l)
+    );
+
+@defineObjectNotifyComments(lead, 'Leads', );
+
+notify (Lead l, Contact c) += salesPerson(l) = c;
+
+@defineObjectEmailAccount(lead, 'Account for leads');
+
+@defineObjectEmail(lead, 'Lead', l);
+
+@defineObjectEmailActions(lead, l, name);
+
+@defineObjectEmailTemplate(lead, l, 'Leads', name);
+
+@defineObjectEmailTemplateFilter(lead, type);
+@defineObjectEmailTemplateFilter(lead, status);
+
+fill (Email e, Lead o) +{
+    customer(o) <- partnerEmail(fromAddress(e));
+}
+
+@defineObjectEmailDashboard(lead, leads);
+
+@defineObjectEmailForm(lead, l);

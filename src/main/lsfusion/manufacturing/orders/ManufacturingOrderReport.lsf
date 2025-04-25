@@ -1,6 +1,6 @@
 MODULE ManufacturingOrderReport;
 
-REQUIRE ManufacturingOrderDone, ItemAttribute;
+REQUIRE ManufacturingOrderDone, ManufacturingOrderCost, ItemAttribute;
 
 NAMESPACE Manufacturing;
 
@@ -16,7 +16,8 @@ FORM manufacturingOrderReport 'Order report'
     PROPERTIES READONLY 'Category 1' = level1(item(o)), 'Category 2' = level2(item(o)), 'Category 3' = level3(item(o)), 'Category 4' = level4(item(o)), 
                         'Canonical group' = canonicalNameCategory(item(o)) 
     PROPERTIES READONLY attribute(o, a) COLUMNS (a) HEADER name(a)
-    PROPERTIES(o) READONLY MEASURE toManufacture, manufactured
+    PROPERTIES(o) READONLY MEASURE toManufacture, manufactured,
+                                   cost, extraCost, totalCost
     FILTERS accessGranted(materialsLocation(o)) OR accessGranted(productsLocation(o)) 
 ;
 

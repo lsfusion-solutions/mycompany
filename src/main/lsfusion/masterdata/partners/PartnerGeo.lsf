@@ -1,36 +1,63 @@
 MODULE PartnerGeo;
 
-REQUIRE Partner;
+REQUIRE Partner, Geo, GeoUtils;
 
 NAMESPACE MasterData;
 
-latitude 'Latitude'= DATA NUMERIC[11,6] (Partner);
-longitude 'Longitude' = DATA NUMERIC[11,6] (Partner);
+META defineObjectMap(object, lobj, container)
+    latitude 'Latitude'= DATA NUMERIC[11,6] (###object);
+    longitude 'Longitude' = DATA NUMERIC[11,6] (###object);
 
-EXTEND FORM partner
-    PROPERTIES(p) latitude, longitude
+    distance (###object p) = abs(longitude(p) - longitude()) + abs(latitude(p) - latitude());
+    near(###object p) = distance(p) <= (OVERRIDE distanceAccuracy(), 0.001);
+
+    afterInputGoogleAddress ABSTRACT LIST (###object, STRING[150]);
     
-    OBJECTS pg = Partner MAP
-    PROPERTIES(pg) name READONLY, latitude, longitude
-    FILTERS pg = p
-;
+    inputGoogleAddress (###object p) {
+        INPUT a = STRING[150] CUSTOM 'googleAutocomplete' DO {
+            address(p) <- getWord(a, ',', 1);
+            city(p) <- getWord(a, ',', 2);
+            state(p) <- getWord(a, ',', 3);
 
-DESIGN partner {
-    tabs {
-        NEW geo {
-            caption = 'Coordinates';
-            NEW coordinates {
-                horizontal = TRUE;
-                MOVE PROPERTY(latitude(p));
-                MOVE PROPERTY(longitude(p));
-            }
-            MOVE BOX(pg) { 
-                height = 500; 
-                caption = ''; 
+            getCoordinates(a);
+
+            latitude(p) <- readLatitude();
+            longitude(p) <- readLongitude();
+
+            afterInputGoogleAddress(p, a);
+        }
+    }
+
+    EXTEND FORM object
+        PROPERTIES addressCsv(lobj) ON CHANGE inputGoogleAddress(lobj) SHOWIF apiKey(MapProvider.google)
+        PROPERTIES(lobj) latitude, longitude
+
+        OBJECTS lobj##g = ###object MAP
+        PROPERTIES(lobj##g) name READONLY, latitude, longitude
+        PROPERTIES fitBounds = TRUE IF lobj##g IS ###object
+        FILTERS lobj##g = lobj
+    ;
+
+    DESIGN object {
+        container {
+            NEW geo {
+                caption = 'Coordinates';
+                MOVE PROPERTY(addressCsv(lobj)) { alignment = STRETCH; }
+                NEW coordinates {
+                    horizontal = TRUE;
+                    MOVE PROPERTY(latitude(lobj));
+                    MOVE PROPERTY(longitude(lobj));
+                }
+                MOVE BOX(lobj##g) {
+                    height = 300;
+                    caption = '';
+                }
             }
         }
     }
-}
+END
+
+@defineObjectMap(partner, p, tabs);
 
 EXTEND FORM partners
     PROPERTIES(p) READONLYIF isReadonly() latitude, longitude

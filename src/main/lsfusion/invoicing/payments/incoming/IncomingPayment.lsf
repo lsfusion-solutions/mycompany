@@ -9,7 +9,7 @@ NAMESPACE Invoicing;
 
 CLASS IncomingPayment 'Incoming payment';
 
-@defineDocStatus(incomingPayment, 'Incoming payment');
+@defineDocStatus(incomingPayment, 'Incoming payment status');
 
 // type
 type 'Type' = DATA IncomingPaymentType (IncomingPayment) NONULL;
@@ -142,10 +142,6 @@ DESIGN incomingPayment {
     }
 }
 
-@defineDocHistoryHeader(incomingPayment, p, dateTime);
-@defineHistoryProperty(incomingPayment, amount, 'Amount');
-@defineDocHistoryForm(incomingPayment, incomingPayment, p);
-
 FORM incomingPayments 'Incoming payments'
     OBJECTS p = IncomingPayment
     PROPERTIES(p) READONLY number, dateTime, namePartner,
@@ -158,8 +154,14 @@ FORM incomingPayments 'Incoming payments'
     LIST IncomingPayment OBJECT p
 ;
 
+@defineDocHistoryHeader(incomingPayment, dateTime);
+@defineHistoryProperty(incomingPayment, amount, 'Amount');
+@defineHistoryForm(incomingPayment, incomingPayment, p);
+
 @defineDocObjectsForm(incomingPayments, p, 'Incoming payments');
 @defineDocStatusForm(incomingPayment, p);
+
+@defineObjectComments(incomingPayment, p, details);
 
 NAVIGATOR {
     invoicing {

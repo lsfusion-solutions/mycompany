@@ -10,11 +10,14 @@ name '{Name}' = DATA ISTRING[50] (TaskStatus) NONULL CHARWIDTH 15;
 id '{ID}' = DATA STRING[20] (TaskStatus);
 taskStatus = GROUP AGGR TaskStatus t BY id(t);
 
+sortingOrder 'Sorting order' = DATA INTEGER (TaskStatus);
+index 'Index' (TaskStatus t) = PARTITION SUM 1 IF t IS TaskStatus ORDER sortingOrder(t), t;
+
 closed 'Closed' = DATA BOOLEAN (TaskStatus);
 
 FORM taskStatus 'Task status'
     OBJECTS o = TaskStatus PANEL
-    PROPERTIES(o) name, id, closed
+    PROPERTIES(o) name, id, sortingOrder, closed
 
     EDIT TaskStatus OBJECT o;
 ;
@@ -30,13 +33,17 @@ DESIGN taskStatus {
 
 FORM taskStatuses 'Task statuses'
     OBJECTS o = TaskStatus
-    PROPERTIES(o) READONLY name, id, closed
+    PROPERTIES(o) READONLY name, id, sortingOrder, closed
+    ORDERS sortingOrder(o)
+
     LIST TaskStatus OBJECT o
 ;
 
 EXTEND FORM options
     OBJECTS ts = TaskStatus
-    PROPERTIES(ts) READONLY name, id, closed
+    PROPERTIES(ts) READONLY name, id, sortingOrder, closed
+    ORDERS sortingOrder(ts)
+
     PROPERTIES(ts) NEWSESSION NEW, EDIT, DELETE
 ;
 

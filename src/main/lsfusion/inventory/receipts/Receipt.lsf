@@ -8,7 +8,7 @@ NAMESPACE Inventory;
 
 CLASS Receipt 'Receipt';
 
-@defineDocStatus(receipt, 'Receipt');
+@defineDocStatus(receipt, 'Receipt status');
 
 immediate 'Unplanned' = DATA BOOLEAN (Receipt);
 
@@ -23,7 +23,7 @@ scheduledDateTime(Receipt r) <- currentDateTime() WHEN (r IS Receipt);
 @defineDateTimeAggregation(Receipt, scheduled, 'Scheduled ');
 
 @defineNumberType(receipt);
-receipt (STRING[31] number) = GROUP LAST Receipt r ORDER r BY number(r);
+receipt (STRING[50] number) = GROUP LAST Receipt r ORDER r BY number(r);
 
 numberDate 'Description' (Receipt r) = number(r) + ' (' + scheduledDateTime(r) + ')' IN id;
 
@@ -63,6 +63,12 @@ idBarCodeProduct 'Barcode' (ReceiptLine l) = idBarCode(product(l));
 idProduct '{ID}' (ReceiptLine l) = id(product(l));
 referenceProduct 'Reference' (ReceiptLine l) = reference(product(l));
 
+nameCategoryProduct 'Category' (ReceiptLine l) = nameCategory(product(l));
+level1Product 'Category 1' (ReceiptLine l) = level1(product(l));
+level2Product 'Category 2' (ReceiptLine l) = level2(product(l));
+level3Product 'Category 3' (ReceiptLine l) = level3(product(l));
+level4Product 'Category 4' (ReceiptLine l) = level4(product(l));
+
 CONSTRAINT product(ReceiptLine l) AND NOT canBePurchased(product(l))
             CHECKED BY product[ReceiptLine]
             MESSAGE 'The product is not intended for purchase';
@@ -75,7 +81,7 @@ nameUom 'UoM' (ReceiptLine l) = name(uom(l));
 initialDemand 'Initial demand' = DATA NUMERIC[16,3] (ReceiptLine);
 
 CONSTRAINT initialDemand(ReceiptLine l) < 0 OR initialDemand(l) > maxQuantity(type(receipt(l))) AND maxQuantity(type(receipt(l))) 
-    MESSAGE 'The planned amount should be between 0 and the maximum allowed';
+    MESSAGE 'The initial demand should be between 0 and the maximum allowed';
 
 initialDemand 'Initial demand' (Receipt r) = GROUP SUM initialDemand(ReceiptLine l) IF receipt(l) = r MATERIALIZED;
 
@@ -98,14 +104,16 @@ FORM receiptLines 'Receipt lines'
 
 FORM receipt 'Receipt'
     OBJECTS r = Receipt PANEL
-    PROPERTIES(r) nameType, scheduledDateTime, number, 
+    PROPERTIES(r) READONLYIF readonly(r)
+                  nameType, scheduledDateTime, number, 
                   nameVendor, nameLocation,
                   vendorReference, note
 
     OBJECTS l = ReceiptLine
-    PROPERTIES(l) index READONLY, nameProduct, nameUom, idBarCodeProduct, idProduct, referenceProduct,
-                  initialDemand SHOWIF NOT immediate(r) BACKGROUND IF status(receipt(l)) = ReceiptStatus.draft THEN RGB(198,230,247)
-    PROPERTIES(l) NEW, DELETE        
+    PROPERTIES(l) READONLYIF readonly(r)
+                  index READONLY, nameProduct, nameUom, idBarCodeProduct, idProduct, referenceProduct,
+                  initialDemand SHOWIF NOT immediate(r) BACKGROUND IF status(receipt(l)) = ReceiptStatus.draft THEN RGB(198,230,247),
+                  NEW, DELETE        
     FILTERS receipt(l) = r
    
     EDIT Receipt OBJECT r
@@ -161,10 +169,6 @@ DESIGN receipt {
 
 edit (ReceiptLine l) + { SHOW receipt OBJECTS r = receipt(l), l = l DOCKED; }
 
-@defineDocHistory(receipt, r, product, scheduledDateTime);
-@defineDocHistoryLineProperty(receipt, ReceiptLine, initialDemand, 'Initial demand', nameProduct);
-
-
 // receipts
 background = ABSTRACT CASE COLOR (Receipt);
 
@@ -180,9 +184,14 @@ FORM receipts 'Receipts'
 
 @extendFormEditable(receipts);
 
+@defineDocHistory(receipt, r, product, scheduledDateTime);
+@defineDocHistoryLineProperty(receipt, ReceiptLine, initialDemand, 'Initial demand', nameProduct);
+
 @defineDocObjectsForm(receipts, r, 'Receipts');
 @defineDocStatusForm(receipt, r);
 @defineDocLocationAccess(receipt, r);
+
+@defineObjectComments(receipt, r, details);
 
 @defineObjectFiles(receipt, r, 'Receipt file');
 

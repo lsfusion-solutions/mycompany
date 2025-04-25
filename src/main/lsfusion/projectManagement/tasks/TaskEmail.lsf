@@ -1,0 +1,24 @@
+MODULE TaskEmail;
+
+REQUIRE Task, EmailUtils;
+
+NAMESPACE ProjectManagement;
+
+// html
+subject = ABSTRACT VALUE ISTRING (Task);
+subject (Task t) += CONCAT ' - ', prefixName(t), (CONCAT ' ', '(' + nameStatus(t) + ')', idName(t));
+
+info = ABSTRACT VALUE HTMLTEXT (Task);
+info (Task t) += propertiesHtmlShortList(t);
+
+body = ABSTRACT VALUE HTMLTEXT (Task);
+body(Task t) += HTMLTEXT (CONCAT '',
+    '<h1><a href="' + contextUrl('/exec/ProjectManagement.showTask?id=' + t) + '">' + subject(t) + '</a></h1>',
+    info(t),
+    description(t)
+    );
+
+@defineObjectNotifyComments(task, 'Tasks', );
+
+notify (Task t, Contact c) += author(t) = c;
+notify (Task t, Contact c) += assignedTo(t) = c;

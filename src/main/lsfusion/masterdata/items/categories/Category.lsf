@@ -20,6 +20,9 @@ nameParent 'Parent' (Category c) = name(parent(c));
 
 rootCategory() = GROUP MIN Category c AS Category IF NOT parent(c);
 
+CONSTRAINT [GROUP SUM 1 IF Category l IS Category AND NOT parent(l)]() > 1
+    MESSAGE 'Parent category is not specified';
+
 CONSTRAINT DROPPED(Category c IS Category) AND PREV(parent(Category child) = c)
         MESSAGE 'It is forbidden to delete categories that are referenced by other categories';
 
@@ -71,7 +74,7 @@ DESIGN category {
                 MOVE PROPERTY(id(c));
                 MOVE PROPERTY(archived(c));
             }
-            MOVE PROPERTY(canonicalNameParent(c)) { alignment = STRETCH; };
+            MOVE PROPERTY(canonicalNameParent(c)) { alignment = STRETCH; notNull = TRUE; };
             NEW params {
                 alignment = STRETCH;
             }
