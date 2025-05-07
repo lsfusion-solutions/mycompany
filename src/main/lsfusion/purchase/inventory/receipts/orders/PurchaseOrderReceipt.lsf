@@ -1,7 +1,7 @@
 MODULE PurchaseOrderReceipt;
 
 REQUIRE PurchaseOrder, PurchaseOrderConfirmed, PurchaseOrderCanceled, PurchaseOrderLocked, 
-        ReceiptCanceled;
+        ReceiptCanceled, ProductSku;
 
 NAMESPACE Purchase;
 
@@ -54,10 +54,10 @@ WHEN ([GROUP SUM 1 IF CHANGED(toReceive(OrderLine l)) BY order(l)](Order o) OR S
         NOT (GROUP SUM 1 IF receipt(ReceiptLine l) = reserveReceipt(o) AND orderLine(l) = ol) 
             NEW rl = ReceiptLine DO {            
         receipt(rl) <- reserveReceipt(o);
-        product(rl) <- item(ol);
+        product(rl) <- sku(item(ol));
         orderLine(rl) <- ol;
     }
-    initialDemand(ReceiptLine l) <- toReceive(orderLine(l)) IF toReceive(orderLine(l)) > 0 WHERE receipt(l) = reserveReceipt(o);  
+    initialDemand(ReceiptLine l) <- NUMERIC[16,3](toReceive(orderLine(l)) * skuCoeff(product(l)))  IF toReceive(orderLine(l)) > 0 WHERE receipt(l) = reserveReceipt(o);  
     DELETE ReceiptLine l WHERE receipt(l) = reserveReceipt(o) AND NOT initialDemand(l);
     IF NOT countLines(reserveReceipt(o)) THEN
         DELETE Receipt r WHERE r = reserveReceipt(o); 

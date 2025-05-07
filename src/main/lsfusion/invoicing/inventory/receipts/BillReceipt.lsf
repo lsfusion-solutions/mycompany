@@ -1,7 +1,7 @@
 MODULE BillReceipt;
 
 REQUIRE BillCanceled, BillReady, ReceiptCanceled,
-        CreditNote, ShipmentReceipt;
+        CreditNote, ShipmentReceipt, ProductSku;
 
 NAMESPACE Invoicing;
 
@@ -34,6 +34,9 @@ EXTEND FORM bills
 // lines
 @defineDocLineRelation(bill, receipt, 'Bill', 'Receipt', b, r);
 
+receivedQuantity (BillLine l) = NUMERIC[16,3](quantity(l) * skuCoeff(item(l)));
+receivedProduct (BillLine l) = sku(item(l));
+
 fill ABSTRACT LIST (Receipt, Bill);
 fill ABSTRACT LIST (ReceiptLine, BillLine);
 billReceiptCreated = DATA LOCAL Receipt ();
@@ -50,8 +53,8 @@ newReceipt (Bill b) {
         
         FOR bill(BillLine l) = b AND item(l) IS Product INLINE NEW rl = ReceiptLine DO {            
             receipt(rl) <- r;
-            product(rl) <- item(l);
-            done(rl) <- quantity(l);
+            product(rl) <- receivedProduct(l);
+            done(rl) <- receivedQuantity(l);
             billLine(rl) <- l;
             fill(rl, l);
         }
@@ -106,7 +109,7 @@ WHEN SET(canceled(Bill b)) AND in(b, Receipt r) AND countBill(r) = 1 AND autoCre
     canceled(r) <- TRUE; 
 WHEN CHANGED(vendor(Bill b)) AND in(b, Receipt r) AND countBill(r) = 1 AND autoCreateReceipt(type(b)) DO 
     vendor(r) <- vendor(b); 
-WHEN CHANGED(quantity(billLine(ReceiptLine l))) AND autoCreateReceipt(type(bill(billLine(l)))) DO 
-    done(l) <- quantity(billLine(l));
+WHEN (CHANGED(quantity(billLine(ReceiptLine l))) OR CHANGED(item(billLine(l)))) AND autoCreateReceipt(type(bill(billLine(l)))) DO 
+    done(l) <- receivedQuantity(billLine(l));
 WHEN CHANGED(item(billLine(ReceiptLine l))) AND autoCreateReceipt(type(bill(billLine(l)))) DO 
-    product(l) <- item(billLine(l));
+    product(l) <- receivedProduct(billLine(l));

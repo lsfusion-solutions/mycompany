@@ -1,6 +1,6 @@
 MODULE InvoiceShipment;
 
-REQUIRE InvoiceCanceled, InvoiceReady, ShipmentCanceled, LocationEmployee;
+REQUIRE InvoiceCanceled, InvoiceReady, ShipmentCanceled, LocationEmployee, ProductSku;
 
 NAMESPACE Invoicing;
 
@@ -37,6 +37,9 @@ EXTEND FORM invoices
 // lines
 @defineDocLineRelation(invoice, shipment, 'Invoice', 'Shipment', i, s);
 
+shippedQuantity (InvoiceLine l) = NUMERIC[16,3](quantity(l) * skuCoeff(item(l)));
+shippedProduct (InvoiceLine l) = sku(item(l));
+
 fill ABSTRACT LIST (Shipment, Invoice);
 fill ABSTRACT LIST (ShipmentLine, InvoiceLine);
 invoiceShipmentCreated = DATA LOCAL Shipment ();
@@ -57,8 +60,8 @@ newShipment (Invoice i) {
     
         FOR invoice(InvoiceLine l) = i AND item(l) IS Product INLINE NEW rl = ShipmentLine DO {            
             shipment(rl) <- r;
-            product(rl) <- item(l);
-            done(rl) <- quantity(l);
+            product(rl) <- shippedProduct(l);
+            done(rl) <- shippedQuantity(l);
             invoiceLine(rl) <- l;
             fill(rl, l);
         }
@@ -116,7 +119,7 @@ WHEN SET(canceled(Invoice i)) AND in(i, Shipment s) AND countInvoice(s) = 1 AND 
     canceled(s) <- TRUE; 
 WHEN CHANGED(customer(Invoice i)) AND in(i, Shipment s) AND countInvoice(s) = 1 AND autoCreateShipment(type(i)) DO 
     customer(s) <- customer(i); 
-WHEN CHANGED(quantity(invoiceLine(ShipmentLine l))) AND autoCreateShipment(type(invoice(invoiceLine(l)))) DO 
-    done(l) <- quantity(invoiceLine(l));
+WHEN (CHANGED(quantity(invoiceLine(ShipmentLine l))) OR CHANGED(item(invoiceLine(l)))) AND autoCreateShipment(type(invoice(invoiceLine(l)))) DO 
+    done(l) <- NUMERIC[16,3](quantity(invoiceLine(l)) * skuCoeff(item(invoiceLine(l))));
 WHEN CHANGED(item(invoiceLine(ShipmentLine l))) AND autoCreateShipment(type(invoice(invoiceLine(l)))) DO 
-    product(l) <- item(invoiceLine(l));
+    product(l) <- shippedProduct(invoiceLine(l));
