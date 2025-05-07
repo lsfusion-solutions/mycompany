@@ -26,10 +26,6 @@ EXTEND FORM item
     PROPERTIES(i) nameInventorySku, inventorySkuCoeff
 ;
 
-EXTEND FORM items
-    PROPERTIES(i) READONLY GRID nameInventorySku, inventorySkuCoeff
-;
-
 DESIGN item {
     inventory {
         NEW inventorySku AFTER inventoryHeader {
@@ -37,8 +33,16 @@ DESIGN item {
             MOVE PROPERTY(nameInventorySku(i));
             MOVE PROPERTY(inventorySkuCoeff(i));
         }
-
     }
+}
+
+EXTEND FORM items
+    PROPERTIES(i) READONLY GRID nameInventorySku, inventorySkuCoeff
+;
+
+DESIGN items {
+    PROPERTY(nameInventorySku(i)) { hide = TRUE; }
+    PROPERTY(inventorySkuCoeff(i)) { hide = TRUE; }
 }
 
 sku (Product p) += inventorySku(p);
