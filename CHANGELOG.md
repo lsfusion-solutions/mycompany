@@ -1,0 +1,109 @@
+# MyCompany Changelog
+
+## 6.0
+
+### Added
+- Projects :
+    - Initial release of **Projects** Module
+    - Project creation and editing functionality
+    - Task management: create, assign, update, and delete tasks
+    - Deadline tracking and task kanban view
+    - Team member assignment and permissions control
+    - Notification system for task updates and project changes
+    - Log time spent on tasks and projects
+    - Define, assign, and manage work shifts
+    - Project geolocation and map support
+    - Supervisor timesheet with mobile support
+    - Link between orders/invoices and projects
+- HR :
+    - Initial release of **Human Resources** Module
+    - Payslip generation and viewing functionality
+    - Support for salary components, bonuses, deductions
+    - Daily attendance tracking with check-in/check-out logging
+    - Geolocation restriction for project attendance
+    - Integration with time entries
+    - Job application kanban with status tracking (applied, interviewed, hired, rejected)
+    - Job application interview process
+    - Candidate profile view with internal notes/comments
+    - Email notifications applicant status changes
+- CRM :
+    - Initial release of **CRM** Module
+    - Lead management: create, import, and track leads
+    - Lead status updates and assignment to team members
+    - Call logging with details such as time, duration, and outcome
+    - Email tracking with send, receive, and follow-up capabilities
+    - Kanban view
+    - Basic filters and search functionality for leads, calls, and emails
+- Inventory :
+    - Barcode reader module
+    - Extra filters to inventory report
+    - Expected inventory quantity
+    - Inventory valuation for specific date
+    - Lot support for put away
+    - Basic packaging functionality
+    - Location of products on stock
+    - Acceptance confirmation for transfers
+    - Inventory ledger in lots form
+-  Manufacturing and sales:
+    - Link between scrap and manufacturing orders
+    - History tab and project copying for manufacturing orders
+    - Item attributes in sales report
+    - Discounts by partner tags and specific locations/attributes
+    - Sales pricelist improvements
+- Invoicing :
+    - Currency conversion on sales price list creation
+    - Currency exchange date to invoices and bills
+    - Account balance for specific date
+- Communication integrations:
+    - Zadarma support for incoming/outgoing calls and records
+    - Google autocomplete for addresses
+    - Email templates
+- Reporting and forms:
+    - Activities calendar and form
+    - Employee print templates
+    - Company full name to print forms
+    - Word formatting of dates in comments and activities
+    - "Created" and "last modified" columns to forms
+    - New print forms for invoices
+    - Readonly attribute to forms based on document status
+- System, integrations and UI enhancements:
+    - Google autocomplete for addresses
+    - Drag-and-drop support for files in documents
+    - Badges/icons to processes
+    - QZ Tray support for printing
+    - Bootstrap themes
+    - Export/import prefixes for categories
+    - Vendor’s price list import
+
+### Changed
+- Increased field lengths:
+    - Number length from 31 to 50
+    - Legal entity name
+    - Bank name
+    - Email field width
+    - BOM quantity decimal size
+- Refactored:
+    - Module structure
+    - Filters design
+    - History metacode
+    - FileUtils metacode
+    - Processes renamed to Dashboards
+    - Items form redesign
+- Optimized:
+    - Cost calculation
+    - Revenue calculation in sales by account
+    - POS form to be more asynchronous
+- Updated:
+    - Platform version 6.0
+    - I18n support and fixes
+- Improved:
+    - Geolocation functionality
+    - Change history logging
+
+### Fixed
+- Minor design fixes
+- Minor bug fixes
+- Undefined error (on empty database)
+- Uom constraint
+- Discount calculation for accumulated sum
+- Filter for lots in receipts
