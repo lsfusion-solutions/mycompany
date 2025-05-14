@@ -35,8 +35,15 @@ assignedTo 'Assigned to' = DATA Employee (Task);
 nameAssignedTo 'Assigned to' (Task t) = name(assignedTo(t));
 @definePropertyValue(task, assignedTo, 'Assigned to', nameAssignedTo);
 
+start 'Start date' = DATA DATE (Task);
+@definePropertyValue(task, start, 'Start date');
+start(Task t) <- currentDate() WHEN SET(t IS Task);
+
 deadline 'Deadline' = DATA DATE (Task);
 @definePropertyValue(task, deadline, 'Deadline');
+
+progress 'Done, %' = DATA INTEGER (Task);
+@definePropertyValue(task, progress, 'Done, %');
 
 description 'Description' = DATA RICHTEXT (Task) CHARWIDTH 20;
 
@@ -70,7 +77,8 @@ FORM task '{Task}'
     PROPERTIES(t) id, name, nameStatus SELECT 'buttonGroup',
                   nameAuthor, nameAssignedTo,
                   nameType, namePriority, tags,
-                  deadline, description
+                  start, deadline, progress,
+                  description
 
     EDIT Task OBJECT t
 ;
@@ -98,7 +106,12 @@ DESIGN task {
                         MOVE PROPERTY(nameType(t));
                         MOVE PROPERTY(namePriority(t));
                         MOVE PROPERTY(tags(t));
-                        MOVE PROPERTY(deadline(t));
+                        NEW progress {
+                            horizontal = TRUE;
+                            MOVE PROPERTY(start(t));
+                            MOVE PROPERTY(deadline(t));
+                            MOVE PROPERTY(progress(t));
+                        }
                     }
                 }
                 NEW details {
