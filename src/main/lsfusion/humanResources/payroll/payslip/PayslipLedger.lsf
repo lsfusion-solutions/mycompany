@@ -76,7 +76,7 @@ META definePayslipDetail (prop, caption)
     
     total 'Total' = DATA NUMERIC[12,2] (Payslip###prop);
     
-    WHEN LOCAL CHANGED(quantity(Payslip###prop l)) OR CHANGED(amount(l)) AND NOT CHANGED(total(l)) DO
+    WHEN LOCAL (CHANGED(quantity(Payslip###prop l)) OR CHANGED(amount(l))) AND NOT CHANGED(total(l)) DO
         total(l) <- round2(quantity(l) * amount(l));
 
     WHEN LOCAL CHANGED(total(Payslip###prop l)) AND NOT CHANGED(amount(l)) DO
