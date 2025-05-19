@@ -1,8 +1,11 @@
 MODULE ProjectSalesOrderShipment;
 
-REQUIRE ProjectSalesOrder, SalesOrderShipmentStatus;
+REQUIRE ProjectSalesOrder, SalesOrderShipmentStatus, ProjectShipment;
 
 NAMESPACE ProjectSales;
+
+WHEN CHANGED(project(Order o)) DO
+    project(reserveShipment(o)) <- project(o);
 
 EXTEND FORM project
     PROPERTIES(so) READONLY AFTER imagedNameStatus(so) nameShipmentStatuses BACKGROUND colorShipmentStatus(so)

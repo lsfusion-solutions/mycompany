@@ -1,8 +1,12 @@
 MODULE ProjectSalesOrderInvoice;
 
-REQUIRE ProjectSalesOrder, SalesOrderInvoiceStatus;
+REQUIRE ProjectSalesOrder, SalesOrderInvoiceStatus, ProjectInvoice;
 
 NAMESPACE ProjectSales;
+
+fill (Invoice i, Order o) +{
+    project(i) <- project(o);
+}
 
 EXTEND FORM project
     PROPERTIES(so) READONLY AFTER imagedNameStatus(so) nameInvoiceStatuses BACKGROUND colorInvoiceStatus(so)

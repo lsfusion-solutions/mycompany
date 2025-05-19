@@ -1,0 +1,49 @@
+MODULE ProductSku;
+
+REQUIRE Product;
+
+NAMESPACE Inventory;
+
+sku = ABSTRACT VALUE Product (Product) MATERIALIZED INDEXED;
+sku (Product p) += p AS Product;
+
+skuCoeff = ABSTRACT VALUE NUMERIC[11,5] (Product) MATERIALIZED;
+skuCoeff (Product p) += 1.0 IF p IS Product;
+
+// inventory sku
+
+inventorySku = DATA Product (Product) INDEXED;
+nameInventorySku 'SKU' (Product p) = name(inventorySku(p));
+
+inventorySkuCoeff 'Coefficient' = DATA NUMERIC[11,5] (Product);
+
+copy (Item n, Item o) + {
+    inventorySku(n) <- inventorySku(o);
+    inventorySkuCoeff(n) <- inventorySkuCoeff(o);
+}
+
+EXTEND FORM item
+    PROPERTIES(i) nameInventorySku, inventorySkuCoeff
+;
+
+DESIGN item {
+    inventory {
+        NEW inventorySku AFTER inventoryHeader {
+            horizontal = TRUE;
+            MOVE PROPERTY(nameInventorySku(i));
+            MOVE PROPERTY(inventorySkuCoeff(i));
+        }
+    }
+}
+
+EXTEND FORM items
+    PROPERTIES(i) READONLY GRID nameInventorySku, inventorySkuCoeff
+;
+
+DESIGN items {
+    PROPERTY(nameInventorySku(i)) { hide = TRUE; }
+    PROPERTY(inventorySkuCoeff(i)) { hide = TRUE; }
+}
+
+sku (Product p) += inventorySku(p);
+skuCoeff (Product p) += inventorySkuCoeff(p);

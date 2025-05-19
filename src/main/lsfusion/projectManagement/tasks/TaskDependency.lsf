@@ -1,0 +1,37 @@
+MODULE TaskDependency;
+
+REQUIRE Task;
+
+NAMESPACE ProjectManagement;
+
+depends 'Depends on' = DATA BOOLEAN (Task, Task);
+depends (Task child) = GROUP CONCAT STRING(Task parent) IF depends(parent, child), ',' ORDER parent;
+nameDepends 'Depends on' (Task child) = GROUP CONCAT name(Task parent) IF depends(parent, child), ' ' ORDER parent;
+
+dependencies (Task parent) = GROUP CONCAT STRING(Task child) IF depends(parent, child), ',' ORDER child;
+nameDependencies 'Dependencies' (Task parent) = GROUP CONCAT name(Task child) IF depends(parent, child), ' ' ORDER child;
+
+level 'Level' (Task p, Task c) = RECURSION 1l IF c IS Task AND p = c
+    STEP 2l IF depends(p,$p) MATERIALIZED;
+
+maxParentLevel (Task c) = GROUP MAX level(Task parent, c) MATERIALIZED;
+
+@defineHistoryProperty(task, nameDepends, 'Depends on');
+@defineHistoryProperty(task, nameDependencies, 'Dependencies');
+
+EXTEND FORM task
+    PROPERTIES(t) nameDepends, nameDependencies
+;
+
+DESIGN task {
+    header {
+        NEW dependencies {
+            horizontal = TRUE;
+            alignment = STRETCH;
+            MOVE PROPERTY(nameDepends(t));
+            MOVE PROPERTY(nameDependencies(t));
+        }
+    }
+}
+
+

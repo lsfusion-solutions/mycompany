@@ -1,0 +1,33 @@
+MODULE TaskGantt;
+
+REQUIRE FrappeGantt, TaskDependency;
+
+NAMESPACE ProjectManagement;
+
+EXTEND FORM tasks
+    OBJECTS tg = Task CUSTOM 'gantt' OPTIONS JSON FROM view_mode = r'Day'
+
+    PROPERTIES(tg) READONLY id = VALUE, name, progress, dependencies = depends, maxParentLevel
+    PROPERTIES start(tg), end = deadline(tg)
+
+    PROPERTIES(tg) PANEL pprogress = progress, editGantt = EDIT
+    
+    ORDERS maxParentLevel(tg)
+    
+    FILTERS [FILTER tasks.t](tg),
+            start(tg), deadline(tg)
+;
+
+DESIGN tasks {
+    tabbedPane {
+        NEW gantt LAST {
+            fill = 1;
+            caption = 'Gantt chart';
+            MOVE GRID(tg) {
+                MOVE PROPERTY(pprogress);
+                MOVE PROPERTY(editGantt);
+                REMOVE BOX(tg);
+            }
+        }
+    }
+}

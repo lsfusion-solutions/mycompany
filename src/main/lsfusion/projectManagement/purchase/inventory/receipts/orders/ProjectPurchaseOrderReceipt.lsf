@@ -1,8 +1,11 @@
 MODULE ProjectPurchaseOrderReceipt;
 
-REQUIRE ProjectPurchaseOrder, PurchaseOrderReceiptStatus;
+REQUIRE ProjectPurchaseOrder, PurchaseOrderReceiptStatus, ProjectReceipt;
 
 NAMESPACE ProjectPurchase;
+
+WHEN CHANGED(project(Order o)) DO
+    project(reserveReceipt(o)) <- project(o);
 
 EXTEND FORM project
     PROPERTIES(po) READONLY AFTER imagedNameStatus(po) nameReceiptStatuses BACKGROUND colorReceiptStatus(po)
