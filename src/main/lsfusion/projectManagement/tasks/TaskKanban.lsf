@@ -1,12 +1,13 @@
 MODULE TaskKanban;
 
-REQUIRE Task, ProjectTask;
+REQUIRE Task, TaskFilter, ProjectTask;
 
 PRIORITY MasterData;
 
 NAMESPACE ProjectManagement;
 
-taskStatuses () = JSON FROM id = TaskStatus s, name(s) WHERE s IS TaskStatus AND NOT closed(s) ORDER sortingOrder(s), s;
+taskStatuses () = JSON FROM id = TaskStatus s, name(s) WHERE s IS TaskStatus AND NOT closed(s) AND (allow(taskType(), s) OR NOT taskType())
+                               ORDER sortingOrder(s), s;
 taskEmployees () = JSON FROM id = Employee e, name(e) WHERE name(e);
 
 jsonTags (Task t) = JSON FROM name(TaskTag tg), idColor(tg) WHERE in(t, tg);

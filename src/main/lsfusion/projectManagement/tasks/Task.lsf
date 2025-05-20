@@ -60,6 +60,13 @@ nameType 'Type' (Task t) = name(type(t)) IN id;
 
 WHEN LOCAL SET(Task t IS Task) AND NOT CHANGED(type(t)) DO type(t) <- defaultTaskType();
 
+WHEN LOCAL SETCHANGED(type(Task l)) AND NOT allow(type(l), status(l)) DO
+    status(l) <- firstTaskStatus(type(l));
+
+CONSTRAINT SETCHANGED(status(Task l)) AND type(l) AND NOT allow(type(l), status(l))
+    CHECKED BY status[Task]
+    MESSAGE 'Status is not allowed for the selected type';
+
 priority 'Priority' = DATA TaskPriority (Task);
 namePriority 'Priority' (Task t) = name(priority(t));
 idColorPriority (Task t) = idColor(priority(t));
