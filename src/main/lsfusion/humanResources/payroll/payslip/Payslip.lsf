@@ -1,6 +1,6 @@
 MODULE Payslip;
 
-REQUIRE HumanResourcesSettings, Employee, FileUtils;
+REQUIRE HumanResourcesSettings, Employee, FileUtils, Doc, Currency;
 
 PRIORITY HumanResources, MasterData;
 
@@ -15,11 +15,17 @@ period 'Period' = DATA INTERVAL[DATE] (Payslip);
 startDate 'Start date' (Payslip p) = from(period(p)) MATERIALIZED INDEXED;
 endDate 'End date' (Payslip p) = to(period(p)) MATERIALIZED;
 
+dueDate 'Due date' (Payslip p) = DATA DATE (Payslip);
+
 employee 'Employee' = DATA Employee (Payslip) NONULL;
 nameEmployee 'Employee' (Payslip o) = name(employee(o));
 firstNameEmployee '{First_name}' (Payslip o) = firstName(employee(o));
 lastNameEmployee 'Surname' (Payslip o) = lastName(employee(o));
 namePositionEmployee 'Position' (Payslip o) = namePosition(employee(o));
+
+currency = DATA Currency (Payslip);
+nameCurrency 'Currency' (Payslip p) = name(currency(p));
+currency(Payslip p) <- defaultCurrency() WHEN SET(p IS Payslip);
 
 company 'Company' = DATA Company (Payslip) NONULL;
 nameCompany 'Company' (Payslip o) = name(company(o));
@@ -29,7 +35,8 @@ payslip = GROUP AGGR Payslip p BY period(p), employee(p), company(p);
 
 FORM payslip 'Payslip'
     OBJECTS p = Payslip PANEL
-    PROPERTIES(p) number, period, nameEmployee, nameCompany
+    PROPERTIES(p) number, period, dueDate, 
+                  nameEmployee, nameCompany, nameCurrency
     
     EDIT Payslip OBJECT p
 ;
@@ -37,20 +44,17 @@ FORM payslip 'Payslip'
 DESIGN payslip {
     caption = badged('Payslip', number(p));
     OBJECTS {
-        NEW actions {
-            caption = 'Actions';
-            horizontal = TRUE;
-            alignment = STRETCH;
-        }
         NEW header {
             NEW headerRow1 {
                 horizontal = TRUE;
                 alignment = STRETCH;
                 MOVE PROPERTY(number(p))  { notNull = TRUE; }
                 MOVE PROPERTY(period(p));
+                MOVE PROPERTY(dueDate(p));
             }
             MOVE PROPERTY(nameEmployee(p)) { notNull = TRUE; alignment = STRETCH; }
             MOVE PROPERTY(nameCompany(p)) { alignment = STRETCH; }
+            MOVE PROPERTY(nameCurrency(p)) { alignment = STRETCH; }
         }
         NEW details {
             fill = 1;
@@ -58,6 +62,8 @@ DESIGN payslip {
         }
     }
 }
+
+@defineFormStatusContainer(payslip);
 
 @defineObjectComments(payslip, p, details);
 
@@ -68,6 +74,13 @@ FORM payslips 'Payslips'
     
     LIST Payslip OBJECT p
 ;
+
+@defineDocObjectsForm(payslips, p, 'Payslips');
+
+@defineDateFilterForm(payslips, p, start);
+
+@defineDocFilter(payslip, Employee, employee, p, 'Employee');
+@defineDocFilter(payslip, Company, company, p, 'Company');
 
 NAVIGATOR {
     operations {
@@ -99,7 +112,7 @@ copy 'Copy' (Payslip p) {
 EXTEND FORM payslip PROPERTIES copy(p);
 
 DESIGN payslip {
-    actions {
-        MOVE PROPERTY(copy(p));
+    secondaryActions {
+        MOVE PROPERTY(copy(p)) { valueClass = 'btn-secondary'; }
     }
 }
