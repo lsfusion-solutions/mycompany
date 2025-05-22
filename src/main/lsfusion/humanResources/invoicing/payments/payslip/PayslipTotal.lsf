@@ -17,10 +17,16 @@ left 'Left' (Employee e) = netWage(e) (-) paid(e);
 newOutgoingPayment 'Payment' (Employee e) {
     NEWSESSION {
         NEW p = OutgoingPayment {
+            ready(p) <- TRUE;
+
             type(p) <- payslipOutgoingPaymentType();
+
             company(p) <- legalEntity(e);
             partner(p) <- e;
+
             amount(p) <- NUMERIC[14,2](left(e));
+            paid(Payslip ps, p) <- left(ps, p) WHERE employee(ps) = e;
+
             SHOW outgoingPayment OBJECTS p = p DOCKED;
         }
     }
