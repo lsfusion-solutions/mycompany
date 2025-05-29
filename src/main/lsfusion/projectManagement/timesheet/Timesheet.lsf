@@ -38,12 +38,15 @@ hoursTimesheet 'Hours' (DATE d, Employee e)=
 
 hoursTimesheet 'Hours' (INTERVAL[DATE] i) = hours(timesheetProject(), i);
 
+backgroundHoursTimesheet (DATE d) = RGB(255,224,224) IF extractDOWNumber(d) = 0 OR extractDOWNumber(d) = 6;
+
 backgroundHoursTimesheet 'Hours' (DATE d, Employee e)=
     IF countTimeEntryType(d, e) > 1 THEN RGB(255,192,0) ELSE
         OVERRIDE
             IF timesheetProject() THEN rgbColorHoursTimeEntry(timeEntry(d, e, timesheetProject()))
-            ELSE rgbColorHoursTimeEntry(timeEntry(d, e)),
-            RGB(255,224,224) IF extractDOWNumber(d) = 0 OR extractDOWNumber(d) = 6;
+                ELSE rgbColorHoursTimeEntry(timeEntry(d, e)),
+            backgroundHoursTimesheet(d);
+
 
 changeTimesheetHours (DATE d, Employee e, TimeEntryType et, NUMERIC[8,2] n, TimeEntryHours h) {
     IF n THEN {
@@ -142,7 +145,7 @@ clearHours 'Clear' (DATE d) {
         clearApply(d);
 }
 
-FORM timesheetSupervisorDateEmployee 'Time entries'
+FORM timesheetDateEmployee 'Time entries'
     OBJECTS i = INTERVAL[DATE] PANEL
     OBJECTS e = Employee PANEL
 

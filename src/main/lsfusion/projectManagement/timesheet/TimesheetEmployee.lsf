@@ -1,0 +1,120 @@
+MODULE TimesheetEmployee;
+
+REQUIRE Timesheet, ProjectTask, TaskTimeEntry, ProjectAssignment;
+
+NAMESPACE ProjectManagement;
+
+EXTEND FORM timesheetDateEmployee
+    PROPERTIES(t) READONLY nameTask
+;
+
+changeTimesheetHours (DATE d, Employee e, Task t, NUMERIC[8,2] n) {
+    IF n THEN {
+        IF NOT timeEntry(d, e, t) THEN NEW te = TimeEntry {
+            date(te) <- d;
+            employee(te) <- e;
+            task(te) <- t;
+        }
+        FOR TimeEntry te = timeEntry(d, e, t) DO {
+            type(te) <- timesheetTimeEntryType();
+            hours(te) <- n;
+        }
+    } ELSE
+        DELETE TimeEntry te WHERE date(te) = d AND employee(te) = e AND task(te) = t;
+}
+
+changeSaveTimesheetHours (DATE d, Employee e, Task t) {
+    INPUT n = hours(d, e, t) DO {
+        IF NOT autoSaveTimesheetHours() THEN {
+            changeTimesheetHours(d, e, t, n);
+        } ELSE
+            NEWSESSION APPLY {
+                changeTimesheetHours(d, e, t, n);
+            }
+    }
+}
+
+FORM timesheetEmployee 'Employee timesheet'
+    OBJECTS dates = INTERVAL[DATE] PANEL NULL
+    PROPERTIES dates '' = VALUE(dates)
+
+    OBJECTS e = Employee PANEL
+    PROPERTIES(e) name SELECTOR
+    FILTERS e = currentUser() OR accessAllProjects(currentUser())
+
+    PROPERTIES() nameTimesheetProject, nameTimesheetTimeEntryType SELECT 'buttonGroup'
+
+    PROPERTIES READONLY hours(e, dates)
+
+    OBJECTS d = DATE
+    FILTERS iterate(d, from(dates), to(dates))
+
+    OBJECTS t = Task
+    PROPERTIES(t) READONLY nameProject SHOWIF NOT timesheetProject(), 
+                           id, name, nameAuthor, nameAssignedTo, nameStatus, nameType
+    PROPERTIES hours(d, e, t) COLUMNS (d) 
+                              HEADER extractDay(d)
+                              FOOTER hours(d, e)
+                              BACKGROUND backgroundHoursTimesheet(d)
+                              ON CHANGE changeSaveTimesheetHours(d, e, t) 
+    FILTERS assigned(project(t), e, dates) OR hours(t, e, dates) OR (NOT countAssignments(project(t)) AND accessAllProjects(e)),
+            project(t) = timesheetProject() OR NOT timesheetProject()
+
+    FILTERGROUP my
+        FILTER 'My tasks' author(t) = currentUser() 'F6'
+        FILTER 'Assigned to me' assignedTo(t) = currentUser() 'F5'
+    
+    EVENTS ON INIT {
+        timesheetTimeEntryType() <- defaultTimeEntryType();
+        SEEK timesheetEmployee.e = currentUser();
+        SEEK timesheetEmployee.dates = interval(firstDayOfMonth(currentDate()), lastDayOfMonth(currentDate()));
+    }
+    
+    PROPERTIES prevInterval '<' = { SEEK timesheetEmployee.dates = prevMonthInterval(dates); },
+               nextInterval '>' = { SEEK timesheetEmployee.dates = nextMonthInterval(dates); }
+        //    PROPERTIES hoursTimesheet(d, t, e) WAIT COLUMNS (d) HEADER extractDay(d) BACKGROUND backgroundHoursTimesheet(d, e)
+;
+
+DESIGN timesheetEmployee {
+    OBJECTS {
+        NEW header {
+            alignment = STRETCH;
+            horizontal = TRUE;
+            NEW interval {
+                horizontal = TRUE;
+                MOVE PROPERTY(prevInterval);
+                MOVE PROPERTY(dates);
+                MOVE PROPERTY(nextInterval);
+            }
+            MOVE PROPERTY(name(e));
+            MOVE PROPERTY(nameTimesheetProject());
+            MOVE PROPERTY(hours(e, dates));
+        }
+        NEW tabbedPane {
+            tabbed = TRUE;
+            fill = 1;
+            NEW timesheet {
+                caption = 'Timesheet';
+                NEW edit {
+                    horizontal = TRUE;
+                    MOVE PROPERTY(nameTimesheetTimeEntryType()) {
+                        caption = '';
+                        placeholder = 'Type';
+                    }
+                }
+                MOVE BOX(t) {
+                    caption = '';
+                    PROPERTY(hours(d, e, t)) {
+                        charWidth = 2;
+                    }
+                }
+            }
+        }
+    }
+}
+
+NAVIGATOR {
+    dashboards {
+        NEW timesheetEmployee;
+    }
+}
