@@ -62,8 +62,9 @@ WHEN CHANGED(amount(IncomingDebt id)) AND amount(id) < paid(id, OutgoingDebt od)
 WHEN CHANGED(amount(OutgoingDebt od)) AND amount(od) < paid(IncomingDebt id, od) DO
     paid(id, od) <- amount(od);
 
+skipMatched = ABSTRACT BOOLEAN (IncomingDebt, OutgoingDebt);
 canBeMatched (IncomingDebt id, OutgoingDebt od) =
-    partner(id) = partner(od) AND company(id) = company(od);
+    partner(id) = partner(od) AND company(id) = company(od) AND NOT skipMatched(id, od);
 
 paid 'Paid' (IncomingDebt id) = GROUP SUM paid(id, OutgoingDebt od) IF active(od) MATERIALIZED;
 paid 'Paid' (OutgoingDebt od) = GROUP SUM paid(IncomingDebt id, od) IF active(id) MATERIALIZED;  
@@ -81,5 +82,6 @@ sourceLeft (OutgoingDebt od) = NUMERIC[14,2] (left(od) / currentRate1(od));
 
 canBePaid (IncomingDebt id, OutgoingDebt od) = canBeMatched(id, od) AND left(id, od) > 0 AND active(id) AND active(od);
 
-CONSTRAINT left(IncomingDebt id) < 0 AND amount(id) > 0 MESSAGE 'Incoming debt is posted more than the amount owed';
-CONSTRAINT left(OutgoingDebt id) < 0 AND amount(id) > 0 MESSAGE 'Outgoing debt has posted more than the outstanding amount';
+skipCheckLeft = ABSTRACT BOOLEAN (Debt);
+CONSTRAINT left(IncomingDebt id) < 0 AND amount(id) > 0 AND NOT skipCheckLeft(id) MESSAGE 'Incoming debt is posted more than the amount owed';
+CONSTRAINT left(OutgoingDebt od) < 0 AND amount(od) > 0 AND NOT skipCheckLeft(od) MESSAGE 'Outgoing debt has posted more than the outstanding amount';
