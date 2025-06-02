@@ -8,7 +8,7 @@ EXTEND FORM timesheetDateEmployee
     PROPERTIES(t) READONLY nameTask
 ;
 
-changeTimesheetHours (DATE d, Employee e, Task t, NUMERIC[8,2] n) {
+changeTimesheetHours (DATE d, Employee e, Task t, NUMERIC[8,2] n, TimeEntryHours h) {
     IF n THEN {
         IF NOT timeEntry(d, e, t) THEN NEW te = TimeEntry {
             date(te) <- d;
@@ -18,21 +18,20 @@ changeTimesheetHours (DATE d, Employee e, Task t, NUMERIC[8,2] n) {
         FOR TimeEntry te = timeEntry(d, e, t) DO {
             type(te) <- timesheetTimeEntryType();
             hours(te) <- n;
+            timeEntryHours(te) <- h;
         }
     } ELSE
         DELETE TimeEntry te WHERE date(te) = d AND employee(te) = e AND task(te) = t;
 }
 
-changeSaveTimesheetHours (DATE d, Employee e, Task t) {
-    INPUT n = hours(d, e, t) DO {
-        IF NOT autoSaveTimesheetHours() THEN {
-            changeTimesheetHours(d, e, t, n);
-        } ELSE
-            NEWSESSION {
-                changeTimesheetHours(d, e, t, n);
-                APPLY;
-            }
-    }
+changeSaveTimesheetHours (DATE d, Employee e, Task t, NUMERIC[8,2] n, TimeEntryHours h) {
+    IF NOT autoSaveTimesheetHours() THEN {
+        changeTimesheetHours(d, e, t, n, h);
+    } ELSE
+        NEWSESSION {
+            changeTimesheetHours(d, e, t, n, h);
+            APPLY;
+        }
 }
 
 FORM timesheetEmployee 'Employee timesheet'
@@ -43,7 +42,8 @@ FORM timesheetEmployee 'Employee timesheet'
     PROPERTIES(e) name SELECTOR
     FILTERS e = currentUser() OR accessAllProjects(currentUser())
 
-    PROPERTIES() nameTimesheetProject, nameTimesheetTimeEntryType SELECT 'buttonGroup'
+    PROPERTIES() nameTimesheetProject, nameTimesheetTimeEntryType SELECT 'buttonGroup',
+                 nameTimesheetTimeEntryHours SHOWIF timesheetTimeEntryType() AND countHours(timesheetTimeEntryType()) SELECT 'buttonGroup'
 
     PROPERTIES READONLY hours(e, dates)
 
@@ -52,14 +52,25 @@ FORM timesheetEmployee 'Employee timesheet'
 
     OBJECTS t = Task
     PROPERTIES(t) READONLY nameProject SHOWIF NOT timesheetProject(), 
-                           id, name, nameAuthor, nameAssignedTo, nameStatus, nameType
+                           id, 'Task' = name, nameAuthor, nameAssignedTo, nameStatus, nameType
     PROPERTIES hours(d, e, t) COLUMNS (d) 
                               HEADER extractDay(d)
                               FOOTER hours(d, e)
                               BACKGROUND backgroundHoursTimesheet(d)
-                              ON CHANGE changeSaveTimesheetHours(d, e, t) 
+                              ON CHANGE {
+                                  IF NOT timesheetTimeEntryHours() THEN {
+                                      INPUT n = hours(d, e, t) DO {
+                                          changeSaveTimesheetHours(d, e, t, n, NULL);
+                                      }
+                                  } ELSE
+                                      changeSaveTimesheetHours(d, e, t, hours(timesheetTimeEntryHours()), timesheetTimeEntryHours());
+                              } 
     FILTERS assigned(project(t), e, dates) OR hours(t, e, dates) OR (NOT countAssignments(project(t)) AND accessAllProjects(currentUser())),
             project(t) = timesheetProject() OR NOT timesheetProject()
+
+    FILTERGROUP active
+        FILTER 'Opened' opened(t) 'F8' DEFAULT
+        FILTER 'Closed' closed(t) 'F7'
 
     FILTERGROUP my
         FILTER 'My tasks' author(t) = e 'F6'
@@ -75,6 +86,8 @@ FORM timesheetEmployee 'Employee timesheet'
                nextInterval '>' = { SEEK timesheetEmployee.dates = nextMonthInterval(dates); }
         //    PROPERTIES hoursTimesheet(d, t, e) WAIT COLUMNS (d) HEADER extractDay(d) BACKGROUND backgroundHoursTimesheet(d, e)
 ;
+
+WHEN LOCAL FORMS timesheetEmployee CHANGED(timesheetTimeEntryType()) DO timesheetTimeEntryHours() <- defaultHours(timesheetTimeEntryType());
 
 DESIGN timesheetEmployee {
     OBJECTS {
@@ -101,6 +114,10 @@ DESIGN timesheetEmployee {
                     MOVE PROPERTY(nameTimesheetTimeEntryType()) {
                         caption = '';
                         placeholder = 'Type';
+                    }
+                    MOVE PROPERTY(nameTimesheetTimeEntryHours()) {
+                        caption = '';
+                        placeholder = 'Hours';
                     }
                 }
                 MOVE BOX(t) {
