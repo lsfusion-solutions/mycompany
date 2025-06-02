@@ -11,5 +11,5 @@ EXTEND FORM timeEntries
 CONSTRAINT ((SET(TimeEntry t IS TimeEntry) AND NOT project(t)) OR (DROPPED(project(t)) AND t IS TimeEntry)) AND NOT accessAllProjects(employee(t))
     MESSAGE 'No project selected for the time entry';
 
-WHEN LOCAL SET(TimeEntry e IS TimeEntry) AND defaultProject(currentUser()) DO
+WHEN LOCAL SET(TimeEntry e IS TimeEntry) AND defaultProject(currentUser()) AND NOT CHANGED(project(e)) DO
     project(e) <- defaultProject(currentUser());
