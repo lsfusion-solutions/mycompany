@@ -10,15 +10,21 @@ EXTEND FORM timesheetDateEmployee
 
 changeTimesheetHours (DATE d, Employee e, Task t, NUMERIC[8,2] n, TimeEntryHours h) {
     IF n THEN {
-        IF NOT timeEntry(d, e, t) THEN NEW te = TimeEntry {
-            date(te) <- d;
-            employee(te) <- e;
-            task(te) <- t;
-        }
         FOR TimeEntry te = timeEntry(d, e, t) DO {
-            type(te) <- timesheetTimeEntryType();
-            hours(te) <- n;
-            timeEntryHours(te) <- h;
+            IF hours(te) = n AND h THEN
+                DELETE t;
+            ELSE {
+                hours(te) <- n;
+                timeEntryHours(te) <- h;
+            }
+        } ELSE {
+            NEW te = TimeEntry {
+                type(te) <- timesheetTimeEntryType();
+                employee(te) <- e;
+                date(te) <- d;
+                hours(te) <- n;
+                timeEntryHours(te) <- h;
+            }
         }
     } ELSE
         DELETE TimeEntry te WHERE date(te) = d AND employee(te) = e AND task(te) = t;

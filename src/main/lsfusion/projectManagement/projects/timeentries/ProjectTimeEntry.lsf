@@ -8,6 +8,12 @@ project = DATA Project (TimeEntry);
 nameProject 'Project' (TimeEntry e) = name(project(e));
 nameCustomer 'Partner' (TimeEntry e) = namePartner(project(e));
 
+projectRequired 'Project required' = DATA BOOLEAN (TimeEntryType);
+EXTEND FORM timeEntryType PROPERTIES(o) projectRequired; 
+
+CONSTRAINT projectRequired(type(TimeEntry e)) AND NOT project(e)
+    MESSAGE 'No project selected for the time entry';
+
 countTimeEntry 'Time entries' (Project p) = GROUP SUM 1 IF project(TimeEntry t) = p MATERIALIZED;  
 hoursTimeEntry 'Hours' (Project p) = GROUP SUM hours(TimeEntry t) IF project(t) = p MATERIALIZED;  
 
