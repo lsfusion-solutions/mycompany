@@ -35,9 +35,9 @@ changeSaveTimesheetHours (DATE d, Employee e, Task t, NUMERIC[8,2] n, TimeEntryH
     IF NOT autoSaveTimesheetHours() THEN {
         changeTimesheetHours(d, e, t, n, h);
     } ELSE
-        NEWSESSION {
+        NEWSESSION NESTED (timesheetTimeEntryType[]) {
             changeTimesheetHours(d, e, t, n, h);
-            APPLY;
+            APPLY NESTED (timesheetTimeEntryType[]);
         }
 }
 
