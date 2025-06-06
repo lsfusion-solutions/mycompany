@@ -11,6 +11,8 @@ idNameTimesheetTask 'Hours' = idName(timesheetTask());
 CONSTRAINT timesheetTask() AND NOT ((project(timesheetTask()) = timesheetProject() OR NOT timesheetProject()) AND opened(timesheetTask()))
     CHECKED BY timesheetTask[] MESSAGE '';
 
+WHEN LOCAL FORMS timesheetSupervisor SETCHANGED(timesheetProject()) AND NOT project(timesheetTask()) = timesheetProject() DO timesheetTask() <- NULL;
+
 hoursTimesheetTask (DATE d, Employee e) = HTML(CONCAT '', '<b>' + hoursToChar(hours(d, e, timesheetTask())) + '</b>', '<font size="-2">(' + hoursToChar(hoursTimesheet(d, e)) + ')</font>') CHARWIDTH 4;
 
 EXTEND FORM timesheetSupervisor
