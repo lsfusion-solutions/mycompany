@@ -1,0 +1,41 @@
+MODULE Assignee;
+
+REQUIRE Employee;
+
+NAMESPACE ProjectManagement;
+
+CLASS ABSTRACT Assignee 'Assignee';
+
+name '{master.data.name}' = ABSTRACT ISTRING (Assignee) CHARWIDTH 20;
+
+// type
+CLASS AssigneeType 'Assignee type';
+id '{ID}' (AssigneeType t) = getWord(staticName(t), '.', 2) IF t IS AssigneeType CHARWIDTH 10;
+name '{Name}' (AssigneeType t) = staticCaption(t) IF t IS AssigneeType CHARWIDTH 15;
+
+type = ABSTRACT AssigneeType (Assignee);
+nameType 'Type' (Assignee a)= name(type(a));
+
+archived 'Archived' = ABSTRACT BOOLEAN (Assignee);
+active '{Active}' (Assignee a) = NOT archived(a);
+
+in 'Incl.' = ABSTRACT BOOLEAN (Assignee, Employee); 
+
+FORM assignees 'Assignees'
+    OBJECTS a = Assignee
+    PROPERTIES(a) READONLY name, nameType
+
+    FILTERGROUP active
+        FILTER '{Active}' active(a) DEFAULT
+
+    LIST Assignee OBJECT a
+;
+
+EXTEND CLASS Employee : Assignee;
+name(Employee e) += MasterData.name(e);
+archived(Employee e) += MasterData.archived(e);
+
+EXTEND CLASS AssigneeType { employee 'Employee' }
+type(Employee e) += AssigneeType.employee IF e IS Employee;
+
+in (Employee a, Employee e) += a AS Employee = e AS Employee;

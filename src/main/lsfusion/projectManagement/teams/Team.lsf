@@ -1,0 +1,106 @@
+MODULE Team;
+
+REQUIRE ProjectManagementSettings, Employee, Assignee;
+
+NAMESPACE ProjectManagement;
+
+CLASS Team 'Team';
+
+@defineID(team, 'Teams', 'TM', 3);
+name '{Name}' = DATA ISTRING (Team) CHARWIDTH 20 IN id;
+
+archived 'Archived' = DATA BOOLEAN (Team);
+active '{Active}' (Team t) = NOT archived(t);
+
+CLASS TeamMember 'Team member';
+team = DATA Team (TeamMember) NONULL DELETE INDEXED;
+
+employee = DATA Employee (TeamMember) NONULL;
+nameEmployee 'Employee' (TeamMember m) = name(employee(m));
+
+active (TeamMember tm) = active(team(tm));
+
+countActiveTeam 'Teams' (Employee e) = GROUP SUM 1 IF employee(TeamMember tm) = e AND active(tm);
+
+count (Team t, Employee e) = GROUP SUM 1 IF team(TeamMember m) = t AND employee(m) = e;
+
+employees 'Employees' (Team t) = GROUP CONCAT nameEmployee(TeamMember m) IF team(m) = t, ', ' ORDER m CHARWIDTH 40; 
+
+FORM team 'Team'
+    OBJECTS t = Team PANEL
+    PROPERTIES(t) id, name, archived
+    
+    OBJECTS m = TeamMember
+    PROPERTIES(m) nameEmployee, NEW, DELETE
+    FILTERS team(m) = t
+    
+    EDIT Team OBJECT t
+;
+
+FORM teams 'Teams'
+    OBJECTS t = Team
+    PROPERTIES(t) READONLY name, employees, archived
+    PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
+
+    FILTERGROUP active
+        FILTER '{Active}' active(t) DEFAULT
+;
+
+FORM dialogTeams 'Teams'
+    OBJECTS t = Team
+    PROPERTIES(t) READONLY name, employees
+    
+    FILTERS active(t)
+    
+    LIST Team OBJECT t
+;
+
+NAVIGATOR {
+    settings {
+        NEW teams;
+    }
+}
+
+// employees
+addToTeam 'Add' (Employee e) {
+    DIALOG dialogTeams OBJECTS t INPUT DO 
+        IF NOT count(t, e) THEN {
+            NEW tm = TeamMember {
+                team(tm) <- t;
+                employee(tm) <- e;
+            }
+        }
+}
+
+deleteFromTeam 'Delete' (Employee e, Team t) {
+    DELETE TeamMember tm WHERE employee(tm) = e AND team(tm) = t;
+} 
+
+EXTEND FORM employee
+    OBJECTS tm = Team
+    PROPERTIES(tm) READONLY name
+    PROPERTIES TOOLBAR DRAW tm addToTeam(e), deleteFromTeam(e, tm)
+
+    FILTERS count(tm, e)
+
+    FILTERGROUP active
+        FILTER '{Active}' active(tm) DEFAULT
+;
+
+DESIGN employee {
+    details {
+        NEW teams {
+            caption = badged('Teams', countActiveTeam(e));
+            MOVE BOX(tm) { caption = ''; }
+        }
+    }
+}
+
+EXTEND CLASS Team : Assignee;
+name(Team t) += name(t);
+archived(Team t) += archived(t);
+
+EXTEND CLASS AssigneeType { team 'Team' }
+type(Team t) += AssigneeType.team IF t IS Team;
+
+in (Team t, Employee e) += TRUE IF count(t, e);

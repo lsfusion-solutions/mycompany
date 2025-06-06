@@ -1,6 +1,6 @@
 MODULE ProjectAssignment;
 
-REQUIRE Project, ProjectRole, Time;
+REQUIRE Project, ProjectRole, Time, Assignee;
 
 PRIORITY MasterData;
 
@@ -12,9 +12,13 @@ project 'Project' = DATA Project (ProjectAssignment) NONULL DELETE;
 nameProject 'Project' (ProjectAssignment a) = name(project(a));
 countAssignments = GROUP SUM 1 BY project(ProjectAssignment a) MATERIALIZED;
 
-employee 'Employee' = DATA Employee (ProjectAssignment) NONULL INDEXED;
+// todo : rename to assignee
+employee 'Employee' = DATA Assignee (ProjectAssignment) NONULL INDEXED;
 nameEmployee 'Employee' (ProjectAssignment a) = name(employee(a));
+typeAssignee 'Type' (ProjectAssignment a) = type(employee(a));
 countAssignments = GROUP SUM 1 BY employee(ProjectAssignment a) MATERIALIZED;
+
+assigned (ProjectAssignment a, Employee e) = in(employee(a), e) MATERIALIZED;
 
 role 'Project role' = DATA ProjectRole (ProjectAssignment);
 nameRole 'Project role' (ProjectAssignment a) = name(role(a));
@@ -29,7 +33,7 @@ active (ProjectAssignment a) = active(a, currentDate());
 
 EXTEND FORM project
     OBJECTS pa = ProjectAssignment
-    PROPERTIES(pa) nameEmployee, nameRole, fromDate, toDate, NEW, DELETE
+    PROPERTIES(pa) nameEmployee, typeAssignee, nameRole, fromDate, toDate, NEW, DELETE
     FILTERS project(pa) = p
     
     FILTERGROUP active
@@ -42,13 +46,13 @@ DESIGN project {
     }
 }
 
-INDEX project(ProjectAssignment a), employee(a), role(a), fromDate(a), a;
+INDEX project(ProjectAssignment a), role(a), fromDate(a), a;
 
 assignment (Project p, Employee e, ProjectRole r, DATE d) = 
-    GROUP LAST ProjectAssignment a ORDER fromDate(a), a WHERE active(a, d) BY project(a), employee(a), role(a);
+    GROUP LAST ProjectAssignment a ORDER fromDate(a), a WHERE active(a, d) AND assigned(a, e) BY project(a), role(a);
 
 assignment (Project p, Employee e, DATE d) =
-    GROUP LAST ProjectAssignment a ORDER fromDate(a), a WHERE active(a, d) BY project(a), employee(a);
+    GROUP LAST ProjectAssignment a ORDER fromDate(a), a WHERE active(a, d) AND assigned(a, e) BY project(a);
 
 TABLE projectEmployeeRole (Project, Employee, ProjectRole);
 assignment (Project p, Employee e, ProjectRole r) = assignment(p, e, r, currentDate()) MATERIALIZED;
@@ -56,14 +60,14 @@ assignment (Project p, Employee e, ProjectRole r) = assignment(p, e, r, currentD
 roles 'Roles' (Project p, Employee e, DATE d) = GROUP CONCAT name(ProjectRole r) IF assignment(p, e, r, d), ', ' ORDER r;
 roles 'Roles' (Project p, Employee e) = GROUP CONCAT name(ProjectRole r) IF assignment(p, e, r), ', ' ORDER r;
 
-assigned (Project p, Employee e, DATE from, DATE to) = GROUP SUM 1 IF fromDate(ProjectAssignment a) <= to AND NOT toDate(a) < from AND project(a) = p AND employee(a) = e;
+assigned (Project p, Employee e, DATE from, DATE to) = GROUP SUM 1 IF fromDate(ProjectAssignment a) <= to AND NOT toDate(a) < from AND project(a) = p AND assigned(a, e);
 assigned (Project p, Employee e, INTERVAL[DATE] i) = assigned(p, e, from(i), to(i));
 
-assigned (Project p, Employee e, DATE d) = GROUP SUM 1 IF active(ProjectAssignment a, d) AND project(a) = p AND employee(a) = e;
+assigned (Project p, Employee e, DATE d) = GROUP SUM 1 IF active(ProjectAssignment a, d) AND project(a) = p AND assigned(a, e);
 assigned (Project p, Employee e) = assigned(p, e, currentDate()) MATERIALIZED;
 countEmployees (Project p) = GROUP SUM 1 IF assigned(p, Employee e);
 
-assigned (Employee e, DATE from, DATE to) = GROUP SUM 1 IF fromDate(ProjectAssignment a) <= to AND NOT toDate(a) < from AND employee(a) = e;
+assigned (Employee e, DATE from, DATE to) = GROUP SUM 1 IF fromDate(ProjectAssignment a) <= to AND NOT toDate(a) < from AND assigned(a, e);
 
 calcDefaultProject (Employee e) = GROUP LAST Project p ORDER p WHERE assigned(p, e);
 countProjects (Employee e) = GROUP SUM 1 IF assigned(Project p, e);
@@ -112,7 +116,7 @@ EXTEND FORM employee
     
     OBJECTS pa = ProjectAssignment
     PROPERTIES(pa) nameProject, nameRole, fromDate, toDate, NEW, DELETE
-    FILTERS employee(pa) = e 
+    FILTERS assigned(pa, e) 
 
     FILTERGROUP active
         FILTER 'Active' active(pa)

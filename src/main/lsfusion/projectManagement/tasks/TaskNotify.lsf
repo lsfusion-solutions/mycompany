@@ -5,11 +5,11 @@ REQUIRE Task;
 NAMESPACE ProjectManagement;
 
 notifyAssignedTo (Task t) {
-    IF pushConnection(assignedTo(t)) THEN {
+    FOR assignedTo(t, Employee e) AND pushConnection(e) DO {
         NEWTHREAD {
             SHOW task OBJECTS t = t DOCKED NOWAIT;
         } TO exportInteger;
-        pushNotify(pushConnection(assignedTo(t)), (CONCAT ' : ', 'New task assigned', idName(t)), exportInteger());
+        pushNotify(pushConnection(e), (CONCAT ' : ', 'New task assigned', idName(t)), exportInteger());
     }
 }
 
