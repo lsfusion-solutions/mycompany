@@ -27,6 +27,9 @@ assignedTo 'Assigned to' = DATA Employee (Activity);
 nameAssignedTo 'Assigned to' (Activity a) = name(assignedTo(a));
 assignedTo (Activity a) <- currentUser() WHEN SET(a IS Activity);
 
+attends = DATA BOOLEAN (Activity, Contact);
+attendees 'Attendees' (Activity a) = GROUP CONCAT name(Contact c) IF attends(a, c), ', ' ORDER name(c), c CHARWIDTH 30; 
+
 // object
 CLASS ABSTRACT ActivityObject;
 name '{Name}' = ABSTRACT ISTRING (ActivityObject) CHARWIDTH 30;
@@ -51,7 +54,7 @@ countOpenedActivity (ActivityObject o) = GROUP SUM 1 IF object(Activity a) = o A
 
 FORM activity 'Activity'
     OBJECTS a = Activity PANEL
-    PROPERTIES(a) nameType, name, nameAssignedTo, nameObject,
+    PROPERTIES(a) nameType, name, nameAssignedTo, attendees, nameObject,
                   dueDate, time SHOWIF time(type(a)), till SHOWIF till(type(a)),
                   done, description, feedback
     
@@ -73,6 +76,7 @@ DESIGN activity {
             }
             MOVE PROPERTY(name(a));
             MOVE PROPERTY(nameAssignedTo(a));
+            MOVE PROPERTY(attendees(a));
             MOVE PROPERTY(nameObject(a));
             MOVE PROPERTY(done(a));
         }
@@ -181,6 +185,11 @@ DESIGN activities {
 
 @defineDocFilter(activities, activity, ActivityType, type, a, 'Type', type);
 @defineDocFilter(activities, activity, Employee, assignedTo, a, 'Assigned to', assignedTo);
+@defineDocFilterProperty(activities, activity, Employee, attendee, a, 'Attendee', attendee);
+
+EXTEND FORM activities
+    FILTERS assignedTo(a) = activityAttendee() OR attends(a, activityAttendee()) OR NOT activityAttendee()
+;
 
 EXTEND FORM activities
     PROPERTIES READONLY name = HTML(CONCAT ' ', 
