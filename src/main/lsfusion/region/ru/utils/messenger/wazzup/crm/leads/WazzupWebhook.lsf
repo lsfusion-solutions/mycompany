@@ -1,0 +1,101 @@
+MODULE WazzupWebhook;
+
+REQUIRE Wazzup, WazzupLead, WazzupPartner;
+
+NAMESPACE Wazzup;
+
+patchWebhooks 'Patch webhooks' () {
+    EXTERNAL HTTP PATCH url() + '/webhooks' HEADERS headers
+        PARAMS JSON FROM webhooksUri = contextUrl('/exec/Wazzup.webhook'),
+                         subscriptions = (JSON FROM contactsAndDealsCreation = TRUE);
+}
+
+responsibleUserId = DATA LOCAL STRING();
+source = DATA LOCAL STRING();
+
+// contact
+GROUP createContact;
+
+name = DATA LOCAL STRING[92]();
+chatId = DATA LOCAL STRING(INTEGER);
+chatType = DATA LOCAL STRING(INTEGER);
+
+FORM createContact
+    PROPERTIES() IN createContact name, source, responsibleUserId
+
+    OBJECTS contactData = INTEGER IN createContact
+    PROPERTIES(contactData) chatId, chatType
+    FILTERS imported(contactData)
+;
+
+// deal
+GROUP createDeal;
+
+pipelineId = DATA LOCAL STRING();
+contacts = DATA LOCAL STRING(INTEGER);
+
+FORM createDeal
+    PROPERTIES() IN createDeal source, responsibleUserId, pipelineId
+
+    OBJECTS contacts = INTEGER IN createDeal
+    PROPERTIES(contacts) contacts EXTID 'value'
+    FILTERS imported(contacts);
+;
+
+
+webhook (JSONFILE body) {
+    fileToString(FILE(body));
+    logToFile('wazzup', resultString());
+
+    IMPORT createContact JSON FROM body;
+    IF source() OR responsibleUserId() THEN {
+        NEW p = LegalEntity {
+            name(p) <- OVERRIDE name(), (CONCAT ' ', 'Wazzup', chatId(0));
+            isCustomer(p) <- TRUE;
+            salesPerson(p) <- partner(responsibleUserId());
+            FOR chatType(INTEGER i) AND NOT communicationChannel(chatType(i)) DO NEW c = CommunicationChannel {
+                id(c) <- chatType(i);
+                name(c) <- chatType(i);
+            }
+            FOR chatId(INTEGER i) DO NEW cd = ContactData {
+                partner(cd) <- p;
+                id(cd) <- chatId(i);
+                communicationChannel(cd) <- communicationChannel(chatType(i));
+            }
+            
+            APPLY;
+            IF canceled() THEN {
+                statusHttpTo() <- 500;
+                EXPORT FROM 'value' = applyMessage();
+            } ELSE
+                EXPORT JSON FROM 'value' = json(p);
+        }
+    } ELSE {
+        IMPORT createDeal JSON FROM body;
+        IF name() OR responsibleUserId() THEN {
+            NEW l = Lead {
+                type(l) <- leadType(pipelineId());
+                name(l) <- OVERRIDE name(leadType(pipelineId())), 'Wazzup';
+                salesPerson(l) <- partner(responsibleUserId());
+                customer(l) <- partner(contacts(0));
+
+                APPLY;
+                IF canceled() THEN {
+                    statusHttpTo() <- 500;
+                    EXPORT FROM 'value' = applyMessage();
+                } ELSE
+                    EXPORT JSON FROM 'value' = json(l);
+            }
+        }
+    }
+} @@api @@noauth;
+
+EXTEND FORM integrationData
+    PROPERTIES() patchWebhooks
+;
+
+DESIGN integrationData {
+    wazzupHeader {
+        MOVE PROPERTY(patchWebhooks());
+    }
+}

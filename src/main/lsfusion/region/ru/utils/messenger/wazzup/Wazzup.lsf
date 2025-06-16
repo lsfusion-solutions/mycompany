@@ -1,0 +1,40 @@
+MODULE Wazzup;
+
+REQUIRE SystemEvents;
+
+NAMESPACE Wazzup;
+
+// REQUIRE Wazzup, WazzupPartner, WazzupLead, WazzupWebhook, WazzupChat
+
+url = 'https://api.wazzup24.com/v3';
+apiKey 'Key' = DATA STRING () CHARWIDTH 40;
+
+callbackUrl(STRING relativeUrl) = OVERRIDE contextUrl(currentConnection(), relativeUrl), webPath() + relativeUrl;
+
+headers (STRING s) = CASE
+    WHEN s = 'Authorization' THEN CONCAT ' ', 'Bearer', apiKey()
+;
+
+EXTEND FORM integrationData
+    PROPERTIES() apiKey
+;
+
+DESIGN integrationData {
+    pane {
+        NEW wazzup {
+            caption = 'Wazzup';
+            NEW wazzupHeader {
+                lines = 3;
+                MOVE PROPERTY(apiKey());
+            }
+            NEW wazzupSyncronize {
+                lines = 3;
+            }
+            NEW wazzupPane {
+                fill = 1;
+                tabbed = TRUE;
+            }
+        }
+    }
+}
+

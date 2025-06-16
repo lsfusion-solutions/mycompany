@@ -1,0 +1,67 @@
+MODULE PartnerCommunication;
+
+REQUIRE Partner;
+
+NAMESPACE MasterData;
+
+CLASS CommunicationChannel 'Communication channel';
+TABLE communicationChannel (CommunicationChannel);
+
+id '{ID}' = DATA STRING[30] (CommunicationChannel) CHARWIDTH 10;
+communicationChannel 'Communication channel' = GROUP AGGR CommunicationChannel cc BY id(cc); 
+
+name '{master.data.name}' = DATA ISTRING[100] (CommunicationChannel) CHARWIDTH 15;
+
+FORM communicationChannel 'Communication channel'
+    OBJECTS c = CommunicationChannel PANEL
+    PROPERTIES(c) id, name
+    
+    EDIT CommunicationChannel OBJECT c
+;
+
+FORM communicationChannels 'Communication channels'
+    OBJECTS o = CommunicationChannel
+    PROPERTIES(o) READONLY id, name
+
+    LIST CommunicationChannel OBJECT o
+;
+
+EXTEND FORM options
+    OBJECTS cc = CommunicationChannel
+    PROPERTIES(cc) READONLY id, name
+    PROPERTIES(cc) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(cc) { caption = 'Communication channels'; }
+    }
+}
+
+// contact data
+
+CLASS ContactData 'Contact data';
+TABLE contactData (ContactData);
+
+partner 'Partner' = DATA Partner (ContactData) NONULL DELETE INDEXED;
+countContactData (Partner p) = GROUP SUM 1 IF partner(ContactData c) = p; 
+
+communicationChannel 'Communication channel' = DATA CommunicationChannel (ContactData) NONULL;
+idCommunicationChannel 'Communication channel' (ContactData c) = id(communicationChannel(c));
+nameCommunicationChannel 'Communication channel' (ContactData c) = name(communicationChannel(c));
+
+id '{ID}' = DATA STRING (ContactData) CHARWIDTH 12;
+name '{master.data.name}' = DATA ISTRING (ContactData) CHARWIDTH 20;
+phone 'Phone' = DATA STRING (ContactData) CHARWIDTH 12;
+
+EXTEND FORM partner
+    OBJECTS cd = ContactData
+    PROPERTIES(cd) nameCommunicationChannel, id, name, phone, NEW, DELETE
+    FILTERS partner(cd) = p
+;
+
+DESIGN partner {
+    tabs {
+        MOVE BOX(cd) { caption = badged('Contact data', countContactData(p)); }
+    }
+}

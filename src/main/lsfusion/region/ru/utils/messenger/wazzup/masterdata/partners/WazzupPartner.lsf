@@ -1,0 +1,56 @@
+MODULE WazzupPartner;
+
+REQUIRE Wazzup, Employee, PartnerSales, PartnerCommunication;
+
+PRIORITY MasterData;
+
+NAMESPACE Wazzup;
+
+hasAccess 'Has access' = DATA BOOLEAN (Employee); 
+
+synchronizeEmployees 'Employees' () {
+    EXTERNAL HTTP POST url() + '/users' HEADERS headers 
+             PARAMS JSON FROM id = id(Employee e), name = name(e), phone = phone(e) WHERE hasAccess(e);
+}
+
+json (Partner p) = JSON FROM id = id(p), responsibleUserId = idSalesPerson(p), name = name(p),
+                                     contactData = (JSON FROM chatType = idCommunicationChannel(ContactData cd), 
+                                                              chatId = id(cd),
+                                                              username = name(cd),
+                                                              phone = phone(cd)
+                                                    WHERE partner(cd) = p), 
+                                     uri = callbackUrl('/exec/MasterData.showPartner?id=' + p);
+
+synchronize 'Partners' (Partner p) {
+    IF isCustomer(p) AND countContactData(p) THEN
+        EXTERNAL HTTP POST url() + '/contacts' HEADERS headers
+            PARAMS JSON FROM value = json(Partner pp) WHERE pp = p;
+}
+
+WHEN (SETCHANGED(id(Partner p)) OR SETCHANGED(salesPerson(p)) OR SETCHANGED(name(p)) OR
+     (GROUP SUM 1 IF SETCHANGED(id(ContactData cd)) OR SETCHANGED(communicationChannel(cd))))
+     AND apiKey() DO
+    synchronize(p);
+
+synchronizePartners 'Partners' () {
+    EXTERNAL HTTP POST url() + '/contacts' HEADERS headers
+        PARAMS JSON FROM value = json(Partner p) WHERE isCustomer(p) AND countContactData(p);
+}
+
+EXTEND FORM integrationData
+    PROPERTIES() synchronizeEmployees, synchronizePartners
+    
+    OBJECTS ewz = Employee
+    PROPERTIES(ewz) hasAccess
+    PROPERTIES(ewz) READONLY id, name, phone
+;
+
+DESIGN integrationData {
+    wazzupSyncronize {
+        MOVE PROPERTY(synchronizeEmployees());
+        MOVE PROPERTY(synchronizePartners());
+    }
+    wazzupPane {
+        MOVE BOX(ewz);
+    }
+}
