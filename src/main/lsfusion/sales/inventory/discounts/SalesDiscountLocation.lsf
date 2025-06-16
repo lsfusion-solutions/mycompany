@@ -4,10 +4,10 @@ REQUIRE SalesDiscountLine, Location;
 
 NAMESPACE Sales;
 
-in 'Incl.' = DATA BOOLEAN (Discount, Location);
+in 'Incl.' = DATA TBOOLEAN (Discount, Location);
 countLocation (Discount d) = GROUP SUM 1 IF in(d, Location l) MATERIALIZED;
 
-set (Discount d, Location c) = GROUP LAST in(d, Location cp) ORDER level(c, cp) MATERIALIZED;
+set (Discount d, Location c) = GROUP LAST in(d, Location cp) = TTRUE ORDER level(c, cp) MATERIALIZED;
 locations 'Locations' (Discount d) = GROUP CONCAT name(Location c) IF in(d, c), ',' ORDER name(c), c CHARWIDTH 20;
 
 EXTEND FORM discount
@@ -35,5 +35,5 @@ EXTEND FORM discounts
 location = ABSTRACT Location (SalesDiscountLine);
 
 processDiscount (SalesDiscountLine l) + {
-    set(l, Discount d) <- NULL WHERE set(l, d) AND countLocation(d) AND NOT set(d, location(l));
+    set(l, Discount d) <- NULL WHERE set(l, d) AND countLocation(d) AND NOT set(d, location(l)) AND NOT in(d, location(l)) = TFALSE;
 } 
