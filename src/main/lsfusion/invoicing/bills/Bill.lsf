@@ -27,6 +27,14 @@ WHEN LOCAL SET (Bill b IS Bill) AND NOT CHANGED(dateTime(b)) DO dateTime(b) <- c
 
 numberDate 'Description' (Bill b) = number(b) + ' (' + dateTime(b) + ')' IN id;
 
+deliveryDateTime 'Delivery date' = DATA DATETIME (Bill);
+@defineDateTimeAggregation(Bill, delivery, 'Delivery ');
+
+executionDateTime 'Execution date' (Bill i) = ABSTRACT VALUE DATETIME (Bill);
+executionDateTime(Bill i) += deliveryDateTime(i);
+executionDateTime(Bill i) += dateTime(i);
+@defineDateTimeAggregation(Bill, execution, 'Execution ');
+
 // vendor
 vendor 'Vendor' = DATA Partner (Bill);
 nameVendor 'Vendor' (Bill b) = name(vendor(b));
@@ -157,7 +165,7 @@ edit (BillLine l) + { edit(bill(l)); }
 FORM bill 'Bill'
     OBJECTS  b = Bill PANEL 
     PROPERTIES(b) READONLYIF readonly(b)
-                  nameType, dateTime, number, 
+                  nameType, dateTime, deliveryDateTime, number, 
                   nameVendor, nameCompany,
                   namePaymentTerms, dueDateTime, nameVendorAccount, nameCompanyAccount,
                   nameRepresentative, vendorReference, note,
@@ -180,7 +188,11 @@ DESIGN bill {
             horizontal = TRUE;
             NEW headerLeft {
                 MOVE PROPERTY(nameType(b)) { notNull = TRUE; }
-                MOVE PROPERTY(dateTime(b));
+                NEW dates {
+                    horizontal = TRUE;
+                    MOVE PROPERTY(dateTime(b));
+                    MOVE PROPERTY(deliveryDateTime(b));
+                }
                 MOVE PROPERTY(number(b));
             }
             NEW headerRight {
@@ -250,9 +262,9 @@ background = ABSTRACT CASE COLOR (Bill);
 FORM bills 'Bills'
     OBJECTS b = Bill BACKGROUND background(b)
     PROPERTIES(b) READONLYIF isReadonly()
-                           number, dateTime, nameVendor,
+                           number, dateTime, deliveryDateTime, nameVendor,
                            nameType, nameCompany,
-                           namePaymentTerms, dueDateTime, nameVendorAccount, nameCompanyAccount,
+                               namePaymentTerms, dueDateTime, nameVendorAccount, nameCompanyAccount,
                            vendorReference, note
     PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE
            

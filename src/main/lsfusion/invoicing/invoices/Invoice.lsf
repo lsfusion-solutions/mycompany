@@ -27,6 +27,14 @@ WHEN LOCAL SET (Invoice b IS Invoice) AND NOT CHANGED(dateTime(b)) DO dateTime(b
 
 numberDate 'Description' (Invoice i) = number(i) + ' (' + dateTime(i) + ')' IN id;
 
+deliveryDateTime 'Delivery date' = DATA DATETIME (Invoice);
+@defineDateTimeAggregation(Invoice, delivery, 'Delivery ');
+
+executionDateTime 'Execution date' (Invoice i) = ABSTRACT VALUE DATETIME (Invoice);
+executionDateTime(Invoice i) += deliveryDateTime(i);
+executionDateTime(Invoice i) += dateTime(i);
+@defineDateTimeAggregation(Invoice, execution, 'Execution ');
+
 // customer
 customer = DATA Partner (Invoice);
 nameCustomer 'Customer' (Invoice i) = name(customer(i));
@@ -175,7 +183,7 @@ edit (InvoiceLine l) + { edit(invoice(l)); }
 FORM invoice 'Invoice'
     OBJECTS  i = Invoice PANEL 
     PROPERTIES(i) READONLYIF readonly(i)
-                  nameType, dateTime, number, 
+                  nameType, dateTime, deliveryDateTime, number, 
                   nameCustomer, nameDepartment SHOWIF countDepartment(customer(i)), nameCompany,
                   namePaymentTerms, dueDateTime, nameCustomerAccount, nameCompanyAccount,
                   deliveryAddress, nameRepresentative, customerReference, note,
@@ -198,7 +206,11 @@ DESIGN invoice {
             alignment = STRETCH;
             NEW headerLeft {
                 MOVE PROPERTY(nameType(i)) { notNull = TRUE; }
-                MOVE PROPERTY(dateTime(i));
+                NEW dates {
+                    horizontal = TRUE;
+                    MOVE PROPERTY(dateTime(i));
+                    MOVE PROPERTY(deliveryDateTime(i));
+                }
                 MOVE PROPERTY(number(i));
             }
             NEW headerRight {
@@ -275,7 +287,7 @@ background = ABSTRACT CASE COLOR (Invoice);
 FORM invoices 'Invoices'
     OBJECTS i = Invoice BACKGROUND background(i)
     PROPERTIES(i) READONLYIF isReadonly()
-                           number, dateTime, nameCustomer, 
+                           number, dateTime, deliveryDateTime, nameCustomer, 
                            nameType, nameCompany,
                            namePaymentTerms, dueDateTime, nameCustomerAccount, nameCompanyAccount,
                            customerReference, note         
