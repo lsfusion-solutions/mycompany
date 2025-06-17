@@ -42,7 +42,7 @@ fill ABSTRACT LIST (ReceiptLine, BillLine);
 billReceiptCreated = DATA LOCAL Receipt ();
 newReceipt (Bill b) {
     NEW r = Receipt {
-        scheduledDateTime(r) <- deliveryDateTime(b);
+        scheduledDateTime(r) <- OVERRIDE deliveryDateTime(b), currentDateTime();
         
         vendor(r) <- vendor(b);
         type(r) <- receiptType(type(b));
