@@ -1,6 +1,6 @@
 MODULE PartnerSales;
 
-REQUIRE MasterData, Partner;
+REQUIRE MasterData, Employee;
 
 NAMESPACE MasterData;
 
@@ -11,23 +11,32 @@ isCustomer 'Customer' = DATA BOOLEAN (Partner);
 
 isCustomer(Partner p) <- NOT notCustomer(type(p)) WHEN SET(p IS Partner);
 
+// responsible
+salesPerson 'Sales person' = DATA Employee (Partner);
+idSalesPerson 'Sales person' (Partner p) = id(salesPerson(p));
+nameSalesPerson 'Sales person' (Partner p) = name(salesPerson(p));
+WHEN LOCAL (SET(Partner p IS Partner) OR SET(isCustomer(p))) AND isCustomer(p) 
+           AND NOT salesPerson(p) AND currentUser() IS Employee DO salesPerson(p) <- currentUser();
+
 EXTEND FORM partners
-    PROPERTIES(p) READONLYIF isReadonly() isCustomer
+    PROPERTIES(p) READONLYIF isReadonly() isCustomer, nameSalesPerson
 ;
 
 EXTEND FORM partner 
-    PROPERTIES(p) isCustomer
+    PROPERTIES(p) isCustomer, nameSalesPerson
 ;
 
 DESIGN partner {
     headerColumn3 {
-        MOVE PROPERTY(isCustomer(p));   
+        MOVE PROPERTY(isCustomer(p));
     }
     tabs {
         NEW customer {
             showIf = isCustomer(p);
             caption = 'Sales';
-            NEW customerOptions;
+            NEW customerOptions {
+                MOVE PROPERTY(nameSalesPerson(p));
+            }
         }
     }
 }

@@ -36,6 +36,7 @@ prefixName (Lead l) += nameCustomer(l);
 countLeads (Partner p) = GROUP SUM 1 IF customer(Lead l) = p;  
 
 salesPerson 'Sales person' = DATA Employee (Lead);
+idSalesPerson 'Sales person' (Lead l) = id(salesPerson(l));
 nameSalesPerson 'Sales person' (Lead l) = name(salesPerson(l));
 WHEN LOCAL SET(Lead l IS Lead) AND NOT salesPerson(l) AND currentUser() IS Employee DO salesPerson(l) <- currentUser();
 @definePropertyValue(lead, salesPerson, 'Sales person', nameSalesPerson);
@@ -212,7 +213,7 @@ DESIGN lead {
 
 showLead (LONG id) {
     FOR LONG(Lead l AS Lead) = id DO
-        SHOW lead OBJECTS l = l DOCKED;
+        SHOW lead OBJECTS l = l DOCKED MANAGESESSION;
 } @@api;
 
 FORM leads '{Leads}'

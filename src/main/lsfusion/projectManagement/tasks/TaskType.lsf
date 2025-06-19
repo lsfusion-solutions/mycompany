@@ -1,6 +1,6 @@
 MODULE TaskType;
 
-REQUIRE ProjectManagementSettings;
+REQUIRE ProjectManagementSettings, TaskStatus;
 
 NAMESPACE ProjectManagement;
 
@@ -10,9 +10,18 @@ name '{Name}' = DATA ISTRING[50] (TaskType) NONULL CHARWIDTH 15;
 id '{ID}' = DATA STRING[20] (TaskType);
 taskType = GROUP AGGR TaskType t BY id(t);
 
+in 'Incl.' = DATA BOOLEAN (TaskType, TaskStatus);
+countStatus (TaskType t) = GROUP SUM 1 IF in(t, TaskStatus l) MATERIALIZED;
+
+allow (TaskType t, TaskStatus s) = in(t, s) OR (t IS TaskType AND s IS TaskStatus AND NOT countStatus(t));
+
 FORM taskType 'Task type'
     OBJECTS o = TaskType PANEL
     PROPERTIES(o) name, id
+
+    OBJECTS s = TaskStatus
+    PROPERTIES(s) READONLY name
+    PROPERTIES             in(o, s)
 
     EDIT TaskType OBJECT o;
 ;
@@ -49,3 +58,5 @@ countTaskTypes 'Number of types' () = GROUP SUM 1 IF t IS TaskType;
 firstTaskType = GROUP LAST TaskType r ORDER DESC r WHERE r IS TaskType;
 
 defaultTaskType = firstTaskType() IF countTaskTypes() = 1;
+
+firstTaskStatus (TaskType t) = GROUP LAST TaskStatus l ORDER DESC sortingOrder(l), l WHERE allow(t, l) MATERIALIZED;

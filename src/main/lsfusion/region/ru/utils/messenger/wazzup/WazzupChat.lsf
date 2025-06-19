@@ -1,0 +1,97 @@
+MODULE WazzupChat;
+
+REQUIRE WazzupPartner, Icon;
+
+NAMESPACE Wazzup;
+
+frameUrl = DATA LOCAL JSON();
+
+FORM wazzup 'Wazzup'
+    PROPERTIES chat '' = frameUrl() CUSTOM 'wazzupChat'
+    
+    EVENTS ON INIT {
+        EXTERNAL HTTP POST url() + '/iframe' HEADERS headers
+            PARAMS JSON FROM user = (JSON FROM id = id(currentUser()),
+                                               name = name(currentUser())),
+                             scope = r'global'
+            TO frameUrl;
+    }
+;
+
+DESIGN wazzup {
+    OBJECTS {
+        MOVE PROPERTY(chat) { fill = 1; }
+    }
+}
+
+unanswered = DATA INTEGER (Employee);
+unansweredType = DATA STRING (Employee);
+
+getUnanswered (Employee e) {
+    NEWSESSION {
+        EXTERNAL HTTP GET url() + '/unanswered/' + id(e) HEADERS headers TO resultFile;
+
+        LOCAL counterV2 = INTEGER();
+        LOCAL type = STRING();
+        IMPORT JSON FROM resultFile() TO() counterV2, type;
+        
+        unanswered(e) <- counterV2();
+        unansweredType(e) <- type();
+        
+        APPLY;
+    }
+}
+
+getUnanswered 'Get unanswered' () {
+    FOR hasAccess(Employee e) AND hasConnectedConnections(e) DO
+        getUnanswered(e);
+}
+
+EXTEND FORM integrationData
+    PROPERTIES() getUnanswered
+;
+
+DESIGN integrationData {
+    wazzupHeader {
+        MOVE PROPERTY(getUnanswered());
+    }
+}
+
+NAVIGATOR {
+    NEW wazzup HEADER imaged(HTML('<span class="badge wrap-text-img ' + (IF unansweredType(currentUser()) = 'red' THEN 'bg-danger' ELSE 'bg-secondary-subtle') + '">' +
+                                                             unanswered(currentUser()) + '</span>'), 
+                                  'Wazzup', NULL, NULL, NULL, NULL);
+}
+
+onWebClientInit() + {
+    onWebClientInit('wazzup.js') <- 1;
+}
+
+META defineWazzupChat(form, cls, obj)
+    EXTEND FORM form
+        PROPERTIES chat '' = frameUrl() CUSTOM 'wazzupChat'
+    ;
+    
+    DESIGN form {
+        details {
+            NEW wazzupChat {
+                showIf = apiKey();
+                caption = 'Wazzup';
+                MOVE PROPERTY(chat) { fill = 1; }
+            }
+        }
+    }
+    
+    WHEN LOCAL FORMS form SET(ACTIVE TAB form.wazzupChat) AND [VIEW form.obj](cls o) AND NOT frameUrl() DO {
+        EXTERNAL HTTP POST url() + '/iframe' HEADERS headers
+            PARAMS JSON FROM user = (JSON FROM id = id(currentUser()),
+                             name = name(currentUser())),
+                             scope = r'card',
+                             filter = (JSON FROM chatType = idCommunicationChannel(ContactData cd),
+                                                 chatId = id(cd),
+                                                 username = name(cd),
+                                                 phone = phone(cd)
+                                       WHERE partner(cd) = customer(o))
+            TO frameUrl;
+    }
+END

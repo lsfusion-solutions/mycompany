@@ -1,0 +1,43 @@
+MODULE TimesheetTask;
+
+REQUIRE Timesheet, ProjectTask, TaskTimeEntry;
+
+NAMESPACE ProjectManagement;
+
+EXTEND FORM timesheetDateEmployee
+    PROPERTIES(t) READONLY nameTask
+;
+
+changeTimesheetHours (DATE d, Employee e, Task t, NUMERIC[8,2] n, TimeEntryHours h) {
+    IF n THEN {
+        FOR TimeEntry te = timeEntry(d, e, t) DO {
+            IF hours(te) = n AND h THEN
+                DELETE te;
+            ELSE {
+                hours(te) <- n;
+                timeEntryHours(te) <- h;
+            }
+        } ELSE {
+            NEW te = TimeEntry {
+                type(te) <- timesheetTimeEntryType();
+                task(te) <- t;
+                employee(te) <- e;
+                date(te) <- d;
+                hours(te) <- n;
+                timeEntryHours(te) <- h;
+            }
+        }
+    } ELSE
+        DELETE TimeEntry te WHERE date(te) = d AND employee(te) = e AND task(te) = t;
+}
+
+changeSaveTimesheetHours (DATE d, Employee e, Task t, NUMERIC[8,2] n, TimeEntryHours h) {
+    IF NOT autoSaveTimesheetHours() THEN {
+        changeTimesheetHours(d, e, t, n, h);
+    } ELSE
+        NEWSESSION NESTED (timesheetTimeEntryType[]) {
+            changeTimesheetHours(d, e, t, n, h);
+            APPLY NESTED (timesheetTimeEntryType[]);
+        }
+}
+

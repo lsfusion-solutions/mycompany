@@ -6,5 +6,5 @@ NAMESPACE Invoicing;
 
 extraCost = ABSTRACT NUMERIC[14,2] (ReceiptLine);
 
-cost (ReceiptLine l) += WHEN billLine(l) AND NOT isCreditNote(bill(billLine(l))) THEN
+cost (ReceiptLine l) += WHEN billLine(l) AND NOT isCreditNote(bill(billLine(l))) AND NOT dataCost(l) THEN
     NUMERIC[14,2](price(billLine(l)) * done(l) * rate1(billLine(l)) / skuCoeff(item(billLine(l)))) (+) NUMERIC[14,2](extraCost(l));

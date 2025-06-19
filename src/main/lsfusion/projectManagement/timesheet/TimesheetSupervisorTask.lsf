@@ -1,0 +1,60 @@
+MODULE TimesheetSupervisorTask;
+
+REQUIRE TimesheetSupervisor, TimesheetTask;
+
+PRIORITY MasterData;
+
+NAMESPACE ProjectManagement;
+
+timesheetTask = DATA LOCAL Task ();
+idNameTimesheetTask 'Hours' = idName(timesheetTask());
+CONSTRAINT timesheetTask() AND NOT ((project(timesheetTask()) = timesheetProject() OR NOT timesheetProject()) AND opened(timesheetTask()))
+    CHECKED BY timesheetTask[] MESSAGE '';
+
+WHEN LOCAL FORMS timesheetSupervisor SETCHANGED(timesheetProject()) AND NOT project(timesheetTask()) = timesheetProject() DO timesheetTask() <- NULL;
+
+hoursTimesheetTask (DATE d, Employee e) = HTML(CONCAT '', '<b>' + hoursToChar(hours(d, e, timesheetTask())) + '</b>', '<font size="-2">(' + hoursToChar(hoursTimesheet(d, e)) + ')</font>') CHARWIDTH 4;
+
+EXTEND FORM timesheetSupervisor
+
+    PROPERTIES() idNameTimesheetTask SELECT 'buttonGroup'
+    
+    OBJECTS te = Employee
+    PROPERTIES(te) READONLY firstName, lastName, namePosition, rolesTimesheet
+    PROPERTIES hoursTimesheetTask(d, te) WAIT COLUMNS (d) HEADER extractDay(d) FOREGROUND RGB(0,212,0) IF hours(d, te, timesheetTask()) BACKGROUND backgroundHoursTimesheet(d, te)
+               ON CHANGE {
+                   IF timesheetTask() THEN {
+                       IF NOT timesheetTimeEntryHours() THEN {
+                           INPUT n = hours(d, te, timesheetTask()) DO {
+                               changeSaveTimesheetHours(d, te, timesheetTask(), n, NULL);
+                           }
+                       } ELSE
+                           changeSaveTimesheetHours(d, te, timesheetTask(), hours(timesheetTimeEntryHours()), timesheetTimeEntryHours());
+                   } ELSE
+                       SHOW timesheetDateEmployee OBJECTS i = interval(d, d), e = te FLOAT;
+               }
+    FILTERS [FILTER timesheetSupervisor.e](te)
+;
+
+DESIGN timesheetSupervisor {
+    timesheet {
+        NEW timesheetPane {
+            tabbed = TRUE;
+            fill = 1;
+            MOVE BOX(e) {
+                caption = 'Total';
+            }
+            NEW timesheetTask {
+                caption = 'Tasks';
+                MOVE PROPERTY(idNameTimesheetTask()) { 
+                    alignment = STRETCH;
+                    caption = '';
+                    placeholder = 'Task';
+                }
+                MOVE BOX(te) {
+                    caption = '';
+                }
+            }
+        }
+    }
+}

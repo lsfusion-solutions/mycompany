@@ -1,0 +1,40 @@
+MODULE PayslipDebt;
+
+REQUIRE PayslipLedger, Debt;
+
+NAMESPACE Payroll;
+
+// extend
+EXTEND CLASS Payslip : IncomingDebt;
+type(Payslip p) += ISTRING[100]('Payslip') IF p IS Payslip;
+
+active (Payslip p) += p IS Payslip;
+number (Payslip p) += number(p);
+dateTime (Payslip p) += DATETIME(endDate(p));
+dueDateTime (Payslip p) += DATETIME(dueDate(p));
+
+partner (Payslip p) += employee(p);
+company (Payslip p) += company(p);
+
+sourceCurrency (Payslip p) += currency(p);
+sourceAmount (Payslip p) += NUMERIC[14,2](netWage(p));
+
+EXTEND FORM payslip
+    OBJECTS d = OutgoingDebt
+    PROPERTIES(d) READONLY dateTime, number, class, type, amount FOOTER paid(p)
+    PROPERTIES paid(p, d)
+    FILTERS paid(p, d), active(d)
+;
+
+DESIGN payslip {
+    details {
+        NEW debts {
+            caption = badged('Payments', paid(p));
+            MOVE BOX(d) { caption = ''; }
+        }
+    }
+}
+
+EXTEND FORM payslips
+    PROPERTIES(p) READONLY paid
+;

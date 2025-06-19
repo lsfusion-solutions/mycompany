@@ -1,0 +1,48 @@
+MODULE PayslipOutgoingPayment;
+
+REQUIRE PayslipLedger, PayslipDebt, OutgoingPaymentReady;
+
+PRIORITY HumanResources;
+
+NAMESPACE Payroll;
+
+payslipOutgoingPaymentType = DATA OutgoingPaymentType ();
+namePayslipOutgoingPaymentType 'Outgoing payment type for payslip' () = name(payslipOutgoingPaymentType());
+EXTEND FORM options PROPERTIES() namePayslipOutgoingPaymentType;
+DESIGN options { commons { MOVE PROPERTY(namePayslipOutgoingPaymentType()); } }
+
+registerPayment 'Register Payment' (Payslip ps) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    NEWSESSION {
+        NEW p = OutgoingPayment {
+            ready(p) <- TRUE;
+            
+            type(p) <- payslipOutgoingPaymentType();
+
+            company(p) <- company(ps);
+            partner(p) <- employee(ps);
+
+            executeLocalEvents();
+
+            amount(p) <- sourceLeft(ps);
+            paid(ps, p) <- left(ps, p);
+
+            DIALOG outgoingPayment OBJECTS p = p DOCKED NOMANAGESESSION DO {
+                IF amount[Debt](p) < paid(ps, p) THEN paid(ps, p) <- amount[Debt](p);
+                APPLY;
+            }
+        }
+    }
+}
+
+EXTEND FORM payslip
+    PROPERTIES(p) registerPayment SHOWIF payslipOutgoingPaymentType()
+;
+
+DESIGN payslip {
+    primaryActions {
+        MOVE PROPERTY(registerPayment(p)) { valueClass = 'btn-primary'; }
+    }
+}

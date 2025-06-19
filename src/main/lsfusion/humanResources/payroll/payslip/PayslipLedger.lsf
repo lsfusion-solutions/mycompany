@@ -20,17 +20,20 @@ nameEmployee 'Employee' (PayslipLedger l) = name(employee(l));
 
 category 'Category' = ABSTRACT PayslipCategory (PayslipLedger) MATERIALIZED;
 nameCategory 'Category' (PayslipLedger l) = name(category(l));
-deduction 'Deduction' (PayslipLedger l) = deduction(category(l));
+
+deduction 'Deduction' = ABSTRACT VALUE BOOLEAN (PayslipLedger) MATERIALIZED;
+deduction(PayslipLedger l) += deduction(category(l));
+
 skip 'Skip' (PayslipLedger l) = skip(category(l));
 hide 'Hide' (PayslipLedger l) = hide(category(l));
 
 description 'Description' = ABSTRACT ISTRING (PayslipLedger) MATERIALIZED CHARWIDTH 15;
 
-quantity 'Qty' = ABSTRACT NUMERIC[8,2] (PayslipLedger);
+quantity 'Qty' = ABSTRACT NUMERIC[8,2] (PayslipLedger) MATERIALIZED;
 
-amount 'Amount' = ABSTRACT NUMERIC[10,2] (PayslipLedger);
+amount 'Amount' = ABSTRACT VALUE NUMERIC[10,2] (PayslipLedger) MATERIALIZED;
 
-total 'Total' = ABSTRACT NUMERIC[16,2] (PayslipLedger);
+total 'Total' = ABSTRACT VALUE NUMERIC[16,2] (PayslipLedger) MATERIALIZED;
 signedTotal 'Total' (PayslipLedger l) = NUMERIC[16,2](total(l) * (IF deduction(l) THEN -1 ELSE 1));
 
 total 'Total' (Payslip p, PayslipCategory c) = GROUP SUM total(PayslipLedger l) IF payslip(l) = p AND category(l) = c; 

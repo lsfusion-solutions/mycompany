@@ -23,6 +23,7 @@ WHEN LOCAL SET(PayslipBatch p IS PayslipBatch) AND NOT CHANGED(company(p)) DO co
 payslipBatch (Company c, INTERVAL[DATE] i) = GROUP MIN PayslipBatch b BY company(b), period(b); 
 
 batch 'Payslip batch' = DATA PayslipBatch (Payslip) INDEXED;
+numberBatch 'Payslip batch' (Payslip p) = number(batch(p));
 
 WHEN LOCAL CHANGED(period(batch(Payslip p))) AND batch(p) AND NOT CHANGED(period(p)) DO
     period(p) <- period(batch(p));
@@ -135,3 +136,13 @@ DESIGN payslipBatch {
         MOVE PROPERTY(copy(b));
     }
 }
+
+EXTEND FORM payslip PROPERTIES(p) numberBatch;
+
+DESIGN payslip {
+    header {
+        MOVE PROPERTY(numberBatch(p));
+    }    
+}
+
+EXTEND FORM payslips PROPERTIES(p) READONLY numberBatch BEFORE netWage(p);

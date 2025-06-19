@@ -4,11 +4,17 @@ REQUIRE Task, TimeEntry;
 
 NAMESPACE TaskManagement;
 
-task = DATA Task (TimeEntry);
+task = DATA Task (TimeEntry) INDEXED;
 nameTask '{Task}' (TimeEntry e) = name(task(e));
 
 countTimeEntry 'Time entries' (Task t) = GROUP SUM 1 IF task(TimeEntry te) = t MATERIALIZED;
 hoursTimeEntry 'Hours' (Task t) = GROUP SUM hours(TimeEntry te) IF task(te) = t MATERIALIZED;
+
+timeEntry (DATE d, Employee e, Task t) = GROUP MIN TimeEntry te IF date(te) = d AND employee(te) = e AND task(te) = t;
+hours 'Hours' (DATE d, Employee e, Task t) = GROUP SUM hours(TimeEntry te) IF task(te) = t AND employee(te) = e AND date(te) = d;
+
+hours 'Hours' (Task t, Employee e, DATE from, DATE to) = GROUP SUM hours(TimeEntry te) IF task(te) = t AND employee(te) = e AND date(te) >= from AND date(te) <= to;
+hours 'Hours' (Task t, Employee e, INTERVAL[DATE] i) = hours(t, e, from(i), to(i));
 
 EXTEND FORM timeEntry
     PROPERTIES(t) nameTask

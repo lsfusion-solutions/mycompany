@@ -18,7 +18,7 @@ countAllowAssignedTo (ProjectRole r, TaskType t) = GROUP SUM 1 IF allowAssignedT
 countAllowAny (ProjectRole r, TaskType t) = countAllow(r, t) (+) countAllowAuthor(r, t) (+) countAllowAssignedTo(r, t) MATERIALIZED;
 
 forbid (Task t, TaskType tt, Employee e, ProjectRole r, TaskStatus from, TaskStatus to) = countAllowAny(r, tt) AND //e IS Employee AND from IS TaskStatus AND to IS TaskStatus AND
-    NOT allow(r, tt, from, to) AND NOT (allowAuthor(r, tt, from, to) AND author(t) = e) AND NOT (allowAssignedTo(r, tt, from, to) AND assignedTo(t) = e);
+    NOT allow(r, tt, from, to) AND NOT (allowAuthor(r, tt, from, to) AND author(t) = e) AND NOT (allowAssignedTo(r, tt, from, to) AND assignedTo(t, e));
 
 allow (Task t, Employee e, TaskStatus from, TaskStatus to) =
     GROUP SUM 1 IF assignment(project(t), e, ProjectRole r) AND NOT forbid(t, type(t), e, r, from, to);

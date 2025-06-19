@@ -1,0 +1,47 @@
+MODULE WazzupLead;
+
+REQUIRE Wazzup, Lead, WazzupChat;
+
+NAMESPACE Wazzup;
+
+json (Lead l) =
+    JSON FROM id = id(l),
+              responsibleUserId = idSalesPerson(l),
+              name = name(l),
+              uri = callbackUrl('/exec/CRM.showLead?id=' + l),
+              contacts = (JSON FROM id(Partner p) IF p = customer(l) OR legalEntity(p) = customer(l)),
+              closed = TBOOLEAN(IF closed(l) THEN TTRUE ELSE TFALSE);
+
+synchronize 'Leads' (Lead l) {
+    EXTERNAL HTTP POST url() + '/deals' HEADERS headers
+        PARAMS JSON FROM value = json(Lead ll) WHERE ll = l;
+}
+
+WHEN (SETCHANGED(id(Lead l)) OR SETCHANGED(salesPerson(l)) OR SETCHANGED(name(l)) OR SETCHANGED(customer(l)) OR
+      (SETCHANGED(status(l)) AND CHANGED(closed(l))))
+      AND apiKey() DO
+    synchronize(l);
+
+synchronizeLeads 'Leads' () {
+    EXTERNAL HTTP POST url() + '/deals' HEADERS headers
+        PARAMS JSON FROM value = json(Lead l) WHERE l IS Lead;
+}
+
+synchronizePipelines 'Pipelines' () {
+    EXTERNAL HTTP POST url() + '/pipelines' HEADERS headers
+        PARAMS JSON FROM id = id(LeadType t),
+                         name = name(t);
+}
+
+EXTEND FORM integrationData
+    PROPERTIES() synchronizeLeads, synchronizePipelines
+;
+
+DESIGN integrationData {
+    wazzupSyncronize {
+        MOVE PROPERTY(synchronizeLeads());
+        MOVE PROPERTY(synchronizePipelines());
+    }
+}
+
+@defineWazzupChat(lead, Lead, l);

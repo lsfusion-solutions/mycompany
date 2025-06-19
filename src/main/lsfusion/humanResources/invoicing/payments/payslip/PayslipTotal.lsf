@@ -1,0 +1,81 @@
+MODULE PayslipTotal;
+
+REQUIRE PayslipOutgoingPayment;
+
+NAMESPACE Payroll;
+
+fromDate = DATA LOCAL NESTED DATE();
+toDate = DATA LOCAL NESTED DATE();
+
+netWage 'Net wage' (Employee e) = GROUP SUM netWage(Payslip p) IF employee(p) = e
+    AND NOT startDate(p) < fromDate() AND NOT startDate(p) > toDate();
+
+paid 'Paid' (Employee e) = GROUP SUM amount(OutgoingPayment p) IF partner(p) = e
+    AND type(p) = payslipOutgoingPaymentType() AND NOT date(p) < fromDate() AND NOT date(p) > toDate() AND active(p);
+left 'Left' (Employee e) = netWage(e) (-) paid(e);
+
+newOutgoingPayment 'Payment' (Employee e) {
+    NEWSESSION {
+        NEW p = OutgoingPayment {
+            ready(p) <- TRUE;
+
+            type(p) <- payslipOutgoingPaymentType();
+
+            company(p) <- legalEntity(e);
+            partner(p) <- e;
+
+            amount(p) <- NUMERIC[14,2](left(e));
+            paid(Payslip ps, p) <- left(ps, p) WHERE employee(ps) = e;
+
+            SHOW outgoingPayment OBJECTS p = p DOCKED;
+        }
+    }
+} IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+
+EXTEND FORM payslips
+    EVENTS ON CHANGE dates {
+        fromDate() <- from(dates);
+        toDate() <- to(dates);
+    }
+
+    OBJECTS e = Employee
+    PROPERTIES(e) READONLY        name, login, namePosition, nameLegalEntity,
+        netWage, paid, left
+    FILTERS legalEntity(e) = payslipCompany() OR NOT payslipCompany()
+
+    OBJECTS tp = Payslip
+    PROPERTIES(tp) READONLY number, startDate, endDate, netWage
+    PROPERTIES(tp) NEWSESSION EDIT
+    FILTERS NOT startDate(tp) < from(dates), NOT startDate(tp) > to(dates)
+    FILTERS employee(tp) = e
+
+    OBJECTS op = OutgoingPayment
+    PROPERTIES(op) READONLY number, dateTime,
+        nameType, amount,
+        nameCompany,
+        note
+    PROPERTIES(e) newOutgoingPayment DRAW op SHOWIF payslipOutgoingPaymentType() TOOLBAR
+    FILTERS NOT date(op) < from(dates), NOT date(op) > to(dates)
+    PROPERTIES(op) NEWSESSION EDIT
+    FILTERS partner(op) = e
+;
+
+DESIGN payslips {
+    tabbedPane {
+        NEW total {
+            horizontal = TRUE;
+            caption = 'Total';
+            NEW totalLeft {
+                fill = 1;
+                width = 200;
+                MOVE BOX(e) { caption = ''; }
+            }
+            NEW totalRight {
+                fill = 1;
+                width = 200;
+                MOVE BOX(tp);
+                MOVE BOX(op);
+            }
+        }
+    }
+}

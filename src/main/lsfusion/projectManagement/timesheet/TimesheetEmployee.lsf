@@ -1,0 +1,108 @@
+MODULE TimesheetEmployee;
+
+REQUIRE TimesheetTask, ProjectAssignment;
+
+NAMESPACE ProjectManagement;
+
+FORM timesheetEmployee 'Employee timesheet'
+    OBJECTS dates = INTERVAL[DATE] PANEL NULL
+    PROPERTIES dates '' = VALUE(dates)
+
+    OBJECTS e = Employee PANEL
+    PROPERTIES(e) name SELECTOR
+    FILTERS e = currentUser() OR accessAllProjects(currentUser())
+
+    PROPERTIES() nameTimesheetProject, nameTimesheetTimeEntryType SELECT 'buttonGroup',
+                 nameTimesheetTimeEntryHours SHOWIF timesheetTimeEntryType() AND countHours(timesheetTimeEntryType()) SELECT 'buttonGroup'
+
+    PROPERTIES READONLY hours(e, dates)
+
+    OBJECTS d = DATE
+    FILTERS iterate(d, from(dates), to(dates))
+
+    OBJECTS t = Task
+    PROPERTIES(t) READONLY nameProject SHOWIF NOT timesheetProject(), 
+                           id, 'Task' = name, nameAuthor, nameAssignedTo, nameStatus, nameType
+    PROPERTIES hours(d, e, t) COLUMNS (d) 
+                              HEADER extractDay(d)
+                              FOOTER hours(d, e)
+                              BACKGROUND backgroundHoursTimesheet(d)
+                              ON CHANGE {
+                                  IF NOT timesheetTimeEntryHours() THEN {
+                                      INPUT n = hours(d, e, t) DO {
+                                          changeSaveTimesheetHours(d, e, t, n, NULL);
+                                      }
+                                  } ELSE
+                                      changeSaveTimesheetHours(d, e, t, hours(timesheetTimeEntryHours()), timesheetTimeEntryHours());
+                              } 
+    FILTERS assigned(project(t), e, dates) OR hours(t, e, dates) OR (NOT countAssignments(project(t)) AND accessAllProjects(currentUser())),
+            project(t) = timesheetProject() OR NOT timesheetProject()
+
+    FILTERGROUP active
+        FILTER 'Opened' opened(t) 'F8' DEFAULT
+        FILTER 'Closed' closed(t) 'F7'
+
+    FILTERGROUP my
+        FILTER 'My tasks' author(t) = e 'F6'
+        FILTER 'Assigned to me' assignedTo(t, e) 'F5'
+    
+    EVENTS ON INIT {
+        timesheetTimeEntryType() <- defaultTimeEntryType();
+        SEEK timesheetEmployee.e = currentUser();
+        SEEK timesheetEmployee.dates = interval(firstDayOfMonth(currentDate()), lastDayOfMonth(currentDate()));
+    }
+    
+    PROPERTIES prevInterval '<' = { SEEK timesheetEmployee.dates = prevMonthInterval(dates); },
+               nextInterval '>' = { SEEK timesheetEmployee.dates = nextMonthInterval(dates); }
+        //    PROPERTIES hoursTimesheet(d, t, e) WAIT COLUMNS (d) HEADER extractDay(d) BACKGROUND backgroundHoursTimesheet(d, e)
+;
+
+WHEN LOCAL FORMS timesheetEmployee CHANGED(timesheetTimeEntryType()) DO timesheetTimeEntryHours() <- defaultHours(timesheetTimeEntryType());
+
+DESIGN timesheetEmployee {
+    OBJECTS {
+        NEW header {
+            alignment = STRETCH;
+            horizontal = TRUE;
+            NEW interval {
+                horizontal = TRUE;
+                MOVE PROPERTY(prevInterval);
+                MOVE PROPERTY(dates);
+                MOVE PROPERTY(nextInterval);
+            }
+            MOVE PROPERTY(name(e));
+            MOVE PROPERTY(nameTimesheetProject());
+            MOVE PROPERTY(hours(e, dates));
+        }
+        NEW tabbedPane {
+            tabbed = TRUE;
+            fill = 1;
+            NEW timesheet {
+                caption = 'Timesheet';
+                NEW edit {
+                    horizontal = TRUE;
+                    MOVE PROPERTY(nameTimesheetTimeEntryType()) {
+                        caption = '';
+                        placeholder = 'Type';
+                    }
+                    MOVE PROPERTY(nameTimesheetTimeEntryHours()) {
+                        caption = '';
+                        placeholder = 'Hours';
+                    }
+                }
+                MOVE BOX(t) {
+                    caption = '';
+                    PROPERTY(hours(d, e, t)) {
+                        charWidth = 2;
+                    }
+                }
+            }
+        }
+    }
+}
+
+NAVIGATOR {
+    dashboards {
+        NEW timesheetEmployee;
+    }
+}

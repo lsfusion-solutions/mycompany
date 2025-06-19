@@ -13,9 +13,11 @@ activityType = GROUP AGGR ActivityType t BY id(t);
 time 'Time' = DATA BOOLEAN (ActivityType);
 till 'Till' = DATA BOOLEAN (ActivityType);
 
+attendees 'Attendees' = DATA BOOLEAN (ActivityType);
+
 FORM activityType 'Activity type'
     OBJECTS o = ActivityType PANEL
-    PROPERTIES(o) name, id, time, till SHOWIF time(o)
+    PROPERTIES(o) name, id, time, till SHOWIF time(o), attendees
 
     EDIT ActivityType OBJECT o;
 ;
@@ -31,13 +33,13 @@ DESIGN activityType {
 
 FORM activityTypees 'Activity types'
     OBJECTS o = ActivityType
-    PROPERTIES(o) READONLY name, id, time, till
+    PROPERTIES(o) READONLY name, id, time, till, attendees
     LIST ActivityType OBJECT o
 ;
 
 EXTEND FORM options
     OBJECTS at = ActivityType
-    PROPERTIES(at) READONLY name, id, time, till
+    PROPERTIES(at) READONLY name, id, time, till, attendees
     PROPERTIES(at) NEWSESSION NEW, EDIT, DELETE
 ;
 

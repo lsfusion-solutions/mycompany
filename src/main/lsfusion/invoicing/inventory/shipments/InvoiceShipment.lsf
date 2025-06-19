@@ -44,7 +44,9 @@ fill ABSTRACT LIST (Shipment, Invoice);
 fill ABSTRACT LIST (ShipmentLine, InvoiceLine);
 invoiceShipmentCreated = DATA LOCAL Shipment ();
 newShipment (Invoice i) {
-    NEW r = Shipment { 
+    NEW r = Shipment {
+        scheduledDateTime(r) <- OVERRIDE deliveryDateTime(i), currentDateTime();
+
         customer(r) <- customer(i);
         department(r) <- department(i);
 

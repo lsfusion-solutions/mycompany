@@ -2,7 +2,8 @@ MODULE Task;
 
 REQUIRE ProjectManagementSettings, Employee,
         Doc, FileUtils, Comments, Activity,
-        TaskType, TaskStatus, TaskPriority, TaskTag;
+        TaskType, TaskStatus, TaskPriority, TaskTag,
+        Assignee;
 
 PRIORITY MasterData;
 
@@ -31,10 +32,12 @@ nameAuthor 'Author' (Task t) = name(author(t));
 WHEN LOCAL SET(Task t IS Task) AND NOT author(t) AND currentUser() IS Employee DO author(t) <- currentUser();
 @definePropertyValue(task, author, 'Author', nameAuthor);
 
-assignedTo 'Assigned to' = DATA Employee (Task);
+assignedTo 'Assigned to' = DATA Assignee (Task);
 nameAssignedTo 'Assigned to' (Task t) = name(assignedTo(t));
 @definePropertyValue(task, assignedTo, 'Assigned to', nameAssignedTo);
 
+assignedTo (Task t, Employee e) = in(assignedTo(t), e) MATERIALIZED; 
+    
 start 'Start date' = DATA DATE (Task);
 @definePropertyValue(task, start, 'Start date');
 start(Task t) <- currentDate() WHEN SET(t IS Task);
@@ -59,6 +62,13 @@ nameType 'Type' (Task t) = name(type(t)) IN id;
 @definePropertyValue(task, type, 'Type', nameType);
 
 WHEN LOCAL SET(Task t IS Task) AND NOT CHANGED(type(t)) DO type(t) <- defaultTaskType();
+
+WHEN LOCAL SETCHANGED(type(Task l)) AND NOT allow(type(l), status(l)) DO
+    status(l) <- firstTaskStatus(type(l));
+
+CONSTRAINT SETCHANGED(status(Task l)) AND type(l) AND NOT allow(type(l), status(l))
+    CHECKED BY status[Task]
+    MESSAGE 'Status is not allowed for the selected type';
 
 priority 'Priority' = DATA TaskPriority (Task);
 namePriority 'Priority' (Task t) = name(priority(t));
@@ -139,7 +149,7 @@ DESIGN task {
 
 showTask (LONG id) {
     FOR LONG(Task t AS Task) = id DO
-        SHOW task OBJECTS t = t DOCKED;
+        SHOW task OBJECTS t = t DOCKED MANAGESESSION;
 } @@api;
 
 FORM tasks '{Tasks}'
@@ -156,7 +166,7 @@ FORM tasks '{Tasks}'
 
     FILTERGROUP my
         FILTER 'My tasks' author(t) = currentUser() 'F6'
-        FILTER 'Assigned to me' assignedTo(t) = currentUser() 'F5'
+        FILTER 'Assigned to me' assignedTo(t, currentUser()) 'F5'
 
     LIST Task OBJECT t
 ;
