@@ -4,11 +4,21 @@ REQUIRE SalesOrder;
 
 NAMESPACE Sales;
 
+newOrder 'Add' (Partner p) {
+    NEWSESSION {
+        NEW o = Order {
+            customer(o) <- p;
+            SHOW order OBJECTS o = o DOCKED;
+        }
+    }
+} IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+
 EXTEND FORM partner
     OBJECTS sl = Order
     PROPERTIES(sl) READONLY number, dateTime, imagedNameStatus BACKGROUND colorStatus(sl), scheduledDateTime, nameRepresentative
     PROPERTIES(sl) READONLY untaxedAmount, taxAmount, amount
-    PROPERTIES(sl) NEWSESSION EDIT
+    PROPERTIES(p) newSalesOrder = newOrder DRAW sl TOOLBAR SHOWIF PREV(p IS Partner)
+    PROPERTIES(sl) NEWSESSION EDIT, DELETE
     FILTERS customer(sl) = p
 ;
 
