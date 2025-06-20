@@ -4,11 +4,21 @@ REQUIRE PurchaseOrder;
 
 NAMESPACE Purchase;
 
+newOrder 'Add' (Partner p) {
+    NEWSESSION {
+        NEW o = Order {
+            vendor(o) <- p;
+            SHOW order OBJECTS o = o DOCKED;
+        }
+    }
+} IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+
 EXTEND FORM partner
     OBJECTS pl = Order
     PROPERTIES(pl) READONLY number, dateTime, imagedNameStatus BACKGROUND colorStatus(pl), scheduledDateTime, nameLocation
     PROPERTIES(pl) READONLY untaxedAmount, taxAmount, amount
-    PROPERTIES(pl) NEWSESSION EDIT
+    PROPERTIES(p) newPurchaseOrder = newOrder DRAW pl TOOLBAR SHOWIF PREV(p IS Partner) 
+    PROPERTIES(pl) NEWSESSION EDIT, DELETE
     FILTERS vendor(pl) = p
 ;
 
