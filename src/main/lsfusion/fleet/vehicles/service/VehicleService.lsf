@@ -1,0 +1,128 @@
+MODULE VehicleService;
+
+REQUIRE Vehicle, VehicleServiceType;
+
+NAMESPACE Fleet;
+
+CLASS VehicleService 'Vehicle service';
+
+vehicle 'Vehicle' = DATA Vehicle (VehicleService) NONULL DELETE INDEXED;
+nameVehicle 'Vehicle' (VehicleService s) = name(vehicle(s));
+
+countVehicleServices 'Vehicle services' (Vehicle v) = GROUP SUM 1 IF vehicle(VehicleService s) = v;
+
+date 'Date' = DATA DATE (VehicleService);
+date(VehicleService e) <- currentDate() WHEN SET(e IS VehicleService);
+
+vendor 'Vendor' = DATA Partner (VehicleService);
+nameVendor 'Vendor' (VehicleService s) = name(vendor(s));
+
+type 'Type' = DATA VehicleServiceType (VehicleService);
+nameType 'Type' (VehicleService v) = name(type(v));
+
+odometerValue 'Odometer value' = DATA INTEGER (VehicleService);
+
+cost 'Cost' = DATA NUMERIC[14,2] (VehicleService);
+
+note 'Note' = DATA ISTRING (VehicleService) CHARWIDTH 30;
+
+description 'Description' = DATA RICHTEXT (VehicleService);
+
+lastVehicleService (Vehicle v, VehicleService vs) = GROUP LAST VehicleService s ORDER date(s), s WHERE s != vs BY vehicle(s);
+WHEN LOCAL SETCHANGED(vehicle(VehicleService s)) DO {
+    vendor(s) <- vendor(lastVehicleService(vehicle(s), s));
+    odometerValue(s) <- odometerValue(lastVehicleService(vehicle(s), s));
+}
+
+FORM vehicleService 'Vehicle service'
+    OBJECTS s = VehicleService PANEL
+    PROPERTIES(s) nameVehicle, date, nameVendor, nameType, odometerValue, cost, note, description
+
+    EDIT VehicleService OBJECT s
+;
+
+DESIGN vehicleService {
+    OBJECTS {
+        NEW actions {
+            caption = 'Actions';
+            horizontal = TRUE;
+            alignment = STRETCH;
+        }
+        NEW header {
+            lines = 2;
+            MOVE PROPERTY(nameVehicle(s));
+            MOVE PROPERTY(date(s));
+            MOVE PROPERTY(nameVendor(s));
+            MOVE PROPERTY(nameType(s));
+            MOVE PROPERTY(odometerValue(s));
+            MOVE PROPERTY(cost(s));
+        }
+        MOVE PROPERTY(note(s));
+        NEW details {
+            fill = 1;
+            tabbed = TRUE;
+            MOVE PROPERTY(description(s));
+        }
+    }
+}
+
+FORM vehicleServices 'Vehicle services'
+    OBJECTS s = VehicleService
+    PROPERTIES(s) READONLY nameVehicle, date, nameVendor, nameType, odometerValue, cost, note
+    PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
+
+    LIST VehicleService OBJECT s
+;
+
+NAVIGATOR {
+    operations {
+        NEW vehicleServices;
+    }
+}
+
+clone ABSTRACT LIST (VehicleService, VehicleService);
+clone (VehicleService to, VehicleService from) + {
+    vehicle(to) <- vehicle(from);
+    date(to) <- date(from);
+    vendor(to) <- vendor(from);
+    type(to) <- type(from);
+    odometerValue(to) <- odometerValue(from);
+    cost(to) <- cost(from);
+    note(to) <- note(from);
+    description(to) <- description(from);
+}
+
+copy 'Copy' (VehicleService from)  {
+    NEWSESSION {
+        NEW to = VehicleService {
+            clone(to, from);
+            SHOW vehicleService OBJECTS s = to DOCKED;
+        }
+    }
+}
+
+EXTEND FORM vehicleService PROPERTIES(s) copy;
+DESIGN vehicleService {
+    actions {
+        MOVE PROPERTY(copy(s));
+    }
+}
+
+// vehicle form
+EXTEND FORM vehicle
+    OBJECTS s = VehicleService
+    PROPERTIES(s) date, nameVendor, nameType, odometerValue, cost, note
+    PROPERTIES(s) NEW, DELETE
+    
+    FILTERS vehicle(s) = v
+;
+
+DESIGN vehicle {
+    details {
+        fill = 1;
+        tabbed = TRUE;
+        MOVE BOX(s) {
+            caption = badged('Vehicle services', countVehicleServices(v));
+        }
+    }
+}

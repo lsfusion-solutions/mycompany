@@ -1,6 +1,6 @@
 MODULE Vehicle;
 
-REQUIRE VehicleModel, Company;
+REQUIRE VehicleModel, Company, Icon;
 
 NAMESPACE Fleet;
 
@@ -47,17 +47,44 @@ nameModel 'Vehicle model' (Vehicle v) = name(model(v));
 
 licensePlate 'License plate' = DATA STRING[20] (Vehicle);
 
+name '{Name}' (Vehicle v) = CONCAT ' / ', nameModel(v), licensePlate(v) CHARWIDTH 25;
+
 VIN r'VIN' = DATA STRING[17] (Vehicle);
 
 company 'Company' = DATA Company (Vehicle);
 nameCompany 'Company' (Vehicle v) = name(company(v));
 
+description 'Description' = DATA RICHTEXT (Vehicle);
+
 FORM vehicle 'Vehicle'
     OBJECTS v = Vehicle PANEL
-    PROPERTIES(v) id, nameModel, licensePlate, VIN, nameCompany
+    PROPERTIES(v) id, nameModel, licensePlate, VIN, nameCompany, description
 
     EDIT Vehicle OBJECT v
 ;
+
+DESIGN vehicle {
+    OBJECTS {
+        NEW actions {
+            caption = 'Actions';
+            horizontal = TRUE;
+            alignment = STRETCH;
+        }
+        NEW header {
+            lines = 2;
+            MOVE PROPERTY(id(v));
+            MOVE PROPERTY(nameModel(v));
+            MOVE PROPERTY(licensePlate(v));
+            MOVE PROPERTY(VIN(v));
+            MOVE PROPERTY(nameCompany(v));
+        }
+        NEW details {
+            fill = 1;
+            tabbed = TRUE;
+            MOVE PROPERTY(description(v));
+        }
+    }
+}
 
 FORM vehicles 'Vehicles'
     OBJECTS v = Vehicle
