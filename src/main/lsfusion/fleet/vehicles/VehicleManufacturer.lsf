@@ -1,0 +1,30 @@
+MODULE VehicleManufacturer;
+
+REQUIRE FleetSettings, MetaNumerator;
+
+NAMESPACE Fleet;
+
+CLASS VehicleManufacturer 'Vehicle manufacturer';
+
+name '{Name}' = DATA ISTRING (VehicleManufacturer) CHARWIDTH 20 IN id;
+
+FORM vehicleManufacturer 'Vehicle manufacturer'
+    OBJECTS m = VehicleManufacturer PANEL
+    PROPERTIES(m) name
+
+    EDIT VehicleManufacturer OBJECT m
+;
+
+FORM vehicleManufacturers 'Vehicle manufacturers'
+    OBJECTS m = VehicleManufacturer
+    PROPERTIES(m) READONLY name
+    PROPERTIES(m) NEWSESSION NEW, EDIT, DELETE
+
+    LIST VehicleManufacturer OBJECT m
+;
+
+NAVIGATOR {
+    settings {
+        NEW vehicleManufacturers;
+    }
+}

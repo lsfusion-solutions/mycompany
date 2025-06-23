@@ -1,0 +1,40 @@
+MODULE VehicleModel;
+
+REQUIRE VehicleManufacturer;
+
+NAMESPACE Fleet;
+
+CLASS VehicleModel 'Vehicle model';
+
+modelName 'Vehicle model' = DATA ISTRING (VehicleModel) CHARWIDTH 20 IN id;
+
+manufacturer 'Vehicle manufacturer' = DATA VehicleManufacturer (VehicleModel);
+nameManufacturer 'Vehicle manufacturer' (VehicleModel m) = name(manufacturer(m));
+
+name '{Name}' (VehicleModel m) = CONCAT ' / ', nameManufacturer(m), modelName(m); 
+
+FORM vehicleModel 'Vehicle model'
+    OBJECTS m = VehicleModel PANEL
+    PROPERTIES(m) nameManufacturer, modelName
+
+    EDIT VehicleModel OBJECT m
+;
+
+FORM vehicleModels 'Vehicle models'
+    OBJECTS t = VehicleModel
+    PROPERTIES(t) READONLY nameManufacturer, modelName
+    PROPERTIES(t) NEWSESSION NEW, EDIT, DELETE
+;
+
+FORM dialogVehicleModels 'Vehicle models'
+    OBJECTS t = VehicleModel
+    PROPERTIES(t) READONLY name
+
+    LIST VehicleModel OBJECT t
+;
+
+NAVIGATOR {
+    settings {
+        NEW vehicleModels;
+    }
+}
