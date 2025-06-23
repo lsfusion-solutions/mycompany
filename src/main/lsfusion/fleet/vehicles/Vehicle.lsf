@@ -1,6 +1,6 @@
 MODULE Vehicle;
 
-REQUIRE VehicleModel;
+REQUIRE VehicleModel, Company;
 
 NAMESPACE Fleet;
 
@@ -49,16 +49,19 @@ licensePlate 'License plate' = DATA STRING[20] (Vehicle);
 
 VIN r'VIN' = DATA STRING[17] (Vehicle);
 
+company 'Company' = DATA Company (Vehicle);
+nameCompany 'Company' (Vehicle v) = name(company(v));
+
 FORM vehicle 'Vehicle'
     OBJECTS v = Vehicle PANEL
-    PROPERTIES(v) id, nameModel, licensePlate, VIN
+    PROPERTIES(v) id, nameModel, licensePlate, VIN, nameCompany
 
     EDIT Vehicle OBJECT v
 ;
 
 FORM vehicles 'Vehicles'
     OBJECTS v = Vehicle
-    PROPERTIES(v) READONLY id, nameModel, licensePlate, VIN
+    PROPERTIES(v) READONLY id, nameModel, licensePlate, VIN, nameCompany
     PROPERTIES(v) NEWSESSION NEW, EDIT, DELETE
 ;
 
