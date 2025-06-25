@@ -1,0 +1,41 @@
+MODULE ContractCost;
+
+REQUIRE Contract;
+
+NAMESPACE MasterData;
+
+cost 'Cost' = DATA BOOLEAN (ContractType);
+EXTEND FORM contractType PROPERTIES(o) cost;
+
+costType 'Cost' (Contract c) = cost(type(c));
+
+activationCost 'Activation cost' = DATA NUMERIC[14,2] (Contract);
+
+recurringCost 'Recurring cost' = DATA NUMERIC[14,2] (Contract);
+
+recurringPeriod 'Recurring period' = DATA DatePeriod (Contract);
+idRecurringPeriod (Contract c) = id(recurringPeriod(c));
+nameRecurringPeriod 'Recurring period' (Contract c) = name(recurringPeriod(c));
+
+EXTEND FORM contract
+    PROPERTIES(c) activationCost, recurringCost, '' = nameRecurringPeriod
+;
+
+DESIGN contract {
+    headerRight {
+        NEW cost {
+            showIf = costType(c);
+            caption = 'Cost';
+            MOVE PROPERTY(activationCost(c));
+            NEW recurring {
+                horizontal = TRUE;
+                MOVE PROPERTY(recurringCost(c));
+                MOVE PROPERTY(nameRecurringPeriod(c));
+            }
+        }
+    }
+}
+
+EXTEND FORM contracts
+    PROPERTIES(c) READONLY activationCost, recurringCost, nameRecurringPeriod
+;

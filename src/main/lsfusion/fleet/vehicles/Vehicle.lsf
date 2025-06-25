@@ -6,41 +6,7 @@ NAMESPACE Fleet;
 
 CLASS Vehicle 'Vehicle';
 
-@defineID(vehicle, 'Vehicles', 'VH', 3){
-    id '{ID}' = DATA STRING[50] (Vehicle) IN id CHARWIDTH 3 INDEXED;
-    vehicle (STRING[50] id) = GROUP AGGR Vehicle o BY id(o);
-    
-    numeratorVehicle = DATA Numerator();
-    nameNumeratorVehicle 'Numerator - Vehicles' = name(numeratorVehicle());
-    
-    loadDefaultNumerators () + {
-        IF NOT GROUP SUM 1 IF name(Numerator n) = 'Vehicles' THEN {
-            NEW n = Numerator {
-                name(n) <- 'Vehicles';
-                series(n) <- 'VH';
-                minValue(n) <- 1;
-                maxValue(n) <- 999999;
-                stringLength(n) <- 3;
-                numeratorVehicle() <- n;
-            }
-        }
-    }
-    
-    EXTEND FORM options 
-        PROPERTIES nameNumeratorVehicle()
-    ;
-    
-    DESIGN options {
-        commons {
-            MOVE PROPERTY(nameNumeratorVehicle());
-        }
-    }
-    
-    WHEN SETCHANGED(Vehicle o IS Vehicle AND numeratorVehicle() AND NOT id(o)) DO {
-        id(o) <- CONCAT '', series(numeratorVehicle()), curStringValue(numeratorVehicle());
-        incrementValueSession(numeratorVehicle());   
-    }
-};
+@defineID(vehicle, 'Vehicles', 'VH', 3);
 
 model 'Vehicle model' = DATA VehicleModel (Vehicle);
 nameModel 'Vehicle model' (Vehicle v) = name(model(v));
