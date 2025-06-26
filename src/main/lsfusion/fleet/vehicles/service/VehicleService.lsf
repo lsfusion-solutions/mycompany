@@ -22,7 +22,15 @@ nameType 'Type' (VehicleService v) = name(type(v));
 
 odometerValue 'Odometer value' = DATA INTEGER (VehicleService);
 
-cost 'Cost' = DATA NUMERIC[14,2] (VehicleService);
+quantity 'Qty' = DATA NUMERIC[16,3] (VehicleService);
+price 'Price' = DATA NUMERIC[10,2] (VehicleService);
+
+untaxedAmount '{Amount}' = DATA NUMERIC[14,2] (VehicleService);
+WHEN LOCAL CHANGED(quantity(VehicleService l)) OR CHANGED(price(l)) DO {
+    untaxedAmount(l) <- NUMERIC[14,2](quantity(l) * price(l));
+}
+
+taxAmount 'Tax' = DATA NUMERIC[14,2] (VehicleService);
 
 note 'Note' = DATA ISTRING (VehicleService) CHARWIDTH 30;
 
@@ -36,7 +44,7 @@ WHEN LOCAL SETCHANGED(vehicle(VehicleService s)) DO {
 
 FORM vehicleService 'Vehicle service'
     OBJECTS s = VehicleService PANEL
-    PROPERTIES(s) nameVehicle, date, nameVendor, nameType, odometerValue, cost, note, description
+    PROPERTIES(s) nameVehicle, date, nameVendor, nameType, odometerValue, quantity, price, untaxedAmount, taxAmount, note, description
 
     EDIT VehicleService OBJECT s
 ;
@@ -55,7 +63,7 @@ DESIGN vehicleService {
             MOVE PROPERTY(nameVendor(s));
             MOVE PROPERTY(nameType(s));
             MOVE PROPERTY(odometerValue(s));
-            MOVE PROPERTY(cost(s));
+            MOVE PROPERTY(untaxedAmount(s));
         }
         MOVE PROPERTY(note(s));
         NEW details {
@@ -68,7 +76,7 @@ DESIGN vehicleService {
 
 FORM vehicleServices 'Vehicle services'
     OBJECTS s = VehicleService
-    PROPERTIES(s) READONLY nameVehicle, date, nameVendor, nameType, odometerValue, cost, note
+    PROPERTIES(s) READONLY nameVehicle, date, nameVendor, nameType, odometerValue, quantity, price, untaxedAmount, taxAmount, note
     PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
 
     LIST VehicleService OBJECT s
@@ -87,7 +95,7 @@ clone (VehicleService to, VehicleService from) + {
     vendor(to) <- vendor(from);
     type(to) <- type(from);
     odometerValue(to) <- odometerValue(from);
-    cost(to) <- cost(from);
+    untaxedAmount(to) <- untaxedAmount(from);
     note(to) <- note(from);
     description(to) <- description(from);
 }
@@ -111,7 +119,7 @@ DESIGN vehicleService {
 // vehicle form
 EXTEND FORM vehicle
     OBJECTS s = VehicleService
-    PROPERTIES(s) date, nameVendor, nameType, odometerValue, cost, note
+    PROPERTIES(s) date, nameVendor, nameType, odometerValue, quantity, price, untaxedAmount, taxAmount, note
     PROPERTIES(s) NEW, DELETE
     
     FILTERS vehicle(s) = v
@@ -119,8 +127,6 @@ EXTEND FORM vehicle
 
 DESIGN vehicle {
     details {
-        fill = 1;
-        tabbed = TRUE;
         MOVE BOX(s) {
             caption = badged('Vehicle services', countVehicleServices(v));
         }
