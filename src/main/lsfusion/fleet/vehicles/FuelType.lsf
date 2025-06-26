@@ -1,0 +1,36 @@
+MODULE FuelType;
+
+REQUIRE FleetSettings, MasterData;
+
+NAMESPACE Fleet;
+
+CLASS FuelType 'Fuel type';
+TABLE fuelType (FuelType);
+
+name '{master.data.name}' = DATA ISTRING[100] (FuelType) CHARWIDTH 15;
+
+FORM fuelType 'Fuel type'
+    OBJECTS o = FuelType PANEL
+    PROPERTIES(o) name
+    
+    EDIT FuelType OBJECT o
+;
+
+EXTEND FORM options
+    OBJECTS ftp = FuelType
+    PROPERTIES(ftp) READONLY name
+    PROPERTIES(ftp) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(ftp) { caption = 'Fuel types'; }
+    }
+}
+
+FORM dialogFuelTypes 'Fuel types'
+    OBJECTS o = FuelType
+    PROPERTIES(o) READONLY name
+    
+    LIST FuelType OBJECT o
+;

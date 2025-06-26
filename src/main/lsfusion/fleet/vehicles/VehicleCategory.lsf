@@ -1,0 +1,36 @@
+MODULE VehicleCategory;
+
+REQUIRE FleetSettings;
+
+NAMESPACE Fleet;
+
+CLASS VehicleCategory 'Vehicle category';
+TABLE vehicleCategory (VehicleCategory);
+
+name '{master.data.name}' = DATA ISTRING[100] (VehicleCategory) CHARWIDTH 15;
+
+FORM vehicleCategory 'Vehicle category'
+    OBJECTS o = VehicleCategory PANEL
+    PROPERTIES(o) name
+
+    EDIT VehicleCategory OBJECT o
+;
+
+EXTEND FORM options
+    OBJECTS vhc = VehicleCategory
+    PROPERTIES(vhc) READONLY name
+    PROPERTIES(vhc) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(vhc) { caption = 'Vehicle categories'; }
+    }
+}
+
+FORM dialogVehicleCategories 'Vehicle categories'
+    OBJECTS o = VehicleCategory
+    PROPERTIES(o) READONLY name
+
+    LIST VehicleCategory OBJECT o
+;
