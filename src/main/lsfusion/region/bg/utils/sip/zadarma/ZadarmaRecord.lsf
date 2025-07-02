@@ -1,32 +1,8 @@
 MODULE ZadarmaRecord;
 
-REQUIRE Zadarma, Call;
+REQUIRE Zadarma, Call, Audio;
 
 NAMESPACE Zadarma;
-
-FORM playRecordRemote 'Record'
-    OBJECTS s = STRING PANEL
-    PROPERTIES(s) player = VALUE CUSTOM 'playRecord'
-;
-
-DESIGN playRecordRemote 'Record' {
-    width = 800;
-    OBJECTS {
-        MOVE PROPERTY(player) { fill = 1; }
-    }
-}
-
-recordLocal = DATA LOCAL RAWFILE();
-
-FORM playRecordLocal 'Record'
-    PROPERTIES() player '' = recordLocal CUSTOM 'playRecord'
-;
-DESIGN playRecordLocal 'Record' {
-    width = 800;
-    OBJECTS {
-        MOVE PROPERTY(player) { fill = 1; }
-    }
-}
 
 links = DATA LOCAL STRING(INTEGER);
 
@@ -38,20 +14,20 @@ FORM requestRecord
 playRecordRemotely 'Play record remotely' = DATA BOOLEAN ();
 
 EXTEND FORM integrationData
-    PROPERTIES() playRecordRemotely
+    PROPERTIES() zadarmaPlayRecordRemotely = playRecordRemotely
 ;
 
 DESIGN integrationData {
     zadarmaHeader {
-        MOVE PROPERTY(playRecordRemotely());
+        MOVE PROPERTY(zadarmaPlayRecordRemotely);
     }
 }
 
-apiRequestRecord (STRING id) {
-    apiGet('/v1/pbx/record/request/', 'pbx_call_id=' + id);
+requestRecord(Call c) + {
+    apiGet('/v1/pbx/record/request/', 'pbx_call_id=' + id(c));
 
     IMPORT requestRecord JSON FROM apiResponse();
-    
+
     FOR links(INTEGER i) DO {
         IF playRecordRemotely() THEN {
             SHOW playRecordRemote OBJECTS s = links(i) FLOAT WAIT;
@@ -61,5 +37,3 @@ apiRequestRecord (STRING id) {
         }
     }
 }
-
-requestRecord(Call c) + { apiRequestRecord(id(c)); }

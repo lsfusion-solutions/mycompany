@@ -1,0 +1,87 @@
+MODULE MangoPBX;
+
+REQUIRE Mango;
+
+NAMESPACE Mango;
+
+CLASS PBXUser 'PBX user';
+
+extension 'Extension' = DATA STRING[20] (PBXUser);
+pbxUser (STRING[10] id) = GROUP AGGR PBXUser pn BY extension(pn);
+
+name 'Extension' = DATA STRING (PBXUser);
+
+EXTEND FORM integrationData
+    OBJECTS pbxU = PBXUser
+    PROPERTIES(pbxU) READONLY extension, name
+;
+
+DESIGN integrationData {
+    mangoPane {
+        NEW mangoPBX {
+            caption = 'PBX';
+            NEW mangoPBXHeader {
+                horizontal = TRUE;
+            }
+            MOVE BOX(pbxU);
+        }
+    }
+}
+
+// import
+GROUP general;
+GROUP telephony;
+
+name = DATA LOCAL STRING(INTEGER);
+position = DATA LOCAL STRING(INTEGER);
+department = DATA LOCAL STRING(INTEGER);
+email = DATA LOCAL STRING(INTEGER);
+outgoingline = DATA LOCAL STRING(INTEGER);
+extension = DATA LOCAL STRING(INTEGER);
+usersNumbers = DATA LOCAL INTEGER(INTEGER);
+number = DATA LOCAL STRING(INTEGER);
+protocol = DATA LOCAL STRING(INTEGER);
+wait_sec = DATA LOCAL STRING(INTEGER);
+order = DATA LOCAL STRING(INTEGER);
+status = DATA LOCAL STRING(INTEGER);
+
+FORM getPBX
+    OBJECTS users = INTEGER
+
+    PROPERTIES(users) IN general name, position, department, email
+    FILTERS imported(users)
+    PROPERTIES(users) IN telephony outgoingline, extension
+
+    OBJECTS numbers = INTEGER IN telephony
+    FILTERS usersNumbers(numbers) == users
+    PROPERTIES(numbers) number, protocol, wait_sec, order, status
+    FILTERS imported(numbers)
+;
+
+apiGetPBX 'Get PBX' () {
+    NEWSESSION {
+        apiGet('config/users/request', NULL);
+
+        IMPORT getPBX JSON FROM apiResponse();
+
+        FOR imported(INTEGER user) AND NOT pbxUser(extension(user)) DO NEW p = PBXUser {
+            extension(p) <- STRING[20](extension(user));
+        }
+
+        FOR imported(INTEGER user) AND PBXUser p = pbxUser(extension(user)) DO {
+            name(p) <- name(user);
+        }
+
+        APPLY;
+    }
+}
+
+EXTEND FORM integrationData
+    PROPERTIES() apiGetPBX
+;
+
+DESIGN integrationData {
+    mangoPBXHeader {
+        MOVE PROPERTY(apiGetPBX());
+    }
+}

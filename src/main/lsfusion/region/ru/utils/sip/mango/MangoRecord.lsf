@@ -1,0 +1,55 @@
+MODULE MangoRecord;
+
+REQUIRE Mango, Call, Audio;
+
+NAMESPACE Mango;
+
+recording_id = DATA LOCAL STRING();
+recording_state = DATA LOCAL STRING();
+completion_code = DATA LOCAL INTEGER();
+
+FORM eventsRecording
+    PROPERTIES() recording_id, extension, recording_state, entry_id, seq, call_id, timestamp, completion_code
+;
+
+recordingId = DATA STRING (Call);
+
+mango_events_recording (STRING vpbx_api_key, STRING sign, JSON json) {
+    logToFile('mango', CONCAT ' : ', 'Event call', STRING(json));
+
+    IMPORT eventsRecording JSON FROM json;
+
+    NEWSESSION {
+        CASE
+            WHEN recording_state() = r'Completed' THEN {
+                FOR id(Call c) = entry_id() DO {
+                    recorded(c) <- completion_code() = 1000;
+                    recordingId(c) <- recording_id();
+                }
+            }
+        APPLY;
+    }
+} @@api @@noauth;
+
+playRecordRemotely 'Play record remotely' = DATA BOOLEAN ();
+
+EXTEND FORM integrationData
+    PROPERTIES() mangoPlayRecordRemotely = playRecordRemotely
+;
+
+DESIGN integrationData {
+    mangoHeader {
+        MOVE PROPERTY(mangoPlayRecordRemotely);
+    }
+}
+
+requestRecord(Call c) + {
+    apiPost('queries/recording/post', JSON FROM recording_id = recordingId(c), action = 'play');
+
+    IF playRecordRemotely() THEN {
+        SHOW playRecordRemote OBJECTS s = headersTo('Location') FLOAT WAIT;
+    } ELSE {
+        READ headersTo('Location') TO recordLocal;
+        SHOW playRecordLocal FLOAT WAIT;
+    }
+}
