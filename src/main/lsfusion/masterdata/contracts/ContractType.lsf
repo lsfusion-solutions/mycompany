@@ -1,0 +1,43 @@
+MODULE ContractType;
+
+REQUIRE MasterDataSettings;
+
+NAMESPACE MasterData;
+
+CLASS ContractType 'Contract type';
+name '{Name}' = DATA ISTRING[50] (ContractType) NONULL CHARWIDTH 15;
+
+id '{ID}' = DATA STRING[20] (ContractType);
+contractType = GROUP AGGR ContractType t BY id(t);
+
+FORM contractType 'Contract type'
+    OBJECTS o = ContractType PANEL
+    PROPERTIES(o) name, id
+
+    EDIT ContractType OBJECT o;
+;
+
+FORM contractTypes 'Contract types'
+    OBJECTS o = ContractType
+    PROPERTIES(o) READONLY name, id
+
+    LIST ContractType OBJECT o;
+;
+
+EXTEND FORM options
+    OBJECTS cnt = ContractType
+    PROPERTIES(cnt) READONLY name, id
+    PROPERTIES(cnt) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(cnt);
+    }
+}
+
+// default type
+countContractTypes 'Number of types' () = GROUP SUM 1 IF r IS ContractType;
+firstContractType = GROUP LAST ContractType r ORDER DESC r WHERE r IS ContractType;
+
+defaultContractType = firstContractType() IF countContractTypes() = 1;

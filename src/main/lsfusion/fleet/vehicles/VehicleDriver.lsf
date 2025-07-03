@@ -1,0 +1,77 @@
+MODULE VehicleDriver;
+
+REQUIRE Vehicle, Employee;
+
+NAMESPACE Fleet;
+
+CLASS VehicleDriver '{Vehicle_driver}';
+
+vehicle 'Vehicle' = DATA Vehicle (VehicleDriver) NONULL DELETE INDEXED;
+nameVehicle 'Vehicle' (VehicleDriver s) = name(vehicle(s));
+
+countVehicleDrivers '{Vehicle_drivers}' (Vehicle v) = GROUP SUM 1 IF vehicle(VehicleDriver s) = v;
+
+date 'Date' = DATA DATE (VehicleDriver);
+date(VehicleDriver e) <- currentDate() WHEN SET(e IS VehicleDriver);
+
+toDate 'Date to' = DATA DATE (VehicleDriver);
+
+employee 'Employee' = DATA Employee (VehicleDriver);
+nameEmployee 'Employee' (VehicleDriver s) = name(employee(s));
+
+odometerValue 'Odometer value' = DATA INTEGER (VehicleDriver);
+
+note 'Note' = DATA ISTRING (VehicleDriver) CHARWIDTH 30;
+
+lastVehicleDriver (Vehicle v, VehicleDriver vd) = GROUP LAST VehicleDriver d ORDER date(d), d WHERE d != vd BY vehicle(d);
+WHEN LOCAL SETCHANGED(vehicle(VehicleDriver d)) DO {
+    employee(d) <- employee(lastVehicleDriver(vehicle(d), d));
+}
+
+FORM vehicleDriver '{Vehicle_driver}'
+    OBJECTS d = VehicleDriver PANEL
+    PROPERTIES(d) nameVehicle, date, toDate, nameEmployee, odometerValue, note
+
+    EDIT VehicleDriver OBJECT d
+;
+
+FORM vehicleDrivers '{Vehicle_drivers}'
+    OBJECTS d = VehicleDriver
+    PROPERTIES(d) READONLY nameVehicle, date, toDate, nameEmployee, odometerValue, note
+    PROPERTIES(d) NEWSESSION NEW, EDIT, DELETE
+
+    LIST VehicleDriver OBJECT d
+;
+
+NAVIGATOR {
+    operations {
+        NEW vehicleDrivers;
+    }
+}
+
+// vehicle form
+vehicleDriver (Vehicle v, DATE dt) = GROUP LAST VehicleDriver d ORDER date(d), d WHERE vehicle(d) = v AND date(d) <= dt AND NOT toDate(d) < dt;
+vehicleDriver (Vehicle v) = vehicleDriver(v, currentDate());
+
+driver (Vehicle v) = employee(vehicleDriver(v));
+nameDriver '{Vehicle_driver}' (Vehicle v) = name(driver(v));
+
+EXTEND FORM vehicle
+    OBJECTS d = VehicleDriver
+    PROPERTIES(d) date, toDate, nameEmployee, odometerValue, note
+    PROPERTIES(d) NEW, DELETE
+
+    FILTERS vehicle(d) = v
+;
+
+DESIGN vehicle {
+    details {
+        MOVE BOX(d) {
+            caption = badged('{Vehicle_drivers}', countVehicleDrivers(v));
+        }
+    }
+}
+
+EXTEND FORM vehicles
+    PROPERTIES(v) READONLY nameDriver
+;

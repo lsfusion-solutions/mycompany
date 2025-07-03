@@ -1,6 +1,6 @@
 MODULE Contract;
 
-REQUIRE MetaNumerator, Company;
+REQUIRE MetaNumerator, Company, ContractType;
 
 NAMESPACE MasterData;
 
@@ -9,6 +9,12 @@ CLASS Contract 'Contract';
 @defineID(contract, 'Contracts', 'CN', 6);
 
 name '{Name}' = DATA ISTRING[30] (Contract) IN id;
+
+// type
+type 'Type' = DATA ContractType (Contract);
+nameType 'Type' (Contract c) = name(type(c));
+
+WHEN LOCAL SET(Contract c IS Contract) AND NOT CHANGED(type(c)) DO type(c) <- defaultContractType();
 
 date 'Date' = DATA DATE (Contract) NONULL IN id;
 endDate 'End date' = DATA DATE (Contract) IN id;
@@ -32,7 +38,7 @@ countContract (Partner p) = GROUP SUM 1 IF partner(Contract ct) = p;
 
 FORM contract 'Contract'
     OBJECTS c = Contract PANEL
-    PROPERTIES(c) id, name, date, endDate, number, nameCompany, namePartner 
+    PROPERTIES(c) id, name, nameType, date, endDate, number, nameCompany, namePartner 
     
     EDIT Contract OBJECT c
 ;
@@ -41,16 +47,20 @@ DESIGN contract {
     OBJECTS {
         NEW header {
             horizontal = TRUE;
+            alignment = STRETCH;
             NEW headerLeft {
+                fill = 2;
+                width = 400;
                 NEW params {
                     caption = 'Parameters';
-                    horizontal = TRUE;
+                    lines = 2;
                     alignment = STRETCH;
                     MOVE PROPERTY(id(c));
                     MOVE PROPERTY(number(c));
+                    MOVE PROPERTY(nameType(c));
                     MOVE PROPERTY(date(c));
-                    MOVE PROPERTY(endDate(c));
                     MOVE PROPERTY(name(c));
+                    MOVE PROPERTY(endDate(c));
                 }
                 NEW legal {
                     caption = 'Partners';
@@ -60,20 +70,23 @@ DESIGN contract {
                     MOVE PROPERTY(namePartner(c));
                 }
             }
-            NEW headerRight;
+            NEW headerRight {
+                fill = 1;
+                width = 200;
+            }
         }
     }
 }
 
 FORM contracts 'Contracts'
     OBJECTS c = Contract
-    PROPERTIES(c) READONLY id, name, date, endDate, number, nameCompany, namePartner
+    PROPERTIES(c) READONLY id, name, nameType, date, endDate, number, nameCompany, namePartner
     PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE
 ;
 
 FORM dialogContracts 'Contracts'
     OBJECTS c = Contract
-    PROPERTIES(c) READONLY id, name, date, endDate, number, nameCompany, namePartner
+    PROPERTIES(c) READONLY id, name, nameType, date, endDate, number, nameCompany, namePartner
     
     LIST Contract OBJECT c
 ;

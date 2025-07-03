@@ -1,0 +1,74 @@
+MODULE VehicleContract;
+
+REQUIRE Vehicle, ContractCost;
+
+NAMESPACE Fleet;
+
+vehicle 'Vehicle' = DATA BOOLEAN (ContractType);
+EXTEND FORM contractType PROPERTIES(o) vehicle;
+
+vehicleType 'Vehicle' (Contract c) = vehicle(type(c));
+
+vehicle 'Vehicle' = DATA Vehicle (Contract) INDEXED;
+nameVehicle 'Vehicle' (Contract c) = name(vehicle(c));
+
+CONSTRAINT vehicle(Contract c) AND NOT vehicle(type(c))
+    CHECKED BY type[Contract]
+    MESSAGE 'The chosen contract type does not allow to select a vehicle';
+
+EXTEND FORM contract
+    PROPERTIES(c) nameVehicle SHOWIF vehicle(c) OR vehicleType(c)
+;
+
+DESIGN contract {
+    headerLeft {
+        NEW fleet {
+            caption = 'Fleet';
+            MOVE PROPERTY(nameVehicle(c));
+        }
+    }
+}
+
+countContracts 'Contracts' (Vehicle v) = GROUP SUM 1 IF vehicle(Contract c) = v;
+
+FORM vehicleContracts 'Vehicle contracts'
+    OBJECTS c = Contract
+    PROPERTIES(c) READONLY nameVehicle, id, name, nameType, date, endDate, number, nameCompany, namePartner, 
+                           activationCost, recurringCost, nameRecurringPeriod
+    PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE
+
+    FILTERS vehicleType(c)
+;
+
+NAVIGATOR {
+    operations {
+        NEW vehicleContracts;
+    }
+}
+
+// vehicle form
+newContract 'Add' (Vehicle v) {
+    NESTEDSESSION {
+        NEW c = Contract {
+            vehicle(c) <- v;
+            DIALOG contract OBJECTS c = c DOCKED DO seek(c);
+        }
+    }
+} IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+
+EXTEND FORM vehicle
+    OBJECTS c = Contract
+    PROPERTIES(c) READONLY id, name, nameType, date, endDate, number, nameCompany, namePartner, activationCost, recurringCost, nameRecurringPeriod
+    PROPERTIES(v) newContract DRAW c TOOLBAR
+    PROPERTIES(c) NESTEDSESSION EDIT, DELETE
+
+    FILTERS vehicle(c) = v
+;
+
+DESIGN vehicle {
+    details {
+        MOVE BOX(c) {
+            caption = badged('Contracts', countContracts(v));
+        }
+    }
+}

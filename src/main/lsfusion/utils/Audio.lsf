@@ -1,0 +1,33 @@
+MODULE Audio;
+
+REQUIRE SystemEvents;
+
+NAMESPACE Utils;
+
+FORM playRecordRemote 'Record'
+    OBJECTS s = STRING PANEL
+    PROPERTIES(s) player = VALUE CUSTOM 'playRecord'
+;
+
+DESIGN playRecordRemote 'Record' {
+    width = 800;
+    OBJECTS {
+        MOVE PROPERTY(player) { fill = 1; }
+    }
+}
+
+recordLocal = DATA LOCAL RAWFILE();
+
+FORM playRecordLocal 'Record'
+    PROPERTIES() player '' = recordLocal CUSTOM 'playRecord'
+;
+DESIGN playRecordLocal 'Record' {
+    width = 800;
+    OBJECTS {
+        MOVE PROPERTY(player) { fill = 1; }
+    }
+}
+
+onWebClientInit() + {
+    onWebClientInit('audio.js') <- 1;
+}

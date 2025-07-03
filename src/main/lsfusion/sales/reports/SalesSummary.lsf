@@ -8,23 +8,29 @@ FORM salesSummary 'Sales summary'
     OBJECTS sw 'Sales by week' = SalesLedger PIVOT 'Line Chart' NOSETTINGS
     PROPERTIES(sw) READONLY year, week, markupAmount MEASURE, amount MEASURE
     PIVOT ROWS (year(sw), week(sw))
+    FILTERS NOT skip(sw)
 
     OBJECTS sc 'Sales by customer' = SalesLedger PIVOT 'Bar Chart' NOSETTINGS
     PROPERTIES(sc) READONLY nameCustomer ROW, markupAmount MEASURE, amount MEASURE
+    FILTERS NOT skip(sc)
 
     OBJECTS sls 'Turnover' = SalesLedger PIVOT 'Line Chart' NOSETTINGS
     PROPERTIES(sls) READONLY year, week, nameLocation COLUMN, amount MEASURE
     PIVOT ROWS (year(sls), week(sls))
+    FILTERS NOT skip(sls)
 
     OBJECTS slm 'Income' = SalesLedger PIVOT 'Line Chart' NOSETTINGS
     PROPERTIES(slm) READONLY year, week, nameLocation COLUMN, markupAmount MEASURE
     PIVOT ROWS (year(slm), week(slm))
+    FILTERS NOT skip(slm)
  
     OBJECTS sis 'Turnover' = SalesLedger PIVOT 'Multiple Pie Chart' NOSETTINGS
     PROPERTIES(sis) READONLY level2 ROW, amount MEASURE
+    FILTERS NOT skip(sis)
  
     OBJECTS sim 'Income' = SalesLedger PIVOT 'Multiple Pie Chart' NOSETTINGS
     PROPERTIES(sim) READONLY level2 ROW, markupAmount MEASURE
+    FILTERS NOT skip(sim)
 ;
 
 DESIGN salesSummary {

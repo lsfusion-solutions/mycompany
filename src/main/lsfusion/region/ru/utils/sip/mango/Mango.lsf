@@ -1,0 +1,68 @@
+MODULE Mango;
+
+REQUIRE System, SQLUtils;
+
+NAMESPACE Mango;
+
+// REQUIRE MangoNotify, MangoPBX, MangoEmployeeCall, MangoWebRTC, MangoRecord
+// Notify : https://<url to mycompany>/exec/Mango.notify
+// require pgcrypto extension for the database :
+
+onStarted() +{
+    runSQL('CREATE EXTENSION IF NOT EXISTS pgcrypto;');
+}
+
+customUrl 'Url' = DATA STRING ();
+urlVPBX () = (OVERRIDE customUrl(), 'https://app.mango-office.ru') + '/vpbx/';
+
+apiKey 'Key' = DATA STRING () CHARWIDTH 40;
+apiSecret 'Secret' = DATA STRING () CHARWIDTH 40;
+
+EXTEND FORM integrationData
+    PROPERTIES() customUrl, apiKey, apiSecret
+;
+
+DESIGN integrationData {
+    pane {
+        NEW mango {
+            caption = 'Mango';
+            NEW mangoHeader {
+                lines = 3;
+                MOVE PROPERTY(customUrl());
+                MOVE PROPERTY(apiKey());
+                MOVE PROPERTY(apiSecret());
+            }
+            NEW mangoPane {
+                fill = 1;
+                tabbed = TRUE;
+            }
+        }
+    }
+}
+
+apiSign (STRING key, STRING json, STRING secret) =
+    FORMULA STRING 'digest(($1)||($2)||($3),\'sha256\')';
+
+apiSign (JSON json) = apiSign(apiKey(), STRING(json), apiSecret());
+
+apiResponse = DATA FILE ();
+
+apiGet (STRING method, JSON json) {
+    IF apiKey() THEN
+        EXTERNAL HTTP GET urlVPBX() + method 
+            BODYPARAMNAMES 'vpbx_api_key', 'sign', json 
+            PARAMS apiKey(), apiSign(json), json TO apiResponse;
+}
+
+apiPost (STRING method, JSON json) {
+    IF apiKey() THEN 
+        EXTERNAL HTTP POST urlVPBX() + method
+            BODYPARAMNAMES 'vpbx_api_key', 'sign', json
+            PARAMS apiKey(), apiSign(json), json TO apiResponse;
+}
+
+extension = DATA LOCAL STRING();
+call_id = DATA LOCAL STRING();
+entry_id = DATA LOCAL STRING();
+seq = DATA LOCAL STRING();
+timestamp = DATA LOCAL STRING();

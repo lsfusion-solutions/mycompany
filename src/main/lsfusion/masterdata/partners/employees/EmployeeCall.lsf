@@ -7,7 +7,33 @@ NAMESPACE MasterData;
 redirect = DATA Employee (Call) INDEXED;
 nameRedirect 'Redirect' (Call c) = name(redirect(c));
 
-internal ABSTRACT LIST (Call, Employee);
+notify ABSTRACT LIST (Call, Employee);
+
+incomingNotifyOptions = DATA LOCAL JSON ();
+incomingNotifyAction = DATA LOCAL INTEGER ();
+
+incoming (Call c, Employee e) {
+    IF pushConnection(e) THEN {
+        notify(c, e);
+
+        APPLY NESTED (incomingNotifyOptions, incomingNotifyAction);
+
+        NEWTHREAD NEWSESSION {
+            SHOW call OBJECTS c = c DOCKED;
+        } TO exportInteger;
+        
+        pushNotify(pushConnection(e),
+             incomingNotifyOptions(),
+             action(exportInteger()));
+        
+//        IF incomingNotifyAction() THEN {
+//            pushNotify(pushConnection(e),
+//                       incomingNotifyOptions(),
+//                       action(incomingNotifyAction()));
+//        }
+    }
+}
+
 answer ABSTRACT LIST (Call, Employee);
 
 META defineObjectCall (object, capt, form, fobj, container)
@@ -71,15 +97,13 @@ META defineObjectHooks (object, let, capt, findProp, redirectProp, hintProp)
         }
     }
 
-    internal (Call c, Employee e) +{
-        FOR ###object l = object(c) AND pushConnection(e) DO {
-            NEWTHREAD {
-                SHOW object OBJECTS let = l DOCKED NOWAIT;
-            } TO exportInteger;
-            pushNotify(pushConnection(e),
-                notification('Incoming call',
-                    JSON FROM body = hintProp(l)),
-                action(exportInteger()));
+    notify (Call c, Employee e) +{
+        FOR ###object l = object(c) DO {
+//            NEWTHREAD NEWSESSION {
+//                SHOW object OBJECTS let = l DOCKED NOWAIT;
+//            } TO incomingNotifyAction;
+            
+            incomingNotifyOptions() <- notification('Incoming call', JSON FROM body = hintProp(l));
         }
     }
 END
@@ -87,3 +111,45 @@ END
 answer (Call c, Employee e) +{
     employee(c) <- e;
 }
+
+META extendFormCall (cls, obj, capt, ncls, ncapt)
+    open###cls capt (Call c) {
+        NEWSESSION {
+            SHOW cls OBJECTS obj = cls(c) DOCKED;
+        }
+    }
+    
+    new###ncls ncapt (Call c) {
+        NEWSESSION {
+            NEW o = ###ncls {
+                cls(c) <- o;
+                phone(o) <- caller(c);
+                SHOW cls OBJECTS obj = o;
+            }
+        }
+    } IMAGE 'add.png';
+    
+    EXTEND FORM call
+        PROPERTIES(c) open###cls HEADER name(cls(c)) SHOWIF cls(c),
+                      new###ncls
+    ;
+    
+    DESIGN call {
+        pane {
+            NEW cls {
+                caption = capt;
+                NEW cls###Actions {
+                    horizontal = TRUE;
+                    MOVE PROPERTY(open###cls(c));
+                    MOVE PROPERTY(new###ncls(c)) {
+                        showIf = NOT cls(c);
+                    }
+                }
+            }
+        }
+    }
+END
+
+META extendFormCall (cls, obj, capt)
+    @extendFormCall(cls, obj, capt, cls, capt);
+END

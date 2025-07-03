@@ -33,4 +33,23 @@ start ABSTRACT LIST (Call);
 end ABSTRACT LIST (Call);
 
 recorded 'Recorded' = DATA BOOLEAN (Call);
-requestRecord 'Request record' ABSTRACT LIST (Call); 
+requestRecord 'Request record' ABSTRACT LIST (Call);
+
+FORM call 'Call'
+    OBJECTS c = Call PANEL
+    PROPERTIES(c) READONLY startedAt, caller, callerName SHOWIF callerName(c), recipient
+;
+
+DESIGN call {
+    caption = badged('Call', callerName(c));
+    OBJECTS {
+        NEW header {
+            MOVE PROPERTY(startedAt(c));
+            MOVE PROPERTY(caller(c));
+            MOVE PROPERTY(callerName(c));
+            MOVE PROPERTY(recipient(c));
+        }
+        NEW pane {
+        }
+    }
+}

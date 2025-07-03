@@ -1,0 +1,60 @@
+MODULE BillVehicleService;
+
+REQUIRE Bill, VehicleService;
+
+NAMESPACE Fleet;
+
+vehicle 'Vehicle' = DATA BOOLEAN (BillType);
+EXTEND FORM billType PROPERTIES(o) vehicle;
+
+bill 'Bill' = DATA Bill (VehicleService) INDEXED;
+numberDateBill 'Bill' (VehicleService s) = numberDate(bill(s));
+
+countVehicleServices 'Vehicle services' (Bill b) = GROUP SUM 1 IF bill(VehicleService s) = b;
+
+untaxedAmountService (Bill b) = GROUP SUM untaxedAmount(VehicleService vs) IF bill(vs) = b;
+taxAmountService (Bill b) = GROUP SUM taxAmount(VehicleService vs) IF bill(vs) = b;
+
+WHEN LOCAL SETCHANGED(bill(VehicleService s)) AND NOT date(s) DO { date(s) <- date(bill(s)); }
+WHEN LOCAL SETCHANGED(bill(VehicleService s)) AND NOT vendor(s) DO { vendor(s) <- vendor(bill(s)); }
+WHEN LOCAL SETCHANGED(bill(VehicleService s)) AND NOT untaxedAmount(s) DO { untaxedAmount(s) <- untaxedAmount(bill(s)); }
+WHEN LOCAL SETCHANGED(bill(VehicleService s)) AND NOT taxAmount(s) DO { taxAmount(s) <- taxAmount(bill(s)); }
+
+EXTEND FORM vehicle
+    PROPERTIES(s) numberDateBill
+;
+
+EXTEND FORM vehicleService
+    PROPERTIES(s) numberDateBill
+;
+
+DESIGN vehicleService {
+    header {
+        MOVE PROPERTY(numberDateBill(s));
+    }
+}
+
+EXTEND FORM vehicleServices
+    PROPERTIES(s) READONLY numberDateBill
+;
+
+// bill
+EXTEND FORM bill
+    OBJECTS vs = VehicleService
+    PROPERTIES(vs) date, nameVendor, nameVehicle, nameType, odometerValue, quantity, price, 
+                   untaxedAmount FOOTER untaxedAmountService(b), 
+                   taxAmount FOOTER taxAmountService(b), 
+                   note
+    PROPERTIES(vs) NEW, DELETE
+
+    FILTERS bill(vs) = b 
+;
+
+DESIGN bill {
+    details {
+        MOVE BOX(vs) {
+            showIf = vehicle(type(b));
+            caption = badged('Vehicle services', countVehicleServices(b));
+        }
+    }
+}

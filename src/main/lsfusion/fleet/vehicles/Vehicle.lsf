@@ -1,0 +1,141 @@
+MODULE Vehicle;
+
+REQUIRE VehicleModel, Company, FuelType, VehicleCategory, FileUtils, Icon;
+
+NAMESPACE Fleet;
+
+CLASS Vehicle 'Vehicle';
+
+readonly = ABSTRACT CASE BOOLEAN (Vehicle);
+
+@defineID(vehicle, 'Vehicles', 'VH', 3);
+
+model 'Vehicle model' = DATA VehicleModel (Vehicle);
+nameModel 'Vehicle model' (Vehicle v) = name(model(v));
+
+licensePlate 'License plate' = DATA STRING[20] (Vehicle);
+
+name '{Name}' (Vehicle v) = CONCAT ' / ', nameModel(v), licensePlate(v) CHARWIDTH 25;
+
+VIN r'VIN' = DATA STRING[17] (Vehicle);
+
+company 'Company' = DATA Company (Vehicle);
+nameCompany 'Company' (Vehicle v) = name(company(v));
+
+vehicleCategory 'Vehicle category' = DATA VehicleCategory (Vehicle);
+nameVehicleCategory 'Vehicle category' (Vehicle v) = name(vehicleCategory(v));
+
+color 'Color' = DATA ISTRING[50] (Vehicle);
+
+yearOfManufacture 'Year of manufacture' = DATA INTEGER (Vehicle);
+
+seatsNumber 'Seats number' = DATA INTEGER (Vehicle);
+doorsNumber 'Doors number' = DATA INTEGER (Vehicle);
+
+engineDisplacement 'Engine displacement, cc' = DATA INTEGER (Vehicle);
+
+automaticTransmission 'Automatic transmission' = DATA BOOLEAN (Vehicle);
+
+fuelType 'Fuel type' = DATA FuelType (Vehicle);
+nameFuelType 'Fuel type' (Vehicle v) = name(fuelType(v));
+
+note 'Note' = DATA ISTRING (Vehicle) CHARWIDTH 20;
+
+description 'Description' = DATA RICHTEXT (Vehicle);
+
+FORM vehicle 'Vehicle'
+    OBJECTS v = Vehicle PANEL
+    PROPERTIES(v) READONLYIF readonly(v)
+                  id, nameModel, licensePlate, VIN, nameCompany,
+                  nameVehicleCategory, color, yearOfManufacture,
+                  seatsNumber, doorsNumber,
+                  automaticTransmission, nameFuelType, engineDisplacement,
+                  note, description
+
+    EDIT Vehicle OBJECT v
+;
+
+DESIGN vehicle {
+    OBJECTS {
+        NEW actions {
+            caption = 'Actions';
+            horizontal = TRUE;
+            alignment = STRETCH;
+        }
+        NEW pane {
+            horizontal = TRUE;
+            fill = 1;
+            NEW leftPane {
+                fill = 2;
+                width = 400;
+                NEW header {
+                    lines = 2;
+                    alignment = STRETCH;
+                    MOVE PROPERTY(id(v));
+                    MOVE PROPERTY(nameModel(v));
+                    MOVE PROPERTY(licensePlate(v));
+                    MOVE PROPERTY(VIN(v));
+                    MOVE PROPERTY(nameCompany(v));
+                }
+                NEW model {
+                    caption = 'Model';
+                    lines = 2;
+                    alignment = STRETCH;
+                    MOVE PROPERTY(nameVehicleCategory(v));
+                    MOVE PROPERTY(color(v));
+                    MOVE PROPERTY(yearOfManufacture(v));
+                    MOVE PROPERTY(seatsNumber(v));
+                    MOVE PROPERTY(doorsNumber(v));
+                }
+                NEW engine {
+                    caption = 'Engine';
+                    lines = 2;
+                    alignment = STRETCH;
+                    MOVE PROPERTY(automaticTransmission(v));
+                    MOVE PROPERTY(nameFuelType(v));
+                    MOVE PROPERTY(engineDisplacement(v));
+                }
+                MOVE PROPERTY(note(v));
+                NEW details {
+                    fill = 1;
+                    tabbed = TRUE;
+                    MOVE PROPERTY(description(v));
+                }
+            }
+            NEW rightPane {
+                fill = 1;
+                width = 200;
+            }
+        }
+    }
+}
+
+@defineObjectComments(vehicle, v, rightPane);
+@defineObjectFiles(vehicle, v, 'Vehicle file');
+
+FORM vehicles 'Vehicles'
+    OBJECTS v = Vehicle
+    PROPERTIES(v) READONLYIF isReadonly() 
+                           id, nameModel, licensePlate, VIN, nameCompany,
+                           nameVehicleCategory, color, yearOfManufacture,
+                           seatsNumber, doorsNumber,
+                           automaticTransmission, nameFuelType, engineDisplacement,
+                           note
+
+    PROPERTIES(v) NEWSESSION NEW, EDIT, DELETE
+;
+
+@extendFormEditable(vehicles);
+
+FORM dialogVehicles 'Vehicles'
+    OBJECTS v = Vehicle
+    PROPERTIES(v) READONLY id, nameModel, licensePlate, VIN, nameCompany
+
+    LIST Vehicle OBJECT v
+;
+
+NAVIGATOR {
+    operations {
+        NEW vehicles;
+    }
+}

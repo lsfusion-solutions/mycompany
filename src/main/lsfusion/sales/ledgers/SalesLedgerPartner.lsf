@@ -9,13 +9,13 @@ yearMonth (DATETIME d) = extractYear(d) * 12 + extractMonthNumber(d);
 initialSoldAmount 'Sold (initial)' = DATA NUMERIC[14,2] (Partner);
 
 // partner
-soldAmount 'Sold' (Partner p) = GROUP SUM amount(SalesLedger l) IF customer(l) = p MATERIALIZED;
+soldAmount 'Sold' (Partner p) = GROUP SUM amount(SalesLedger l) IF customer(l) = p AND NOT skip(l) MATERIALIZED;
 
 totalSoldAmount 'Sold' (Partner p) = OVERRIDE soldAmount(p) (+) initialSoldAmount(p), (0.0 IF p IS Partner) MATERIALIZED;
 prevTotalSoldAmount (Partner p) = PREV(totalSoldAmount(p));
 
 soldAmount (Partner p, INTEGER ym) = 
-    GROUP SUM amount(SalesLedger l) IF customer(l) = p AND yearMonth(dateTime(l)) = ym MATERIALIZED; 
+    GROUP SUM amount(SalesLedger l) IF customer(l) = p AND yearMonth(dateTime(l)) = ym AND NOT skip(l) MATERIALIZED; 
 
 soldAmountPreviousMonth (Partner p, DATETIME d) = soldAmount(p, yearMonth(d) - 1);
 
@@ -32,7 +32,8 @@ FORM salesLedgers 'Sales by partner'
     PROPERTIES(s) NEWSESSION EDIT
     ORDERS dateTime(s)
     
-    FILTERS customer(s) = p
+    FILTERS customer(s) = p,
+            NOT skip(s)
 ;
 
 EXTEND FORM partner

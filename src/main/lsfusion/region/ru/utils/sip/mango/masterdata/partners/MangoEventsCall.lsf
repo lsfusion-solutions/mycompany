@@ -1,0 +1,86 @@
+MODULE MangoEventCall;
+
+REQUIRE MangoEmployee, EmployeeCall;
+
+NAMESPACE Mango;
+
+GROUP from;
+GROUP to;
+
+command_id = DATA LOCAL STRING();
+location = DATA LOCAL STRING();
+number = DATA LOCAL STRING();
+call_state = DATA LOCAL STRING();
+numberFrom = DATA LOCAL STRING();
+extensionFrom = DATA LOCAL STRING();
+numberTo = DATA LOCAL STRING();
+extensionTo = DATA LOCAL STRING();
+disconnect_reason = DATA LOCAL STRING();
+
+FORM eventsCall
+    PROPERTIES() command_id, location, call_state, disconnect_reason, entry_id, seq, call_id, timestamp
+    PROPERTIES() IN from numberFrom EXTID 'number', extensionFrom EXTID 'extension'
+    PROPERTIES() IN to numberTo EXTID 'number', extensionTo EXTID 'extension'
+;
+
+callAppeared() {
+    IF NOT call(entry_id()) THEN {
+        NEW c = Call {
+            id(c) <- entry_id();
+            
+            outgoing(c) <- command_id() = r'outgoing';
+            
+            IF outgoing(c) THEN {
+                caller(c) <- ISTRING[100](numberTo());
+                recipient(c) <- ISTRING[100](numberFrom());
+            } ELSE {
+                caller(c) <- ISTRING[100](numberFrom());
+                recipient(c) <- ISTRING[100](numberTo());
+            }
+
+            start(c);
+            
+            IF extensionPBXUser(redirect(c)) AND NOT outgoing(c) THEN {
+                apiPost('commands/route', JSON FROM call_id = call_id(), to_number = extensionPBXUser(redirect(c)), command_id = r'redirect' );
+            }
+        }
+    }
+    
+    FOR id(Call c) = entry_id() AND Employee e = employee(pbxUser(extensionTo())) DO {
+        incoming(c, e);
+    }
+}
+
+callConnected() {
+    FOR id(Call c) = entry_id() AND Employee e = employee(pbxUser(extensionTo())) AND NOT outgoing(c) DO {
+        answer(c, e);
+    }
+}
+
+callDisconnected() {
+    FOR id(Call c) = entry_id() AND (command_id() = r'redirect' OR (outgoing(c) AND recipient(c) = numberTo())) DO {
+        result(c) <- disconnect_reason();
+
+        end(c);
+    }
+}
+
+mango_events_call (STRING vpbx_api_key, STRING sign, JSON json) {
+    logToFile('mango', CONCAT ' : ', 'Event call', STRING(json));
+
+    NEWSESSION {
+        IMPORT eventsCall JSON FROM json;
+        
+        CASE
+            WHEN call_state() = r'Appeared' THEN {
+                callAppeared();
+            }
+            WHEN call_state() = r'Connected' THEN {
+                callConnected();
+            }
+            WHEN call_state() = r'Disconnected' THEN {
+                callDisconnected();
+            }
+        APPLY; 
+    }
+} @@api @@noauth;

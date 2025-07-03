@@ -1,0 +1,67 @@
+MODULE VehicleTag;
+
+REQUIRE Vehicle;
+
+NAMESPACE Fleet;
+
+CLASS VehicleTag 'Vehicle tag';
+name '{Name}' = DATA ISTRING[50] (VehicleTag) NONULL CHARWIDTH 15;
+
+id '{ID}' = DATA STRING[20] (VehicleTag);
+vehicleTag = GROUP AGGR VehicleTag t BY id(t);
+
+FORM vehicleTag 'Vehicle tag'
+    OBJECTS o = VehicleTag PANEL
+    PROPERTIES(o) name, id
+
+    EDIT VehicleTag OBJECT o;
+;
+
+DESIGN vehicleTag {
+    OBJECTS {
+        NEW tabbedPane {
+            fill = 1;
+            tabbed = TRUE;
+        }
+    }
+}
+
+FORM vehicleTags 'Vehicle tags'
+    OBJECTS o = VehicleTag
+    PROPERTIES(o) READONLY name, id
+    LIST VehicleTag OBJECT o
+;
+
+EXTEND FORM options
+    OBJECTS prtg = VehicleTag
+    PROPERTIES(prtg) READONLY name, id
+    PROPERTIES(prtg) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(prtg) { caption = 'Vehicle tags'; }
+    }
+}
+
+// vehicle
+in 'Incl.' = DATA BOOLEAN (Vehicle, VehicleTag);
+tags 'Tags' (Vehicle p) = GROUP CONCAT name(VehicleTag pg) IF in(p, pg), ', ' ORDER name(pg), pg CHARWIDTH 30;
+
+EXTEND FORM vehicle
+    PROPERTIES(v) tags
+;
+
+DESIGN vehicle {
+    leftPane {
+        MOVE PROPERTY(tags(v)) AFTER header;
+    }
+}
+
+EXTEND FORM vehicles
+    PROPERTIES(v) READONLY tags
+;
+
+EXTEND FORM dialogVehicles
+    PROPERTIES(v) READONLY tags
+;

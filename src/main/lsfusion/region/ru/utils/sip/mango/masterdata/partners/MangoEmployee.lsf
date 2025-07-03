@@ -1,0 +1,20 @@
+MODULE MangoEmployee;
+
+REQUIRE MangoPBX, Employee;
+
+NAMESPACE Mango;
+
+employee 'Employee' = DATA Employee (PBXUser);
+nameEmployee 'Employee' (PBXUser n) = name(employee(n));
+
+EXTEND FORM integrationData
+    PROPERTIES(pbxU) nameEmployee
+;
+
+PBXUser (Employee e) = GROUP AGGR PBXUser n BY employee(n);
+extensionPBXUser '{ID}' (Employee e) = extension(PBXUser(e));
+
+currentPBXUser () = PBXUser(currentUser());
+extensionCurrentPBXUser () = extension(currentPBXUser());
+
+

@@ -1,0 +1,46 @@
+MODULE VehicleServiceType;
+
+REQUIRE FleetSettings;
+
+NAMESPACE Fleet;
+
+CLASS VehicleServiceType 'Vehicle service type';
+name '{Name}' = DATA ISTRING[50] (VehicleServiceType) NONULL CHARWIDTH 15;
+
+id '{ID}' = DATA STRING[20] (VehicleServiceType);
+vehicleServiceType = GROUP AGGR VehicleServiceType t BY id(t);
+
+FORM vehicleServiceType 'Vehicle service type'
+    OBJECTS o = VehicleServiceType PANEL
+    PROPERTIES(o) name, id
+
+    EDIT VehicleServiceType OBJECT o;
+;
+
+DESIGN vehicleServiceType {
+    OBJECTS {
+        NEW tabbedPane {
+            fill = 1;
+            tabbed = TRUE;
+        }
+    }
+}
+
+FORM vehicleServiceTypes 'Vehicle service types'
+    OBJECTS o = VehicleServiceType
+    PROPERTIES(o) READONLY name, id
+    
+    LIST VehicleServiceType OBJECT o;
+;
+
+EXTEND FORM options
+    OBJECTS vct = VehicleServiceType
+    PROPERTIES(vct) READONLY name, id
+    PROPERTIES(vct) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(vct);
+    }
+}
