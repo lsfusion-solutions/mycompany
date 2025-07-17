@@ -4,11 +4,13 @@ REQUIRE BillDone, BillCanceled, BillContract, BillCurrency, Debt;
 
 NAMESPACE Invoicing;
 
+skipDebt = ABSTRACT BOOLEAN (Bill);
+
 // extend
 EXTEND CLASS Bill : IncomingDebt;
 type(Bill b) += nameType(b);
 
-active (Bill b) += active(b);
+active (Bill b) += active(b) AND NOT skipDebt(b);
 number (Bill b) += number(b);
 dateTime (Bill b) += dateTime(b);
 dueDateTime (Bill b) += dueDateTime(b);
