@@ -16,6 +16,8 @@ EXTEND FORM incomingPaymentType
 @defineDocRelation(incomingPayment, outgoingPayment, 'Incoming payment', 'Outgoing payment', p, p);
 
 outgoingPaymentCreated = DATA LOCAL OutgoingPayment ();
+fill ABSTRACT LIST (IncomingPayment, OutgoingPayment);
+
 newOutgoingPayment (IncomingPayment op) {
     NEW ip = OutgoingPayment {
         incomingPayment(ip) <- op;
@@ -34,6 +36,8 @@ newOutgoingPayment (IncomingPayment op) {
 
         note(ip) <- note(op);
         reference(ip) <- reference(op);
+        
+        fill(ip, op);
 
         outgoingPaymentCreated() <- ip;
     }
