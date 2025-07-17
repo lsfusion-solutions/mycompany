@@ -4,11 +4,13 @@ REQUIRE OutgoingPaymentCanceled, OutgoingPaymentContract, OutgoingPaymentCurrenc
 
 NAMESPACE Invoicing;
 
+skipDebt = ABSTRACT BOOLEAN (OutgoingPayment);
+
 // extend
 EXTEND CLASS OutgoingPayment : OutgoingDebt;
 type (OutgoingPayment p) += nameType(p);
 
-active (OutgoingPayment p) += active(p);
+active (OutgoingPayment p) += active(p) AND NOT skipDebt(p);
 number (OutgoingPayment p) += number(p);
 dateTime (OutgoingPayment p) += dateTime(p);
 
