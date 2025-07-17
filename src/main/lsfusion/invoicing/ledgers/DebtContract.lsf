@@ -8,11 +8,11 @@ currency = DATA Currency (Contract);
 nameCurrency 'Currency' (Contract c) = name(currency(c));
 currency (Debt d) += currency(contract(d));
 
-debtContract 'Debt' (Debt d) = PARTITION SUM signedAmount(d) ORDER dateTime(d), d BY contract(d); 
+debtContract 'Debt' (Debt d) = PARTITION SUM signedAmount(d) IF active(d) ORDER dateTime(d), d BY contract(d); 
 
-debt 'Debt' (Contract c) = GROUP SUM signedAmount(Debt d) IF contract(d) = c;
+debt 'Debt' (Contract c) = GROUP SUM signedAmount(Debt d) IF active(d) AND contract(d) = c;
 
-pastDueDebt 'Overdue debt' (Contract c) = GROUP SUM signedLeft(Debt d) IF contract(d) = c AND dueDateTime(d) < currentDateTime();
+pastDueDebt 'Overdue debt' (Contract c) = GROUP SUM signedLeft(Debt d) IF active(d) AND contract(d) = c AND dueDateTime(d) < currentDateTime();
 
 FORM debtsContract 'Contract debts'
     OBJECTS c = Contract PANEL
