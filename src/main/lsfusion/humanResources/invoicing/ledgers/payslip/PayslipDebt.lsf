@@ -4,11 +4,13 @@ REQUIRE PayslipLedger, Debt;
 
 NAMESPACE Payroll;
 
+skipDebt = ABSTRACT BOOLEAN (Payslip);
+
 // extend
 EXTEND CLASS Payslip : IncomingDebt;
 type(Payslip p) += ISTRING[100]('Payslip') IF p IS Payslip;
 
-active (Payslip p) += p IS Payslip;
+active (Payslip p) += p IS Payslip AND NOT skipDebt(p);
 number (Payslip p) += number(p);
 dateTime (Payslip p) += DATETIME(endDate(p));
 dueDateTime (Payslip p) += DATETIME(dueDate(p));
