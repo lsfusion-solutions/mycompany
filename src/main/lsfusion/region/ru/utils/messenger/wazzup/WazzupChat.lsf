@@ -36,6 +36,12 @@ getUnanswered (Employee e) {
         IMPORT JSON FROM resultFile() TO() counterV2, type;
         
         unanswered(e) <- counterV2();
+        IF pushConnection(e) AND ((NOT unanswered(e) = counterV2()) AND (unanswered(e) OR counterV2())) THEN {
+            NEWTHREAD {
+                navigatorRefresh();
+            } TO exportInteger;
+            push(pushConnection(e), NULL, action(exportInteger()));
+        }
         unansweredType(e) <- type();
         
         APPLY;
