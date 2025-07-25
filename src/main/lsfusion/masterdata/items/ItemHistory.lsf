@@ -1,125 +1,21 @@
 MODULE ItemHistory;
 
-REQUIRE Authentication, Time, Item;
+REQUIRE Authentication, Time, Item, ObjectUtils;
 
 NAMESPACE MasterData;
 
-CLASS ItemHistory 'Change history';
+@defineHistoryObject(item);
+@defineHistoryModify(item);
 
-item = DATA Item (ItemHistory) INDEXED;
 nameItem '{Item}' (ItemHistory l) = name(item(l));
 idItem '{ID}' (ItemHistory l) = id(item(l));
-
-dateTime 'Date' = DATA DATETIME (ItemHistory);
-
-user 'User' = DATA User (ItemHistory);
-nameUser 'User' (ItemHistory l) = name(user(l));
-
-computer = DATA Computer (ItemHistory);
-hostnameComputer 'Computer' (ItemHistory l) = hostname(computer(l)) CHARWIDTH 10;
-
-type 'Type' = DATA ISTRING[100] (ItemHistory) CHARWIDTH 15;
-description 'Description' = DATA TEXT (ItemHistory);
-
-WHEN SET(Item it IS Item)  DO {     
-    NEW h = ItemHistory {
-        item(h) <- it;
-        dateTime(h) <- currentDateTime();
-        user(h) <- currentUser();
-        computer(h) <- currentComputer();
-        type(h) <- 'Added item';
-        description (h) <- CONCAT ' ', 'Added item', name(it);
-    }
-}
-
-WHEN DROPPED(Item it IS Item) DO {     
-    NEW h = ItemHistory {
-        dateTime(h) <- currentDateTime();
-        user(h) <- currentUser();
-        computer(h) <- currentComputer();
-        type(h) <- 'Item removed';
-        description (h) <- CONCAT ' ', 'Item removed', PREV(name(it));
-    }
-}
- 
-FORM itemHistory 'History'
-    OBJECTS h = ItemHistory
-    PROPERTIES(h) READONLY dateTime, nameUser, type, nameItem, idItem, description, pdescription = description PANEL
-    ORDERS dateTime(h)
-    FILTERGROUP itemType
-        FILTER 'Added item' type(h) = 'Added item'
-        FILTER 'Item removed' type(h) = 'Item removed'
+EXTEND FORM itemHistory
+    PROPERTIES(h) READONLY AFTER type(h) nameItem, idItem
 ;
 
-showHistory 'History' () {
-    SHOW itemHistory DOCKED;        
-}
+@defineHistoryForm(item, item, i, tabs);
 
-EXTEND FORM item
-    OBJECTS h = ItemHistory
-    PROPERTIES(h) READONLY dateTime, nameUser, hostnameComputer, type, description, pdescription = description PANEL
-    FILTERS item(h) = i
-    ORDERS dateTime(h)
-;
-
-EXTEND FORM items
-    PROPERTIES showHistory() TOOLBAR
-; 
-
-DESIGN item {
-    tabs {
-        NEW history {
-            caption = 'History';
-            fill = 1;
-            horizontal = TRUE;
-            MOVE BOX(h) {
-                caption = '';
-                fill = 2;
-                PROPERTY(description(h)) { valueHeight = 18; }
-            }
-            MOVE PROPERTY(pdescription) { panelCaptionVertical = TRUE; fill = 1; }
-        }
-    }
-}  
- 
-DESIGN itemHistory {
-    OBJECTS {
-        NEW pane {
-            fill = 1;
-            horizontal = TRUE;
-            MOVE BOX(h) {
-                fill = 2;
-                PROPERTY(description(h)) { valueHeight = 18; }
-            }            
-            MOVE PROPERTY(pdescription) { panelCaptionVertical = TRUE; fill = 1; }
-        }
-    }
-}
-
-META defineItemHistoryFilter(t)
-    EXTEND FORM itemHistory
-        EXTEND FILTERGROUP itemType
-            FILTER t type(h) = t
-    ;
-END
-
-META defineItemHistoryAttr(attr, caption)
-
-    WHEN SETCHANGED(attr(Item item)) DO {     
-        NEW l = ItemHistory {
-            item(l) <- item;
-            dateTime(l) <- currentDateTime();
-            user(l) <- currentUser();
-            computer(l) <- currentComputer();
-            type(l) <- caption;
-            description (l) <- CONCAT ' ', caption, 'on', attr(item);
-        }
-    }
-    
-    @defineItemHistoryFilter(caption);
-    
-END
-  
-@defineItemHistoryAttr(name, 'Full name changed');
-@defineItemHistoryAttr(uom, 'Unit of measure changed');
-@defineItemHistoryAttr(canonicalNameCategory, 'Changed category');
+@defineHistoryProperty(item, id, '{ID}');
+@defineHistoryProperty(item, name, 'Name (full)');
+@defineHistoryProperty(item, nameUom, 'UoM');
+@defineHistoryProperty(item, canonicalNameCategory, 'Category (full)');

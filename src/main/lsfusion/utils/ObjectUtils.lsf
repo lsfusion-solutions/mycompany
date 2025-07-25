@@ -2,6 +2,16 @@ MODULE ObjectUtils;
 
 NAMESPACE Utils;
 
+disableHistory 'Disable history recording' = DATA BOOLEAN () PREREAD;
+EXTEND FORM System.options
+    PROPERTIES() disableHistory
+;
+DESIGN System.options {
+    commons {
+        MOVE PROPERTY(disableHistory());
+    }
+}
+
 META defineHistoryObject(obj)
     CLASS ###obj##History 'Change history';
 
@@ -45,7 +55,7 @@ META defineHistoryProperty(obj, prop, capt)
     @defineHistoryProperty(obj, prop, capt, prop);
 END
 
-META defineHistoryForm(doc, form, let)
+META defineHistoryForm(doc, form, let, cont)
     EXTEND FORM form
         OBJECTS doc##l = ###doc##History
         PROPERTIES(doc##l) READONLY dateTime, nameUser, hostnameComputer, type, description, pdescription = description PANEL
@@ -53,7 +63,7 @@ META defineHistoryForm(doc, form, let)
     ;
 
     DESIGN form {
-        details {
+        cont {
             NEW history {
                 caption = badged('History', countHistories(let));
                 fill = 1;
@@ -71,6 +81,10 @@ META defineHistoryForm(doc, form, let)
     EXTEND FORM form##s
         PROPERTIES(let) nameUserFirstHistory, dateTimeFirstHistory, nameUserLastHistory, dateTimeLastHistory
     ;
+END
+
+META defineHistoryForm(doc, form, let)
+    @defineHistoryForm(doc, form, let, details);
 END
 
 resultPropertyTemplate = DATA LOCAL STRING();
@@ -107,4 +121,44 @@ END
 
 META definePropertyValue (obj, prop, capt)
     @definePropertyValue(obj, prop, capt, prop);
+END
+
+META defineHistoryModify (obj)
+    WHEN SET(###obj it IS ###obj)  DO {
+        NEW h = ###obj##History {
+            obj(h) <- it;
+            dateTime(h) <- currentDateTime();
+            user(h) <- currentUser();
+            computer(h) <- currentComputer();
+            type(h) <- 'Added';
+            description (h) <- CONCAT ' ', 'Added', name(it);
+        }
+    }
+
+    WHEN DROPPED(###obj it IS ###obj) DO {
+        NEW h = ###obj##History {
+            dateTime(h) <- currentDateTime();
+            user(h) <- currentUser();
+            computer(h) <- currentComputer();
+            type(h) <- 'Deleted';
+            description (h) <- CONCAT ' ', 'Deleted', PREV(name(it));
+        }
+    }
+
+    FORM obj##History 'History'
+        OBJECTS h = ###obj##History
+        PROPERTIES(h) READONLY dateTime, nameUser, type, description, pdescription = description PANEL
+        ORDERS dateTime(h)
+        FILTERGROUP type
+            FILTER 'Added' type(h) = 'Added'
+            FILTER 'Deleted' type(h) = 'Deleted'
+    ;
+
+    show###obj##History 'History' () {
+        SHOW obj##History DOCKED;
+    }
+
+    EXTEND FORM obj##s
+        PROPERTIES show###obj##History() TOOLBAR
+    ;
 END

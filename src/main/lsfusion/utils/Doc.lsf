@@ -356,16 +356,6 @@ META defineDocSearch (doc, it, fun, capt, let, check)
     ;
 END
 
-disableHistory 'Disable history recording' = DATA BOOLEAN () PREREAD;
-EXTEND FORM System.options 
-    PROPERTIES() disableHistory
-;
-DESIGN System.options {
-    commons { 
-        MOVE PROPERTY(disableHistory()); 
-    }
-}
-
 META defineDocHistoryLineProperty(doc, docLine, prop, capt, descrProp)
     WHEN CHANGED(prop(docLine l)) AND doc(l) = ###doc d
         AND NOT status(d) = ###doc##Status.draft AND NOT disableHistory() DO {
