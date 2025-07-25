@@ -1,0 +1,88 @@
+MODULE SalesOrderAPI;
+
+REQUIRE SalesOrder;
+
+NAMESPACE Sales;
+
+number = DATA LOCAL STRING[50](INTEGER);
+type = DATA LOCAL STRING(INTEGER);
+time = DATA LOCAL DATETIME(INTEGER);
+company = DATA LOCAL STRING(INTEGER);
+customer = DATA LOCAL STRING(INTEGER);
+
+order = DATA LOCAL INTEGER(INTEGER);
+
+item = DATA LOCAL STRING(INTEGER);
+amount = DATA LOCAL NUMERIC[14,2](INTEGER);
+quantity = DATA LOCAL NUMERIC[16,3](INTEGER);
+price = DATA LOCAL NUMERIC[10,2](INTEGER);
+discountPrice = DATA LOCAL NUMERIC[10,2](INTEGER);
+discount = DATA LOCAL NUMERIC[5,2](INTEGER);
+
+FORM importOrder
+    OBJECTS value = INTEGER
+    PROPERTIES(value) number, type, time, company, customer
+    FILTERS imported(value)
+
+    OBJECTS items = INTEGER
+    PROPERTIES(items) item, quantity, price, discount, discountPrice, amount
+    FILTERS order(items) = value
+;
+
+// export :
+//EXPORT JSON FROM
+//    number(Sales.Order o),
+//    type = id(type(o)),
+//    time = dateTime(o),
+//    company = id(company(o)),
+//    customer = id(customer(o)),
+//    
+//    items = (JSON FROM
+//        item = idItem(Sales.OrderLine l),
+//        quantity(l),
+//        price(l),
+//        discount(l),
+//        discountPrice(l),
+//        amount = untaxedAmount(l)
+//        WHERE order(l) = o
+//    );
+
+// http://localhost:8080/lsfusion6/exec/Sales.newOrders
+
+newOrders (FILE json) {
+    IMPORT importOrder JSON FROM json;
+    FOR imported(INTEGER order) AND NOT order(number(order)) NEW o = Order DO {
+        number(o) <- number(order);
+        type(o) <- orderType(type(order));
+        dateTime(o) <- time(order);
+        company(o) <- partner(company(order));
+        customer(o) <- partner(customer(order));
+        
+        FOR order(INTEGER line) = order NEW l = OrderLine DO {
+            order(l) <- o;
+            item(l) <- item(item(line));
+            quantity(l) <- quantity(line);
+            price(l) <- price(line);
+            discount(l) <- discount(line);
+            discountPrice(l) <- discountPrice(line);
+            untaxedAmount(l) <- amount(line);
+        } 
+    }
+    
+    APPLY;
+    IF canceled() THEN
+        throwException(applyMessage());
+} @@api;
+
+// http://localhost:8080/lsfusion6/exec/Sales.deleteOrders
+// [ "number1", "number2"]
+
+deleteOrders (JSON json) {
+    IMPORT JSON FROM json TO number = value;
+    DELETE Order o WHERE GROUP SUM 1 IF number(INTEGER order) = number(o) AND status(o) = OrderStatus.draft;
+
+    APPLY;
+    IF canceled() THEN
+        throwException(applyMessage());
+        
+} @@api;

@@ -1,0 +1,21 @@
+MODULE ItemAPI;
+
+REQUIRE Product, BarCode, ItemImage;
+
+NAMESPACE MasterData;
+
+// http://localhost:8080/exec/MasterData.getItems?category=123&extended=true
+
+getItems (STRING category, BOOLEAN extended) {
+    IF category AND NOT category(category) THEN
+        throwException('Category not found');
+    
+    EXPORT JSON FROM
+        id(Item i),
+        name(i), class(i), reference(i),
+        barcode = idBarCode(i),  
+        category = idCategory(i), uom = idUom(i),
+        country = nameCountryOrigin(i),
+        image = image(i) IF extended, description = description(i) IF extended
+        WHERE id(i) AND (category(i) = category(category) OR NOT category) AND active(i);
+} @@api;

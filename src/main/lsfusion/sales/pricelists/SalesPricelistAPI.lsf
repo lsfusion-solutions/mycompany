@@ -1,0 +1,17 @@
+MODULE SalesPricelistAPI;
+
+REQUIRE SalesPricelistValue;
+
+NAMESPACE Sales;
+
+// http://localhost:8080/Sales.getPrices?type=retail&time=23.07.2025T12%3A12%3A00
+
+getPrices (STRING type, DATETIME time) {
+    FOR PriceType pt = priceType(type) DO 
+        EXPORT JSON FROM
+            id(Item i),
+            price = priceB(pt, i, (OVERRIDE time, currentDateTime()))
+        WHERE id(i) AND priceB(pt, i, (OVERRIDE time, currentDateTime()));
+    ELSE
+        throwException('Price type not found');
+} @@api;
