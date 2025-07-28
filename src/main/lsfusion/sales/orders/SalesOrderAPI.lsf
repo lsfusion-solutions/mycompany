@@ -9,10 +9,12 @@ type = DATA LOCAL STRING(INTEGER);
 time = DATA LOCAL DATETIME(INTEGER);
 company = DATA LOCAL STRING(INTEGER);
 customer = DATA LOCAL STRING(INTEGER);
+note = DATA LOCAL STRING(INTEGER);
 
 order = DATA LOCAL INTEGER(INTEGER);
 
 item = DATA LOCAL STRING(INTEGER);
+description = DATA LOCAL STRING(INTEGER);
 amount = DATA LOCAL NUMERIC[14,2](INTEGER);
 quantity = DATA LOCAL NUMERIC[16,3](INTEGER);
 price = DATA LOCAL NUMERIC[10,2](INTEGER);
@@ -21,11 +23,11 @@ discount = DATA LOCAL NUMERIC[5,2](INTEGER);
 
 FORM importOrder
     OBJECTS value = INTEGER
-    PROPERTIES(value) number, type, time, company, customer
+    PROPERTIES(value) number, type, time, company, customer, note
     FILTERS imported(value)
 
     OBJECTS items = INTEGER
-    PROPERTIES(items) item, quantity, price, discount, discountPrice, amount
+    PROPERTIES(items) item, description, quantity, price, discount, discountPrice, amount
     FILTERS order(items) = value
 ;
 
@@ -36,9 +38,11 @@ FORM importOrder
 //    time = dateTime(o),
 //    company = id(company(o)),
 //    customer = id(customer(o)),
+//    note = note(o),
 //    
 //    items = (JSON FROM
 //        item = idItem(Sales.OrderLine l),
+//        description(l),        
 //        quantity(l),
 //        price(l),
 //        discount(l),
@@ -57,10 +61,12 @@ newOrders (FILE json) {
         dateTime(o) <- time(order);
         company(o) <- partner(company(order));
         customer(o) <- partner(customer(order));
+        note(o) <- note(order);
         
         FOR order(INTEGER line) = order NEW l = OrderLine DO {
             order(l) <- o;
             item(l) <- item(item(line));
+            description(l) <- description(line);
             quantity(l) <- quantity(line);
             price(l) <- price(line);
             discount(l) <- discount(line);
