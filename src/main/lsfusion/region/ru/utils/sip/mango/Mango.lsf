@@ -1,11 +1,12 @@
 MODULE Mango;
 
-REQUIRE System, SQLUtils;
+REQUIRE System, SQLUtils, Utils;
 
 NAMESPACE Mango;
 
 // REQUIRE MangoPBX, MangoEventsCall, MangoEmployeeCall, MangoRecord
-// Notify : https://<url to mycompany>/exec
+// Notify : https://<url to mycompany>/exec/mango
+// Notice : must be melody on recieving calls in order to have time to route
 // require pgcrypto extension for the database :
 
 onStarted() +{
@@ -51,19 +52,23 @@ httpHeaders(TEXT name) = CASE
 apiResponse = DATA FILE ();
 
 apiGet (STRING method, JSON json) {
-    IF apiKey() THEN
-        EXTERNAL HTTP GET urlVPBX() + method 
+    IF apiKey() THEN {
+        logToFile('mango', CONCAT ' : ', r'Get', method, STRING(json));
+        EXTERNAL HTTP GET urlVPBX() + method
             BODYPARAMNAMES r'vpbx_api_key', r'sign', r'json'
             HEADERS httpHeaders
             PARAMS apiKey(), apiSign(json), STRING(json) TO apiResponse;
+    }
 }
 
 apiPost (STRING method, JSON json) {
-    IF apiKey() THEN 
+    IF apiKey() THEN {
+        logToFile('mango', CONCAT ' : ', r'Post', method, STRING(json));
         EXTERNAL HTTP POST urlVPBX() + method
             BODYPARAMNAMES r'vpbx_api_key', r'sign', r'json'
             HEADERS httpHeaders
             PARAMS apiKey(), apiSign(json), STRING(json) TO apiResponse;
+    }
 }
 
 extension = DATA LOCAL STRING();
