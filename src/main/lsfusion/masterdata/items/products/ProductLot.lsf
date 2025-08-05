@@ -7,9 +7,9 @@ NAMESPACE MasterData;
 dataUseLot 'Use lots' = DATA BOOLEAN (Product);
 useLot 'Use lots' (Product i) = useLot() AND (dataUseLot(i) OR (useLot(category(i)) AND i IS Product)) MATERIALIZED;
 
-useSerialNumbers (Product p) = useSerialNumbers(category(p));
-numeratorLot (Product p) = numeratorLot(category(p));
-prefixLot 'Prefix' (Product p) = prefixLot(category(p));
+useSerialNumbers (Product p) = useSerialNumbers(category(p)) IF p IS Product;
+numeratorLot (Product p) = numeratorLot(category(p)) IF p IS Product;
+prefixLot 'Prefix' (Product p) = prefixLot(category(p)) IF p IS Product;
 
 EXTEND FORM item
     PROPERTIES (i) dataUseLot SHOWIF i IS Product AND useLot();

@@ -64,14 +64,14 @@ WHEN CHANGED(amount(OutgoingDebt od)) AND amount(od) < paid(IncomingDebt id, od)
 
 skipMatched = ABSTRACT BOOLEAN (IncomingDebt, OutgoingDebt);
 canBeMatched (IncomingDebt id, OutgoingDebt od) =
-    partner(id) = partner(od) AND company(id) = company(od) AND NOT skipMatched(id, od);
+    id IS IncomingDebt AND od IS OutgoingDebt AND partner(id) = partner(od) AND company(id) = company(od) AND NOT skipMatched(id, od);
 
 paid 'Paid' (IncomingDebt id) = GROUP SUM paid(id, OutgoingDebt od) IF active(od) MATERIALIZED;
 paid 'Paid' (OutgoingDebt od) = GROUP SUM paid(IncomingDebt id, od) IF active(id) MATERIALIZED;  
 paid 'Paid' (Debt d) = MULTI paid[IncomingDebt](d), paid[OutgoingDebt](d);
 
-left 'Left' (IncomingDebt id) = amount(id) (-) paid(id);
-left 'Left' (OutgoingDebt od) = amount(od) (-) paid(od);
+left 'Left' (IncomingDebt id) = (amount(id) IF id IS IncomingDebt) (-) paid(id);
+left 'Left' (OutgoingDebt od) = (amount(od) IF od IS OutgoingDebt) (-) paid(od);
 left 'Left' (Debt d) = MULTI left[IncomingDebt](d), left[OutgoingDebt](d);
 signedLeft 'Left' (Debt d) = IF d IS OutgoingDebt THEN left(d) ELSE -left(d);
 

@@ -39,7 +39,7 @@ META defineObjectNotifyComments(obj, capt, NS)
     DESIGN editProfile { notifications { MOVE PROPERTY(NS###notify###obj); } }
 
     notify = ABSTRACT VALUE BOOLEAN (###obj, Contact);
-    notify (###obj t, Contact c) += TRUE IF GROUP SUM 1 IF user(###obj##Comment tc) = c AND obj(tc) = t;
+    notify (###obj t, Contact c) += TRUE IF GROUP SUM 1 IF (user(###obj##Comment tc) AS CustomUser) = c AND obj(tc) = t;
 
     WHEN SET(###obj##Comment tc IS ###obj##Comment) AND
         notify(obj(tc), Contact c) AND
@@ -68,7 +68,7 @@ META defineObjectEmailAccount (obj, capt)
         }
     }
     
-    match###obj (Account a, CustomUser u) = emailAccount(currentUser()) = a OR a = obj##Account();
+    match###obj (Account a, CustomUser u) = emailAccount(u) = a OR a = obj##Account();
 END
 
 META defineObjectEmail (obj, capt, let)
