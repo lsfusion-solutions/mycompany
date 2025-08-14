@@ -191,13 +191,16 @@ EXTEND FORM activities
     FILTERS assignedTo(a) = activityAttendee() OR attends(a, activityAttendee()) OR NOT activityAttendee()
 ;
 
+calendarName = ABSTRACT VALUE HTML (Activity);
+calendarName(Activity a) += HTML(CONCAT ' ',
+    period(a),
+    '<b>' + nameType(a) + '</b>' IF NOT activityType(),
+    '<u>' + nameAssignedTo(a) + '</u>' IF NOT activityAssignedTo(),
+    name(a),
+    '- <i>' + typeNameObject(a) + '</i>');
+
 EXTEND FORM activities
-    PROPERTIES READONLY name = HTML(CONCAT ' ', 
-                period(a),  
-                '<b>' + nameType(a) + '</b>' IF NOT activityType(),
-                '<u>' + nameAssignedTo(a) + '</u>' IF NOT activityAssignedTo(),
-                name(a), 
-                '- <i>' + typeNameObject(a) + '</i>')
+    PROPERTIES READONLY name = calendarName(a)
 
     EVENTS ON INIT { activityAssignedTo() <- currentUser(); }
 ;
