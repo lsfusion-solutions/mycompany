@@ -25,11 +25,25 @@ EXTEND FORM tasks
     PROPERTIES(t) READONLY nameProject AFTER name(t)
 ;
 
+newTask 'Add' (Project p) {
+    NEWSESSION {
+        NEW t = Task {
+            project(t) <- p;
+            SHOW task OBJECTS t = t DOCKED;
+        }
+    }
+} IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+
 EXTEND FORM project
     OBJECTS t = Task
     PROPERTIES(t) READONLY id, name, nameAuthor, nameAssignedTo, deadline, closed
-    PROPERTIES(t) EDIT
+    PROPERTIES(p) newTask DRAW t TOOLBAR SHOWIF PREV(p IS Project)
+    PROPERTIES(t) NEWSESSION EDIT, DELETE
     FILTERS project(t) = p
+
+    FILTERGROUP active
+        FILTER 'Opened' opened(t) 'F8' DEFAULT
+        FILTER 'Closed' closed(t) 'F7'
 ;
 
 DESIGN project {

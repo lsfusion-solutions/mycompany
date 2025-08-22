@@ -27,8 +27,8 @@ assignedTo 'Assigned to' = DATA Employee (Activity);
 nameAssignedTo 'Assigned to' (Activity a) = name(assignedTo(a));
 assignedTo (Activity a) <- currentUser() WHEN SET(a IS Activity);
 
-attends = DATA BOOLEAN (Activity, Contact);
-attendees 'Attendees' (Activity a) = GROUP CONCAT name(Contact c) IF attends(a, c), ', ' ORDER name(c), c CHARWIDTH 30; 
+attends = DATA BOOLEAN (Activity, Partner);
+attendees 'Attendees' (Activity a) = GROUP CONCAT name(Partner p) IF attends(a, p), ', ' ORDER name(p), p CHARWIDTH 30; 
 
 // object
 CLASS ABSTRACT ActivityObject;
@@ -96,7 +96,7 @@ DESIGN activity {
 }
 
 newActivity 'Add' (ActivityType t) {
-    NESTEDSESSION {
+    NEWSESSION {
         NEW na = Activity {
             type(na) <- t;
             DIALOG activity OBJECTS a = na FLOAT;
@@ -136,7 +136,7 @@ FORM activities 'Activities'
                            nameType, gname = name, nameObject, nameAssignedTo, done
     PROPERTIES(a) READONLY PANEL pnameType = nameType, pname = name, pdescription = description
     PROPERTIES(a) peditObject = editObject HEADER typeNameObject(a)
-    PROPERTIES(a) PANEL setDone, edit = EDIT, delete = DELETE
+    PROPERTIES(a) PANEL setDone, edit = EDIT NEWSESSION, delete = DELETE
     ORDERS date DESC, time(a)
 
     FILTERGROUP active
@@ -191,13 +191,16 @@ EXTEND FORM activities
     FILTERS assignedTo(a) = activityAttendee() OR attends(a, activityAttendee()) OR NOT activityAttendee()
 ;
 
+calendarName = ABSTRACT VALUE HTML (Activity);
+calendarName(Activity a) += HTML(CONCAT ' ',
+    period(a),
+    '<b>' + nameType(a) + '</b>' IF NOT activityType(),
+    '<u>' + nameAssignedTo(a) + '</u>' IF NOT activityAssignedTo(),
+    name(a),
+    '- <i>' + typeNameObject(a) + '</i>');
+
 EXTEND FORM activities
-    PROPERTIES READONLY name = HTML(CONCAT ' ', 
-                period(a),  
-                '<b>' + nameType(a) + '</b>' IF NOT activityType(),
-                '<u>' + nameAssignedTo(a) + '</u>' IF NOT activityAssignedTo(),
-                name(a), 
-                '- <i>' + typeNameObject(a) + '</i>')
+    PROPERTIES READONLY name = calendarName(a)
 
     EVENTS ON INIT { activityAssignedTo() <- currentUser(); }
 ;

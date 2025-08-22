@@ -1,0 +1,22 @@
+MODULE PartnerRu;
+
+REQUIRE Partner;
+
+NAMESPACE MasterData;
+
+inn 'ИНН' = ABSTRACT STRING[12] (Partner);
+partnerInn = GROUP AGGR Partner p BY inn(p);
+
+EXTEND FORM partner
+    PROPERTIES(p) inn
+;
+
+DESIGN partner {
+    legalInfoOptions {
+        MOVE PROPERTY(inn(p));
+    }
+}
+
+EXTEND FORM partners
+    PROPERTIES(p) READONLYIF isReadonly() GRID inn
+;

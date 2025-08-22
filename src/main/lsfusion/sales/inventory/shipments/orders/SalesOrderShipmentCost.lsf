@@ -1,0 +1,12 @@
+MODULE SalesOrderShipmentCost;
+
+REQUIRE SalesOrderShipment, ShipmentCost;
+
+NAMESPACE Sales;
+
+costAmount 'Cost' (OrderLine l) = ABSTRACT VALUE NUMERIC[14,2] (OrderLine);
+costAmount (OrderLine l) += NUMERIC[14,2] (quantity(l) * cost(item(l), date(l)));
+costAmount (OrderLine l) += GROUP SUM amount(outCostLedger(ShipmentLine sl)) IF orderLine(sl) = l;
+
+markupAmount 'Markup' (OrderLine l) = untaxedAmount(l) (-) costAmount(l);
+markup '{Markup_p}' (OrderLine l) = NUMERIC[10,2] (100.0 * markupAmount(l) / costAmount(l));

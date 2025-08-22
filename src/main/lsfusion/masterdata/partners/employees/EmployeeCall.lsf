@@ -21,7 +21,10 @@ incoming (Call c, Employee e) {
         NEWTHREAD NEWSESSION {
             SHOW call OBJECTS c = c DOCKED;
         } TO exportInteger;
-        
+
+        IF NOT incomingNotifyOptions() THEN 
+            incomingNotifyOptions() <- notification('Incoming call', JSON FROM body = 'Unknown');
+
         pushNotify(pushConnection(e),
              incomingNotifyOptions(),
              action(exportInteger()));

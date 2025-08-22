@@ -38,7 +38,8 @@ hoursTimesheet 'Hours' (DATE d, Employee e)=
 
 hoursTimesheet 'Hours' (INTERVAL[DATE] i) = hours(timesheetProject(), i);
 
-backgroundHoursTimesheet (DATE d) = RGB(255,224,224) IF extractDOWNumber(d) = 0 OR extractDOWNumber(d) = 6;
+backgroundHoursTimesheet (DATE d) = CASE WHEN d = currentDate() THEN RGB(224,255,224) 
+                                                  WHEN extractDOWNumber(d) = 0 OR extractDOWNumber(d) = 6 THEN RGB(255,224,224);
 
 backgroundHoursTimesheet 'Hours' (DATE d, Employee e)=
     IF countTimeEntryType(d, e) > 1 THEN RGB(255,192,0) ELSE

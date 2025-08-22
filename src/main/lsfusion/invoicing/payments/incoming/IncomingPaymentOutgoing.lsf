@@ -19,6 +19,8 @@ EXTEND FORM outgoingPaymentType
 rate1 (IncomingPayment ip, OutgoingPayment op) = rate1(currency(op), currency(ip), date(op));
 
 incomingPaymentCreated = DATA LOCAL IncomingPayment ();
+fill ABSTRACT LIST (IncomingPayment, OutgoingPayment);
+
 newIncomingPayment (OutgoingPayment op) {
     NEW ip = IncomingPayment {
         outgoingPayment(ip) <- op;
@@ -37,7 +39,9 @@ newIncomingPayment (OutgoingPayment op) {
 
         note(ip) <- note(op);
         reference(ip) <- reference(op);
-
+        
+        fill(ip, op);
+        
         incomingPaymentCreated() <- ip;
     }
 }

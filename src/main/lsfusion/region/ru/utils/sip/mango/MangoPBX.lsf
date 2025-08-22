@@ -60,11 +60,11 @@ FORM getPBX
 
 apiGetPBX 'Get PBX' () {
     NEWSESSION {
-        apiGet('config/users/request', NULL);
+        apiPost('config/users/request', JSON('\{\}'));
 
         IMPORT getPBX JSON FROM apiResponse();
 
-        FOR imported(INTEGER user) AND NOT pbxUser(extension(user)) DO NEW p = PBXUser {
+        FOR imported(INTEGER user) AND extension(user) AND NOT pbxUser(extension(user)) DO NEW p = PBXUser {
             extension(p) <- STRING[20](extension(user));
         }
 
@@ -77,11 +77,11 @@ apiGetPBX 'Get PBX' () {
 }
 
 EXTEND FORM integrationData
-    PROPERTIES() apiGetPBX
+    PROPERTIES() mangoApiGetPBX = apiGetPBX
 ;
 
 DESIGN integrationData {
     mangoPBXHeader {
-        MOVE PROPERTY(apiGetPBX());
+        MOVE PROPERTY(mangoApiGetPBX);
     }
 }

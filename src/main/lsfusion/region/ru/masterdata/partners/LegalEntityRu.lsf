@@ -1,11 +1,12 @@
 MODULE LegalEntityRu;
 
-REQUIRE LegalEntity;
+REQUIRE LegalEntity, PartnerRu;
 
 NAMESPACE MasterData;
 
 inn 'ИНН' = DATA STRING[12] (LegalEntity);
-legalEntityInn = GROUP AGGR LegalEntity b BY inn(b);
+legalEntityInn = GROUP MAX LegalEntity b BY inn(b);
+inn (LegalEntity l) += inn(l);
 
 kpp 'КПП' = DATA STRING[9] (LegalEntity);
 
@@ -16,12 +17,11 @@ ogrn 'ОГРН' = DATA STRING[15] (LegalEntity);
 legalEntityOgrn = GROUP AGGR LegalEntity b BY ogrn(b);
 
 EXTEND FORM partner
-    PROPERTIES(p) inn, kpp, okpo, ogrn
+    PROPERTIES(p) kpp, okpo, ogrn
 ;
 
 DESIGN partner {
     legalInfoOptions {
-        MOVE PROPERTY(inn(p));
         MOVE PROPERTY(kpp(p));
         MOVE PROPERTY(okpo(p));
         MOVE PROPERTY(ogrn(p));
@@ -29,5 +29,5 @@ DESIGN partner {
 }
 
 EXTEND FORM partners
-    PROPERTIES(p) READONLYIF isReadonly() GRID inn, kpp, okpo, ogrn
+    PROPERTIES(p) READONLYIF isReadonly() GRID kpp, okpo, ogrn
 ;

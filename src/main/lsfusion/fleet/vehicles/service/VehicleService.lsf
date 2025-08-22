@@ -36,7 +36,7 @@ note 'Note' = DATA ISTRING (VehicleService) CHARWIDTH 30;
 
 description 'Description' = DATA RICHTEXT (VehicleService);
 
-lastVehicleService (Vehicle v, VehicleService vs) = GROUP LAST VehicleService s ORDER date(s), s WHERE s != vs BY vehicle(s);
+lastVehicleService (Vehicle v, VehicleService vs) = GROUP LAST VehicleService s ORDER date(s), s WHERE s != vs AND vs IS VehicleService BY vehicle(s);
 WHEN LOCAL SETCHANGED(vehicle(VehicleService s)) AND NOT vendor(s) DO {
     vendor(s) <- vendor(lastVehicleService(vehicle(s), s));
 }

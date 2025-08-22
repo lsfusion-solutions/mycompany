@@ -1,0 +1,23 @@
+MODULE InvLedgerAPI;
+
+REQUIRE InvLedger;
+
+NAMESPACE Inventory;
+
+// http://localhost:8080/exec/Inventory.getInventory?location=123&category=456
+
+getInventory (STRING category, STRING location) {
+    IF category AND NOT category(category) THEN
+        throwException('Category not found');
+
+    IF location AND NOT location(location) THEN
+        throwException('Location not found');
+
+    EXPORT JSON FROM
+        product = id(Product p),
+        location = id(Location l),
+        onHand(l, p)
+        WHERE id(p) AND active(p) AND id(l) AND active(l) AND onHand(l, p) AND
+              (category(p) = category(category) OR NOT category) AND
+              (l = location(location) OR NOT location);
+} @@api;

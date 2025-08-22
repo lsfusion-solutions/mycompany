@@ -1,4 +1,4 @@
-MODULE MangoEventCall;
+MODULE MangoEventsCall;
 
 REQUIRE MangoEmployee, EmployeeCall;
 
@@ -40,7 +40,7 @@ callAppeared() {
 
             start(c);
             
-            IF extensionPBXUser(redirect(c)) AND NOT outgoing(c) THEN {
+            IF location() = r'ivr' AND extensionPBXUser(redirect(c)) AND NOT outgoing(c) THEN {
                 apiPost('commands/route', JSON FROM call_id = call_id(), to_number = extensionPBXUser(redirect(c)), command_id = r'redirect' );
             }
         }
@@ -66,8 +66,8 @@ callDisconnected() {
 }
 
 mango_events_call (STRING vpbx_api_key, STRING sign, JSON json) {
-    logToFile('mango', CONCAT ' : ', 'Event call', STRING(json));
-
+    logToFile('mango', CONCAT ' : ', 'Event call', STRING(json), sign);
+    
     NEWSESSION {
         IMPORT eventsCall JSON FROM json;
         
@@ -83,4 +83,9 @@ mango_events_call (STRING vpbx_api_key, STRING sign, JSON json) {
             }
         APPLY; 
     }
+    logToFile('mango', CONCAT ' : ', 'Event call returned', sign);
+} @@api @@noauth;
+
+mango_result_route (STRING vpbx_api_key, STRING sign, JSON json) {
+    logToFile('mango', CONCAT ' : ', 'Route result', STRING(json));
 } @@api @@noauth;

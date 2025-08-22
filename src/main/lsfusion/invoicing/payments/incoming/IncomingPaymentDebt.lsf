@@ -4,11 +4,13 @@ REQUIRE IncomingPaymentCanceled, IncomingPaymentContract, IncomingPaymentCurrenc
 
 NAMESPACE Invoicing;
 
+skipDebt = ABSTRACT BOOLEAN (IncomingPayment);
+
 // extend
 EXTEND CLASS IncomingPayment : IncomingDebt;
 type (IncomingPayment p) += nameType(p);
 
-active (IncomingPayment p) += active(p);
+active (IncomingPayment p) += active(p) AND NOT skipDebt(p);
 number (IncomingPayment p) += number(p);
 dateTime (IncomingPayment p) += dateTime(p);
 

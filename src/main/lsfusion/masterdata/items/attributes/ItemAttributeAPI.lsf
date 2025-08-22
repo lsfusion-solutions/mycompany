@@ -1,0 +1,18 @@
+MODULE ItemAttributeAPI;
+
+REQUIRE ItemAPI, ItemAttribute;
+
+NAMESPACE MasterData;
+
+// http://localhost:8080/exec/MasterData.getItemAttributes?category=123
+
+getItemAttributes (STRING category) {
+    IF category AND NOT category(category) THEN
+        throwException('Category not found');
+
+    EXPORT JSON FROM
+        item = id(Item i),
+        attribute = id(ItemAttribute ia),
+        value(i, ia)
+        WHERE id(i) AND id(ia) AND value(i, ia) AND (category(i) = category(category) OR NOT category) AND active(i);
+} @@api;

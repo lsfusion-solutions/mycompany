@@ -1,0 +1,68 @@
+MODULE PartnerAttribute;
+
+REQUIRE Partner;
+
+NAMESPACE MasterData;
+
+CLASS PartnerAttribute 'Partner attribute';
+
+id '{ID}' = DATA STRING[50] (PartnerAttribute) IN id CHARWIDTH 8;
+partnerAttribute (STRING[50] id) = GROUP AGGR PartnerAttribute i BY id(i);
+
+index '№' (PartnerAttribute a) = PARTITION SUM 1 ORDER a AS PartnerAttribute MATERIALIZED CHARWIDTH 2;
+partnerAttribute (INTEGER i) = GROUP LAST PartnerAttribute a ORDER a BY index(a);
+
+nonull 'Required' = DATA BOOLEAN (PartnerAttribute);
+
+name '{Name}' = DATA ISTRING[50] (PartnerAttribute) IN id NONULL;
+
+FORM partnerAttributes 'Partner attributes'
+    OBJECTS a = PartnerAttribute
+    PROPERTIES(a) READONLY index, id, name, nonull
+    PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE
+
+    LIST PartnerAttribute OBJECT a
+;
+
+EXTEND FORM options
+    OBJECTS pa = PartnerAttribute
+    PROPERTIES(pa) READONLY name, id, nonull
+    PROPERTIES(pa) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(pa) { caption = 'Partner attributes'; }
+    }
+}
+
+// attribute value
+value 'Attribute' = DATA ISTRING (Partner, PartnerAttribute) INDEXED;
+
+CONSTRAINT nonull(PartnerAttribute a) AND NOT value(Partner i, a) AND NOT SET(nonull(a))
+    MESSAGE 'The attribute is required';
+
+readonly = ABSTRACT BOOLEAN (Partner, PartnerAttribute);
+
+EXTEND FORM partner
+    OBJECTS a = PartnerAttribute
+    PROPERTIES value(p, a) COLUMNS (a) HEADER name(a) 
+;
+
+DESIGN partner {
+    tabs {
+        NEW attributes {
+            caption = 'Attributes';
+            NEW attributesPane {
+                alignment = STRETCH;
+                lines = 4;
+                MOVE PROPERTY(value(p, a));
+            }
+        }
+    }
+}
+
+EXTEND FORM partners
+    OBJECTS a = PartnerAttribute BEFORE p
+    PROPERTIES value(p, a) COLUMNS (a) HEADER name(a)
+;

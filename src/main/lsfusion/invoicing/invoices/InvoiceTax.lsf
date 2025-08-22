@@ -1,0 +1,19 @@
+MODULE InvoiceTax;
+
+REQUIRE Invoice;
+
+NAMESPACE Invoicing;
+
+DESIGN invoiceType {
+    OBJECTS {
+        NEW taxes BEFORE tabbedPane;
+    }
+}
+
+@defineTax(, InvoiceType, '', invoiceType, o, taxes);
+
+WHEN LOCAL GOAFTER in[InvoiceLine, Tax] (SETCHANGED(item(InvoiceLine l)) OR SETCHANGED(type(l))) AND countIn(type(l), TaxGroup tg) DO
+    in(l, Tax t) <- in(type(l), t) WHERE taxGroup(t) = tg;
+
+WHEN LOCAL (SETCHANGED(type(InvoiceLine l))) AND NOT countIn(type(l), TaxGroup tg) DO
+    in(l, Tax t) <- salesIn(item(l), t) WHERE taxGroup(t) = tg;

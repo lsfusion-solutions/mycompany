@@ -1,0 +1,19 @@
+MODULE PartnerHistory;
+
+REQUIRE Authentication, Time, Partner, ObjectUtils;
+
+NAMESPACE MasterData;
+
+@defineHistoryObject(partner);
+@defineHistoryModify(partner);
+
+namePartner '{Partner}' (PartnerHistory l) = name(partner(l));
+idPartner '{ID}' (PartnerHistory l) = id(partner(l));
+EXTEND FORM partnerHistory
+    PROPERTIES(h) READONLY AFTER type(h) namePartner, idPartner
+;
+
+@defineHistoryForm(partner, partner, p, tabs);
+
+@defineHistoryProperty(partner, id, '{ID}');
+@defineHistoryProperty(partner, fullName, 'Full name');

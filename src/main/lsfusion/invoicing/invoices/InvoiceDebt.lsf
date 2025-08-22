@@ -4,11 +4,13 @@ REQUIRE InvoiceDone, InvoiceCanceled, InvoiceContract, InvoiceCurrency, Debt;
 
 NAMESPACE Invoicing;
 
+skipDebt = ABSTRACT BOOLEAN (Invoice);
+
 // extend
 EXTEND CLASS Invoice : OutgoingDebt;
 type(Invoice i) += nameType(i);
 
-active (Invoice i) += active(i);
+active (Invoice i) += active(i) IF NOT skipDebt(i);
 number (Invoice i) += number(i);
 dateTime (Invoice i) += dateTime(i);
 dueDateTime (Invoice i) += dueDateTime(i);

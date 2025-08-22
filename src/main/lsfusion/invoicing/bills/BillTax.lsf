@@ -1,0 +1,13 @@
+MODULE BillTax;
+
+REQUIRE Bill;
+
+NAMESPACE Invoicing;
+
+@defineTax(purchase, Partner, '', partner, p, vendorOptions);
+
+WHEN LOCAL GOAFTER in[BillLine, Tax] (SETCHANGED(item(BillLine l)) OR SETCHANGED(vendor(l))) AND purchaseCountIn(vendor(l), TaxGroup tg) DO
+    in(l, Tax t) <- purchaseIn(vendor(l), t) WHERE taxGroup(t) = tg;
+
+WHEN LOCAL (SETCHANGED(vendor(BillLine l))) AND NOT purchaseCountIn(vendor(l), TaxGroup tg) DO
+    in(l, Tax t) <- purchaseIn(item(l), t) WHERE taxGroup(t) = tg;

@@ -1,11 +1,12 @@
 MODULE Mango;
 
-REQUIRE System, SQLUtils;
+REQUIRE System, SQLUtils, Utils;
 
 NAMESPACE Mango;
 
-// REQUIRE MangoNotify, MangoPBX, MangoEmployeeCall, MangoWebRTC, MangoRecord
-// Notify : https://<url to mycompany>/exec/Mango.notify
+// REQUIRE MangoPBX, MangoEventsCall, MangoEmployeeCall, MangoRecord
+// Notify : https://<url to mycompany>/exec/mango
+// Notice : must be melody on recieving calls in order to have time to route
 // require pgcrypto extension for the database :
 
 onStarted() +{
@@ -19,7 +20,7 @@ apiKey 'Key' = DATA STRING () CHARWIDTH 40;
 apiSecret 'Secret' = DATA STRING () CHARWIDTH 40;
 
 EXTEND FORM integrationData
-    PROPERTIES() customUrl, apiKey, apiSecret
+    PROPERTIES() mangoCustomUrl = customUrl, mangoApiKey = apiKey, mangoApiSecret = apiSecret
 ;
 
 DESIGN integrationData {
@@ -28,9 +29,9 @@ DESIGN integrationData {
             caption = 'Mango';
             NEW mangoHeader {
                 lines = 3;
-                MOVE PROPERTY(customUrl());
-                MOVE PROPERTY(apiKey());
-                MOVE PROPERTY(apiSecret());
+                MOVE PROPERTY(mangoCustomUrl);
+                MOVE PROPERTY(mangoApiKey);
+                MOVE PROPERTY(mangoApiSecret);
             }
             NEW mangoPane {
                 fill = 1;
@@ -41,24 +42,33 @@ DESIGN integrationData {
 }
 
 apiSign (STRING key, STRING json, STRING secret) =
-    FORMULA STRING 'digest(($1)||($2)||($3),\'sha256\')';
+    FORMULA STRING 'encode(digest(($1)||($2)||($3),\'sha256\'),\'hex\')';
 
 apiSign (JSON json) = apiSign(apiKey(), STRING(json), apiSecret());
+
+httpHeaders(TEXT name) = CASE
+    WHEN name = 'Content-Type' THEN 'multipart/form-data; boundary=&';
 
 apiResponse = DATA FILE ();
 
 apiGet (STRING method, JSON json) {
-    IF apiKey() THEN
-        EXTERNAL HTTP GET urlVPBX() + method 
-            BODYPARAMNAMES 'vpbx_api_key', 'sign', json 
-            PARAMS apiKey(), apiSign(json), json TO apiResponse;
+    IF apiKey() THEN {
+        logToFile('mango', CONCAT ' : ', r'Get', method, STRING(json));
+        EXTERNAL HTTP GET urlVPBX() + method
+            BODYPARAMNAMES r'vpbx_api_key', r'sign', r'json'
+            HEADERS httpHeaders
+            PARAMS apiKey(), apiSign(json), STRING(json) TO apiResponse;
+    }
 }
 
 apiPost (STRING method, JSON json) {
-    IF apiKey() THEN 
+    IF apiKey() THEN {
+        logToFile('mango', CONCAT ' : ', r'Post', method, STRING(json));
         EXTERNAL HTTP POST urlVPBX() + method
-            BODYPARAMNAMES 'vpbx_api_key', 'sign', json
-            PARAMS apiKey(), apiSign(json), json TO apiResponse;
+            BODYPARAMNAMES r'vpbx_api_key', r'sign', r'json'
+            HEADERS httpHeaders
+            PARAMS apiKey(), apiSign(json), STRING(json) TO apiResponse;
+    }
 }
 
 extension = DATA LOCAL STRING();

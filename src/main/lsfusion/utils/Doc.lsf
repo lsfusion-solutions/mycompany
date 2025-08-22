@@ -73,6 +73,9 @@ META defineDocStatus (doc, title, firstStatus, firstStatusCapt)
     readonly = ABSTRACT CASE BOOLEAN (###doc);
     readonly (###doc d) += WHEN readonly(status(d)) THEN TRUE;
 
+    dataReadonly 'Read-only' = DATA BOOLEAN (###doc);
+    readonly (###doc d) += WHEN dataReadonly(d) THEN TRUE;
+
     closed = ABSTRACT CASE BOOLEAN (###doc##Status) MATERIALIZED;
     closed 'Closed' (###doc d) = closed(status(d));
     opened 'Opened' (###doc d) = d IS ###doc AND NOT closed(d) MATERIALIZED INDEXED;
@@ -123,6 +126,9 @@ END
 META defineDocStatusForm (doc, let, beforeProp, firstStatus, firstStatusCapt)
     EXTEND FORM doc##s
         PROPERTIES(##let) READONLY imagedNameStatus BACKGROUND colorStatus(##let) BEFORE beforeProp(##let)
+        
+        PROPERTIES(##let) READONLYIF isReadonly() dataReadonly
+        
         FILTERGROUP status
             FILTER firstStatusCapt status(##let) = ###doc##Status.firstStatus
     ;
@@ -134,6 +140,8 @@ META defineDocStatusForm (doc, let, beforeProp, firstStatus, firstStatusCapt)
     }
     
     EXTEND FORM doc
+        PROPERTIES(##let) dataReadonly
+        
         PROPERTIES(##let) READONLY imagedNameStatus BACKGROUND colorStatus(##let)
     ;
     
@@ -141,6 +149,10 @@ META defineDocStatusForm (doc, let, beforeProp, firstStatus, firstStatusCapt)
         
     DESIGN doc {
         status {
+            MOVE PROPERTY(dataReadonly(##let)) {
+                valueClass = 'btn-check';
+                image = 'lock.png';
+            }
             MOVE PROPERTY(imagedNameStatus(##let));
             NEW statusGroup {
                 custom = '';
@@ -343,16 +355,6 @@ META defineDocSearch (doc, it, fun, capt, let, check)
         FILTERS ##check(itm)
     ;
 END
-
-disableHistory 'Disable history recording' = DATA BOOLEAN () PREREAD;
-EXTEND FORM System.options 
-    PROPERTIES() disableHistory
-;
-DESIGN System.options {
-    commons { 
-        MOVE PROPERTY(disableHistory()); 
-    }
-}
 
 META defineDocHistoryLineProperty(doc, docLine, prop, capt, descrProp)
     WHEN CHANGED(prop(docLine l)) AND doc(l) = ###doc d
