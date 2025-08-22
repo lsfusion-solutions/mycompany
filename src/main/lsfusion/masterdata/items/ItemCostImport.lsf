@@ -1,13 +1,13 @@
 MODULE ItemCostImport;
 
-REQUIRE ItemCost; 
+REQUIRE ItemCost, Product; 
 
 NAMESPACE MasterData;
 
 itemCostExport 'Export costs' () {
     NEWSESSION {
         IF NOT (GROUP SUM 1 IF Item p IS Item) THEN {
-            NEW p = Item {
+            NEW p = Product {
                 id(p) <- '123';
                 dataName(p) <- 'My product';
                 category(p) <- GROUP LAST Category c ORDER c WHERE c IS Category;
