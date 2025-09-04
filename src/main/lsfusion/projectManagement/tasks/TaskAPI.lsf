@@ -1,0 +1,67 @@
+MODULE TaskAPI;
+
+REQUIRE Task, ProjectTask;
+
+NAMESPACE ProjectManagement;
+
+// http://localhost:8080/exec/ProjectManagement.getTasks?assignedTo=123&opened=true&extended=true
+
+getTasks (STRING assignedTo, STRING task, BOOLEAN opened, BOOLEAN extended) {
+    IF task AND NOT task(task) THEN
+        throwException('Task not found');
+
+    IF assignedTo AND NOT partner(assignedTo) IS Employee THEN
+        throwException('Employee not found');
+
+    EXPORT JSON FROM
+        id(Task t),
+        name(t),
+        author = idAuthor(t),
+        assignedTo = idAssignedTo(t),
+        start(t), deadline(t), progress(t),
+        project = numberProject(t),
+        description = description(t) IF extended
+        WHERE id(t) AND (assignedTo(t) = partner(assignedTo) OR NOT assignedTo) AND
+                        (id(t) = task OR NOT task) AND
+                        (opened(t) OR NOT opened);
+} @@api;
+
+id = DATA LOCAL STRING[50](INTEGER);
+name = DATA LOCAL STRING(INTEGER);
+author = DATA LOCAL STRING(INTEGER);
+assignedTo = DATA LOCAL STRING(INTEGER);
+start = DATA LOCAL DATE(INTEGER);
+deadline = DATA LOCAL DATE(INTEGER);
+progress = DATA LOCAL NUMERIC(INTEGER);
+project = DATA LOCAL STRING(INTEGER);
+description = DATA LOCAL STRING(INTEGER);
+
+FORM importTasks
+    OBJECTS value = INTEGER
+    PROPERTIES(value) id, name, author, assignedTo, start, deadline, progress, project, description
+    FILTERS imported(value)
+;
+
+// http://localhost:8080/lsfusion6/exec/ProjectManagement.addTasks
+
+addTasks (FILE json) {
+    IMPORT importTasks JSON FROM json;
+    FOR imported(INTEGER task) AND NOT task(id(task)) NEW t = Task DO {
+        id(t) <- id(task);
+    }
+    
+    FOR imported(INTEGER task) AND Task t = task(id(task)) DO {
+        name(t) <- name(task);
+        author(t) <- partner(author(task));
+        assignedTo(t) <- partner(assignedTo(task));
+        start(t) <- start(task);
+        deadline(t) <- deadline(task);
+        progress(t) <- progress(task);
+        project(t) <- project(project(task));
+        description(t) <- description(task);
+    }
+
+    APPLY;
+    IF canceled() THEN
+        throwException(applyMessage());
+} @@api;
