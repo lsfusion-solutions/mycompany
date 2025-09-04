@@ -1,6 +1,6 @@
 MODULE Employee;
 
-REQUIRE Individual, Company, Authentication, Security;
+REQUIRE Individual, Company, Authentication, Security, ObjectUtils;
 
 NAMESPACE MasterData;
 
@@ -9,11 +9,26 @@ CLASS Employee 'Employee' : Individual, CustomUser;
 name '{Name}' (Employee e) = name[Partner](e) IF e IS Employee CHARWIDTH 15;
 archived '{Name}' (Employee e) = archived[Partner](e) IF e IS Employee;
 
-WHEN CHANGED(firstName(Employee e)) DO firstName[Contact](e) <- firstName(e);
-WHEN CHANGED(lastName(Employee e)) DO lastName[Contact](e) <- lastName(e);
-WHEN CHANGED(email(Employee e)) DO email[Contact](e) <- email(e);
-WHEN CHANGED(phone(Employee e)) DO phone[Contact](e) <- phone(e);
-WHEN CHANGED(postAddress(Employee e)) DO postAddress[Contact](e) <- postAddress(e);
+@defineSychronizeProperty(Employee, firstName, Contact){
+    WHEN CHANGED(firstName(Employee o)) DO firstName[Contact](o) <- firstName(o);
+    WHEN CHANGED(firstName[Contact](Employee o)) AND NOT CHANGED(firstName(o)) DO firstName(o) <- firstName[Contact](o);
+};
+@defineSychronizeProperty(Employee, lastName, Contact){
+    WHEN CHANGED(firstName(Employee o)) DO firstName[Contact](o) <- firstName(o);
+    WHEN CHANGED(firstName[Contact](Employee o)) AND NOT CHANGED(firstName(o)) DO firstName(o) <- firstName[Contact](o);
+};
+@defineSychronizeProperty(Employee, email, Contact){
+    WHEN CHANGED(firstName(Employee o)) DO firstName[Contact](o) <- firstName(o);
+    WHEN CHANGED(firstName[Contact](Employee o)) AND NOT CHANGED(firstName(o)) DO firstName(o) <- firstName[Contact](o);
+};
+@defineSychronizeProperty(Employee, phone, Contact){
+    WHEN CHANGED(firstName(Employee o)) DO firstName[Contact](o) <- firstName(o);
+    WHEN CHANGED(firstName[Contact](Employee o)) AND NOT CHANGED(firstName(o)) DO firstName(o) <- firstName[Contact](o);
+};
+@defineSychronizeProperty(Employee, postAddress, Contact){
+    WHEN CHANGED(firstName(Employee o)) DO firstName[Contact](o) <- firstName(o);
+    WHEN CHANGED(firstName[Contact](Employee o)) AND NOT CHANGED(firstName(o)) DO firstName(o) <- firstName[Contact](o);
+};
 
 EXTEND CLASS PartnerType {
     employee 'Employee'
