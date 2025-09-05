@@ -24,6 +24,10 @@ hours 'Hours' (DATE d, Employee e, Project p, TimeEntryType et) =
     GROUP SUM hours(TimeEntry t) IF date(t) = d AND employee(t) = e AND project(t) = p AND type(t) = et;
 
 timeEntry (DATE d, Employee e, Project p) = GROUP MIN TimeEntry t IF date(t) = d AND employee(t) = e AND project(t) = p;
+
+lastTimeEntry (Employee e, Project p) = GROUP LAST TimeEntry t ORDER date(t), t WHERE employee(t) = e AND project(t) = p;
+dateLastTimeEntry 'Last time entry date' (Employee e, Project p) = date(lastTimeEntry(e, p));
+
 hours 'Hours' (DATE d, Employee e, Project p) =
     GROUP SUM hours(TimeEntry t) IF date(t) = d AND employee(t) = e AND project(t) = p;
 hours 'Hours' (Employee e, Project p, DATE from, DATE to) =
