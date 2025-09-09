@@ -18,6 +18,16 @@ EXTEND FORM paymentMethod PROPERTIES dataIdPaymentAtol(pm);
 
 GROUP request;
 
+url (Pos p) = 'http://' + hostname(p) + ':' + (OVERRIDE port(p), 16732);
+urlRequests(p) = url(p) + '/requests';
+
+headers = DATA LOCAL STRING (STRING);
+
+request (Pos p, FILE f) {
+    headers(r'Authorization') <- r'Basic ' + encodeBase64(login(p) + ':' + password(p));
+    EXTERNAL HTTP CLIENT urlRequests(p) HEADERS headers PARAMS f;
+}
+
 // report X
 FORM reportX
     PROPERTIES uuid = generatedUUID()
@@ -27,7 +37,7 @@ reportX(Pos p) {
     generateUUID();
     EXPORT reportX JSON CHARSET 'UTF-8';
     TRY {
-        EXTERNAL HTTP CLIENT 'http://' + hostname(p) + ':16732/requests' PARAMS exportFile();
+        request(p, exportFile());
     } CATCH {
         CASE
             WHEN statusHttp() > 299 THEN
@@ -49,7 +59,7 @@ continuePrint(Pos p) {
     generateUUID();
     EXPORT continuePrint JSON CHARSET 'UTF-8';
     TRY {
-        EXTERNAL HTTP CLIENT 'http://' + hostname(p) + ':16732/requests' PARAMS exportFile();
+        request(p, exportFile());
     } CATCH {
         CASE
             WHEN statusHttp() > 299 THEN
@@ -71,7 +81,7 @@ openShift(Session s) {
     generateUUID();
     EXPORT openShift JSON CHARSET 'UTF-8';
     TRY {
-        EXTERNAL HTTP CLIENT 'http://' + hostname(pos(s)) + ':16732/requests' PARAMS exportFile();
+        request(pos(s), exportFile());
         NEWSESSION {
             fiscalOpenSession(s) <- TRUE;
             APPLY;
@@ -96,7 +106,7 @@ closeShift(Session s) {
     generateUUID();
     EXPORT closeShift JSON CHARSET 'UTF-8';
     TRY {
-        EXTERNAL HTTP CLIENT 'http://' + hostname(pos(s)) + ':16732/requests' PARAMS exportFile();
+        request(pos(s), exportFile());
         NEWSESSION {
             fiscalCloseSession(s) <- TRUE;
             APPLY;
@@ -125,7 +135,7 @@ cashIn(IncomingPayment i) {
     generateUUID();
     EXPORT cashIn OBJECTS i = i JSON CHARSET 'UTF-8';
     TRY {
-        EXTERNAL HTTP CLIENT 'http://' + hostname(pos(session(i))) + ':16732/requests' PARAMS exportFile();
+        request(pos(session(i)), exportFile());
         NEWSESSION {
             fiscal(i) <- TRUE;
             APPLY;
@@ -153,7 +163,7 @@ cashOut(OutgoingPayment o) {
     generateUUID();
     EXPORT cashOut OBJECTS o = o JSON CHARSET 'UTF-8';
     TRY {
-        EXTERNAL HTTP CLIENT 'http://' + hostname(pos(session(o))) + ':16732/requests' PARAMS exportFile();
+        request(pos(session(o)), exportFile());
         NEWSESSION {
             fiscal(o) <- TRUE;
             APPLY;
@@ -203,7 +213,7 @@ sell(Invoice i) {
     generateUUID();
     EXPORT sell OBJECTS i = i JSON CHARSET 'UTF-8';
     TRY {
-        EXTERNAL HTTP CLIENT 'http://' + hostname(pos(session(i))) + ':16732/requests' PARAMS exportFile();
+        request(pos(session(i)), exportFile());
         NEWSESSION {
             fiscal(i) <- TRUE;
             APPLY;

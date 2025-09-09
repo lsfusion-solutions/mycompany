@@ -16,6 +16,11 @@ nameDriver 'Driver' (Pos p) = name(driver(p));
 dataHostname 'Host' = DATA ISTRING[30] (Pos);
 hostname 'Host' (Pos p) = OVERRIDE dataHostname(p), 'localhost'; 
 
+port 'Port' = DATA INTEGER (Pos);
+
+login '{authentication.login}' = DATA STRING (Pos);
+password '{authentication.password}' = DATA STRING (Pos) ECHO;
+
 FORM cashDrivers 'Cash drivers'
     OBJECTS d = CashDriver
     PROPERTIES(d) READONLY name
@@ -23,7 +28,11 @@ FORM cashDrivers 'Cash drivers'
     LIST CashDriver OBJECT d
 ;
 
-EXTEND FORM pos PROPERTIES(p) nameDriver, dataHostname SHOWIF driver(p);    
+EXTEND FORM pos 
+    PROPERTIES(p) nameDriver
+    PROPERTIES(p) SHOWIF driver(p) dataHostname, port, login, password
+;
+
 EXTEND FORM poss PROPERTIES(p) READONLY nameDriver;
 
 session = DATA Session (Payment);
