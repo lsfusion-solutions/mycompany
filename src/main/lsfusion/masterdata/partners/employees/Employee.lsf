@@ -7,28 +7,13 @@ NAMESPACE MasterData;
 CLASS Employee 'Employee' : Individual, CustomUser;
 
 name '{Name}' (Employee e) = name[Partner](e) IF e IS Employee CHARWIDTH 15;
-archived '{Name}' (Employee e) = archived[Partner](e) IF e IS Employee;
+archived 'Archived' (Employee e) = archived[Partner](e) IF e IS Employee;
 
-@defineSychronizeProperty(Employee, firstName, Contact){
-    WHEN CHANGED(firstName(Employee o)) DO firstName[Contact](o) <- firstName(o);
-    WHEN CHANGED(firstName[Contact](Employee o)) AND NOT CHANGED(firstName(o)) DO firstName(o) <- firstName[Contact](o);
-};
-@defineSychronizeProperty(Employee, lastName, Contact){
-    WHEN CHANGED(firstName(Employee o)) DO firstName[Contact](o) <- firstName(o);
-    WHEN CHANGED(firstName[Contact](Employee o)) AND NOT CHANGED(firstName(o)) DO firstName(o) <- firstName[Contact](o);
-};
-@defineSychronizeProperty(Employee, email, Contact){
-    WHEN CHANGED(firstName(Employee o)) DO firstName[Contact](o) <- firstName(o);
-    WHEN CHANGED(firstName[Contact](Employee o)) AND NOT CHANGED(firstName(o)) DO firstName(o) <- firstName[Contact](o);
-};
-@defineSychronizeProperty(Employee, phone, Contact){
-    WHEN CHANGED(firstName(Employee o)) DO firstName[Contact](o) <- firstName(o);
-    WHEN CHANGED(firstName[Contact](Employee o)) AND NOT CHANGED(firstName(o)) DO firstName(o) <- firstName[Contact](o);
-};
-@defineSychronizeProperty(Employee, postAddress, Contact){
-    WHEN CHANGED(firstName(Employee o)) DO firstName[Contact](o) <- firstName(o);
-    WHEN CHANGED(firstName[Contact](Employee o)) AND NOT CHANGED(firstName(o)) DO firstName(o) <- firstName[Contact](o);
-};
+@defineSychronizeProperty(Employee, firstName, Contact);
+@defineSychronizeProperty(Employee, lastName, Contact);
+@defineSychronizeProperty(Employee, email, Contact);
+@defineSychronizeProperty(Employee, phone, Contact);
+@defineSychronizeProperty(Employee, postAddress, Contact);
 
 EXTEND CLASS PartnerType {
     employee 'Employee'
