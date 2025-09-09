@@ -17,6 +17,7 @@ idPaymentAtol 'Код платежа Атол' (PaymentMethod p) = OVERRIDE data
 EXTEND FORM paymentMethod PROPERTIES dataIdPaymentAtol(pm); 
 
 GROUP request;
+GROUP operator;
 
 url (Pos p) = 'http://' + hostname(p) + ':' + (OVERRIDE port(p), 16732);
 urlRequests(p) = url(p) + '/requests';
@@ -32,6 +33,7 @@ request (Pos p, FILE f) {
 FORM reportX
     PROPERTIES uuid = generatedUUID()
     PROPERTIES IN request type = 'reportX'
+    PROPERTIES IN operator currentUserName() EXTID 'name' 
 ;
 reportX(Pos p) {
     generateUUID();
@@ -54,6 +56,7 @@ reportX(Pos p) + WHEN driver(p) = CashDriver.atol10 THEN {reportX(p);}
 FORM continuePrint
     PROPERTIES uuid = generatedUUID()
     PROPERTIES IN request type = 'continuePrint'
+    PROPERTIES IN operator currentUserName() EXTID 'name'
 ;
 continuePrint(Pos p) {
     generateUUID();
@@ -76,6 +79,7 @@ continuePrint(Pos p) + WHEN driver(p) = CashDriver.atol10 THEN {continuePrint(p)
 FORM openShift
     PROPERTIES uuid = generatedUUID()
     PROPERTIES IN request type = 'openShift'
+    PROPERTIES IN operator currentUserName() EXTID 'name'
 ;
 openShift(Session s) {
     generateUUID();
@@ -101,6 +105,7 @@ openShift(Session s) + WHEN driver(pos(s)) = CashDriver.atol10 THEN {openShift(s
 FORM closeShift
     PROPERTIES uuid = generatedUUID()
     PROPERTIES IN request type = 'closeShift'
+    PROPERTIES IN operator currentUserName() EXTID 'name'
 ;
 closeShift(Session s) {
     generateUUID();
@@ -126,9 +131,10 @@ closeShift(Session s) + WHEN driver(pos(s)) = CashDriver.atol10 THEN {closeShift
 // cash in
 FORM cashIn
     PROPERTIES uuid = generatedUUID()
-    
+
     OBJECTS i = IncomingPayment  
     PROPERTIES IN request type = 'cashIn'
+    PROPERTIES IN operator currentUserName() EXTID 'name'
     PROPERTIES IN request cashSum = amount(i)
 ;
 cashIn(IncomingPayment i) {
@@ -157,6 +163,7 @@ FORM cashOut
     
     OBJECTS o = OutgoingPayment  
     PROPERTIES IN request type = 'cashOut'
+    PROPERTIES IN operator currentUserName() EXTID 'name'
     PROPERTIES IN request cashSum = amount(o)
 ;
 cashOut(OutgoingPayment o) {
@@ -184,8 +191,8 @@ typeLine = ABSTRACT STRING (InvoiceLine);
 typeLine(InvoiceLine l) += 'posi' + 'tion';
  
 paymentObject = ABSTRACT CASE STRING (InvoiceLine);
-paymentObject (InvoiceLine l) += WHEN item(l) IS Product THEN 'comm' + 'odity';
-paymentObject (InvoiceLine l) += WHEN item(l) IS Service THEN 'ser' + 'vice';
+paymentObject (InvoiceLine l) += WHEN item(l) IS Product THEN r'commodity';
+paymentObject (InvoiceLine l) += WHEN item(l) IS Service THEN r'service';
 
 paymentType (IncomingPayment p, Invoice i) = idPaymentAtol(paymentMethod(p, i));
  
@@ -195,7 +202,8 @@ FORM sell
     PROPERTIES uuid = generatedUUID()
     
     OBJECTS i = Invoice
-    PROPERTIES IN request type = 'sell' 
+    PROPERTIES IN request type = 'sell'
+    PROPERTIES IN operator currentUserName() EXTID 'name'
     
     OBJECTS l = InvoiceLine IN request EXTID 'items'
     PROPERTIES(l) typeLine EXTID 'type', nameItem EXTID 'name', resultPrice EXTID 'price', quantity,
