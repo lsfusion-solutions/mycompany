@@ -184,7 +184,13 @@ createInvoice (Session s) {
 }
 
 EXTEND FORM posDashboard
-    EVENTS ON CHANGE s createInvoice(s);
+    EVENTS ON CHANGE s {
+        IF i AND s THEN session(i) <- s;
+        ELSE {
+            CANCEL;
+            createInvoice(s);
+        }
+    }
 ;
 
 NAVIGATOR {
