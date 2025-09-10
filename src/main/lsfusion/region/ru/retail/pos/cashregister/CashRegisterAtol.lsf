@@ -211,7 +211,7 @@ FORM sell
 
     FILTERS i = invoice(l)
     
-    PROPERTIES taxType = IF countTaxes(l) THEN 'vat'  + trim(toChar(taxPercent(l), '99')) ELSE 'none' EXTID 'type' IN tax
+    PROPERTIES taxType = IF countTaxes(l) THEN 'vat'  + trim(toChar((OVERRIDE taxPercent(l), 0), '99')) ELSE 'none' EXTID 'type' IN tax
     
     OBJECTS d = Debt IN request EXTID 'payments'
     PROPERTIES (d, i) paymentType EXTID 'type', paid EXTID 'sum'
