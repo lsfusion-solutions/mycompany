@@ -22,7 +22,9 @@ addressLines 'Address' (Partner p) = CONCAT '\n ', address(p), city(p), state(p)
 phone 'Phone' = DATA ISTRING[100] (Partner) CHARWIDTH 12;
 email 'Email' = DATA ISTRING[400] (Partner) CHARWIDTH 20 REGEXP '[\\-!#-\'*+\\/-9=?A-Z^-~]+(\\.[\\-!#-\'*+\\/-9=?A-Z^-~]+)*@[0-9A-Za-z]([0-9A-Za-z\\-]\{0,61\}[0-9A-Za-z])?(\\.[0-9A-Za-z]([0-9A-Za-z\\-]\{0,61\}[0-9A-Za-z])?)+' '{authentication.email.contact.incorrect}';
 
-partnerEmail (ISTRING[400] email) = GROUP MAX Partner p BY email(p);
+match (STRING phone, STRING number) = regexpReplace(phone, '[+() -]', '', 'g') = regexpReplace(number, '[+() -]', '', 'g');
+partnerPhone (ISTRING[100] phone) = GROUP LAST Partner p ORDER p WHERE match(phone(p), phone);
+partnerEmail (ISTRING[400] email) = GROUP LAST Partner p ORDER p WHERE lower(email(p)) = email;
 
 archived 'Archived' = DATA BOOLEAN (Partner);
 active '{Active}' (Partner p) = NOT archived(p);
@@ -129,7 +131,7 @@ FORM partners 'Partners'
     PROPERTIES(p) READONLYIF isReadonly() name, id, nameType, addressCsv, phone, email 
     PROPERTIES(p) NEWSESSION EDIT, DELETE 
     FILTERGROUP active
-        FILTER '{Active}' active(p) 'F10' DEFAULT
+    FILTER '{Active}' active(p) 'F10' DEFAULT
         FILTER 'Archived' archived(p) 'F9'
 ;
 

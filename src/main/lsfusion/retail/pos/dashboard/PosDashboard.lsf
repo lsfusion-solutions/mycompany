@@ -18,7 +18,7 @@ FORM posDashboard 'POS' LOCALASYNC
     
     OBJECTS i = Invoice PANEL
     PROPERTIES(i) 'Total' = fullAmount, 'Discount' = discountAmount, 'To pay' = amount, 
-                  nameCustomer
+                  nameCustomer, emailCustomer, phoneCustomer
     FILTERS session(i) = s
     
     OBJECTS l = InvoiceLine
@@ -59,8 +59,11 @@ DESIGN posDashboard {
                     }
                     NEW invoice {
                         alignment = STRETCH;
+                        lines = 2;
                         horizontal = TRUE;
                         MOVE PROPERTY(nameCustomer(i)) { changeKey = 'F5'; }
+                        MOVE PROPERTY(phoneCustomer(i));
+                        MOVE PROPERTY(emailCustomer(i));
                     }
                     REMOVE BOX(l);
                     MOVE GRID(l) {
