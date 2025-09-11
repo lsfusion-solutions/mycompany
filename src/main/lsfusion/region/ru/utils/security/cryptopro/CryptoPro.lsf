@@ -1,0 +1,80 @@
+MODULE CryptoPro;
+
+REQUIRE Company, Employee;
+
+CLASS Certificate 'Сертификат CryptoPro';
+
+serialNumber 'Serial number' = DATA STRING (Certificate) INDEXED;
+
+company = DATA LegalEntity (Certificate) INDEXED;
+nameCompany 'Company' (Certificate c) = name(company(c));
+
+certificate = GROUP AGGR Certificate c BY serialNumber(c);
+
+fromDate 'Date from' = DATA DATE (Certificate);
+toDate 'Date to' = DATA DATE (Certificate);
+
+subjectName 'Subject name' = DATA STRING (Certificate);
+issuerName 'Issuer name' = DATA STRING (Certificate);
+
+thumbprint 'Thumbprint' = DATA STRING (Certificate);
+
+in 'Incl.' = DATA BOOLEAN (Certificate, CustomUser);
+users 'Users' (Certificate c) = GROUP CONCAT name(CustomUser u) IF in(c, u), ',' ORDER u CHARWIDTH 30;
+
+certificate (Company c, CustomUser u) = GROUP MAX Certificate ct IF company(ct) = c AND in(ct, u);
+
+getCryptoProCertificates 'Get certificates' () {
+    LOCAL certs = JSON();
+    INTERNAL CLIENT r'getCryptoProCertificates' TO certs;
+
+    IMPORT JSON FROM certs() FIELDS STRING serialNumber, DATE fromDate, DATE toDate, STRING subjectName, STRING issuerName, STRING thumbprint DO {
+        IF NOT certificate(serialNumber) THEN NEW c = Certificate {
+            serialNumber(c) <- serialNumber;
+            fromDate(c) <- fromDate;
+            toDate(c) <- toDate;
+            subjectName(c) <- subjectName;
+            issuerName(c) <- issuerName;
+            thumbprint(c) <- thumbprint;
+        }
+
+        in(certificate(serialNumber), currentUser()) <- TRUE;
+    }
+}
+
+EXTEND FORM integrationData
+    OBJECTS ccp = Certificate
+    PROPERTIES (ccp) READONLY serialNumber, fromDate, toDate, subjectName, issuerName, thumbprint
+    PROPERTIES (ccp) nameCompany, users, DELETE
+    PROPERTIES () getCryptoProCertificates TOOLBAR DRAW ccp
+;
+
+DESIGN integrationData {
+    pane {
+        NEW cryptoPro {
+            caption = r'CryptoPro';
+            MOVE BOX(ccp);
+        }
+    }
+}
+
+// sign
+signature = DATA LOCAL STRING ();
+sign(RAWFILE f, Certificate c) {
+    INTERNAL CLIENT r'signCryptoPro' PARAMS encodeBase64(f), thumbprint(c) TO signature;
+}
+
+sign (RAWFILE f, LegalEntity l) {
+    sign(f, certificate(l, currentUser()));
+}
+sign (FILE f, LegalEntity l) {
+    sign(RAWFILE(f), l);
+}
+
+onWebClientInit() + {
+    onWebClientInit('cryptopro.js') <- 1;
+}
+
+onWebClientLoad() +{
+    INTERNAL CLIENT WAIT 'https://www.cryptopro.ru/sites/default/files/products/cades/cadesplugin_api.js';
+}
