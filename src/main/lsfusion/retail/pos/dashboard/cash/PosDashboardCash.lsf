@@ -97,7 +97,7 @@ EXTEND FORM posDashboard
     
     OBJECTS ip = IncomingPayment
     PROPERTIES(ip) READONLY dateTime, amount
-    PROPERTIES(p)  deposit DRAW ip TOOLBAR SHOWIF cashAccount(p) 
+    PROPERTIES(p)  deposit DRAW ip TOOLBAR DISABLEIF NOT cashAccount(p) 
     PROPERTIES(ip) DELETE GRID
     FILTERS companyAccount(ip) = cashAccount(p), 
             type(ip) = depositPaymentType()
@@ -105,7 +105,7 @@ EXTEND FORM posDashboard
 
     OBJECTS op = OutgoingPayment
     PROPERTIES(op) READONLY dateTime, amount
-    PROPERTIES(p)  withdraw DRAW op TOOLBAR SHOWIF cashAccount(p)
+    PROPERTIES(p)  withdraw DRAW op TOOLBAR DISABLEIF NOT cashAccount(p)
     PROPERTIES(op) DELETE GRID
     FILTERS companyAccount(op) = cashAccount(p),
             type(op) = withdrawPaymentType()
