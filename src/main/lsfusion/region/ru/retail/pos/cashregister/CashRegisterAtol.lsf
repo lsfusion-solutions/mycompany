@@ -1,6 +1,6 @@
 MODULE CashRegisterAtol;
 
-REQUIRE CashRegister, ServiceP, Debt;
+REQUIRE CashRegisterFiscal, ServiceP, Debt;
 
 PRIORITY Retail;
 
@@ -23,16 +23,59 @@ url (Pos p) = 'http://' + hostname(p) + ':' + (OVERRIDE port(p), 16732);
 urlRequests(p) = url(p) + '/requests';
 
 headers = DATA LOCAL STRING (STRING);
+headers (Pos p, STRING h) = CASE 
+    WHEN h = r'Authorization' THEN r'Basic ' + encodeBase64(login(p) + ':' + password(p)); 
+
+requestResult = DATA LOCAL FILE ();
 
 request (Pos p, FILE f) {
-    headers(r'Authorization') <- r'Basic ' + encodeBase64(login(p) + ':' + password(p));
-    EXTERNAL HTTP CLIENT urlRequests(p) HEADERS headers PARAMS f;
+    headers(STRING h) <- headers(p, h);
+    EXTERNAL HTTP CLIENT urlRequests(p) HEADERS headers PARAMS f TO requestResult;
+}
+
+// request with response
+requestResponseNumberAttempts 'Кол-во попыток чтения ответа от драйвера АТОЛ' = DATA INTEGER ();
+EXTEND FORM options PROPERTIES() requestResponseNumberAttempts;
+DESIGN options { commons { MOVE PROPERTY(requestResponseNumberAttempts()); } }
+
+GROUP error;
+GROUP result;
+GROUP fiscalParams : result;
+
+fiscalDocumentNumber = DATA LOCAL NUMERIC(INTEGER);
+code = DATA LOCAL NUMERIC(INTEGER);
+description = DATA LOCAL STRING(INTEGER);
+status = DATA LOCAL STRING(INTEGER);
+
+FORM requestResponse
+    OBJECTS results = INTEGER
+
+    PROPERTIES(results) IN error code, description
+    PROPERTIES(results) status
+    
+    PROPERTIES(results) IN fiscalParams fiscalDocumentNumber
+    FILTERS imported(results)
+;
+
+requestWithResponse (Pos p, FILE f) {
+    headers(STRING h) <- headers(p, h);
+
+    EXTERNAL HTTP CLIENT POST urlRequests(p) HEADERS headers PARAMS f TO requestResult;
+
+    // get answer
+    FOR iterate(INTEGER i, 1, requestResponseNumberAttempts()) DO {
+        sleep(1000);
+
+        EXTERNAL HTTP CLIENT GET urlRequests(p) + '/' + generatedUUID() HEADERS headers TO requestResult;
+        IMPORT requestResponse JSON FROM requestResult();
+        IF NOT (status(0) = 'wait' OR status(0) = 'inProgress') THEN BREAK;
+    }
 }
 
 // report X
 FORM reportX
     PROPERTIES uuid = generatedUUID()
-    PROPERTIES IN request type = 'reportX'
+    PROPERTIES IN request type = r'reportX'
     PROPERTIES IN operator currentUserName() EXTID 'name' 
 ;
 reportX(Pos p) {
@@ -55,7 +98,7 @@ reportX(Pos p) + WHEN driver(p) = CashDriver.atol10 THEN {reportX(p);}
 // continue print
 FORM continuePrint
     PROPERTIES uuid = generatedUUID()
-    PROPERTIES IN request type = 'continuePrint'
+    PROPERTIES IN request type = r'continuePrint'
     PROPERTIES IN operator currentUserName() EXTID 'name'
 ;
 continuePrint(Pos p) {
@@ -78,7 +121,7 @@ continuePrint(Pos p) + WHEN driver(p) = CashDriver.atol10 THEN {continuePrint(p)
 // open shift
 FORM openShift
     PROPERTIES uuid = generatedUUID()
-    PROPERTIES IN request type = 'openShift'
+    PROPERTIES IN request type = r'openShift'
     PROPERTIES IN operator currentUserName() EXTID 'name'
 ;
 openShift(Session s) {
@@ -104,7 +147,7 @@ openShift(Session s) + WHEN driver(pos(s)) = CashDriver.atol10 THEN {openShift(s
 // close shift
 FORM closeShift
     PROPERTIES uuid = generatedUUID()
-    PROPERTIES IN request type = 'closeShift'
+    PROPERTIES IN request type = r'closeShift'
     PROPERTIES IN operator currentUserName() EXTID 'name'
 ;
 closeShift(Session s) {
@@ -133,7 +176,7 @@ FORM cashIn
     PROPERTIES uuid = generatedUUID()
 
     OBJECTS i = IncomingPayment  
-    PROPERTIES IN request type = 'cashIn'
+    PROPERTIES IN request type = r'cashIn'
     PROPERTIES IN operator currentUserName() EXTID 'name'
     PROPERTIES IN request cashSum = amount(i)
 ;
@@ -162,7 +205,7 @@ FORM cashOut
     PROPERTIES uuid = generatedUUID()
     
     OBJECTS o = OutgoingPayment  
-    PROPERTIES IN request type = 'cashOut'
+    PROPERTIES IN request type = r'cashOut'
     PROPERTIES IN operator currentUserName() EXTID 'name'
     PROPERTIES IN request cashSum = amount(o)
 ;
@@ -188,7 +231,7 @@ cashOut(OutgoingPayment o) + WHEN driver(pos(session(o))) = CashDriver.atol10 TH
 
 //buy
 typeLine = ABSTRACT STRING (InvoiceLine);
-typeLine(InvoiceLine l) += 'posi' + 'tion';
+typeLine(InvoiceLine l) += r'position';
  
 paymentObject = ABSTRACT CASE STRING (InvoiceLine);
 paymentObject (InvoiceLine l) += WHEN item(l) IS Product THEN r'commodity';
@@ -217,22 +260,25 @@ FORM sell
     PROPERTIES (d, i) paymentType EXTID 'type', paid EXTID 'sum'
     FILTERS paid(d, i), active(d)
 ;
+
 sell(Invoice i) {
     generateUUID();
     EXPORT sell OBJECTS i = i JSON CHARSET 'UTF-8';
     TRY {
-        request(pos(session(i)), exportFile());
-        NEWSESSION {
-            fiscal(i) <- TRUE;
-            APPLY;
-        }
-    } CATCH
-        CASE
-            WHEN statusHttp() > 299 THEN
-                MESSAGE 'Ошибка - ' + STRING(statusHttp());
-            WHEN NOT statusHttp() THEN
-                MESSAGE 'Ошибка - нет связи с хостом АТОЛ v.10';
-            ELSE
-                MESSAGE 'Ошибка - потеряна связь с хостом АТОЛ v.10';
+        requestWithResponse(pos(session(i)), exportFile());
+        IF status(0) = 'ready' THEN
+            NEWSESSION NESTED (fiscalDocumentNumber) { 
+                fiscal(i) <- TRUE; 
+                fiscalNumber(i) <- fiscalDocumentNumber(0);
+                APPLY; 
+            }
+        ELSE {
+            fileToString(requestResult());
+            MESSAGE 'Ошибка при обработке чека : ' + resultString();
+        } 
+    } CATCH {
+        fileToString(requestResult());
+        MESSAGE 'Ошибка при отправке чека : ' + OVERRIDE messageCaughtException(), '';
+    }
 }
-sell(Invoice i) + WHEN driver(pos(session(i))) THEN { sell(i);}
+sell(Invoice i) + WHEN driver(pos(session(i))) = CashDriver.atol10 THEN { sell(i); }

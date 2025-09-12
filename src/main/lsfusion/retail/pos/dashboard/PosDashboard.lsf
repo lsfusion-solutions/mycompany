@@ -34,7 +34,7 @@ FORM posDashboard 'POS' LOCALASYNC
     
     OBJECTS si = Invoice
     PROPERTIES(si) READONLY number, dateTime, nameCustomer, 'Total' = fullAmount, 'Discount' = discountAmount, 'To pay' = amount
-    PROPERTIES(si) NEWSESSION EDIT
+    PROPERTIES(si) NEWSESSION EDIT, DELETE SHOWIF NOT readonly(si)
     FILTERGROUP invoices
         FILTER 'By session' PREV(session(si)) = s DEFAULT
         FILTER 'By POS' PREV(pos(session(si))) = p

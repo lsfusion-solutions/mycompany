@@ -1,8 +1,6 @@
 MODULE CashRegister;
 
-REQUIRE Pos, Session, IncomingPayment, OutgoingPayment, Invoicing,
-        PosDashboard, PosDashboardPayment, PosDashboardCash,
-        CashRegisterMeta;
+REQUIRE Pos;
 
 NAMESPACE Retail;
 
@@ -34,67 +32,3 @@ EXTEND FORM pos
 ;
 
 EXTEND FORM poss PROPERTIES(p) READONLY nameDriver;
-
-session = DATA Session (Payment);
-
-openShift 'Open session' ABSTRACT CASE EXCLUSIVE (Session);
-closeShift 'Close session' ABSTRACT CASE EXCLUSIVE (Session);
-cashIn 'Cash in' ABSTRACT CASE EXCLUSIVE (Payment);
-cashOut 'Cash out' ABSTRACT CASE EXCLUSIVE (Payment);
-sell 'Cash receipt' ABSTRACT CASE EXCLUSIVE (Invoice);
-
-continuePrint 'Continue printing' ABSTRACT CASE EXCLUSIVE (Pos);
-reportX 'X-Report' ABSTRACT CASE EXCLUSIVE (Pos);
-
-afterOpen(Session s) + {openShift(s);}
-afterClose(Session s) + {closeShift(s);}
-afterPosPayment(Invoice i) + {sell(i);}
-afterDeposit(Pos p, IncomingPayment i) + {
-    session(i) <- openedSession(p);
-    cashIn(i);
-}
-afterWithdraw(Pos p, OutgoingPayment o) + {
-    session(o) <- openedSession(p);
-    cashOut(o);
-}
-
-fiscalOpenSession 'Fiscal' = DATA BOOLEAN (Session);
-fiscalCloseSession 'Fiscal' = DATA BOOLEAN (Session);
-
-refiscalSession 'Fiscalize' (Session s) {
-    IF fiscalOpenSession(s) AND NOT fiscalCloseSession(s) AND closingDateTime(s) THEN
-        closeShift(s);
-    ELSE
-        IF NOT fiscalOpenSession(s) AND NOT closingDateTime(s) THEN
-            openShift(s);
-}
-
-EXTEND FORM session
-    PROPERTIES(s) fiscalOpenSession SHOWIF NOT closingDateTime(s),
-                  fiscalCloseSession SHOWIF closingDateTime(s),
-                  refiscalSession SHOWIF NOT fiscalCloseSession(s) AND (closingDateTime(s) OR NOT fiscalOpenSession(s)) 
-;
-
-DESIGN session {
-    header {
-        NEW fiscal {
-            horizontal = TRUE;
-            MOVE PROPERTY(fiscalOpenSession(s));
-            MOVE PROPERTY(fiscalCloseSession(s));
-            MOVE PROPERTY(refiscalSession(s));
-        }
-    }
-}
-
-@defFiscal(incomingPayment, p, cashIn);
-@defFiscal(outgoingPayment, p, cashOut);
-@defFiscal(invoice, i, sell);
-
-EXTEND FORM posDashboard PROPERTIES(p) continuePrint, reportX; 
-
-DESIGN posDashboard {
-    cashRegister {
-        MOVE PROPERTY(continuePrint(p));
-        MOVE PROPERTY(reportX(p));
-    }
-}
