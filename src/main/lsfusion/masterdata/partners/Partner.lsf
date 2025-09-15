@@ -29,6 +29,8 @@ partnerEmail (ISTRING[400] email) = GROUP LAST Partner p ORDER p WHERE lower(ema
 archived 'Archived' = DATA BOOLEAN (Partner);
 active '{Active}' (Partner p) = NOT archived(p);
 
+logo = DATA IMAGEFILE (Partner);
+
 // type
 CLASS PartnerType 'Partner type';
 
@@ -50,7 +52,7 @@ nameType 'Partner type' (Partner p) = name(type(p));
 
 FORM partner 'Partner'
     OBJECTS p = Partner PANEL 
-    PROPERTIES(p) id, nameType, 
+    PROPERTIES(p) id, nameType, logo, 
                   address, city, state, zip,
                   phone, email,
                   archived
@@ -80,13 +82,24 @@ DESIGN partner {
         NEW header {
             horizontal = TRUE;            
             NEW headerLeft {
-                NEW headerTop {
-                    horizontal = TRUE;
+                NEW headerMain {
                     alignment = STRETCH;
-                    MOVE PROPERTY(id(p)); 
-                    MOVE PROPERTY(nameType(p));
+                    horizontal = TRUE;
+                    NEW headerMainLeft {
+                        fill = 1;
+                        NEW headerTop {
+                            horizontal = TRUE;
+                            alignment = STRETCH;
+                            MOVE PROPERTY(id(p));
+                            MOVE PROPERTY(nameType(p));
+                        }
+                        NEW headerDetails { alignment = STRETCH; }
+                    }
+                    MOVE PROPERTY(logo(p)) {
+                        size = (100, 100);
+                        caption = '';
+                    }
                 }
-                NEW headerDetails { alignment = STRETCH; }
                 NEW headerPane {
                     horizontal = TRUE;
                     alignment = STRETCH;
@@ -105,7 +118,7 @@ DESIGN partner {
                     }
                 }
             }
-            NEW headerRight;    
+            NEW headerRight;
         }
         NEW tabs {
             tabbed = TRUE;
