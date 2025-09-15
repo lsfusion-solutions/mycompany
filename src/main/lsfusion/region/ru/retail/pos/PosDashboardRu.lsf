@@ -1,0 +1,23 @@
+MODULE PosDashboardRu;
+
+REQUIRE PosDashboardPayment, CashRegisterFiscal;
+
+NAMESPACE Retail;
+
+fiscalNumber 'Номер чека' = DATA INTEGER (Invoice);
+EXTEND FORM posDashboard PROPERTIES(si) READONLY fiscalNumber AFTER fiscal(si);
+
+emailOrPhone 'Отправить чек на' = DATA STRING (Invoice);
+
+EXTEND FORM posPayment
+    PROPERTIES(i) emailOrPhone ON CHANGE {
+        INPUT s = OVERRIDE emailOrPhone(i), email(customer(i)), phone(customer(i)) DO
+            emailOrPhone(i) <- s;
+    }
+;
+
+DESIGN posPayment {
+    top {
+        MOVE PROPERTY(emailOrPhone(i)) { fontSize = 24; alignment = STRETCH; }
+    }
+}

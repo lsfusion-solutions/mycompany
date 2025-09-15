@@ -162,3 +162,8 @@ META defineHistoryModify (obj)
         PROPERTIES show###obj##History() TOOLBAR
     ;
 END
+
+META defineSychronizeProperty (obj, prop, cls)
+    WHEN CHANGED(prop(obj o)) DO prop[cls](o) <- prop(o);
+    WHEN CHANGED(prop[cls](obj o)) AND NOT CHANGED(prop(o)) DO prop(o) <- prop[cls](o);
+END

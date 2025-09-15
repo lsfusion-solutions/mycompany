@@ -7,7 +7,7 @@ REQUIRE PosDashboard, PosPaymentMethod,
 NAMESPACE Retail;
 
 FORM inputMoney 'Deposit/withdrawal cash'
-    PROPERTIES() READONLY keyboardDecimalInput
+    PROPERTIES() keyboardDecimalInput
 ;
 DESIGN inputMoney {
     OBJECTS {
@@ -29,7 +29,8 @@ DESIGN options {
     }
 }
 
-afterDeposit ABSTRACT LIST (Pos, IncomingPayment); 
+afterDeposit ABSTRACT LIST (Pos, IncomingPayment);
+session = DATA Session (IncomingPayment) INDEXED;
 deposit 'Deposit cash' (Pos p) {
     DIALOG inputMoney DO {
         FOR NUMERIC[14,2] a = NUMERIC[14,2] (keyboardDecimalInput()) IF a > 0 DO 
@@ -46,6 +47,8 @@ deposit 'Deposit cash' (Pos p) {
                     companyAccount(ip) <- cashAccount(p);
                     
                     amount(ip) <- a;
+                    
+                    session(ip) <- openedSession(p);
                     
                     APPLY;
                     IF NOT canceled() THEN
@@ -66,6 +69,7 @@ DESIGN options {
 
 // withdraw
 afterWithdraw ABSTRACT LIST (Pos, OutgoingPayment);
+session = DATA Session (OutgoingPayment) INDEXED;
 withdraw 'Withdraw' (Pos p) {
     DIALOG inputMoney DO {
         FOR NUMERIC[14,2] a = NUMERIC[14,2] (keyboardDecimalInput()) IF a > 0 DO 
@@ -82,7 +86,9 @@ withdraw 'Withdraw' (Pos p) {
                     companyAccount(op) <- cashAccount(p);
                     
                     amount(op) <- a;
-                    
+
+                    session(op) <- openedSession(p);
+
                     APPLY;
                     IF NOT canceled() THEN 
                         afterWithdraw(p, op);
@@ -97,16 +103,16 @@ EXTEND FORM posDashboard
     
     OBJECTS ip = IncomingPayment
     PROPERTIES(ip) READONLY dateTime, amount
-    PROPERTIES(p)  deposit DRAW ip TOOLBAR
-    PROPERTIES(ip) DELETE GRID
+    PROPERTIES(p)  deposit DRAW ip TOOLBAR DISABLEIF NOT cashAccount(p) 
+    PROPERTIES(ip) NEWSESSION DELETE GRID SHOWIF NOT readonly(ip)
     FILTERS companyAccount(ip) = cashAccount(p), 
             type(ip) = depositPaymentType()
              
 
     OBJECTS op = OutgoingPayment
     PROPERTIES(op) READONLY dateTime, amount
-    PROPERTIES(p)  withdraw DRAW op TOOLBAR
-    PROPERTIES(op) DELETE GRID
+    PROPERTIES(p)  withdraw DRAW op TOOLBAR DISABLEIF NOT cashAccount(p)
+    PROPERTIES(op) NEWSESSION DELETE GRID SHOWIF NOT readonly(op)
     FILTERS companyAccount(op) = cashAccount(p),
             type(op) = withdrawPaymentType()
 ;

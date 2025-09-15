@@ -1,0 +1,92 @@
+MODULE CashRegisterFiscal;
+
+REQUIRE CashRegister,
+        PosDashboard, PosDashboardPayment, PosDashboardCash;
+
+NAMESPACE Retail;
+
+openShift 'Open session' ABSTRACT CASE EXCLUSIVE (Session);
+closeShift 'Close session' ABSTRACT CASE EXCLUSIVE (Session);
+cashIn 'Cash in' ABSTRACT CASE EXCLUSIVE (Payment);
+cashOut 'Cash out' ABSTRACT CASE EXCLUSIVE (Payment);
+sell 'Cash receipt' ABSTRACT CASE EXCLUSIVE (Invoice);
+
+continuePrint 'Continue printing' ABSTRACT CASE EXCLUSIVE (Pos);
+reportX 'X-Report' ABSTRACT CASE EXCLUSIVE (Pos);
+
+afterOpen(Session s) + { openShift(s); }
+afterClose(Session s) + { closeShift(s); }
+afterPosPayment(Invoice i) + { sell(i); }
+afterDeposit(Pos p, IncomingPayment i) + { cashIn(i); }
+afterWithdraw(Pos p, OutgoingPayment o) + { cashOut(o); }
+
+fiscalOpenSession 'Fiscal' = DATA BOOLEAN (Session);
+fiscalCloseSession 'Fiscal' = DATA BOOLEAN (Session);
+
+refiscalSession 'Fiscalize' (Session s) {
+    IF fiscalOpenSession(s) AND NOT fiscalCloseSession(s) AND closingDateTime(s) THEN
+        closeShift(s);
+    ELSE
+        IF NOT fiscalOpenSession(s) AND NOT closingDateTime(s) THEN
+            openShift(s);
+}
+
+EXTEND FORM session
+    PROPERTIES(s) 
+        fiscalOpenSession SHOWIF NOT closingDateTime(s),
+        fiscalCloseSession SHOWIF closingDateTime(s),
+        refiscalSession SHOWIF NOT fiscalCloseSession(s) AND (closingDateTime(s) OR NOT fiscalOpenSession(s))
+;
+
+DESIGN session {
+    header {
+        NEW fiscal {
+            horizontal = TRUE;
+            MOVE PROPERTY(fiscalOpenSession(s));
+            MOVE PROPERTY(fiscalCloseSession(s));
+            MOVE PROPERTY(refiscalSession(s));
+        }
+    }
+}
+
+EXTEND FORM posDashboard PROPERTIES(p) continuePrint, reportX;
+
+DESIGN posDashboard {
+    cashRegister {
+        MOVE PROPERTY(continuePrint(p));
+        MOVE PROPERTY(reportX(p));
+    }
+}
+
+META defineDocumentFiscal(doc, obj, command, pobj)
+    fiscal 'Fiscal' = DATA BOOLEAN (###doc);
+    readonly (###doc o) += WHEN fiscal(o) THEN fiscal(o);
+
+    needFiscal(###doc obj) = NOT fiscal(obj) AND fiscalOpenSession(session(obj)) AND NOT fiscalCloseSession(session(obj));
+
+    EXTEND FORM ##doc 
+        PROPERTIES(obj) fiscal SHOWIF session(obj) READONLYIF fiscalCloseSession(session(obj)), 
+                        ##command SHOWIF needFiscal(obj)
+    ;
+
+    DESIGN ##doc {
+        statusPane {
+            MOVE PROPERTY(fiscal(obj));
+        }
+        secondaryActions {
+            MOVE PROPERTY(##command(obj)) { caption = 'Fiscalisation';};
+        }
+    }
+    
+    EXTEND FORM posDashboard
+        PROPERTIES(pobj) fiscal READONLY FIRST
+        PROPERTIES(pobj) SHOWIF needFiscal(pobj)
+                         ##command TOOLBAR
+    ;
+END
+
+@defineDocumentFiscal(incomingPayment, p, cashIn, ip);
+
+@defineDocumentFiscal(outgoingPayment, p, cashOut, op);
+
+@defineDocumentFiscal(invoice, i, sell, si);

@@ -28,11 +28,13 @@ prefixName = ABSTRACT VALUE ISTRING (Task);
 fullName (Task t) = CONCAT ' - ', prefixName(t), name(t);
 
 author 'Author' = DATA Employee (Task);
+idAuthor 'Author' (Task t) = id(author(t));
 nameAuthor 'Author' (Task t) = name(author(t));
 WHEN LOCAL SET(Task t IS Task) AND NOT author(t) AND currentUser() IS Employee DO author(t) <- currentUser();
 @definePropertyValue(task, author, 'Author', nameAuthor);
 
 assignedTo 'Assigned to' = DATA Assignee (Task);
+idAssignedTo 'Assigned to' (Task t) = id(assignedTo(t));
 nameAssignedTo 'Assigned to' (Task t) = name(assignedTo(t));
 @definePropertyValue(task, assignedTo, 'Assigned to', nameAssignedTo);
 

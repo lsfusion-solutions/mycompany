@@ -21,7 +21,7 @@ price = DATA LOCAL NUMERIC[10,2](INTEGER);
 discountPrice = DATA LOCAL NUMERIC[10,2](INTEGER);
 discount = DATA LOCAL NUMERIC[5,2](INTEGER);
 
-FORM importOrder
+FORM importOrders
     OBJECTS value = INTEGER
     PROPERTIES(value) number, type, time, company, customer, note
     FILTERS imported(value)
@@ -54,7 +54,7 @@ FORM importOrder
 // http://localhost:8080/lsfusion6/exec/Sales.newOrders
 
 newOrders (FILE json) {
-    IMPORT importOrder JSON FROM json;
+    IMPORT importOrders JSON FROM json;
     FOR imported(INTEGER order) AND NOT order(number(order)) NEW o = Order DO {
         number(o) <- number(order);
         type(o) <- orderType(type(order));
