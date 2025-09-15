@@ -71,6 +71,11 @@ requestWithResponse (Pos p, FILE f) {
         IMPORT requestResponse JSON FROM requestResult();
         IF NOT (status(0) = 'wait' OR status(0) = 'inProgress') THEN BREAK;
     }
+    
+    IF NOT status(0) = 'ready' THEN {
+        fileToString(requestResult());
+        MESSAGE 'Ошибка при обработке запроса со статусом ' + (OVERRIDE status(0), 'unknown') + ' : ' + (OVERRIDE resultString(), '');
+    }
 }
 
 // report X
@@ -82,19 +87,9 @@ FORM reportX
 reportX(Pos p) {
     generateUUID();
     EXPORT reportX JSON CHARSET 'UTF-8';
-    TRY {
-        request(p, exportFile());
-    } CATCH {
-        CASE
-            WHEN statusHttp() > 299 THEN
-                MESSAGE 'Ошибка - ' + STRING(statusHttp());
-            WHEN NOT statusHttp() THEN
-                MESSAGE 'Ошибка - нет связи с хостом АТОЛ v.10';
-            ELSE
-                MESSAGE 'Ошибка - потеряна связь с хостом АТОЛ v.10';
-    }
+    request(p, exportFile());
 }
-reportX(Pos p) + WHEN driver(p) = CashDriver.atol10 THEN {reportX(p);}
+reportX(Pos p) + WHEN driver(p) = CashDriver.atol10 THEN { reportX(p);}
 
 // continue print
 FORM continuePrint
@@ -105,17 +100,7 @@ FORM continuePrint
 continuePrint(Pos p) {
     generateUUID();
     EXPORT continuePrint JSON CHARSET 'UTF-8';
-    TRY {
-        request(p, exportFile());
-    } CATCH {
-        CASE
-            WHEN statusHttp() > 299 THEN
-                MESSAGE 'Ошибка - ' + STRING(statusHttp());
-            WHEN NOT statusHttp() THEN
-                MESSAGE 'Ошибка - нет связи с хостом АТОЛ v.10';
-            ELSE
-                MESSAGE 'Ошибка - потеряна связь с хостом АТОЛ v.10';
-    }
+    request(p, exportFile());
 }
 continuePrint(Pos p) + WHEN driver(p) = CashDriver.atol10 THEN {continuePrint(p);}
 
@@ -129,21 +114,15 @@ openShift(Session s) {
     generateUUID();
     EXPORT openShift JSON CHARSET 'UTF-8';
     TRY {
-        request(pos(s), exportFile());
-        NEWSESSION {
-            fiscalOpenSession(s) <- TRUE;
-            APPLY;
-        }
-    } CATCH
-        CASE
-            WHEN statusHttp() > 299 THEN
-                MESSAGE 'Ошибка - ' + STRING(statusHttp());
-            WHEN NOT statusHttp() THEN
-                MESSAGE 'Ошибка - нет связи с хостом АТОЛ v.10';
-            ELSE
-                MESSAGE 'Ошибка - потеряна связь с хостом АТОЛ v.10';
+        requestWithResponse(pos(s), exportFile());
+        IF status(0) = 'ready' THEN
+            NEWSESSION { fiscalOpenSession(s) <- TRUE; APPLY; }
+    } CATCH {
+        fileToString(requestResult());
+        MESSAGE 'Ошибка при отправке открытия смены : ' + OVERRIDE messageCaughtException(), '';
+    }
 }
-openShift(Session s) + WHEN driver(pos(s)) = CashDriver.atol10 THEN {openShift(s);}
+openShift(Session s) + WHEN driver(pos(s)) = CashDriver.atol10 THEN { openShift(s); }
 
 // close shift
 FORM closeShift
@@ -155,20 +134,13 @@ closeShift(Session s) {
     generateUUID();
     EXPORT closeShift JSON CHARSET 'UTF-8';
     TRY {
-        request(pos(s), exportFile());
-        NEWSESSION {
-            fiscalCloseSession(s) <- TRUE;
-            APPLY;
-        }
+        requestWithResponse(pos(s), exportFile());
+        IF status(0) = 'ready' THEN
+            NEWSESSION { fiscalCloseSession(s) <- TRUE; APPLY; }
+    } CATCH {
+        fileToString(requestResult());
+        MESSAGE 'Ошибка при отправке закрытия смены : ' + OVERRIDE messageCaughtException(), '';
     }
-    CATCH
-        CASE
-            WHEN statusHttp() > 299 THEN
-                MESSAGE 'Ошибка - ' + STRING(statusHttp());
-            WHEN NOT statusHttp() THEN
-                MESSAGE 'Ошибка - нет связи с хостом АТОЛ v.10';
-            ELSE
-                MESSAGE 'Ошибка - потеряна связь с хостом АТОЛ v.10';
 }
 closeShift(Session s) + WHEN driver(pos(s)) = CashDriver.atol10 THEN {closeShift(s);}
 
@@ -185,21 +157,15 @@ cashIn(IncomingPayment i) {
     generateUUID();
     EXPORT cashIn OBJECTS i = i JSON CHARSET 'UTF-8';
     TRY {
-        request(pos(session(i)), exportFile());
-        NEWSESSION {
-            fiscal(i) <- TRUE;
-            APPLY;
-        }
-    } CATCH
-        CASE
-            WHEN statusHttp() > 299 THEN
-                MESSAGE 'Ошибка - ' + STRING(statusHttp());
-            WHEN NOT statusHttp() THEN
-                MESSAGE 'Ошибка - нет связи с хостом АТОЛ v.10';
-            ELSE
-                MESSAGE 'Ошибка - потеряна связь с хостом АТОЛ v.10';
+        requestWithResponse(pos(session(i)), exportFile());
+        IF status(0) = 'ready' THEN
+            NEWSESSION { fiscal(i) <- TRUE; APPLY; }
+    } CATCH {
+        fileToString(requestResult());
+        MESSAGE 'Ошибка при отправке внесения наличных : ' + OVERRIDE messageCaughtException(), '';
+    }
 }
-cashIn(IncomingPayment i) + WHEN driver(pos(session(i))) = CashDriver.atol10 AND i IS IncomingPayment THEN {cashIn(i);}
+cashIn(IncomingPayment i) + WHEN driver(pos(session(i))) = CashDriver.atol10 AND i IS IncomingPayment THEN { cashIn(i); }
 
 // cash out
 FORM cashOut
@@ -214,21 +180,15 @@ cashOut(OutgoingPayment o) {
     generateUUID();
     EXPORT cashOut OBJECTS o = o JSON CHARSET 'UTF-8';
     TRY {
-        request(pos(session(o)), exportFile());
-        NEWSESSION {
-            fiscal(o) <- TRUE;
-            APPLY;
-        }
-    } CATCH
-        CASE
-            WHEN statusHttp() > 299 THEN
-                MESSAGE 'Ошибка - ' + STRING(statusHttp());
-            WHEN NOT statusHttp() THEN
-                MESSAGE 'Ошибка - нет связи с хостом АТОЛ v.10';
-            ELSE
-                MESSAGE 'Ошибка - потеряна связь с хостом АТОЛ v.10';
+        requestWithResponse(pos(session(o)), exportFile());
+        IF status(0) = 'ready' THEN
+            NEWSESSION { fiscal(o) <- TRUE; APPLY; }
+    } CATCH {
+        fileToString(requestResult());
+        MESSAGE 'Ошибка при отправке изъятия наличных : ' + OVERRIDE messageCaughtException(), '';
+    }
 }
-cashOut(OutgoingPayment o) + WHEN driver(pos(session(o))) = CashDriver.atol10 THEN {cashOut(o);}
+cashOut(OutgoingPayment o) + WHEN driver(pos(session(o))) = CashDriver.atol10 THEN { cashOut(o); }
 
 //buy
 typeLine = ABSTRACT STRING (InvoiceLine);
@@ -274,10 +234,6 @@ sell(Invoice i) {
                 fiscalNumber(i) <- fiscalDocumentNumber(0);
                 APPLY; 
             }
-        ELSE {
-            fileToString(requestResult());
-            MESSAGE 'Ошибка при обработке чека : ' + resultString();
-        } 
     } CATCH {
         fileToString(requestResult());
         MESSAGE 'Ошибка при отправке чека : ' + OVERRIDE messageCaughtException(), '';
