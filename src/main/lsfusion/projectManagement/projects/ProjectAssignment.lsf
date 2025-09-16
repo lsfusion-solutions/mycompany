@@ -28,6 +28,9 @@ fromDate (ProjectAssignment a) <- currentDate() WHEN SET(a IS ProjectAssignment)
 
 toDate 'Date to' = DATA DATE (ProjectAssignment);
 
+CONSTRAINT toDate(ProjectAssignment a) < fromDate(a)
+    MESSAGE 'Date to cannot be earlier than the date from';
+
 active (ProjectAssignment a, DATE d) = d >= fromDate(a) AND NOT d > toDate(a);
 active (ProjectAssignment a) = active(a, currentDate());
 
