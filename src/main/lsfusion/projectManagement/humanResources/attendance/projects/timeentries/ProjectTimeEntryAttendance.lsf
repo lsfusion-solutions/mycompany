@@ -22,7 +22,7 @@ EXTEND FORM timeEntries
 ;
 
 hoursAttendance = ABSTRACT VALUE NUMERIC[8,2] (TimeEntry);
-hoursAttendance (TimeEntry t) += round1((GROUP SUM seconds(Attendance a) IF timeEntry(a) = t) / 3600.0);
+hoursAttendance (TimeEntry t) += NUMERIC[8,2](round1((GROUP SUM seconds(Attendance a) IF timeEntry(a) = t) / 3600.0));
 WHEN CHANGED(hoursAttendance(TimeEntry t)) AND attendance(t) DO hours(t) <- hoursAttendance(t);
 WHEN DROPPED(hoursAttendance(TimeEntry t)) AND attendance(t) DO DELETE t;
 
