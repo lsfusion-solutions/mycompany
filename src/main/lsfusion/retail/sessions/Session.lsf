@@ -84,6 +84,9 @@ NAVIGATOR {
 }
 
 // actions
+breakSession = DATA LOCAL BOOLEAN ();
+
+beforeOpen ABSTRACT LIST (Session);
 afterOpen ABSTRACT LIST (Session);
 openSession 'Open session' (Pos p) {
     CANCEL;
@@ -92,23 +95,30 @@ openSession 'Open session' (Pos p) {
         IF NOT openedSession(p) THEN
             NEW s = Session {
                 pos(s) <- p;
-                APPLY;
-                IF NOT canceled() THEN
-                    afterOpen(s);
+                beforeOpen(s);
+                IF NOT breakSession() THEN {
+                    APPLY;
+                    IF NOT canceled() THEN
+                        afterOpen(s);
+                }
             }
         ELSE
             MESSAGE 'There is already an open session';
     }
 }
 
+beforeClose ABSTRACT LIST (Session);
 afterClose ABSTRACT LIST (Session);
 close 'Close session' (Session s) {
     CANCEL;
 
     NEWSESSION {
         closingDateTime(s) <- currentDateTime();
-        APPLY;
-        IF NOT canceled() THEN
-            afterClose(s);
+        beforeClose(s);
+        IF NOT breakSession() THEN {
+            APPLY;
+            IF NOT canceled() THEN
+                afterClose(s);
+        }
     }
 } CONFIRM;

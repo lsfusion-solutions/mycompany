@@ -134,15 +134,18 @@ FORM openShift
     PROPERTIES IN operator currentUserName() EXTID 'name'
 ;
 openShift(Session s) {
+    breakSession() <- TRUE;
     generateUUID();
     EXPORT openShift JSON CHARSET 'UTF-8';
     TRY {
         requestWithResponse(pos(s), exportFile());
-        IF status(0) = 'ready' THEN
-            NEWSESSION { fiscalOpenSession(s) <- TRUE; APPLY; }
+        IF status(0) = 'ready' THEN {
+            fiscalOpenSession(s) <- TRUE;
+            breakSession() <- NULL;
+        }
     } CATCH {
         fileToString(requestResult());
-        MESSAGE 'Ошибка при отправке открытия смены : ' + OVERRIDE messageCaughtException(), '';
+        MESSAGE 'Ошибка при отправке открытия смены : ' + OVERRIDE (CONCAT '\n', resultString() , messageCaughtException()), '';
     }
 }
 openShift(Session s) + WHEN driver(pos(s)) = CashDriver.atol10 THEN { openShift(s); }
@@ -154,18 +157,21 @@ FORM closeShift
     PROPERTIES IN operator currentUserName() EXTID 'name'
 ;
 closeShift(Session s) {
+    breakSession() <- TRUE;
     generateUUID();
     EXPORT closeShift JSON CHARSET 'UTF-8';
     TRY {
         requestWithResponse(pos(s), exportFile());
-        IF status(0) = 'ready' THEN
-            NEWSESSION { fiscalCloseSession(s) <- TRUE; APPLY; }
+        IF status(0) = 'ready' THEN {
+            fiscalCloseSession(s) <- TRUE;
+            breakSession() <- NULL;
+        }
     } CATCH {
         fileToString(requestResult());
-        MESSAGE 'Ошибка при отправке закрытия смены : ' + OVERRIDE messageCaughtException(), '';
+        MESSAGE 'Ошибка при отправке закрытия смены : ' + OVERRIDE (CONCAT '\n', resultString() , messageCaughtException()), '';
     }
 }
-closeShift(Session s) + WHEN driver(pos(s)) = CashDriver.atol10 THEN {closeShift(s);}
+closeShift(Session s) + WHEN driver(pos(s)) = CashDriver.atol10 THEN { closeShift(s); }
 
 // cash in
 FORM cashIn
@@ -259,7 +265,7 @@ sell(Invoice i) {
             }
     } CATCH {
         fileToString(requestResult());
-        MESSAGE 'Ошибка при отправке чека : ' + OVERRIDE messageCaughtException(), '';
+        MESSAGE 'Ошибка при отправке чека : ' + OVERRIDE (CONCAT '\n', resultString() , messageCaughtException()), '';
     }
 }
 sell(Invoice i) + WHEN driver(pos(session(i))) = CashDriver.atol10 THEN { sell(i); }
