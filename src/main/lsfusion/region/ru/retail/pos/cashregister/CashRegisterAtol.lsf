@@ -14,8 +14,25 @@ EXTEND CLASS CashDriver {
 dataIdPaymentAtol 'Код платежа Атол' = DATA STRING[20] (PaymentMethod);
 idPaymentAtol 'Код платежа Атол' (PaymentMethod p) = OVERRIDE dataIdPaymentAtol(p), IF isCash(p) THEN 'cash' ELSE 'electronically';
 
-EXTEND FORM paymentMethod PROPERTIES dataIdPaymentAtol(pm); 
+EXTEND FORM paymentMethod PROPERTIES dataIdPaymentAtol(pm);
 
+requestFromServer 'Формировать запросы с сервера' = DATA BOOLEAN ();
+requestResponseNumberAttempts 'Кол-во попыток чтения ответа от драйвера АТОЛ' = DATA INTEGER ();
+
+EXTEND FORM options 
+    PROPERTIES() requestFromServer, requestResponseNumberAttempts
+;
+DESIGN options { 
+    tabbedPane {
+        NEW atol {
+            caption = 'Atol';
+            MOVE PROPERTY(requestFromServer());
+            MOVE PROPERTY(requestResponseNumberAttempts());
+        }
+    } 
+}
+
+// request
 GROUP request;
 GROUP operator : request;
 GROUP clientInfo : request;
@@ -31,13 +48,13 @@ requestResult = DATA LOCAL FILE ();
 
 request (Pos p, FILE f) {
     headers(STRING h) <- headers(p, h);
-    EXTERNAL HTTP CLIENT urlRequests(p) HEADERS headers PARAMS f TO requestResult;
+    IF requestFromServer() THEN
+        EXTERNAL HTTP urlRequests(p) HEADERS headers PARAMS f TO requestResult;
+    ELSE
+        EXTERNAL HTTP CLIENT urlRequests(p) HEADERS headers PARAMS f TO requestResult;
 }
 
 // request with response
-requestResponseNumberAttempts 'Кол-во попыток чтения ответа от драйвера АТОЛ' = DATA INTEGER ();
-EXTEND FORM options PROPERTIES() requestResponseNumberAttempts;
-DESIGN options { commons { MOVE PROPERTY(requestResponseNumberAttempts()); } }
 
 GROUP error;
 GROUP result;
@@ -61,13 +78,19 @@ FORM requestResponse
 requestWithResponse (Pos p, FILE f) {
     headers(STRING h) <- headers(p, h);
 
-    EXTERNAL HTTP CLIENT POST urlRequests(p) HEADERS headers PARAMS f TO requestResult;
+    IF requestFromServer() THEN
+        EXTERNAL HTTP POST urlRequests(p) HEADERS headers PARAMS f TO requestResult;
+    ELSE
+        EXTERNAL HTTP CLIENT POST urlRequests(p) HEADERS headers PARAMS f TO requestResult;
 
     // get answer
     FOR iterate(INTEGER i, 1, requestResponseNumberAttempts()) DO {
         sleep(1000);
 
-        EXTERNAL HTTP CLIENT GET urlRequests(p) + '/' + generatedUUID() HEADERS headers TO requestResult;
+        IF requestFromServer() THEN
+            EXTERNAL HTTP GET urlRequests(p) + '/' + generatedUUID() HEADERS headers TO requestResult;
+        ELSE
+            EXTERNAL HTTP CLIENT GET urlRequests(p) + '/' + generatedUUID() HEADERS headers TO requestResult;
         IMPORT requestResponse JSON FROM requestResult();
         IF NOT (status(0) = 'wait' OR status(0) = 'inProgress') THEN BREAK;
     }
