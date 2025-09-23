@@ -16,7 +16,7 @@ multiple = ABSTRACT BOOLEAN (BarCode) MATERIALIZED;
 itemBarCode (STRING[50] id) = item(barCode(id));
 
 singleBarCode (STRING[50] id) = GROUP MAX BarCode b IF NOT multiple(b) BY id(b);
-itemSingleBarCode (STRING[50] id) = item(singleBarCode(id));
+itemSingleBarCode (STRING[50] id) = OVERRIDE item(singleBarCode(id)), item(id);
 
 dataDefaultBarCode = DATA BarCode (Item);
 calcDefaultBarCode (Item i) = GROUP LAST BarCode b ORDER DESC b WHERE item(b) = i;

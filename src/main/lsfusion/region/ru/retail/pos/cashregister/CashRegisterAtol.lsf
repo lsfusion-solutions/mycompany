@@ -233,6 +233,11 @@ paymentType (IncomingPayment p, Invoice i) = idPaymentAtol(paymentMethod(p, i));
  
 GROUP tax;
 
+// marking
+GROUP markingCode;
+markType = ABSTRACT CASE STRING (InvoiceLine);
+markType (InvoiceLine l) += WHEN mark(l) THEN r'other';
+
 FORM sell
     PROPERTIES uuid = generatedUUID()
     
@@ -248,6 +253,8 @@ FORM sell
     FILTERS i = invoice(l)
     
     PROPERTIES taxType = IF countTaxes(l) THEN 'vat'  + trim(toChar((OVERRIDE taxPercent(l), 0), '99')) ELSE 'none' EXTID 'type' IN tax
+    
+    PROPERTIES IN markingCode markType(l) EXTID 'type', mark = encodeBase64(mark(l))
     
     OBJECTS d = Debt IN request EXTID 'payments'
     PROPERTIES (d, i) paymentType EXTID 'type', paid EXTID 'sum'
@@ -298,6 +305,8 @@ FORM sellReturn
     FILTERS b = bill(l)
 
     PROPERTIES taxType = IF countTaxes(l) THEN 'vat'  + trim(toChar((OVERRIDE taxPercent(l), 0), '99')) ELSE 'none' EXTID 'type' IN tax
+
+    PROPERTIES IN markingCode markType = markType(invoiceLine(l)) EXTID 'type', mark = encodeBase64(mark(invoiceLine(l)))
 
     OBJECTS d = Debt IN request EXTID 'payments'
     PROPERTIES(b, d) paymentType EXTID 'type', paid EXTID 'sum'

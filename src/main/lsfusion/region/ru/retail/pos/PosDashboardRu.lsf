@@ -21,3 +21,28 @@ DESIGN posPayment {
         MOVE PROPERTY(emailOrPhone(i)) { fontSize = 24; alignment = STRETCH; }
     }
 }
+
+mark 'Контрольная марка' = DATA STRING (InvoiceLine);
+
+EXTEND FORM posDashboard
+    PROPERTIES(l) READONLY SHOWIF mark(l) mark PANEL
+;
+
+DESIGN posDashboard {
+    info {
+        MOVE PROPERTY(mark(l)) FIRST { alignment = STRETCH; }
+    }
+}
+
+// scan mark
+processBarCode (Invoice i, InvoiceLine l, STRING b) + {
+    IF length(b) > 30 THEN
+        FOR Item it = itemSingleBarCode(ltrim(substr(b, 3, 14), '0')) DO NEW nl = InvoiceLine {
+            invoice(nl) <- i;
+            item(nl) <- it;
+            quantity(nl) <- 1;
+            mark(nl) <- b;
+            SEEK posDashboard.l = nl;
+            consumedBarCode() <- TRUE;
+        }
+}
