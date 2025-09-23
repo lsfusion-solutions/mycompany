@@ -1,7 +1,7 @@
 MODULE CashRegisterFiscal;
 
 REQUIRE CashRegister,
-        PosDashboard, PosDashboardPayment, PosDashboardCash;
+        PosDashboard, PosDashboardPayment, PosDashboardReturnPayment, PosDashboardCash;
 
 NAMESPACE Retail;
 
@@ -10,6 +10,7 @@ closeShift 'Close session' ABSTRACT CASE EXCLUSIVE (Session);
 cashIn 'Cash in' ABSTRACT CASE EXCLUSIVE (Payment);
 cashOut 'Cash out' ABSTRACT CASE EXCLUSIVE (Payment);
 sell 'Cash receipt' ABSTRACT CASE EXCLUSIVE (Invoice);
+return 'Cash receipt' ABSTRACT CASE EXCLUSIVE (Bill);
 
 continuePrint 'Continue printing' ABSTRACT CASE EXCLUSIVE (Pos);
 reportX 'X-Report' ABSTRACT CASE EXCLUSIVE (Pos);
@@ -17,6 +18,7 @@ reportX 'X-Report' ABSTRACT CASE EXCLUSIVE (Pos);
 beforeOpen(Session s) + { openShift(s); }
 beforeClose(Session s) + { closeShift(s); }
 afterPosPayment(Invoice i) + { sell(i); }
+afterPosPayment(Bill b) + { return(b); }
 afterDeposit(Pos p, IncomingPayment i) + { cashIn(i); }
 afterWithdraw(Pos p, OutgoingPayment o) + { cashOut(o); }
 
@@ -90,3 +92,5 @@ END
 @defineDocumentFiscal(outgoingPayment, p, cashOut, op);
 
 @defineDocumentFiscal(invoice, i, sell, si);
+
+@defineDocumentFiscal(bill, b, return, sb);

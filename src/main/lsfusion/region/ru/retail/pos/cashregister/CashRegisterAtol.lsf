@@ -16,18 +16,19 @@ idPaymentAtol 'Код платежа Атол' (PaymentMethod p) = OVERRIDE data
 
 EXTEND FORM paymentMethod PROPERTIES dataIdPaymentAtol(pm);
 
-requestFromServer 'Формировать запросы с сервера' = DATA BOOLEAN ();
-requestResponseNumberAttempts 'Кол-во попыток чтения ответа от драйвера АТОЛ' = DATA INTEGER ();
+requestFromServer 'Формировать запросы с сервера' = DATA BOOLEAN (Pos);
+requestResponseNumberAttempts 'Кол-во попыток чтения ответа от драйвера АТОЛ' = DATA INTEGER (Pos);
 
-EXTEND FORM options 
-    PROPERTIES() requestFromServer, requestResponseNumberAttempts
+EXTEND FORM pos 
+    PROPERTIES(p) requestFromServer, requestResponseNumberAttempts
 ;
-DESIGN options { 
+DESIGN pos { 
     tabbedPane {
         NEW atol {
+            showIf = driver(p) = CashDriver.atol10;
             caption = 'Atol';
-            MOVE PROPERTY(requestFromServer());
-            MOVE PROPERTY(requestResponseNumberAttempts());
+            MOVE PROPERTY(requestFromServer(p));
+            MOVE PROPERTY(requestResponseNumberAttempts(p));
         }
     } 
 }
@@ -48,7 +49,7 @@ requestResult = DATA LOCAL FILE ();
 
 request (Pos p, FILE f) {
     headers(STRING h) <- headers(p, h);
-    IF requestFromServer() THEN
+    IF requestFromServer(p) THEN
         EXTERNAL HTTP urlRequests(p) HEADERS headers PARAMS f TO requestResult;
     ELSE
         EXTERNAL HTTP CLIENT urlRequests(p) HEADERS headers PARAMS f TO requestResult;
@@ -78,24 +79,25 @@ FORM requestResponse
 requestWithResponse (Pos p, FILE f) {
     headers(STRING h) <- headers(p, h);
 
-    IF requestFromServer() THEN
+    IF requestFromServer(p) THEN
         EXTERNAL HTTP POST urlRequests(p) HEADERS headers PARAMS f TO requestResult;
     ELSE
         EXTERNAL HTTP CLIENT POST urlRequests(p) HEADERS headers PARAMS f TO requestResult;
 
     // get answer
-    FOR iterate(INTEGER i, 1, requestResponseNumberAttempts()) DO {
+    FOR iterate(INTEGER i, 1, (OVERRIDE requestResponseNumberAttempts(p), 5)) DO {
         sleep(1000);
-
-        IF requestFromServer() THEN
+        
+        status(0) <- '';
+        IF requestFromServer(p) THEN
             EXTERNAL HTTP GET urlRequests(p) + '/' + generatedUUID() HEADERS headers TO requestResult;
         ELSE
             EXTERNAL HTTP CLIENT GET urlRequests(p) + '/' + generatedUUID() HEADERS headers TO requestResult;
         IMPORT requestResponse JSON FROM requestResult();
-        IF NOT (status(0) = 'wait' OR status(0) = 'inProgress') THEN BREAK;
+        IF NOT (status(0) = r'wait' OR status(0) = r'inProgress') THEN BREAK;
     }
     
-    IF NOT status(0) = 'ready' THEN {
+    IF status(0) != r'ready' THEN {
         fileToString(requestResult());
         MESSAGE 'Ошибка при обработке запроса со статусом ' + (OVERRIDE status(0), 'unknown') + ' : ' + (OVERRIDE resultString(), '');
     }
@@ -139,7 +141,7 @@ openShift(Session s) {
     EXPORT openShift JSON CHARSET 'UTF-8';
     TRY {
         requestWithResponse(pos(s), exportFile());
-        IF status(0) = 'ready' THEN {
+        IF status(0) = r'ready' THEN {
             fiscalOpenSession(s) <- TRUE;
             breakSession() <- NULL;
         }
@@ -162,7 +164,7 @@ closeShift(Session s) {
     EXPORT closeShift JSON CHARSET 'UTF-8';
     TRY {
         requestWithResponse(pos(s), exportFile());
-        IF status(0) = 'ready' THEN {
+        IF status(0) = r'ready' THEN {
             fiscalCloseSession(s) <- TRUE;
             breakSession() <- NULL;
         }
@@ -187,7 +189,7 @@ cashIn(IncomingPayment i) {
     EXPORT cashIn OBJECTS i = i JSON CHARSET 'UTF-8';
     TRY {
         requestWithResponse(pos(session(i)), exportFile());
-        IF status(0) = 'ready' THEN
+        IF status(0) = r'ready' THEN
             NEWSESSION { fiscal(i) <- TRUE; APPLY; }
     } CATCH {
         fileToString(requestResult());
@@ -210,7 +212,7 @@ cashOut(OutgoingPayment o) {
     EXPORT cashOut OBJECTS o = o JSON CHARSET 'UTF-8';
     TRY {
         requestWithResponse(pos(session(o)), exportFile());
-        IF status(0) = 'ready' THEN
+        IF status(0) = r'ready' THEN
             NEWSESSION { fiscal(o) <- TRUE; APPLY; }
     } CATCH {
         fileToString(requestResult());
@@ -219,7 +221,7 @@ cashOut(OutgoingPayment o) {
 }
 cashOut(OutgoingPayment o) + WHEN driver(pos(session(o))) = CashDriver.atol10 THEN { cashOut(o); }
 
-//buy
+// sell
 typeLine = ABSTRACT STRING (InvoiceLine);
 typeLine(InvoiceLine l) += r'position';
  
@@ -235,7 +237,7 @@ FORM sell
     PROPERTIES uuid = generatedUUID()
     
     OBJECTS i = Invoice
-    PROPERTIES IN request type = 'sell'
+    PROPERTIES IN request type = r'sell'
     PROPERTIES IN operator currentUserName() EXTID 'name'
     PROPERTIES IN clientInfo emailOrPhone(i)
     
@@ -257,7 +259,7 @@ sell(Invoice i) {
     EXPORT sell OBJECTS i = i JSON CHARSET 'UTF-8';
     TRY {
         requestWithResponse(pos(session(i)), exportFile());
-        IF status(0) = 'ready' THEN
+        IF status(0) = r'ready' THEN
             NEWSESSION NESTED (fiscalDocumentNumber) { 
                 fiscal(i) <- TRUE; 
                 fiscalNumber(i) <- fiscalDocumentNumber(0);
@@ -269,3 +271,52 @@ sell(Invoice i) {
     }
 }
 sell(Invoice i) + WHEN driver(pos(session(i))) = CashDriver.atol10 THEN { sell(i); }
+
+// return
+typeLine = ABSTRACT STRING (BillLine);
+typeLine(BillLine l) += r'position';
+
+paymentObject = ABSTRACT CASE STRING (BillLine);
+paymentObject (BillLine l) += WHEN item(l) IS Product THEN r'commodity';
+paymentObject (BillLine l) += WHEN item(l) IS Service THEN r'service';
+
+paymentType (Bill b, OutgoingPayment p) = idPaymentAtol(paymentMethod(b, p));
+
+FORM sellReturn
+    PROPERTIES uuid = generatedUUID()
+
+    OBJECTS b = Bill
+    PROPERTIES IN request type = r'sellReturn'
+    
+    PROPERTIES IN operator currentUserName() EXTID 'name'
+    PROPERTIES IN clientInfo emailOrPhone = emailOrPhone(maxInvoice(b))
+
+    OBJECTS l = BillLine IN request EXTID 'items'
+    PROPERTIES(l) typeLine EXTID 'type', nameItem EXTID 'name', price, quantity,
+                  nameUom EXTID 'measurementUnit', paymentObject, untaxedAmount EXTID 'amount'
+    
+    FILTERS b = bill(l)
+
+    PROPERTIES taxType = IF countTaxes(l) THEN 'vat'  + trim(toChar((OVERRIDE taxPercent(l), 0), '99')) ELSE 'none' EXTID 'type' IN tax
+
+    OBJECTS d = Debt IN request EXTID 'payments'
+    PROPERTIES(b, d) paymentType EXTID 'type', paid EXTID 'sum'
+    FILTERS paid(b, d), active(d)
+;
+
+sellReturn(Bill b) {
+    generateUUID();
+    EXPORT sellReturn OBJECTS b = b JSON CHARSET 'UTF-8';
+    TRY {
+        requestWithResponse(pos(session(b)), exportFile());
+        IF status(0) = r'ready' THEN
+            NEWSESSION {
+                fiscal(b) <- TRUE;
+                APPLY;
+            }
+    } CATCH {
+        fileToString(requestResult());
+        MESSAGE 'Ошибка при отправке возврата : ' + OVERRIDE (CONCAT '\n', resultString() , messageCaughtException()), '';
+    }
+}
+return(Bill b) + WHEN driver(pos(session(b))) = CashDriver.atol10 THEN { sellReturn(b); }
