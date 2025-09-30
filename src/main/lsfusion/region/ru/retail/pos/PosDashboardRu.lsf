@@ -35,14 +35,26 @@ DESIGN posDashboard {
 }
 
 // scan mark
+invalidMark = DATA LOCAL BOOLEAN ();
+checkMarkValidity ABSTRACT LIST (Item, STRING);
+
+afterScanMark ABSTRACT (InvoiceLine, STRING);
+
 processBarCode (Invoice i, InvoiceLine l, STRING b) + {
-    IF length(b) > 30 THEN
-        FOR Item it = itemSingleBarCode(ltrim(substr(b, 3, 14), '0')) DO NEW nl = InvoiceLine {
-            invoice(nl) <- i;
-            item(nl) <- it;
-            quantity(nl) <- 1;
-            mark(nl) <- b;
-            SEEK posDashboard.l = nl;
+    IF length(b) > 20 THEN
+        FOR Item it = itemSingleBarCode(ltrim(substr(b, 3, 14), '0')) DO {
+            invalidMark() <- NULL;
+            checkMarkValidity(it, b);
+            IF NOT invalidMark() THEN
+                NEW nl = InvoiceLine {
+                    invoice(nl) <- i;
+                    item(nl) <- it;
+                    quantity(nl) <- 1;
+                    mark(nl) <- b;
+                    SEEK posDashboard.l = nl;
+                    
+                    afterScanMark(nl, b);
+                }
             consumedBarCode() <- TRUE;
         }
 }
