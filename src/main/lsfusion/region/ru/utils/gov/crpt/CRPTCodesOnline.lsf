@@ -50,6 +50,11 @@ checkCodesOnline (CDN cdn, JSON marks) {
             PARAMS marks TO result;
 
         IMPORT checkCodesOnline JSON FROM result();
+        
+        IF logRequests() THEN {
+            fileToString(result());
+            logToFile('crpt', 'request : ' + STRING(marks) + ' - response : ' + resultString());
+        }
 
         CASE
             WHEN NOT found(0) THEN
@@ -73,11 +78,8 @@ checkCodesOnline (CDN cdn, JSON marks) {
     }
 }
 
-extractGS1 = FORMULA STRING[200] 'split_part(($1),\'\',1)';
-translateBarcode = FORMULA STRING[200] 'SELECT CASE WHEN ($1) ~* \'[а-яА-Я]\' THEN translate(($1), \'ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭ/ЯЧСМИТЬБЮ,йцукенгшщзхъфывапролджэячсмитьбю.\', \'QWERTYUIOP{}ASDFGHJKL:"|ZXCVBNM<>?qwertyuiop[]asdfghjkl;\'\'zxcvbnm,./\') ELSE ($1) END';
-
 checkCodesOnline(STRING mark) {
-    checkCodesOnline(defaultCDN(), JSON FROM codes = JSON FROM translateBarcode(mark) AS STRING IF INTEGER i = 0);
+    checkCodesOnline(defaultCDN(), JSON FROM codes = JSON FROM mark AS STRING IF INTEGER i = 0);
 }
 
 
@@ -87,4 +89,4 @@ checkCodesOnline(STRING mark) {
 
 // 0108051931145232215XJM2,I%K!Km491FFD092testtesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttest
 
-// 0102900003946023215Vnoa:rYVmK0dZwsoQTn91FFD092dGVzdMtSUFEDXLsyYiv+5uRxm962hUFh0p5CflYMxoo= правильная
+// 0102900003946023215Vnoa:rYVmK0dZwsoЙTn91FFD092dGVzdMtSUFEDXLsyYiv+5uRxm962hUFh0p5CflYMxoo= правильная

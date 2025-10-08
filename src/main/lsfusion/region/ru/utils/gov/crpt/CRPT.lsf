@@ -4,6 +4,8 @@ REQUIRE Utils;
 
 sandbox 'Sandbox' = DATA BOOLEAN ();
 
+logRequests 'Log requests' = DATA BOOLEAN ();
+
 markirovkaUrl() = 'https://' + IF sandbox() THEN 'markirovka.sandbox.crptech.ru' ELSE 'markirovka.crpt.ru';
 cdnUrl() = 'https://' + IF sandbox() THEN 'markirovka.sandbox.crptech.ru' ELSE 'cdn.crpt.ru';
 
@@ -19,7 +21,7 @@ headers (STRING s) = CASE
 ;
 
 EXTEND FORM integrationData
-    PROPERTIES() crptSandbox = sandbox, crptToken = token
+    PROPERTIES() crptSandbox = sandbox, crptToken = token, crptLogRequests = logRequests
 ;
 
 DESIGN integrationData {
@@ -28,6 +30,7 @@ DESIGN integrationData {
             caption = 'Честный знак';
             MOVE PROPERTY(crptSandbox);
             MOVE PROPERTY(crptToken);
+            MOVE PROPERTY(crptLogRequests);
         }
     }
 }
@@ -75,6 +78,8 @@ getCDNInfo 'Получить CDN' () {
             FOR host(INTEGER i) AND NOT cdn(host(i)) NEW c = CDN DO {
                 host(c) <- host(i);
             }
+            
+            DELETE CDN c WHERE c IS CDN AND NOT [ GROUP SUM 1 BY host(INTEGER i)](host(c)); 
             
             APPLY;
         } CATCH {

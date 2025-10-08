@@ -1,6 +1,6 @@
 MODULE PosDashboardRu;
 
-REQUIRE PosDashboardPayment, CashRegisterFiscal;
+REQUIRE PosDashboardPayment, CashRegisterFiscal, ItemMarkRu;
 
 NAMESPACE Retail;
 
@@ -44,16 +44,16 @@ processBarCode (Invoice i, InvoiceLine l, STRING b) + {
     IF length(b) > 20 THEN
         FOR Item it = itemSingleBarCode(ltrim(substr(b, 3, 14), '0')) DO {
             invalidMark() <- NULL;
-            checkMarkValidity(it, b);
+            checkMarkValidity(it, translateBarcode(b));
             IF NOT invalidMark() THEN
                 NEW nl = InvoiceLine {
                     invoice(nl) <- i;
                     item(nl) <- it;
                     quantity(nl) <- 1;
-                    mark(nl) <- b;
+                    mark(nl) <- translateBarcode(b);
                     SEEK posDashboard.l = nl;
                     
-                    afterScanMark(nl, b);
+                    afterScanMark(nl, translateBarcode(b));
                 }
             consumedBarCode() <- TRUE;
         }
