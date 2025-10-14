@@ -15,6 +15,16 @@ addressCsvCompany (Order o) = addressCsv(company(o));
 phoneCompany (Order o) = phone(company(o));
 fullNameCompany (Order o) = fullName(company(o));
 
+printUom = ABSTRACT VALUE Uom (OrderLine);
+namePrintUom (OrderLine l) = name(printUom(l));
+printUom(OrderLine l) += uom(l);
+
+printQuantity = ABSTRACT VALUE NUMERIC[16,3] (OrderLine);
+printQuantity(OrderLine l) += quantity(l);
+
+printPrice = ABSTRACT VALUE NUMERIC[16,3] (OrderLine);
+printPrice(OrderLine l) += price(l);
+
 FORM printOrder 'Sales order'   
     OBJECTS o = Order PANEL 
     PROPERTIES(o) number, dateTime, scheduledDateTime, nameRepresentative,
@@ -25,9 +35,9 @@ FORM printOrder 'Sales order'
                   phoneCompany
         
     OBJECTS l = OrderLine
-    PROPERTIES(l) idItem, nameItem, description, nameUom, idBarCodeItem, referenceItem, isService,
+    PROPERTIES(l) idItem, nameItem, description, nameUom = namePrintUom, idBarCodeItem, referenceItem, isService,
                   nameCategoryItem, level1Item, level2Item, level3Item, level4Item,
-                  quantity, price,
+                  quantity = printQuantity, price = printPrice,
                   taxPercent, taxAmount, taxes, 
                   untaxedAmount, amount
     FILTERS order(l) = o
