@@ -1,0 +1,19 @@
+MODULE SalesOrderTax;
+
+REQUIRE SalesOrder;
+
+NAMESPACE Sales;
+
+DESIGN orderType {
+    OBJECTS {
+        NEW taxes BEFORE tabbedPane;
+    }
+}
+
+@defineTax(, OrderType, '', orderType, o, taxes);
+
+WHEN LOCAL GOAFTER in[OrderLine, Tax] (SETCHANGED(item(OrderLine l)) OR SETCHANGED(type(l))) AND countIn(type(l), TaxGroup tg) DO
+    in(l, Tax t) <- in(type(l), t) WHERE taxGroup(t) = tg;
+
+WHEN LOCAL (SETCHANGED(type(OrderLine l))) AND NOT countIn(type(l), TaxGroup tg) DO
+    in(l, Tax t) <- salesIn(item(l), t) WHERE taxGroup(t) = tg;
