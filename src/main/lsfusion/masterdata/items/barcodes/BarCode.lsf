@@ -71,7 +71,7 @@ EXTEND FORM products
 ;
 
 consumedBarCode = DATA LOCAL BOOLEAN ();
-barCode 'Barcode' = DATA LOCAL STRING () CHANGEKEY 'F4';
+barCode 'Barcode' = DATA LOCAL STRING () CHANGEKEY 'F4' EVENTID 'SCANNER';
 
 doNotActivateQuantityAfterScanning 'Do not activate quantity after scanning' = DATA BOOLEAN();
 EXTEND FORM options PROPERTIES() doNotActivateQuantityAfterScanning;
@@ -90,7 +90,7 @@ META defineBarCodeSearch(doc, docLine, let, line, quantity)
                 consumedBarCode() <- NULL;
                 processBarCode(d, l, id);
                 IF NOT consumedBarCode() THEN
-                    MESSAGE 'Barcode not found';
+                    MESSAGE 'Barcode not found' + ' (' + id + ')';
             }
         }
     }
@@ -110,7 +110,7 @@ META defineBarCodeSeek(form, obj, gobj)
             IF itemBarCode(id) THEN
                 SEEK form.obj = itemBarCode(id);
             ELSE
-                MESSAGE 'Barcode not found';
+                MESSAGE 'Barcode not found' + ' (' + id + ')';
         }
     }
     
