@@ -22,7 +22,21 @@ DESIGN posPayment {
     }
 }
 
+// марки
+dataMarkMandatory 'Обязательная КМ' = DATA BOOLEAN (Category);
+
+markMandatory (Category c) =
+    GROUP LAST dataMarkMandatory(Category parent) ORDER DESC level(c, parent) MATERIALIZED;
+
+EXTEND FORM category PROPERTIES(c) dataMarkMandatory;
+DESIGN category { pos { MOVE PROPERTY(dataMarkMandatory(c)); } }
+
 mark 'Контрольная марка' = DATA STRING (InvoiceLine);
+
+WHEN LOCAL FORMS posDashboard SETCHANGED(item(InvoiceLine l)) AND markMandatory(category(item(l))) AND NOT mark(l) DO {
+    MESSAGE 'По выбранной позиции обязательно сканирование контрольной марки';
+    DELETE l;
+}
 
 EXTEND FORM posDashboard
     PROPERTIES(l) READONLY SHOWIF mark(l) mark PANEL

@@ -6,18 +6,11 @@ NAMESPACE Retail;
 
 dataCheckOnlineCRPT 'Проверять КМ онлайн в ГИС МТ' = DATA BOOLEAN (Category);
 
-checkOnlineCRPT 'Costing methods' (Category c) =
+checkOnlineCRPT (Category c) =
     GROUP LAST dataCheckOnlineCRPT(Category parent) ORDER DESC level(c, parent) MATERIALIZED;
 
-EXTEND FORM category
-    PROPERTIES(c) dataCheckOnlineCRPT
-;
-
-DESIGN category {
-    params {
-        MOVE PROPERTY(dataCheckOnlineCRPT(c));
-    }
-}
+EXTEND FORM category PROPERTIES(c) dataCheckOnlineCRPT;
+DESIGN category { pos { MOVE PROPERTY(dataCheckOnlineCRPT(c)); } }
 
 checkMarkValidity (Item i, STRING b) +{
     IF checkOnlineCRPT(category(i)) THEN {
