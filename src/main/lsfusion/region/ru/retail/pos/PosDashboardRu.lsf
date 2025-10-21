@@ -1,6 +1,6 @@
 MODULE PosDashboardRu;
 
-REQUIRE PosDashboardPayment, CashRegisterFiscal;
+REQUIRE PosDashboardPayment, CashRegisterFiscal, ItemMarkRu;
 
 NAMESPACE Retail;
 
@@ -20,4 +20,55 @@ DESIGN posPayment {
     top {
         MOVE PROPERTY(emailOrPhone(i)) { fontSize = 24; alignment = STRETCH; }
     }
+}
+
+// марки
+dataMarkMandatory 'Обязательная КМ' = DATA BOOLEAN (Category);
+
+markMandatory (Category c) =
+    GROUP LAST dataMarkMandatory(Category parent) ORDER DESC level(c, parent) MATERIALIZED;
+
+EXTEND FORM category PROPERTIES(c) dataMarkMandatory;
+DESIGN category { pos { MOVE PROPERTY(dataMarkMandatory(c)); } }
+
+mark 'Контрольная марка' = DATA STRING (InvoiceLine);
+
+WHEN LOCAL FORMS posDashboard SETCHANGED(item(InvoiceLine l)) AND markMandatory(category(item(l))) AND NOT mark(l) DO {
+    MESSAGE 'По выбранной позиции обязательно сканирование контрольной марки';
+    DELETE l;
+}
+
+EXTEND FORM posDashboard
+    PROPERTIES(l) READONLY SHOWIF mark(l) mark PANEL
+;
+
+DESIGN posDashboard {
+    info {
+        MOVE PROPERTY(mark(l)) FIRST { alignment = STRETCH; }
+    }
+}
+
+// scan mark
+invalidMark = DATA LOCAL BOOLEAN ();
+checkMarkValidity ABSTRACT LIST (Item, STRING);
+
+afterScanMark ABSTRACT (InvoiceLine, STRING);
+
+processBarCode (Invoice i, InvoiceLine l, STRING b) + {
+    IF length(b) > 20 THEN
+        FOR Item it = itemSingleBarCode(ltrim(substr(b, 3, 14), '0')) DO {
+            invalidMark() <- NULL;
+            checkMarkValidity(it, translateBarcode(b));
+            IF NOT invalidMark() THEN
+                NEW nl = InvoiceLine {
+                    invoice(nl) <- i;
+                    item(nl) <- it;
+                    quantity(nl) <- 1;
+                    mark(nl) <- translateBarcode(b);
+                    SEEK posDashboard.l = nl;
+                    
+                    afterScanMark(nl, translateBarcode(b));
+                }
+            consumedBarCode() <- TRUE;
+        }
 }

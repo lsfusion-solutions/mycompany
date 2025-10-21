@@ -21,10 +21,10 @@ reserved 'Reserved' (OrderLine ol) =
 
 done 'Done' (OrderLine ol) = 
     GROUP SUM done(ShipmentLine rl) IF orderLine(rl) = ol AND active(shipment(rl));
-toShip 'Mark as Todo' (OrderLine ol) = 
+toShip (OrderLine ol) = 
     max(quantity(ol) (-) done(ol), 0) IF item(ol) IS Product MATERIALIZED;
 
-toShip 'Mark as Todo' (Order o) = GROUP SUM toShip(OrderLine ol) IF order(ol) = o;
+toShip (Order o) = GROUP SUM toShip(OrderLine ol) IF order(ol) = o;
 
 CONSTRAINT (quantity(OrderLine ol) (-) done(ol)) < 0 AND confirmed(order(ol)) 
     MESSAGE 'For the product, the shipment exceeds the quantity in the order';

@@ -1,0 +1,131 @@
+MODULE CRPT;
+
+REQUIRE Utils;
+
+sandbox 'Sandbox' = DATA BOOLEAN ();
+
+logRequests 'Log requests' = DATA BOOLEAN ();
+
+markirovkaUrl() = 'https://' + IF sandbox() THEN 'markirovka.sandbox.crptech.ru' ELSE 'markirovka.crpt.ru';
+cdnUrl() = 'https://' + IF sandbox() THEN 'markirovka.sandbox.crptech.ru' ELSE 'cdn.crpt.ru';
+
+apiV4Url = '/api/v4/true-api';
+
+trueApiMarkirovkaUrl = markirovkaUrl() + apiV4Url();
+trueApiCdnUrl = cdnUrl() + apiV4Url();
+
+token 'Токен' = DATA STRING ();
+
+headers (STRING s) = CASE
+    WHEN s = 'X-API-KEY' THEN token()
+;
+
+EXTEND FORM integrationData
+    PROPERTIES() crptSandbox = sandbox, crptToken = token, crptLogRequests = logRequests
+;
+
+DESIGN integrationData {
+    pane {
+        NEW CRPT {
+            caption = 'Честный знак';
+            MOVE PROPERTY(crptSandbox);
+            MOVE PROPERTY(crptToken);
+            MOVE PROPERTY(crptLogRequests);
+        }
+    }
+}
+
+// CDN
+
+code = DATA LOCAL NUMERIC();
+description = DATA LOCAL STRING();
+
+host = DATA LOCAL STRING(INTEGER);
+
+FORM importCDNS
+    PROPERTIES() code, description
+
+    OBJECTS hosts = INTEGER
+    PROPERTIES(hosts) host
+    FILTERS imported(hosts)
+;
+
+CLASS CDN 'CDN';
+host 'Host' = DATA STRING (CDN);
+cdn (STRING host) = GROUP AGGR CDN c BY host(c);
+
+trueApiMarkirovkaUrl (CDN c) = host(c) + apiV4Url();
+
+responseTime 'Время ответа, мс' = DATA LONG (CDN);
+disableTill 'Выключить до' = DATA DATETIME (CDN);
+
+dataDefaultCDN = DATA CDN();
+firstCDN () = GROUP LAST CDN c ORDER DESC responseTime(c), c WHERE c IS CDN AND NOT disableTill(c) > currentDateTime();
+defaultCDN = OVERRIDE dataDefaultCDN(), firstCDN();
+default 'Default' (CDN c) = defaultCDN() = c;
+
+countCDN() = GROUP SUM 1 IF CDN c IS CDN AND NOT disableTill(c) > currentDateTime();
+
+getCDNInfo 'Получить CDN' () {
+    NEWSESSION {
+        LOCAL result = FILE();
+
+        TRY {
+            EXTERNAL HTTP GET trueApiCdnUrl() + '/cdn/info' HEADERS headers TO result;
+
+            IMPORT importCDNS JSON FROM result();
+
+            FOR host(INTEGER i) AND NOT cdn(host(i)) NEW c = CDN DO {
+                host(c) <- host(i);
+            }
+            
+            DELETE CDN c WHERE c IS CDN AND NOT [ GROUP SUM 1 BY host(INTEGER i)](host(c)); 
+            
+            APPLY;
+        } CATCH {
+            fileToString(result());
+            MESSAGE 'Ошибка при чтении CDN : \n' + (OVERRIDE messageCaughtException(), '') + '\n' + (OVERRIDE resultString(), '');
+            RETURN;
+        }
+    }
+}
+
+healthCheck 'Проверка' (CDN c) {
+    NEWSESSION {
+        LOCAL result = FILE();
+
+        TRY {
+            LOCAL start = LONG();
+            start() <- getMilliSeconds(ZDATETIME(currentDateTimeMillis()));
+
+            EXTERNAL HTTP GET host(c) + apiV4Url() + '/cdn/health/check' HEADERS headers TO result;
+
+            responseTime(c) <- getMilliSeconds(ZDATETIME(currentDateTimeMillis())) - start();
+
+            APPLY;
+        } CATCH {
+            fileToString(result());
+            MESSAGE 'Ошибка при проверке CDN : \n' + (OVERRIDE messageCaughtException(), '') + '\n' + (OVERRIDE resultString(), '');
+            RETURN;
+        }
+    }
+}
+
+healthCheckCDN () {
+    FOR CDN c IS CDN DO healthCheck(c);
+} 
+
+EXTEND FORM integrationData
+    OBJECTS crptCDN = CDN
+    PROPERTIES(crptCDN) host READONLY, responseTime READONLY, disableTill READONLY, 
+                        default, DELETE,
+                        healthCheck GRID
+    
+    PROPERTIES() DRAW crptCDN TOOLBAR getCDNInfo, healthCheckCDN
+;
+
+DESIGN integrationData {
+    CRPT {
+        MOVE BOX(crptCDN);
+    }
+}

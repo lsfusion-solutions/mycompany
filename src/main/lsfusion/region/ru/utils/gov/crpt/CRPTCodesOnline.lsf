@@ -1,0 +1,92 @@
+MODULE CRPTCodesOnline;
+
+REQUIRE CRPT;
+
+NAMESPACE CRPT;
+
+errorCode = DATA LOCAL NUMERIC(INTEGER);
+
+gtin = DATA LOCAL STRING(INTEGER);
+producerInn = DATA LOCAL STRING(INTEGER);
+cis = DATA LOCAL STRING(INTEGER);
+packageType = DATA LOCAL STRING(INTEGER);
+printView = DATA LOCAL STRING(INTEGER);
+
+sold = DATA LOCAL BOOLEAN(INTEGER);
+verified = DATA LOCAL BOOLEAN(INTEGER);
+realizable = DATA LOCAL BOOLEAN(INTEGER);
+isBlocked = DATA LOCAL BOOLEAN(INTEGER);
+utilised = DATA LOCAL BOOLEAN(INTEGER);
+valid = DATA LOCAL BOOLEAN(INTEGER);
+isTracking = DATA LOCAL BOOLEAN(INTEGER);
+grayZone = DATA LOCAL BOOLEAN(INTEGER);
+found = DATA LOCAL BOOLEAN(INTEGER);
+
+expireDate = DATA LOCAL DATETIME(INTEGER);
+
+reqTimestamp = DATA LOCAL STRING();
+reqId = DATA LOCAL STRING();
+
+FORM checkCodesOnline
+    PROPERTIES() code, description, reqId, reqTimestamp
+
+    OBJECTS codes = INTEGER
+    PROPERTIES(codes) sold, gtin, producerInn, utilised, verified, isBlocked, errorCode, expireDate,
+        cis, packageType, valid, isTracking, realizable, found, grayZone, printView
+;
+
+checkCodesResult = DATA LOCAL STRING ();
+
+checkCodesOnline (CDN cdn, JSON marks) {
+    LOCAL result = FILE();
+
+    checkCodesResult() <- NULL;
+
+    TRY {
+        timeoutHttp() <- 1500; 
+
+        logToFile('crpt', STRING(marks));
+        EXTERNAL HTTP POST trueApiMarkirovkaUrl(cdn) + '/codes/check' HEADERS headers
+            PARAMS marks TO result;
+
+        IMPORT checkCodesOnline JSON FROM result();
+        
+        IF logRequests() THEN {
+            fileToString(result());
+            logToFile('crpt', 'request : ' + STRING(marks) + ' - response : ' + resultString());
+        }
+
+        CASE
+            WHEN NOT found(0) THEN
+                checkCodesResult() <- 'КМ не найдена';
+            WHEN NOT verified(0) THEN
+                checkCodesResult() <- 'Не корректный код проверки КМ';
+            WHEN NOT utilised(0) THEN
+                checkCodesResult() <- 'КМ не нанесена';
+            WHEN NOT realizable(0) THEN
+                checkCodesResult() <- 'КМ не введена в оборот';
+            WHEN sold(0) THEN
+                checkCodesResult() <- 'КМ выведена из оборота';
+            WHEN expireDate(0) < currentDateTime() THEN
+                checkCodesResult() <- 'Истек срок годности : ' + expireDate(0);
+
+    } CATCH {
+        IF ((statusHttp() >= 500 OR statusHttp() = 429) OR isSubstring(messageCaughtException(), 'TimeoutException')) AND countCDN() > 1 THEN 
+            NEWSESSION { disableTill(cdn) <- sumMinutes(currentDateTime(), 15); APPLY; }
+        fileToString(result());
+        checkCodesResult() <- 'Ошибка при чтении марки : \n' + (OVERRIDE messageCaughtException(), '') + '\n' + (OVERRIDE resultString(), '');
+    }
+}
+
+checkCodesOnline(STRING mark) {
+    checkCodesOnline(defaultCDN(), JSON FROM codes = JSON FROM mark AS STRING IF INTEGER i = 0);
+}
+
+
+// 0104670540176099215'W9Um93dGVz Если utilised=false, то предупреждение УОТ о неверном статусе КМ 
+// 0104670540176099215!pGKy93dGVz - 504
+// 0104670540176099215MpGKy93dGVz - 2 секунды
+
+// 0108051931145232215XJM2,I%K!Km491FFD092testtesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttest
+
+// 0102900003946023215Vnoa:rYVmK0dZwsoЙTn91FFD092dGVzdMtSUFEDXLsyYiv+5uRxm962hUFh0p5CflYMxoo= правильная

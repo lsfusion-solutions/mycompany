@@ -19,7 +19,10 @@ META defineDocObjectsForm (form, obj, title)
                 NEW tabbedPane {
                     tabbed = TRUE;
                     fill = 1000;
-                    MOVE BOX(obj) { caption = title; }
+                    MOVE BOX(obj) { 
+                        height = 500; 
+                        caption = title; 
+                    }
                 }
                 NEW rightPane {
                     tabbed = TRUE;
@@ -486,7 +489,9 @@ END
 META defineDocLineRelation(docTo, docFrom, docFromLine, captTo, captFrom, objTo, objFrom, prefix)
     docTo##Line = DATA ###docTo##Line (###docFromLine) INDEXED;
     
-    in (###docTo i, ###docFrom s) = GROUP SUM 1 IF docTo(docTo##Line(###docFromLine l)) = i AND docFrom(l) = s MATERIALIZED; 
+    in (###docTo i, ###docFrom s) = GROUP SUM 1 IF docTo(docTo##Line(###docFromLine l)) = i AND docFrom(l) = s MATERIALIZED;
+    
+    max###docTo (###docFrom s) = GROUP MAX ###docTo i IF in(i, s);
     
     count###docTo (###docFrom s) = GROUP SUM 1 IF in(###docTo i, s) MATERIALIZED;
     count###docFrom##s (###docTo i) = GROUP SUM 1 IF in(i, ###docFrom s) MATERIALIZED;

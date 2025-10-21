@@ -59,6 +59,8 @@ EXTEND FORM posPaymentReturn
 
 @defineKeyboardDecimal(amount, posPaymentReturn, PaymentMethod, pm, right, 64);
 
+afterPosPayment ABSTRACT LIST (Bill);
+
 posPayment 'Payment' (Session s, Bill b) {
     amount(PaymentMethod pm) <- NULL;
     DIALOG posPaymentReturn OBJECTS b = b NOMANAGESESSION DO {
@@ -82,6 +84,7 @@ posPayment 'Payment' (Session s, Bill b) {
             DELETE IncomingPayment p WHERE SET(p IS IncomingPayment);
             ready(b) <- NULL;
         } ELSE {
+            afterPosPayment(b);
             createInvoice(s);
         }
     }

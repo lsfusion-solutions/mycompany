@@ -1,0 +1,31 @@
+MODULE PosDashboardCRPT;
+
+REQUIRE CRPTCodesOnline, PosDashboardRu;
+
+NAMESPACE Retail;
+
+dataCheckOnlineCRPT 'Проверять КМ онлайн в ГИС МТ' = DATA BOOLEAN (Category);
+
+checkOnlineCRPT (Category c) =
+    GROUP LAST dataCheckOnlineCRPT(Category parent) ORDER DESC level(c, parent) MATERIALIZED;
+
+EXTEND FORM category PROPERTIES(c) dataCheckOnlineCRPT;
+DESIGN category { pos { MOVE PROPERTY(dataCheckOnlineCRPT(c)); } }
+
+checkMarkValidity (Item i, STRING b) +{
+    IF checkOnlineCRPT(category(i)) THEN {
+        checkCodesOnline(b);
+        IF checkCodesResult() THEN {
+            invalidMark() <- TRUE;
+            MESSAGE checkCodesResult() + ' ( ' + b + ' ) ' ERROR;
+        }
+    }
+}
+
+reqId = DATA LOCAL STRING (InvoiceLine);
+reqTimestamp = DATA LOCAL STRING (InvoiceLine);
+
+afterScanMark (InvoiceLine l, STRING b) +{
+    reqId(l) <- reqId();
+    reqTimestamp(l) <- reqTimestamp();
+}

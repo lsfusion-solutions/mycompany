@@ -227,7 +227,7 @@ changeBarCode (Invoice i, InvoiceLine l) {
             processBarCode(i, l, b);
             
             IF NOT consumedBarCode() THEN
-                MESSAGE 'Barcode not found';
+                MESSAGE 'Barcode not found' + ' (' + b + ')';
         } 
     }
 }
@@ -239,5 +239,13 @@ EXTEND FORM posDashboard
 DESIGN posDashboard {
     invoiceHeader {
         MOVE PROPERTY(barCode()) FIRST;
+    }
+}
+
+DESIGN category {
+    tabs {
+        NEW pos { // utility container for POS
+            caption = 'POS';
+        }
     }
 }

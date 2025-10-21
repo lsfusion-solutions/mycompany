@@ -21,7 +21,8 @@ EXTEND FORM timeEntries
     PROPERTIES(t) READONLY attendance
 ;
 
-hoursAttendance (TimeEntry t) = round1((GROUP SUM seconds(Attendance a) IF timeEntry(a) = t) / 3600.0);
+hoursAttendance = ABSTRACT VALUE NUMERIC[8,2] (TimeEntry);
+hoursAttendance (TimeEntry t) += NUMERIC[8,2](round1((GROUP SUM seconds(Attendance a) IF timeEntry(a) = t) / 3600.0));
 WHEN CHANGED(hoursAttendance(TimeEntry t)) AND attendance(t) DO hours(t) <- hoursAttendance(t);
 WHEN DROPPED(hoursAttendance(TimeEntry t)) AND attendance(t) DO DELETE t;
 
@@ -32,7 +33,7 @@ nameAttendanceTimeEntryType 'Time entry type for attendance' () = name(attendanc
 EXTEND FORM options PROPERTIES() nameAttendanceTimeEntryType;
 DESIGN options { commons { MOVE PROPERTY(nameAttendanceTimeEntryType()); } }
 
-WHEN (CHANGED(employee(Attendance a)) OR CHANGED(project(a)) OR CHANGED(checkInDate(a)) OR CHANGED(checkOut(a))) AND seconds(a) DO {
+WHEN (CHANGED(employee(Attendance a)) OR CHANGED(project(a)) OR CHANGED(checkInDate(a)) OR CHANGED(checkOut(a))) AND hours(a) DO {
     IF NOT attendanceTimeEntry(checkInDate(a), employee(a), project(a)) THEN NEW t = TimeEntry {
         date(t) <- checkInDate(a);
         employee(t) <- employee(a);

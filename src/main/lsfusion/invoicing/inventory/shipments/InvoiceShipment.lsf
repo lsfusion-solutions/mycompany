@@ -40,6 +40,13 @@ EXTEND FORM invoices
 shippedQuantity (InvoiceLine l) = NUMERIC[16,3](quantity(l) * skuCoeff(item(l)));
 shippedProduct (InvoiceLine l) = sku(item(l));
 
+done 'Done' (InvoiceLine il) =
+    GROUP SUM done(ShipmentLine rl) IF invoiceLine(rl) = il AND active(shipment(rl));
+toShip (InvoiceLine il) =
+    max(shippedQuantity(il) (-) done(il), 0) IF item(il) IS Product MATERIALIZED;
+
+toShip (Invoice i) = GROUP SUM toShip(InvoiceLine il) IF invoice(il) = i;
+
 fill ABSTRACT LIST (Shipment, Invoice);
 fill ABSTRACT LIST (ShipmentLine, InvoiceLine);
 invoiceShipmentCreated = DATA LOCAL Shipment ();
@@ -60,10 +67,10 @@ newShipment (Invoice i) {
         
         fill(r, i);
     
-        FOR invoice(InvoiceLine l) = i AND item(l) IS Product INLINE NEW rl = ShipmentLine DO {            
+        FOR invoice(InvoiceLine l) = i AND item(l) IS Product AND toShip(l) > 0 INLINE NEW rl = ShipmentLine DO {            
             shipment(rl) <- r;
             product(rl) <- shippedProduct(l);
-            done(rl) <- shippedQuantity(l);
+            done(rl) <- toShip(l);
             invoiceLine(rl) <- l;
             fill(rl, l);
         }
@@ -83,7 +90,7 @@ createShipment 'Create Shipment' (Invoice b) {
 }
 
 EXTEND FORM invoice
-    PROPERTIES(i) createShipment SHOWIF active(i) AND shipmentType(type(i)) AND NOT countShipmentLine(i) 
+    PROPERTIES(i) createShipment SHOWIF active(i) AND shipmentType(type(i)) AND toShip(i) 
 
     OBJECTS s = Shipment
     PROPERTIES(s) READONLY number, scheduledDateTime, imagedNameStatus BACKGROUND colorStatus(s), nameType, executionDateTime
@@ -122,6 +129,6 @@ WHEN SET(canceled(Invoice i)) AND in(i, Shipment s) AND countInvoice(s) = 1 AND 
 WHEN CHANGED(customer(Invoice i)) AND in(i, Shipment s) AND countInvoice(s) = 1 AND autoCreateShipment(type(i)) DO 
     customer(s) <- customer(i); 
 WHEN (CHANGED(quantity(invoiceLine(ShipmentLine l))) OR CHANGED(item(invoiceLine(l)))) AND autoCreateShipment(type(invoice(invoiceLine(l)))) DO 
-    done(l) <- NUMERIC[16,3](quantity(invoiceLine(l)) * skuCoeff(item(invoiceLine(l))));
+    done(l) <- shippedQuantity(invoiceLine(l));
 WHEN CHANGED(item(invoiceLine(ShipmentLine l))) AND autoCreateShipment(type(invoice(invoiceLine(l)))) DO 
     product(l) <- shippedProduct(invoiceLine(l));
