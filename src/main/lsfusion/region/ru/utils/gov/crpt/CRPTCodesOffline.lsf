@@ -1,0 +1,159 @@
+MODULE CRPTCodesOffline;
+
+REQUIRE CRPTCodesOnline, Pos, ItemMarkRu;
+
+NAMESPACE CRPT;
+
+CLASS LocalModule 'ЛМ ЧЗ';
+name 'Имя' = DATA STRING (LocalModule);
+host 'Хост' = DATA STRING (LocalModule);
+login 'Пользователь' = DATA STRING (LocalModule);
+password 'Пароль' = DATA STRING (LocalModule) ECHO;
+
+url (LocalModule l) = 'http://' + host(l) + '/api/v1';
+
+headers (LocalModule l, STRING h) = CASE
+    WHEN h = r'Authorization' THEN r'Basic ' + encodeBase64(login(l) + ':' + password(l));
+
+EXTEND FORM integrationData
+    OBJECTS crptLocalModule = LocalModule
+    PROPERTIES(crptLocalModule) name, host, login, password, NEW, DELETE
+;
+
+DESIGN integrationData {
+    CRPT {
+        MOVE BOX(crptLocalModule);
+    }
+}
+
+// init
+init 'Инициализировать' (LocalModule l) {
+    LOCAL result = FILE();
+
+    TRY {
+        localHeaders(STRING h) <- headers(l, h);
+        EXTERNAL HTTP CLIENT POST url(l) + '/init' HEADERS localHeaders PARAMS JSON FROM token() TO result;
+    } CATCH {
+        fileToString(result());
+        MESSAGE 'Ошибка при инициализации ЛМ ЧЗ : \n' + (OVERRIDE messageCaughtException(), '') + '\n' + (OVERRIDE resultString(), '');
+        RETURN;
+    }
+}
+
+EXTEND FORM integrationData
+    PROPERTIES(crptLocalModule) init TOOLBAR
+;
+
+// проверка кодов
+resultsCodes = DATA LOCAL INTEGER(INTEGER);
+isGreyGtin = DATA LOCAL STRING(INTEGER);
+code = DATA LOCAL NUMERIC(INTEGER);
+reqTimestamp = DATA LOCAL NUMERIC(INTEGER);
+inst = DATA LOCAL STRING(INTEGER);
+description = DATA LOCAL STRING(INTEGER);
+version = DATA LOCAL STRING(INTEGER);
+reqId = DATA LOCAL STRING(INTEGER);
+
+FORM checkCodesOffline
+    OBJECTS results = INTEGER
+    PROPERTIES(results) code, reqTimestamp, inst, description, version, reqId
+    FILTERS imported(results)
+
+    OBJECTS codes = INTEGER
+    PROPERTIES(codes) isGreyGtin, sold, gtin, printView, isBlocked, cis
+    FILTERS resultsCodes(codes) = results,
+            imported(codes)
+;
+
+checkCodesOffline (LocalModule l, JSON marks) {
+    LOCAL result = FILE();
+
+    checkCodesResult() <- NULL;
+
+    TRY {
+        logToFile('crptlocal', STRING(marks));
+
+        localHeaders(STRING h) <- headers(l, h);
+        EXTERNAL HTTP CLIENT POST url(l) + '/cis/outCheck' HEADERS localHeaders
+            PARAMS marks TO result;
+
+        IMPORT checkCodesOffline JSON FROM result();
+
+        IF logRequests() THEN {
+            fileToString(result());
+            logToFile('crptlocal', 'request : ' + STRING(marks) + ' - response : ' + OVERRIDE resultString(), '');
+        }
+
+        CASE
+            WHEN isBlocked(0) THEN
+                checkCodesResult() <- 'ЛМ ЧЗ : КМ заблокирована';
+            WHEN sold(0) THEN
+                checkCodesResult() <- 'ЛМ ЧЗ : КМ выведена из оборота';
+            WHEN code(0) >= 400 THEN
+                checkCodesResult() <- 'ЛМ ЧЗ : ' + description(0);
+
+    } CATCH {
+        fileToString(result());
+        logToFile('crptlocal', 'request : ' + STRING(marks) + ' - error : ' + (OVERRIDE messageCaughtException(), '') + ' / ' + OVERRIDE resultString(), '');
+        checkCodesResult() <- 'Ошибка при чтении марки из ЛМ ЧЗ : \n' + (OVERRIDE messageCaughtException(), '') + '\n' + OVERRIDE resultString(), '';
+    }
+}
+
+checkCodesOffline(LocalModule l, STRING mark) {
+    checkCodesOffline(l, JSON FROM cis_list = JSON FROM extractGS1(mark) AS STRING IF INTEGER i = 0);
+}
+
+// sell
+
+sellCodesOffline (LocalModule l, JSON marks) {
+    LOCAL result = FILE();
+    
+    checkCodesResult() <- NULL;
+
+    TRY {
+        logToFile('crptlocal', 'sell : ' + STRING(marks));
+    
+        localHeaders(STRING h) <- headers(l, h);
+        EXTERNAL HTTP POST url(l) + '/cis/sell' HEADERS localHeaders
+            PARAMS marks TO result;
+    
+        IF logRequests() THEN {
+            fileToString(result());
+            logToFile('crptlocal', 'sell request : ' + STRING(marks) + ' - response : ' + OVERRIDE resultString(), '');
+        }
+    } CATCH {
+        fileToString(result());
+        logToFile('crptlocal', 'sell request : ' + STRING(marks) + ' - error : ' + (OVERRIDE messageCaughtException(), '') + ' / ' + OVERRIDE resultString(), '');
+        checkCodesResult() <- 'Ошибка при продаже марки в ЛМ ЧЗ : \n' + (OVERRIDE messageCaughtException(), '') + '\n' + OVERRIDE resultString(), '';
+    }
+}
+
+sellCodesOffline(LocalModule l, STRING mark) {
+    sellCodesOffline(l, JSON FROM cis_list = JSON FROM extractGS1(mark) AS STRING IF INTEGER i = 0);
+}
+
+// return
+returnCodesOffline (LocalModule l, JSON marks) {
+    LOCAL result = FILE();
+
+    TRY {
+        logToFile('crptlocal', 'return : ' + STRING(marks));
+
+        localHeaders(STRING h) <- headers(l, h);
+        EXTERNAL HTTP POST url(l) + '/cis/return' HEADERS localHeaders
+            PARAMS marks TO result;
+
+        IF logRequests() THEN {
+            fileToString(result());
+            logToFile('crptlocal', 'return request : ' + STRING(marks) + ' - response : ' + resultString());
+        }
+    } CATCH {
+        fileToString(result());
+        logToFile('crptlocal', 'return request : ' + STRING(marks) + ' - error : ' + (OVERRIDE messageCaughtException(), '') + ' / ' + OVERRIDE resultString(), '');
+        checkCodesResult() <- 'Ошибка при возврате марки в ЛМ ЧЗ : \n' + (OVERRIDE messageCaughtException(), '') + '\n' + OVERRIDE resultString(), '';
+    }
+}
+
+returnCodesOffline(LocalModule l, STRING mark) {
+    returnCodesOffline(l, JSON FROM cis_list = JSON FROM extractGS1(mark) AS STRING IF INTEGER i = 0);
+}

@@ -1,21 +1,40 @@
 MODULE PosDashboardCRPT;
 
-REQUIRE CRPTCodesOnline, PosDashboardRu;
+REQUIRE CRPTCodesOnline, CRPTCodesOffline, PosDashboardRu;
 
 NAMESPACE Retail;
 
 dataCheckOnlineCRPT 'Проверять КМ онлайн в ГИС МТ' = DATA BOOLEAN (Category);
+dataCheckOfflineCRPT 'Проверять КМ оффлайн в ЛМ ЧЗ' = DATA BOOLEAN (Category);
 
 checkOnlineCRPT (Category c) =
     GROUP LAST dataCheckOnlineCRPT(Category parent) ORDER DESC level(c, parent) MATERIALIZED;
+checkOfflineCRPT (Category c) =
+    GROUP LAST dataCheckOfflineCRPT(Category parent) ORDER DESC level(c, parent) MATERIALIZED;
 
-EXTEND FORM category PROPERTIES(c) dataCheckOnlineCRPT;
-DESIGN category { pos { MOVE PROPERTY(dataCheckOnlineCRPT(c)); } }
+EXTEND FORM category PROPERTIES(c) dataCheckOnlineCRPT, dataCheckOfflineCRPT SHOWIF dataCheckOnlineCRPT(c);
+DESIGN category { 
+    pos { 
+        MOVE PROPERTY(dataCheckOnlineCRPT(c));
+        MOVE PROPERTY(dataCheckOfflineCRPT(c));
+    } 
+}
 
-checkMarkValidity (Item i, STRING b) +{
+localModule = DATA LocalModule (Pos);
+nameLocalModule 'ЛМ ЧЗ' (Pos p) = name(localModule(p));
+
+EXTEND FORM pos
+    PROPERTIES(p) nameLocalModule
+;
+
+checkMarkValidity (Pos p, Item i, STRING b) +{
     IF checkOnlineCRPT(category(i)) THEN {
         checkCodesOnline(b);
         IF checkCodesResult() THEN {
+            IF checkCodesTimeout() AND checkOfflineCRPT(category(i)) THEN {
+                checkCodesOffline(localModule(p), b);
+                IF NOT checkCodesResult() THEN RETURN;
+            }
             invalidMark() <- TRUE;
             MESSAGE checkCodesResult() + ' ( ' + b + ' ) ' ERROR;
         }
@@ -28,4 +47,29 @@ reqTimestamp = DATA LOCAL STRING (InvoiceLine);
 afterScanMark (InvoiceLine l, STRING b) +{
     reqId(l) <- reqId();
     reqTimestamp(l) <- reqTimestamp();
+}
+
+// offline operations
+afterPosPayment (Invoice i) +{
+    IF GROUP SUM 1 IF invoice(InvoiceLine l) = i AND checkOfflineCRPT(category(item(l))) THEN {
+        sellCodesOffline(localModule(pos(session(i))), 
+            JSON FROM cis_list = 
+                      JSON FROM extractGS1(mark(InvoiceLine l)) AS STRING 
+                          IF invoice(l) = i AND checkOfflineCRPT(category(item(l))));
+        IF checkCodesResult() THEN {
+            MESSAGE checkCodesResult() ERROR;
+        }
+    }
+}
+
+afterPosPayment (Bill b) +{
+    IF GROUP SUM 1 IF bill(BillLine l) = b AND checkOfflineCRPT(category(item(l))) AND mark(invoiceLine(l)) THEN {
+        returnCodesOffline(localModule(pos(session(b))),
+            JSON FROM cis_list =
+                      JSON FROM extractGS1(mark(invoiceLine(BillLine l))) AS STRING 
+                          IF bill(l) = b AND checkOfflineCRPT(category(item(l))) AND mark(invoiceLine(l)));
+        IF checkCodesResult() THEN {
+            MESSAGE checkCodesResult() ERROR;
+        }
+    }
 }

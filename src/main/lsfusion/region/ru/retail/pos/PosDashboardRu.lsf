@@ -50,7 +50,7 @@ DESIGN posDashboard {
 
 // scan mark
 invalidMark = DATA LOCAL BOOLEAN ();
-checkMarkValidity ABSTRACT LIST (Item, STRING);
+checkMarkValidity ABSTRACT LIST (Pos, Item, STRING);
 
 afterScanMark ABSTRACT (InvoiceLine, STRING);
 
@@ -58,7 +58,7 @@ processBarCode (Invoice i, InvoiceLine l, STRING b) + {
     IF length(b) > 20 THEN
         FOR Item it = itemSingleBarCode(ltrim(substr(b, 3, 14), '0')) DO {
             invalidMark() <- NULL;
-            checkMarkValidity(it, translateBarcode(b));
+            checkMarkValidity(pos(session(i)), it, translateBarcode(b));
             IF NOT invalidMark() THEN
                 NEW nl = InvoiceLine {
                     invoice(nl) <- i;
