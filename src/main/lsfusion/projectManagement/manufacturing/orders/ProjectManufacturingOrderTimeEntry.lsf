@@ -10,7 +10,7 @@ numberDateManufacturingOrder 'Manufacturing order' (TimeEntry t) = numberDate(ma
 countTimeEntry 'Time entries' (ManufacturingOrder o) = GROUP SUM 1 IF manufacturingOrder(TimeEntry t) = o MATERIALIZED;
 hoursTimeEntry 'Hours' (ManufacturingOrder o) = GROUP SUM hours(TimeEntry t) IF manufacturingOrder(t) = o MATERIALIZED;
 
-WHEN LOCAL SETCHANGED(project(manufacturingOrder(TimeEntry t))) AND NOT CHANGED(manufacturingOrder(t)) DO
+WHEN LOCAL SETCHANGED(project(manufacturingOrder(TimeEntry t))) AND NOT CHANGED(project(t)) DO
     project(t) <- project(manufacturingOrder(t));
 
 CONSTRAINT manufacturingOrder(TimeEntry t) AND project(t) AND NOT project(t) = project(manufacturingOrder(t))
