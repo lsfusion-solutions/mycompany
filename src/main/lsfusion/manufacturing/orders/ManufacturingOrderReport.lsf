@@ -17,8 +17,22 @@ FORM manufacturingOrderReport 'Order report'
                         'Canonical group' = canonicalNameCategory(item(o)) 
     PROPERTIES READONLY attribute(o, a) COLUMNS (a) HEADER name(a)
     PROPERTIES(o) READONLY MEASURE toManufacture, manufactured,
-                                   cost, extraCost, totalCost
-    FILTERS accessGranted(materialsLocation(o)) OR accessGranted(productsLocation(o)) 
+                                   cost, extraCost, laborCost, totalCost
+    FILTERS accessGranted(materialsLocation(o)) OR accessGranted(productsLocation(o))
+
+    OBJECTS cl = (cl = ConsumedLine, co = ManufacturingOrder) PIVOT
+    PROPERTIES(co) READONLY number, scheduledDateTime, nameItem, imagedNameStatus, nameType, executionDateTime,
+                            nameCompany, nameMaterialsLocation, nameProductsLocation,
+                            descriptionBom
+    
+    PROPERTIES(cl) READONLY 'Material' = nameItem, nameUom
+    PROPERTIES READONLY 'Category 1' = level1(item(cl)), 'Category 2' = level2(item(cl)), 'Category 3' = level3(item(cl)), 'Category 4' = level4(item(cl)),
+                        'Canonical group' = canonicalNameCategory(item(o))
+    PROPERTIES READONLY attribute(co, a) COLUMNS (a) HEADER name(a)
+    
+    PROPERTIES(cl) READONLY MEASURE 'Cost' = toConsume, reserved, consumed, cost
+    FILTERS manufacturingOrder(cl) = co,
+            accessGranted(materialsLocation(co)) OR accessGranted(productsLocation(co))
 ;
 
 DESIGN manufacturingOrderReport {
@@ -26,6 +40,16 @@ DESIGN manufacturingOrderReport {
         NEW filters FIRST { 
             caption = 'Filters';
             horizontal = TRUE;
+        }
+        NEW pane {
+            tabbed = TRUE;
+            fill = 1;
+            MOVE BOX(o) {
+                caption = 'Manufacturing orders';
+            }
+            MOVE BOX(cl) {
+                caption = 'Materials';
+            }
         }
     }
 }

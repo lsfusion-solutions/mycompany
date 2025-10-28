@@ -125,8 +125,6 @@ descriptionBom 'Bill of Materials' (ConsumedLine l) = descriptionBom(manufacturi
 responsible (ConsumedLine l) = responsible(manufacturingOrder(l));
 nameResponsible 'Responsible' (ConsumedLine l) = MasterData.name(responsible(l));
 
-edit (ConsumedLine l) + { edit(manufacturingOrder(l)); } 
-
 FORM manufacturingOrder 'Manufacturing order'
     OBJECTS o = ManufacturingOrder PANEL 
     PROPERTIES(o) READONLY unbuild
@@ -217,6 +215,9 @@ DESIGN manufacturingOrder {
         }
     }
 }
+
+edit (FinishedLine l) + { edit(manufacturingOrder(l)); }
+edit (ConsumedLine l) + { edit(manufacturingOrder(l)); }
 
 @defineDocHistoryHeader(manufacturingOrder, scheduledDateTime);
 @defineHistoryProperty(manufacturingOrder, item, 'Item', nameItem);
