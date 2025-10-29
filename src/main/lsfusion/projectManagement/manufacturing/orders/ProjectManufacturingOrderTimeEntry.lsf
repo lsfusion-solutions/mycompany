@@ -6,6 +6,7 @@ NAMESPACE ProjectManufacturing;
 
 manufacturingOrder = DATA ManufacturingOrder (TimeEntry) INDEXED;
 numberDateManufacturingOrder 'Manufacturing order' (TimeEntry t) = numberDate(manufacturingOrder(t));
+nameItemManufacturingOrder '{Item}' (TimeEntry t) = nameItem(manufacturingOrder(t));
 
 countTimeEntry 'Time entries' (ManufacturingOrder o) = GROUP SUM 1 IF manufacturingOrder(TimeEntry t) = o MATERIALIZED;
 hoursTimeEntry 'Hours' (ManufacturingOrder o) = GROUP SUM hours(TimeEntry t) IF manufacturingOrder(t) = o MATERIALIZED;
@@ -28,7 +29,7 @@ DESIGN timeEntry {
 }
 
 EXTEND FORM timeEntries
-    PROPERTIES(t) READONLY numberDateManufacturingOrder
+    PROPERTIES(t) READONLY numberDateManufacturingOrder, nameItemManufacturingOrder
 ;
 
 EXTEND FORM project

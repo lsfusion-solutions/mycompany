@@ -1,0 +1,31 @@
+MODULE ProjectManufacturingOrderReport;
+
+REQUIRE ProjectManufacturingOrderTimeEntry, ManufacturingOrderReport, ProjectTimeEntryPayslip;
+
+NAMESPACE ProjectManufacturing;
+
+EXTEND FORM manufacturingOrderReport
+    OBJECTS te = (te = TimeEntry, to = ManufacturingOrder) PIVOT
+    PROPERTIES(to) READONLY number, scheduledDateTime, nameItem, imagedNameStatus, nameType, executionDateTime,
+                            nameCompany, nameMaterialsLocation, nameProductsLocation,
+                            descriptionBom
+
+    PROPERTIES(te) READONLY nameEmployee, nameProject 
+
+    PROPERTIES(te) READONLY MEASURE hours, rateSalary, salary
+    FILTERS manufacturingOrder(te) = to,
+            accessGranted(materialsLocation(to)) OR accessGranted(productsLocation(to))
+;
+
+DESIGN manufacturingOrderReport {
+    pane {
+        MOVE BOX(te) {
+            caption = 'Labor cost';
+        }
+    }
+}
+
+@defineDateTimeAggregationForm(manufacturingOrderReport, to, scheduled);
+EXTEND FORM manufacturingOrderReport
+    FILTERS NOT scheduledDate(to) < from(dates), NOT scheduledDate(to) > to(dates)
+;

@@ -30,7 +30,7 @@ FORM manufacturingOrderReport 'Order report'
                         'Canonical group' = canonicalNameCategory(item(o))
     PROPERTIES READONLY attribute(co, a) COLUMNS (a) HEADER name(a)
     
-    PROPERTIES(cl) READONLY MEASURE 'Cost' = toConsume, reserved, consumed, cost
+    PROPERTIES(cl) READONLY MEASURE toConsume, reserved, consumed, cost
     FILTERS manufacturingOrder(cl) = co,
             accessGranted(materialsLocation(co)) OR accessGranted(productsLocation(co))
 ;
@@ -56,6 +56,11 @@ DESIGN manufacturingOrderReport {
 
 @defineDateTimeAggregationForm(manufacturingOrderReport, o, scheduled);
 @defineDateFilterForm(manufacturingOrderReport, o, scheduled);
+
+@defineDateTimeAggregationForm(manufacturingOrderReport, co, scheduled);
+EXTEND FORM manufacturingOrderReport
+    FILTERS NOT scheduledDate(co) < from(dates), NOT scheduledDate(co) > to(dates)
+;
 
 NAVIGATOR {
     manufacturing {
