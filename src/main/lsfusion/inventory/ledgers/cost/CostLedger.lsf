@@ -30,6 +30,12 @@ price 'Price' (InCostLedger il) = amount(il) / quantity(il);
 
 INDEX location(InCostLedger l), product(l), dateTime(l), l;
 
+lastCostPrice 'Last cost' (Location l, Product p, DATETIME dt) = 
+    GROUP LAST price(InCostLedger il) ORDER dateTime(il), l WHERE location(il) = l AND product(il) = p AND dateTime(il) <= dt;
+
+lastCostPrice 'Last cost' (Location l, Product p) =
+    GROUP LAST price(InCostLedger il) ORDER dateTime(il), l WHERE location(il) = l AND product(il) = p;
+
 // out
 CLASS OutCostLedger 'Cost ledger (outcome)' : CostLedger;
 
