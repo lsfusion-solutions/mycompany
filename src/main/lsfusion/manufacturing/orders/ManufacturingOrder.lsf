@@ -54,7 +54,9 @@ WHEN LOCAL SETCHANGED(type(ManufacturingOrder mo)) AND NOT materialsLocation(mo)
 CONSTRAINT SETCHANGED(materialsLocation(ManufacturingOrder o)) AND internalUse(materialsLocation(o)) CHECKED BY materialsLocation[ManufacturingOrder]
     MESSAGE 'The selected location is for internal use';
 
-unbuild 'Unbuild' (ManufacturingOrder mo)= unbuild(type(mo)); 
+unbuild 'Unbuild' (ManufacturingOrder mo)= unbuild(type(mo));
+
+note 'Note' = DATA ISTRING (ManufacturingOrder) CHARWIDTH 20;
 
 // consumed
 CLASS ConsumedLine 'Materials';
@@ -131,7 +133,8 @@ FORM manufacturingOrder 'Manufacturing order'
     PROPERTIES(o) READONLYIF readonly(o)
                   nameType, scheduledDateTime, number, nameCompany, nameResponsible, 
                   nameItem, toManufacture, nameUom, 
-                  descriptionBom, nameMaterialsLocation 
+                  descriptionBom, nameMaterialsLocation,
+                  note
     
     OBJECTS c = ConsumedLine
     PROPERTIES(c) READONLYIF readonly(o)
@@ -175,6 +178,7 @@ DESIGN manufacturingOrder {
                 tabbed = TRUE;
             }
         }
+        MOVE PROPERTY(note(o));
         NEW details {
             fill = 1;
             tabbed = TRUE;

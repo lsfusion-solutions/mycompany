@@ -11,6 +11,8 @@ type 'Type' = ABSTRACT ISTRING[100] (CostLedger) CHARWIDTH 20 MATERIALIZED;
 
 number 'Number' = ABSTRACT STRING[50] (CostLedger) CHARWIDTH 10 MATERIALIZED;
 
+note 'Note' = ABSTRACT ISTRING (CostLedger) CHARWIDTH 20;
+
 // in
 CLASS InCostLedger 'Cost ledger (income)' : CostLedger;
 
@@ -51,7 +53,22 @@ amount '{Amount}' = DATA NUMERIC[14,2] (OutCostLedger);
 
 // cost
 dateTime 'Time' (CostLedger l) = MULTI dateTime[InCostLedger](l), dateTime[OutCostLedger](l) MATERIALIZED;
-date 'Date' (CostLedger l) = DATE(dateTime(l));
+@defineDateTimeAggregation(CostLedger, , ){
+    date 'Date' (CostLedger o) = DATE(dateTime(o));
+    
+    @defineDateAggregation(CostLedger, , date, ){
+    numberDOW 'Day of week number' (CostLedger o) = extractDOWNumber(date(o));
+    nameDOW 'Day of week' (CostLedger o) = extractDOWName(date(o));
+    week 'Week' (CostLedger o) = extractWeek(date(o));
+    
+    numberMonth 'Month number' (CostLedger o) = extractMonthNumber(date(o));
+    nameMonth 'Month' (CostLedger o) = extractMonthName(date(o));
+    year 'Year' (CostLedger o) = extractYear(date(o));
+};
+
+    minute 'Minute' (CostLedger o) = extractMinute(dateTime(o));
+    hour 'Hour' (CostLedger o) = extractHour(dateTime(o));
+};
 
 location 'Location' (CostLedger l) = MULTI location[InCostLedger](l), location[OutCostLedger](l) MATERIALIZED;
 nameLocation 'Location' (CostLedger l) = name(location(l));
