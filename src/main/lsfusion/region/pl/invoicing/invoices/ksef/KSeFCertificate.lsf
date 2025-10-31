@@ -1,0 +1,39 @@
+MODULE KSeFCertificate;
+
+REQUIRE KSeF;
+
+NAMESPACE KSeF;
+
+tokenEncryptionCertificate 'Public key for token encryption' = DATA TEXT ();
+
+getPublicKeyCertificates 'Get public key certificates' () {
+    NEWSESSION {
+        TRY {
+            EXTERNAL HTTP GET hostApi() + '/security/public-key-certificates' TO resultFile;
+
+            IMPORT JSON FROM resultFile() FIELDS STRING certificate, STRING usage DO {
+                IF usage = r'["KsefTokenEncryption"]' THEN
+                    tokenEncryptionCertificate() <- '-----BEGIN CERTIFICATE-----\n' + certificate + '\n-----END CERTIFICATE-----';
+            }
+
+            APPLY;
+        } CATCH { catchException('Get public key'); }
+    }
+}
+
+EXTEND FORM integrationData
+    PROPERTIES() getPublicKeyCertificates, tokenEncryptionCertificate READONLY
+;
+
+DESIGN integrationData {
+    KSeF {
+        NEW KSeFCertificates {
+            caption = 'Certificates';
+            MOVE PROPERTY(getPublicKeyCertificates());
+            MOVE PROPERTY(tokenEncryptionCertificate()) {
+                panelCaptionVertical = TRUE;
+                fill = 1;
+            }
+        }
+    }
+}

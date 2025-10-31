@@ -1,0 +1,22 @@
+MODULE PartnerPl;
+
+REQUIRE Partner;
+
+NAMESPACE MasterData;
+
+nip 'NIP' = ABSTRACT STRING[10] (Partner);
+partnerNip = GROUP AGGR Partner p BY nip(p);
+
+EXTEND FORM partner
+    PROPERTIES(p) nip
+;
+
+DESIGN partner {
+    legalInfoOptions {
+        MOVE PROPERTY(nip(p));
+    }
+}
+
+EXTEND FORM partners
+    PROPERTIES(p) READONLYIF isReadonly() GRID nip
+;
