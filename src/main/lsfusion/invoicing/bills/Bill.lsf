@@ -28,12 +28,12 @@ WHEN LOCAL SET (Bill b IS Bill) AND NOT CHANGED(dateTime(b)) DO dateTime(b) <- c
 numberDate 'Description' (Bill b) = number(b) + ' (' + dateTime(b) + ')' IN id;
 
 deliveryDateTime 'Delivery date' = DATA DATETIME (Bill);
-@defineDateTimeAggregation(Bill, delivery, 'Delivery ');
+@defineDateTimeAggregation(Bill, delivery, '(delivery)');
 
 executionDateTime 'Execution date' (Bill i) = ABSTRACT VALUE DATETIME (Bill);
 executionDateTime(Bill i) += deliveryDateTime(i);
 executionDateTime(Bill i) += dateTime(i);
-@defineDateTimeAggregation(Bill, execution, 'Execution ');
+@defineDateTimeAggregation(Bill, execution, '(execution)');
 
 // vendor
 vendor 'Vendor' = DATA Partner (Bill);

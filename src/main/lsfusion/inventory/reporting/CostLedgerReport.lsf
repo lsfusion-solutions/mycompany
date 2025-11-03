@@ -35,34 +35,8 @@ DESIGN costLedgerReport {
     }
 }
 
-@defineDateTimeAggregationForm(costLedgerReport, l){
-    @defineDateTimeAggregationForm(costLedgerReport, l, ){
-        EXTEND FORM costLedgerReport
-            PROPERTIES(l) READONLY AFTER dateTime(l) minute, hour, date
-        ;
-        @defineDateAggregationForm(costLedgerReport, l, date, ){
-            EXTEND FORM costLedgerReport
-                PROPERTIES(l) READONLY AFTER date(l) numberDOW, nameDOW, week, numberMonth, nameMonth, year
-            ;
-        };
-    };
-};
-@defineDateFilterForm(costLedgerReport, l){
-    @defineDateFilterForm(costLedgerReport, l, ){
-        EXTEND FORM costLedgerReport
-            OBJECTS dates = INTERVAL[DATE] BEFORE l PANEL NULL
-            PROPERTIES filterDates 'Date interval' = VALUE(dates)
-
-            FILTERS NOT date(l) < from(dates), NOT date(l) > to(dates)
-        ;
-
-        DESIGN costLedgerReport {
-            filters {
-                MOVE PROPERTY(filterDates);
-            }
-        }
-    };
-};
+@defineDateTimeAggregationForm(costLedgerReport, l);
+@defineDateFilterForm(costLedgerReport, l);
 
 NAVIGATOR {
     stock {

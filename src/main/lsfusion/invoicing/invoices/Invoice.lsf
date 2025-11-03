@@ -28,12 +28,12 @@ WHEN LOCAL SET (Invoice b IS Invoice) AND NOT CHANGED(dateTime(b)) DO dateTime(b
 numberDate 'Description' (Invoice i) = number(i) + ' (' + dateTime(i) + ')' IN id;
 
 deliveryDateTime 'Delivery date' = DATA DATETIME (Invoice);
-@defineDateTimeAggregation(Invoice, delivery, 'Delivery ');
+@defineDateTimeAggregation(Invoice, delivery, '(delivery)');
 
 executionDateTime 'Execution date' (Invoice i) = ABSTRACT VALUE DATETIME (Invoice);
 executionDateTime(Invoice i) += deliveryDateTime(i);
 executionDateTime(Invoice i) += dateTime(i);
-@defineDateTimeAggregation(Invoice, execution, 'Execution ');
+@defineDateTimeAggregation(Invoice, execution, '(execution)');
 
 // customer
 customer = DATA Partner (Invoice);
