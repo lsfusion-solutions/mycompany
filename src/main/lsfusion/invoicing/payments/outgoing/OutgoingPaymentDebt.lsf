@@ -62,8 +62,11 @@ WHEN (SETCHANGED(reference(OutgoingPayment p)) OR SETCHANGED(partner(p)) OR SET(
      canBePaid(d, p) DO
     paid(d, p) <- left(d, p);
     
-countPaid 'Number of payments' (OutgoingDebt p) = GROUP SUM 1 IF paid(IncomingDebt d, p) AND active(d) MATERIALIZED;
+countPaid 'Number of debts' (OutgoingDebt p) = GROUP SUM 1 IF paid(IncomingDebt d, p) AND active(d) MATERIALIZED;
 
 EXTEND FORM outgoingPayments
-    PROPERTIES(p) READONLY countPaid, paid
+    PROPERTIES(p) READONLY AFTER amount(p) paid, countPaid
+    
+    FILTERGROUP notMatched
+        FILTER 'Not matched' left(p)
 ; 
