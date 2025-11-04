@@ -24,10 +24,6 @@ DESIGN attendanceMobile {
     }
 }
 
-start(Attendance a) + {
-    project(a) <- attendanceProject();
-}
-
 // geo
 
 attendanceNear (Project p, CustomUser u) = near(p) AND NOT skipAttendance(p, u);
@@ -46,3 +42,11 @@ META defineAttendanceProjectDefault(form, prop)
 END
 
 @defineAttendanceProjectDefault(attendanceMobile, attendanceProject);
+
+start(Attendance a) + {
+    IF (attendanceProject() AND NOT skipAttendance(attendanceProject(), employee(a))) OR attendanceWithoutGeolocation(currentUser()) THEN
+        project(a) <- attendanceProject();
+    ELSE
+        IF countAttendanceNearProject(employee(a)) = 1 THEN
+            attendanceProject() <- maxAttendanceNearProject(employee(a));
+}
