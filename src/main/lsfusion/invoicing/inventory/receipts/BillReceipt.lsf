@@ -37,6 +37,13 @@ EXTEND FORM bills
 receivedQuantity (BillLine l) = NUMERIC[16,3](quantity(l) * skuCoeff(item(l)));
 receivedProduct (BillLine l) = sku(item(l));
 
+done 'Done' (BillLine il) =
+    GROUP SUM done(ReceiptLine rl) IF billLine(rl) = il AND active(receipt(rl));
+toReceive (BillLine il) =
+    max(receivedQuantity(il) (-) done(il), 0) IF item(il) IS Product MATERIALIZED;
+
+toReceive (Bill i) = GROUP SUM toReceive(BillLine il) IF bill(il) = i;
+
 fill ABSTRACT LIST (Receipt, Bill);
 fill ABSTRACT LIST (ReceiptLine, BillLine);
 billReceiptCreated = DATA LOCAL Receipt ();
@@ -96,6 +103,13 @@ DESIGN bill {
         REMOVE TOOLBARSYSTEM(r);
     }
 }
+
+EXTEND FORM bills
+    FILTERGROUP received
+        FILTER 'Not received' toReceive(b)
+        FILTER 'Received' NOT toReceive(b)
+        FILTER 'Partially received' countReceipts(b) AND toReceive(b)
+;
 
 clone (Bill to, Bill from) + {
     location(to) <- location(from);

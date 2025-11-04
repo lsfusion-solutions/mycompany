@@ -114,6 +114,13 @@ DESIGN invoice {
     }
 }
 
+EXTEND FORM invoices
+    FILTERGROUP shipped
+        FILTER 'Not shipped' toShip(i)
+        FILTER 'Shipped' NOT toShip(i)
+        FILTER 'Partially shipped' countShipments(i) AND toShip(i)
+;
+
 clone (Invoice to, Invoice from) + {
     location(to) <- location(from);
 }
