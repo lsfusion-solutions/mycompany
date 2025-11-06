@@ -65,7 +65,7 @@ WHEN (SETCHANGED(reference(OutgoingPayment p)) OR SETCHANGED(partner(p)) OR SET(
 countPaid 'Number of debts' (OutgoingDebt p) = GROUP SUM 1 IF paid(IncomingDebt d, p) AND active(d) MATERIALIZED;
 
 EXTEND FORM outgoingPayments
-    PROPERTIES(p) READONLY AFTER amount(p) paid, countPaid
+    PROPERTIES(p) READONLY AFTER amount(p) paid BACKGROUND backgroundPaid(p), countPaid
     
     FILTERGROUP notMatched
         FILTER 'Not matched' left(p)

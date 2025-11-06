@@ -77,6 +77,10 @@ signedLeft 'Left' (Debt d) = IF d IS OutgoingDebt THEN left(d) ELSE -left(d);
 
 left 'Left' (IncomingDebt id, OutgoingDebt od) = min(left(id), left(od));
 
+backgroundPaid (Debt d) = 
+    CASE WHEN paid(d) AND left(d) THEN RGB(255,255,128)
+         WHEN left(d) < 0 THEN RGB(255,128,128);
+
 sourceLeft (IncomingDebt id) = NUMERIC[14,2] (left(id) / currentRate1(id)); 
 sourceLeft (OutgoingDebt od) = NUMERIC[14,2] (left(od) / currentRate1(od)); 
 
