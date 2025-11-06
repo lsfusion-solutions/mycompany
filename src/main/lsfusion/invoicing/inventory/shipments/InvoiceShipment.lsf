@@ -139,3 +139,43 @@ WHEN (CHANGED(quantity(invoiceLine(ShipmentLine l))) OR CHANGED(item(invoiceLine
     done(l) <- shippedQuantity(invoiceLine(l));
 WHEN CHANGED(item(invoiceLine(ShipmentLine l))) AND autoCreateShipment(type(invoice(invoiceLine(l)))) DO 
     product(l) <- shippedProduct(invoiceLine(l));
+
+// create invoice
+createShipmentsInvoice 'Create Invoice' () {
+    LOCAL in = BOOLEAN (Shipment);
+    in(Shipment s) <- selectedShipments(s);
+    
+    NEWSESSION NESTED (in[Shipment]){
+        NEW i = Invoice {
+
+            FOR Shipment s = GROUP MAX Shipment ss IF in(ss) DO {
+                customer(i) <- customer(s);
+                department(i) <- department(s);
+                
+                location(i) <- location(s);
+                deliveryAddress(i) <- deliveryAddress(s);
+            }
+
+            FOR NUMERIC[16,3] q = [GROUP SUM done(ShipmentLine sl) IF in(shipment(sl)) AND NOT invoiceLine(sl) BY product(sl)](Product p)
+                INLINE DO NEW il = InvoiceLine {
+                invoice(il) <- i;
+
+                item(il) <- p;
+                quantity(il) <- q;
+                
+                invoiceLine(ShipmentLine sl) <- il WHERE in(shipment(sl)) AND NOT invoiceLine(sl) AND product(sl) = p;
+            }
+            SHOW invoice OBJECTS i = i;
+        }
+    }
+}
+
+EXTEND FORM shipments
+    PROPERTIES() createShipmentsInvoice
+;
+
+DESIGN shipments {
+    actions {
+        MOVE PROPERTY(createShipmentsInvoice()) { alignment = STRETCH; }
+    }
+}
