@@ -1,6 +1,6 @@
 MODULE KSeFCertificate;
 
-REQUIRE KSeF;
+REQUIRE KSeF, Crypto;
 
 NAMESPACE KSeF;
 
@@ -26,7 +26,7 @@ EXTEND FORM integrationData
 ;
 
 DESIGN integrationData {
-    KSeF {
+    KSeFPane {
         NEW KSeFCertificates {
             caption = 'Certificates';
             MOVE PROPERTY(getPublicKeyCertificates());
@@ -35,5 +35,196 @@ DESIGN integrationData {
                 fill = 1;
             }
         }
+    }
+}
+
+// enrollments
+CLASS CertificateType 'KSeF certificate type' {
+    authentication 'Authentication',
+    offline 'Offline'
+}
+TABLE certificateType (CertificateType);
+
+name '{master.data.name}' (CertificateType o) = staticCaption(o) IF o IS CertificateType CHARWIDTH 15 MATERIALIZED;
+
+FORM dialogCertificateTypes 'KSeF certificate type'
+    OBJECTS o = CertificateType
+    PROPERTIES(o) READONLY name
+    
+    LIST CertificateType OBJECT o
+;
+
+CLASS Certificate 'KSeF certificate';
+company = DATA Company (Certificate) NONULL;
+
+name '{Name}' = DATA STRING (Certificate);
+
+type 'Type' = DATA CertificateType (Certificate) NONULL;
+nameType 'Type' (Certificate c) = name(type(c));
+
+privateKey = DATA RAWFILE (Certificate);
+
+referenceNumber 'Reference number' = DATA STRING (Certificate);
+timestamp 'Timestamp' = DATA DATETIME (Certificate);
+
+certificateName '{Name}' = DATA LOCAL STRING ();
+certificateType = DATA LOCAL CertificateType ();
+nameCertificateType 'Type' = name(certificateType());
+
+certificateEnrollment (Company c) {
+    NEWSESSION NESTED (certificateName, certificateType) {
+        TRY {
+            getAccessToken(c);
+            EXTERNAL HTTP GET hostApi() + '/certificates/enrollments/data' HEADERS accessHeaders TO resultFile;
+
+            generateCSR(JSON(resultFile()));
+            
+            NEW crt = Certificate {
+                company(crt) <- c;
+                
+                name(crt) <- certificateName();
+                type(crt) <- certificateType();
+                privateKey(crt) <- generatedPrivateKey();
+
+                EXTERNAL HTTP POST hostApi() + '/certificates/enrollments' HEADERS accessHeaders 
+                    PARAMS JSON FROM certificateName = name(crt),
+                                     certificateType = nameType(crt),
+                                     csr = encodeBase64(generatedCSR())
+                    TO resultFile;
+
+                IMPORT JSON FROM resultFile() FIELDS() STRING referenceNumber, ZDATETIME timestamp DO {
+                    referenceNumber(crt) <- referenceNumber;
+                    timestamp(crt) <- DATETIME(timestamp);
+                }
+
+                APPLY;
+            }
+        } CATCH { catchException('Get enrollmentsData'); }
+    }    
+}
+
+statusCode 'Status code' = DATA INTEGER (Certificate);
+statusDescription 'Status' = DATA STRING (Certificate);
+statusDetails 'Details' = DATA STRING (Certificate);
+
+serialNumber 'Serial number' = DATA STRING (Certificate);
+
+getStatus 'Get status' (Certificate crt) {
+    NEWSESSION {
+        TRY {
+            getAccessToken(company(crt));
+            EXTERNAL HTTP GET hostApi() + '/certificates/enrollments/' + referenceNumber(crt) HEADERS accessHeaders TO resultFile;
+
+            LOCAL status = JSON ();
+            LOCAL certificateSerialNumber = STRING();
+            IMPORT JSON FROM resultFile() TO() status, certificateSerialNumber;
+
+            statusCode(crt) <- INTEGER(fieldText(status(), 'code'));
+            statusDescription(crt) <- fieldText(status(), 'description');
+            statusDetails(crt) <- fieldText(status(), 'details');
+            
+            serialNumber(crt) <- certificateSerialNumber();
+
+            APPLY;
+        } CATCH { catchException('Get certificate KSeF status'); }
+    }
+}
+
+certificate 'Certificate' = DATA STRING (Certificate);
+
+retrieve 'Retrieve' (Certificate crt) {
+    NEWSESSION {
+        TRY {
+            getAccessToken(company(crt));
+            EXTERNAL HTTP POST hostApi() + '/certificates/retrieve' HEADERS accessHeaders 
+                PARAMS JSON FROM certificateSerialNumbers = (JSON FROM value = serialNumber(crt) IF INTEGER i = 0) TO resultFile;
+
+            LOCAL certificates = JSON();
+            IMPORT JSON FROM resultFile() TO() certificates;
+            
+            IMPORT JSON FROM certificates() FIELDS STRING certificate DO {
+                certificate(crt) <- certificate;
+            }
+
+            APPLY;
+        } CATCH { catchException('Get certificate KSeF'); }
+    }
+}
+
+EXTEND FORM integrationData
+    OBJECTS ksefCertificate = Certificate
+    PROPERTIES(ksefCertificate) READONLY name, nameType, referenceNumber, timestamp
+    FILTERS company(ksefCertificate) = ksefCompany
+    
+    PROPERTIES certificateName(), nameCertificateType()
+    PROPERTIES certificateEnrollment(ksefCompany) DISABLEIF NOT certificateName() OR NOT certificateType()
+    
+    PROPERTIES(ksefCertificate) getStatus GRID, statusCode READONLY, statusDescription READONLY, statusDetails READONLY, serialNumber READONLY
+    PROPERTIES(ksefCertificate) retrieve GRID, certificate READONLY
+;
+
+DESIGN integrationData {
+    KSeFCertificates {
+        NEW KSeFCertificateGenerate {
+            caption = 'Generate';
+            horizontal = TRUE;
+            MOVE PROPERTY(certificateName());
+            MOVE PROPERTY(nameCertificateType());
+            MOVE PROPERTY(certificateEnrollment(ksefCompany));
+        }
+        MOVE BOX(ksefCertificate);
+    }
+}
+
+// auth
+dataDefaultCertificate = DATA Certificate (Company);
+calcDefaultCertificate (Company c) = GROUP LAST Certificate crt ORDER DESC crt WHERE company(crt) = c;
+
+changeDefault (Certificate crt) {
+    INPUT b = BOOLEAN DO {
+        IF b THEN
+            dataDefaultCertificate(Company c) <- crt WHERE c = company(crt);
+    }
+}
+
+defaultCertificate (Company c) = OVERRIDE dataDefaultCertificate(c), calcDefaultCertificate(c);
+default 'Default' (Certificate crt) = defaultCertificate(company(crt)) = crt CHARWIDTH 10;
+
+authRequest (Certificate ta) {
+    NEWSESSION {
+        authChallenge();
+
+        IF challenge() THEN {
+            EXPORT authTokenRequest OBJECTS c = company(ta) XML;
+        } ELSE
+            RETURN;
+        
+        signXAdESEnveloped(RAWFILE(exportFile()), privateKey(ta), certificate(ta));
+
+        TRY {
+            LOCAL localHeaders = STRING(STRING);
+            localHeaders('Content-Type') <- 'application/xml'; // default : text/xml
+            
+            EXTERNAL HTTP POST hostApi() + '/auth/xades-signature' HEADERS localHeaders PARAMS signedXML() TO resultFile;
+
+            createToken(company(ta));
+            APPLY;
+        } CATCH { catchException('Authorization certificate KSeF'); }
+    }
+}
+
+authCertificateKsefRequest 'Authenticate with certificate KSeF' (Company c) {
+    authRequest(defaultCertificate(c));
+}
+
+EXTEND FORM integrationData
+    PROPERTIES(ksefCertificate) default FIRST
+    
+    PROPERTIES(ksefCompany) authCertificateKsefRequest
+;
+
+DESIGN integrationData {
+    KSeFAuthenticate {
+        MOVE PROPERTY(authCertificateKsefRequest(ksefCompany));
     }
 }

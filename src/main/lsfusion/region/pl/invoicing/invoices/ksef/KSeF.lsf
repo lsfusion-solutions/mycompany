@@ -17,11 +17,14 @@ DESIGN integrationData {
     pane {
         NEW KSeF {
             caption = 'KSeF';
-            tabbed = TRUE;
-            NEW KSeFGeneral {
-                caption = 'General';
-                MOVE PROPERTY(ksefHostPostfix);
-                MOVE BOX(ksefCompany);
+            MOVE PROPERTY(ksefHostPostfix);
+            MOVE BOX(ksefCompany);
+            NEW KSeFPane {
+                fill = 1;
+                tabbed = TRUE;
+                NEW KSeFGeneral {
+                    caption = 'General';
+                }
             }
         }
     }
@@ -125,6 +128,11 @@ EXTEND FORM integrationData
 
 DESIGN integrationData {
     KSeFGeneral {
+        NEW KSeFAuthenticate {
+            horizontal = TRUE;
+            MOVE PROPERTY(authXadesSignatureRequest(ksefCompany));
+            MOVE PROPERTY(authXadesSignature(ksefCompany));
+        }
         MOVE BOX(ksefToken);
     }
 }
@@ -163,7 +171,7 @@ accessValidUntil 'Valid until (access)' = DATA DATETIME (Token);
 refresh 'Refresh token' = DATA STRING (Token);
 refreshValidUntil 'Valid until (refresh)' = DATA DATETIME (Token);
 
-redeemAccessToken 'Redeem access tokens' (Token t) {
+redeemAccess 'Redeem access token' (Token t) {
     NEWSESSION {
         TRY {
             LOCAL localHeaders = STRING(STRING);
@@ -208,7 +216,7 @@ refreshAccessToken 'Refresh access token' (Token t) {
 EXTEND FORM integrationData
     PROPERTIES(ksefToken) getStatus GRID, 
                           statusCode READONLY, statusDescription READONLY, statusDetails READONLY,
-                          redeemAccessToken GRID, 
+                          redeemAccess GRID, 
                           access READONLY, accessValidUntil READONLY,
                           refreshAccessToken GRID,
                           refresh READONLY, refreshValidUntil READONLY

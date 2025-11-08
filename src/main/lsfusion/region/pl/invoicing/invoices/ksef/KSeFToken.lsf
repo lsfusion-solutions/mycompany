@@ -69,10 +69,10 @@ generateTokenAuth 'Generate token KSeF' (Company c) {
 status 'Status' = DATA STRING (TokenAuth);
 statusDetails 'Status details' = DATA STRING (TokenAuth);
 
-getStatus 'Get status' (Company c, TokenAuth ta) {
-    NEWSESSION NESTED (select, tokenDescription) {
+getStatus 'Get status' (TokenAuth ta) {
+    NEWSESSION {
         TRY {
-            getAccessToken(c);
+            getAccessToken(company(ta));
             EXTERNAL HTTP GET hostApi() + '/tokens/' + referenceNumber(ta) HEADERS accessHeaders TO resultFile;
 
             IMPORT JSON FROM resultFile() FIELDS() STRING status, STRING statusDetails DO {
@@ -122,8 +122,7 @@ EXTEND FORM integrationData
 
     OBJECTS ksefTokenAuth = TokenAuth
     PROPERTIES(ksefTokenAuth) READONLY referenceNumber, token, description, permissions
-    PROPERTIES                         getStatus(ksefCompany, ksefTokenAuth) GRID
-    PROPERTIES(ksefTokenAuth) READONLY status, statusDetails
+    PROPERTIES(ksefTokenAuth)          getStatus GRID, status READONLY, statusDetails READONLY
     PROPERTIES(ksefTokenAuth)          allowedIp
     PROPERTIES                         delete(ksefCompany, ksefTokenAuth) GRID
     PROPERTIES                         DELETE(ksefTokenAuth) GRID DISABLEIF NOT (status(ksefTokenAuth) = 'Failed' OR status(ksefTokenAuth) = 'Revoked')
@@ -162,7 +161,7 @@ changeDefault (TokenAuth a) {
 defaultTokenAuth (Company c) = OVERRIDE dataDefaultTokenAuth(c), calcDefaultTokenAuth(c);
 default 'Default' (TokenAuth a) = defaultTokenAuth(company(a)) = a CHARWIDTH 10;
 
-authTokenKsefRequest (TokenAuth ta) {
+authRequest (TokenAuth ta) {
     IF NOT tokenEncryptionCertificate() THEN getPublicKeyCertificates();
     
     NEWSESSION {
@@ -187,7 +186,7 @@ authTokenKsefRequest (TokenAuth ta) {
 }
 
 authTokenKsefRequest 'Authenticate with token KSeF' (Company c) {
-    authTokenKsefRequest(defaultTokenAuth(c));
+    authRequest(defaultTokenAuth(c));
 }
 
 EXTEND FORM integrationData
@@ -195,15 +194,25 @@ EXTEND FORM integrationData
     PROPERTIES(ksefCompany) authTokenKsefRequest DISABLEIF NOT defaultTokenAuth(ksefCompany)
 ;
 
+DESIGN integrationData {
+    KSeFAuthenticate {
+        MOVE PROPERTY(authTokenKsefRequest(ksefCompany));
+    }
+}
+
 // to scheduler
 updateTokens 'Update tokens' () {
-    FOR defaultTokenAuth(Company c) AND NOT refreshValidUntil(accessToken(c)) > sumMinutes(currentDateTime(), 360) DO
-        authTokenKsefRequest(c);
+    FOR (defaultCertificate(Company c) OR defaultTokenAuth(c)) AND NOT refreshValidUntil(accessToken(c)) > sumMinutes(currentDateTime(), 360) DO {
+        IF defaultCertificate(c) THEN
+            authCertificateKsefRequest(c);
+        ELSE
+            authTokenKsefRequest(c);
+    }
     
     sleep(1000);
     
     FOR authentication(Token t) AND NOT statusCode(t) DO getStatus(t);
-    FOR statusCode(Token t) = 200 AND NOT refresh(t) DO redeemAccessToken(t);
+    FOR statusCode(Token t) = 200 AND NOT refresh(t) DO redeemAccess(t);
 }
 
 EXTEND FORM integrationData
