@@ -133,8 +133,9 @@ EXTEND FORM integrationData
 ;
 
 DESIGN integrationData {
-    KSeFGeneral {
+    KSeFPane {
         NEW KSeFTokens {
+            caption = 'Tokens';
             fill = 1;
             NEW generate {
                 horizontal = TRUE;
@@ -168,13 +169,14 @@ authRequest (TokenAuth ta) {
         authChallenge();
         IF NOT challenge() THEN RETURN;
 
-        cipherRSAOAEPMGF1(token(ta) + '|' + trunc(getMilliSeconds(timestamp()), 0), 'SHA-256', tokenEncryptionCertificate());
+        stringToFile(token(ta) + '|' + trunc(getMilliSeconds(timestamp()), 0));
+        cipherRSAOAEPMGF1(RAWFILE(resultFile()), 'SHA-256', tokenEncryptionCertificate());
 
         TRY {
             EXTERNAL HTTP POST hostApi() + '/auth/ksef-token' PARAMS 
                 JSON FROM challenge(),
                           contextIdentifier = (JSON FROM type = 'nip', value = nip(company(ta))),
-                          encryptedToken = cipherResult(),
+                          encryptedToken = encodeBase64(cipherResult()),
                           authorizationPolicy = (JSON FROM allowedIps = (JSON FROM ip4Addresses = (JSON FROM value = allowedIp(ta) IF INTEGER i = 0))) 
                 TO resultFile;
 

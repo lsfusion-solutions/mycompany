@@ -1,0 +1,103 @@
+MODULE KSeFInvoice;
+
+REQUIRE Invoice, InvoiceCurrency, Partner, Company, LegalEntityPl, KSeFFaktura;
+
+NAMESPACE KSeF;
+
+// Link from Faktura to Invoice (adapter level)
+invoice 'Invoice' = DATA Invoice (Faktura) INDEXED; // Faktura -> Invoice
+
+// Selector to keep compatibility: find Faktura by Invoice
+faktura (Invoice i) = GROUP LAST Faktura f ORDER f WHERE invoice(f) = i;
+
+fakturaReference 'KSeF reference' (Invoice i) = referenceNumber(faktura(i));
+fakturaStatusCode 'KSeF status code' (Invoice i) = statusCode(faktura(i));
+fakturaStatusDescription 'KSeF status' (Invoice i) = statusDescription(faktura(i));
+fakturaStatusDetails 'KSeF details' (Invoice i) = statusDetails(faktura(i));
+fakturaNumber 'KSeF number' (Invoice i) = number(faktura(i));
+
+toSendToKSeF (Invoice i) = (statusCode(faktura(i)) != 200 OR NOT faktura(i)) AND
+    (status(i) = InvoiceStatus.ready OR status(i) = InvoiceStatus.done);
+
+readonly(Invoice i) += WHEN faktura(i) AND NOT statusCode(faktura(i)) != 200 THEN TRUE;
+
+// Build Faktura from Invoice (adapter)
+createFaktura 'Build Faktura' (Invoice i) {
+    NEW f = Faktura {
+        invoice(f) <- i;
+        podmiot1(f) <- company(i);
+        podmiot2(f) <- customer(i);
+        // Header
+        KodFormularza(f) <- 'FA';
+        WariantFormularza(f) <- 3;
+        SystemInfo(f) <- 'MyCompany lsFusion';
+        // Attributes are exported as constants on form; data fields remain as stored
+        // Seller
+        p1_NIP(f) <- nip(company(i));
+        p1_Nazwa(f) <- fullName(company(i));
+        p1_KodKraju(f) <- OVERRIDE alpha2(country(company(i))), r'PL';
+        p1_AdresL1(f) <- address(company(i));
+        p1_AdresL2(f) <- CONCAT ' ', zip(company(i)), city(company(i)), state(company(i));
+        p1_Email(f) <- email(company(i));
+        p1_Telefon(f) <- phone(company(i));
+        // Buyer
+        p2_NIP(f) <- nip(customer(i));
+        p2_Nazwa(f) <- fullName(customer(i));
+        p2_KodKraju(f) <- OVERRIDE alpha2(country(customer(i))), r'PL';
+        p2_AdresL1(f) <- address(customer(i));
+        p2_AdresL2(f) <- CONCAT ' ', zip(customer(i)), city(customer(i)), state(customer(i));
+        p2_Email(f) <- email(customer(i));
+        p2_Telefon(f) <- phone(customer(i));
+        p2_NrKlienta(f) <- id(customer(i));
+        // Fa totals
+        KodWaluty(f) <- id(currency(i));
+        P_1(f) <- DATE(dateTime(i));
+        P_2(f) <- number(i);
+        P_6(f) <- OVERRIDE DATE(deliveryDate(i)), DATE(dueDateTime(i));
+        P_13_1(f) <- untaxedAmount(i);
+        P_14_1(f) <- taxAmount(i);
+        P_15(f) <- amount(i);
+        P_16(f) <- 2;
+        P_17(f) <- 2;
+        P_18(f) <- 2;
+        P_18A(f) <- 2;
+        P_23(f) <- 2;
+        KursWalutyZ(f) <- rate1(i) IF currency(i) != defaultCurrency();
+        RodzajFaktury(f) <- 'VAT';
+        
+        FOR invoice(InvoiceLine l) = i DO NEW w = FaWiersz {
+            faktura(w) <- f;
+            NrWierszaFa(w) <- index(l);
+            P_7(w) <- nameItem(l);
+            P_8A(w) <- nameUom(l);
+            P_8B(w) <- quantity(l);
+            P_9A(w) <- resultPrice(l);
+            P_11(w) <- untaxedAmount(l);
+            P_12(w) <- OVERRIDE (toChar(taxPercent(l), '99') IF taxPercent(l) > 0), taxes(l);
+        }
+    }
+}
+
+EXTEND FORM invoices
+    //    PROPERTIES(i) GRID sendToKSeF, getInvoiceKSeFStatus DISABLEIF NOT faktura(i)
+    PROPERTIES(i) READONLY fakturaReference, fakturaStatusCode, fakturaStatusDescription, fakturaStatusDetails, fakturaNumber
+;
+
+EXTEND FORM invoice
+    PROPERTIES(i) READONLY fakturaReference, fakturaStatusCode, fakturaStatusDescription, fakturaStatusDetails, fakturaNumber
+;
+
+DESIGN invoice {
+    otherInformation {
+        NEW KSeF {
+            alignment = STRETCH;
+            caption = 'KSeF';
+            lines = 3;
+            MOVE PROPERTY(fakturaReference(i));
+            MOVE PROPERTY(fakturaStatusCode(i));
+            MOVE PROPERTY(fakturaStatusDescription(i));
+            MOVE PROPERTY(fakturaStatusDetails(i));
+            MOVE PROPERTY(fakturaNumber(i));
+        }
+    }
+}

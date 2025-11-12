@@ -5,6 +5,7 @@ REQUIRE KSeF, Crypto;
 NAMESPACE KSeF;
 
 tokenEncryptionCertificate 'Public key for token encryption' = DATA TEXT ();
+symmetricKeyEncryptionCertificate 'Public key for symmetric encryption' = DATA TEXT();
 
 getPublicKeyCertificates 'Get public key certificates' () {
     NEWSESSION {
@@ -14,6 +15,8 @@ getPublicKeyCertificates 'Get public key certificates' () {
             IMPORT JSON FROM resultFile() FIELDS STRING certificate, STRING usage DO {
                 IF usage = r'["KsefTokenEncryption"]' THEN
                     tokenEncryptionCertificate() <- '-----BEGIN CERTIFICATE-----\n' + certificate + '\n-----END CERTIFICATE-----';
+                IF usage = r'["SymmetricKeyEncryption"]' THEN
+                    symmetricKeyEncryptionCertificate() <- '-----BEGIN CERTIFICATE-----\n' + certificate + '\n-----END CERTIFICATE-----';
             }
 
             APPLY;
@@ -22,7 +25,8 @@ getPublicKeyCertificates 'Get public key certificates' () {
 }
 
 EXTEND FORM integrationData
-    PROPERTIES() getPublicKeyCertificates, tokenEncryptionCertificate READONLY
+    PROPERTIES() getPublicKeyCertificates, 
+                 tokenEncryptionCertificate READONLY, symmetricKeyEncryptionCertificate READONLY
 ;
 
 DESIGN integrationData {
@@ -30,9 +34,17 @@ DESIGN integrationData {
         NEW KSeFCertificates {
             caption = 'Certificates';
             MOVE PROPERTY(getPublicKeyCertificates());
-            MOVE PROPERTY(tokenEncryptionCertificate()) {
-                panelCaptionVertical = TRUE;
-                fill = 1;
+            NEW publicCertificates {
+                horizontal = TRUE;
+                alignment = STRETCH;
+                MOVE PROPERTY(tokenEncryptionCertificate()) {
+                    panelCaptionVertical = TRUE;
+                    fill = 1;
+                }
+                MOVE PROPERTY(symmetricKeyEncryptionCertificate()) {
+                    panelCaptionVertical = TRUE;
+                    fill = 1;
+                }
             }
         }
     }
@@ -46,6 +58,7 @@ CLASS CertificateType 'KSeF certificate type' {
 TABLE certificateType (CertificateType);
 
 name '{master.data.name}' (CertificateType o) = staticCaption(o) IF o IS CertificateType CHARWIDTH 15 MATERIALIZED;
+certificate (STRING s) = GROUP MAX CertificateType t BY name(t);
 
 FORM dialogCertificateTypes 'KSeF certificate type'
     OBJECTS o = CertificateType
@@ -63,6 +76,7 @@ type 'Type' = DATA CertificateType (Certificate) NONULL;
 nameType 'Type' (Certificate c) = name(type(c));
 
 privateKey = DATA RAWFILE (Certificate);
+hasPrivateKey 'Has private key' (Certificate c) = TRUE IF privateKey(c);
 
 referenceNumber 'Reference number' = DATA STRING (Certificate);
 timestamp 'Timestamp' = DATA DATETIME (Certificate);
@@ -109,6 +123,11 @@ statusDetails 'Details' = DATA STRING (Certificate);
 
 serialNumber 'Serial number' = DATA STRING (Certificate);
 
+// From /certificates/query
+status 'Status' = DATA STRING (Certificate);
+validFrom 'Valid from' = DATA DATETIME (Certificate);
+validTo 'Valid to' = DATA DATETIME (Certificate);
+
 getStatus 'Get status' (Certificate crt) {
     NEWSESSION {
         TRY {
@@ -153,7 +172,7 @@ retrieve 'Retrieve' (Certificate crt) {
 
 EXTEND FORM integrationData
     OBJECTS ksefCertificate = Certificate
-    PROPERTIES(ksefCertificate) READONLY name, nameType, referenceNumber, timestamp
+    PROPERTIES(ksefCertificate) READONLY name, nameType, hasPrivateKey, referenceNumber, timestamp
     FILTERS company(ksefCertificate) = ksefCompany
     
     PROPERTIES certificateName(), nameCertificateType()
@@ -161,6 +180,7 @@ EXTEND FORM integrationData
     
     PROPERTIES(ksefCertificate) getStatus GRID, statusCode READONLY, statusDescription READONLY, statusDetails READONLY, serialNumber READONLY
     PROPERTIES(ksefCertificate) retrieve GRID, certificate READONLY
+    PROPERTIES(ksefCertificate) READONLY status, validFrom, validTo
 ;
 
 DESIGN integrationData {
@@ -175,6 +195,43 @@ DESIGN integrationData {
         MOVE BOX(ksefCertificate);
     }
 }
+
+// certificates query
+
+certificateBySerial (Company c, STRING s) = GROUP LAST Certificate crt ORDER crt WHERE company(crt) = c AND serialNumber(crt) = s;
+
+certificatesQuery 'Query certificates' (Company c) {
+    NEWSESSION {
+        TRY {
+            getAccessToken(c);
+            EXTERNAL HTTP POST hostApi() + '/certificates/query' HEADERS accessHeaders PARAMS
+                JSON FROM contextIdentifier = (JSON FROM type = 'nip', value = nip(c))
+                TO resultFile;
+
+            LOCAL certificates = JSON();
+            IMPORT JSON FROM resultFile() TO() certificates;
+
+            IMPORT JSON FROM certificates() FIELDS STRING certificateSerialNumber, STRING type, STRING status, ZDATETIME validFrom, ZDATETIME validTo DO {
+                IF NOT certificateBySerial(c, certificateSerialNumber) THEN NEW crt = Certificate {
+                    company(crt) <- c;
+                    serialNumber(crt) <- certificateSerialNumber;
+                }
+                FOR Certificate crt = certificateBySerial(c, certificateSerialNumber) DO {
+                    type(crt) <- certificate(type);
+                    status(crt) <- status;
+                    validFrom(crt) <- DATETIME(validFrom);
+                    validTo(crt) <- DATETIME(validTo);
+                }
+            }
+
+            APPLY;
+        } CATCH { catchException('Query certificates KSeF'); }
+    }
+}
+
+EXTEND FORM integrationData
+    PROPERTIES certificatesQuery(ksefCompany) DRAW ksefCertificate TOOLBAR
+;
 
 // auth
 dataDefaultCertificate = DATA Certificate (Company);

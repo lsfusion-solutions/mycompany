@@ -1,5 +1,6 @@
 package mycompany.utils.crypto;
 
+import lsfusion.base.file.RawFileData;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -28,7 +29,7 @@ public class CipherRSAOAEPMGF1Action extends InternalAction {
 
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        String plainText = (String)getParam(0, context);
+        RawFileData raw = (RawFileData) getParam(0, context);
         String mdName = (String)getParam(1, context);
         String certificatePem = (String)getParam(2, context);
 
@@ -44,9 +45,10 @@ public class CipherRSAOAEPMGF1Action extends InternalAction {
             Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPPadding");
 
             cipher.init(Cipher.ENCRYPT_MODE, publicKey, oaep256);
-            byte[] result = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
+            byte[] inputBytes = raw != null ? raw.getBytes() : new byte[0];
+            byte[] result = cipher.doFinal(inputBytes);
 
-            findProperty("cipherResult[]").change(Base64.getEncoder().encodeToString(result), context);
+            findProperty("cipherResult[]").change(new RawFileData(result), context);
         } catch (Exception e) {
             throw new RuntimeException("Cipher error", e);
         }

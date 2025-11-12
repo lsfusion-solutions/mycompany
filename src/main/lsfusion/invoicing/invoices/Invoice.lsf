@@ -62,6 +62,7 @@ paymentTerms = DATA PaymentTerm (Invoice);
 namePaymentTerms 'Payment terms' (Invoice i) = name(paymentTerms(i));
 
 dueDateTime 'Pay before' = DATA DATETIME (Invoice);
+@defineDateTimeAggregation(Invoice, due, '(pay before)');
 
 WHEN LOCAL CHANGED(customer(Invoice b)) AND NOT CHANGED(paymentTerms(b)) DO paymentTerms(b) <- customerPaymentTerms(customer(b)); 
 

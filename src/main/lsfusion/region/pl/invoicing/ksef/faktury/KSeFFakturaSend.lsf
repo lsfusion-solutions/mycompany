@@ -1,0 +1,49 @@
+MODULE KSeFFakturaSend;
+
+REQUIRE KSeFFakturaFA3;
+
+NAMESPACE KSeF;
+
+sendInteractive 'Send to KSeF' (Faktura f) {
+    TRY {
+        // Ensure we have a session: linked or latest open for company; open if missing
+        IF NOT latestOpenSession(podmiot1(f)) THEN
+            openSession(podmiot1(f));
+
+        LOCAL session = Session();
+        session() <- latestOpenSession(podmiot1(f));
+        IF NOT session() THEN RETURN; // cannot send without session
+
+        session(f) <- session();
+
+        // Export FA(3) XML for this Faktura
+        EXPORT FA3Xml OBJECTS f = f XML;
+
+        // Encrypt content with session key
+        cipherAESCBCPKCS7(RAWFILE(exportFile()), aesKey(session()), ivB64(session()));
+
+        // Send
+        getAccessToken(podmiot1(f));
+        EXTERNAL HTTP POST hostApi() + '/sessions/online/' + referenceNumber(session()) + '/invoices' HEADERS accessHeaders PARAMS
+            JSON FROM invoiceHash = hashSha256Base64(RAWFILE(exportFile())),
+            invoiceSize = rawOctetLength(RAWFILE(exportFile())),
+            encryptedInvoiceHash = hashSha256Base64(cipherResult()),
+            encryptedInvoiceSize = rawOctetLength(cipherResult()),
+            encryptedInvoiceContent = encodeBase64Unchunked(cipherResult())
+            TO resultFile;
+
+        IMPORT JSON FROM resultFile() FIELDS() STRING[200] referenceNumber DO {
+            referenceNumber(f) <- referenceNumber;
+        }
+        APPLY;
+    } CATCH { catchException('Send Faktura to KSeF'); }
+}
+
+exportFA3 'Export FA(3)' (Faktura f) {
+    EXPORT FA3Xml OBJECTS f = f XML;
+    open(exportFile(), 'FA3');
+}
+
+EXTEND FORM faktury
+    PROPERTIES(f) exportFA3 TOOLBAR
+;

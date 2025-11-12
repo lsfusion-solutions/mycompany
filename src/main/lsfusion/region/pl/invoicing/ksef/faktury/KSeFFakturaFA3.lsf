@@ -1,0 +1,70 @@
+MODULE KSeFFakturaFA3;
+
+REQUIRE KSeFFaktura;
+
+NAMESPACE KSeF;
+
+// XML groups for export
+GROUP Naglowek;
+GROUP Podmiot1;
+GROUP Podmiot2;
+GROUP Fa;
+GROUP KodFormularza : Naglowek;
+GROUP Adnotacje : Fa;
+GROUP Zwolnienie : Adnotacje;
+GROUP NoweSrodkiTransportu : Adnotacje;
+GROUP PMarzy : Adnotacje;
+
+// Nested groups
+GROUP P1DaneId EXTID 'DaneIdentyfikacyjne' : Podmiot1;
+GROUP P1Adres EXTID 'Adres' : Podmiot1;
+GROUP P1Kontakt EXTID 'DaneKontaktowe' : Podmiot1;
+
+GROUP P2DaneId EXTID 'DaneIdentyfikacyjne' : Podmiot2;
+GROUP P2Adres EXTID 'Adres' : Podmiot2;
+GROUP P2Kontakt EXTID 'DaneKontaktowe' : Podmiot2;
+
+FORM FA3Xml
+    OBJECTS f = Faktura PANEL
+
+    FORMEXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Faktura'
+    PROPERTIES ATTR = 'http://www.w3.org/2001/XMLSchema' EXTID 'xmlns:xsd'
+    PROPERTIES ATTR = 'http://www.w3.org/2001/XMLSchema-instance' EXTID 'xmlns:xsi'
+    PROPERTIES ATTR = 'http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2022/01/05/eD/DefinicjeTypy/' EXTID 'xmlns:etd'
+
+    // Naglowek
+    PROPERTIES IN KodFormularza value = KodFormularza(f), = 'FA (3)' IF KodFormularza(f) EXTID 'kodSystemowy' ATTR, = '1-0E' IF KodFormularza(f) EXTID 'wersjaSchemy' ATTR
+    
+    PROPERTIES IN Naglowek WariantFormularza(f), DataWytworzeniaFa = toChar(DataWytworzeniaFa(f), 'yyyy-MM-ddThh24:mi:ss.msZ'), SystemInfo(f)
+
+    // Podmiot1
+    PROPERTIES(f) IN P1DaneId p1_NIP EXTID 'NIP', p1_Nazwa EXTID 'Nazwa'
+    PROPERTIES(f) IN P1Adres p1_KodKraju EXTID 'KodKraju', p1_AdresL1 EXTID 'AdresL1', p1_AdresL2 EXTID 'AdresL2'
+    PROPERTIES(f) IN P1Kontakt p1_Email EXTID 'Email', p1_Telefon EXTID 'Telefon'
+
+    // Podmiot2
+    PROPERTIES(f) IN P2DaneId p2_NIP EXTID 'NIP', p2_Nazwa EXTID 'Nazwa'
+    PROPERTIES(f) IN P2Adres p2_KodKraju EXTID 'KodKraju', p2_AdresL1 EXTID 'AdresL1', p2_AdresL2 EXTID 'AdresL2'
+    PROPERTIES(f) IN P2Kontakt p2_Email EXTID 'Email', p2_Telefon EXTID 'Telefon'
+    PROPERTIES    IN Podmiot2 p2_NrKlienta(f) EXTID 'NrKlienta', = 2 EXTID 'JST', = 2 EXTID 'GV' 
+
+    // Fa
+    PROPERTIES(f) IN Fa KodWaluty, P_1, P_2, P_6
+    PROPERTIES(f) IN Fa P_13_1, P_14_1, P_15
+    PROPERTIES(f) IN Fa KursWalutyZ
+
+    PROPERTIES(f) IN Adnotacje P_16, P_17, P_18, P_18A
+    
+    PROPERTIES    IN Zwolnienie P_19N = 1
+    PROPERTIES    IN NoweSrodkiTransportu P_22N = 1
+    PROPERTIES(f) IN Adnotacje P_23
+
+    PROPERTIES    IN PMarzy P_PMarzyN = 1
+    
+    PROPERTIES(f) IN Fa RodzajFaktury
+
+    // FaWiersz
+    OBJECTS w = FaWiersz EXTID 'FaWiersz' IN Fa
+    PROPERTIES(w) NrWierszaFa, P_7, P_8A, P_8B, P_9A, P_11, P_12
+    FILTERS faktura(w) = f
+;
