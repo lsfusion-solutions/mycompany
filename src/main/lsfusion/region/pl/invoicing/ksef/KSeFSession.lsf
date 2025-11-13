@@ -22,7 +22,7 @@ lastError 'Last error' = DATA STRING (Session);
 aesKey 'AES key' = DATA RAWFILE (Session);
 ivB64 'IV (Base64)' = DATA STRING[64] (Session);
 
-opened 'Open' (Session s) = (NOT closedAt(s) AND NOT validUntil(s) < currentDateTime()) OR statusCode(s) != 100;
+opened 'Open' (Session s) = (NOT closedAt(s) AND NOT validUntil(s) < currentDateTime()) AND NOT statusCode(s) != 100;
 
 latestOpenSession (Company c) = GROUP LAST Session s ORDER openedAt(s), s WHERE company(s) = c AND opened(s);
 

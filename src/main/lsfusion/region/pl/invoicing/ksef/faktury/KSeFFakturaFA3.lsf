@@ -50,15 +50,15 @@ FORM FA3XmlExport
     PROPERTIES    IN Podmiot2 p2_NrKlienta(f) EXTID 'NrKlienta', = 2 EXTID 'JST', = 2 EXTID 'GV' 
 
     // Fa
-    PROPERTIES(f) IN Fa KodWaluty, P_1, P_2, P_6
-    PROPERTIES(f) IN Fa P_13_1, P_14_1, P_15
+    PROPERTIES(f) IN Fa KodWaluty, invoiceDate EXTID 'P_1', invoiceNumber EXTID 'P_2', deliveryDate EXTID 'P_6'
+    PROPERTIES(f) IN Fa untaxedAmount EXTID 'P_13_1', taxAmount EXTID 'P_14_1', amount EXTID 'P_15'
     PROPERTIES(f) IN Fa KursWalutyZ
 
-    PROPERTIES(f) IN Adnotacje P_16, P_17, P_18, P_18A
+    PROPERTIES(f) IN Adnotacje metodaKasowa EXTID 'P_16', samofakturowanie EXTID 'P_17', odwrotneObciazenie EXTID 'P_18', mpp EXTID 'P_18A'
     
     PROPERTIES    IN Zwolnienie P_19N = 1
     PROPERTIES    IN NoweSrodkiTransportu P_22N = 1
-    PROPERTIES(f) IN Adnotacje P_23
+    PROPERTIES(f) IN Adnotacje weUproszczona EXTID 'P_23'
 
     PROPERTIES    IN PMarzy P_PMarzyN = 1
     
@@ -66,7 +66,7 @@ FORM FA3XmlExport
 
     // FaWiersz
     OBJECTS w = FaWiersz EXTID 'FaWiersz' IN Fa
-    PROPERTIES(w) NrWierszaFa, P_7, P_8A, P_8B, P_9A, P_11, P_12
+    PROPERTIES(w) NrWierszaFa, nameItem EXTID 'P_7', nameUom EXTID 'P_8A', quantity EXTID 'P_8B', price EXTID 'P_9A', untaxedAmount EXTID 'P_11', taxes EXTID 'P_12'
     FILTERS faktura(w) = f
 ;
 
@@ -150,18 +150,18 @@ import (Faktura nf) {
     p2_NIP(nf) <- p2_NIP(); p2_Nazwa(nf) <- p2_Nazwa(); p2_KodKraju(nf) <- p2_KodKraju(); p2_AdresL1(nf) <- p2_AdresL1(); p2_AdresL2(nf) <- p2_AdresL2(); p2_Email(nf) <- p2_Email(); p2_Telefon(nf) <- p2_Telefon();
     p2_NrKlienta(nf) <- NrKlienta();
     // Fa
-    KodWaluty(nf) <- KodWaluty(); P_1(nf) <- P_1(); P_2(nf) <- P_2(); P_6(nf) <- P_6();
-    P_13_1(nf) <- P_13_1(); P_14_1(nf) <- P_14_1(); P_15(nf) <- P_15();
-    P_16(nf) <- P_16(); P_17(nf) <- P_17(); P_18(nf) <- P_18(); P_18A(nf) <- P_18A(); P_23(nf) <- P_23();
+    KodWaluty(nf) <- KodWaluty(); invoiceDate(nf) <- P_1(); invoiceNumber(nf) <- P_2(); deliveryDate(nf) <- P_6();
+    untaxedAmount(nf) <- P_13_1(); taxAmount(nf) <- P_14_1(); amount(nf) <- P_15();
+    metodaKasowa(nf) <- P_16(); samofakturowanie(nf) <- P_17(); odwrotneObciazenie(nf) <- P_18(); mpp(nf) <- P_18A(); weUproszczona(nf) <- P_23();
     KursWalutyZ(nf) <- KursWalutyZ(); RodzajFaktury(nf) <- RodzajFaktury();
     FOR imported(INTEGER faWiersz) DO NEW fw = FaWiersz {
         faktura(fw) <- nf;
         NrWierszaFa(fw) <- INTEGER(NrWierszaFa(faWiersz));
-        P_7(fw) <- P_7(faWiersz);
-        P_8A(fw) <- P_8A(faWiersz);
-        P_8B(fw) <- P_8B(faWiersz);
-        P_9A(fw) <- P_9A(faWiersz);
-        P_11(fw) <- P_11(faWiersz);
-        P_12(fw) <- P_12(faWiersz);
+        nameItem(fw) <- P_7(faWiersz);
+        nameUom(fw) <- P_8A(faWiersz);
+        quantity(fw) <- P_8B(faWiersz);
+        price(fw) <- P_9A(faWiersz);
+        untaxedAmount(fw) <- P_11(faWiersz);
+        taxes(fw) <- P_12(faWiersz);
     }
 }

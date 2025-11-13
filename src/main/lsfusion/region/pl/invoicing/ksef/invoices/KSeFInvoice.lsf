@@ -51,29 +51,29 @@ createFaktura 'Build Faktura' (Invoice i) {
         p2_NrKlienta(f) <- id(customer(i));
         // Fa totals
         KodWaluty(f) <- id(currency(i));
-        P_1(f) <- DATE(dateTime(i));
-        P_2(f) <- number(i);
-        P_6(f) <- OVERRIDE DATE(deliveryDate(i)), DATE(dueDateTime(i));
-        P_13_1(f) <- untaxedAmount(i);
-        P_14_1(f) <- taxAmount(i);
-        P_15(f) <- amount(i);
-        P_16(f) <- 2;
-        P_17(f) <- 2;
-        P_18(f) <- 2;
-        P_18A(f) <- 2;
-        P_23(f) <- 2;
+        invoiceDate(f) <- DATE(dateTime(i));
+        invoiceNumber(f) <- number(i);
+        deliveryDate(f) <- OVERRIDE DATE(deliveryDate(i)), DATE(dueDateTime(i));
+        untaxedAmount(f) <- untaxedAmount(i);
+        taxAmount(f) <- taxAmount(i);
+        amount(f) <- amount(i);
+        metodaKasowa(f) <- 2;
+        samofakturowanie(f) <- 2;
+        odwrotneObciazenie(f) <- 2;
+        mpp(f) <- 2;
+        weUproszczona(f) <- 2;
         KursWalutyZ(f) <- rate1(i) IF currency(i) != defaultCurrency();
         RodzajFaktury(f) <- 'VAT';
         
         FOR invoice(InvoiceLine l) = i DO NEW w = FaWiersz {
             faktura(w) <- f;
             NrWierszaFa(w) <- index(l);
-            P_7(w) <- nameItem(l);
-            P_8A(w) <- nameUom(l);
-            P_8B(w) <- quantity(l);
-            P_9A(w) <- resultPrice(l);
-            P_11(w) <- untaxedAmount(l);
-            P_12(w) <- OVERRIDE (toChar(taxPercent(l), '99') IF taxPercent(l) > 0), taxes(l);
+            nameItem(w) <- nameItem(l);
+            nameUom(w) <- nameUom(l);
+            quantity(w) <- quantity(l);
+            price(w) <- resultPrice(l);
+            untaxedAmount(w) <- untaxedAmount(l);
+            taxes(w) <- OVERRIDE (toChar(taxPercent(l), '99') IF taxPercent(l) > 0), taxes(l);
         }
     }
 }
