@@ -24,7 +24,8 @@ GROUP P2DaneId EXTID 'DaneIdentyfikacyjne' : Podmiot2;
 GROUP P2Adres EXTID 'Adres' : Podmiot2;
 GROUP P2Kontakt EXTID 'DaneKontaktowe' : Podmiot2;
 
-FORM FA3Xml
+// export
+FORM FA3XmlExport
     OBJECTS f = Faktura PANEL
 
     FORMEXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Faktura'
@@ -68,3 +69,99 @@ FORM FA3Xml
     PROPERTIES(w) NrWierszaFa, P_7, P_8A, P_8B, P_9A, P_11, P_12
     FILTERS faktura(w) = f
 ;
+
+// import
+KodFormularza = DATA LOCAL STRING();
+WariantFormularza = DATA LOCAL INTEGER();
+DataWytworzeniaFa = DATA LOCAL STRING();
+SystemInfo = DATA LOCAL STRING();
+
+p1_NIP = DATA LOCAL STRING();
+p1_Nazwa = DATA LOCAL STRING();
+p1_KodKraju = DATA LOCAL STRING();
+p1_AdresL1 = DATA LOCAL STRING();
+p1_AdresL2 = DATA LOCAL STRING();
+p1_Email = DATA LOCAL STRING();
+p1_Telefon = DATA LOCAL STRING();
+
+p2_NIP = DATA LOCAL STRING();
+p2_Nazwa = DATA LOCAL STRING();
+p2_KodKraju = DATA LOCAL STRING();
+p2_AdresL1 = DATA LOCAL STRING();
+p2_AdresL2 = DATA LOCAL STRING();
+p2_Email = DATA LOCAL STRING();
+p2_Telefon = DATA LOCAL STRING();
+NrKlienta = DATA LOCAL STRING();
+
+KodWaluty = DATA LOCAL STRING();
+P_1 = DATA LOCAL DATE();
+P_2 = DATA LOCAL STRING();
+P_6 = DATA LOCAL DATE();
+P_13_1 = DATA LOCAL NUMERIC[14,2]();
+P_14_1 = DATA LOCAL NUMERIC[14,2]();
+P_15 = DATA LOCAL NUMERIC[14,2]();
+P_16 = DATA LOCAL INTEGER();
+P_17 = DATA LOCAL INTEGER();
+P_18 = DATA LOCAL INTEGER();
+P_18A = DATA LOCAL INTEGER();
+P_23 = DATA LOCAL INTEGER();
+
+KursWalutyZ = DATA NUMERIC[16,6] ();
+RodzajFaktury = DATA LOCAL STRING();
+
+NrWierszaFa = DATA LOCAL STRING(INTEGER);
+UU_ID = DATA LOCAL STRING(INTEGER);
+P_7 = DATA LOCAL STRING(INTEGER);
+P_8A = DATA LOCAL STRING(INTEGER);
+P_8B = DATA LOCAL NUMERIC[16,3](INTEGER);
+P_9A = DATA LOCAL NUMERIC[10,2](INTEGER);
+P_11 = DATA LOCAL NUMERIC[14,2](INTEGER);
+P_12 = DATA LOCAL STRING(INTEGER);
+
+FORM FA3XmlImport FORMEXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Faktura'
+    PROPERTIES ATTR ='http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2022/01/05/eD/DefinicjeTypy/' EXTID 'xmlns:etd', ='http://www.w3.org/2001/XMLSchema' EXTID 'xmlns:xsd', ='http://www.w3.org/2001/XMLSchema-instance' EXTID 'xmlns:xsi'
+    PROPERTIES() IN Naglowek KodFormularza, WariantFormularza, DataWytworzeniaFa, SystemInfo
+    PROPERTIES() IN P1DaneId p1_NIP EXTID ':NIP', p1_Nazwa EXTID ':Nazwa'
+    PROPERTIES() IN P1Adres p1_KodKraju EXTID ':KodKraju', p1_AdresL1 EXTID ':AdresL1', p1_AdresL2 EXTID ':AdresL2'
+    PROPERTIES() IN P1Kontakt p1_Email EXTID ':Email', p1_Telefon EXTID ':Telefon'
+    PROPERTIES() IN Podmiot2 NrKlienta
+    PROPERTIES() IN P2DaneId p2_NIP EXTID ':NIP', p2_Nazwa EXTID ':Nazwa'
+    PROPERTIES() IN P2Adres p2_KodKraju EXTID ':KodKraju', p2_AdresL1 EXTID ':AdresL1', p2_AdresL2 EXTID ':AdresL2'
+    PROPERTIES() IN P2Kontakt p2_Email EXTID ':Email', p2_Telefon EXTID ':Telefon'
+    PROPERTIES() IN Fa KodWaluty, P_1, P_2, P_6, P_13_1, P_14_1, P_15
+    PROPERTIES() IN Adnotacje P_16, P_17, P_18, P_18A, P_23
+    PROPERTIES() IN Fa KursWalutyZ, RodzajFaktury
+
+    OBJECTS faWiersz = INTEGER EXTID ':FaWiersz' IN Fa
+    PROPERTIES(faWiersz) NrWierszaFa, UU_ID, P_7, P_8A, P_8B, P_9A, P_11, P_12
+    FILTERS imported(faWiersz)
+;
+
+import (Faktura nf) {
+    podmiot1(nf) <- legalEntityNip(p1_NIP());
+
+    // Header
+    KodFormularza(nf) <- KodFormularza();
+    WariantFormularza(nf) <- WariantFormularza();
+    DataWytworzeniaFa(nf) <- DATETIME(DataWytworzeniaFa());
+    SystemInfo(nf) <- SystemInfo();
+    // Parties
+    p1_NIP(nf) <- p1_NIP(); p1_Nazwa(nf) <- p1_Nazwa(); p1_KodKraju(nf) <- p1_KodKraju(); p1_AdresL1(nf) <- p1_AdresL1(); p1_AdresL2(nf) <- p1_AdresL2(); p1_Email(nf) <- p1_Email(); p1_Telefon(nf) <- p1_Telefon();
+    p2_NIP(nf) <- p2_NIP(); p2_Nazwa(nf) <- p2_Nazwa(); p2_KodKraju(nf) <- p2_KodKraju(); p2_AdresL1(nf) <- p2_AdresL1(); p2_AdresL2(nf) <- p2_AdresL2(); p2_Email(nf) <- p2_Email(); p2_Telefon(nf) <- p2_Telefon();
+    p2_NrKlienta(nf) <- NrKlienta();
+    // Fa
+    KodWaluty(nf) <- KodWaluty(); P_1(nf) <- P_1(); P_2(nf) <- P_2(); P_6(nf) <- P_6();
+    P_13_1(nf) <- P_13_1(); P_14_1(nf) <- P_14_1(); P_15(nf) <- P_15();
+    P_16(nf) <- P_16(); P_17(nf) <- P_17(); P_18(nf) <- P_18(); P_18A(nf) <- P_18A(); P_23(nf) <- P_23();
+    KursWalutyZ(nf) <- KursWalutyZ(); RodzajFaktury(nf) <- RodzajFaktury();
+    FOR imported(INTEGER faWiersz) DO NEW fw = FaWiersz {
+        faktura(fw) <- nf;
+        NrWierszaFa(fw) <- INTEGER(NrWierszaFa(faWiersz));
+        P_7(fw) <- P_7(faWiersz);
+        P_8A(fw) <- P_8A(faWiersz);
+        P_8B(fw) <- P_8B(faWiersz);
+        P_9A(fw) <- P_9A(faWiersz);
+        P_11(fw) <- P_11(faWiersz);
+        P_12(fw) <- P_12(faWiersz);
+    }
+}

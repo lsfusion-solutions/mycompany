@@ -1,0 +1,70 @@
+MODULE KSeFFakturaQuery;
+
+REQUIRE KSeF, KSeFFaktura, KSeFFakturaFA3, Company, Doc;
+
+NAMESPACE KSeF;
+
+getFaktura (Company c, STRING ksefNumber) {
+    NEWSESSION {
+        TRY {
+            getAccessToken(c);
+            EXTERNAL HTTP GET hostApi() + '/invoices/ksef/' + ksefNumber HEADERS accessHeaders TO resultFile;
+
+            // Parse XML into LOCALs via import form
+            IMPORT FA3XmlImport XML FROM resultFile();
+
+            // Upsert Faktura by KSeF number and fill fields
+            NEW nf = Faktura {
+                number(nf) <- ksefNumber;
+
+                import(nf);
+            }
+            // Create lines for NEW object
+            APPLY;
+        } CATCH { catchException('Get Faktura XML'); }
+    }
+}
+
+// Core action: fetch metadata by date interval + subjectType and import into Faktura
+fetchKSeFMetadata 'Fetch KSeF metadata' (Company c, DATE from, DATE to, STRING subject) {
+    TRY {
+        // Auth headers
+        getAccessToken(c);
+        EXTERNAL HTTP POST hostApi() + '/invoices/query/metadata' HEADERS accessHeaders PARAMS
+            JSON FROM
+                subjectType = subject,
+                dateRange = (JSON FROM dateType = 'PermanentStorage',
+                                               from = toChar(toDateTime(from, 00:00:00), 'yyyy-MM-ddThh24:mi:ss.msZ'),
+                                               to = toChar(toDateTime(to, 23:59:59), 'yyyy-MM-ddThh24:mi:ss.msZ'))
+            TO resultFile;
+
+        LOCAL invoices = JSON();
+        IMPORT JSON FROM resultFile() TO() invoices;
+
+        IMPORT JSON FROM invoices() FIELDS STRING ksefNumber DO {
+            IF ksefNumber AND NOT fakturaKSeFNumber(ksefNumber) THEN
+                getFaktura(c, ksefNumber);
+        }
+    } CATCH { catchException('KSeF metadata fetch'); }
+}
+
+fetchSubject1 'Get (sprzedawca)' (INTERVAL[DATE] dates) {
+    FOR Company c = filterCompany() OR (NOT filterCompany() AND accessToken(c)) DO
+        fetchKSeFMetadata(c, from(dates), to(dates), 'subject1');
+}
+
+fetchSubject2 'Get (klient)' (INTERVAL[DATE] dates) {
+    FOR Company c = filterCompany() OR (NOT filterCompany() AND accessToken(c)) DO
+        fetchKSeFMetadata(c, from(dates), to(dates), 'subject2');
+}
+
+EXTEND FORM faktury
+    PROPERTIES(dates) DISABLEIF NOT dates IS INTERVAL[DATE] fetchSubject1, fetchSubject2
+;
+
+DESIGN faktury {
+    actions {
+        MOVE PROPERTY(fetchSubject1(dates)) { alignment = STRETCH; }
+        MOVE PROPERTY(fetchSubject2(dates)) { alignment = STRETCH; }
+    }
+}

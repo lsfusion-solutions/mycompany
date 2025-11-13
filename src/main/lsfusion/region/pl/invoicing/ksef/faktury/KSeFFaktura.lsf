@@ -1,6 +1,6 @@
 MODULE KSeFFaktura;
 
-REQUIRE Company, KSeFSession, KSeF, Crypto, InvoicingSettings;
+REQUIRE Company, KSeFSession, KSeF, Crypto, InvoicingSettings, Doc;
 
 NAMESPACE KSeF;
 
@@ -51,7 +51,7 @@ p2_NrKlienta 'Nr Klienta' = DATA STRING[50] (Faktura);
 
 // Fa totals and fields
 KodWaluty = DATA STRING[3] (Faktura);
-P_1 = DATA DATE (Faktura);
+P_1 = DATA DATE (Faktura) INDEXED;
 P_2 = DATA STRING[50] (Faktura);
 P_6 = DATA DATE (Faktura);
 P_13_1 = DATA NUMERIC[14,2] (Faktura);
@@ -62,15 +62,8 @@ P_16 = DATA INTEGER (Faktura); // metoda kasowa
 P_17 = DATA INTEGER (Faktura); // samofakturowanie
 P_18 = DATA INTEGER (Faktura); // odwrotne obciążenie
 P_18A = DATA INTEGER (Faktura); // MPP
-// Zwolnienie
-P_19 = DATA INTEGER (Faktura); // 1 = zwolnienie
-P_19A = DATA STRING[100] (Faktura);
-P_19B = DATA STRING[100] (Faktura);
-P_19C = DATA STRING[100] (Faktura);
-// NoweSrodkiTransportu
-P_22 = DATA INTEGER (Faktura); // 1 = WDT nowego środka transportu
 P_23 = DATA INTEGER (Faktura); // faktura WE uproszczona
-// PMarzy
+
 KursWalutyZ = DATA NUMERIC[16,6] (Faktura);
 RodzajFaktury = DATA STRING[20] (Faktura);
 
@@ -202,7 +195,7 @@ DESIGN faktura {
 
 FORM faktury 'Faktury KSeF'
     OBJECTS f = Faktura
-    PROPERTIES(f) READONLY
+    PROPERTIES(f) READONLYIF isReadonly()
                     referenceNumberSession, referenceNumber, statusCode, statusDescription, statusDetails,
                     number, P_2, P_1, KodWaluty,
                     p1_NIP, p1_Nazwa, p1_AdresL1, p1_AdresL2, p1_Email, p1_Telefon,
@@ -210,9 +203,32 @@ FORM faktury 'Faktury KSeF'
                     P_13_1, P_14_1, P_15,
                     P_16, P_17, P_18, P_18A, P_23,
                     KursWalutyZ, RodzajFaktury
-PROPERTIES(f) getStatus GRID BEFORE statusCode(f)
+    PROPERTIES(f) getStatus GRID BEFORE statusCode(f)
     PROPERTIES(f) NEWSESSION EDIT, DELETE
 ;
+
+@extendFormEditable(faktury);
+@defineDocObjectsForm(faktury, f, 'Faktury');
+
+filterCompany = DATA LOCAL NESTED Company();
+nameFilterCompany 'Company' = name(filterCompany());
+
+EXTEND FORM faktury
+    OBJECTS dates = INTERVAL[DATE] BEFORE f PANEL NULL
+    PROPERTIES filterDates 'Date interval' = VALUE(dates)
+
+    FILTERS NOT P_1(f) < from(dates), NOT P_1(f) > to(dates)
+    
+    PROPERTIES nameFilterCompany()
+    FILTERS (NOT filterCompany() OR podmiot1(f) = filterCompany() OR podmiot2(f) = filterCompany())
+;
+
+DESIGN faktury {
+    filters {
+        MOVE PROPERTY(filterDates);
+        MOVE PROPERTY(nameFilterCompany());
+    }
+}
 
 NAVIGATOR {
     invoicing {

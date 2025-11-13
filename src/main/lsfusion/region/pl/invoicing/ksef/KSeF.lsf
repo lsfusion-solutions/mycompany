@@ -232,7 +232,7 @@ accessHeaders (STRING header) = CASE
 accessToken(Company c) = GROUP LAST Token t ORDER accessValidUntil(t), refreshValidUntil(t), t WHERE company(t) = c AND access(t);
 
 getAccessToken (Company c) {
-    accessToken() <- GROUP LAST Token t ORDER accessValidUntil(t), refreshValidUntil(t), t WHERE company(t) = c AND access(t);
+    accessToken() <- accessToken(c);
     IF accessValidUntil(accessToken()) <= currentDateTime() THEN 
         refreshAccessToken(accessToken());
 }
