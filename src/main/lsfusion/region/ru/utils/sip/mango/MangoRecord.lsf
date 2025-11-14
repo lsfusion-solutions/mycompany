@@ -17,9 +17,9 @@ recordingId = DATA STRING (Call);
 mango_events_recording (STRING vpbx_api_key, STRING sign, JSON json) {
     logToFile('mango', CONCAT ' : ', 'Event recording', STRING(json));
 
-    IMPORT eventsRecording JSON FROM json;
-
     NEWSESSION {
+        IMPORT eventsRecording JSON FROM json;
+
         CASE
             WHEN recording_state() = r'Completed' THEN {
                 FOR id(Call c) = entry_id() DO {
