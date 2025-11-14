@@ -195,7 +195,13 @@ FORM invoice 'Invoice'
     OBJECTS l = InvoiceLine
     PROPERTIES(l) READONLYIF readonly(i)
                   index, nameItem, description, nameUom, idBarCodeItem, idItem, referenceItem, 
-                  quantity, price, taxes, NEW, DELETE 
+                  quantity, price
+
+    OBJECTS tg = TaxGroup
+    PROPERTIES    READONLYIF readonly(i)
+                  nameTax(l, tg) ON CHANGE changeTax(l, tg) COLUMNS (tg) HEADER name(tg)  
+
+    PROPERTIES(l) NEW, DELETE 
     FILTERS invoice(l) = i
 
     EDIT Invoice OBJECT i

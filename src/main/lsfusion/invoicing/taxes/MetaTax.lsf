@@ -15,6 +15,14 @@ META defineTaxCalc(doc, let, prefix, price)
     WHEN LOCAL SET(in(###doc##Line l, Tax t)) DO {
         in(l, Tax tx) <- NULL WHERE taxGroup(t) = taxGroup(tx) AND NOT t = tx;
     }
+    tax (###doc##Line l, TaxGroup tg) = GROUP AGGR Tax t WHERE in(l, t) BY taxGroup(t);
+    nameTax (###doc##Line l, TaxGroup tg) = name(tax(l, tg));
+    
+    changeTax (###doc##Line l, TaxGroup tg) {
+        DIALOG taxes OBJECTS t = tax(l, tg) INPUT LIST name(t) FILTERS taxGroup(t) = tg DO {
+            in(l, Tax tx) <- t = tx WHERE taxGroup(tx) = tg;
+        }
+    }
 
     // amount    
     taxAmount 'Taxes' = DATA NUMERIC[14,2] (Tax, ###doc##Line);

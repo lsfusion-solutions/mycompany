@@ -174,7 +174,13 @@ FORM bill 'Bill'
     OBJECTS l = BillLine
     PROPERTIES(l) READONLYIF readonly(b)
                   index, nameItem, description, nameUom, idBarCodeItem, idItem, referenceItem, 
-                  quantity, price, taxes, NEW, DELETE 
+                  quantity, price
+
+    OBJECTS tg = TaxGroup
+    PROPERTIES    READONLYIF readonly(b)
+                  nameTax(l, tg) ON CHANGE changeTax(l, tg) COLUMNS (tg) HEADER name(tg)
+
+    PROPERTIES(l) NEW, DELETE 
     FILTERS bill(l) = b
 
     EDIT Bill OBJECT b

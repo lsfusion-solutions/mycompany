@@ -168,8 +168,13 @@ FORM order 'Purchase order'
                       INPUT i = item(l) LIST name(i) ACTIONS 'add' { newProduct(STRING(i)); } DO item(l) <- i;
                   },
                   description, nameUom, idBarCodeItem, idItem, referenceItem, 
-                  quantity, price, untaxedAmount, taxes,
-                  NEW, DELETE
+                  quantity, price, untaxedAmount
+
+    OBJECTS tg = TaxGroup
+    PROPERTIES    READONLYIF readonly(o)
+                  nameTax(l, tg) ON CHANGE changeTax(l, tg) COLUMNS (tg) HEADER name(tg)
+
+    PROPERTIES(l) NEW, DELETE
     FILTERS order(l) = o
      
     EDIT Order OBJECT o    
