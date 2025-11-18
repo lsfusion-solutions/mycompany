@@ -9,5 +9,5 @@ NAMESPACE Invoicing;
 WHEN LOCAL GOAFTER in[BillLine, Tax] (SETCHANGED(item(BillLine l)) OR SETCHANGED(vendor(l))) AND purchaseCountIn(vendor(l), TaxGroup tg) DO
     in(l, Tax t) <- purchaseIn(vendor(l), t) WHERE taxGroup(t) = tg;
 
-WHEN LOCAL (SETCHANGED(vendor(BillLine l))) AND NOT purchaseCountIn(vendor(l), TaxGroup tg) DO
+WHEN LOCAL (SETCHANGED(vendor(BillLine l))) AND purchaseCountIn(PREV(vendor(l)), TaxGroup tg) AND NOT purchaseCountIn(vendor(l), tg) DO
     in(l, Tax t) <- purchaseIn(item(l), t) WHERE taxGroup(t) = tg;

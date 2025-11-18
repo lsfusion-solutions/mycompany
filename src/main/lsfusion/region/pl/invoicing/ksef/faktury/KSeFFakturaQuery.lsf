@@ -26,14 +26,14 @@ getFaktura (Company c, STRING ksefNumber) {
 }
 
 // Core action: fetch metadata by date interval + subjectType and import into Faktura
-fetchKSeFMetadata 'Fetch KSeF metadata' (Company c, DATE from, DATE to, STRING subject) {
+fetchKSeFMetadata 'Fetch KSeF metadata' (Company c, DATE from, DATE to, STRING subject, STRING dateType) {
     TRY {
         // Auth headers
         getAccessToken(c);
         EXTERNAL HTTP POST hostApi() + '/invoices/query/metadata' HEADERS accessHeaders PARAMS
             JSON FROM
                 subjectType = subject,
-                dateRange = (JSON FROM dateType = 'Issue',
+                dateRange = (JSON FROM dateType = dateType,
                                        from = toChar(toDateTime(from, 00:00:00), 'yyyy-MM-ddThh24:mi:ss.msZ'),
                                        to = toChar(toDateTime(to, 23:59:59), 'yyyy-MM-ddThh24:mi:ss.msZ'))
             TO resultFile;
@@ -48,14 +48,34 @@ fetchKSeFMetadata 'Fetch KSeF metadata' (Company c, DATE from, DATE to, STRING s
     } CATCH { catchException('KSeF metadata fetch'); }
 }
 
-fetchSubject1 'Get (sprzedawca)' (INTERVAL[DATE] dates) {
+fetchSubject1 'Fetch (sprzedawca)' (INTERVAL[DATE] dates) {
     FOR Company c = filterCompany() OR (NOT filterCompany() AND accessToken(c)) DO
-        fetchKSeFMetadata(c, from(dates), to(dates), 'subject1');
+        fetchKSeFMetadata(c, from(dates), to(dates), 'subject1', 'Issue');
 }
 
-fetchSubject2 'Get (klient)' (INTERVAL[DATE] dates) {
+fetchSubject2 'Fetch (klient)' (INTERVAL[DATE] dates) {
     FOR Company c = filterCompany() OR (NOT filterCompany() AND accessToken(c)) DO
-        fetchKSeFMetadata(c, from(dates), to(dates), 'subject2');
+        fetchKSeFMetadata(c, from(dates), to(dates), 'subject2', 'Issue');
+}
+
+fetchSubject2Last (INTEGER days) {
+    FOR Company c = filterCompany() OR (NOT filterCompany() AND accessToken(c)) DO
+        fetchKSeFMetadata(c, subtract(currentDate(), days), currentDate(), 'subject2', 'PermanentStorage');
+}
+
+fetchInterval 'Fetch interval (days)' = DATA INTEGER ();
+EXTEND FORM integrationData
+    PROPERTIES() fetchInterval
+;
+
+DESIGN integrationData {
+    KSeFHeader {
+        MOVE PROPERTY(fetchInterval());
+    }
+}
+// to scheduler
+fetchSubject2 'Fetch' () {
+    fetchSubject2Last(OVERRIDE fetchInterval(), 7);
 }
 
 EXTEND FORM faktury

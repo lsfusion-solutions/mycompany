@@ -15,5 +15,5 @@ DESIGN invoiceType {
 WHEN LOCAL GOAFTER in[InvoiceLine, Tax] (SETCHANGED(item(InvoiceLine l)) OR SETCHANGED(type(l))) AND countIn(type(l), TaxGroup tg) DO
     in(l, Tax t) <- in(type(l), t) WHERE taxGroup(t) = tg;
 
-WHEN LOCAL (SETCHANGED(type(InvoiceLine l))) AND NOT countIn(type(l), TaxGroup tg) DO
+WHEN LOCAL (SETCHANGED(type(InvoiceLine l))) AND countIn(PREV(type(l)), TaxGroup tg) AND NOT countIn(type(l), tg) DO
     in(l, Tax t) <- salesIn(item(l), t) WHERE taxGroup(t) = tg;

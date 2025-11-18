@@ -6,6 +6,7 @@ NAMESPACE KSeF;
 
 // Link from Faktura to Invoice (adapter level)
 invoice 'Invoice' = DATA Invoice (Faktura) INDEXED; // Faktura -> Invoice
+numberInvoice 'Invoice' (Faktura f) = number(invoice(f)); 
 
 // Selector to keep compatibility: find Faktura by Invoice
 faktura (Invoice i) = GROUP LAST Faktura f ORDER f WHERE invoice(f) = i;
@@ -69,6 +70,7 @@ createFaktura 'Build Faktura' (Invoice i) {
             faktura(w) <- f;
             NrWierszaFa(w) <- index(l);
             nameItem(w) <- nameItem(l);
+            GTIN(w) <- idBarCodeItem(l);
             nameUom(w) <- nameUom(l);
             quantity(w) <- quantity(l);
             price(w) <- resultPrice(l);
@@ -77,6 +79,10 @@ createFaktura 'Build Faktura' (Invoice i) {
         }
     }
 }
+
+EXTEND FORM faktury
+    PROPERTIES(f) READONLY numberInvoice
+;
 
 EXTEND FORM invoices
     //    PROPERTIES(i) GRID sendToKSeF, getInvoiceKSeFStatus DISABLEIF NOT faktura(i)

@@ -9,7 +9,7 @@ META defineTaxCalc(doc, let, prefix, price)
     
     // taxes for line
     in 'Incl.' = DATA BOOLEAN (###doc##Line, Tax);
-    WHEN LOCAL CHANGED(item(###doc##Line l)) DO
+    WHEN LOCAL CHANGED(item(###doc##Line l)) AND NOT GROUP SUM 1 IF SET(in(l, Tax t)) DO
         in(l, Tax t) <- prefix##In(item(l), t) WHERE prefix##CountIn(item(l), taxGroup(t));
 
     WHEN LOCAL SET(in(###doc##Line l, Tax t)) DO {
