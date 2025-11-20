@@ -38,7 +38,7 @@ createFaktura 'Build Faktura' (Invoice i) {
         p1_Nazwa(f) <- fullName(company(i));
         p1_KodKraju(f) <- OVERRIDE alpha2(country(company(i))), r'PL';
         p1_AdresL1(f) <- address(company(i));
-        p1_AdresL2(f) <- CONCAT ' ', zip(company(i)), city(company(i)), state(company(i));
+        p1_AdresL2(f) <- zipState(company(i));
         p1_Email(f) <- email(company(i));
         p1_Telefon(f) <- phone(company(i));
         // Buyer
@@ -46,7 +46,7 @@ createFaktura 'Build Faktura' (Invoice i) {
         p2_Nazwa(f) <- fullName(customer(i));
         p2_KodKraju(f) <- OVERRIDE alpha2(country(customer(i))), r'PL';
         p2_AdresL1(f) <- address(customer(i));
-        p2_AdresL2(f) <- CONCAT ' ', zip(customer(i)), city(customer(i)), state(customer(i));
+        p2_AdresL2(f) <- zipState(company(i));
         p2_Email(f) <- email(customer(i));
         p2_Telefon(f) <- phone(customer(i));
         p2_NrKlienta(f) <- id(customer(i));
@@ -69,7 +69,7 @@ createFaktura 'Build Faktura' (Invoice i) {
         FOR invoice(InvoiceLine l) = i DO NEW w = FaWiersz {
             faktura(w) <- f;
             NrWierszaFa(w) <- index(l);
-            nameItem(w) <- nameItem(l);
+            description(w) <- OVERRIDE description(l), nameItem(l);
             GTIN(w) <- idBarCodeItem(l);
             nameUom(w) <- nameUom(l);
             quantity(w) <- quantity(l);

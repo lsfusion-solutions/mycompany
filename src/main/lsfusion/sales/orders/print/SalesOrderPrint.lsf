@@ -14,6 +14,7 @@ addressLinesCompany (Order o) = addressLines(company(o));
 addressCsvCompany (Order o) = addressCsv(company(o));
 phoneCompany (Order o) = phone(company(o));
 fullNameCompany (Order o) = fullName(company(o));
+logoCompany (Order o) = logo(company(o));
 
 printUom = ABSTRACT VALUE Uom (OrderLine);
 namePrintUom (OrderLine l) = name(printUom(l));
@@ -26,16 +27,18 @@ printPrice = ABSTRACT VALUE NUMERIC[16,3] (OrderLine);
 printPrice(OrderLine l) += price(l);
 
 FORM printOrder 'Sales order'   
-    OBJECTS o = Order PANEL 
-    PROPERTIES(o) number, dateTime, scheduledDateTime, nameRepresentative,
+    OBJECTS o = Order PANEL
+    PROPERTIES document = r'Order'
+    PROPERTIES(o) number, dateTime, scheduledDateTime, dueDateTime, nameRepresentative,
                   nameCustomer, addressLinesCustomer, addressCsvCustomer, 
                   phoneCustomer, deliveryAddress,   
                   nameLocation, addressLinesLocation, addressCsvLocation, 
-                  nameCompany, fullNameCompany, addressLinesCompany, addressCsvCompany, 
-                  phoneCompany
+                  nameCompany, fullNameCompany, logoCompany,
+                  addressLinesCompany, addressCsvCompany, phoneCompany,
+                  nameCurrency
         
     OBJECTS l = OrderLine
-    PROPERTIES(l) idItem, nameItem, description, nameUom = namePrintUom, idBarCodeItem, referenceItem, isService,
+    PROPERTIES(l) index, idItem, nameItem, description, nameUom = namePrintUom, idBarCodeItem, referenceItem, isService,
                   nameCategoryItem, level1Item, level2Item, level3Item, level4Item,
                   quantity = printQuantity, price = printPrice,
                   taxPercent, taxAmount, taxes, 

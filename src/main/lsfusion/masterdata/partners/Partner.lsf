@@ -15,12 +15,13 @@ address 'Address' = DATA ISTRING[150] (Partner) CHARWIDTH 30;
 city 'City' = DATA ISTRING[50] (Partner) CHARWIDTH 12;
 state 'State' = DATA ISTRING[50] (Partner) CHARWIDTH 12;
 zip 'Postcode' = DATA ISTRING[10] (Partner);
+zipState (Partner p) = CONCAT ', ', zip(p), city(p), state(p) IF NOT state(p) = city(p);
 
 country 'Country' = DATA Country (Partner);
 nameCountry 'Country' (Partner p) = name(country(p));
 
-addressCsv 'Address' (Partner p) = CONCAT ', ', address(p), city(p), state(p) IF NOT state(p) = city(p), zip(p) CHARWIDTH 20;
-addressLines 'Address' (Partner p) = CONCAT '\n ', address(p), city(p), state(p) IF NOT state(p) = city(p), zip(p);
+addressCsv 'Address' (Partner p) = CONCAT ', ', address(p), zipState(p) CHARWIDTH 20;
+addressLines 'Address' (Partner p) = CONCAT '\n', address(p), zipState(p);
 
 phone 'Phone' = DATA ISTRING[100] (Partner) CHARWIDTH 12;
 email 'Email' = DATA ISTRING[400] (Partner) CHARWIDTH 20 REGEXP '[\\-!#-\'*+\\/-9=?A-Z^-~]+(\\.[\\-!#-\'*+\\/-9=?A-Z^-~]+)*@[0-9A-Za-z]([0-9A-Za-z\\-]\{0,61\}[0-9A-Za-z])?(\\.[0-9A-Za-z]([0-9A-Za-z\\-]\{0,61\}[0-9A-Za-z])?)+' '{authentication.email.contact.incorrect}';

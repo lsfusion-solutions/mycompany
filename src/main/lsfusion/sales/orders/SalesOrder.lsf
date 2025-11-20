@@ -52,7 +52,9 @@ validity 'Validity' = DATA DATETIME (Order);
 paymentTerms = DATA PaymentTerm (Order);
 namePaymentTerms 'Payment terms' (Order o)= name(paymentTerms(o));
 
-WHEN LOCAL CHANGED(customer(Order o)) AND NOT CHANGED(paymentTerms(o)) DO paymentTerms(o) <- customerPaymentTerms(customer(o)); 
+WHEN LOCAL CHANGED(customer(Order o)) AND NOT CHANGED(paymentTerms(o)) DO paymentTerms(o) <- customerPaymentTerms(customer(o));
+
+dueDateTime 'Pay before' (Order o) = sumDay(dateTime(o), days(paymentTerms(o)));
 
 // company
 company 'Company' = DATA Company (Order) NONULL;
