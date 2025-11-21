@@ -1,0 +1,52 @@
+MODULE LegalEntityImportPl;
+
+REQUIRE LegalEntityImport, LegalEntityPl, PartnerPurchase, PartnerSales;
+
+NAMESPACE MasterData;
+
+legalEntityExportPl 'Eksport danych podmiotów' () {
+    NEWSESSION {
+        IF NOT (GROUP SUM 1 IF LegalEntity l IS LegalEntity) THEN {
+            NEW l = LegalEntity {
+                id(l) <- '123';
+                nip(l) <- '321';
+            }
+        }
+        
+        LOCAL f = EXCELFILE ();
+        EXPORT XLSX HEADER FROM '{ID}' = id(LegalEntity l), 'NIP' = nip(l) WHERE l IS LegalEntity TO f;   
+        open(f());
+    }
+}
+
+legalEntityImportPl 'Import danych podmiotów' () {
+    LOCAL id = STRING[50] (INTEGER);
+    LOCAL nip = ISTRING[10] (INTEGER);
+           
+    INPUT f = EXCELFILE DO {
+        NEWSESSION {
+            IMPORT XLS HEADER FROM f TO id, nip;
+            FOR id(LegalEntity l) = id(INTEGER j) DO {
+                nip(l) <- nip(j);
+            }            
+            
+            APPLY;
+            MESSAGE 'Import zakończony';
+        }
+    }    
+}
+
+EXTEND FORM migrationData 
+    PROPERTIES legalEntityImportPl(), legalEntityExportPl()
+;
+
+DESIGN migrationData {
+    commons {
+        NEW legalEntityPl {
+            horizontal = TRUE;
+            caption = 'Dane podmiotów';
+            MOVE PROPERTY(legalEntityImportPl());
+            MOVE PROPERTY(legalEntityExportPl());
+        }
+    }
+}
