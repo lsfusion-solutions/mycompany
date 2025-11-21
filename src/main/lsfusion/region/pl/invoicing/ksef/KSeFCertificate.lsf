@@ -211,12 +211,13 @@ certificatesQuery 'Query certificates' (Company c) {
             LOCAL certificates = JSON();
             IMPORT JSON FROM resultFile() TO() certificates;
 
-            IMPORT JSON FROM certificates() FIELDS STRING certificateSerialNumber, STRING type, STRING status, ZDATETIME validFrom, ZDATETIME validTo DO {
+            IMPORT JSON FROM certificates() FIELDS STRING certificateSerialNumber, STRING name, STRING type, STRING status, ZDATETIME validFrom, ZDATETIME validTo DO {
                 IF NOT certificateBySerial(c, certificateSerialNumber) THEN NEW crt = Certificate {
                     company(crt) <- c;
                     serialNumber(crt) <- certificateSerialNumber;
                 }
                 FOR Certificate crt = certificateBySerial(c, certificateSerialNumber) DO {
+                    name(crt) <- name;
                     type(crt) <- certificate(type);
                     status(crt) <- status;
                     validFrom(crt) <- DATETIME(validFrom);
