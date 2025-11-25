@@ -1,13 +1,26 @@
 MODULE ProjectAssignmentPayslip;
 
-REQUIRE ProjectAssignment, ProjectTimeEntryPayslip;
+REQUIRE ProjectAssignment, ProjectTimeEntryPayslip, Team;
 
 NAMESPACE ProjectManagement;
 
+rateSalary 'Salary per hour' = DATA NUMERIC[10,2] (Employee);
+EXTEND FORM employee PROPERTIES(e) rateSalary;
+DESIGN employee {
+    projectsHeader {
+        MOVE PROPERTY(rateSalary(e));
+    }
+}
+
+rateSalary (TimeEntry e) += rateSalary(employee(e));
+
+rateSalary 'Salary per hour' = DATA NUMERIC[10,2] (TeamMember);
+EXTEND FORM team PROPERTIES(m) rateSalary;
+rateSalary(Team t, Employee e) = rateSalary(member(t, e)) MATERIALIZED;
+
 rateSalary 'Salary per hour' = DATA NUMERIC[10,2] (ProjectAssignment);
+EXTEND FORM project PROPERTIES(pa) rateSalary;
 
-EXTEND FORM project
-    PROPERTIES(pa) rateSalary
-;
+rateSalary (ProjectAssignment a, Employee e) = OVERRIDE rateSalary(a), rateSalary(employee(a), e);
 
-rateSalary (TimeEntry e) += rateSalary(assignment(project(e), employee(e), date(e)));
+rateSalary (TimeEntry e) += rateSalary(assignment(project(e), employee(e), date(e)), employee(e));
