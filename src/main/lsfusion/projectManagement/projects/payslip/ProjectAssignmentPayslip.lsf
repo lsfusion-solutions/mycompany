@@ -16,10 +16,12 @@ rateSalary (TimeEntry e) += rateSalary(employee(e));
 
 rateSalary 'Salary per hour' = DATA NUMERIC[10,2] (TeamMember);
 EXTEND FORM team PROPERTIES(m) rateSalary;
-rateSalary(Team t, Employee e) = rateSalary(member(t, e)) MATERIALIZED;
+rateSalary 'Salary per hour' (Team t, Employee e) = rateSalary(member(t, e)) MATERIALIZED;
+EXTEND FORM employee PROPERTIES(tm, e) READONLY rateSalary;
 
 rateSalary 'Salary per hour' = DATA NUMERIC[10,2] (ProjectAssignment);
 EXTEND FORM project PROPERTIES(pa) rateSalary;
+EXTEND FORM employee PROPERTIES(pa) rateSalary;
 
 rateSalary (ProjectAssignment a, Employee e) = OVERRIDE rateSalary(a), rateSalary(employee(a), e);
 
