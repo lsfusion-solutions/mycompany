@@ -54,9 +54,22 @@ KodWaluty = DATA STRING[3] (Faktura);
 invoiceDate = DATA DATE (Faktura) INDEXED;
 invoiceNumber = DATA STRING[50] (Faktura);
 deliveryDate = DATA DATE (Faktura);
-untaxedAmount = DATA NUMERIC[14,2] (Faktura);
-taxAmount = DATA NUMERIC[14,2] (Faktura);
-amount = DATA NUMERIC[14,2] (Faktura);
+
+// kwoty
+untaxedAmount1 'Netto (23%)' = DATA NUMERIC[14,2] (Faktura);
+taxAmount1 'VAT (23%)' = DATA NUMERIC[14,2] (Faktura);
+
+untaxedAmount2 'Netto (8%)' = DATA NUMERIC[14,2] (Faktura);
+taxAmount2 'VAT (8%)' = DATA NUMERIC[14,2] (Faktura);
+
+untaxedAmount3 'Netto (5%)' = DATA NUMERIC[14,2] (Faktura);
+taxAmount3 'VAT (5%)' = DATA NUMERIC[14,2] (Faktura);
+
+untaxedAmount6 'Netto (0%)' = DATA NUMERIC[14,2] (Faktura);
+untaxedAmount7 'Netto (zw)' = DATA NUMERIC[14,2] (Faktura);
+
+amount 'Brutto' = DATA NUMERIC[14,2] (Faktura);
+
 // Adnotacje flags (1 = yes, 2 = no) and sub-blocks
 metodaKasowa = DATA INTEGER (Faktura); // metoda kasowa
 samofakturowanie = DATA INTEGER (Faktura); // samofakturowanie
@@ -66,6 +79,11 @@ weUproszczona = DATA INTEGER (Faktura); // faktura WE uproszczona
 
 KursWalutyZ = DATA NUMERIC[16,6] (Faktura);
 RodzajFaktury = DATA STRING[20] (Faktura);
+
+PrzyczynaKorekty = DATA STRING (Faktura);
+DataWystFaKorygowanej = DATA DATE (Faktura);
+NrFaKorygowanej = DATA STRING[50] (Faktura);
+NrKSeFFaKorygowanej = DATA STRING[36] (Faktura);
 
 // Row fields
 CLASS FaWiersz 'FaWiersz';
@@ -117,11 +135,16 @@ FORM faktura 'Faktura KSeF'
     PROPERTIES(f) READONLY
                   referenceNumberSession, referenceNumber, statusCode, statusDescription, statusDetails,
                   DataWytworzeniaFa, invoiceNumber, invoiceDate, KodWaluty,
-                  p1_NIP, p1_Nazwa, p1_AdresL1, p1_AdresL2, p1_Email, p1_Telefon,
-                  p2_NIP, p2_Nazwa, p2_AdresL1, p2_AdresL2, p2_Email, p2_Telefon, p2_NrKlienta,
-                  untaxedAmount, taxAmount, amount, 
+                  namePodmiot1 CHANGEABLE, p1_NIP, p1_Nazwa, p1_AdresL1, p1_AdresL2, p1_Email, p1_Telefon,
+                  namePodmiot2 CHANGEABLE, p2_NIP, p2_Nazwa, p2_AdresL1, p2_AdresL2, p2_Email, p2_Telefon, p2_NrKlienta,
+                  untaxedAmount1, taxAmount1,
+                  untaxedAmount2, taxAmount2,
+                  untaxedAmount3, taxAmount3,
+                  untaxedAmount6, untaxedAmount7,
+                  amount, 
                   metodaKasowa, samofakturowanie, odwrotneObciazenie, mpp, weUproszczona,
-                  KursWalutyZ, RodzajFaktury
+                  KursWalutyZ, RodzajFaktury,
+                  PrzyczynaKorekty, DataWystFaKorygowanej, NrFaKorygowanej, NrKSeFFaKorygowanej
     
     OBJECTS w = FaWiersz
     PROPERTIES(w) READONLY NrWierszaFa, description, GTIN, nameUom, quantity, price, untaxedAmount, taxes
@@ -152,6 +175,7 @@ DESIGN faktura {
             NEW seller {
                 caption = 'Podmiot 1';
                 lines = 3;
+                MOVE PROPERTY(namePodmiot1(f));
                 MOVE PROPERTY(p1_NIP(f));
                 MOVE PROPERTY(p1_Nazwa(f));
                 MOVE PROPERTY(p1_AdresL1(f));
@@ -162,6 +186,7 @@ DESIGN faktura {
             NEW buyer {
                 caption = 'Podmiot 2';
                 lines = 3;
+                MOVE PROPERTY(namePodmiot2(f));
                 MOVE PROPERTY(p2_NIP(f));
                 MOVE PROPERTY(p2_Nazwa(f));
                 MOVE PROPERTY(p2_AdresL1(f));
@@ -173,10 +198,23 @@ DESIGN faktura {
         }
         NEW totals {
             horizontal = TRUE;
-            MOVE PROPERTY(untaxedAmount(f));
-            MOVE PROPERTY(taxAmount(f));
+            MOVE PROPERTY(untaxedAmount1(f));
+            MOVE PROPERTY(untaxedAmount2(f));
+            MOVE PROPERTY(untaxedAmount3(f));
+            MOVE PROPERTY(untaxedAmount6(f));
+            MOVE PROPERTY(untaxedAmount7(f));
+            MOVE PROPERTY(taxAmount1(f));
+            MOVE PROPERTY(taxAmount2(f));
+            MOVE PROPERTY(taxAmount3(f));
             MOVE PROPERTY(amount(f));
             MOVE PROPERTY(RodzajFaktury(f));
+        }
+        NEW korekta {
+            horizontal = TRUE;
+            MOVE PROPERTY(PrzyczynaKorekty(f));
+            MOVE PROPERTY(DataWystFaKorygowanej(f));
+            MOVE PROPERTY(NrFaKorygowanej(f));
+            MOVE PROPERTY(NrKSeFFaKorygowanej(f));
         }
         NEW adnotacje {
             horizontal = TRUE;
@@ -197,9 +235,11 @@ FORM faktury 'Faktury KSeF'
                     number, invoiceNumber, invoiceDate, KodWaluty,
                     p1_NIP, p1_Nazwa, p1_AdresL1, p1_AdresL2, p1_Email, p1_Telefon,
                     p2_NIP, p2_Nazwa, p2_AdresL1, p2_AdresL2, p2_Email, p2_Telefon, p2_NrKlienta,
-                    untaxedAmount, taxAmount, amount,
+                    untaxedAmount1, untaxedAmount2, untaxedAmount3, untaxedAmount6, untaxedAmount7,
+                    taxAmount1, taxAmount2, taxAmount3, amount,
                     metodaKasowa, samofakturowanie, odwrotneObciazenie, mpp, weUproszczona,
-                    KursWalutyZ, RodzajFaktury
+                    KursWalutyZ, RodzajFaktury,
+                    PrzyczynaKorekty, DataWystFaKorygowanej, NrFaKorygowanej, NrKSeFFaKorygowanej
     PROPERTIES(f) getStatus GRID BEFORE statusCode(f)
     PROPERTIES(f) NEWSESSION EDIT, DELETE
 ;

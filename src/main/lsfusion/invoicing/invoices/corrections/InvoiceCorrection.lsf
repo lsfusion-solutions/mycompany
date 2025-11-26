@@ -31,6 +31,7 @@ prevCorrection (Invoice i) = PARTITION PREV i ORDER dateTime(i), i BY original(i
 prevInvoice(Invoice i) = OVERRIDE prevCorrection(i), original(i);
 
 correctionUntaxedAmount 'Amount correction' (Invoice i) = untaxedAmount(i) (-) untaxedAmount(prevInvoice(i));
+correctionUntaxedAmount 'Amount correction' (Tax t, Invoice i) = untaxedAmount(t, i) (-) untaxedAmount(t, prevInvoice(i));
 correctionTaxAmount 'Tax correction' (Tax t, Invoice i) = taxAmount(t, i) (-) taxAmount(t, prevInvoice(i));
 correctionTaxAmount 'Tax correction' (Invoice i) = taxAmount(i) (-) taxAmount(prevInvoice(i));
 correctionAmount 'Total amount correction' (Invoice i) = amount(i) (-) amount(prevInvoice(i));

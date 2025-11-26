@@ -1,6 +1,6 @@
 MODULE KSeFBill;
 
-REQUIRE Bill, BillCurrency, Partner, Company, KSeFFaktura, KSeFFakturaQuery;
+REQUIRE Bill, BillCurrency, BillCorrection, Partner, Company, KSeFFaktura, KSeFFakturaQuery;
 
 NAMESPACE KSeF;
 
@@ -34,6 +34,8 @@ createBill 'Create Bill' (Faktura f) {
             vendorReference(b) <- invoiceNumber(f);
 
             currency(b) <- currency(KodWaluty(f));
+            
+            original(b) <- bill(fakturaKSeFNumber(NrKSeFFaKorygowanej(f)));
 
             FOR faktura(FaWiersz w) = f ORDER NrWierszaFa(w) DO NEW l = BillLine {
                 bill(l) <- b;
@@ -80,7 +82,7 @@ DESIGN bill {
 
 EXTEND FORM bills
     OBJECTS f = Faktura
-    PROPERTIES(f) READONLY referenceNumber, invoiceNumber, invoiceDate, KodWaluty, p1_Nazwa, p2_Nazwa, amount
+    PROPERTIES(f) READONLY number, invoiceNumber, invoiceDate, KodWaluty, p1_Nazwa, p2_Nazwa, amount
     PROPERTIES(f) GRID createBill DISABLEIF bill(f)
     PROPERTIES() fetchSubject2 DRAW f TOOLBAR
     FILTERS toBill(f)

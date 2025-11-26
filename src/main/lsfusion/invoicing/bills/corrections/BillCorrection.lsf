@@ -31,6 +31,7 @@ prevCorrection (Bill b) = PARTITION PREV b ORDER dateTime(b), b BY original(b) M
 prevBill(Bill b) = OVERRIDE prevCorrection(b), original(b);
 
 correctionUntaxedAmount 'Amount correction' (Bill b) = untaxedAmount(b) (-) untaxedAmount(prevBill(b));
+correctionUntaxedAmount 'Amount correction' (Tax t, Bill b) = untaxedAmount(t, b) (-) untaxedAmount(t, prevBill(b));
 correctionTaxAmount 'Tax correction' (Tax t, Bill b) = taxAmount(t, b) (-) taxAmount(t, prevBill(b));
 correctionTaxAmount 'Tax correction' (Bill b) = taxAmount(b) (-) taxAmount(prevBill(b));
 correctionAmount 'Total amount correction' (Bill b) = amount(b) (-) amount(prevBill(b));

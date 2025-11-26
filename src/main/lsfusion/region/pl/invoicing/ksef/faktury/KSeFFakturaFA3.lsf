@@ -14,6 +14,7 @@ GROUP Adnotacje : Fa;
 GROUP Zwolnienie : Adnotacje;
 GROUP NoweSrodkiTransportu : Adnotacje;
 GROUP PMarzy : Adnotacje;
+GROUP DaneFaKorygowanej : Fa;
 
 // Nested groups
 GROUP P1DaneId EXTID 'DaneIdentyfikacyjne' : Podmiot1;
@@ -51,7 +52,11 @@ FORM FA3XmlExport
 
     // Fa
     PROPERTIES(f) IN Fa KodWaluty, invoiceDate EXTID 'P_1', invoiceNumber EXTID 'P_2', deliveryDate EXTID 'P_6'
-    PROPERTIES(f) IN Fa untaxedAmount EXTID 'P_13_1', taxAmount EXTID 'P_14_1', amount EXTID 'P_15'
+    PROPERTIES(f) IN Fa untaxedAmount1 EXTID 'P_13_1', taxAmount1 EXTID 'P_14_1'
+    PROPERTIES(f) IN Fa untaxedAmount2 EXTID 'P_13_2', taxAmount2 EXTID 'P_14_2'
+    PROPERTIES(f) IN Fa untaxedAmount3 EXTID 'P_13_3', taxAmount3 EXTID 'P_14_3'
+    PROPERTIES(f) IN Fa untaxedAmount6 EXTID 'P_13_6', untaxedAmount7 EXTID 'P_13_7'
+    PROPERTIES(f) IN Fa amount EXTID 'P_15'
     PROPERTIES(f) IN Fa KursWalutyZ
 
     PROPERTIES(f) IN Adnotacje metodaKasowa EXTID 'P_16', samofakturowanie EXTID 'P_17', odwrotneObciazenie EXTID 'P_18', mpp EXTID 'P_18A'
@@ -63,6 +68,10 @@ FORM FA3XmlExport
     PROPERTIES    IN PMarzy P_PMarzyN = 1
     
     PROPERTIES(f) IN Fa RodzajFaktury
+
+    PROPERTIES(f) IN Fa PrzyczynaKorekty
+    PROPERTIES IN DaneFaKorygowanej = toChar(DataWystFaKorygowanej(f), 'yyyy-MM-dd') EXTID 'DataWystFaKorygowanej',
+                  NrFaKorygowanej(f), NrKSeF = 1 IF NrFaKorygowanej(f), NrKSeFFaKorygowanej(f)
 
     // FaWiersz
     OBJECTS w = FaWiersz EXTID 'FaWiersz' IN Fa
@@ -98,7 +107,13 @@ P_1 = DATA LOCAL DATE();
 P_2 = DATA LOCAL STRING();
 P_6 = DATA LOCAL DATE();
 P_13_1 = DATA LOCAL NUMERIC[14,2]();
+P_13_2 = DATA LOCAL NUMERIC[14,2]();
+P_13_3 = DATA LOCAL NUMERIC[14,2]();
+P_13_6 = DATA LOCAL NUMERIC[14,2]();
+P_13_7 = DATA LOCAL NUMERIC[14,2]();
 P_14_1 = DATA LOCAL NUMERIC[14,2]();
+P_14_2 = DATA LOCAL NUMERIC[14,2]();
+P_14_3 = DATA LOCAL NUMERIC[14,2]();
 P_15 = DATA LOCAL NUMERIC[14,2]();
 P_16 = DATA LOCAL INTEGER();
 P_17 = DATA LOCAL INTEGER();
@@ -108,6 +123,11 @@ P_23 = DATA LOCAL INTEGER();
 
 KursWalutyZ = DATA NUMERIC[16,6] ();
 RodzajFaktury = DATA LOCAL STRING();
+
+PrzyczynaKorekty = DATA STRING ();
+DataWystFaKorygowanej = DATA STRING ();
+NrFaKorygowanej = DATA STRING[50] ();
+NrKSeFFaKorygowanej = DATA STRING[36] ();
 
 NrWierszaFa = DATA LOCAL STRING(INTEGER);
 UU_ID = DATA LOCAL STRING(INTEGER);
@@ -129,9 +149,12 @@ FORM FA3XmlImport FORMEXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Faktura'
     PROPERTIES() IN P2DaneId p2_NIP EXTID ':NIP', p2_Nazwa EXTID ':Nazwa'
     PROPERTIES() IN P2Adres p2_KodKraju EXTID ':KodKraju', p2_AdresL1 EXTID ':AdresL1', p2_AdresL2 EXTID ':AdresL2'
     PROPERTIES() IN P2Kontakt p2_Email EXTID ':Email', p2_Telefon EXTID ':Telefon'
-    PROPERTIES() IN Fa KodWaluty, P_1, P_2, P_6, P_13_1, P_14_1, P_15
+    PROPERTIES() IN Fa KodWaluty, P_1, P_2, P_6, P_13_1, P_13_2, P_13_3, P_13_6, P_13_7, P_14_1, P_14_2, P_14_3, P_15
     PROPERTIES() IN Adnotacje P_16, P_17, P_18, P_18A, P_23
     PROPERTIES() IN Fa KursWalutyZ, RodzajFaktury
+    PROPERTIES() IN Fa PrzyczynaKorekty
+    PROPERTIES() IN DaneFaKorygowanej DataWystFaKorygowanej, NrFaKorygowanej, NrKSeFFaKorygowanej
+    
 
     OBJECTS faWiersz = INTEGER EXTID ':FaWiersz' IN Fa
     PROPERTIES(faWiersz) NrWierszaFa, UU_ID, P_7, GTIN, P_8A, P_8B, P_9A, P_11, P_12
@@ -147,14 +170,27 @@ import (Faktura nf) {
     DataWytworzeniaFa(nf) <- DATETIME(DataWytworzeniaFa());
     SystemInfo(nf) <- SystemInfo();
     // Parties
-    p1_NIP(nf) <- p1_NIP(); p1_Nazwa(nf) <- p1_Nazwa(); p1_KodKraju(nf) <- p1_KodKraju(); p1_AdresL1(nf) <- p1_AdresL1(); p1_AdresL2(nf) <- p1_AdresL2(); p1_Email(nf) <- p1_Email(); p1_Telefon(nf) <- p1_Telefon();
-    p2_NIP(nf) <- p2_NIP(); p2_Nazwa(nf) <- p2_Nazwa(); p2_KodKraju(nf) <- p2_KodKraju(); p2_AdresL1(nf) <- p2_AdresL1(); p2_AdresL2(nf) <- p2_AdresL2(); p2_Email(nf) <- p2_Email(); p2_Telefon(nf) <- p2_Telefon();
+    podmiot1(nf) <- partnerNip(p1_NIP());
+    p1_NIP(nf) <- p1_NIP(); p1_Nazwa(nf) <- p1_Nazwa(); p1_KodKraju(nf) <- p1_KodKraju(); 
+    p1_AdresL1(nf) <- p1_AdresL1(); p1_AdresL2(nf) <- p1_AdresL2(); 
+    p1_Email(nf) <- p1_Email(); p1_Telefon(nf) <- p1_Telefon();
+
+    podmiot2(nf) <- partnerNip(p2_NIP());
+    p2_NIP(nf) <- p2_NIP(); p2_Nazwa(nf) <- p2_Nazwa(); p2_KodKraju(nf) <- p2_KodKraju(); 
+    p2_AdresL1(nf) <- p2_AdresL1(); p2_AdresL2(nf) <- p2_AdresL2(); 
+    p2_Email(nf) <- p2_Email(); p2_Telefon(nf) <- p2_Telefon();
     p2_NrKlienta(nf) <- NrKlienta();
     // Fa
     KodWaluty(nf) <- KodWaluty(); invoiceDate(nf) <- P_1(); invoiceNumber(nf) <- P_2(); deliveryDate(nf) <- P_6();
-    untaxedAmount(nf) <- P_13_1(); taxAmount(nf) <- P_14_1(); amount(nf) <- P_15();
+    untaxedAmount1(nf) <- P_13_1(); taxAmount1(nf) <- P_14_1();
+    untaxedAmount2(nf) <- P_13_2(); taxAmount2(nf) <- P_14_2();
+    untaxedAmount3(nf) <- P_13_3(); taxAmount3(nf) <- P_14_3();
+    untaxedAmount6(nf) <- P_13_6(); untaxedAmount7(nf) <- P_13_7();
+    amount(nf) <- P_15();
     metodaKasowa(nf) <- P_16(); samofakturowanie(nf) <- P_17(); odwrotneObciazenie(nf) <- P_18(); mpp(nf) <- P_18A(); weUproszczona(nf) <- P_23();
     KursWalutyZ(nf) <- KursWalutyZ(); RodzajFaktury(nf) <- RodzajFaktury();
+    PrzyczynaKorekty(nf) <- PrzyczynaKorekty(); DataWystFaKorygowanej(nf) <- DATE(DataWystFaKorygowanej());
+    NrFaKorygowanej(nf) <- NrFaKorygowanej(); NrKSeFFaKorygowanej(nf) <- NrKSeFFaKorygowanej();
     FOR imported(INTEGER faWiersz) DO NEW fw = FaWiersz {
         faktura(fw) <- nf;
         NrWierszaFa(fw) <- INTEGER(NrWierszaFa(faWiersz));

@@ -1,6 +1,6 @@
 MODULE KSeFInvoice;
 
-REQUIRE Invoice, InvoiceCurrency, Partner, Company, LegalEntityPl, KSeFFaktura;
+REQUIRE Invoice, InvoiceCurrency, InvoiceCorrection, Partner, Company, LegalEntityPl, KSeFFaktura;
 
 NAMESPACE KSeF;
 
@@ -55,16 +55,29 @@ createFaktura 'Build Faktura' (Invoice i) {
         invoiceDate(f) <- DATE(dateTime(i));
         invoiceNumber(f) <- number(i);
         deliveryDate(f) <- OVERRIDE DATE(deliveryDate(i)), DATE(dueDateTime(i));
-        untaxedAmount(f) <- untaxedAmount(i);
-        taxAmount(f) <- taxAmount(i);
-        amount(f) <- amount(i);
+        
+        untaxedAmount1(f) <- correctionUntaxedAmount(tax(r'23%'), i);
+        untaxedAmount2(f) <- correctionUntaxedAmount(tax(r'8%'), i);
+        untaxedAmount3(f) <- correctionUntaxedAmount(tax(r'5%'), i);
+        untaxedAmount6(f) <- correctionUntaxedAmount(tax(r'0%'), i);
+        untaxedAmount7(f) <- correctionUntaxedAmount(tax(r'zw'), i);
+        taxAmount1(f) <- correctionTaxAmount(tax(r'23%'), i);
+        taxAmount2(f) <- correctionTaxAmount(tax(r'8%'), i);
+        taxAmount3(f) <- correctionTaxAmount(tax(r'5%'), i);
+        amount(f) <- correctionAmount(i);
+        
         metodaKasowa(f) <- 2;
         samofakturowanie(f) <- 2;
         odwrotneObciazenie(f) <- 2;
         mpp(f) <- 2;
         weUproszczona(f) <- 2;
         KursWalutyZ(f) <- rate1(i) IF currency(i) != defaultCurrency();
-        RodzajFaktury(f) <- 'VAT';
+        RodzajFaktury(f) <- IF original(i) THEN 'KOR' ELSE 'VAT';
+        
+        PrzyczynaKorekty(f) <- note(i) IF original(i);
+        DataWystFaKorygowanej(f) <- invoiceDate(faktura(original(i)));
+        NrFaKorygowanej(f) <- invoiceNumber(faktura(original(i)));
+        NrKSeFFaKorygowanej(f) <- number(faktura(original(i)));
         
         FOR invoice(InvoiceLine l) = i DO NEW w = FaWiersz {
             faktura(w) <- f;
@@ -98,12 +111,15 @@ DESIGN invoice {
         NEW KSeF {
             alignment = STRETCH;
             caption = 'KSeF';
-            lines = 3;
-            MOVE PROPERTY(fakturaReference(i));
-            MOVE PROPERTY(fakturaStatusCode(i));
-            MOVE PROPERTY(fakturaStatusDescription(i));
-            MOVE PROPERTY(fakturaStatusDetails(i));
-            MOVE PROPERTY(fakturaNumber(i));
+            NEW KseFLine1 {
+                alignment = STRETCH;
+                horizontal = TRUE;
+                MOVE PROPERTY(fakturaReference(i));
+                MOVE PROPERTY(fakturaStatusCode(i));
+                MOVE PROPERTY(fakturaStatusDescription(i));
+                MOVE PROPERTY(fakturaNumber(i));
+            }
+            MOVE PROPERTY(fakturaStatusDetails(i)) { alignment = STRETCH; }
         }
     }
 }
