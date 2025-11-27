@@ -1,5 +1,47 @@
 # MyCompany Changelog
 
+## 6.1 (2025-11-27)
+### Implemented enhancements:
+ - Add functionality to create an invoice based on existing shipments [#323](https://github.com/lsfusion-solutions/mycompany/issues/323)
+ - Add highlighting for partially paid invoices [#322](https://github.com/lsfusion-solutions/mycompany/issues/322)
+ - Add filters for paid and shipped status to invoices and bills [#321](https://github.com/lsfusion-solutions/mycompany/issues/321)
+ - Add filters "not paid" and "not matched" to payments, invoices and payslips [#320](https://github.com/lsfusion-solutions/mycompany/issues/320)
+ - Prevent deletion of read-only documents [#319](https://github.com/lsfusion-solutions/mycompany/issues/319)
+ - Add cost ledger report [#318](https://github.com/lsfusion-solutions/mycompany/issues/318)
+ - Add labor cost tab to manufacturing order report [#317](https://github.com/lsfusion-solutions/mycompany/issues/317)
+ - Add materials tab to manufacturing order report [#316](https://github.com/lsfusion-solutions/mycompany/issues/316)
+ - Add labor cost to manufacturing orders [#315](https://github.com/lsfusion-solutions/mycompany/issues/315)
+ - Multiple shipments for one invoice [#314](https://github.com/lsfusion-solutions/mycompany/issues/314)
+ - Special taxes for a certain type of sales orders [#313](https://github.com/lsfusion-solutions/mycompany/issues/313)
+ - Add time entry tracking for manufacturing orders [#312](https://github.com/lsfusion-solutions/mycompany/issues/312)
+ - Logo for partners [#309](https://github.com/lsfusion-solutions/mycompany/issues/309)
+ - CryptoPro Browser Plugin support [#308](https://github.com/lsfusion-solutions/mycompany/issues/308)
+ - Add Task API [#307](https://github.com/lsfusion-solutions/mycompany/issues/307)
+ - Contact data for partners [#306](https://github.com/lsfusion-solutions/mycompany/issues/306)
+ - Cost and markup in sales order report [#305](https://github.com/lsfusion-solutions/mycompany/issues/305)
+ - Additional attributes for partners [#304](https://github.com/lsfusion-solutions/mycompany/issues/304)
+ - History of changes to partner data [#303](https://github.com/lsfusion-solutions/mycompany/issues/303)
+ - Basic JSON API [#302](https://github.com/lsfusion-solutions/mycompany/issues/302)
+ - Highlight current day in timesheets [#301](https://github.com/lsfusion-solutions/mycompany/issues/301)
+ - Creating tasks in project form [#300](https://github.com/lsfusion-solutions/mycompany/issues/300)
+ - Read-only attribute for a document [#299](https://github.com/lsfusion-solutions/mycompany/issues/299)
+ - Special taxes for a certain vendor of bill [#298](https://github.com/lsfusion-solutions/mycompany/issues/298)
+ - Special taxes for a certain type of invoice [#297](https://github.com/lsfusion-solutions/mycompany/issues/297)
+ - Mango office ip telephony support [#296](https://github.com/lsfusion-solutions/mycompany/issues/296)
+ - add property skipSalesLedger(Invoice) to expand the capabilities of sales register management [#295](https://github.com/lsfusion-solutions/mycompany/issues/295)
+ - Types for contracts [#294](https://github.com/lsfusion-solutions/mycompany/issues/294)
+ - Ability to add and delete orders from the partner editing form [#293](https://github.com/lsfusion-solutions/mycompany/issues/293)
+ - Delivery date for bills and invoices [#292](https://github.com/lsfusion-solutions/mycompany/issues/292)
+ - Wazzup integration [#291](https://github.com/lsfusion-solutions/mycompany/issues/291)
+ - Option to ignore storage location hierarchy in discounts [#290](https://github.com/lsfusion-solutions/mycompany/issues/290)
+ - Increase size field 'Note' in OutgoingPayment and IncomingPayment [#289](https://github.com/lsfusion-solutions/mycompany/issues/289)
+ - abstract property 'active' for Invoice and Bill [#288](https://github.com/lsfusion-solutions/mycompany/issues/288)
+ - List of attendees for an activity [#287](https://github.com/lsfusion-solutions/mycompany/issues/287)
+ - Ability to assign projects and tasks to teams [#286](https://github.com/lsfusion-solutions/mycompany/issues/286)
+ - Specifying tasks for time entries in supervisor timesheet [#285](https://github.com/lsfusion-solutions/mycompany/issues/285)
+ - Add employee timesheet [#284](https://github.com/lsfusion-solutions/mycompany/issues/284)
+
+
 ## 6.0
 
 ### Added
