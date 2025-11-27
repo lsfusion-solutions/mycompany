@@ -1,0 +1,39 @@
+MODULE Crypto;
+
+REQUIRE SQLUtils;
+
+NAMESPACE Utils;
+
+// Ensure pgcrypto is available (needed for digest function in SQL FORMULA)
+onStarted() +{
+    runSQL('CREATE EXTENSION IF NOT EXISTS pgcrypto;');
+}
+
+cipherResult = DATA LOCAL RAWFILE ();
+
+// rawfile / SHA-256 / certificate PEM
+cipherRSAOAEPMGF1 INTERNAL 'mycompany.utils.crypto.CipherRSAOAEPMGF1Action' (RAWFILE, STRING, TEXT);
+
+generatedCSR = DATA LOCAL RAWFILE (); // DER format
+generatedPrivateKey = DATA LOCAL RAWFILE ();
+
+signedXML = DATA LOCAL XMLFILE ();
+
+// params: XML , private key (PKCS#8), certificate DER (Base64)
+signXAdESEnveloped INTERNAL 'mycompany.utils.crypto.SignXAdESEnvelopedAction' (RAWFILE, RAWFILE, STRING);
+
+generateCSR INTERNAL 'mycompany.utils.crypto.GenerateCSRAction' (JSON);
+
+// New AES-256-CBC key (RAWFILE bytes) and IV (Base64 string)
+generatedAESKey = DATA LOCAL RAWFILE ();
+generatedIV = DATA LOCAL STRING ();
+
+generateAesKeyIv INTERNAL 'mycompany.utils.crypto.GenerateAESKeyIVAction' ();
+// AES-256-CBC PKCS#7 (PKCS5Padding) encrypt RAWFILE with RAWFILE key and base64 IV -> base64 ciphertext
+encryptedCbcB64 = DATA LOCAL STRING (); 
+cipherAESCBCPKCS7 INTERNAL 'mycompany.utils.crypto.CipherAESCBCPKCS7Action' (RAWFILE, RAWFILE, STRING);
+
+// Base64(SHA-256(rawfile))
+hashSha256Base64 (RAWFILE f) = FORMULA STRING 'encode(digest(($1),\'sha256\'), \'base64\')';
+// Byte length of RAWFILE
+rawOctetLength (RAWFILE f) = FORMULA INTEGER 'octet_length(($1))';

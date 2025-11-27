@@ -1,0 +1,100 @@
+MODULE InvoiceCorrection;
+
+REQUIRE InvoiceCanceled;
+
+NAMESPACE Invoicing;
+
+original = DATA Invoice (Invoice);
+numberDateOriginal 'Original invoice' (Invoice i) = numberDate(original(i));
+countCorrections 'Correction count' (Invoice i) = GROUP SUM 1 IF original(Invoice c) = i;
+
+INDEX original(Invoice i), dateTime(i), i;
+
+CONSTRAINT original(Invoice i) AND NOT customer(i) = customer(original(i))
+                CHECKED BY original[Invoice]
+                MESSAGE 'Correction customer must match the original invoice customer';
+
+CONSTRAINT original(Invoice i) AND NOT company(i) = company(original(i))
+                CHECKED BY original[Invoice]
+                MESSAGE 'Correction company must match the original invoice company';
+
+CONSTRAINT original(Invoice i) AND original(original(i))
+                CHECKED BY original[Invoice]
+                MESSAGE 'Original invoice cannot be a correction';
+
+EXTEND FORM invoices
+    PROPERTIES READONLY numberDateOriginal(i), countCorrections(i)
+;
+
+indexCorrection '{Index}' (Invoice i) = PARTITION SUM 1 ORDER dateTime(i), i BY original(i);
+prevCorrection (Invoice i) = PARTITION PREV i ORDER dateTime(i), i BY original(i) MATERIALIZED;
+prevInvoice(Invoice i) = OVERRIDE prevCorrection(i), original(i);
+
+correctionUntaxedAmount 'Amount correction' (Invoice i) = untaxedAmount(i) (-) untaxedAmount(prevInvoice(i));
+correctionUntaxedAmount 'Amount correction' (Tax t, Invoice i) = untaxedAmount(t, i) (-) untaxedAmount(t, prevInvoice(i));
+correctionTaxAmount 'Tax correction' (Tax t, Invoice i) = taxAmount(t, i) (-) taxAmount(t, prevInvoice(i));
+correctionTaxAmount 'Tax correction' (Invoice i) = taxAmount(i) (-) taxAmount(prevInvoice(i));
+correctionAmount 'Total amount correction' (Invoice i) = amount(i) (-) amount(prevInvoice(i));
+
+lastCorrection (Invoice i) = GROUP LAST Invoice c ORDER dateTime(c), c WHERE original(c) = i;
+untaxedAmountLastCorrection 'Amount correction' (Invoice i) = untaxedAmount(lastCorrection(i));
+taxAmountLastCorrection 'Tax correction' (t, Invoice i) = taxAmount(t, lastCorrection(i));
+taxAmountLastCorrection 'Tax correction' (Invoice i) = taxAmount(lastCorrection(i));
+amountLastCorrection 'Total amount correction' (Invoice i) = amount(lastCorrection(i));
+
+createCorrection 'Create Correction' (Invoice i) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    NEWSESSION {
+        NEW to = Invoice {
+            original(to) <- OVERRIDE original(i), i;
+
+            clone(to, i);
+
+            SHOW invoice OBJECTS i = to DOCKED;
+        }
+    }
+}
+
+EXTEND FORM invoice
+    OBJECTS cb = Invoice
+    PROPERTIES(cb) READONLY indexCorrection, number, dateTime, imagedNameStatus BACKGROUND colorStatus(i), 
+                            correctionUntaxedAmount, correctionTaxAmount, correctionAmount, untaxedAmount, taxAmount, amount
+    PROPERTIES(cb) NEWSESSION EDIT, DELETE
+    ORDERS indexCorrection(cb)
+    FILTERS original(cb) = i
+
+    PROPERTIES createCorrection(i) SHOWIF active(i)
+
+    PROPERTIES(i) READONLY SHOWIF lastCorrection(i) untaxedAmountLastCorrection, taxAmountLastCorrection, amountLastCorrection
+    PROPERTIES(i) SHOWIF original(i)          numberDateOriginal
+    PROPERTIES(i) SHOWIF original(i) READONLY correctionUntaxedAmount, correctionTaxAmount, correctionAmount
+;
+
+DESIGN invoice {
+    details {
+        NEW corrections {
+            caption = badged('Corrections', countCorrections(i));
+            MOVE BOX(cb) { caption = ''; }
+        }
+    }
+
+    secondaryActions {
+        MOVE PROPERTY(createCorrection(i)) { valueClass = 'btn-warning'; }
+    }
+
+    linesFooter {
+        NEW correction {
+            caption = 'Correction';
+            MOVE PROPERTY(untaxedAmountLastCorrection(i));
+            MOVE PROPERTY(taxAmountLastCorrection(i));
+            MOVE PROPERTY(amountLastCorrection(i));
+
+            MOVE PROPERTY(numberDateOriginal(i));
+            MOVE PROPERTY(correctionUntaxedAmount(i));
+            MOVE PROPERTY(correctionTaxAmount(i));
+            MOVE PROPERTY(correctionAmount(i));
+        }
+    }
+}

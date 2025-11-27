@@ -1,0 +1,98 @@
+MODULE KSeFBill;
+
+REQUIRE Bill, BillCurrency, BillCorrection, Partner, Company, KSeFFaktura, KSeFFakturaQuery;
+
+NAMESPACE KSeF;
+
+// Link from Faktura to Bill (adapter level)
+bill 'Bill' = DATA Bill (Faktura) INDEXED; // Faktura -> Bill
+numberBill 'Bill' (Faktura f) = number(bill(f));
+
+toBill (Faktura f) = number(f) AND podmiot2(f) IS Company AND NOT bill(f);
+countToBillFaktura = GROUP SUM 1 IF toBill(Faktura f);
+
+// Selector to keep compatibility: find Faktura by Bill
+faktura (Bill b) = GROUP LAST Faktura f ORDER f WHERE bill(f) = b;
+
+fakturaReference 'KSeF reference' (Bill b) = referenceNumber(faktura(b));
+fakturaStatusCode 'KSeF status code' (Bill b) = statusCode(faktura(b));
+fakturaStatusDescription 'KSeF status' (Bill b) = statusDescription(faktura(b));
+fakturaStatusDetails 'KSeF details' (Bill b) = statusDetails(faktura(b));
+fakturaNumber 'KSeF number' (Bill b) = number(faktura(b));
+
+// Create Bill from Faktura (FA3) without attachments
+createBill 'Create Bill' (Faktura f) {
+    NEWSESSION {
+        NEW b = Bill {
+            bill(f) <- b;
+            
+            vendor(b) <- podmiot1(f);
+            company(b) <- podmiot2(f);
+
+            dateTime(b) <- DATETIME(invoiceDate(f));
+            deliveryDateTime(b) <- DATETIME(deliveryDate(f));
+            vendorReference(b) <- invoiceNumber(f);
+
+            currency(b) <- currency(KodWaluty(f));
+            
+            original(b) <- bill(fakturaKSeFNumber(NrKSeFFaKorygowanej(f)));
+
+            FOR faktura(FaWiersz w) = f ORDER NrWierszaFa(w) DO NEW l = BillLine {
+                bill(l) <- b;
+                item(l) <- itemBarCode(GTIN(w));
+                description(l) <- description(w);
+                quantity(l) <- quantity(w);
+                price(l) <- price(w);
+                untaxedAmount(l) <- untaxedAmount(w);
+                
+                in(l, Tax t) <- taxes(w) = (OVERRIDE (toChar(value(t), '99') IF value(t) > 0), name(t));
+            }
+
+            SHOW bill OBJECTS b = b DOCKED;
+        }
+    }
+}
+
+EXTEND FORM faktury
+    PROPERTIES(f) READONLY numberBill
+;
+
+EXTEND FORM bills
+    PROPERTIES(b) READONLY fakturaReference, fakturaStatusCode, fakturaStatusDescription, fakturaStatusDetails, fakturaNumber
+;
+
+EXTEND FORM bill
+    PROPERTIES(b) READONLY fakturaReference, fakturaStatusCode, fakturaStatusDescription, fakturaStatusDetails, fakturaNumber
+;
+
+DESIGN bill {
+    otherInformation {
+        NEW KSeF {
+            alignment = STRETCH;
+            caption = 'KSeF';
+            lines = 3;
+            MOVE PROPERTY(fakturaReference(b));
+            MOVE PROPERTY(fakturaStatusCode(b));
+            MOVE PROPERTY(fakturaStatusDescription(b));
+            MOVE PROPERTY(fakturaStatusDetails(b));
+            MOVE PROPERTY(fakturaNumber(b));
+        }
+    }
+}
+
+EXTEND FORM bills
+    OBJECTS f = Faktura
+    PROPERTIES(f) READONLY number, invoiceNumber, invoiceDate, KodWaluty, p1_Nazwa, p2_Nazwa, amount
+    PROPERTIES(f) GRID createBill DISABLEIF bill(f)
+    PROPERTIES() fetchSubject2 DRAW f TOOLBAR
+    FILTERS toBill(f)
+;
+
+DESIGN bills {
+    tabbedPane {
+        MOVE BOX(f) { 
+            caption = badged('KSeF', countToBillFaktura());
+            GRID(f) { size = (100, -1); }
+        }
+    }
+}

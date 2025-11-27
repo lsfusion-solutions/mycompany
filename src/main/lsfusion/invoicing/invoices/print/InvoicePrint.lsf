@@ -1,20 +1,25 @@
 MODULE InvoicePrint;
 
-REQUIRE Invoice, Product, DocTemplate;
+REQUIRE InvoiceCurrency, Product, DocTemplate;
 
 NAMESPACE Invoicing;
 
 fullNameCompany (Invoice i) = fullName(company(i));
+logoCompany (Invoice i) = logo(company(i));
 
+addressCompany (Invoice i) = address(company(i));
 addressLinesCompany (Invoice i) = addressLines(company(i));
 addressCsvCompany (Invoice i) = addressCsv(company(i));
 phoneCompany (Invoice i) = phone(company(i));
 emailCompany (Invoice i) = email(company(i));
 websiteCompany (Invoice i) = website(company(i));
+zipStateCompany (Invoice i) = zipState(company(i));
 
 fullNameCustomer (Invoice i) = fullName(customer(i));
 
-addressLinesCustomer (Invoice i) = addressLines(customer(i)); 
+addressCustomer (Invoice i) = address(customer(i));
+addressLinesCustomer (Invoice i) = addressLines(customer(i));
+zipStateCustomer (Invoice i) = zipState(customer(i));
 
 nameCountryOrigin (InvoiceLine l) = nameCountryOrigin(item(l));
 idCountryOrigin (InvoiceLine l) = id(countryOrigin(item(l)));
@@ -30,18 +35,20 @@ printPrice = ABSTRACT VALUE NUMERIC[16,3] (InvoiceLine);
 printPrice(InvoiceLine l) += price(l);  
 
 FORM printInvoice 'Invoice'
-    OBJECTS o = Invoice PANEL 
+    OBJECTS o = Invoice PANEL
+    PROPERTIES document = r'Invoice'
     PROPERTIES(o) dateTime, deliveryDateTime, executionDateTime, dueDateTime, number,
-                  nameCompany, fullNameCompany, 
-                  addressLinesCompany, addressCsvCompany, 
-                  phoneCompany, emailCompany, websiteCompany,
-                  idBankCompanyAccount, nameBankCompanyAccount, numberCompanyAccount,
+                  nameCompany, fullNameCompany, logoCompany,
+                  addressCompany, addressLinesCompany, addressCsvCompany, 
+                  phoneCompany, emailCompany, websiteCompany, zipStateCompany,
+                  idBankCompanyAccount, nameBankCompanyAccount, bicBankCompanyAccount, numberCompanyAccount,
                   nameCustomer, fullNameCustomer, 
-                  addressLinesCustomer, addressCsvCustomer, deliveryAddress, 
-                  phoneCustomer
+                  addressCustomer, addressLinesCustomer, addressCsvCustomer, zipStateCustomer, 
+                  phoneCustomer, deliveryAddress,
+                  nameCurrency
     
     OBJECTS l = InvoiceLine
-    PROPERTIES(l) nameItem, idItem, description, nameUom = namePrintUom, idBarCodeItem, referenceItem,
+    PROPERTIES(l) index, nameItem, idItem, description, nameUom = namePrintUom, idBarCodeItem, referenceItem,
                   nameCategoryItem, level1Item, level2Item, level3Item, level4Item,
                   quantity = printQuantity, price = printPrice, untaxedAmount,
                   taxPercent, taxAmount, taxes, 

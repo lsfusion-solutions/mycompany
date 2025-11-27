@@ -17,7 +17,7 @@ WHEN LOCAL SET(ManufacturingOrder o IS ManufacturingOrder) AND NOT CHANGED(type(
 
 scheduledDateTime 'Start date' = DATA DATETIME (ManufacturingOrder) IN id;
 scheduledDateTime(ManufacturingOrder o) <- currentDateTime() WHEN SET(o IS ManufacturingOrder);
-@defineDateTimeAggregation(ManufacturingOrder, scheduled, 'Scheduled ');
+@defineDateTimeAggregation(ManufacturingOrder, scheduled, '(scheduled)');
 
 @defineNumberType(ManufacturingOrder);
 
@@ -54,7 +54,9 @@ WHEN LOCAL SETCHANGED(type(ManufacturingOrder mo)) AND NOT materialsLocation(mo)
 CONSTRAINT SETCHANGED(materialsLocation(ManufacturingOrder o)) AND internalUse(materialsLocation(o)) CHECKED BY materialsLocation[ManufacturingOrder]
     MESSAGE 'The selected location is for internal use';
 
-unbuild 'Unbuild' (ManufacturingOrder mo)= unbuild(type(mo)); 
+unbuild 'Unbuild' (ManufacturingOrder mo)= unbuild(type(mo));
+
+note 'Note' = DATA ISTRING (ManufacturingOrder) CHARWIDTH 20;
 
 // consumed
 CLASS ConsumedLine 'Materials';
@@ -125,15 +127,14 @@ descriptionBom 'Bill of Materials' (ConsumedLine l) = descriptionBom(manufacturi
 responsible (ConsumedLine l) = responsible(manufacturingOrder(l));
 nameResponsible 'Responsible' (ConsumedLine l) = MasterData.name(responsible(l));
 
-edit (ConsumedLine l) + { edit(manufacturingOrder(l)); } 
-
 FORM manufacturingOrder 'Manufacturing order'
     OBJECTS o = ManufacturingOrder PANEL 
     PROPERTIES(o) READONLY unbuild
     PROPERTIES(o) READONLYIF readonly(o)
                   nameType, scheduledDateTime, number, nameCompany, nameResponsible, 
                   nameItem, toManufacture, nameUom, 
-                  descriptionBom, nameMaterialsLocation 
+                  descriptionBom, nameMaterialsLocation,
+                  note
     
     OBJECTS c = ConsumedLine
     PROPERTIES(c) READONLYIF readonly(o)
@@ -177,6 +178,7 @@ DESIGN manufacturingOrder {
                 tabbed = TRUE;
             }
         }
+        MOVE PROPERTY(note(o));
         NEW details {
             fill = 1;
             tabbed = TRUE;
@@ -218,6 +220,9 @@ DESIGN manufacturingOrder {
     }
 }
 
+edit (FinishedLine l) + { edit(manufacturingOrder(l)); }
+edit (ConsumedLine l) + { edit(manufacturingOrder(l)); }
+
 @defineDocHistoryHeader(manufacturingOrder, scheduledDateTime);
 @defineHistoryProperty(manufacturingOrder, item, 'Item', nameItem);
 @defineHistoryProperty(manufacturingOrder, company, 'Company', nameCompany);
@@ -242,7 +247,7 @@ FORM manufacturingOrders 'Manufacturing orders'
                            descriptionBom,
                                nameMaterialsLocation,
                            countConsumedLine READONLY, countFinishedLine READONLY
-    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE DISABLEIF readonly(o)
 
     LIST ManufacturingOrder OBJECT o
 ;

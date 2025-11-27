@@ -17,9 +17,9 @@ recordingId = DATA STRING (Call);
 mango_events_recording (STRING vpbx_api_key, STRING sign, JSON json) {
     logToFile('mango', CONCAT ' : ', 'Event recording', STRING(json));
 
-    IMPORT eventsRecording JSON FROM json;
-
     NEWSESSION {
+        IMPORT eventsRecording JSON FROM json;
+
         CASE
             WHEN recording_state() = r'Completed' THEN {
                 FOR id(Call c) = entry_id() DO {
@@ -31,25 +31,27 @@ mango_events_recording (STRING vpbx_api_key, STRING sign, JSON json) {
     }
 } @@api @@noauth;
 
-playRecordRemotely 'Play record remotely' = DATA BOOLEAN ();
-
-EXTEND FORM integrationData
-    PROPERTIES() mangoPlayRecordRemotely = playRecordRemotely
-;
-
-DESIGN integrationData {
-    mangoHeader {
-        MOVE PROPERTY(mangoPlayRecordRemotely);
-    }
-}
+//playRecordRemotely 'Play record remotely' = DATA BOOLEAN ();
+//
+//EXTEND FORM integrationData
+//    PROPERTIES() mangoPlayRecordRemotely = playRecordRemotely
+//;
+//
+//DESIGN integrationData {
+//    mangoHeader {
+//        MOVE PROPERTY(mangoPlayRecordRemotely);
+//    }
+//}
 
 requestRecord(Call c) + {
     apiPost('queries/recording/post', JSON FROM recording_id = recordingId(c), action = 'play');
+    recordLocal() <- RAWFILE(apiResponse());
+    SHOW playRecordLocal FLOAT WAIT;
 
-    IF playRecordRemotely() THEN {
-        SHOW playRecordRemote OBJECTS s = headersTo('Location') FLOAT WAIT;
-    } ELSE {
-        READ headersTo('Location') TO recordLocal;
-        SHOW playRecordLocal FLOAT WAIT;
-    }
+//    IF playRecordRemotely() THEN {
+//        SHOW playRecordRemote OBJECTS s = headersTo('Location') FLOAT WAIT;
+//    } ELSE {
+//        READ headersTo('Location') TO recordLocal;
+//        SHOW playRecordLocal FLOAT WAIT;
+//    }
 }

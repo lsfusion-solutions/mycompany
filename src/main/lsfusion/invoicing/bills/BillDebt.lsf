@@ -57,7 +57,12 @@ DESIGN bill {
 }
 
 EXTEND FORM bills   
-    PROPERTIES(b) READONLY paid  
+    PROPERTIES(b) READONLY AFTER amount(b) paid BACKGROUND backgroundPaid(b)
+    
+    FILTERGROUP paid
+        FILTER 'Not paid' left(b)
+        FILTER 'Paid' NOT left(b)
+        FILTER 'Partially paid' paid(b) AND left(b)
 ;
 
 // auto set done

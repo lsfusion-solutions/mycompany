@@ -13,14 +13,17 @@ EXTEND FORM orderType PROPERTIES nameReceiptType(o);
 // relation
 @defineDocLineRelation(order, receipt, '{Order}', 'Receipt', o, r);
 
+receivedQuantity (OrderLine l) = NUMERIC[16,3](quantity(l) * skuCoeff(item(l)));
+receivedProduct (OrderLine l) = sku(item(l));
+
 done '{Received}' (OrderLine ol) = 
     GROUP SUM done(ReceiptLine rl) IF orderLine(rl) = ol AND active(receipt(rl));
 toReceive 'Ready' (OrderLine ol) = 
-    max(quantity(ol) (-) done(ol), 0) IF item(ol) IS Product;
+    max(receivedQuantity(ol) (-) done(ol), 0) IF item(ol) IS Product;
 
 toReceive 'Ready' (Order o) = GROUP SUM toReceive(OrderLine ol) IF order(ol) = o;
 
-CONSTRAINT (quantity(OrderLine ol) (-) done(ol)) < 0 AND confirmed(order(ol)) 
+CONSTRAINT (receivedQuantity(OrderLine ol) (-) done(ol)) < 0 AND confirmed(order(ol)) 
     MESSAGE 'For the goods, the receipt exceeds the quantity in the order';
 
 reserveReceipt = DATA Receipt (Order);
@@ -54,10 +57,10 @@ WHEN ([GROUP SUM 1 IF CHANGED(toReceive(OrderLine l)) BY order(l)](Order o) OR S
         NOT (GROUP SUM 1 IF receipt(ReceiptLine l) = reserveReceipt(o) AND orderLine(l) = ol) 
             NEW rl = ReceiptLine DO {            
         receipt(rl) <- reserveReceipt(o);
-        product(rl) <- sku(item(ol));
+        product(rl) <- receivedProduct(ol);
         orderLine(rl) <- ol;
     }
-    initialDemand(ReceiptLine l) <- NUMERIC[16,3](toReceive(orderLine(l)) * skuCoeff(product(l)))  IF toReceive(orderLine(l)) > 0 WHERE receipt(l) = reserveReceipt(o);  
+    initialDemand(ReceiptLine l) <- toReceive(orderLine(l)) IF toReceive(orderLine(l)) > 0 WHERE receipt(l) = reserveReceipt(o);  
     DELETE ReceiptLine l WHERE receipt(l) = reserveReceipt(o) AND NOT initialDemand(l);
     IF NOT countLines(reserveReceipt(o)) THEN
         DELETE Receipt r WHERE r = reserveReceipt(o); 

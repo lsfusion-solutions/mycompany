@@ -1,0 +1,20 @@
+MODULE InvoicePrintPl;
+
+REQUIRE InvoicePrint, InvoicePrintDebt, LegalEntityPl, UtilsPl;
+
+NAMESPACE Invoicing;
+
+// Polish specific identifiers for company and customer
+nipCompany (Invoice i) = nip(company(i));
+nipCustomer (Invoice i) = nip(customer(i));
+
+amountSlownie (Invoice i) = currencySlownie(amount(i), nameCurrency(i));
+
+// Extend base print form with PL-specific properties
+EXTEND FORM printInvoice
+    PROPERTIES(o) nipCompany, nipCustomer, amountSlownie
+;
+
+@defineTaxFormIndex(invoice, printInvoice, o, 1);
+@defineTaxFormIndex(invoice, printInvoice, o, 2);
+@defineTaxFormIndex(invoice, printInvoice, o, 3);

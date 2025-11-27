@@ -1,0 +1,107 @@
+MODULE KSeFSession;
+
+REQUIRE KSeF, KSeFCertificate, Company, Crypto;
+
+NAMESPACE KSeF;
+
+// Persistent KSeF interactive session
+CLASS Session 'KSeF session';
+
+company 'Company' = DATA Company(Session) NONULL INDEXED;
+referenceNumber 'Reference number' = DATA STRING[200] (Session) INDEXED;
+openedAt 'Opened at' = DATA DATETIME (Session) NONULL;
+closedAt 'Closed at' = DATA DATETIME (Session);
+
+validUntil 'Valid until' = DATA DATETIME (Session);
+
+statusCode 'Status code' = DATA INTEGER (Session);
+statusDescription 'Status' = DATA STRING (Session);
+statusDetails 'Details' = DATA STRING (Session);
+lastError 'Last error' = DATA STRING (Session);
+
+aesKey 'AES key' = DATA RAWFILE (Session);
+ivB64 'IV (Base64)' = DATA STRING[64] (Session);
+
+opened 'Open' (Session s) = (NOT closedAt(s) AND NOT validUntil(s) < currentDateTime()) AND NOT statusCode(s) != 100;
+
+latestOpenSession (Company c) = GROUP LAST Session s ORDER openedAt(s), s WHERE company(s) = c AND opened(s);
+
+openSession 'Open KSeF interactive session' (Company c) {
+    NEWSESSION {
+        TRY {
+            IF NOT symmetricKeyEncryptionCertificate() THEN getPublicKeyCertificates();
+            // Generate symmetric key and IV, encrypt key with RSA-OAEP SHA-256/MGF1
+            generateAesKeyIv();
+            cipherRSAOAEPMGF1(generatedAESKey(), 'SHA-256', symmetricKeyEncryptionCertificate());
+
+            getAccessToken(c);
+            EXTERNAL HTTP POST hostApi() + '/sessions/online' HEADERS accessHeaders PARAMS
+                JSON FROM formCode = (JSON FROM systemCode = 'FA (3)', schemaVersion = '1-0E', value = 'FA'),
+                          encryption = (JSON FROM encryptedSymmetricKey = encodeBase64Unchunked(cipherResult()), initializationVector = generatedIV())
+                TO resultFile;
+
+            IMPORT JSON FROM resultFile() FIELDS() STRING referenceNumber, ZDATETIME validUntil DO {
+                NEW s = Session {
+                    company(s) <- c;
+                    referenceNumber(s) <- referenceNumber;
+                    validUntil(s) <- DATETIME(validUntil);
+                    openedAt(s) <- currentDateTime();
+                    aesKey(s) <- generatedAESKey();
+                    ivB64(s) <- generatedIV();
+                }
+                APPLY;
+            }
+        } CATCH {
+            catchException('Open KSeF session');
+        }
+    }
+}
+
+getStatus 'Get status' (Session s) {
+    NEWSESSION {
+        TRY {
+            getAccessToken(company(s));
+            EXTERNAL HTTP GET hostApi() + '/sessions/' + referenceNumber(s) HEADERS accessHeaders TO resultFile;
+
+            LOCAL status = JSON ();
+            LOCAL validUntil = ZDATETIME ();
+            IMPORT JSON FROM resultFile() TO() status, validUntil;
+
+            validUntil(s) <- DATETIME(validUntil());
+
+            statusCode(s) <- INTEGER(fieldText(status(), 'code'));
+            statusDescription(s) <- fieldText(status(), 'description');
+            statusDetails(s) <- fieldText(status(), 'details');
+
+            APPLY;
+        } CATCH { catchException('Get KSeF session status'); }
+    }
+}
+
+close 'Close' (Session s) {
+    NEWSESSION {
+        TRY {
+            getAccessToken(company(s));
+            EXTERNAL HTTP POST hostApi() + '/sessions/online/' + referenceNumber(s) + '/close' HEADERS accessHeaders TO resultFile;
+            closedAt(s) <- currentDateTime();
+            APPLY;
+        } CATCH { catchException('Close KSeF session'); }
+    }
+}
+
+EXTEND FORM integrationData
+    OBJECTS ksefSession = Session
+    PROPERTIES(ksefSession) READONLY referenceNumber, openedAt, validUntil, closedAt, statusCode, statusDescription
+    PROPERTIES(ksefSession) getStatus GRID, close GRID
+    FILTERS company(ksefSession) = ksefCompany
+;
+
+DESIGN integrationData {
+    KSeFPane {
+        NEW KSeFSessions {
+            caption = 'Sessions';
+            MOVE BOX(ksefSession);
+        }
+    }
+}
+

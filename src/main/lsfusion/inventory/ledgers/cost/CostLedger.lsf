@@ -11,6 +11,8 @@ type 'Type' = ABSTRACT ISTRING[100] (CostLedger) CHARWIDTH 20 MATERIALIZED;
 
 number 'Number' = ABSTRACT STRING[50] (CostLedger) CHARWIDTH 10 MATERIALIZED;
 
+note 'Note' = ABSTRACT ISTRING (CostLedger) CHARWIDTH 20;
+
 // in
 CLASS InCostLedger 'Cost ledger (income)' : CostLedger;
 
@@ -30,6 +32,12 @@ price 'Price' (InCostLedger il) = amount(il) / quantity(il);
 
 INDEX location(InCostLedger l), product(l), dateTime(l), l;
 
+lastCostPrice 'Last cost' (Location l, Product p, DATETIME dt) = 
+    GROUP LAST price(InCostLedger il) ORDER dateTime(il), l WHERE location(il) = l AND product(il) = p AND dateTime(il) <= dt;
+
+lastCostPrice 'Last cost' (Location l, Product p) =
+    GROUP LAST price(InCostLedger il) ORDER dateTime(il), l WHERE location(il) = l AND product(il) = p;
+
 // out
 CLASS OutCostLedger 'Cost ledger (outcome)' : CostLedger;
 
@@ -45,7 +53,7 @@ amount '{Amount}' = DATA NUMERIC[14,2] (OutCostLedger);
 
 // cost
 dateTime 'Time' (CostLedger l) = MULTI dateTime[InCostLedger](l), dateTime[OutCostLedger](l) MATERIALIZED;
-date 'Date' (CostLedger l) = DATE(dateTime(l));
+@defineDateTimeAggregation(CostLedger, , );
 
 location 'Location' (CostLedger l) = MULTI location[InCostLedger](l), location[OutCostLedger](l) MATERIALIZED;
 nameLocation 'Location' (CostLedger l) = name(location(l));

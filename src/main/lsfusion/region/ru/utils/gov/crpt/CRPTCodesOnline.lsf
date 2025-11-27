@@ -35,11 +35,13 @@ FORM checkCodesOnline
         cis, packageType, valid, isTracking, realizable, found, grayZone, printView
 ;
 
+checkCodesTimeout = DATA LOCAL BOOLEAN();
 checkCodesResult = DATA LOCAL STRING ();
 
 checkCodesOnline (CDN cdn, JSON marks) {
     LOCAL result = FILE();
 
+    checkCodesTimeout() <- NULL;
     checkCodesResult() <- NULL;
 
     TRY {
@@ -53,7 +55,7 @@ checkCodesOnline (CDN cdn, JSON marks) {
         
         IF logRequests() THEN {
             fileToString(result());
-            logToFile('crpt', 'request : ' + STRING(marks) + ' - response : ' + resultString());
+            logToFile('crpt', 'request : ' + STRING(marks) + ' - response : ' + OVERRIDE resultString(), '');
         }
 
         CASE
@@ -69,12 +71,17 @@ checkCodesOnline (CDN cdn, JSON marks) {
                 checkCodesResult() <- 'КМ выведена из оборота';
             WHEN expireDate(0) < currentDateTime() THEN
                 checkCodesResult() <- 'Истек срок годности : ' + expireDate(0);
+            WHEN code() >= 400 THEN
+                checkCodesResult() <- 'ЛМ ЧЗ : ' + description();
 
     } CATCH {
-        IF ((statusHttp() >= 500 OR statusHttp() = 429) OR isSubstring(messageCaughtException(), 'TimeoutException')) AND countCDN() > 1 THEN 
+        IF ((statusHttp() >= 500 OR statusHttp() = 429) OR isSubstring(messageCaughtException(), 'TimeoutException')) AND countCDN() > 1 THEN {
+            checkCodesTimeout() <- TRUE;
             NEWSESSION { disableTill(cdn) <- sumMinutes(currentDateTime(), 15); APPLY; }
+        }
         fileToString(result());
-        checkCodesResult() <- 'Ошибка при чтении марки : \n' + (OVERRIDE messageCaughtException(), '') + '\n' + (OVERRIDE resultString(), '');
+        logToFile('crpt', 'request : ' + STRING(marks) + ' - error : ' + (OVERRIDE messageCaughtException(), '') + ' / ' + OVERRIDE resultString(), '');
+        checkCodesResult() <- 'Ошибка при чтении марки : \n' + (OVERRIDE messageCaughtException(), '') + '\n' + OVERRIDE resultString(), '';
     }
 }
 

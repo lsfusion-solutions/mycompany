@@ -19,14 +19,17 @@ discountPriceOrder 'Discount price' (ShipmentLine l) = discountPrice(orderLine(l
 reserved 'Reserved' (OrderLine ol) = 
     GROUP SUM reserved(ShipmentLine rl) IF orderLine(rl) = ol AND toReserve(shipment(rl));
 
+shippedQuantity (OrderLine l) = NUMERIC[16,3](quantity(l) * skuCoeff(item(l)));
+shippedProduct (OrderLine l) = sku(item(l));
+
 done 'Done' (OrderLine ol) = 
     GROUP SUM done(ShipmentLine rl) IF orderLine(rl) = ol AND active(shipment(rl));
 toShip (OrderLine ol) = 
-    max(quantity(ol) (-) done(ol), 0) IF item(ol) IS Product MATERIALIZED;
+    max(shippedQuantity(ol) (-) done(ol), 0) IF item(ol) IS Product MATERIALIZED;
 
 toShip (Order o) = GROUP SUM toShip(OrderLine ol) IF order(ol) = o;
 
-CONSTRAINT (quantity(OrderLine ol) (-) done(ol)) < 0 AND confirmed(order(ol)) 
+CONSTRAINT (shippedQuantity(OrderLine ol) (-) done(ol)) < 0 AND confirmed(order(ol)) 
     MESSAGE 'For the product, the shipment exceeds the quantity in the order';
 
 reserveShipment = DATA Shipment (Order);
@@ -64,10 +67,10 @@ WHEN ([GROUP SUM 1 IF CHANGED(toShip(OrderLine l)) BY order(l)](Order o) OR SET(
         NOT (GROUP SUM 1 IF shipment(ShipmentLine l) = reserveShipment(o) AND orderLine(l) = ol) 
             NEW sl = ShipmentLine DO {            
         shipment(sl) <- reserveShipment(o);
-        product(sl) <- sku(item(ol));
+        product(sl) <- shippedProduct(ol);
         orderLine(sl) <- ol;
     }
-    initialDemand(ShipmentLine l) <- NUMERIC[16,3](toShip(orderLine(l)) * skuCoeff(product(l))) IF toShip(orderLine(l)) > 0 WHERE shipment(l) = reserveShipment(o);  
+    initialDemand(ShipmentLine l) <- toShip(orderLine(l)) IF toShip(orderLine(l)) > 0 WHERE shipment(l) = reserveShipment(o);  
     DELETE ShipmentLine l WHERE shipment(l) = reserveShipment(o) AND NOT initialDemand(l);
     IF NOT countLines(reserveShipment(o)) THEN
         DELETE Shipment s WHERE s = reserveShipment(o); 

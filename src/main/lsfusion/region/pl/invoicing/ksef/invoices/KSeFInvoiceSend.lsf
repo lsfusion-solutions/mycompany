@@ -1,0 +1,36 @@
+MODULE KSeFInvoiceSend;
+
+REQUIRE KSeF, KSeFCertificate, KSeFFakturaSend, KSeFInvoice, KSeFSession, InvoiceDone, 
+        Company, LegalEntityPl, Crypto, FileUtils;
+
+NAMESPACE KSeF;
+
+sendToKSeF 'Wyślij do KSeF' (Invoice i) {
+    NEWSESSION {
+        TRY {
+            createFaktura(i);
+            
+            sendInteractive(faktura(i));
+            
+            IF referenceNumber(faktura(i)) THEN
+                APPLY;
+        } CATCH { catchException('Send invoice to KSeF'); }
+    }
+} CONFIRM;
+
+// UI integration: invoice toolbar
+getInvoiceKSeFStatus 'Pobierz status KSeF' (Invoice i) {
+    getStatus(faktura(i));
+}
+
+EXTEND FORM invoice
+    PROPERTIES(i) sendToKSeF SHOWIF toSendToKSeF(i), 
+                  getInvoiceKSeFStatus SHOWIF faktura(i) AND NOT fakturaStatusCode(i)
+;
+
+DESIGN invoice {
+    secondaryActions {
+        MOVE PROPERTY(sendToKSeF(i)) { valueClass = 'btn-secondary'; }
+        MOVE PROPERTY(getInvoiceKSeFStatus(i)) { valueClass = 'btn-secondary'; }
+    }
+}

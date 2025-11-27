@@ -28,12 +28,12 @@ WHEN LOCAL SET (Invoice b IS Invoice) AND NOT CHANGED(dateTime(b)) DO dateTime(b
 numberDate 'Description' (Invoice i) = number(i) + ' (' + dateTime(i) + ')' IN id;
 
 deliveryDateTime 'Delivery date' = DATA DATETIME (Invoice);
-@defineDateTimeAggregation(Invoice, delivery, 'Delivery ');
+@defineDateTimeAggregation(Invoice, delivery, '(delivery)');
 
 executionDateTime 'Execution date' (Invoice i) = ABSTRACT VALUE DATETIME (Invoice);
 executionDateTime(Invoice i) += deliveryDateTime(i);
 executionDateTime(Invoice i) += dateTime(i);
-@defineDateTimeAggregation(Invoice, execution, 'Execution ');
+@defineDateTimeAggregation(Invoice, execution, '(execution)');
 
 // customer
 customer = DATA Partner (Invoice);
@@ -62,6 +62,7 @@ paymentTerms = DATA PaymentTerm (Invoice);
 namePaymentTerms 'Payment terms' (Invoice i) = name(paymentTerms(i));
 
 dueDateTime 'Pay before' = DATA DATETIME (Invoice);
+@defineDateTimeAggregation(Invoice, due, '(pay before)');
 
 WHEN LOCAL CHANGED(customer(Invoice b)) AND NOT CHANGED(paymentTerms(b)) DO paymentTerms(b) <- customerPaymentTerms(customer(b)); 
 
@@ -85,7 +86,8 @@ nameCompanyAccount 'Company account' (Invoice b) = name(companyAccount(b));
 numberCompanyAccount (Invoice b) = number(companyAccount(b));
 bankCompanyAccount (Invoice b) = bank(companyAccount(b));
 idBankCompanyAccount 'Bank' (Invoice b) = idBank(companyAccount(b));
-nameBankCompanyAccount 'Bank' (Invoice b) = nameBank(companyAccount(b)); 
+nameBankCompanyAccount 'Bank' (Invoice b) = nameBank(companyAccount(b));
+bicBankCompanyAccount 'BIC/SWIFT' (Invoice b) = bicBank(companyAccount(b)); 
 
 WHEN LOCAL CHANGED(company(Invoice b)) DO companyAccount(b) <- defaultAccount(company(b));
 
@@ -194,7 +196,13 @@ FORM invoice 'Invoice'
     OBJECTS l = InvoiceLine
     PROPERTIES(l) READONLYIF readonly(i)
                   index, nameItem, description, nameUom, idBarCodeItem, idItem, referenceItem, 
-                  quantity, price, taxes, NEW, DELETE 
+                  quantity, price
+
+    OBJECTS tg = TaxGroup
+    PROPERTIES    READONLYIF readonly(i)
+                  nameTax(l, tg) ON CHANGE changeTax(l, tg) COLUMNS (tg) HEADER name(tg)  
+
+    PROPERTIES(l) NEW, DELETE 
     FILTERS invoice(l) = i
 
     EDIT Invoice OBJECT i
@@ -293,7 +301,7 @@ FORM invoices 'Invoices'
                            nameType, nameCompany,
                            namePaymentTerms, dueDateTime, nameCustomerAccount, nameCompanyAccount,
                            customerReference, note         
-    PROPERTIES(i) NEWSESSION NEW, EDIT, DELETE
+    PROPERTIES(i) NEWSESSION NEW, EDIT, DELETE DISABLEIF readonly(i)
            
     LIST Invoice OBJECT i
 ;
@@ -336,6 +344,8 @@ clone (Invoice to, Invoice from) + {
         price(nl) <- price(l);
         discount(nl) <- discount(l);
         discountPrice(nl) <- discountPrice(l);
+        
+        in(nl, Tax t) <- in(l, t);
     }
 }
 

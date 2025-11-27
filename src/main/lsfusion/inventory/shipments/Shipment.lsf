@@ -20,7 +20,7 @@ WHEN LOCAL SET(Shipment s IS Shipment) AND NOT CHANGED(type(s)) DO type(s) <- de
 
 scheduledDateTime 'Scheduled date' = DATA DATETIME (Shipment) NONULL IN id;
 scheduledDateTime(Shipment s) <- currentDateTime() WHEN SET(s IS Shipment);
-@defineDateTimeAggregation(Shipment, scheduled, 'Scheduled ');
+@defineDateTimeAggregation(Shipment, scheduled, '(scheduled)');
 
 @defineNumberType(shipment);
 
@@ -211,7 +211,7 @@ FORM shipments 'Shipments'
                            nameType,
                            nameLocation, nameToLocation,
                            note, countLines
-    PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
+    PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE DISABLEIF readonly(s)
 ;
 
 @extendFormEditable(shipments);

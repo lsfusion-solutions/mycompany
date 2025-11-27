@@ -1,0 +1,100 @@
+MODULE BillCorrection;
+
+REQUIRE BillCanceled;
+
+NAMESPACE Invoicing;
+
+original = DATA Bill (Bill);
+numberDateOriginal 'Original bill' (Bill b) = numberDate(original(b));
+countCorrections 'Correction count' (Bill b) = GROUP SUM 1 IF original(Bill c) = b;
+
+INDEX original(Bill b), dateTime(b), b;
+
+CONSTRAINT original(Bill b) AND NOT vendor(b) = vendor(original(b))
+                CHECKED BY original[Bill]
+                MESSAGE 'Correction vendor must match the original bill vendor';
+
+CONSTRAINT original(Bill b) AND NOT company(b) = company(original(b))
+                CHECKED BY original[Bill]
+                MESSAGE 'Correction company must match the original bill company';
+
+CONSTRAINT original(Bill b) AND original(original(b))
+                CHECKED BY original[Bill]
+                MESSAGE 'Original bill cannot be a correction';
+
+EXTEND FORM bills
+    PROPERTIES READONLY numberDateOriginal(b), countCorrections(b)
+;
+
+indexCorrection '{Index}' (Bill b) = PARTITION SUM 1 ORDER dateTime(b), b BY original(b);
+prevCorrection (Bill b) = PARTITION PREV b ORDER dateTime(b), b BY original(b) MATERIALIZED;
+prevBill(Bill b) = OVERRIDE prevCorrection(b), original(b);
+
+correctionUntaxedAmount 'Amount correction' (Bill b) = untaxedAmount(b) (-) untaxedAmount(prevBill(b));
+correctionUntaxedAmount 'Amount correction' (Tax t, Bill b) = untaxedAmount(t, b) (-) untaxedAmount(t, prevBill(b));
+correctionTaxAmount 'Tax correction' (Tax t, Bill b) = taxAmount(t, b) (-) taxAmount(t, prevBill(b));
+correctionTaxAmount 'Tax correction' (Bill b) = taxAmount(b) (-) taxAmount(prevBill(b));
+correctionAmount 'Total amount correction' (Bill b) = amount(b) (-) amount(prevBill(b));
+
+lastCorrection (Bill b) = GROUP LAST Bill c ORDER dateTime(c), c WHERE original(c) = b;
+untaxedAmountLastCorrection 'Amount correction' (Bill b) = untaxedAmount(lastCorrection(b));
+taxAmountLastCorrection 'Tax correction' (t, Bill b) = taxAmount(t, lastCorrection(b));
+taxAmountLastCorrection 'Tax correction' (Bill b) = taxAmount(lastCorrection(b));
+amountLastCorrection 'Total amount correction' (Bill b) = amount(lastCorrection(b));
+
+createCorrection 'Create Correction' (Bill b) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    NEWSESSION {
+        NEW to = Bill {
+            original(to) <- OVERRIDE original(b), b;
+
+            clone(to, b);
+
+            SHOW bill OBJECTS b = to DOCKED;
+        }
+    }
+}
+
+EXTEND FORM bill
+    OBJECTS cb = Bill
+    PROPERTIES(cb) READONLY indexCorrection, number, dateTime, imagedNameStatus BACKGROUND colorStatus(b), 
+                            correctionUntaxedAmount, correctionTaxAmount, correctionAmount, untaxedAmount, taxAmount, amount
+    PROPERTIES(cb) NEWSESSION EDIT, DELETE
+    ORDERS indexCorrection(cb)
+    FILTERS original(cb) = b
+
+    PROPERTIES createCorrection(b) SHOWIF active(b)
+
+    PROPERTIES(b) READONLY SHOWIF lastCorrection(b) untaxedAmountLastCorrection, taxAmountLastCorrection, amountLastCorrection
+    PROPERTIES(b) SHOWIF original(b)          numberDateOriginal
+    PROPERTIES(b) SHOWIF original(b) READONLY correctionUntaxedAmount, correctionTaxAmount, correctionAmount
+;
+
+DESIGN bill {
+    details {
+        NEW corrections {
+            caption = badged('Corrections', countCorrections(b));
+            MOVE BOX(cb) { caption = ''; }
+        }
+    }
+
+    secondaryActions {
+        MOVE PROPERTY(createCorrection(b)) { valueClass = 'btn-warning'; }
+    }
+
+    linesFooter {
+        NEW correction {
+            caption = 'Correction';
+            MOVE PROPERTY(untaxedAmountLastCorrection(b));
+            MOVE PROPERTY(taxAmountLastCorrection(b));
+            MOVE PROPERTY(amountLastCorrection(b));
+
+            MOVE PROPERTY(numberDateOriginal(b));
+            MOVE PROPERTY(correctionUntaxedAmount(b));
+            MOVE PROPERTY(correctionTaxAmount(b));
+            MOVE PROPERTY(correctionAmount(b));
+        }
+    }
+}

@@ -28,12 +28,12 @@ WHEN LOCAL SET (Bill b IS Bill) AND NOT CHANGED(dateTime(b)) DO dateTime(b) <- c
 numberDate 'Description' (Bill b) = number(b) + ' (' + dateTime(b) + ')' IN id;
 
 deliveryDateTime 'Delivery date' = DATA DATETIME (Bill);
-@defineDateTimeAggregation(Bill, delivery, 'Delivery ');
+@defineDateTimeAggregation(Bill, delivery, '(delivery)');
 
 executionDateTime 'Execution date' (Bill i) = ABSTRACT VALUE DATETIME (Bill);
 executionDateTime(Bill i) += deliveryDateTime(i);
 executionDateTime(Bill i) += dateTime(i);
-@defineDateTimeAggregation(Bill, execution, 'Execution ');
+@defineDateTimeAggregation(Bill, execution, '(execution)');
 
 // vendor
 vendor 'Vendor' = DATA Partner (Bill);
@@ -174,7 +174,13 @@ FORM bill 'Bill'
     OBJECTS l = BillLine
     PROPERTIES(l) READONLYIF readonly(b)
                   index, nameItem, description, nameUom, idBarCodeItem, idItem, referenceItem, 
-                  quantity, price, taxes, NEW, DELETE 
+                  quantity, price
+
+    OBJECTS tg = TaxGroup
+    PROPERTIES    READONLYIF readonly(b)
+                  nameTax(l, tg) ON CHANGE changeTax(l, tg) COLUMNS (tg) HEADER name(tg)
+
+    PROPERTIES(l) NEW, DELETE 
     FILTERS bill(l) = b
 
     EDIT Bill OBJECT b
@@ -266,7 +272,7 @@ FORM bills 'Bills'
                            nameType, nameCompany,
                                namePaymentTerms, dueDateTime, nameVendorAccount, nameCompanyAccount,
                            vendorReference, note
-    PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE
+    PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE DISABLEIF readonly(b)
            
     LIST Bill OBJECT b
 ;
@@ -304,6 +310,7 @@ clone (Bill to, Bill from) + {
         item(nl) <- item(l);
         quantity(nl) <- quantity(l);
         price(nl) <- price(l);
+        in(nl, Tax t) <- in(l, t);
     }
 }
 

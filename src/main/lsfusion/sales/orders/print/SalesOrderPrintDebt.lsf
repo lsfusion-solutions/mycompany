@@ -1,0 +1,19 @@
+MODULE SalesOrderPrintDebt;
+
+REQUIRE SalesOrderPrint, SalesOrderDebt, BankAccount;
+
+NAMESPACE Sales;
+
+companyAccount(Order o) = defaultAccount(company(o));
+
+numberCompanyAccount (Order o) = number(companyAccount(o));
+bankCompanyAccount (Order o) = bank(companyAccount(o));
+idBankCompanyAccount 'Bank' (Order o) = idBank(companyAccount(o));
+nameBankCompanyAccount 'Bank' (Order o) = nameBank(companyAccount(o));
+bicBankCompanyAccount 'BIC/SWIFT' (Order o) = bicBank(companyAccount(o));
+
+EXTEND FORM printOrder
+    PROPERTIES(o) idBankCompanyAccount, nameBankCompanyAccount, bicBankCompanyAccount, numberCompanyAccount
+    
+    PROPERTIES paid = max(-debt(o), 0), left = amount(o) (-) max(-debt(o), 0)  
+;

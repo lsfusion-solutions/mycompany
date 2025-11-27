@@ -1,0 +1,47 @@
+MODULE CostLedgerReport;
+
+REQUIRE CostLedger, ItemAttribute;
+
+NAMESPACE Inventory;
+
+attribute(CostLedger l, ItemAttribute a) = value(attribute(product(l), a));
+
+FORM costLedgerReport 'Cost report'
+    OBJECTS a = ItemAttribute
+
+    OBJECTS l = CostLedger PIVOT
+    PROPERTIES(l) READONLY class, type, dateTime, number,
+                           nameLocation, nameProduct, note,
+                           price
+    PROPERTIES READONLY 'Category 1' = level1(product(l)), 'Category 2' = level2(product(l)), 'Category 3' = level3(product(l)), 'Category 4' = level4(product(l)),
+                        'Canonical group' = canonicalNameCategory(product(l))
+    PROPERTIES READONLY attribute(l, a) COLUMNS (a) HEADER name(a)
+    PROPERTIES(l) READONLY MEASURE signedQuantity, signedAmount
+;
+
+DESIGN costLedgerReport {
+    OBJECTS {
+        NEW filters FIRST {
+            caption = 'Filters';
+            horizontal = TRUE;
+        }
+        NEW pane {
+            tabbed = TRUE;
+            fill = 1;
+            MOVE BOX(l) {
+                caption = 'Cost';
+            }
+        }
+    }
+}
+
+@defineDateTimeAggregationForm(costLedgerReport, l);
+@defineDateFilterForm(costLedgerReport, l);
+
+NAVIGATOR {
+    stock {
+        reporting {
+            NEW costLedgerReport;
+        }
+    }
+}

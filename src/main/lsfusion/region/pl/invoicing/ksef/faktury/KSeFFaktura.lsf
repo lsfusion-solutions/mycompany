@@ -1,0 +1,276 @@
+MODULE KSeFFaktura;
+
+REQUIRE Company, KSeFSession, KSeF, Crypto, InvoicingSettings, Doc;
+
+NAMESPACE KSeF;
+
+// Core FA(3) data classes without any dependency on Invoice
+CLASS Faktura 'Faktura';
+
+number 'KSeF number' = DATA STRING[36] (Faktura) INDEXED;
+fakturaKSeFNumber = GROUP AGGR Faktura f BY number(f);
+
+// Link: row -> Faktura
+// Faktura ownership and session link
+podmiot1 'Podmiot 1' (Faktura f) = DATA Partner (Faktura) INDEXED;
+namePodmiot1 'Podmiot 1' (Faktura f) = name(podmiot1(f)); 
+
+podmiot2 'Podmiot 2' (Faktura f) = DATA Partner (Faktura) INDEXED;
+namePodmiot2 'Podmiot 2' (Faktura f) = name(podmiot2(f));
+
+session 'Session' = DATA Session (Faktura) INDEXED;
+referenceNumberSession 'Session' (Faktura f) = referenceNumber(session(f));
+
+// Header (Naglowek)
+KodFormularza = DATA STRING[10] (Faktura);
+WariantFormularza = DATA INTEGER (Faktura);
+
+DataWytworzeniaFa = DATA DATETIME (Faktura);
+DataWytworzeniaFa (Faktura f) <- currentDateTime() WHEN SET(f IS Faktura);
+
+SystemInfo = DATA STRING[100] (Faktura);
+
+// Podmiot1 (seller)
+p1_NIP 'NIP (1)' = DATA STRING[20] (Faktura);
+p1_Nazwa 'Nazwa (1)' = DATA ISTRING[200] (Faktura);
+p1_KodKraju 'Kod Kraju (1)' = DATA STRING[5] (Faktura);
+p1_AdresL1 'Adres L1 (1)' = DATA ISTRING[200] (Faktura);
+p1_AdresL2 'Adres L2 (1)' = DATA ISTRING[200] (Faktura);
+p1_Email 'Email (1)' = DATA ISTRING[400] (Faktura);
+p1_Telefon 'Telefon (1)' = DATA ISTRING[100] (Faktura);
+
+// Podmiot2 (buyer)
+p2_NIP 'NIP (2)' = DATA STRING[20] (Faktura);
+p2_Nazwa 'Nazwa (2)' = DATA ISTRING[200] (Faktura);
+p2_KodKraju 'Kod Kraju (2)' = DATA STRING[5] (Faktura);
+p2_AdresL1 'Adres L1 (2)' = DATA ISTRING[200] (Faktura);
+p2_AdresL2 'Adres L2 (2)' = DATA ISTRING[200] (Faktura);
+p2_Email 'Email (2)' = DATA ISTRING[400] (Faktura);
+p2_Telefon 'Telefon (2)' = DATA ISTRING[100] (Faktura);
+p2_NrKlienta 'Nr Klienta (2)' = DATA STRING[50] (Faktura);
+
+// Fa totals and fields
+KodWaluty = DATA STRING[3] (Faktura);
+invoiceDate = DATA DATE (Faktura) INDEXED;
+invoiceNumber = DATA STRING[50] (Faktura);
+deliveryDate = DATA DATE (Faktura);
+
+// kwoty
+untaxedAmount1 'Netto (23%)' = DATA NUMERIC[14,2] (Faktura);
+taxAmount1 'VAT (23%)' = DATA NUMERIC[14,2] (Faktura);
+
+untaxedAmount2 'Netto (8%)' = DATA NUMERIC[14,2] (Faktura);
+taxAmount2 'VAT (8%)' = DATA NUMERIC[14,2] (Faktura);
+
+untaxedAmount3 'Netto (5%)' = DATA NUMERIC[14,2] (Faktura);
+taxAmount3 'VAT (5%)' = DATA NUMERIC[14,2] (Faktura);
+
+untaxedAmount6 'Netto (0%)' = DATA NUMERIC[14,2] (Faktura);
+untaxedAmount7 'Netto (zw)' = DATA NUMERIC[14,2] (Faktura);
+
+amount 'Brutto' = DATA NUMERIC[14,2] (Faktura);
+
+// Adnotacje flags (1 = yes, 2 = no) and sub-blocks
+metodaKasowa = DATA INTEGER (Faktura); // metoda kasowa
+samofakturowanie = DATA INTEGER (Faktura); // samofakturowanie
+odwrotneObciazenie = DATA INTEGER (Faktura); // odwrotne obciążenie
+mpp = DATA INTEGER (Faktura); // MPP
+weUproszczona = DATA INTEGER (Faktura); // faktura WE uproszczona
+
+KursWalutyZ = DATA NUMERIC[16,6] (Faktura);
+RodzajFaktury = DATA STRING[20] (Faktura);
+
+PrzyczynaKorekty = DATA STRING (Faktura);
+DataWystFaKorygowanej = DATA DATE (Faktura);
+NrFaKorygowanej = DATA STRING[50] (Faktura);
+NrKSeFFaKorygowanej = DATA STRING[36] (Faktura);
+
+// Row fields
+CLASS FaWiersz 'FaWiersz';
+faktura 'Faktura' = DATA Faktura (FaWiersz) NONULL DELETE INDEXED;
+
+NrWierszaFa '№' = DATA INTEGER (FaWiersz);
+description 'Description' = DATA ISTRING[200] (FaWiersz);
+GTIN 'GTIN' = DATA STRING[20] (FaWiersz);
+nameUom 'UoM' = DATA ISTRING[30] (FaWiersz);
+quantity = DATA NUMERIC[16,3] (FaWiersz);
+price = DATA NUMERIC[10,2] (FaWiersz);
+untaxedAmount = DATA NUMERIC[14,2] (FaWiersz);
+taxes = DATA STRING (FaWiersz);
+
+// KSeF result and status stored on Faktura
+referenceNumber 'Reference' = DATA STRING[200] (Faktura) INDEXED;
+statusCode 'Status code' = DATA INTEGER (Faktura);
+statusDescription 'Status' = DATA STRING (Faktura);
+statusDetails 'Details' = DATA STRING (Faktura);
+
+getStatus 'Get status' (Faktura f) {
+    NEWSESSION {
+        TRY {
+            // Auth and request
+            getAccessToken(podmiot1(f));
+            EXTERNAL HTTP GET hostApi() + '/sessions/' + referenceNumber(session(f)) + '/invoices/' + referenceNumber(f) HEADERS accessHeaders TO resultFile;
+
+            // Parse response
+            LOCAL ksefNumber = STRING[36]();
+            LOCAL status = JSON();
+            IMPORT JSON FROM resultFile() TO() ksefNumber, status;
+
+            number(f) <- ksefNumber();
+            
+            statusCode(f) <- INTEGER(fieldText(status(), 'code'));
+            statusDescription(f) <- fieldText(status(), 'description');
+            statusDetails(f) <- fieldText(status(), 'details');
+
+            APPLY;
+        } CATCH { catchException('Get Faktura status'); }
+    }
+}
+
+// === Faktura UI: edit form and list under Finance ===
+
+FORM faktura 'Faktura KSeF'
+    OBJECTS f = Faktura PANEL
+    
+    PROPERTIES(f) READONLY
+                  referenceNumberSession, referenceNumber, statusCode, statusDescription, statusDetails,
+                  DataWytworzeniaFa, invoiceNumber, invoiceDate, KodWaluty,
+                  namePodmiot1 CHANGEABLE, p1_NIP, p1_Nazwa, p1_AdresL1, p1_AdresL2, p1_Email, p1_Telefon,
+                  namePodmiot2 CHANGEABLE, p2_NIP, p2_Nazwa, p2_AdresL1, p2_AdresL2, p2_Email, p2_Telefon, p2_NrKlienta,
+                  untaxedAmount1, taxAmount1,
+                  untaxedAmount2, taxAmount2,
+                  untaxedAmount3, taxAmount3,
+                  untaxedAmount6, untaxedAmount7,
+                  amount, 
+                  metodaKasowa, samofakturowanie, odwrotneObciazenie, mpp, weUproszczona,
+                  KursWalutyZ, RodzajFaktury,
+                  PrzyczynaKorekty, DataWystFaKorygowanej, NrFaKorygowanej, NrKSeFFaKorygowanej
+    
+    OBJECTS w = FaWiersz
+    PROPERTIES(w) READONLY NrWierszaFa, description, GTIN, nameUom, quantity, price, untaxedAmount, taxes
+    FILTERS faktura(w) = f
+    
+    EDIT Faktura OBJECT f
+;
+
+DESIGN faktura {
+    OBJECTS {
+        NEW ksefInfo {
+            horizontal = TRUE;
+            MOVE PROPERTY(referenceNumberSession(f));
+            MOVE PROPERTY(referenceNumber(f));
+            MOVE PROPERTY(statusCode(f));
+            MOVE PROPERTY(statusDescription(f));
+        }
+        MOVE PROPERTY(statusDetails(f)) { alignment = STRETCH; }
+        NEW header FIRST {
+            horizontal = TRUE;
+            MOVE PROPERTY(DataWytworzeniaFa(f));
+            MOVE PROPERTY(invoiceNumber(f));
+            MOVE PROPERTY(invoiceDate(f));
+            MOVE PROPERTY(KodWaluty(f));
+            MOVE PROPERTY(KursWalutyZ(f));
+        }
+        NEW parties {
+            NEW seller {
+                caption = 'Podmiot 1';
+                lines = 3;
+                MOVE PROPERTY(namePodmiot1(f));
+                MOVE PROPERTY(p1_NIP(f));
+                MOVE PROPERTY(p1_Nazwa(f));
+                MOVE PROPERTY(p1_AdresL1(f));
+                MOVE PROPERTY(p1_AdresL2(f));
+                MOVE PROPERTY(p1_Email(f));
+                MOVE PROPERTY(p1_Telefon(f));
+            }
+            NEW buyer {
+                caption = 'Podmiot 2';
+                lines = 3;
+                MOVE PROPERTY(namePodmiot2(f));
+                MOVE PROPERTY(p2_NIP(f));
+                MOVE PROPERTY(p2_Nazwa(f));
+                MOVE PROPERTY(p2_AdresL1(f));
+                MOVE PROPERTY(p2_AdresL2(f));
+                MOVE PROPERTY(p2_Email(f));
+                MOVE PROPERTY(p2_Telefon(f));
+                MOVE PROPERTY(p2_NrKlienta(f));
+            }
+        }
+        NEW totals {
+            horizontal = TRUE;
+            MOVE PROPERTY(untaxedAmount1(f));
+            MOVE PROPERTY(untaxedAmount2(f));
+            MOVE PROPERTY(untaxedAmount3(f));
+            MOVE PROPERTY(untaxedAmount6(f));
+            MOVE PROPERTY(untaxedAmount7(f));
+            MOVE PROPERTY(taxAmount1(f));
+            MOVE PROPERTY(taxAmount2(f));
+            MOVE PROPERTY(taxAmount3(f));
+            MOVE PROPERTY(amount(f));
+            MOVE PROPERTY(RodzajFaktury(f));
+        }
+        NEW korekta {
+            horizontal = TRUE;
+            MOVE PROPERTY(PrzyczynaKorekty(f));
+            MOVE PROPERTY(DataWystFaKorygowanej(f));
+            MOVE PROPERTY(NrFaKorygowanej(f));
+            MOVE PROPERTY(NrKSeFFaKorygowanej(f));
+        }
+        NEW adnotacje {
+            horizontal = TRUE;
+            MOVE PROPERTY(metodaKasowa(f));
+            MOVE PROPERTY(samofakturowanie(f));
+            MOVE PROPERTY(odwrotneObciazenie(f));
+            MOVE PROPERTY(mpp(f));
+            MOVE PROPERTY(weUproszczona(f));
+        }
+        MOVE BOX(w) { caption = 'Lines'; fill = 1; }
+    }
+}
+
+FORM faktury 'Faktury KSeF'
+    OBJECTS f = Faktura
+    PROPERTIES(f) READONLYIF isReadonly()
+                    referenceNumberSession, referenceNumber, statusCode, statusDescription, statusDetails,
+                    number, invoiceNumber, invoiceDate, KodWaluty,
+                    p1_NIP, p1_Nazwa, p1_AdresL1, p1_AdresL2, p1_Email, p1_Telefon,
+                    p2_NIP, p2_Nazwa, p2_AdresL1, p2_AdresL2, p2_Email, p2_Telefon, p2_NrKlienta,
+                    untaxedAmount1, untaxedAmount2, untaxedAmount3, untaxedAmount6, untaxedAmount7,
+                    taxAmount1, taxAmount2, taxAmount3, amount,
+                    metodaKasowa, samofakturowanie, odwrotneObciazenie, mpp, weUproszczona,
+                    KursWalutyZ, RodzajFaktury,
+                    PrzyczynaKorekty, DataWystFaKorygowanej, NrFaKorygowanej, NrKSeFFaKorygowanej
+    PROPERTIES(f) getStatus GRID BEFORE statusCode(f)
+    PROPERTIES(f) NEWSESSION EDIT, DELETE
+;
+
+@extendFormEditable(faktury);
+@defineDocObjectsForm(faktury, f, 'Faktury');
+
+filterCompany = DATA LOCAL NESTED Company();
+nameFilterCompany 'Company' = name(filterCompany());
+
+EXTEND FORM faktury
+    OBJECTS dates = INTERVAL[DATE] BEFORE f PANEL NULL
+    PROPERTIES filterDates 'Date interval' = VALUE(dates)
+
+    FILTERS NOT invoiceDate(f) < from(dates), NOT invoiceDate(f) > to(dates)
+    
+    PROPERTIES nameFilterCompany()
+    FILTERS (NOT filterCompany() OR podmiot1(f) = filterCompany() OR podmiot2(f) = filterCompany())
+;
+
+DESIGN faktury {
+    filters {
+        MOVE PROPERTY(filterDates);
+        MOVE PROPERTY(nameFilterCompany());
+    }
+}
+
+NAVIGATOR {
+    invoicing {
+        NEW FOLDER KSeF 'KSeF' {
+            NEW faktury;
+        }
+    }
+}

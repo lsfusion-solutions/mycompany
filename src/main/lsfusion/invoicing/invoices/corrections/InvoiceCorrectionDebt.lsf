@@ -1,0 +1,30 @@
+MODULE InvoiceCorrectionDebt;
+
+REQUIRE InvoiceCorrection, InvoiceDebt;
+
+NAMESPACE Invoicing;
+
+CLASS InvoiceCorrection 'Invoice correction';
+invoiceCorrection = AGGR InvoiceCorrection WHERE original(Invoice invoice);
+
+EXTEND CLASS InvoiceCorrection: IncomingDebt;
+
+type(InvoiceCorrection c) += nameType(invoice(c));
+active(InvoiceCorrection c) += active(invoice(c));
+number(InvoiceCorrection c) += number(invoice(c));
+dateTime(InvoiceCorrection c) += dateTime(invoice(c));
+dueDateTime(InvoiceCorrection c) += dueDateTime(invoice(c));
+partner(InvoiceCorrection c) += customer(invoice(c));
+company(InvoiceCorrection c) += company(invoice(c));
+contract(InvoiceCorrection c) += contract(invoice(c));
+sourceCurrency(InvoiceCorrection c) += currency(invoice(c));
+sourceAmount(InvoiceCorrection c) += -correctionAmount(invoice(c));
+
+//sourceAmount(Invoice i) += correctionAmount(i) IF correctionAmount(i) > 0;
+
+skipDebt (Invoice i) += TRUE IF original(i); // AND NOT correctionAmount(i) > 0;
+
+edit(InvoiceCorrection c) +{ edit(invoice(c)); }
+
+WHEN CHANGED(correctionAmount(Invoice i)) AND original(i) DO // AND correctionAmount(i) < 0 
+    paid(invoiceCorrection(i), original(i)) <- -correctionAmount(i); 

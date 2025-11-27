@@ -1,0 +1,30 @@
+MODULE BillCorrectionDebt;
+
+REQUIRE BillCorrection, BillDebt;
+
+NAMESPACE Invoicing;
+
+CLASS BillCorrection 'Bill correction';
+billCorrection = AGGR BillCorrection WHERE original(Bill bill);
+
+EXTEND CLASS BillCorrection: OutgoingDebt;
+
+type(BillCorrection c) += nameType(bill(c));
+active(BillCorrection c) += active(bill(c));
+number(BillCorrection c) += number(bill(c));
+dateTime(BillCorrection c) += dateTime(bill(c));
+dueDateTime(BillCorrection c) += dueDateTime(bill(c));
+partner(BillCorrection c) += vendor(bill(c));
+company(BillCorrection c) += company(bill(c));
+contract(BillCorrection c) += contract(bill(c));
+sourceCurrency(BillCorrection c) += currency(bill(c));
+sourceAmount(BillCorrection c) += -correctionAmount(bill(c));
+
+//sourceAmount(Bill b) += correctionAmount(b) IF correctionAmount(b) > 0;
+
+skipDebt (Bill b) += TRUE IF original(b); // AND NOT correctionAmount(b) > 0;
+
+edit(BillCorrection c) +{ edit(bill(c)); }
+
+WHEN CHANGED(correctionAmount(Bill b)) AND original(b) DO // AND correctionAmount(b) < 0 
+    paid(original(b), billCorrection(b)) <- -correctionAmount(b); 

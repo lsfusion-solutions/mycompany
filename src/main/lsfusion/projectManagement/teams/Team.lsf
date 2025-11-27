@@ -18,6 +18,9 @@ team = DATA Team (TeamMember) NONULL DELETE INDEXED;
 employee = DATA Employee (TeamMember) NONULL;
 nameEmployee 'Employee' (TeamMember m) = name(employee(m));
 
+member (Team t, Employee e) = GROUP AGGR TeamMember tm BY team(tm), employee(tm) MATERIALIZED;
+INDEX employee(TeamMember m), team(m);
+
 active (TeamMember tm) = active(team(tm));
 
 countActiveTeam 'Teams' (Employee e) = GROUP SUM 1 IF employee(TeamMember tm) = e AND active(tm);

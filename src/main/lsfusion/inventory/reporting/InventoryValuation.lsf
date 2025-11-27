@@ -22,8 +22,8 @@ FORM inventoryValuation 'Inventory valuation'
     OBJECTS lp = (l = Location, p = Product)
     PROPERTIES READONLY       nameCostingMethod(p), 'Location' = canonicalName(l)
     PROPERTIES(p) READONLY    'Product' = name, nameUom, idBarCode, id
-    PROPERTIES(l, p) SHOWIF NOT dt IS DATETIME READONLY costQuantity, costPrice, costAmount
-    PROPERTIES(l, p, dt) SHOWIF dt IS DATETIME READONLY costQuantity, costPrice, costAmount
+    PROPERTIES(l, p) SHOWIF NOT dt IS DATETIME READONLY costQuantity, costPrice, costAmount, lastCostPrice
+    PROPERTIES(l, p, dt) SHOWIF dt IS DATETIME READONLY costQuantity, costPrice, costAmount, lastCostPrice
     PROPERTIES(p) NEWSESSION EDIT
     PROPERTIES(l, p) recalculateCost GRID
     PROPERTIES recalculateCost() DRAW lp TOOLBAR
@@ -56,7 +56,8 @@ FORM inventoryValuation 'Inventory valuation'
 
     PROPERTIES READONLY costQuantity '{Quantity}' = IF dt IS DATETIME THEN costQuantity(location, product, dt) ELSE costQuantity(location, product) MEASURE,
                         costPrice 'Unit cost' = IF dt IS DATETIME THEN costPrice(location, product, dt) ELSE costPrice(location, product),
-                        costAmount 'Cost' = IF dt IS DATETIME THEN costAmount(location, product, dt) ELSE costAmount(location, product) MEASURE
+                        costAmount 'Cost' = IF dt IS DATETIME THEN costAmount(location, product, dt) ELSE costAmount(location, product) MEASURE,
+                        lastCostPrice 'Last cost' = IF dt IS DATETIME THEN lastCostPrice(location, product, dt) ELSE lastCostPrice(location, product)
     
     FILTERS IF dt IS DATETIME THEN costQuantity(location, product, dt) ELSE costQuantity(location, product)
 ;

@@ -1,0 +1,20 @@
+MODULE SalesOrderPrintPl;
+
+REQUIRE SalesOrderPrint, SalesOrderPrintDebt, LegalEntityPl, UtilsPl;
+
+NAMESPACE Sales;
+
+// Polish specific identifiers for company and customer
+nipCompany (Order i) = nip(company(i));
+nipCustomer (Order i) = nip(customer(i));
+
+amountSlownie (Order i) = currencySlownie(amount(i), nameCurrency(i));
+
+// Extend base print form with PL-specific properties
+EXTEND FORM printOrder
+    PROPERTIES(o) nipCompany, nipCustomer, amountSlownie
+;
+
+@defineTaxFormIndex(order, printOrder, o, 1);
+@defineTaxFormIndex(order, printOrder, o, 2);
+@defineTaxFormIndex(order, printOrder, o, 3);

@@ -1,0 +1,222 @@
+MODULE KSeFToken;
+
+REQUIRE KSeF, KSeFCertificate, Crypto;
+
+NAMESPACE KSeF;
+
+CLASS Permission 'KSeF permission' {
+    invoiceRead 'InvoiceRead', 
+    invoiceWrite 'InvoiceWrite', 
+    credentialsRead 'CredentialsRead',
+    credentialsManage 'CredentialsManage',
+    subunitManage 'SubunitManage',
+    enforcementOperations 'EnforcementOperations'
+}
+TABLE permission (Permission);
+
+name '{master.data.name}' (Permission o) = ISTRING(staticCaption(o)) IF o IS Permission CHARWIDTH 15;
+
+FORM dialogPermissions 'KSeF permission'
+    OBJECTS o = Permission
+    PROPERTIES(o) READONLY name
+    
+    LIST Permission OBJECT o
+;
+
+select = DATA LOCAL BOOLEAN (Permission);
+selectPermissions 'Permissions' = GROUP CONCAT name(Permission p) IF select(p), ',' ORDER p;
+
+tokenDescription 'Description' = DATA LOCAL STRING ();
+
+CLASS TokenAuth 'Token KSeF';
+company = DATA Company (TokenAuth) NONULL;
+
+referenceNumber 'Reference number' = DATA STRING (TokenAuth);
+tokenAuthReferenceNumber = GROUP AGGR TokenAuth a BY referenceNumber(a);
+
+token 'Token' = DATA STRING (TokenAuth);
+description 'Description' = DATA STRING (TokenAuth);
+
+in = DATA BOOLEAN (TokenAuth, Permission);
+permissions 'Permissions' (TokenAuth t) = GROUP CONCAT name(Permission p) IF in(t, p), ',' ORDER p;
+
+allowedIp 'Allowed IP' = DATA STRING (TokenAuth);
+
+generateTokenAuth 'Generate token KSeF' (Company c) {
+    NEWSESSION NESTED (select, tokenDescription) {
+        TRY {
+            getAccessToken(c);
+            EXTERNAL HTTP POST hostApi() + '/tokens' HEADERS accessHeaders PARAMS
+                        JSON FROM permissions = (JSON FROM value = name(Permission p) IF select(p)),
+                                  description = tokenDescription() TO resultFile;
+
+            NEW ta = TokenAuth {
+                company(ta) <- c;
+                in(ta, Permission p) <- select(p);
+                description(ta) <- tokenDescription();
+
+                IMPORT JSON FROM resultFile() FIELDS() STRING referenceNumber, STRING token DO {
+                    referenceNumber(ta) <- referenceNumber;
+                    token(ta) <- token;
+                }
+
+                APPLY;
+            }
+        } CATCH { catchException('Generate token KSeF'); }
+    }
+}
+
+status 'Status' = DATA STRING (TokenAuth);
+statusDetails 'Status details' = DATA STRING (TokenAuth);
+
+getStatus 'Get status' (TokenAuth ta) {
+    NEWSESSION {
+        TRY {
+            getAccessToken(company(ta));
+            EXTERNAL HTTP GET hostApi() + '/tokens/' + referenceNumber(ta) HEADERS accessHeaders TO resultFile;
+
+            IMPORT JSON FROM resultFile() FIELDS() STRING status, STRING statusDetails DO {
+                status(ta) <- status;
+                statusDetails(ta) <- statusDetails;
+            }
+
+            APPLY;
+        } CATCH { catchException('Get token KSeF status'); }
+    }
+}
+
+getTokens 'Get tokens' (Company c) {
+    NEWSESSION {
+        TRY {
+            getAccessToken(c);
+            EXTERNAL HTTP GET hostApi() + '/tokens' HEADERS accessHeaders TO resultFile;
+
+            LOCAL tokens = JSON ();
+            IMPORT JSON FROM resultFile() TO() tokens;
+            
+            IMPORT JSON FROM tokens() FIELDS STRING referenceNumber, STRING description, STRING status, STRING statusDetails DO {
+                IF NOT tokenAuthReferenceNumber(referenceNumber) THEN NEW t = TokenAuth {
+                    company(t) <- c;
+                    referenceNumber(t) <- referenceNumber;
+                    description(t) <- description;
+                    status(t) <- status;
+                    statusDetails(t) <- statusDetails;
+                }
+            }            
+
+            APPLY;
+        } CATCH { catchException('Get tokens'); }
+    }
+}
+
+delete 'Disable' (Company c, TokenAuth ta) {
+    TRY {
+        getAccessToken(c);
+        EXTERNAL HTTP DELETE hostApi() + '/tokens/' + referenceNumber(ta) HEADERS accessHeaders TO resultFile;
+    } CATCH { catchException('Delete token KSeF'); }
+}
+
+EXTEND FORM integrationData
+    PROPERTIES() selectPermissions, tokenDescription
+    PROPERTIES generateTokenAuth(ksefCompany) PANEL DISABLEIF NOT tokenDescription() OR NOT selectPermissions()
+
+    OBJECTS ksefTokenAuth = TokenAuth
+    PROPERTIES(ksefTokenAuth) READONLY referenceNumber, token, description, permissions
+    PROPERTIES(ksefTokenAuth)          getStatus GRID, status READONLY, statusDetails READONLY
+    PROPERTIES(ksefTokenAuth)          allowedIp
+    PROPERTIES                         delete(ksefCompany, ksefTokenAuth) GRID
+    PROPERTIES                         DELETE(ksefTokenAuth) GRID DISABLEIF NOT (status(ksefTokenAuth) = 'Failed' OR status(ksefTokenAuth) = 'Revoked')
+    
+    PROPERTIES getTokens(ksefCompany) DRAW ksefTokenAuth TOOLBAR
+    
+    FILTERS company(ksefTokenAuth) = ksefCompany
+;
+
+DESIGN integrationData {
+    KSeFPane {
+        NEW KSeFTokens {
+            caption = 'Tokens';
+            fill = 1;
+            NEW generate {
+                horizontal = TRUE;
+                MOVE PROPERTY(selectPermissions());
+                MOVE PROPERTY(tokenDescription());
+                MOVE PROPERTY(generateTokenAuth(ksefCompany));
+            }
+            MOVE BOX(ksefTokenAuth);
+        }
+    }
+}
+
+//
+dataDefaultTokenAuth = DATA TokenAuth (Company);
+calcDefaultTokenAuth (Company c) = GROUP LAST TokenAuth a ORDER DESC a WHERE company(a) = c AND status(a) = 'Active';
+
+changeDefault (TokenAuth a) {
+    INPUT b = BOOLEAN DO {
+        IF b THEN
+            dataDefaultTokenAuth(Company c) <- a WHERE c = company(a);
+    }
+}
+
+defaultTokenAuth (Company c) = OVERRIDE dataDefaultTokenAuth(c), calcDefaultTokenAuth(c);
+default 'Default' (TokenAuth a) = defaultTokenAuth(company(a)) = a CHARWIDTH 10;
+
+authRequest (TokenAuth ta) {
+    IF NOT tokenEncryptionCertificate() THEN getPublicKeyCertificates();
+    
+    NEWSESSION {
+        authChallenge();
+        IF NOT challenge() THEN RETURN;
+
+        stringToFile(token(ta) + '|' + trunc(getMilliSeconds(timestamp()), 0));
+        cipherRSAOAEPMGF1(RAWFILE(resultFile()), 'SHA-256', tokenEncryptionCertificate());
+
+        TRY {
+            EXTERNAL HTTP POST hostApi() + '/auth/ksef-token' PARAMS 
+                JSON FROM challenge(),
+                          contextIdentifier = (JSON FROM type = 'nip', value = nip(company(ta))),
+                          encryptedToken = encodeBase64(cipherResult()),
+                          authorizationPolicy = (JSON FROM allowedIps = (JSON FROM ip4Addresses = (JSON FROM value = allowedIp(ta) IF INTEGER i = 0))) 
+                TO resultFile;
+
+            createToken(company(ta));
+            APPLY;
+            
+        } CATCH { catchException('Authorization token KSeF'); }
+    }
+}
+
+authTokenKsefRequest 'Zaloguj tokenem KSeF' (Company c) {
+    authRequest(defaultTokenAuth(c));
+}
+
+EXTEND FORM integrationData
+    PROPERTIES(ksefTokenAuth) default ON CHANGE changeDefault(ksefTokenAuth) FIRST
+    PROPERTIES(ksefCompany) authTokenKsefRequest DISABLEIF NOT defaultTokenAuth(ksefCompany)
+;
+
+DESIGN integrationData {
+    KSeFAuthenticate {
+        MOVE PROPERTY(authTokenKsefRequest(ksefCompany));
+    }
+}
+
+// to scheduler
+updateTokens 'Update tokens' () {
+    FOR (defaultCertificate(Company c) OR defaultTokenAuth(c)) AND NOT refreshValidUntil(accessToken(c)) > sumMinutes(currentDateTime(), 360) DO {
+        IF defaultCertificate(c) THEN
+            authCertificateKsefRequest(c);
+        ELSE
+            authTokenKsefRequest(c);
+    }
+    
+    sleep(1000);
+    
+    FOR authentication(Token t) AND NOT statusCode(t) DO getStatus(t);
+    FOR statusCode(Token t) = 200 AND NOT refresh(t) DO redeemAccess(t);
+}
+
+EXTEND FORM integrationData
+    PROPERTIES() updateTokens DRAW ksefToken TOOLBAR
+;

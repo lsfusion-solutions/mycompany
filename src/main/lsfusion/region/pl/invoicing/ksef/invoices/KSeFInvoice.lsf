@@ -1,0 +1,125 @@
+MODULE KSeFInvoice;
+
+REQUIRE Invoice, InvoiceCurrency, InvoiceCorrection, Partner, Company, LegalEntityPl, KSeFFaktura;
+
+NAMESPACE KSeF;
+
+// Link from Faktura to Invoice (adapter level)
+invoice 'Invoice' = DATA Invoice (Faktura) INDEXED; // Faktura -> Invoice
+numberInvoice 'Invoice' (Faktura f) = number(invoice(f)); 
+
+// Selector to keep compatibility: find Faktura by Invoice
+faktura (Invoice i) = GROUP LAST Faktura f ORDER f WHERE invoice(f) = i;
+
+fakturaReference 'KSeF reference' (Invoice i) = referenceNumber(faktura(i));
+fakturaStatusCode 'KSeF status code' (Invoice i) = statusCode(faktura(i));
+fakturaStatusDescription 'KSeF status' (Invoice i) = statusDescription(faktura(i));
+fakturaStatusDetails 'KSeF details' (Invoice i) = statusDetails(faktura(i));
+fakturaNumber 'KSeF number' (Invoice i) = number(faktura(i));
+
+toSendToKSeF (Invoice i) = (statusCode(faktura(i)) != 200 OR NOT faktura(i)) AND
+    (status(i) = InvoiceStatus.ready OR status(i) = InvoiceStatus.done);
+
+readonly(Invoice i) += WHEN faktura(i) AND NOT statusCode(faktura(i)) != 200 THEN TRUE;
+
+// Build Faktura from Invoice (adapter)
+createFaktura 'Build Faktura' (Invoice i) {
+    NEW f = Faktura {
+        invoice(f) <- i;
+        podmiot1(f) <- company(i);
+        podmiot2(f) <- customer(i);
+        // Header
+        KodFormularza(f) <- 'FA';
+        WariantFormularza(f) <- 3;
+        SystemInfo(f) <- 'MyCompany lsFusion';
+        // Attributes are exported as constants on form; data fields remain as stored
+        // Seller
+        p1_NIP(f) <- nip(company(i));
+        p1_Nazwa(f) <- fullName(company(i));
+        p1_KodKraju(f) <- OVERRIDE alpha2(country(company(i))), r'PL';
+        p1_AdresL1(f) <- address(company(i));
+        p1_AdresL2(f) <- zipState(company(i));
+        p1_Email(f) <- email(company(i));
+        p1_Telefon(f) <- phone(company(i));
+        // Buyer
+        p2_NIP(f) <- nip(customer(i));
+        p2_Nazwa(f) <- fullName(customer(i));
+        p2_KodKraju(f) <- OVERRIDE alpha2(country(customer(i))), r'PL';
+        p2_AdresL1(f) <- address(customer(i));
+        p2_AdresL2(f) <- zipState(company(i));
+        p2_Email(f) <- email(customer(i));
+        p2_Telefon(f) <- phone(customer(i));
+        p2_NrKlienta(f) <- id(customer(i));
+        // Fa totals
+        KodWaluty(f) <- id(currency(i));
+        invoiceDate(f) <- DATE(dateTime(i));
+        invoiceNumber(f) <- number(i);
+        deliveryDate(f) <- OVERRIDE DATE(deliveryDate(i)), DATE(dueDateTime(i));
+        
+        untaxedAmount1(f) <- correctionUntaxedAmount(tax(r'23%'), i);
+        untaxedAmount2(f) <- correctionUntaxedAmount(tax(r'8%'), i);
+        untaxedAmount3(f) <- correctionUntaxedAmount(tax(r'5%'), i);
+        untaxedAmount6(f) <- correctionUntaxedAmount(tax(r'0%'), i);
+        untaxedAmount7(f) <- correctionUntaxedAmount(tax(r'zw'), i);
+        taxAmount1(f) <- correctionTaxAmount(tax(r'23%'), i);
+        taxAmount2(f) <- correctionTaxAmount(tax(r'8%'), i);
+        taxAmount3(f) <- correctionTaxAmount(tax(r'5%'), i);
+        amount(f) <- correctionAmount(i);
+        
+        metodaKasowa(f) <- 2;
+        samofakturowanie(f) <- 2;
+        odwrotneObciazenie(f) <- 2;
+        mpp(f) <- 2;
+        weUproszczona(f) <- 2;
+        KursWalutyZ(f) <- rate1(i) IF currency(i) != defaultCurrency();
+        RodzajFaktury(f) <- IF original(i) THEN 'KOR' ELSE 'VAT';
+        
+        PrzyczynaKorekty(f) <- note(i) IF original(i);
+        DataWystFaKorygowanej(f) <- invoiceDate(faktura(original(i)));
+        NrFaKorygowanej(f) <- invoiceNumber(faktura(original(i)));
+        NrKSeFFaKorygowanej(f) <- number(faktura(original(i)));
+        
+        FOR invoice(InvoiceLine l) = i DO NEW w = FaWiersz {
+            faktura(w) <- f;
+            NrWierszaFa(w) <- index(l);
+            description(w) <- OVERRIDE description(l), nameItem(l);
+            GTIN(w) <- idBarCodeItem(l);
+            nameUom(w) <- nameUom(l);
+            quantity(w) <- quantity(l);
+            price(w) <- resultPrice(l);
+            untaxedAmount(w) <- untaxedAmount(l);
+            taxes(w) <- OVERRIDE (toChar(taxPercent(l), '99') IF taxPercent(l) > 0), taxes(l);
+        }
+    }
+}
+
+EXTEND FORM faktury
+    PROPERTIES(f) READONLY numberInvoice
+;
+
+EXTEND FORM invoices
+    //    PROPERTIES(i) GRID sendToKSeF, getInvoiceKSeFStatus DISABLEIF NOT faktura(i)
+    PROPERTIES(i) READONLY fakturaReference, fakturaStatusCode, fakturaStatusDescription, fakturaStatusDetails, fakturaNumber
+;
+
+EXTEND FORM invoice
+    PROPERTIES(i) READONLY fakturaReference, fakturaStatusCode, fakturaStatusDescription, fakturaStatusDetails, fakturaNumber
+;
+
+DESIGN invoice {
+    otherInformation {
+        NEW KSeF {
+            alignment = STRETCH;
+            caption = 'KSeF';
+            NEW KseFLine1 {
+                alignment = STRETCH;
+                horizontal = TRUE;
+                MOVE PROPERTY(fakturaReference(i));
+                MOVE PROPERTY(fakturaStatusCode(i));
+                MOVE PROPERTY(fakturaStatusDescription(i));
+                MOVE PROPERTY(fakturaNumber(i));
+            }
+            MOVE PROPERTY(fakturaStatusDetails(i)) { alignment = STRETCH; }
+        }
+    }
+}

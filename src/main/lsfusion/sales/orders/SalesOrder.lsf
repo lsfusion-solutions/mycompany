@@ -52,7 +52,9 @@ validity 'Validity' = DATA DATETIME (Order);
 paymentTerms = DATA PaymentTerm (Order);
 namePaymentTerms 'Payment terms' (Order o)= name(paymentTerms(o));
 
-WHEN LOCAL CHANGED(customer(Order o)) AND NOT CHANGED(paymentTerms(o)) DO paymentTerms(o) <- customerPaymentTerms(customer(o)); 
+WHEN LOCAL CHANGED(customer(Order o)) AND NOT CHANGED(paymentTerms(o)) DO paymentTerms(o) <- customerPaymentTerms(customer(o));
+
+dueDateTime 'Pay before' (Order o) = sumDay(dateTime(o), days(paymentTerms(o)));
 
 // company
 company 'Company' = DATA Company (Order) NONULL;
@@ -181,8 +183,14 @@ FORM order 'Sales order'
                  
     OBJECTS l = OrderLine
     PROPERTIES(l) READONLYIF readonly(o)
-                  index, nameItem, description, nameUom, idBarCodeItem, idItem, referenceItem, quantity, price, untaxedAmount, taxes,
-                  NEW, DELETE
+                  index, nameItem, description, nameUom, idBarCodeItem, idItem, referenceItem, 
+                  quantity, price, untaxedAmount
+
+    OBJECTS tg = TaxGroup
+    PROPERTIES    READONLYIF readonly(o)
+                  nameTax(l, tg) ON CHANGE changeTax(l, tg) COLUMNS (tg) HEADER name(tg)
+
+    PROPERTIES(l) NEW, DELETE
     FILTERS order(l) = o
     
     EDIT Order OBJECT o    
@@ -303,7 +311,7 @@ FORM orders 'Sales orders'
                             nameRepresentative, customerReference, note,
                             untaxedAmount, taxAmount, amount, nameCurrency
                             
-     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE 
+     PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE DISABLEIF readonly(o)
 ;
 
 @extendFormEditable(orders);

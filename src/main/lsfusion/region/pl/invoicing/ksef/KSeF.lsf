@@ -1,0 +1,241 @@
+MODULE KSeF;
+
+REQUIRE Company, LegalEntityPl;
+
+NAMESPACE KSeF;
+
+hostPostfix 'Host postfix' = DATA STRING ();
+
+EXTEND FORM integrationData
+    OBJECTS ksefCompany = Company PANEL
+    PROPERTIES(ksefCompany) name SELECTOR
+    
+    PROPERTIES() ksefHostPostfix = hostPostfix
+;
+
+DESIGN integrationData {
+    pane {
+        NEW KSeF {
+            caption = 'KSeF';
+            NEW KSeFHeader {
+                horizontal = TRUE;
+                MOVE PROPERTY(ksefHostPostfix);
+            }
+            MOVE BOX(ksefCompany);
+            NEW KSeFPane {
+                fill = 1;
+                tabbed = TRUE;
+                NEW KSeFGeneral {
+                    caption = 'General';
+                }
+            }
+        }
+    }
+}
+
+host() = 'https://ksef' + (OVERRIDE '-' + hostPostfix(), '') + '.mf.gov.pl';
+
+hostApi() = host() + '/api/v2';
+
+challenge = DATA LOCAL STRING ();
+timestamp = DATA LOCAL ZDATETIME ();
+
+toDateTimeZone (STRING s) = FORMULA DATETIME '($1)::timestamptz::timestamp';
+
+catchException (STRING action) {
+//    fileToString(resultFile());
+    MESSAGE action + ' error : \n' + (OVERRIDE messageCaughtException(), ''); // + '\n' + (OVERRIDE resultString(), '');
+}
+
+authChallenge () {
+    TRY {
+        EXTERNAL HTTP POST hostApi() + '/auth/challenge' TO resultFile;
+        IMPORT JSON FROM resultFile() TO() challenge, timestamp
+    } CATCH { catchException('Auth challenge'); }
+}
+
+// xades-signature
+GROUP contextIdentifier EXTID ':ContextIdentifier';
+GROUP signature1 EXTID 'ds=http://www.w3.org/2000/09/xmldsig#:Signature';
+
+//signature = DATA LOCAL STRING();
+
+FORM authTokenRequest FORMEXTID '=http://ksef.mf.gov.pl/auth/token/2.0:AuthTokenRequest'
+    OBJECTS c = Company PANEL
+    
+    PROPERTIES ATTR ='http://www.w3.org/2001/XMLSchema' EXTID 'xmlns:xsd', ='http://www.w3.org/2001/XMLSchema-instance' EXTID 'xmlns:xsi'
+
+    PROPERTIES() challenge EXTID ':Challenge'
+    PROPERTIES IN contextIdentifier nip(c) EXTID ':Nip'
+
+    PROPERTIES = 'certificateSubject' EXTID ':SubjectIdentifierType'
+    
+;
+
+authXadesSignatureRequest 'Pobierz żądanie autoryzacyjne' (Company c) {
+    authChallenge();
+
+    IF challenge() THEN {
+        EXPORT authTokenRequest OBJECTS c = c XML;
+        open(exportFile(), 'toSign');
+    }
+}
+
+CLASS Token 'Token';
+
+company = DATA Company (Token) NONULL;
+
+referenceNumber 'Reference number' = DATA STRING (Token);
+authentication 'Authentication token' = DATA STRING (Token);
+authenticationValidUntil 'Valid until (authentication)' = DATA DATETIME (Token);
+
+createToken (Company c) {
+    NEW t = Token {
+        company(t) <- c;
+
+        LOCAL referenceNumber = STRING();
+        LOCAL authenticationToken = JSON();
+
+        IMPORT JSON FROM resultFile() TO() referenceNumber, authenticationToken;
+        referenceNumber(t) <- referenceNumber();
+        authentication(t) <- fieldText(authenticationToken(), 'token');
+        authenticationValidUntil(t) <- toDateTimeZone(fieldText(authenticationToken(), 'validUntil'));
+    }
+}
+
+authXadesSignature 'Zaloguj podpisanym żądaniem autoryzacyjnym' (Company c) {
+    INPUT f = XMLFILE DO {
+        NEWSESSION {
+            TRY {
+                LOCAL localHeaders = STRING(STRING);
+                localHeaders('Content-Type') <- 'application/xml'; // default : text/xml
+
+                EXTERNAL HTTP POST hostApi() + '/auth/xades-signature' HEADERS localHeaders PARAMS f TO resultFile;
+
+                createToken(c);
+                APPLY;
+            } CATCH { catchException('Authorization XAdES signature'); }
+        }        
+    }
+    
+}
+
+EXTEND FORM integrationData
+    PROPERTIES(ksefCompany) authXadesSignatureRequest, authXadesSignature
+
+    OBJECTS ksefToken = Token
+    PROPERTIES(ksefToken) READONLY referenceNumber, authentication, authenticationValidUntil
+    PROPERTIES(ksefToken) DELETE GRID
+    FILTERS company(ksefToken) = ksefCompany
+;
+
+DESIGN integrationData {
+    KSeFGeneral {
+        NEW KSeFAuthenticate {
+            horizontal = TRUE;
+            MOVE PROPERTY(authXadesSignatureRequest(ksefCompany));
+            MOVE PROPERTY(authXadesSignature(ksefCompany));
+        }
+        MOVE BOX(ksefToken);
+    }
+}
+
+// check status
+
+statusCode 'Status code' = DATA INTEGER (Token);
+statusDescription 'Status' = DATA STRING (Token);
+statusDetails 'Details' = DATA STRING (Token);
+
+getStatus 'Get status' (Token t) {
+    NEWSESSION {
+        TRY {
+            LOCAL localHeaders = STRING(STRING);
+            localHeaders(r'Authorization') <- r'Bearer ' + authentication(t);
+            
+            EXTERNAL HTTP GET hostApi() + '/auth/' + referenceNumber(t) HEADERS localHeaders TO resultFile;
+            
+            LOCAL status = JSON ();
+            IMPORT JSON FROM resultFile() TO() status;
+            
+            statusCode(t) <- INTEGER(fieldText(status(), 'code'));
+            statusDescription(t) <- fieldText(status(), 'description');
+            statusDetails(t) <- fieldText(status(), 'details');
+
+            APPLY;
+        } CATCH { catchException('Get status'); }
+    }
+}
+
+// redeem tokens
+
+access 'Access token' = DATA STRING (Token);
+accessValidUntil 'Valid until (access)' = DATA DATETIME (Token);
+
+refresh 'Refresh token' = DATA STRING (Token);
+refreshValidUntil 'Valid until (refresh)' = DATA DATETIME (Token);
+
+redeemAccess 'Redeem access token' (Token t) {
+    NEWSESSION {
+        TRY {
+            LOCAL localHeaders = STRING(STRING);
+            localHeaders(r'Authorization') <- r'Bearer ' + authentication(t);
+
+            EXTERNAL HTTP POST hostApi() + '/auth/token/redeem' HEADERS localHeaders TO resultFile;
+
+            LOCAL accessToken = JSON ();
+            LOCAL refreshToken = JSON ();
+            IMPORT JSON FROM resultFile() TO() accessToken, refreshToken;
+
+            access(t) <- fieldText(accessToken(), 'token');
+            accessValidUntil(t) <- toDateTimeZone(fieldText(accessToken(), 'validUntil'));
+
+            refresh(t) <- fieldText(refreshToken(), 'token');
+            refreshValidUntil(t) <- toDateTimeZone(fieldText(refreshToken(), 'validUntil'));
+
+            APPLY;
+        } CATCH { catchException('Redeem token'); }
+    }
+}
+
+refreshAccessToken 'Refresh access token' (Token t) {
+    NEWSESSION {
+        TRY {
+            LOCAL localHeaders = STRING(STRING);
+            localHeaders(r'Authorization') <- r'Bearer ' + refresh(t);
+
+            EXTERNAL HTTP POST hostApi() + '/auth/token/refresh' HEADERS localHeaders TO resultFile;
+
+            LOCAL accessToken = JSON ();
+            IMPORT JSON FROM resultFile() TO() accessToken;
+
+            access(t) <- fieldText(accessToken(), 'token');
+            accessValidUntil(t) <- toDateTimeZone(fieldText(accessToken(), 'validUntil'));
+
+            APPLY;
+        } CATCH { catchException('Refresh token'); }
+    }
+}
+
+EXTEND FORM integrationData
+    PROPERTIES(ksefToken) getStatus GRID, 
+                          statusCode READONLY, statusDescription READONLY, statusDetails READONLY,
+                          redeemAccess GRID, 
+                          access READONLY, accessValidUntil READONLY,
+                          refreshAccessToken GRID,
+                          refresh READONLY, refreshValidUntil READONLY
+
+;
+
+// request
+
+accessToken = DATA LOCAL NESTED Token();
+accessHeaders (STRING header) = CASE
+    WHEN header = r'Authorization' THEN r'Bearer ' + access(accessToken());
+
+accessToken(Company c) = GROUP LAST Token t ORDER accessValidUntil(t), refreshValidUntil(t), t WHERE company(t) = c AND access(t);
+
+getAccessToken (Company c) {
+    accessToken() <- accessToken(c);
+    IF accessValidUntil(accessToken()) <= currentDateTime() THEN 
+        refreshAccessToken(accessToken());
+}

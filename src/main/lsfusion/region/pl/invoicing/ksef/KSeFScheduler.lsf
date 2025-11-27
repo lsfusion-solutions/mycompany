@@ -1,0 +1,41 @@
+MODULE KSeFScheduler;
+
+REQUIRE KSeF, DefaultData, Scheduler;
+
+NAMESPACE KSeF;
+
+initScheduler 'Init scheduler' () {
+    NEWSESSION {
+        NEW s = UserScheduledTask {
+            name(s) <- r'KSeF';
+            active(s) <- TRUE;
+            startDate(s) <- currentDateTime();
+            period(s) <- 600;
+            schedulerStartType(s) <- SchedulerStartType.afterStart;
+            NEW d = UserScheduledTaskDetail {
+                scheduledTask(d) <- s;
+                action(d) <- actionCanonicalName(r'KSeF.updateTokens[]');
+                order(d) <- 0;
+                active(d) <- TRUE;
+            }
+            NEW d = UserScheduledTaskDetail {
+                scheduledTask(d) <- s;
+                action(d) <- actionCanonicalName(r'KSeF.fetchSubject2[]');
+                order(d) <- 0;
+                active(d) <- TRUE;
+            }
+        }
+        
+        APPLY;
+    }
+}
+
+EXTEND FORM integrationData
+    PROPERTIES() initScheduler SHOWIF NOT scheduledTask(r'KSeF')
+;
+
+DESIGN integrationData {
+    KSeFHeader {
+        MOVE PROPERTY(initScheduler());
+    }
+}
