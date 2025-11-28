@@ -21,7 +21,7 @@ WHEN LOCAL CHANGED(item(OrderLine l)) AND manufacturingOrderType(type(Order o))
     DO bom(l) <- defaultBom(item(l));
 
 // manufacturing order
-orderLine = DATA OrderLine (ManufacturingOrder) INDEXED;
+orderLine 'Order line' = DATA OrderLine (ManufacturingOrder) INDEXED;
 numberDateSalesOrder 'Sales order' (ManufacturingOrder mo) = numberDate(order(orderLine(mo)));
 
 untaxedAmount '{Amount}' (ManufacturingOrder o) = untaxedAmount(orderLine(o));
@@ -30,23 +30,30 @@ amount 'Total amount' (ManufacturingOrder o) = amount(orderLine(o));
 
 manufacturingOrder (OrderLine l) = GROUP AGGR ManufacturingOrder mo BY orderLine(mo);
 
+CONSTRAINT orderLine(ManufacturingOrder o) AND NOT item(orderLine(o)) = item(o)
+    CHECKED BY orderLine[ManufacturingOrder]
+    MESSAGE 'The sales order item must match the manufacturing order item';
+
 countFreeBomLine (Order o) = GROUP SUM 1 IF order(OrderLine l) = o AND bom(l) AND NOT manufacturingOrder(l);
 countManufacturingOrder (Order o) = GROUP SUM 1 IF order(orderLine(ManufacturingOrder mo)) = o;
 
 CONSTRAINT DROPPED(OrderLine l IS OrderLine) AND PREV(manufacturingOrder(l))
     MESSAGE 'You cannot delete the line from which the production order was created';
 
-openOrder (ManufacturingOrder mo) { 
-    edit(order(orderLine(mo))); 
+changeOrderLine (ManufacturingOrder o) {
+    DIALOG orderLines OBJECTS l = orderLine(o) CHANGE LIST numberDate(l) FILTERS manufacturingOrder(l) = o OR NOT manufacturingOrder(l);
 }
 
 EXTEND FORM manufacturingOrder
-    PROPERTIES(o) numberDateSalesOrder ON CHANGE openOrder(o) SHOWIF orderLine(o)
+    PROPERTIES(o) SHOWIF orderLine(o) AND readonly(o) numberDateSalesOrder ON CHANGE { edit(orderLine(o)); }
+    
+    PROPERTIES SHOWIF NOT readonly(o) changeSalesOrder = numberDateSalesOrder(o) ON CHANGE changeOrderLine(o)
 ;
 
 DESIGN manufacturingOrder {
     footer {
         MOVE PROPERTY(numberDateSalesOrder(o));
+        MOVE PROPERTY(changeSalesOrder);
     }
 }
 

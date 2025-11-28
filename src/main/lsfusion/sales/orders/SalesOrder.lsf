@@ -151,16 +151,17 @@ WHEN LOCAL CHANGED(item(OrderLine ol)) DO {
 nameType 'Type' (OrderLine l) = nameType(order(l));
 status 'Status' (OrderLine l) = status(order(l));
 imagedNameStatus 'Status' (OrderLine l) = imagedNameStatus(order(l));
+colorStatus 'Status' (OrderLine l) = colorStatus(order(l));
 type (OrderLine l) = type(order(l)); 
 dateTime 'Date' (OrderLine l) = dateTime(order(l)) IN id;
 date 'Date' (OrderLine l) = date(order(l));
 number 'Number' (OrderLine l) = number(order(l)) IN id;
 numberDate 'Description' (OrderLine l) = numberDate(order(l));
 location 'Location' (OrderLine l) = location(order(l));
-nameLocation 'Location' (OrderLine l) = nameLocation(order(l));
+nameLocation 'Location' (OrderLine l) = nameLocation(order(l)) IN id;
 
 customer (OrderLine l) = customer(order(l));
-nameCustomer 'Customer' (OrderLine l) = nameCustomer(order(l));
+nameCustomer 'Customer' (OrderLine l) = nameCustomer(order(l)) IN id;
 
 scheduledDateTime 'Scheduled date' (OrderLine l) = scheduledDateTime(order(l));
 scheduledDate 'Scheduled date' (OrderLine l) = scheduledDateTime(order(l));
@@ -292,6 +293,8 @@ DESIGN order {
     }            
 }
 
+edit (OrderLine l) + { SHOW order OBJECTS o = order(l), l = l DOCKED; }
+
 showOrder (LONG id) {
     FOR LONG(Order o AS Order) = id DO
         SHOW order OBJECTS o = o DOCKED MANAGESESSION;
@@ -312,6 +315,16 @@ FORM orders 'Sales orders'
                             untaxedAmount, taxAmount, amount, nameCurrency
                             
      PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE DISABLEIF readonly(o)
+;
+
+FORM orderLines 'Sales orders'
+    OBJECTS l = OrderLine BACKGROUND background(order(l))
+    PROPERTIES(l) READONLY number, dateTime, nameCustomer, imagedNameStatus BACKGROUND colorStatus(l), nameType, nameLocation,
+                           untaxedAmount, taxAmount, amount
+    
+    PROPERTIES(l) NEWSESSION EDIT
+    
+    LIST OrderLine OBJECT l
 ;
 
 @extendFormEditable(orders);
