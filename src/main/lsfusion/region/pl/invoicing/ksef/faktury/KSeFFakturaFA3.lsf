@@ -73,6 +73,11 @@ FORM FA3XmlExport
     PROPERTIES IN DaneFaKorygowanej = toChar(DataWystFaKorygowanej(f), 'yyyy-MM-dd') EXTID 'DataWystFaKorygowanej',
                   NrFaKorygowanej(f), NrKSeF = 1 IF NrFaKorygowanej(f), NrKSeFFaKorygowanej(f)
 
+    // zaliczka
+    OBJECTS z = FakturaZaliczkowa EXTID 'FakturaZaliczkowa' IN Fa
+    PROPERTIES(z) number EXTID 'NrKSeFFaZaliczkowej'
+    FILTERS faktura(z) = f
+
     // FaWiersz
     OBJECTS w = FaWiersz EXTID 'FaWiersz' IN Fa
     PROPERTIES(w) NrWierszaFa, description EXTID 'P_7', GTIN, nameUom EXTID 'P_8A', quantity EXTID 'P_8B', price EXTID 'P_9A', untaxedAmount EXTID 'P_11', taxes EXTID 'P_12'
@@ -129,6 +134,8 @@ DataWystFaKorygowanej = DATA STRING ();
 NrFaKorygowanej = DATA STRING[50] ();
 NrKSeFFaKorygowanej = DATA STRING[36] ();
 
+NrKSeFFaZaliczkowej = DATA LOCAL STRING[36](INTEGER);
+
 NrWierszaFa = DATA LOCAL STRING(INTEGER);
 UU_ID = DATA LOCAL STRING(INTEGER);
 P_7 = DATA LOCAL STRING(INTEGER);
@@ -154,7 +161,9 @@ FORM FA3XmlImport FORMEXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Faktura'
     PROPERTIES() IN Fa KursWalutyZ, RodzajFaktury
     PROPERTIES() IN Fa PrzyczynaKorekty
     PROPERTIES() IN DaneFaKorygowanej DataWystFaKorygowanej, NrFaKorygowanej, NrKSeFFaKorygowanej
-    
+
+    OBJECTS z = INTEGER EXTID ':FakturaZaliczkowa' IN Fa
+    PROPERTIES(z) NrKSeFFaZaliczkowej
 
     OBJECTS faWiersz = INTEGER EXTID ':FaWiersz' IN Fa
     PROPERTIES(faWiersz) NrWierszaFa, UU_ID, P_7, GTIN, P_8A, P_8B, P_9A, P_11, P_12
@@ -191,6 +200,12 @@ import (Faktura nf) {
     KursWalutyZ(nf) <- KursWalutyZ(); RodzajFaktury(nf) <- RodzajFaktury();
     PrzyczynaKorekty(nf) <- PrzyczynaKorekty(); DataWystFaKorygowanej(nf) <- DATE(DataWystFaKorygowanej());
     NrFaKorygowanej(nf) <- NrFaKorygowanej(); NrKSeFFaKorygowanej(nf) <- NrKSeFFaKorygowanej();
+
+    FOR NrKSeFFaZaliczkowej(INTEGER fz) DO NEW z = FakturaZaliczkowa {
+        faktura(z) <- nf;
+        number(z) <- NrKSeFFaZaliczkowej(fz);
+    }
+
     FOR imported(INTEGER faWiersz) DO NEW fw = FaWiersz {
         faktura(fw) <- nf;
         NrWierszaFa(fw) <- INTEGER(NrWierszaFa(faWiersz));
