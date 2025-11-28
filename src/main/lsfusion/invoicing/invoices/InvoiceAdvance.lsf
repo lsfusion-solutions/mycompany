@@ -1,0 +1,76 @@
+MODULE InvoiceAdvance;
+
+REQUIRE InvoiceCanceled, InvoiceCurrency, InvoiceTax, Icon;
+
+NAMESPACE Invoicing;
+
+isAdvance 'Advance' = DATA BOOLEAN (InvoiceType);
+EXTEND FORM invoiceType PROPERTIES isAdvance(o);
+
+isAdvance 'Advance' = DATA BOOLEAN (Invoice);
+EXTEND FORM invoice PROPERTIES(i) isAdvance;
+DESIGN invoice {
+    headerLeft {
+        MOVE PROPERTY(isAdvance(i));
+    }
+}
+
+WHEN LOCAL SETCHANGED(type(Invoice b)) DO isAdvance(b) <- isAdvance(type(b));
+
+advanced 'Advanced' = DATA NUMERIC[14,2] (Invoice, Invoice);
+
+WHEN SETCHANGED(amount(Invoice i)) AND amount(i) < advanced(i, Invoice od) DO
+    advanced(i, od) <- amount(i);
+
+WHEN SETCHANGED(amount(Invoice ad)) AND amount(ad) < advanced(Invoice i, ad) DO
+    advanced(i, ad) <- amount(ad);
+
+CONSTRAINT advanced(Invoice i, Invoice ad) AND NOT isAdvance(ad)
+    MESSAGE 'Invoices not marked as advances cannot be advanced';
+
+countAdvanced (Invoice i) = GROUP SUM 1 IF advanced(i, Invoice ad) IF active(ad);
+advanced 'Advanced' (Invoice i) = GROUP SUM advanced(i, Invoice ad) IF active(ad) MATERIALIZED;
+toAdvance 'To advance' (Invoice i) = amount(i) (-) advanced(i);
+
+invoiced 'Invoiced' (Invoice ad) = GROUP SUM advanced(Invoice i, ad) IF active(i) MATERIALIZED;
+toInvoice 'To invoice' (Invoice ad) = (amount(ad) (-) invoiced(ad)) IF isAdvance(ad);
+
+canBeAdvanced (Invoice i, Invoice ad) =
+    customer(i) = customer(ad) AND company(i) = company(ad) AND isAdvance(ad) AND active(ad) AND toInvoice(ad);
+
+// pay
+toAdvance 'Match' ABSTRACT LIST (Invoice, Invoice) CHANGEMOUSE 'DBLCLK';
+toAdvance (Invoice i, Invoice ad) + {
+    advanced(i, ad) <- min(toAdvance(i), toInvoice(ad)) (+) advanced(i, ad);
+}
+
+EXTEND FORM invoice
+    PROPERTIES(i) advanced
+
+    OBJECTS ad = Invoice
+    PROPERTIES(ad) READONLY dateTime, number, nameType, untaxedAmount, taxAmount, amount
+    PROPERTIES advanced(i, ad)
+    FILTERS advanced(i, ad), active(ad)
+
+    OBJECTS add = Invoice
+    PROPERTIES(add) READONLY dateTime, number, nameType, untaxedAmount, taxAmount, amount, toInvoice
+    PROPERTIES toAdvance(i, add) TOOLBAR
+    FILTERS canBeAdvanced(i, add)
+;
+
+DESIGN invoice {
+    total {
+        MOVE PROPERTY(advanced(i));
+    }
+    details {
+        NEW advances {
+            caption = badged('Advance matching', countAdvanced(i));
+            MOVE BOX(ad) { caption = 'Matched'; }
+            MOVE BOX(add) { caption = 'Available'; }
+        }
+    }
+}
+
+EXTEND FORM invoices
+    PROPERTIES(i) READONLY advanced, toInvoice
+;
