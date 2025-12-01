@@ -3,7 +3,7 @@ MODULE MetaTax;
 META defineTaxCalc(doc, let, prefix, price)
     untaxedAmount '{Amount}'  = DATA NUMERIC[14,2] (###doc##Line);
     
-    WHEN LOCAL CHANGED(quantity(###doc##Line l)) OR CHANGED(price(l)) DO {
+    WHEN LOCAL (CHANGED(quantity(###doc##Line l)) OR CHANGED(price(l))) AND NOT CHANGED(untaxedAmount(l)) DO {
         untaxedAmount(l) <- NUMERIC[14,2](quantity(l) * price(l));
     }
     
@@ -66,7 +66,7 @@ END
 
 META defineDocTaxForm(doc, let)
     EXTEND FORM doc  
-        PROPERTIES(l) untaxedAmount
+        PROPERTIES(l) untaxedAmount ON CHANGE changeUntaxedAmount(l)
             
         OBJECTS t = Tax
         PROPERTIES name(t) READONLY, taxAmount(t, let) READONLY, taxAmount(t, l) READONLYIF readonly(let)

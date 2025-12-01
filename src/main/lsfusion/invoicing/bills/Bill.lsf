@@ -284,6 +284,14 @@ FORM bills 'Bills'
 @defineDocHistoryLineProperty(bill, BillLine, untaxedAmount, '{Amount}', nameItem);
 
 @defineDocObjectsForm(bills, b, 'Bills');
+
+changeUntaxedAmount (BillLine l) { 
+    INPUT n = untaxedAmount(l) CHANGE DO {
+        IF abs(n / quantity(l) (-) price(l)) > 0.015 THEN
+            price(l) <- NUMERIC[10,2](n / quantity(l));
+    } 
+}
+
 @defineDocTaxForm(bill, b);
 @defineDocStatusForm(bill, b);
 @defineDocLinesCount(bill, b);
