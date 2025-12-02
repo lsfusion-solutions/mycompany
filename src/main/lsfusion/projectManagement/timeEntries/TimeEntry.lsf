@@ -52,6 +52,23 @@ FORM timeEntry 'Time entry'
 
 DESIGN timeEntry {
     OBJECTS {
+        NEW statusPane {
+            horizontal = TRUE;
+            alignment = STRETCH;
+            NEW statusActions {
+                horizontal = TRUE;
+                flex = 1;
+                NEW primaryActions {
+                    horizontal = TRUE;
+                }
+                NEW secondaryActions {
+                    horizontal = TRUE;
+                }
+            }
+            NEW status {
+                horizontal = TRUE;
+            }
+        }
         NEW pane {
             NEW header {
                 alignment = STRETCH;
@@ -80,5 +97,34 @@ FORM timeEntries 'Time entries'
 NAVIGATOR {
     operations {
         NEW timeEntries;
+    }
+}
+
+// copy
+clone ABSTRACT LIST (TimeEntry, TimeEntry);
+clone (TimeEntry to, TimeEntry from) + {
+    employee(to) <- employee(from);
+    date(to) <- date(from);
+    hours(to) <- hours(from);
+    type(to) <- type(from);
+    description(to) <- description(from);
+}
+
+copy 'Copy' (TimeEntry from) {
+    NEWSESSION {
+        NEW to = TimeEntry {
+            clone(to, from);
+            SHOW timeEntry OBJECTS t = to;
+        }
+    }
+}
+
+EXTEND FORM timeEntry
+    PROPERTIES(t) copy
+;
+
+DESIGN timeEntry {
+    secondaryActions {
+        MOVE PROPERTY(copy(t)) { valueClass = 'btn-secondary'; }
     }
 }

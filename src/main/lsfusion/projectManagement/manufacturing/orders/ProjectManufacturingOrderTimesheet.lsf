@@ -1,0 +1,34 @@
+MODULE ProjectManufacturingOrderTimesheet;
+
+REQUIRE ProjectManufacturingOrderTimeEntry, TimesheetSupervisor;
+
+NAMESPACE ProjectManufacturing;
+
+timesheetManufacturingOrder = DATA LOCAL NESTED ManufacturingOrder ();
+numberDateTimesheetManufacturingOrder 'Manufacturing order' () = numberDate(timesheetManufacturingOrder());
+
+CONSTRAINT timesheetManufacturingOrder() AND timesheetProject() AND NOT timesheetProject() = project(timesheetManufacturingOrder())
+    CHECKED BY timesheetManufacturingOrder[]
+    MESSAGE '';
+
+EXTEND FORM timesheetSupervisor
+    PROPERTIES numberDateTimesheetManufacturingOrder()
+;
+
+DESIGN timesheetSupervisor {
+    edit {
+        MOVE PROPERTY(numberDateTimesheetManufacturingOrder());
+    }
+}
+
+EXTEND FORM timesheetDateEmployee
+    PROPERTIES(t) READONLY numberDateManufacturingOrder, nameItemManufacturingOrder
+;
+
+newTimesheet (TimeEntry t) +{
+    manufacturingOrder(t) <- timesheetManufacturingOrder();
+}
+
+clone (TimeEntry to, TimeEntry from) +{
+    manufacturingOrder(to) <- manufacturingOrder(from);
+}
