@@ -8,7 +8,7 @@ META defineItemPack(prefix, caption)
 
     // category
     prefix##Uom = DATA Uom (Category);
-    name###prefix##Uom 'Unit of measure for '##caption (Category c) = name(prefix##Uom(c));
+    name###prefix##Uom caption (Category c) = name(prefix##Uom(c));
 
     parent###prefix##Uom (Category child) =
     GROUP LAST prefix##Uom(Category parent) ORDER DESC level(child, parent) WHERE prefix##Uom(parent);
@@ -26,7 +26,7 @@ META defineItemPack(prefix, caption)
     // item   
     data###prefix##Uom = DATA Uom (Item);
     prefix##Uom '{Markup_p}' (Item i) = OVERRIDE data###prefix##Uom(i), parent###prefix##Uom(category(i)) MATERIALIZED;
-    name###prefix##Uom 'Unit of measure for '##caption (Item i) = name(prefix##Uom(i));
+    name###prefix##Uom caption (Item i) = name(prefix##Uom(i));
     
     EXTEND FORM item
         PROPERTIES(i) name###prefix##Uom

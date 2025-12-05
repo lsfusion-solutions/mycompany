@@ -11,12 +11,12 @@ done 'Done' = DATA BOOLEAN (Shipment);
 
 status(Shipment s) += WHEN done(s) THEN ShipmentStatus.done;
 
-executionDateTime 'Execution Date' = DATA DATETIME (Shipment);
+executionDateTime 'Execution date' = DATA DATETIME (Shipment);
 WHEN SET(done(Shipment s)) AND NOT CHANGED(executionDateTime(s)) DO executionDateTime(s) <- currentDateTime(); 
 @defineDateTimeAggregation(Shipment, execution, '(execution)');
 
-executionDateTime 'Execution Date' (ShipmentLine l) = executionDateTime(shipment(l));
-executionDate 'Execution Date' (ShipmentLine l) = executionDate(shipment(l));
+executionDateTime 'Execution date' (ShipmentLine l) = executionDateTime(shipment(l));
+executionDate 'Execution date' (ShipmentLine l) = executionDate(shipment(l));
 
 doNotCheckDone 'Do not check shipped quantity' = DATA BOOLEAN (ShipmentType);
 EXTEND FORM shipmentType PROPERTIES(o) doNotCheckDone;
@@ -82,7 +82,7 @@ DESIGN shipment {
     }                  
 }
 
-@defineHistoryProperty(shipment, executionDateTime, 'Execution Date');
+@defineHistoryProperty(shipment, executionDateTime, 'Execution date');
 @defineDocHistoryLineProperty(shipment, ShipmentLine, done, 'Done', nameProduct);
 
 EXTEND FORM shipments
