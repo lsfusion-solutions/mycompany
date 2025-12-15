@@ -1,0 +1,53 @@
+MODULE EnterpriseDataReceive;
+
+REQUIRE EnterpriseData;
+
+NAMESPACE EnterpriseData;
+
+FORM import
+;
+
+importFailed = DATA LOCAL NESTED BOOLEAN();
+processImport ABSTRACT LIST ();
+
+importFromFile 'Импорт из файла' () {
+    INPUT f = XMLFILE DO {
+        importFailed() <- NULL;
+
+        IMPORT import XML FROM f;
+        processImport();
+    }
+}
+
+importUrl 'Url' = DATA STRING () CHARWIDTH 40;
+importFromUrl 'Импорт из url' () {
+    listFiles(importUrl());
+    FOR STRING[250] fileName = fileName(INTEGER j) AND NOT fileIsDirectory(j) DO {
+        importFailed() <- NULL;
+
+        LOCAL file = FILE();
+        READ importUrl() + '/' + fileName TO file;
+
+        IMPORT import XML FROM file();
+        processImport();
+
+        IF NOT importFailed() THEN
+            delete(importUrl() + '/' + fileName);
+    }
+}
+
+EXTEND FORM integrationData
+    PROPERTIES() importFromFile,
+                 importUrl, importFromUrl
+;
+
+DESIGN integrationData {
+    enterpriseData {
+        NEW import {
+            horizontal = TRUE;
+            MOVE PROPERTY(importFromFile());
+            MOVE PROPERTY(importUrl());
+            MOVE PROPERTY(importFromUrl());
+        }
+    }
+}

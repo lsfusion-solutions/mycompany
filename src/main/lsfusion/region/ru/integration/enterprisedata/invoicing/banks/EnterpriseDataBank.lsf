@@ -1,0 +1,32 @@
+MODULE EnterpriseDataBank;
+
+REQUIRE EnterpriseData, Bank;
+
+NAMESPACE EnterpriseData;
+
+@defineGuid(bank, bank, b, otherInformation);
+
+META defineImportBank (prefix, object, group, groupCategory)
+    prefix##Guid = DATA LOCAL STRING(INTEGER);
+    prefix##Name = DATA LOCAL ISTRING[100](INTEGER);
+    prefix##Code = DATA LOCAL STRING[11](INTEGER);
+
+    EXTEND FORM import
+        PROPERTIES(object) IN group prefix##Guid EXTID 'Ссылка'
+        PROPERTIES(object) IN groupCategory prefix##Name EXTID 'Наименование',
+                                            prefix##Code EXTID 'БИК'
+    ;
+
+    import###prefix () {
+        FOR [GROUP SUM 1 BY prefix##Guid(INTEGER i), prefix##Code(i)](STRING guid, STRING[12] code) AND
+            NOT bankGuid(guid) AND bank(code) INLINE DO {
+            guid(Bank b) <- guid WHERE id(b) = code;
+        }
+
+        FOR [GROUP SUM 1 BY prefix##Guid(INTEGER i)](STRING guid) AND NOT bankGuid(guid) NEW b = Bank DO {
+            guid(b) <- guid;
+            id(b) <- GROUP MAX prefix##Code(INTEGER i) IF prefix##Guid(i) = guid;
+            name(b) <- GROUP MAX prefix##Name(INTEGER i) IF prefix##Guid(i) = guid;
+        }
+    }
+END
