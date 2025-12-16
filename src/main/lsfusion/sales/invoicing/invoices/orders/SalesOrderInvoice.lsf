@@ -32,7 +32,7 @@ invoiced 'Invoiced' (OrderLine ol) =
 paid 'Paid' (OrderLine ol) = 
     GROUP SUM quantity(InvoiceLine bl) IF orderLine(bl) = ol AND done(invoice(bl)) AND NOT canceled(invoice(bl));
 
-CONSTRAINT SET(locked(Order o)) AND (GROUP SUM 1 IF order(OrderLine l) = o AND paid(l) < quantity(l)) AND forbidLockNotFullyPaid(type(o))
+CONSTRAINT SET(locked(Order o)) AND (GROUP SUM 1 IF order(OrderLine l) = o AND (OVERRIDE paid(l), 0.0) < quantity(l)) AND forbidLockNotFullyPaid(type(o))
     MESSAGE 'It is forbidden to lock orders that are not fully paid';
 
 toInvoiceOrdered 'To bill' (OrderLine l) = 
