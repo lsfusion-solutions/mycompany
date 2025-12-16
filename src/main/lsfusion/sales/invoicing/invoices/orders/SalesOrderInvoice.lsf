@@ -1,6 +1,7 @@
 MODULE SalesOrderInvoice;
 
 REQUIRE SalesOrderConfirmed, 
+        SalesOrderLocked,
         InvoiceCurrency, InvoiceDone, InvoiceCanceled;
 
 NAMESPACE Sales;
@@ -20,6 +21,9 @@ invoicingPolicy = DATA InvoicingPolicy (OrderType);
 nameInvoicingPolicy 'Invoicing policy' (OrderType t) = name(invoicingPolicy(t)); 
 EXTEND FORM orderType PROPERTIES nameInvoicingPolicy(o);
 
+forbidLockNotFullyPaid 'Forbid to lock orders that are not fully paid' = DATA BOOLEAN (OrderType);
+EXTEND FORM orderType PROPERTIES(o) forbidLockNotFullyPaid;
+
 // lines
 @defineDocLineRelation(order, invoice, '{Order}', 'Invoice', o, i);
 
@@ -27,6 +31,10 @@ invoiced 'Invoiced' (OrderLine ol) =
     GROUP SUM quantity(InvoiceLine bl) IF orderLine(bl) = ol AND active(invoice(bl));
 paid 'Paid' (OrderLine ol) = 
     GROUP SUM quantity(InvoiceLine bl) IF orderLine(bl) = ol AND done(invoice(bl)) AND NOT canceled(invoice(bl));
+
+CONSTRAINT SET(locked(Order o)) AND (GROUP SUM 1 IF order(OrderLine l) = o AND paid(l) < quantity(l)) AND forbidLockNotFullyPaid(type(o))
+    MESSAGE 'It is forbidden to lock orders that are not fully paid';
+
 toInvoiceOrdered 'To bill' (OrderLine l) = 
     max(quantity(l) (-) invoiced(l), 0) 
         IF (invoicingPolicy(type(l)) = InvoicingPolicy.ordered OR NOT invoicingPolicy(type(l)) OR NOT item(l) IS Product);
