@@ -11,7 +11,7 @@ name '{Name}' = DATA ISTRING[30] (ExchangeRate) CHARWIDTH 10;
 
 currency = DATA Currency (ExchangeRate) NONULL;
 nameCurrency 'Currency' (ExchangeRate er) = name(currency(er));
-WHEN LOCAL SET(ExchangeRate er IS ExchangeRate) AND NOT CHANGED(currency(er)) DO currency(er) <- defaultCurrency(); 
+WHEN LOCAL SET(ExchangeRate er IS ExchangeRate) AND NOT CHANGED(currency(er)) DO currency(er) <- defaultCurrency();
 
 defaultExchangeRate = DATA ExchangeRate (Currency);
 default 'Default' (ExchangeRate er) = defaultExchangeRate(currency(er)) = er;
@@ -19,6 +19,8 @@ changeDefault (ExchangeRate er) {
     INPUT b = BOOLEAN DO
         defaultExchangeRate(currency(er)) <- er IF b;
 } 
+
+defaultCurrencyExchangeRate = defaultExchangeRate(defaultCurrency()) MATERIALIZED PREREAD;
 
 // lines
 CLASS ExchangeRateLine 'Exchange rate line';
@@ -32,7 +34,7 @@ nameCurrency 'Currency' (ExchangeRateLine l) = name(currency(l));
 
 rate 'Rate' = DATA NUMERIC[20,10] (ExchangeRateLine) NONULL;
 
-INDEX exchangeRate(ExchangeRateLine rl), currency(rl), date(rl);
+INDEX exchangeRate(ExchangeRateLine rl), currency(rl), date(rl), rl;
 
 FORM exchangeRate 'Exchange rate'
     OBJECTS o = ExchangeRate PANEL
@@ -73,10 +75,11 @@ NAVIGATOR {
 rate (ExchangeRate r, Currency from, DATE d) =
     GROUP LAST rate(ExchangeRateLine rl)
           ORDER date(rl), rl
-          WHERE exchangeRate(rl) = r AND currency(rl) = from AND date(rl) <= d; 
+          WHERE exchangeRate(rl) = r AND currency(rl) = from AND date(rl) <= d;
+rate1 (ExchangeRate r, Currency from, DATE d) = OVERRIDE rate(r, from, d), 1.0000000000;
 
 rate (Currency to, Currency from, DATE d) = rate(defaultExchangeRate(to), from, d);
 rate1 (Currency to, Currency from, DATE d) = OVERRIDE rate(to, from, d), 1.0000000000;
 
-rate (Currency from, DATE d) = rate(defaultCurrency(), from, d);
-rate1 (Currency from, DATE d) = rate1(defaultCurrency(), from, d); 
+rate (Currency from, DATE d) = rate(defaultCurrencyExchangeRate(), from, d);
+rate1 (Currency from, DATE d) = rate1(defaultCurrencyExchangeRate(), from, d); 
