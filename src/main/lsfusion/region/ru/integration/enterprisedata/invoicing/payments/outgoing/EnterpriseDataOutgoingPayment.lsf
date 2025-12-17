@@ -54,7 +54,7 @@ processImport() + {
     NEWSESSION NESTED LOCAL {
         FOR outgoingPaymentGuid(INTEGER i) AND NOT outgoingPaymentGuid(outgoingPaymentGuid(i)) NEW p = OutgoingPayment DO {
             guid(p) <- outgoingPaymentGuid(i);
-            type(p) <- firstOutgoingPaymentType();
+            type(p) <- firstPartnerOutgoingPaymentType();
         }
 
         importOutgoingPaymentCompany();
@@ -72,30 +72,29 @@ processImport() + {
             number(p) <- outgoingPaymentNumber(i);
 
             company(p) <- partnerGuid(outgoingPaymentCompanyGuid(i));
+            companyAccount(p) <- bankAccountGuid(outgoingPaymentCompanyAccountGuid(i));
 
+            partner(p) <- partnerGuid(outgoingPaymentPartnerGuid(i));
+            partnerAccount(p) <- bankAccountGuid(outgoingPaymentPartnerAccountGuid(i));
+            
             reference(p) <- outgoingPaymentReference(i);
 
             currency(p) <- currencyId(outgoingPaymentCurrencyCode(i));
-
             amount(p) <- outgoingPaymentAmount(i);
 
-            companyAccount(p) <- bankAccountGuid(outgoingPaymentCompanyAccountGuid(i));
-
             note(p) <- outgoingPaymentNote(i);
-
-            partner(p) <- partnerGuid(outgoingPaymentPartnerGuid(i));
-
-            partnerAccount(p) <- bankAccountGuid(outgoingPaymentPartnerAccountGuid(i));
         }
 
         LOCAL successMessage = STRING();
         successMessage() <- 'Импортировано исходящих платежей : ' + (GROUP SUM 1 IF outgoingPaymentGuid(outgoingPaymentGuid(INTEGER i))) +
                             (OVERRIDE '(Новых : ' + (GROUP SUM 1 IF SET(p IS OutgoingPayment)) + ')', '');
 
-        APPLY NESTED LOCAL;
-        IF canceled() THEN
-            importFailed() <- TRUE;
-        ELSE
-            MESSAGE successMessage() NOWAIT;
+        IF successMessage() THEN {
+            APPLY NESTED LOCAL;
+            IF canceled() THEN
+                importFailed() <- TRUE;
+            ELSE
+                MESSAGE successMessage() NOWAIT;
+        }
     }
 }
