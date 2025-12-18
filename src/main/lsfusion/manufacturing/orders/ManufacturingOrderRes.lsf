@@ -4,6 +4,9 @@ REQUIRE ManufacturingOrderCanceled, ResLedger;
 
 NAMESPACE Manufacturing;
 
+increaseAvailableStock 'Increase available stock' = DATA BOOLEAN (ManufacturingOrderType);
+EXTEND FORM manufacturingOrderType PROPERTIES(o) increaseAvailableStock;
+
 CLASS ManufacturingOrderResLedger 'Manufacturing' : ResLedger;
 manLedger = AGGR ManufacturingOrderResLedger WHERE reserved(ConsumedLine line) AND item(line) IS Product AND
     (status(manufacturingOrder(line)) = ManufacturingOrderStatus.waiting OR 
@@ -23,3 +26,25 @@ reserved(ManufacturingOrderResLedger r) += reserved(line(r));
 number(ManufacturingOrderResLedger r) += number(manufacturingOrder(line(r)));
 
 edit (ManufacturingOrderResLedger r) + { edit(manufacturingOrder(line(r))); }
+
+CLASS ManufacturingOrderProductsResLedger 'Manufacturing' : ResLedger;
+manProdLedger = AGGR ManufacturingOrderProductsResLedger WHERE toProduce(FinishedLine line) AND item(line) IS Product AND
+    (status(manufacturingOrder(line)) = ManufacturingOrderStatus.waiting OR
+     status(manufacturingOrder(line)) = ManufacturingOrderStatus.ready OR
+     status(manufacturingOrder(line)) = ManufacturingOrderStatus.inProgress);
+
+type(ManufacturingOrderProductsResLedger r) += nameType(manufacturingOrder(line(r)));
+
+dateTime(ManufacturingOrderProductsResLedger r) += scheduledDateTime(manufacturingOrder(line(r)));
+
+partner(ManufacturingOrderProductsResLedger r) += company(manufacturingOrder(line(r)));
+location(ManufacturingOrderProductsResLedger r) += productsLocation(manufacturingOrder(line(r)));
+
+product(ManufacturingOrderProductsResLedger r) += (item(line(r))) AS Product;
+reserved(ManufacturingOrderProductsResLedger r) += -toProduce(line(r));
+
+skipAvailable(ManufacturingOrderProductsResLedger r) += line(r) AND NOT increaseAvailableStock(type(manufacturingOrder(line(r))));
+
+number(ManufacturingOrderProductsResLedger r) += number(manufacturingOrder(line(r)));
+
+edit (ManufacturingOrderProductsResLedger r) + { edit(manufacturingOrder(line(r))); }
