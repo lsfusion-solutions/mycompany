@@ -36,6 +36,7 @@ reference 'Reference' = ABSTRACT ISTRING[50] (Payment) MATERIALIZED;
 // balance
 
 balance 'Balance' (Account a) = GROUP SUM signedAmount(Payment p) IF companyAccount(p) = a AND active(p) MATERIALIZED;
+cashBalance 'Cash balance' (Company c) = GROUP SUM balance(Account a) IF holder(a) = c; 
 
 balanceA 'Balance' (Account a, DATETIME d) = balance(a) (-)
     GROUP SUM signedAmount(Payment p) IF companyAccount(p) = a AND active(p) AND dateTime(p) > d;

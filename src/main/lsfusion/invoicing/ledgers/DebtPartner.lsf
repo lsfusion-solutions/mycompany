@@ -14,7 +14,7 @@ debt 'Debt' (Partner p) = GROUP SUM signedAmount(Debt d) IF active(d) AND partne
 
 pastDueDebt 'Overdue debt' (Partner p) = GROUP SUM signedLeft(Debt d) IF active(d) AND partner(d) = p AND dueDateTime(d) < currentDateTime();
 
-FORM debts 'Partner debts'
+FORM partnerDebts 'Partner debts'
     OBJECTS p = Partner PANEL
     PROPERTIES(p) READONLY name
 
@@ -32,7 +32,7 @@ FORM debts 'Partner debts'
 
 EXTEND FORM partner
     PROPERTIES(p) nameCurrency
-    PROPERTIES(p) ON CHANGE { SHOW debts OBJECTS p = p DOCKED; } debt, pastDueDebt
+    PROPERTIES(p) ON CHANGE { SHOW partnerDebts OBJECTS p = p DOCKED; } debt, pastDueDebt
 ;
 DESIGN partner {
     headerRight {
