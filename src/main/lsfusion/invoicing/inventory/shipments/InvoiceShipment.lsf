@@ -50,6 +50,10 @@ toShip (Invoice i) = GROUP SUM toShip(InvoiceLine il) IF invoice(il) = i;
 fill ABSTRACT LIST (Shipment, Invoice);
 fill ABSTRACT LIST (ShipmentLine, InvoiceLine);
 invoiceShipmentCreated = DATA LOCAL Shipment ();
+
+plannedShipment 'Create planned shipment' = DATA BOOLEAN (InvoiceType);
+EXTEND FORM invoiceType PROPERTIES plannedShipment(o) SHOWIF shipmentType(o);
+
 newShipment (Invoice i) {
     NEW r = Shipment {
         scheduledDateTime(r) <- OVERRIDE deliveryDateTime(i), currentDateTime();
@@ -62,15 +66,18 @@ newShipment (Invoice i) {
         
         deliveryAddress(r) <- deliveryAddress(i);
 
-        immediate(r) <- TRUE;
-        done(r) <- TRUE;
+        IF NOT plannedShipment(type(i)) THEN {
+            immediate(r) <- TRUE;
+            done(r) <- TRUE;
+        }
         
         fill(r, i);
     
         FOR invoice(InvoiceLine l) = i AND item(l) IS Product AND toShip(l) > 0 INLINE NEW rl = ShipmentLine DO {            
             shipment(rl) <- r;
             product(rl) <- shippedProduct(l);
-            done(rl) <- toShip(l);
+            initialDemand(rl) <- toShip(l) IF plannedShipment(type(i));
+            done(rl) <- toShip(l) IF NOT plannedShipment(type(i));
             invoiceLine(rl) <- l;
             fill(rl, l);
         }
