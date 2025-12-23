@@ -314,7 +314,19 @@ FORM invoices 'Invoices'
 
 
 @defineDocObjectsForm(invoices, i, 'Invoices');
+
+changeUntaxedAmount (InvoiceLine l) { 
+    INPUT n = untaxedAmount(l) CHANGE DO {
+        IF discountPrice(l) THEN {
+            discountPrice(l) <- NUMERIC[10,2] (n / quantity(l));
+            recalcDiscount(l);
+        } ELSE
+            price(l) <- NUMERIC[10,2] (n / quantity(l));
+    } 
+}
+@defineTaxData(invoice, i, headerRight);
 @defineDocTaxForm(invoice, i);
+
 @defineDocStatusForm(invoice, i);
 @defineDocLinesCount(invoice, i);
 

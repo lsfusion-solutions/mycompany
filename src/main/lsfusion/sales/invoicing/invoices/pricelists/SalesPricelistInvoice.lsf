@@ -13,7 +13,7 @@ EXTEND FORM invoiceType
 ;
 
 taxValid (InvoiceType it, PriceType pt) = 
-    (taxIncluded(it) AND taxIncluded(pt)) OR (NOT taxIncluded(pt) AND NOT taxIncluded(it));
+    NOT taxIncluded(it) OR taxIncluded(pt);
 
 CONSTRAINT priceType(InvoiceType i) AND priceType(i) AND NOT taxValid(i, priceType(i))
            CHECKED BY priceType[InvoiceType]
@@ -31,6 +31,9 @@ CONSTRAINT type(Invoice i) AND priceType(i) AND NOT taxValid(type(i), priceType(
 
 WHEN LOCAL CHANGED(customer(Invoice o)) OR CHANGED(type(o)) DO 
     priceType(o) <- OVERRIDE priceType(customer(o)), priceType(type(o));
+
+WHEN LOCAL SETCHANGED(priceType(Invoice o)) DO
+    taxIncluded(o) <- taxIncluded(priceType(o));
 
 // price
 listPrice (InvoiceLine l) = 

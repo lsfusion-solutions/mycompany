@@ -18,6 +18,10 @@ CONSTRAINT manufacturingOrder(TimeEntry t) AND project(t) AND NOT project(t) = p
     CHECKED BY manufacturingOrder[TimeEntry]
     MESSAGE 'The time entry manufacturing order does not match the project';
 
+clone (TimeEntry to, TimeEntry from) + {
+    manufacturingOrder(to) <- manufacturingOrder(from);
+}
+
 EXTEND FORM timeEntry
     PROPERTIES(t) numberDateManufacturingOrder
 ;

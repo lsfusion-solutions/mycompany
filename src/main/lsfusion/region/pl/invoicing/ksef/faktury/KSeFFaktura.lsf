@@ -85,6 +85,11 @@ DataWystFaKorygowanej = DATA DATE (Faktura);
 NrFaKorygowanej = DATA STRING[50] (Faktura);
 NrKSeFFaKorygowanej = DATA STRING[36] (Faktura);
 
+CLASS FakturaZaliczkowa;
+faktura 'Faktura' = DATA Faktura (FakturaZaliczkowa) NONULL DELETE INDEXED;
+
+number 'KSeF number' = DATA STRING[36] (FakturaZaliczkowa);
+
 // Row fields
 CLASS FaWiersz 'FaWiersz';
 faktura 'Faktura' = DATA Faktura (FaWiersz) NONULL DELETE INDEXED;
@@ -145,7 +150,11 @@ FORM faktura 'Faktura KSeF'
                   metodaKasowa, samofakturowanie, odwrotneObciazenie, mpp, weUproszczona,
                   KursWalutyZ, RodzajFaktury,
                   PrzyczynaKorekty, DataWystFaKorygowanej, NrFaKorygowanej, NrKSeFFaKorygowanej
-    
+
+    OBJECTS z = FakturaZaliczkowa
+    PROPERTIES(z) READONLY number
+    FILTERS faktura(z) = f
+
     OBJECTS w = FaWiersz
     PROPERTIES(w) READONLY NrWierszaFa, description, GTIN, nameUom, quantity, price, untaxedAmount, taxes
     FILTERS faktura(w) = f
@@ -155,74 +164,84 @@ FORM faktura 'Faktura KSeF'
 
 DESIGN faktura {
     OBJECTS {
-        NEW ksefInfo {
+        NEW header {
+            alignment = STRETCH;
             horizontal = TRUE;
-            MOVE PROPERTY(referenceNumberSession(f));
-            MOVE PROPERTY(referenceNumber(f));
-            MOVE PROPERTY(statusCode(f));
-            MOVE PROPERTY(statusDescription(f));
-        }
-        MOVE PROPERTY(statusDetails(f)) { alignment = STRETCH; }
-        NEW header FIRST {
-            horizontal = TRUE;
-            MOVE PROPERTY(DataWytworzeniaFa(f));
-            MOVE PROPERTY(invoiceNumber(f));
-            MOVE PROPERTY(invoiceDate(f));
-            MOVE PROPERTY(KodWaluty(f));
-            MOVE PROPERTY(KursWalutyZ(f));
-        }
-        NEW parties {
-            NEW seller {
-                caption = 'Podmiot 1';
-                lines = 3;
-                MOVE PROPERTY(namePodmiot1(f));
-                MOVE PROPERTY(p1_NIP(f));
-                MOVE PROPERTY(p1_Nazwa(f));
-                MOVE PROPERTY(p1_AdresL1(f));
-                MOVE PROPERTY(p1_AdresL2(f));
-                MOVE PROPERTY(p1_Email(f));
-                MOVE PROPERTY(p1_Telefon(f));
+            NEW headerLeft {
+                fill = 1;
+                NEW ksefInfo {
+                    horizontal = TRUE;
+                    MOVE PROPERTY(referenceNumberSession(f));
+                    MOVE PROPERTY(referenceNumber(f));
+                    MOVE PROPERTY(statusCode(f));
+                    MOVE PROPERTY(statusDescription(f));
+                }
+                MOVE PROPERTY(statusDetails(f)) { alignment = STRETCH; }
+                NEW invoicing FIRST {
+                    horizontal = TRUE;
+                    MOVE PROPERTY(DataWytworzeniaFa(f));
+                    MOVE PROPERTY(invoiceNumber(f));
+                    MOVE PROPERTY(invoiceDate(f));
+                    MOVE PROPERTY(KodWaluty(f));
+                    MOVE PROPERTY(KursWalutyZ(f));
+                }
+                NEW parties {
+                    NEW seller {
+                        caption = 'Podmiot 1';
+                        lines = 3;
+                        MOVE PROPERTY(namePodmiot1(f));
+                        MOVE PROPERTY(p1_NIP(f));
+                        MOVE PROPERTY(p1_Nazwa(f));
+                        MOVE PROPERTY(p1_AdresL1(f));
+                        MOVE PROPERTY(p1_AdresL2(f));
+                        MOVE PROPERTY(p1_Email(f));
+                        MOVE PROPERTY(p1_Telefon(f));
+                    }
+                    NEW buyer {
+                        caption = 'Podmiot 2';
+                        lines = 3;
+                        MOVE PROPERTY(namePodmiot2(f));
+                        MOVE PROPERTY(p2_NIP(f));
+                        MOVE PROPERTY(p2_Nazwa(f));
+                        MOVE PROPERTY(p2_AdresL1(f));
+                        MOVE PROPERTY(p2_AdresL2(f));
+                        MOVE PROPERTY(p2_Email(f));
+                        MOVE PROPERTY(p2_Telefon(f));
+                        MOVE PROPERTY(p2_NrKlienta(f));
+                    }
+                }
+                NEW totals {
+                    horizontal = TRUE;
+                    MOVE PROPERTY(untaxedAmount1(f));
+                    MOVE PROPERTY(untaxedAmount2(f));
+                    MOVE PROPERTY(untaxedAmount3(f));
+                    MOVE PROPERTY(untaxedAmount6(f));
+                    MOVE PROPERTY(untaxedAmount7(f));
+                    MOVE PROPERTY(taxAmount1(f));
+                    MOVE PROPERTY(taxAmount2(f));
+                    MOVE PROPERTY(taxAmount3(f));
+                    MOVE PROPERTY(amount(f));
+                    MOVE PROPERTY(RodzajFaktury(f));
+                }
+                NEW korekta {
+                    horizontal = TRUE;
+                    MOVE PROPERTY(PrzyczynaKorekty(f));
+                    MOVE PROPERTY(DataWystFaKorygowanej(f));
+                    MOVE PROPERTY(NrFaKorygowanej(f));
+                    MOVE PROPERTY(NrKSeFFaKorygowanej(f));
+                }
+                NEW adnotacje {
+                    horizontal = TRUE;
+                    MOVE PROPERTY(metodaKasowa(f));
+                    MOVE PROPERTY(samofakturowanie(f));
+                    MOVE PROPERTY(odwrotneObciazenie(f));
+                    MOVE PROPERTY(mpp(f));
+                    MOVE PROPERTY(weUproszczona(f));
+                }
             }
-            NEW buyer {
-                caption = 'Podmiot 2';
-                lines = 3;
-                MOVE PROPERTY(namePodmiot2(f));
-                MOVE PROPERTY(p2_NIP(f));
-                MOVE PROPERTY(p2_Nazwa(f));
-                MOVE PROPERTY(p2_AdresL1(f));
-                MOVE PROPERTY(p2_AdresL2(f));
-                MOVE PROPERTY(p2_Email(f));
-                MOVE PROPERTY(p2_Telefon(f));
-                MOVE PROPERTY(p2_NrKlienta(f));
+            NEW headerRight {
+                MOVE BOX(z);
             }
-        }
-        NEW totals {
-            horizontal = TRUE;
-            MOVE PROPERTY(untaxedAmount1(f));
-            MOVE PROPERTY(untaxedAmount2(f));
-            MOVE PROPERTY(untaxedAmount3(f));
-            MOVE PROPERTY(untaxedAmount6(f));
-            MOVE PROPERTY(untaxedAmount7(f));
-            MOVE PROPERTY(taxAmount1(f));
-            MOVE PROPERTY(taxAmount2(f));
-            MOVE PROPERTY(taxAmount3(f));
-            MOVE PROPERTY(amount(f));
-            MOVE PROPERTY(RodzajFaktury(f));
-        }
-        NEW korekta {
-            horizontal = TRUE;
-            MOVE PROPERTY(PrzyczynaKorekty(f));
-            MOVE PROPERTY(DataWystFaKorygowanej(f));
-            MOVE PROPERTY(NrFaKorygowanej(f));
-            MOVE PROPERTY(NrKSeFFaKorygowanej(f));
-        }
-        NEW adnotacje {
-            horizontal = TRUE;
-            MOVE PROPERTY(metodaKasowa(f));
-            MOVE PROPERTY(samofakturowanie(f));
-            MOVE PROPERTY(odwrotneObciazenie(f));
-            MOVE PROPERTY(mpp(f));
-            MOVE PROPERTY(weUproszczona(f));
         }
         MOVE BOX(w) { caption = 'Lines'; fill = 1; }
     }

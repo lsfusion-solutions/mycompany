@@ -68,3 +68,6 @@ defaultAccount(Partner p, OutgoingPaymentType t) = CASE OVERRIDE
     WHEN bank(t) THEN defaultBankAccount(p)
     WHEN cash(t) THEN defaultCashAccount(p)
 ;
+
+firstPartnerOutgoingPaymentType () = GROUP LAST OutgoingPaymentType t ORDER DESC t WHERE t IS OutgoingPaymentType AND NOT interpay(t);
+firstInterpayOutgoingPaymentType () = GROUP LAST OutgoingPaymentType t ORDER DESC t WHERE interpay(t);

@@ -3,7 +3,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Реализация" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" isFloatColumnFooter="true" uuid="a51f6d25-4c68-4694-a79d-09a675e63348">
 	<property name="net.sf.jasperreports.export.xls.print.page.width" value="842"/>
 	<property name="net.sf.jasperreports.export.xls.print.page.height" value="595"/>
-	<style name="DefaultStyle" isDefault="true" vTextAlign="Middle" fontName="DejaVu Sans" pdfFontName="DejaVu Sans" pdfEncoding="cp1251" fontSize="10">
+	<style name="DefaultStyle" isDefault="true" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10" pdfFontName="DejaVu Sans" pdfEncoding="cp1251">
 		<box>
 			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 		</box>
@@ -56,6 +56,13 @@
 	<field name="legalCodeUom(l)" class="java.lang.String"/>
 	<field name="nameCountryOrigin(l)" class="java.lang.String"/>
 	<field name="idCountryOrigin(l)" class="java.lang.String"/>
+	<field name="numberCompanyAccount(o)" class="java.lang.String"/>
+	<field name="kppCustomer(o)" class="java.lang.String"/>
+	<field name="kppCompany(o)" class="java.lang.String"/>
+	<field name="idBankCompanyAccount(o)" class="java.lang.String"/>
+	<field name="nameBankCompanyAccount(o)" class="java.lang.String"/>
+	<field name="numberCustomerAccount(o)" class="java.lang.String"/>
+	<field name="correspondentAccountCompany(o)" class="java.lang.String"/>
 	<variable name="sumSubtotalPage" class="java.math.BigDecimal" resetType="Page" calculation="Sum">
 		<variableExpression><![CDATA[$F{untaxedAmount(l)}]]></variableExpression>
 	</variable>
@@ -661,6 +668,21 @@
 				</textElement>
 				<textFieldExpression><![CDATA["(8)"]]></textFieldExpression>
 			</textField>
+			<componentElement>
+				<reportElement x="0" y="0" width="109" height="78" uuid="af9bc989-e5e4-419e-a07d-9bad8a82ccd1"/>
+				<jr:QRCode xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" evaluationTime="Report">
+					<jr:codeExpression><![CDATA["ST00012|"
+ + "Name=" + (($F{fullNameCompany(o)}!=null?$F{fullNameCompany(o)}:"").replace("|"," ")) + "|"
+ + "PersonalAcc=" + (($F{numberCompanyAccount(o)}!=null?$F{numberCompanyAccount(o)}:"").replace("|"," ")) + "|"
+ + "BankName=" + (($F{nameBankCompanyAccount(o)}!=null?$F{nameBankCompanyAccount(o)}:"").replace("|"," ")) + "|"
+ + "BIC=" + (($F{idBankCompanyAccount(o)}!=null?$F{idBankCompanyAccount(o)}:"").replace("|"," ")) + "|"
+ + "CorrespAcc=" + (($F{correspondentAccountCompany(o)}!=null?$F{correspondentAccountCompany(o)}:"").replace("|"," ")) + "|"
+ + "PayeeINN=" + (($F{innCompany(o)}!=null?$F{innCompany(o)}:"").replace("|"," ")) + "|"
+ + "KPP=" + (($F{kppCompany(o)}!=null?$F{kppCompany(o)}:"").replace("|"," ")) + "|"
+ + "Purpose=" + (("Оплата по счету №" + ($F{number(o)}!=null?$F{number(o)}:"")) .replace("|"," ")) + "|"
+ + "Sum=" + ($V{sumTotal}!=null ? $V{sumTotal}.multiply(new java.math.BigDecimal(100)).setScale(0, java.math.RoundingMode.HALF_UP).toPlainString() : "")]]></jr:codeExpression>
+				</jr:QRCode>
+			</componentElement>
 		</band>
 	</title>
 	<pageHeader>

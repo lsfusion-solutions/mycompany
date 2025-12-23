@@ -49,6 +49,7 @@ backgroundHoursTimesheet 'Hours' (DATE d, Employee e)=
             backgroundHoursTimesheet(d);
 
 
+newTimesheet ABSTRACT LIST (TimeEntry);
 changeTimesheetHours (DATE d, Employee e, TimeEntryType et, NUMERIC[8,2] n, TimeEntryHours h) {
     IF n THEN {
         IF timesheetProject() THEN {
@@ -68,6 +69,8 @@ changeTimesheetHours (DATE d, Employee e, TimeEntryType et, NUMERIC[8,2] n, Time
                     date(t) <- d;
                     hours(t) <- n;
                     timeEntryHours(t) <- h;
+
+                    newTimesheet(t);
                 }
             }
         } ELSE {
@@ -86,6 +89,8 @@ changeTimesheetHours (DATE d, Employee e, TimeEntryType et, NUMERIC[8,2] n, Time
                     date(t) <- d;
                     hours(t) <- n;
                     timeEntryHours(t) <- h;
+
+                    newTimesheet(t);
                 }
             }
         }
@@ -147,12 +152,26 @@ clearHours 'Clear' (DATE d) {
         clearApply(d);
 }
 
+addTimesheetTimeEntry 'Add' (INTERVAL[DATE] i, Employee e) {
+    NEW t = TimeEntry {
+        project(t) <- timesheetProject();
+        employee(t) <- e;
+        date(t) <- from(i);
+        newTimesheet(t);
+        DIALOG timeEntry OBJECTS t = t DO {} ELSE {
+            DELETE t;
+        }
+    }
+} IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+
 FORM timesheetDateEmployee 'Time entries'
     OBJECTS i = INTERVAL[DATE] PANEL
     OBJECTS e = Employee PANEL
 
     OBJECTS t = TimeEntry
     PROPERTIES(t) READONLY nameProject SHOWIF NOT timesheetProject(), date SHOWIF from(i) != to(i), hours, nameType, description, nameTimeEntryHours
+    PROPERTIES(t) copy TOOLBAR
+    PROPERTIES(i, e) addTimesheetTimeEntry DRAW t TOOLBAR
     PROPERTIES(t) EDIT, DELETE
     ORDERS date(t)
     FILTERS date(t) >= from(i) AND date(t) <= to(i),

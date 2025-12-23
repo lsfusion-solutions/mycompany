@@ -1,0 +1,100 @@
+MODULE EnterpriseDataOutgoingPayment;
+
+REQUIRE EnterpriseDataReceive, OutgoingPaymentCurrency,
+        EnterpriseDataPartner, EnterpriseDataBank, EnterpriseDataBankAccount;
+
+NAMESPACE EnterpriseData;
+
+@defineGuid(outgoingPayment, outgoingPayment, p, otherInformation);
+
+// type
+settlementType 'Вид расчетов (1С)' = DATA STRING (OutgoingPaymentType);
+EXTEND FORM outgoingPaymentType PROPERTIES(o) settlementType;
+
+outgoingPaymentTypeSettlement = GROUP AGGR OutgoingPaymentType t BY settlementType(t);
+
+outgoingPaymentGuid = DATA LOCAL STRING (INTEGER);
+
+outgoingPaymentDateTime = DATA LOCAL DATETIME(INTEGER);
+outgoingPaymentNumber = DATA LOCAL STRING[50](INTEGER);
+
+outgoingPaymentReference = DATA LOCAL ISTRING[50](INTEGER);
+
+outgoingPaymentCurrencyCode = DATA LOCAL STRING(INTEGER);
+outgoingPaymentAmount = DATA LOCAL NUMERIC[14,2](INTEGER);
+
+outgoingPaymentNote = DATA LOCAL ISTRING[200](INTEGER);
+
+outgoingPaymentSettlement = DATA LOCAL STRING(INTEGER);
+
+EXTEND FORM import
+    OBJECTS outgoingPayment = INTEGER EXTID 'Документ.СБДСРасчетыСКонтрагентами' IN body
+
+    PROPERTIES(outgoingPayment) IN key outgoingPaymentGuid EXTID 'Ссылка'
+    PROPERTIES(outgoingPayment) IN key outgoingPaymentDateTime EXTID 'Дата', outgoingPaymentNumber EXTID 'Номер'
+
+    PROPERTIES(outgoingPayment) IN common outgoingPaymentReference EXTID 'НомерВходящегоДокумента'
+    PROPERTIES(outgoingPayment) IN commonCurrencyCategory outgoingPaymentCurrencyCode EXTID 'Код'
+    PROPERTIES(outgoingPayment) IN common outgoingPaymentAmount EXTID 'Сумма'
+    PROPERTIES(outgoingPayment) IN common outgoingPaymentNote EXTID 'НазначениеПлатежа'
+
+    PROPERTIES(outgoingPayment) outgoingPaymentSettlement EXTID 'ВидРасчетов'
+;
+
+@defineImportPartner(outgoingPaymentCompany, outgoingPayment, keyCompany, Company);
+@defineImportBank(outgoingPaymentCompanyAccountBank, outgoingPayment, commonCompanyAccountBank, commonCompanyAccountBankCategory);
+@defineImportBankAccount(outgoingPaymentCompany, outgoingPayment, commonCompanyAccount);
+
+@defineImportPartner(outgoingPaymentPartner, outgoingPayment, partner, LegalEntity);
+
+@defineImportBank(outgoingPaymentPartnerAccountBank, outgoingPayment, commonAccountBank, commonAccountBankCategory);
+@defineImportBankAccount(outgoingPaymentPartner, outgoingPayment, commonAccount);
+
+processImport() + {
+    NEWSESSION NESTED LOCAL {
+        FOR outgoingPaymentGuid(INTEGER i) AND NOT outgoingPaymentGuid(outgoingPaymentGuid(i)) NEW p = OutgoingPayment DO {
+            guid(p) <- outgoingPaymentGuid(i);
+            type(p) <- firstPartnerOutgoingPaymentType();
+        }
+
+        importOutgoingPaymentCompany();
+        importOutgoingPaymentCompanyAccountBank();
+        importOutgoingPaymentCompanyAccount();
+
+        importOutgoingPaymentPartner();
+        importOutgoingPaymentPartnerAccountBank();
+        importOutgoingPaymentPartnerAccount();
+
+        FOR OutgoingPayment p = outgoingPaymentGuid(outgoingPaymentGuid(INTEGER i)) DO {
+            type(p) <- outgoingPaymentTypeSettlement(outgoingPaymentSettlement(i)) WHERE outgoingPaymentTypeSettlement(outgoingPaymentSettlement(i));
+
+            dateTime(p) <- outgoingPaymentDateTime(i);
+            number(p) <- outgoingPaymentNumber(i);
+
+            company(p) <- partnerGuid(outgoingPaymentCompanyGuid(i));
+            companyAccount(p) <- bankAccountGuid(outgoingPaymentCompanyAccountGuid(i));
+
+            partner(p) <- partnerGuid(outgoingPaymentPartnerGuid(i));
+            partnerAccount(p) <- bankAccountGuid(outgoingPaymentPartnerAccountGuid(i));
+            
+            reference(p) <- outgoingPaymentReference(i);
+
+            currency(p) <- currencyId(outgoingPaymentCurrencyCode(i));
+            amount(p) <- outgoingPaymentAmount(i);
+
+            note(p) <- outgoingPaymentNote(i);
+        }
+
+        LOCAL successMessage = STRING();
+        successMessage() <- 'Импортировано исходящих платежей : ' + (GROUP SUM 1 IF outgoingPaymentGuid(outgoingPaymentGuid(INTEGER i))) +
+                            (OVERRIDE '(Новых : ' + (GROUP SUM 1 IF SET(p IS OutgoingPayment)) + ')', '');
+
+        IF successMessage() THEN {
+            APPLY NESTED LOCAL;
+            IF canceled() THEN
+                importFailed() <- TRUE;
+            ELSE
+                MESSAGE successMessage() NOWAIT;
+        }
+    }
+}

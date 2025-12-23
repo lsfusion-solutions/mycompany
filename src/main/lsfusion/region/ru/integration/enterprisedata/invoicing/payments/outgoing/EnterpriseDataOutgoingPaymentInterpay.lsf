@@ -1,0 +1,85 @@
+MODULE EnterpriseDataOutgoingPaymentInterpay;
+
+REQUIRE EnterpriseDataOutgoingPayment;
+
+NAMESPACE EnterpriseData;
+
+interpayPaymentGuid = DATA LOCAL STRING(LONG);
+interpayPaymentDateTime = DATA LOCAL DATETIME(LONG);
+interpayPaymentNumber = DATA LOCAL STRING[50](LONG);
+
+interpayPaymentReference = DATA LOCAL ISTRING[50](LONG);
+
+interpayPaymentCurrencyCode = DATA LOCAL STRING(LONG);
+interpayPaymentAmount = DATA LOCAL NUMERIC[14,2](LONG);
+
+interpayPaymentNote = DATA LOCAL ISTRING[200](LONG);
+
+EXTEND FORM import
+    OBJECTS interpayPayment = LONG EXTID 'Документ.СБДСПереводНаДругойСчет' IN body
+
+    PROPERTIES(interpayPayment) IN key interpayPaymentGuid EXTID 'Ссылка'
+    PROPERTIES(interpayPayment) IN key interpayPaymentDateTime EXTID 'Дата', interpayPaymentNumber EXTID 'Номер'
+
+    PROPERTIES(interpayPayment) IN common interpayPaymentReference EXTID 'НомерВходящегоДокумента'
+    PROPERTIES(interpayPayment) IN commonCurrencyCategory interpayPaymentCurrencyCode EXTID 'Код'
+    PROPERTIES(interpayPayment) IN common interpayPaymentAmount EXTID 'Сумма'
+    PROPERTIES(interpayPayment) IN common interpayPaymentNote EXTID 'НазначениеПлатежа'
+;
+
+@defineImportPartner(interpayPaymentCompany, interpayPayment, keyCompany, Company);
+
+@defineImportBank(interpayPaymentCompanyAccountBank, interpayPayment, commonCompanyAccountBank, commonCompanyAccountBankCategory);
+@defineImportBankAccount(interpayPaymentCompany, interpayPayment, commonCompanyAccount);
+
+@defineImportPartner(interpayPaymentPartner, interpayPayment, commonAccountOwnerCompany, Company);
+
+@defineImportBank(interpayPaymentPartnerAccountBank, interpayPayment, commonAccountBank, commonAccountBankCategory);
+@defineImportBankAccount(interpayPaymentPartner, interpayPayment, commonAccount);
+
+processImport() + {
+    NEWSESSION NESTED LOCAL {
+        FOR interpayPaymentGuid(LONG i) AND NOT outgoingPaymentGuid(interpayPaymentGuid(i)) NEW p = OutgoingPayment DO {
+            guid(p) <- interpayPaymentGuid(i);
+            type(p) <- firstInterpayOutgoingPaymentType();
+        }
+
+        importInterpayPaymentCompany();
+        importInterpayPaymentCompanyAccountBank();
+        importInterpayPaymentCompanyAccount();
+        
+        importInterpayPaymentPartner();
+        importInterpayPaymentPartnerAccountBank();
+        importInterpayPaymentPartnerAccount();
+
+        FOR OutgoingPayment p = outgoingPaymentGuid(interpayPaymentGuid(LONG i)) DO {
+            dateTime(p) <- interpayPaymentDateTime(i);
+            number(p) <- interpayPaymentNumber(i);
+
+            company(p) <- partnerGuid(interpayPaymentCompanyGuid(i));
+            companyAccount(p) <- bankAccountGuid(interpayPaymentCompanyAccountGuid(i));
+
+            partner(p) <- partnerGuid(interpayPaymentPartnerGuid(i));
+            partnerAccount(p) <- bankAccountGuid(interpayPaymentPartnerAccountGuid(i));
+
+            reference(p) <- interpayPaymentReference(i);
+
+            currency(p) <- currencyId(interpayPaymentCurrencyCode(i));
+            amount(p) <- interpayPaymentAmount(i);
+
+            note(p) <- interpayPaymentNote(i);
+        }
+
+        LOCAL successMessage = STRING();
+        successMessage() <- 'Импортировано переводов на другой счет : ' + (GROUP SUM 1 IF outgoingPaymentGuid(interpayPaymentGuid(LONG i))) +
+                            (OVERRIDE '(Новых : ' + (GROUP SUM 1 IF SET(p IS OutgoingPayment)) + ')', '');
+
+        IF successMessage() THEN {
+            APPLY NESTED LOCAL;
+            IF canceled() THEN
+                importFailed() <- TRUE;
+            ELSE
+                MESSAGE successMessage() NOWAIT;
+        }
+    }
+}

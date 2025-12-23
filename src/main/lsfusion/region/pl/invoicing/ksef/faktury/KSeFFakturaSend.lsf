@@ -26,9 +26,9 @@ sendInteractive 'Wyślij do KSeF' (Faktura f) {
         getAccessToken(podmiot1(f));
         EXTERNAL HTTP POST hostApi() + '/sessions/online/' + referenceNumber(session()) + '/invoices' HEADERS accessHeaders PARAMS
             JSON FROM invoiceHash = hashSha256Base64(RAWFILE(exportFile())),
-            invoiceSize = rawOctetLength(RAWFILE(exportFile())),
+            invoiceSize = octetLength(RAWFILE(exportFile())),
             encryptedInvoiceHash = hashSha256Base64(cipherResult()),
-            encryptedInvoiceSize = rawOctetLength(cipherResult()),
+            encryptedInvoiceSize = octetLength(cipherResult()),
             encryptedInvoiceContent = encodeBase64Unchunked(cipherResult())
             TO resultFile;
 

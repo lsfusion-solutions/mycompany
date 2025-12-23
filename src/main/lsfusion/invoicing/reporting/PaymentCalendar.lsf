@@ -1,0 +1,145 @@
+MODULE PaymentCalendar;
+
+REQUIRE Debt, Payment, Account, Company, Partner, DateUtils;
+
+NAMESPACE Invoicing;
+
+hasDebtRow (Company c, Partner p, ISTRING[100] t, INTERVAL[DATE] i) = GROUP SUM 1 IF active(Debt d)
+    AND company(d) = c AND partner(d) = p AND type(d) = t AND dueDate(d) <= to(i);
+
+hasDebtRow (Company c, ISTRING[100] t, INTERVAL[DATE] i) = GROUP SUM 1 IF active(Debt d)
+    AND company(d) = c AND type(d) = t AND dueDate(d) <= to(i);
+
+debtBefore 'Debt before' (Company c, Partner p, ISTRING[100] t, INTERVAL[DATE] i) = GROUP SUM signedLeft(Debt d) IF active(d)
+    AND company(d) = c AND partner(d) = p AND type(d) = t AND dueDate(d) < from(i);
+
+debtBefore 'Debt before' (Company c, ISTRING[100] t, INTERVAL[DATE] i) = GROUP SUM signedLeft(Debt d) IF active(d)
+    AND company(d) = c AND type(d) = t AND dueDate(d) < from(i);
+
+debtChange (DATE dt, Company c, Partner p, ISTRING[100] t) = GROUP SUM signedLeft(Debt d) IF active(d)
+    AND company(d) = c AND partner(d) = p AND type(d) = t AND dueDate(d) = dt;
+
+debtChange (DATE dt, Company c, ISTRING[100] t) = GROUP SUM signedLeft(Debt d) IF active(d)
+    AND company(d) = c AND type(d) = t AND dueDate(d) = dt;
+
+debtLeft (DATE dt, Company c) = GROUP SUM signedLeft(Debt d) IF active(d)
+    AND company(d) = c AND dueDate(d) <= dt;
+
+forecastCash (DATE dt, Company c) = cashBalance(c) (+) debtLeft(dt, c);
+
+debtBackground (NUMERIC[14,2] n) = CASE
+    WHEN n > 0 THEN RGB(212,255,212)
+    WHEN n < 0 THEN RGB(255,212,212);
+
+FORM paymentCalendar 'Payment calendar'
+    OBJECTS c = Company PANEL
+    PROPERTIES(c) 'Company' = name SELECTOR
+
+    OBJECTS dates = INTERVAL[DATE] PANEL NULL
+    PROPERTIES interval '' = VALUE(dates)
+
+    EVENTS ON INIT {
+        SEEK paymentCalendar.dates = interval(currentDate(), sum(currentDate(), 14));
+    }
+
+    PROPERTIES prevInterval '<' = { SEEK paymentCalendar.dates = prevMonthInterval(dates); },
+               nextInterval '>' = { SEEK paymentCalendar.dates = nextMonthInterval(dates); }
+
+    PROPERTIES(c) READONLY cashBalance
+
+    OBJECTS dt = DATE
+    FILTERS iterate(dt, from(dates), to(dates))
+
+    OBJECTS ta = ISTRING[100]
+    FILTERS hasDebtRow(c, ta, dates)
+
+    PROPERTIES type 'Type' = VALUE(ta)
+    PROPERTIES debtBefore(c, ta, dates) BACKGROUND debtBackground(debtBefore(c, ta, dates))
+                                        ON CHANGE { SHOW debts FILTERS company(d) = c AND type(d) = ta AND dueDate(d) < from(dates); }
+
+    PROPERTIES debtChange(dt, c, ta) COLUMNS (dt)
+                                    HEADER extractDay(dt) + '.' + extractMonthNumber(dt) + ' ' + extractDOWName(dt)
+                                    FOOTER forecastCash(dt, c)
+                                    BACKGROUND debtBackground(debtChange(dt, c, ta))
+                                    ON CHANGE { IF debtChange(dt, c, ta) THEN SHOW debts FILTERS company(d) = c AND type(d) = ta AND dueDate(d) = dt; }
+
+    OBJECTS pt = (p = Partner, t = ISTRING[100])
+    FILTERS hasDebtRow(c, p, t, dates)
+
+    PROPERTIES(p) READONLY name
+    PROPERTIES typePartner 'Type' = VALUE(t)
+    PROPERTIES debtBefore(c, p, t, dates) BACKGROUND debtBackground(debtBefore(c, p, t, dates))
+                                          ON CHANGE { SHOW debts FILTERS company(d) = c AND type(d) = t AND partner(d) = p AND dueDate(d) < from(dates); }
+
+    PROPERTIES debtChange(dt, c, p, t) COLUMNS (dt)
+                                      HEADER extractDay(dt) + '.' + extractMonthNumber(dt) + ' ' + extractDOWName(dt)
+                                      FOOTER forecastCash(dt, c)
+                                      BACKGROUND debtBackground(debtChange(dt, c, p, t))
+                                      ON CHANGE { IF debtChange(dt, c, p, t) THEN SHOW debts FILTERS company(d) = c AND type(d) = t AND partner(d) = p AND dueDate(d) = dt; }
+
+    OBJECTS dcf 'Cash balance' = DATE PIVOT 'Line Chart' NOSETTINGS
+    PROPERTIES READONLY date = VALUE(dcf) ROW, forecastCash(dcf, c) MEASURE
+    FILTERS iterate(dcf, from(dates), to(dates))
+;
+
+DESIGN paymentCalendar {
+    OBJECTS {
+        NEW header {
+            horizontal = TRUE;
+            NEW interval {
+                horizontal = TRUE;
+                MOVE PROPERTY(prevInterval);
+                MOVE PROPERTY(interval);
+                MOVE PROPERTY(nextInterval);
+            }
+            MOVE PROPERTY(name(c));
+            MOVE PROPERTY(cashBalance(c));
+        }
+        NEW tabbedPane {
+            fill = 1;
+            tabbed = TRUE;
+            MOVE BOX(ta) {
+                caption = 'Type';
+                PROPERTY(type) {
+                    charWidth = 20;
+                }
+                PROPERTY(debtBefore(c, ta, dates)) {
+                    charWidth = 13;
+                }
+                PROPERTY(debtChange(dt, c, ta)) {
+                    charWidth = 13;
+                }
+            }
+            MOVE BOX(pt) {
+                caption = 'Partner';
+                PROPERTY(name(p)) {
+                    caption = 'Partner';
+                }
+                PROPERTY(typePartner) {
+                    charWidth = 20;
+                }
+                PROPERTY(debtBefore(c, p, t, dates)) {
+                    charWidth = 13;
+                }
+                PROPERTY(debtChange(dt, c, p, t)) {
+                    charWidth = 13;
+                }
+            }
+            MOVE BOX(dcf);
+        }
+    }
+}
+
+DESIGN paymentCalendar {
+    PROPERTY(debtBefore(c, ta, dates)) { changeOnSingleClick = TRUE; }
+    PROPERTY(debtChange(dt, c, ta)) { changeOnSingleClick = TRUE; }
+    PROPERTY(debtBefore(c, p, t, dates)) { changeOnSingleClick = TRUE; }
+    PROPERTY(debtChange(dt, c, p, t)) { changeOnSingleClick = TRUE; }
+}
+
+NAVIGATOR {
+    reporting {
+        NEW paymentCalendar;
+    }
+}
+

@@ -1,0 +1,31 @@
+MODULE EnterpriseDataBankAccount;
+
+REQUIRE EnterpriseData, BankAccount;
+
+NAMESPACE EnterpriseData;
+
+@defineGuid(bankAccount, account, a, extraParams);
+
+META defineImportBankAccount (prefix, object, group)
+    prefix##AccountGuid = DATA LOCAL STRING(INTEGER);
+    prefix##AccountNumber = DATA LOCAL ISTRING[30](INTEGER);
+
+    EXTEND FORM import
+        PROPERTIES(object) IN group prefix##AccountGuid EXTID 'Ссылка',
+                                    prefix##AccountNumber EXTID 'НомерСчета'  
+    ;
+
+    import###prefix##Account () {
+        FOR [GROUP SUM 1 BY prefix##AccountGuid(INTEGER i), prefix##Guid(i), prefix##AccountNumber(i)](STRING guid, STRING partnerGuid, STRING[30] accountNumber) AND
+            NOT bankAccountGuid(guid) AND account(partnerGuid(partnerGuid), accountNumber) INLINE DO {
+            guid(BankAccount a) <- guid WHERE holder(a) = partnerGuid(partnerGuid) AND number(a) = accountNumber;
+        }
+
+        FOR [GROUP SUM 1 BY prefix##AccountGuid(INTEGER i)](STRING guid) AND NOT bankAccountGuid(guid) NEW a = BankAccount DO {
+            guid(a) <- guid;
+            holder(a) <- GROUP MAX partnerGuid(prefix##Guid(INTEGER i)) IF prefix##AccountGuid(i) = guid;
+            number(a) <- GROUP MAX prefix##AccountNumber(INTEGER i) IF prefix##AccountGuid(i) = guid;
+            bank(a) <- GROUP MAX bankGuid(prefix##AccountBankGuid(INTEGER i)) IF prefix##AccountGuid(i) = guid;
+        }
+    }
+END

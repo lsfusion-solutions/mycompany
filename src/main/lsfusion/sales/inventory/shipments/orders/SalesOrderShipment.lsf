@@ -81,12 +81,18 @@ WHEN ([GROUP SUM 1 IF CHANGED(toShip(OrderLine l)) BY order(l)](Order o) OR SET(
 forbidLockActiveShipments 'Forbid to lock orders with active shipments' = DATA BOOLEAN (OrderType);
 EXTEND FORM orderType PROPERTIES(o) forbidLockActiveShipments;
 
+forbidLockNotFullyShipped 'Forbid to lock orders that are not fully shipped' = DATA BOOLEAN (OrderType);
+EXTEND FORM orderType PROPERTIES(o) forbidLockNotFullyShipped;
+
 WHEN SET(locked(Order o)) AND NOT forbidLockActiveShipments(type(o)) DO {
     DELETE Shipment s WHERE s = reserveShipment(o) AND toReserve(s);
 }
 
 CONSTRAINT SET(locked(Order o)) AND toReserve(reserveShipment(o)) AND forbidLockActiveShipments(type(o))
     MESSAGE 'It is forbidden to lock orders with active shipments';
+
+CONSTRAINT SET(locked(Order o)) AND toShip(o) > 0 AND forbidLockNotFullyShipped(type(o))
+    MESSAGE 'It is forbidden to lock orders that are not fully shipped';
 
 overShipPartially (ShipmentLine to, ShipmentLine from) +{
     orderLine(to) <- orderLine(from);

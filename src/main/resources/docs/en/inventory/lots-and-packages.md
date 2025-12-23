@@ -1,0 +1,21 @@
+# Lots and packages
+
+## Lots
+
+A lot (batch/serial) is used for traceability.
+
+If lot accounting is enabled:
+
+- a lot can be specified in receipts;
+- a lot can be required in shipments;
+- stock reports can be built with a lot breakdown.
+
+## Packages
+
+A package is used to account for goods in containers/packaging units.
+
+If package accounting is enabled:
+
+- you can account for package contents;
+- you can link a package to a lot;
+- you can perform transfer/shipment operations using packages.

@@ -12,6 +12,7 @@ dateTime 'Date' = ABSTRACT DATETIME (Debt) MATERIALIZED;
 @defineDateTimeAggregation(Debt);
 
 dueDateTime 'Pay before' = ABSTRACT DATETIME(Debt) MATERIALIZED;
+@defineDateTimeAggregation(Debt, due, '(pay before)');
 
 partner = ABSTRACT Partner (Debt) MATERIALIZED;
 namePartner 'Partner' (Debt d) = name(partner(d));
@@ -89,3 +90,13 @@ canBePaid (IncomingDebt id, OutgoingDebt od) = canBeMatched(id, od) AND left(id,
 skipCheckLeft = ABSTRACT BOOLEAN (Debt);
 CONSTRAINT left(IncomingDebt id) < 0 AND amount(id) > 0 AND NOT skipCheckLeft(id) MESSAGE 'Incoming debt is posted more than the amount owed';
 CONSTRAINT left(OutgoingDebt od) < 0 AND amount(od) > 0 AND NOT skipCheckLeft(od) MESSAGE 'Outgoing debt has posted more than the outstanding amount';
+
+FORM debts 'Debts'
+    OBJECTS d = Debt
+    PROPERTIES(d) READONLY class, type, number, dateTime, dueDateTime, nameCompany, namePartner,
+                           sourceAmount, nameSourceCurrency, rate1, amount, left
+    PROPERTIES(d) NEWSESSION EDIT
+    ORDERS dateTime(d)
+
+    FILTERS active(d)
+;

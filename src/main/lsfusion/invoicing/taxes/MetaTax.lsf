@@ -3,7 +3,7 @@ MODULE MetaTax;
 META defineTaxCalc(doc, let, prefix, price)
     untaxedAmount '{Amount}'  = DATA NUMERIC[14,2] (###doc##Line);
     
-    WHEN LOCAL CHANGED(quantity(###doc##Line l)) OR CHANGED(price(l)) DO {
+    WHEN LOCAL (CHANGED(quantity(###doc##Line l)) OR CHANGED(price(l))) AND NOT CHANGED(untaxedAmount(l)) DO {
         untaxedAmount(l) <- NUMERIC[14,2](quantity(l) * price(l));
     }
     
@@ -27,8 +27,8 @@ META defineTaxCalc(doc, let, prefix, price)
     // amount    
     taxAmount 'Taxes' = DATA NUMERIC[14,2] (Tax, ###doc##Line);
     
-    taxIncluded = ABSTRACT BOOLEAN (###doc##Line);
-    WHEN LOCAL CHANGED(untaxedAmount(###doc##Line l) IF in(l, Tax t)) AND value(t) AND NOT CHANGED(taxAmount(t, l)) DO
+    taxIncluded = ABSTRACT VALUE BOOLEAN (###doc##Line);
+    WHEN LOCAL (CHANGED(untaxedAmount(###doc##Line l) IF in(l, Tax t)) OR CHANGED(taxIncluded(l))) AND value(t) AND NOT CHANGED(taxAmount(t, l)) DO
         taxAmount (t, l) <- NUMERIC[14,2] (value(t) / (100 (+) (value(t) IF taxIncluded(l))) * untaxedAmount(l));
     
     CONSTRAINT (DROPPED(Tax t IS Tax) AND PREV(taxAmount(t, ###doc##Line l))) 
@@ -64,9 +64,20 @@ META defineTaxCalc(doc, let, prefix)
     @defineTaxCalc(doc, let, prefix, price);
 END
 
+META defineTaxData(doc, let, container)
+    taxIncluded 'Price includes taxes' = DATA BOOLEAN (###doc);
+    EXTEND FORM doc PROPERTIES(let) taxIncluded SHOWIF NOT taxIncluded(type(let));
+    DESIGN doc {
+        container {
+            MOVE PROPERTY(taxIncluded(let));
+        }
+    }
+    taxIncluded(###doc###Line l) += taxIncluded(doc(l));
+END
+
 META defineDocTaxForm(doc, let)
     EXTEND FORM doc  
-        PROPERTIES(l) untaxedAmount
+        PROPERTIES(l) untaxedAmount ON CHANGE changeUntaxedAmount(l)
             
         OBJECTS t = Tax
         PROPERTIES name(t) READONLY, taxAmount(t, let) READONLY, taxAmount(t, l) READONLYIF readonly(let)

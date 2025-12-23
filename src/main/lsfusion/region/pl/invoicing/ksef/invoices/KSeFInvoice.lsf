@@ -1,6 +1,7 @@
 MODULE KSeFInvoice;
 
-REQUIRE Invoice, InvoiceCurrency, InvoiceCorrection, Partner, Company, LegalEntityPl, KSeFFaktura;
+REQUIRE Invoice, InvoiceCurrency, InvoiceCorrection, InvoiceAdvance,
+        LegalEntityPl, KSeFFaktura;
 
 NAMESPACE KSeF;
 
@@ -72,12 +73,19 @@ createFaktura 'Build Faktura' (Invoice i) {
         mpp(f) <- 2;
         weUproszczona(f) <- 2;
         KursWalutyZ(f) <- rate1(i) IF currency(i) != defaultCurrency();
-        RodzajFaktury(f) <- IF original(i) THEN 'KOR' ELSE 'VAT';
+        RodzajFaktury(f) <- IF isAdvance(i) THEN IF original(i) THEN 'KOR_ZAL' ELSE 'ZAL' ELSE
+                                IF countAdvanced(i) THEN IF original(i) THEN 'KOR_ROZ' ELSE 'ROZ' ELSE
+                                    IF original(i) THEN 'KOR' ELSE 'VAT';
         
         PrzyczynaKorekty(f) <- note(i) IF original(i);
         DataWystFaKorygowanej(f) <- invoiceDate(faktura(original(i)));
         NrFaKorygowanej(f) <- invoiceNumber(faktura(original(i)));
         NrKSeFFaKorygowanej(f) <- number(faktura(original(i)));
+        
+        FOR advanced(i, Invoice ad) DO NEW z = FakturaZaliczkowa {
+            faktura(z) <- f;
+            number(z) <- number(faktura(ad));
+        }
         
         FOR invoice(InvoiceLine l) = i DO NEW w = FaWiersz {
             faktura(w) <- f;

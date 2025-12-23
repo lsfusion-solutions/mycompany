@@ -1,0 +1,30 @@
+MODULE EnterpriseDataPartner;
+
+REQUIRE EnterpriseData, LegalEntityRu;
+
+NAMESPACE EnterpriseData;
+
+@defineGuid(partner, partner, p, headerColumn3);
+
+META defineImportPartner (prefix, object, group, cls)
+    prefix##Guid = DATA LOCAL STRING(INTEGER);
+    prefix##Name = DATA LOCAL ISTRING[92](INTEGER);
+    prefix##Inn = DATA LOCAL STRING[12](INTEGER);
+    
+    EXTEND FORM import
+        PROPERTIES(object) IN group prefix##Guid EXTID 'Ссылка', prefix##Name EXTID 'Наименование', prefix##Inn EXTID 'ИНН'
+    ;
+    
+    import###prefix () {
+        FOR [GROUP SUM 1 BY prefix##Guid(INTEGER i), prefix##Inn(i)](STRING guid, STRING[12] inn) AND
+            NOT partnerGuid(guid) AND partnerInn(inn) INLINE DO {
+            guid(Partner l) <- guid WHERE inn(l) = inn;
+        }
+
+        FOR [GROUP SUM 1 BY prefix##Guid(INTEGER i)](STRING guid) AND NOT partnerGuid(guid) NEW l = cls DO {
+            guid(l) <- guid;
+            inn(l) <- GROUP MAX prefix##Inn(INTEGER i) IF prefix##Guid(i) = guid;
+            name(l) <- GROUP MAX prefix##Name(INTEGER i) IF prefix##Guid(i) = guid;
+        }
+    }
+END
