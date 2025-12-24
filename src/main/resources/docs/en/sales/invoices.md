@@ -13,7 +13,7 @@ An invoice can be created based on a sales order and/or a shipment.
 When created, it typically transfers:
 
 - customer;
-- warehouse/location and/or address;
+- location and/or address;
 - lines and quantities (from the order or from the actual shipment);
 - prices, discounts, and taxes.
 

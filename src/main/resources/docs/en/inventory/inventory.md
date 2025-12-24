@@ -29,15 +29,15 @@ Below is a typical warehouse cycle.
 
 1. Create/review **locations** (warehouse, zones, bins) if bin-level storage is required.
 2. Create a **receipt**:
-   - specify supplier (if used) and warehouse;
+   - specify supplier (if used) and location;
    - add item lines and quantities;
    - move the receipt to execution and complete it.
 3. Create a **shipment**:
-   - specify customer (if used) and warehouse;
+   - specify customer (if used) and location;
    - add item lines and quantities;
    - run availability checks and reservation (if enabled);
    - perform picking (if used) and complete the shipment.
-4. If needed, perform a **transfer** between warehouses/zones.
+4. If needed, perform a **transfer** between locations (warehouses/zones).
 5. Use **scrap** to record discrepancies (damage, losses, defects, expiry, etc.).
 6. Periodically run **adjustments** and close them.
 
@@ -58,11 +58,11 @@ A warehouse, zone or bin where items are stored.
 
 #### Receipt
 
-A document that records goods coming into the warehouse.
+A document that records goods coming into the location.
 
 #### Shipment
 
-A document that records goods going out of the warehouse.
+A document that records goods going out of the location.
 
 #### Transfer
 

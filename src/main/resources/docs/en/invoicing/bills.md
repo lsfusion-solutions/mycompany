@@ -74,7 +74,7 @@ Typical status set:
 - Draft;
 - To pay;
 - Done;
-- Cancelled.
+- Canceled.
 
 Statuses affect editing and printing availability.
 
@@ -83,7 +83,7 @@ Typical logic:
 - in **Draft** you can change the header and lines;
 - in **To pay** the document is confirmed for further actions (for example, payment registration, printing — if used);
 - in **Done** the bill is considered closed;
-- in **Cancelled** the bill is excluded from accounting.
+- in **Canceled** the bill is excluded from accounting.
 
 ### Payment and debt
 

@@ -2,7 +2,7 @@
 
 The section is intended for accounting contracts related to vehicles (for example, rent, leasing, insurance — depending on the contract types used in your organization).
 
-A contract can be used as a card for storing conditions: validity dates, counterparty, amounts (if applicable), and the link to a specific vehicle.
+A contract can be used as a card for storing conditions: validity dates, partner, amounts (if applicable), and the link to a specific vehicle.
 
 ## Where to find it
 
@@ -12,8 +12,8 @@ Open **“Fleet” → “Operations” → “Vehicle contracts”**.
 
 You can create a contract:
 
-- from the **“Vehicle contracts”** list;
-- from the vehicle card (in the contracts block).
+- from the **“Vehicle contracts”** list (use **New**);
+- from the vehicle card (in the **Contracts** block — use **Add**).
 
 The recommended option for “linking to a specific vehicle” is to create a contract from the vehicle card: then the vehicle field will be filled automatically.
 
@@ -22,7 +22,7 @@ When filling in, they usually specify:
 - contract type;
 - validity dates;
 - number (if used);
-- company and counterparty;
+- company and partner;
 - amounts (for example, initial cost and periodic payment — if provided by the contract type).
 
 ### Contract type and availability of the “Vehicle” field
@@ -30,7 +30,7 @@ When filling in, they usually specify:
 In some organizations, not all contract types imply a link to a vehicle. Then:
 
 - the vehicle selection field may be hidden or unavailable;
-- when trying to specify a vehicle for an inappropriate contract type, the system may show a message that the selected contract type does not allow using a vehicle.
+- when trying to specify a vehicle for an inappropriate contract type, the system may show a message: **“The chosen contract type does not allow to select a vehicle”**.
 
 If you encounter such a restriction, check whether the contract type is selected correctly, or contact the administrator to configure types.
 
@@ -47,4 +47,4 @@ The vehicle card shows a list of related contracts. This is convenient for contr
 From there it is also convenient to:
 
 - quickly open the contract card;
-- add a new contract related to the selected vehicle.
+- add a new contract related to the selected vehicle (use **Add**).

@@ -13,7 +13,7 @@ Recalculation is also available from **“Inventory valuation”** via the **“
 
 Costing is used to:
 
-- value stock in warehouses (how much the current stock of an item costs);
+- value stock in locations (how much the current stock of an item costs);
 - calculate the cost of shipments / write-offs;
 - transfer cost along with quantity when moving stock between cost accounting locations;
 - form the cost of production output (if the Manufacturing module is used).
@@ -22,10 +22,10 @@ Costing is used to:
 
 Cost is maintained **by**:
 
-- **warehouse/location** (the costing accounting location),
+- **location** (the cost accounting location),
 - **item**.
 
-For each “warehouse–item” pair the system stores and calculates:
+For each “location–item” pair the system stores and calculates:
 
 - **stock quantity**;
 - **stock cost**;
@@ -60,7 +60,7 @@ Below is a user-level description of which operations form cost.
 
 Receipts create an **inbound** operation and increase stock:
 
-- warehouse quantity increases;
+- location quantity increases;
 - stock cost increases.
 
 In some receipt types, you can enter cost manually using the **“Show cost”** flag.
@@ -69,7 +69,7 @@ In some receipt types, you can enter cost manually using the **“Show cost”**
 
 Shipment forms an **outbound** operation:
 
-- warehouse quantity decreases;
+- location quantity decreases;
 - stock cost decreases;
 - the write-off amount is calculated automatically based on the item’s cost method.
 
@@ -95,8 +95,8 @@ In adjustments, the hint **“Current unit cost”** may be shown — the unit c
 
 A production order affects costing as follows:
 
-- materials are written off from the warehouse as a regular outbound operation using the selected method;
-- output (finished goods) is received into the warehouse;
+- materials are written off from the location as a regular outbound operation using the selected method;
+- output (finished goods) is received into the location;
 - the cost of output is distributed from the total order cost (materials + additional costs + labor) across output lines.
 
 ## How to view cost
@@ -138,9 +138,9 @@ Recalculation may be needed if:
 
 1. Open **“Inventory valuation”**.
 2. Click **“Recalculate cost”**.
-3. In parameters, specify the date **from which** you need to recalculate (and optionally limit recalculation by warehouse/item).
+3. In parameters, specify the date **from which** you need to recalculate (and optionally limit recalculation by location/item).
 
-Tip: if changes affected a specific item or warehouse, specify them in parameters to make recalculation faster.
+Tip: if changes affected a specific item or location, specify them in parameters to make recalculation faster.
 
 ## Typical questions
 
@@ -151,7 +151,7 @@ Tip: if changes affected a specific item or warehouse, specify them in parameter
 
 ### Why didn’t cost change after a transfer?
 
-If the transfer was performed inside one cost accounting location (when warehouses belong to one cost accounting group), the system does not transfer cost between them.
+If the transfer was performed inside one cost accounting location (when locations belong to one cost accounting group), the system does not transfer cost between them.
 
 ### Why wasn’t cost “recalculated” immediately?
 

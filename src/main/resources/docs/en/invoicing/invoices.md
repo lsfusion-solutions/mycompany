@@ -27,7 +27,7 @@ Depending on settings, an invoice can be:
 - date and number;
 - partner;
 - contract (if used);
-- warehouse/address (if used);
+- location/address (if used);
 - note.
 
 If the payment calendar is used, the invoice may include payment terms / due date (field names depend on configuration).
@@ -47,14 +47,14 @@ Typical status set:
 - Draft;
 - To pay;
 - Done;
-- Cancelled.
+- Canceled.
 
 As a rule:
 
 - in **Draft**, you can change the header and lines;
 - in **To pay**, the document is confirmed for further actions (printing, creating a shipment, payments matching);
 - in **Done**, the document is considered closed;
-- **Cancelled** excludes the document from the process/settlements.
+- **Canceled** excludes the document from the process/settlements.
 
 ### Relationship with shipment
 
@@ -65,7 +65,7 @@ If Inventory is used:
 
 See: [Shipments from invoice](shipments-from-invoice.md).
 
-Practical tip: if the shipment is created automatically from the invoice, first verify the lines (items, quantities, warehouse/address), and only then move the invoice to the status that triggers auto creation.
+Practical tip: if the shipment is created automatically from the invoice, first verify the lines (items, quantities, location/address), and only then move the invoice to the status that triggers auto creation.
 
 ## Payment
 

@@ -2,7 +2,7 @@
 
 ## Where to find
 
-Open **“Sales” → “Setup” → “Settings”**.
+Open **“Sales” → “Configuration” → “Settings”**.
 
 ## What is typically configured
 
@@ -12,4 +12,4 @@ Open **“Sales” → “Setup” → “Settings”**.
 - pricing and discount rules;
 - availability of specific actions depending on statuses.
 
-Recommendation: configure order types and numbering first, then price lists and discounts.
+Recommendation: configure order types and numbering first, then pricelists and discounts.

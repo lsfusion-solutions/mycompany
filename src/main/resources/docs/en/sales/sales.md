@@ -1,6 +1,6 @@
 # Sales — user documentation
 
-This documentation describes working in the **“Sales”** section: creating sales orders, generating invoices, processing shipments, calculating discounts, working with price lists, and reporting.
+This documentation describes working in the **“Sales”** section: creating sales orders, generating invoices, processing shipments, calculating discounts, working with pricelists, and reporting.
 
 ## Contents
 
@@ -14,7 +14,7 @@ Sections:
 - [Sales order workflow and statuses](workflow-and-statuses.md)
 - [Shipments for orders](shipments.md)
 - [Invoices for orders](invoices.md)
-- [Price lists and price types](pricelists.md)
+- [Pricelists and price types](pricelists.md)
 - [Discounts](discounts.md)
 - [Reports](reports.md)
 - [Settings](settings.md)
@@ -27,7 +27,7 @@ Typical scenario “create an order → ship → create an invoice”:
 2. Create a new order and fill in:
    - customer;
    - date and planned shipping date;
-   - warehouse/location and delivery address (if used);
+   - location and delivery address (if used);
    - order lines (items, quantity, price).
 3. Check amounts and taxes.
 4. Confirm the order.
@@ -40,7 +40,7 @@ The **“Sales”** section usually includes groups:
 - **Operations** — daily work (orders, shipments, invoices).
 - **Processes** — control and processing dashboards (if enabled).
 - **Reporting** — sales reports.
-- **Setup** — parameters and master data.
+- **Configuration** — parameters and master data.
 
 ## Terms
 

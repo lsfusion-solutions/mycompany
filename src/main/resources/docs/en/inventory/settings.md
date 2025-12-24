@@ -20,7 +20,7 @@ Settings include a directory of **receipt types**. A receipt type defines how us
 Typically, a receipt type defines:
 
 - **Numbering** — how the number is generated;
-- **Default warehouse** — which warehouse is set in new documents;
+- **Default location** — which location is set in new documents;
 - **Maximum quantity** — the upper limit for the “Planned quantity” field in lines.
 
 If the system has exactly one receipt type, it may be substituted automatically.
@@ -32,14 +32,14 @@ Settings include a directory of **shipment types**.
 Typically, a shipment type defines:
 
 - **Numbering**;
-- **Default source warehouse**;
-- **Default destination warehouse** (relevant for transfers);
-- **“Transfer” flag** — enables the “source warehouse → destination warehouse” mode;
+- **Default source location**;
+- **Default destination location** (relevant for transfers);
+- **“Transfer” flag** — enables the “source location → destination location” mode;
 - **Maximum quantity** — the upper limit for the “Planned quantity” field in lines.
 
 Validation:
 
-- for transfers, the source and destination warehouses cannot be the same.
+- for transfers, the source and destination locations cannot be the same.
 
 ## Recommended setup order
 

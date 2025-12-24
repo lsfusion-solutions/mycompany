@@ -23,15 +23,15 @@ A typical scenario “add a vehicle and start tracking”:
 
 1. Open **“Fleet” → “Operations” → “Vehicles”**.
 2. If required values are missing in selection lists (for example, a model, category, or fuel type), first fill in the directories under **“Fleet” → “Configuration”**.
-3. Create a vehicle and fill in the main fields (usually: model, registration number, company).
+3. Click **New** and fill in the main fields (usually: vehicle model, license plate, company).
 4. If needed, add **tags** and attach **files** (photos/scans of documents).
 5. Assign a driver (see **“Fleet” → “Operations” → “Drivers”**) and specify the assignment period.
-6. When work/service is performed, create a vehicle service record (see **“Fleet” → “Operations” → “Vehicle services”**) and record the date, service type, and odometer readings.
+6. When work/service is performed, create a vehicle service record (see **“Fleet” → “Operations” → “Vehicle services”**) and record the date, **Type**, and **Odometer value**.
 
 A typical scenario “record service expenses”:
 
-1. Create a vehicle service record and enter the cost (price/amount).
-2. If your system uses service receipt documents, specify the supplier and the receipt document (if it is used in your organization).
+1. Click **New** to create a vehicle service record and enter the cost (price/amount).
+2. If your system uses **Bill** documents, specify the **Vendor** and the **Bill** (if it is used in your organization).
 3. To review history, use the vehicle card: it collects driver assignments, services, and related contracts.
 
 ## Navigation
@@ -52,11 +52,11 @@ The exact set of permissions depends on your organization settings. A typical re
 - **Accountant / cost controller** — controls expense accounting and linking services to settlement documents (if used).
 - **Administrator** — configures directories and section parameters.
 
-If some actions are not available (create/edit/delete, attaching files), this is usually due to permission limitations or section settings.
+If some actions are not available (new/edit/delete, attaching files), this is usually due to permission limitations or section settings.
 
 Most often the restrictions look like this:
 
-- there are no **Create/Edit/Delete** buttons in lists;
+- there are no **New/Edit/Delete** buttons in lists;
 - you cannot add or delete a file in a card;
 - you cannot create related records (for example, a driver assignment or a vehicle service) from the vehicle card.
 
@@ -72,13 +72,13 @@ An employee assigned to a vehicle for a specific period.
 
 #### Vehicle service
 
-A record of works/services performed for a vehicle with the date, odometer readings, and cost.
+A record of works/services performed for a vehicle with the date, **Odometer value**, and cost.
 
 #### Vehicle service type
 
 A directory for classifying services (for example, scheduled maintenance, repair, tire service, etc.).
 
-#### Odometer readings
+#### Odometer value
 
 The mileage value at the time of an event (for example, driver assignment or service).
 

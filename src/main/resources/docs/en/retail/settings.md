@@ -4,7 +4,7 @@ This page describes the basic settings that affect how the cash register and POS
 
 ## Where to find it
 
-Settings are usually located in **“Retail” → “Settings”**.
+Settings are usually located in **“Retail” → “Configuration” → “Settings”**.
 
 In most configurations, the main directories (cash registers, payment methods, discount cards) are available directly from this section.
 
@@ -12,7 +12,7 @@ In most configurations, the main directories (cash registers, payment methods, d
 
 A cash register is a workplace from which sales and returns are processed.
 
-Where to find: usually **“Retail” → “Settings” → “Cash registers”**.
+Where to find: usually **“Retail” → “Configuration” → “Cash registers”**.
 
 Typically configured:
 
@@ -28,7 +28,7 @@ Sessions usually use numbering. A session numeration parameter may be available 
 
 Settings define the list of payment methods. For each method, you typically specify:
 
-Where to find: usually **“Retail” → “Settings” → “Payment methods”**.
+Where to find: usually **“Retail” → “Configuration” → “Settings”** (Payment methods tab).
 
 - name and code;
 - the **“cash”** flag (used to calculate change);
@@ -38,12 +38,4 @@ Where to find: usually **“Retail” → “Settings” → “Payment methods�
 
 Discount cards may use automatic numbering. A discount card numeration parameter may be available in settings.
 
-Where to find: usually **“Retail” → “Settings” → “Discount cards”**.
-
-## Marked goods
-
-If your configuration uses marked goods:
-
-- mandatory scanning can be configured per category;
-- the code validation mode can be configured (online/offline);
-- for offline validation, you may need to specify a local module for the cash register.
+Where to find: usually **“Retail” → “Configuration” → “Discount cards”**.

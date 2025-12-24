@@ -5,9 +5,9 @@ REQUIRE ShipmentDone;
 NAMESPACE Inventory;
     
 EXTEND CLASS ShipmentStatus {
-    canceled 'Cancelled'
+    canceled 'Canceled'
 }
-canceled 'Cancelled' = DATA BOOLEAN (Shipment);
+canceled 'Canceled' = DATA BOOLEAN (Shipment);
 active '{Active}' (Shipment s) = done(s) AND NOT canceled(s);
 
 status(Shipment s) += WHEN canceled(s) THEN ShipmentStatus.canceled;
@@ -41,7 +41,7 @@ DESIGN shipment {
 
 EXTEND FORM shipments    
     EXTEND FILTERGROUP status
-        FILTER 'Cancelled' status(s) = ShipmentStatus.canceled    
+        FILTER 'Canceled' status(s) = ShipmentStatus.canceled    
 ;
 
 @defineSelectionAction(shipments, Shipment, cancel, 'Cancel', statuses);

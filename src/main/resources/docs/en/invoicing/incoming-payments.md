@@ -130,7 +130,7 @@ Check:
 
 1. Whether **payments matching** with documents was performed.
 2. Whether the correct partner and company are selected.
-3. Whether the document is cancelled (if cancellation is used in your configuration).
+3. Whether the document is Canceled (if cancellation is used in your configuration).
 
 ### Cannot select an account/cash register
 

@@ -42,7 +42,7 @@ Purchase orders typically use the following lifecycle:
 1. **Draft** — the order can be edited freely.
 2. **Sent** — the order has been sent to the vendor (if sending is used).
 3. **Confirmed** — the order is confirmed for fulfillment.
-4. **Cancelled** — the order is excluded from further processing.
+4. **Canceled** — the order is excluded from further processing.
 
 Status behavior may differ depending on settings. Usually, after confirmation there are more restrictions on changes.
 
@@ -62,9 +62,9 @@ After confirmation, related documents (for example, a receipt or a bill) and lin
 
 ### Canceling a purchase order
 
-The **“Cancel”** action marks the purchase order as cancelled.
+The **“Cancel”** action marks the purchase order as Canceled.
 
-Usually, cancelled purchase orders are excluded from further automatic operations and process selections.
+Usually, Canceled purchase orders are excluded from further automatic operations and process selections.
 
 ## Related documents and fulfillment control
 

@@ -34,4 +34,4 @@ Recommendations:
 ## Typical rules
 
 - When selecting a location in a document, make sure it matches your process (for example, a shipment should not be done from a “receiving zone” if it is disallowed by your procedures).
-- If a document cannot be posted because of a missing location, check that the warehouse/location in the document header is filled in.
+- If a document cannot be posted because of a missing location, check that the location in the document header is filled in.

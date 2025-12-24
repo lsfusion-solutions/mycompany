@@ -4,7 +4,7 @@ A discount card is used to provide a discount and/or identify the customer durin
 
 ## Where to find it
 
-Usually: **“Retail” → “Settings” → “Discount cards”**.
+Usually: **“Retail” → “Configuration” → “Discount cards”**.
 
 ## Main card data
 

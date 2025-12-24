@@ -70,6 +70,6 @@ If you encounter such a restriction:
 
 1. Check whether bills have been created for all lines.
 2. Check whether outgoing payments have been allocated to bills.
-3. Make sure bills and payments are not cancelled.
+3. Make sure bills and payments are not Canceled.
 
 See also: [Settings](settings.md).

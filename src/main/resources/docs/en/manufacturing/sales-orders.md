@@ -45,7 +45,7 @@ The following fields are filled automatically:
 - waiting status (the order is created as waiting);
 - **manufacturing order type** — taken from the sales order type;
 - **start date** — taken from the sales order;
-- **finished goods storage location** — taken from the sales order warehouse/storage location;
+- **finished goods storage location** — taken from the sales order location/storage location;
 - **item** — taken from the sales order line;
 - **Bill of Materials** — taken from the sales order line;
 - material and output lines are generated based on the sales order line quantity.
@@ -76,7 +76,7 @@ Restrictions:
 
 If the sales order is canceled and automatic creation is enabled:
 
-- linked manufacturing orders are automatically moved to **Cancelled**.
+- linked manufacturing orders are automatically moved to **Canceled**.
 
 There is also a restriction:
 

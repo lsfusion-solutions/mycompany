@@ -14,7 +14,7 @@ Specifics:
 
 - the action is available if a **Scrap type** is specified for the manufacturing order type;
 - the created document automatically contains the manufacturing order;
-- the storage location is taken from the order’s material warehouse.
+- the storage location is taken from the order’s material location.
 
 ## Where to see linked Scraps
 
@@ -23,4 +23,4 @@ The manufacturing order card shows a block of linked **Scraps**. From it you can
 ## Recommendations
 
 - create the **Scrap** before marking the order as **Done** so actual data is consistent;
-- make sure the correct material warehouse is selected.
+- make sure the correct material location is selected.

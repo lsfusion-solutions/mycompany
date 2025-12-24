@@ -16,7 +16,7 @@ Debt can be calculated:
 What is important to understand:
 
 - debt changes **only for payments that are linked/matched** with documents;
-- if a document is cancelled, it usually does not participate in calculation;
+- if a document is Canceled, it usually does not participate in calculation;
 - for partial payment, debt decreases by the matched amount.
 
 ## How debt is closed
@@ -52,6 +52,6 @@ Check:
 
 - whether **payment terms/due date** are filled in documents;
 - whether calendar settings and planned date calculation rules are enabled;
-- whether documents are excluded by status (for example, Cancelled).
+- whether documents are excluded by status (for example, Canceled).
 
 See parameters: [Settings and directories](settings.md).

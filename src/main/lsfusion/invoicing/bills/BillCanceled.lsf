@@ -5,9 +5,9 @@ REQUIRE BillReady;
 NAMESPACE Invoicing;
     
 EXTEND CLASS BillStatus {
-    canceled 'Cancelled'
+    canceled 'Canceled'
 }
-canceled 'Cancelled' = DATA BOOLEAN (Bill);
+canceled 'Canceled' = DATA BOOLEAN (Bill);
 active '{Active}' (Bill b) = ready(b) AND NOT canceled(b);
 
 status(Bill b) += WHEN canceled(b) THEN BillStatus.canceled;
@@ -41,7 +41,7 @@ DESIGN bill {
 
 EXTEND FORM bills    
     EXTEND FILTERGROUP status
-        FILTER 'Cancelled' status(b) = BillStatus.canceled    
+        FILTER 'Canceled' status(b) = BillStatus.canceled    
 ;
 
 @defineSelectionAction(bills, Bill, cancel, 'Cancel', statuses);

@@ -11,16 +11,16 @@ If some menu items or actions are missing in your configuration, that is normal:
 - [Module map and end-to-end processes](#module-map-and-end-to-end-processes)
 - [Modules](#modules)
   - [Master Data](#master-data)
-  - [CRM](#crm)
-  - [Human Resources](#human-resources)
   - [Inventory](#inventory)
   - [Invoicing](#invoicing)
-  - [Manufacturing](#manufacturing)
-  - [Project Management](#project-management)
   - [Purchase](#purchase)
-  - [Retail](#retail)
+  - [Manufacturing](#manufacturing)
   - [Sales](#sales)
-  - [Fleet](#fleet)
+  - [Retail](#retail)
+  - [Project Management](#project-management)
+  - [Human Resources](#human-resources)
+  - [CRM](#crm)
+  - [Transport](#transport)
 
 ## Module map and end-to-end processes
 
@@ -56,9 +56,9 @@ Below are typical “chains” between modules. In a particular organization, so
 1. **Retail** — POS, sessions, receipt, payment.
 2. Depending on the configuration, **Sales** (sales documents) and/or **Invoicing** (payments / debt accounting) may be involved.
 
-### Fleet and expenses
+### Transport and expenses
 
-1. **Fleet** — vehicles / drivers / services / contracts.
+1. **Transport** — vehicles / drivers / services / contracts.
 2. Related expenses can be reflected in **Invoicing** (bills / payments) and/or **Purchase** (supplier orders) — if enabled and used.
 
 ## Modules
@@ -85,57 +85,6 @@ Start documentation: [masterdata/masterdata.md](masterdata/masterdata.md)
 
 - [Master Data](masterdata/masterdata.md)
 
-### CRM
-
-Start documentation: [crm/crm.md](crm/crm.md)
-
-**Purpose.** A module for working with leads (pipeline): from the first contact to handing over to sales. The focus is a convenient lead card, status management, and interaction history.
-
-**Typical scenarios:**
-
-- handle an incoming call / email → create a lead or attach a communication to an existing one;
-- move the lead through stages (statuses) on a kanban board;
-- record agreements and the “next step”;
-- create related documents (e.g., an order / an invoice), if configured.
-
-**Key objects:** lead, lead type, lead status, lead priority, lead tags, communications.
-
-**Who it’s useful for:** sales managers and sales leads (pipeline control and lead handling quality).
-
-**Read next:**
-
-- [Leads: list and card](crm/leads.md)
-- [Lead board (kanban)](crm/kanban.md)
-- [Communications: calls and emails](crm/communications.md)
-- [Orders and invoices from a lead](crm/sales-and-documents.md)
-- [Lead report](crm/reports.md)
-
-### Human Resources
-
-Start documentation: [humanResources/humanResources.md](humanResources/humanResources.md)
-
-**Purpose.** HR module: recruitment, attendance tracking (check in / check out), payroll calculation and payment.
-
-**Typical scenarios:**
-
-- candidate application → questionnaire → interview → decision (hire / reject);
-- track working time (mobile check‑in / kiosk — if used);
-- create a payroll batch → get payslips → register payment (if maintained in the system).
-
-**Key objects/documents:** candidate application, interview, attendance, payroll batch, payslip.
-
-**Who it’s useful for:** recruiters, HR specialists, payroll accountants / finance, department managers.
-
-**Integrations:** if time-based payroll logic is enabled, it may use time entries from [Project Management](#project-management).
-
-**Read next:**
-
-- [Recruitment](humanResources/recruitment.md)
-- [Attendance](humanResources/attendance.md)
-- [Payroll: calculation and payment](humanResources/payroll.md)
-- [Payslip](humanResources/payslip.md)
-- [How the “Net to pay” total is calculated](humanResources/net-wage.md)
-
 ### Inventory
 
 Start documentation: [inventory/inventory.md](inventory/inventory.md)
@@ -146,7 +95,7 @@ Start documentation: [inventory/inventory.md](inventory/inventory.md)
 
 - create a receipt and complete the document;
 - create a shipment for an order / invoice and close the movement;
-- transfer between warehouses / zones / bins;
+- transfer between locations (warehouses / zones / bins);
 - run an adjustment and record variances;
 - organize picking, if used.
 
@@ -197,59 +146,6 @@ Start documentation: [invoicing/invoicing.md](invoicing/invoicing.md)
 - [Outgoing payments](invoicing/outgoing-payments.md)
 - [Debt and payment calendar](invoicing/debt-and-calendar.md)
 
-### Manufacturing
-
-Start documentation: [manufacturing/manufacturing.md](manufacturing/manufacturing.md)
-
-**Purpose.** Manufacturing contour: bills of materials, planning and execution of production orders, material reservation, production and consumption, scrap / waste, printing and reports.
-
-**Typical scenarios:**
-
-- create / verify a product bill of materials → create a production order → reserve materials → start → record production / consumption → complete;
-- create production orders based on customer orders (if enabled);
-- control costing and lots (if used).
-
-**Key objects/documents:** bill of materials, production order, material reservation, production and consumption.
-
-**Who it’s useful for:** production dispatchers, foremen, planners, warehouse (materials / finished goods).
-
-**Integrations:** tightly connected to [Inventory](#inventory) (materials / output) and can be linked to [Sales](#sales) (demand) and [Purchase](#purchase) (material replenishment).
-
-**Read next:**
-
-- [Bills of materials](manufacturing/bom.md)
-- [Production orders: list and card](manufacturing/orders.md)
-- [Production order workflow and statuses](manufacturing/workflow.md)
-- [Production and consumption](manufacturing/production-and-consumption.md)
-- [Costing: how it is calculated](manufacturing/costing.md)
-
-### Project Management
-
-Start documentation: [projectManagement/projectManagement.md](projectManagement/projectManagement.md)
-
-**Purpose.** Project contour: projects and tasks, team and roles, time entries and timesheets, control views (e.g., boards / Gantt) and reporting.
-
-**Typical scenarios:**
-
-- create a project → build a task plan → assign assignees and due dates;
-- track progress via task statuses and comments;
-- record effort using time entries;
-- collect timesheets and actuals reports.
-
-**Key objects:** project, task, assignment (role / participation), time entry, status / workflow.
-
-**Who it’s useful for:** project managers, assignees, team leads.
-
-**Integrations:** if time-based pay is enabled, it is used together with [Human Resources](#human-resources).
-
-**Read next:**
-
-- [Projects](projectManagement/projects.md)
-- [Tasks](projectManagement/tasks.md)
-- [Time entries](projectManagement/time-entries.md)
-- [Timesheet](projectManagement/timesheets.md)
-- [Project team and roles](projectManagement/team-and-roles.md)
-
 ### Purchase
 
 Start documentation: [purchase/purchase.md](purchase/purchase.md)
@@ -279,32 +175,31 @@ Start documentation: [purchase/purchase.md](purchase/purchase.md)
 - [Supplier price lists](purchase/pricelists.md)
 - [Purchase reports](purchase/reports.md)
 
-### Retail
+### Manufacturing
 
-Start documentation: [retail/retail.md](retail/retail.md)
+Start documentation: [manufacturing/manufacturing.md](manufacturing/manufacturing.md)
 
-**Purpose.** Retail sales via POS: session management, sales and returns, discounts and discount cards, payment acceptance.
+**Purpose.** Manufacturing contour: bills of materials, planning and execution of production orders, material reservation, production and consumption, scrap / waste, printing and reports.
 
 **Typical scenarios:**
 
-- configure POS and payment methods → open a session → create a sale in POS → accept payment → close the session;
-- create a return (by receipt or in “free” mode — depends on configuration);
-- use discount cards and discounts;
-- work with marked goods (if enabled).
+- create / verify a product bill of materials → create a production order → reserve materials → start → record production / consumption → complete;
+- create production orders based on customer orders (if enabled);
+- control costing and lots (if used).
 
-**Key objects/documents:** POS, session, receipt, payment method, discount card.
+**Key objects/documents:** bill of materials, production order, material reservation, production and consumption.
 
-**Who it’s useful for:** cashiers, senior cashiers / store administrators, configuration owners.
+**Who it’s useful for:** production dispatchers, foremen, planners, warehouse (materials / finished goods).
 
-**Integrations:** depending on settings, it can send results to [Sales](#sales) and/or [Invoicing](#invoicing).
+**Integrations:** tightly connected to [Inventory](#inventory) (materials / output) and can be linked to [Sales](#sales) (demand) and [Purchase](#purchase) (material replenishment).
 
 **Read next:**
 
-- [POS](retail/pos.md)
-- [Sessions](retail/sessions.md)
-- [Retail payments](retail/payments.md)
-- [Returns](retail/returns.md)
-- [Discount cards](retail/discount-cards.md)
+- [Bills of materials](manufacturing/bom.md)
+- [Production orders: list and card](manufacturing/orders.md)
+- [Production order workflow and statuses](manufacturing/workflow.md)
+- [Production and consumption](manufacturing/production-and-consumption.md)
+- [Costing: how it is calculated](manufacturing/costing.md)
 
 ### Sales
 
@@ -337,11 +232,116 @@ Start documentation: [sales/sales.md](sales/sales.md)
 - [Price lists and price types](sales/pricelists.md)
 - [Discounts](sales/discounts.md)
 
-### Fleet
+### Retail
+
+Start documentation: [retail/retail.md](retail/retail.md)
+
+**Purpose.** Retail sales via POS: session management, sales and returns, discounts and discount cards, payment acceptance.
+
+**Typical scenarios:**
+
+- configure POS and payment methods → open a session → create a sale in POS → accept payment → close the session;
+- create a return (by receipt or in “free” mode — depends on configuration);
+- use discount cards and discounts;
+- work with marked goods (if enabled).
+
+**Key objects/documents:** POS, session, receipt, payment method, discount card.
+
+**Who it’s useful for:** cashiers, senior cashiers / store administrators, configuration owners.
+
+**Integrations:** depending on settings, it can send results to [Sales](#sales) and/or [Invoicing](#invoicing).
+
+**Read next:**
+
+- [POS](retail/pos.md)
+- [Sessions](retail/sessions.md)
+- [Retail payments](retail/payments.md)
+- [Returns](retail/returns.md)
+- [Discount cards](retail/discount-cards.md)
+
+### Project Management
+
+Start documentation: [projectManagement/projectManagement.md](projectManagement/projectManagement.md)
+
+**Purpose.** Project contour: projects and tasks, team and roles, time entries and timesheets, control views (e.g., boards / Gantt) and reporting.
+
+**Typical scenarios:**
+
+- create a project → build a task plan → assign assignees and due dates;
+- track progress via task statuses and comments;
+- record effort using time entries;
+- collect timesheets and actuals reports.
+
+**Key objects:** project, task, assignment (role / participation), time entry, status / workflow.
+
+**Who it’s useful for:** project managers, assignees, team leads.
+
+**Integrations:** if time-based pay is enabled, it is used together with [Human Resources](#human-resources).
+
+**Read next:**
+
+- [Projects](projectManagement/projects.md)
+- [Tasks](projectManagement/tasks.md)
+- [Time entries](projectManagement/time-entries.md)
+- [Timesheet](projectManagement/timesheets.md)
+- [Project team and roles](projectManagement/team-and-roles.md)
+
+### Human Resources
+
+Start documentation: [humanResources/humanResources.md](humanResources/humanResources.md)
+
+**Purpose.** HR module: recruitment, attendance tracking (check in / check out), payroll calculation and payment.
+
+**Typical scenarios:**
+
+- candidate application → questionnaire → interview → decision (hire / reject);
+- track working time (mobile check‑in / kiosk — if used);
+- create a payroll batch → get payslips → register payment (if maintained in the system).
+
+**Key objects/documents:** candidate application, interview, attendance, payroll batch, payslip.
+
+**Who it’s useful for:** recruiters, HR specialists, payroll accountants / finance, department managers.
+
+**Integrations:** if time-based payroll logic is enabled, it may use time entries from [Project Management](#project-management).
+
+**Read next:**
+
+- [Recruitment](humanResources/recruitment.md)
+- [Attendance](humanResources/attendance.md)
+- [Payroll: calculation and payment](humanResources/payroll.md)
+- [Payslip](humanResources/payslip.md)
+- [How the “Net to pay” total is calculated](humanResources/net-wage.md)
+
+### CRM
+
+Start documentation: [crm/crm.md](crm/crm.md)
+
+**Purpose.** A module for working with leads (pipeline): from the first contact to handing over to sales. The focus is a convenient lead card, status management, and interaction history.
+
+**Typical scenarios:**
+
+- handle an incoming call / email → create a lead or attach a communication to an existing one;
+- move the lead through stages (statuses) on a kanban board;
+- record agreements and the “next step”;
+- create related documents (e.g., an order / an invoice), if configured.
+
+**Key objects:** lead, lead type, lead status, lead priority, lead tags, communications.
+
+**Who it’s useful for:** sales managers and sales leads (pipeline control and lead handling quality).
+
+**Read next:**
+
+- [Leads: list and card](crm/leads.md)
+- [Lead board (kanban)](crm/kanban.md)
+- [Communications: calls and emails](crm/communications.md)
+- [Orders and invoices from a lead](crm/sales-and-documents.md)
+- [Lead report](crm/reports.md)
+
+### Transport
 
 Start documentation: [transport/transport.md](transport/transport.md)
 
-**Purpose.** Fleet accounting: vehicles, driver assignments, services (work / expenses), vehicle contracts, and reference data settings.
+**Purpose.** Transport accounting: vehicles, driver assignments, services (work / expenses), vehicle contracts, and reference data settings.
 
 **Typical scenarios:**
 
@@ -352,7 +352,7 @@ Start documentation: [transport/transport.md](transport/transport.md)
 
 **Key objects:** vehicle, driver, vehicle service, vehicle contract, tags and files.
 
-**Who it’s useful for:** fleet specialists, accounting (expense control), administrators (reference data settings).
+**Who it’s useful for:** transport specialists, accounting (expense control), administrators (reference data settings).
 
 **Read next:**
 

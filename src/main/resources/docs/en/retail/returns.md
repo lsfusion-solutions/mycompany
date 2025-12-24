@@ -64,17 +64,6 @@ Example: if the purchase was paid partly in cash and partly by bank card, then t
 
 After confirming the return payment, POS usually creates a new receipt for further work.
 
-## Working with marked goods
-
-If marking codes were recorded for items in the original sale, the system may perform additional checks and marking-related operations during the return.
-
-If you encounter errors when returning marked goods, check that:
-
-- marking codes were scanned correctly during the sale;
-- the return contains the same items for which the codes were recorded.
-
-Details: [Marked goods (marking codes)](marking.md).
-
 ## Common cases
 
 ### Cannot process a return: there is no open session

@@ -12,11 +12,11 @@ To open a vehicle card, select a row in the list and use **Edit** (or open the r
 
 ## Vehicles list
 
-The list usually shows the main vehicle data (model, registration number, company, category, fuel type, etc.).
+The list usually shows the main vehicle data (vehicle model, license plate, company, vehicle category, fuel type, etc.).
 
 Typical actions in the list:
 
-- **Create** — add a new vehicle.
+- **New** — add a new vehicle.
 - **Edit** — open the selected vehicle card.
 - **Delete** — delete the record (if permitted by rights and there are no restrictions due to related data).
 
@@ -29,19 +29,19 @@ For quick search and control, use filters and sorting. In practice, they most of
 
 ## Creating a vehicle
 
-1. Click **Create**.
+1. Click **New**.
 2. Fill in required and main fields (depending on configuration):
-   - name/model;
-   - registration number;
+   - vehicle model;
+   - license plate;
    - company;
    - vehicle category, fuel type, year of manufacture, and other characteristics.
 3. Save the record.
 
 ### Filling recommendations
 
-- **Model**. If the required model is missing, it is usually added under **“Fleet” → “Configuration”** (if you have permissions).
-- **Registration number**. Enter it in a single format accepted in the organization to simplify search.
-- **Identification number**. If used, fill it in according to documents, without spaces or extra symbols.
+- **Vehicle model**. If the required model is missing, it is usually added under **“Fleet” → “Configuration”** (if you have permissions).
+- **License plate**. Enter it in a single format accepted in the organization to simplify search.
+- **VIN**. If used, fill it in according to documents, without spaces or extra symbols.
 - **Category, fuel type, year of manufacture and other characteristics** help build reports and plan maintenance.
 
 ## Editing and deleting
@@ -77,7 +77,7 @@ Typical workflow:
 
 1. Open the vehicle card.
 2. Go to the **Files** block.
-3. Add a file and, if needed, fill in the description.
+3. Click **File** to add a file and, if needed, fill in the description.
 
 The ability to add/delete files depends on permissions.
 
@@ -94,7 +94,9 @@ The vehicle card usually contains blocks:
 - **Vehicle services** — service and expense history.
 - **Contracts** — linked contracts.
 
-To add a record in a related block, use **Create** in the corresponding table.
+To add a record in a related block, use **New** in the corresponding table.
+
+For the **Contracts** block on the vehicle card, use **Add**.
 
 ### How to understand who the “current driver” is
 

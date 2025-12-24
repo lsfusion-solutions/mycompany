@@ -25,14 +25,13 @@ Sections:
 - [Sessions](sessions.md)
 - [Retail payments](payments.md)
 - [Discount cards](discount-cards.md)
-- [Marked goods (marking codes)](marking.md)
 - [Settings](settings.md)
 
 ## Quick start
 
 ### Scenario: open a session → process a sale → take payment → close the session
 
-1. Open **“Retail” → “Settings”** and make sure that:
+1. Open **“Retail” → “Configuration” → “Settings”** and make sure that:
    - **cash registers** are created and (if needed) linked to computers;
    - **payment methods** are configured.
 2. Open **“Retail” → “Operations” → “Sessions”**.
@@ -58,13 +57,13 @@ Details: [Returns](returns.md).
 The **“Retail”** section typically contains groups:
 
 - **Operations** — POS, sessions, receipt/operation lists within a session.
-- **Settings** — directories and parameters that affect how the cash register and payments work.
+- **Configuration** — directories and parameters that affect how the cash register and payments work.
 
 Typical menu items:
 
 - **“Retail” → “Operations” → “Sessions”** — open/close and monitor sessions.
 - **“Retail” → “Operations”** — POS.
-- **“Retail” → “Settings”** — section parameters.
+- **“Retail” → “Configuration” → “Settings”** — section parameters.
 
 ## Terms
 
@@ -82,7 +81,7 @@ A cashier screen for processing sales and returns: creating a receipt, adding it
 
 #### Receipt
 
-The result of processing a sale or return: list of lines, prices, discounts, amount due, and payment method(s).
+The result of processing a sale or return: list of lines, prices, discounts, To pay, and payment method(s).
 
 #### Payment method
 

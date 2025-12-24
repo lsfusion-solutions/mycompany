@@ -5,9 +5,9 @@ REQUIRE ReceiptDone;
 NAMESPACE Inventory;
     
 EXTEND CLASS ReceiptStatus {
-    canceled 'Cancelled'
+    canceled 'Canceled'
 }
-canceled 'Cancelled' = DATA BOOLEAN (Receipt);
+canceled 'Canceled' = DATA BOOLEAN (Receipt);
 active '{Active}' (Receipt r) = done(r) AND NOT canceled(r);
 
 status(Receipt r) += WHEN canceled(r) THEN ReceiptStatus.canceled;
@@ -41,7 +41,7 @@ DESIGN receipt {
 
 EXTEND FORM receipts    
     EXTEND FILTERGROUP status
-        FILTER 'Cancelled' status(r) = ReceiptStatus.canceled    
+        FILTER 'Canceled' status(r) = ReceiptStatus.canceled    
 ;
 
 @defineSelectionAction(receipts, Receipt, cancel, 'Cancel', statuses);

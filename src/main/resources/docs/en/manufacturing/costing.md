@@ -26,16 +26,16 @@ Only lines where:
 
 are included in costing.
 
-### 2) Material warehouse and Execution date
+### 2) Material location and Execution date
 
 Consumption cost is determined taking into account:
 
-- the **Material location** (warehouse used for write-off);
+- the **Material location** (location used for write-off);
 - the **Execution date** of the manufacturing order.
 
 Practical meaning:
 
-- if different warehouses have different costs, write-off is valued by the material warehouse;
+- if different locations have different costs, write-off is valued by the material location;
 - the **Execution** date fixes the “valuation moment”, i.e. which date is used to take the cost.
 
 ### 3) Additional and labor costs

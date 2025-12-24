@@ -5,9 +5,9 @@ REQUIRE IncomingPaymentDone;
 NAMESPACE Invoicing;
     
 EXTEND CLASS IncomingPaymentStatus {
-    canceled 'Cancelled'
+    canceled 'Canceled'
 }
-canceled 'Cancelled' = DATA BOOLEAN (IncomingPayment);
+canceled 'Canceled' = DATA BOOLEAN (IncomingPayment);
 active '{Active}' (IncomingPayment s) = done(s) AND NOT canceled(s);
 
 status(IncomingPayment s) += WHEN canceled(s) THEN IncomingPaymentStatus.canceled;
@@ -41,5 +41,5 @@ DESIGN incomingPayment {
 
 EXTEND FORM incomingPayments    
     EXTEND FILTERGROUP status
-        FILTER 'Cancelled' status(p) = IncomingPaymentStatus.canceled    
+        FILTER 'Canceled' status(p) = IncomingPaymentStatus.canceled    
 ;

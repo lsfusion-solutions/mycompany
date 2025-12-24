@@ -19,7 +19,7 @@ Typical directories:
 - **Vehicle service types** — service classification (scheduled maintenance, repair, etc.).
 - **Vehicle tags** — additional labels for filtering and control.
 
-For directories, the **Create**, **Edit**, **Delete** actions are usually available.
+For directories, the **New**, **Edit**, **Delete** actions are usually available.
 
 Recommendations for maintaining directories:
 

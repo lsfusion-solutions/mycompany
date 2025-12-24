@@ -23,7 +23,7 @@ In the list, you typically see:
 - status;
 - amount;
 - planned shipping date;
-- warehouse/location.
+- location.
 
 Filters and the set of columns depend on your configuration.
 
@@ -35,7 +35,7 @@ Typically, the card includes:
 
 - **Customer**;
 - **Date** and **planned shipping date**;
-- **Warehouse/location**;
+- **Location**;
 - **Delivery address** (if used);
 - **Order type** (if multiple types are used);
 - **Responsible person**.
@@ -50,7 +50,7 @@ In lines, you specify:
 - discount (if used);
 - line amount.
 
-Recommendation: fill in the customer and warehouse first, then add lines — this helps the system select prices and availability more accurately.
+Recommendation: fill in the customer and location first, then add lines — this helps the system select prices and availability more accurately.
 
 ## Confirmation and cancellation
 

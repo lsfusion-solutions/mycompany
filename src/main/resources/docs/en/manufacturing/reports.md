@@ -7,7 +7,7 @@ The reporting section is used to analyze manufacturing orders.
 - number of orders for a period;
 - planned vs actual output;
 - material availability;
-- **Done** and **Cancelled** orders.
+- **Done** and **Canceled** orders.
 
 ## Usage recommendations
 

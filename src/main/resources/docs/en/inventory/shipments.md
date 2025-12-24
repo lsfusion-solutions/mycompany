@@ -8,8 +8,8 @@ Open **“Inventory” → “Operations” → “Shipments”**.
 
 The **Shipment** document is used for:
 
-- shipping goods from a warehouse (regular shipment);
-- transferring goods between warehouses (if a type with the “Transfer” flag is selected).
+- shipping goods from a location (regular shipment);
+- transferring goods between locations (if a type with the “Transfer” flag is selected).
 
 The same form is used for both shipments and transfers — the behavior depends on the selected **type**.
 
@@ -21,7 +21,7 @@ The list typically shows:
 - planned date and time;
 - type;
 - partner (for a regular shipment);
-- source warehouse and (for transfers) destination warehouse;
+- source location and (for transfers) destination location;
 - note;
 - number of lines.
 
@@ -41,7 +41,7 @@ How editing works:
 - you can **edit planned quantity** in a cell for the corresponding shipment and item;
 - editing is available only for shipments in **Draft** or **Waiting**; for other statuses values are read-only.
 
-Additionally, the tab may show hints about stock at the source warehouse and highlight if the total planned quantity exceeds available stock.
+Additionally, the tab may show hints about stock at the source location and highlight if the total planned quantity exceeds available stock.
 
 ## Shipment card
 
@@ -49,12 +49,12 @@ Additionally, the tab may show hints about stock at the source warehouse and hig
 
 In the shipment header you typically specify:
 
-- **Type** — affects numbering, default warehouses and restrictions;
+- **Type** — affects numbering, default locations and restrictions;
 - **Planned date**;
 - **Number**;
 - **Partner** (for a regular shipment);
-- **Source warehouse** — required;
-- **Destination warehouse** — required for transfer;
+- **Source location** — required;
+- **Destination location** — required for transfer;
 - **Delivery address** (if used);
 - **Customer reference** (if used);
 - **Note**.
@@ -64,8 +64,8 @@ In the shipment header you typically specify:
 A shipment type can be marked as **Transfer** (i.e., the type has the “Transfer” flag enabled). In this case:
 
 - the partner may be optional;
-- destination warehouse becomes required;
-- the system does not allow selecting the same source and destination warehouse.
+- destination location becomes required;
+- the system does not allow selecting the same source and destination location.
 
 ### Shipment lines
 
@@ -102,10 +102,10 @@ Below is the exact set of statuses defined in the source code.
 2. **Waiting** — the document is marked for processing (from Draft) and awaits availability.
 3. **Ready** — availability/reservation is ensured for lines.
 4. **Done** — the shipment fact is confirmed, completion date is recorded.
-5. **Accepted** — receipt confirmation at the destination warehouse.
+5. **Accepted** — receipt confirmation at the destination location.
    - this status is used when transfer requires destination confirmation;
    - after **Done**, the receipt confirmation action becomes available.
-6. **Cancelled** — the document is cancelled.
+6. **Canceled** — the document is Canceled.
 
 Important: there is no separate “Picking” status in the status list. Picking is implemented as a work mode by locations for shipment types with picking enabled (see below).
 
@@ -145,4 +145,4 @@ At the same time, the document status remains one of the statuses listed above (
 - **Cannot save a line** — the “Planned quantity” value is out of range defined in the shipment type.
 - **Cannot add the same item as a second line** — the “one line per item” rule is enabled for the shipment type.
 - **Cannot move to execution** — not enough available stock or picking is not completed.
-- **Cannot create a transfer** — the same source and destination warehouse is selected.
+- **Cannot create a transfer** — the same source and destination location is selected.

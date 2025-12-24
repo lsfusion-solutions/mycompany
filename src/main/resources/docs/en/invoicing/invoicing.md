@@ -59,7 +59,7 @@ Below are typical document chains. In a particular configuration, some steps may
 ### Sales (customer)
 
 1. **Invoice** — records the sale in accounting (revenue/taxes/customer debt).
-2. **Shipment** (optional) — a warehouse document that can be created from an invoice.
+2. **Shipment** (optional) — an inventory document that can be created from an invoice.
 3. **Incoming payment** — records money receipt and reduces debt (after matching with documents).
 
 ### Purchase (supplier)
@@ -111,14 +111,14 @@ Many documents in “Invoicing” follow a typical lifecycle:
 - **Draft** — the document can be freely edited;
 - **To pay** (or **Ready**, depending on the document) — the document is confirmed for further actions (printing, creating related documents, payments matching);
 - **Done** — the document is completed (often means operations are closed);
-- **Cancelled** — the document is excluded from accounting/processes.
+- **Canceled** — the document is excluded from accounting/processes.
 
 Exact behavior depends on configuration. As a rule, the “higher” the status, the more restrictions there are on changing fields and lines.
 
 ## Integrations and dependent contours (user level)
 
 - **Bank/cash**: payments are linked to bank accounts/cash registers; movement and debt reports are built from them.
-- **Inventory** (if used): invoices can create shipments; some fields (warehouse, delivery address) become required.
+- **Inventory** (if used): invoices can create shipments; some fields (location, delivery address) become required.
 - **Taxes**: taxes can be set manually in lines or substituted automatically based on settings.
 
 ## FAQ
@@ -128,7 +128,7 @@ Exact behavior depends on configuration. As a rule, the “higher” the status,
 Usually you need to:
 
 1. Make sure the payment is **matched** with documents (bills/invoices).
-2. Check document and payment statuses (they must not be cancelled).
+2. Check document and payment statuses (they must not be Canceled).
 3. Check currency and amounts (partial payment, overpayment).
 
 See: [Payments](payments.md), [Incoming payments](incoming-payments.md), [Outgoing payments](outgoing-payments.md), [Debt and payment calendar](debt-and-calendar.md).

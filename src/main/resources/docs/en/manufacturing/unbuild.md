@@ -7,7 +7,7 @@ This section describes the unbuild (disassembly) logic implemented through a spe
 Unbuild is “reverse manufacturing”:
 
 - the **source item** is consumed from stock (as a material);
-- the **components** from the Bill of Materials are received to the finished goods warehouse (as output).
+- the **components** from the Bill of Materials are received to the finished goods location (as output).
 
 In practice, the system records the operation as:
 
@@ -65,13 +65,13 @@ Unbuild goes through the same statuses as regular production:
 1. Prepare the order: type “Unbuild”, item, Bill of Materials, quantity.
 2. Check availability and reserve materials.
    - for unbuild, the material is the source item;
-   - if the source item is not available in the material warehouse, the order cannot move to the ready status.
+   - if the source item is not available in the material location, the order cannot move to the ready status.
 3. Move the order “in progress”.
    - run **Manufacture**.
 4. Record actual execution:
    - for unbuild, “produced” is typically derived from consuming the source item;
    - the system can automatically fill output components and consumption proportionally.
-5. Run **Mark as Done** and specify the finished goods warehouse where components will be received.
+5. Run **Mark as Done** and specify the finished goods location where components will be received.
 
 ## Costing for unbuild
 
@@ -87,5 +87,5 @@ See details in [Costing: how it is calculated](costing.md).
 ## Common mistakes
 
 - **Unbuild lines are not generated** — a Bill of Materials is not selected.
-- **Reservation fails** — the source item is not available in the material warehouse in the required quantity.
-- **Components are received to the wrong warehouse** — make sure the finished goods warehouse is specified on completion.
+- **Reservation fails** — the source item is not available in the material location in the required quantity.
+- **Components are received to the wrong location** — make sure the finished goods location is specified on completion.
