@@ -9,7 +9,7 @@ Most commonly used:
 - stock on hand report;
 - inventory valuation;
 - item movements;
-- costing reports.
+- [costing reports](costing.md).
 
 ## Ledgers
 
@@ -28,4 +28,4 @@ Practical purpose of ledgers:
 ## Recommendations
 
 1. Always set a date interval when analyzing movements.
-2. For problematic items, use breakdown by location and lot.
+2. For problematic items, use breakdown by [location](locations.md) and [lot](lots-and-packages.md).

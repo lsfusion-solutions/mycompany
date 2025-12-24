@@ -17,7 +17,7 @@ The assignment is set up as a record with a validity period.
    - vehicle;
    - **Date** and, if needed, **Date to**;
    - employee (driver);
-   - **Odometer value** (if required);
+   - **[Odometer value](service.md)** (if required);
    - note (if needed).
 3. Save the record.
 
@@ -55,4 +55,4 @@ If the driver is not displayed in the vehicle list or is displayed incorrectly:
 
 Additionally:
 
-- If your organization records mileage, it is convenient to enter **Odometer value** when changing drivers — this helps reconcile mileage and service vehicles according to the schedule.
+- If your organization records mileage, it is convenient to enter **[Odometer value](service.md)** when changing drivers — this helps reconcile mileage and service vehicles according to the schedule.

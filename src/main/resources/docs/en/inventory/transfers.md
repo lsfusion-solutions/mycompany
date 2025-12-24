@@ -1,12 +1,12 @@
 # Transfers
 
-Transfer (`Transfer`) is a document for moving goods between locations (for example, between warehouses, zones or bins).
+Transfer (`Transfer`) is a document for moving goods between [locations](locations.md) (for example, between warehouses, zones or bins).
 
-In fact, a transfer is a kind of **Shipment** document (it is stored in the system as a shipment with the **Transfer** type). Therefore, the list and the card are located in the common shipments section.
+In fact, a transfer is a kind of **[Shipment](shipments.md)** document (it is stored in the system as a shipment with the **Transfer** type). Therefore, the list and the card are located in the common shipments section.
 
 ## How the system determines that a type is a transfer
 
-There is no separate “transfer document type” in the system — a transfer is a **shipment** that uses a **shipment type** with the **Transfer** flag enabled.
+There is no separate “transfer document type” in the system — a transfer is a **[shipment](shipments.md)** that uses a **shipment type** with the **Transfer** flag enabled.
 
 This is a flag on the **Shipment type** directory.
 
@@ -47,7 +47,7 @@ Columns and fields depend on configuration, but the basic set is:
 
 ## Statuses and completion
 
-Transfers use the same statuses and completion logic as the Shipment document.
+Transfers use the same statuses and completion logic as the [Shipment](shipments.md) document.
 
 Practical rule:
 

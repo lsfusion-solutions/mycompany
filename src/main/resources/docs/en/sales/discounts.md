@@ -1,6 +1,6 @@
 # Discounts: application logic
 
-In the system, a discount is a separate **“Discount”** object that can be applied to sales document lines (primarily, to sales order lines).
+In the system, a discount is a separate **“Discount”** object that can be applied to sales document lines (primarily, to [sales order](orders.md) lines).
 
 A discount can be defined:
 
@@ -15,9 +15,9 @@ In the discount card, you specify:
 
 - validity period;
 - applicability conditions;
-- which items/categories it applies to;
-- which price types are allowed;
-- if needed — which locations it applies to;
+- which [items](../masterdata/items.md)/categories it applies to;
+- which [price types](pricelists.md) are allowed;
+- if needed — which [locations](../inventory/locations.md) it applies to;
 - discount amount (percent) or a price type (if the discount is defined by price).
 
 ## How the system decides whether a discount matches a line
@@ -67,7 +67,7 @@ Important: the amount used for the check is the “full amount” (calculated fr
 
 ### 6) By cumulative conditions per customer
 
-A discount can be cumulative and enabled only if the customer has:
+A discount can be cumulative and enabled only if the [customer](../masterdata/partners.md) has:
 
 - total volume of previous purchases above a threshold;
 - or purchase volume for the previous month above a threshold.

@@ -6,11 +6,11 @@ Open **“Inventory” → “Configuration” → “Settings”**.
 
 ## What is typically configured
 
-- receipt and shipment types;
-- transfer usage (a shipment type with the “Transfer” flag);
+- [receipt](receipts.md) and [shipment](shipments.md) types;
+- [transfer](transfers.md) usage (a [shipment](shipments.md) type with the “Transfer” flag);
 - document statuses and action availability;
 - reservation rules;
-- lot and package usage;
+- [lot and package](lots-and-packages.md) usage;
 - print forms.
 
 ## Receipt types
@@ -20,7 +20,7 @@ Settings include a directory of **receipt types**. A receipt type defines how us
 Typically, a receipt type defines:
 
 - **Numbering** — how the number is generated;
-- **Default location** — which location is set in new documents;
+- **Default location** — which [location](locations.md) is set in new documents;
 - **Maximum quantity** — the upper limit for the “Planned quantity” field in lines.
 
 If the system has exactly one receipt type, it may be substituted automatically.
@@ -43,8 +43,8 @@ Validation:
 
 ## Recommended setup order
 
-1. Configure locations.
-2. Configure document types (receipts/shipments/transfers).
+1. Configure [locations](locations.md).
+2. Configure document types ([receipts](receipts.md)/[shipments](shipments.md)/[transfers](transfers.md)).
 3. Configure statuses and transition rules.
-4. Enable/configure lots and packages (if needed).
-5. Configure reports and access rights.
+4. Enable/configure [lots and packages](lots-and-packages.md) (if needed).
+5. Configure [reports](reports-and-ledgers.md) and access rights.

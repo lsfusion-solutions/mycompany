@@ -1,6 +1,6 @@
 # Sessions
 
-A session is the period of cash register operation between opening and closing. Sales and returns in POS are processed within an open session.
+A session is the period of **[cash register](settings.md)** operation between opening and closing. Sales and returns in **[POS](pos.md)** are processed within an open session.
 
 ## Where to find it
 
@@ -9,7 +9,7 @@ A session is the period of cash register operation between opening and closing. 
 ## How to open a session
 
 1. Open the session list.
-2. Select a cash register.
+2. Select a **[cash register](settings.md)**.
 3. Run the **“Open session”** action.
 
 The system automatically records the date and time of opening.
@@ -31,7 +31,7 @@ The system records the date and time of closing.
 
 ## Monitoring operations by session
 
-In the session list, filtering by date is usually available. In POS, you can usually view the receipt list:
+In the session list, filtering by date is usually available. In **[POS](pos.md)**, you can usually view the receipt list:
 
 - by the current session;
 - by cash register.

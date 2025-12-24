@@ -6,17 +6,17 @@ Forms for working with pricelists are usually located at **“Purchase” → �
 
 ## Purpose
 
-A **pricelist** stores vendor prices and is used for:
+A **pricelist** stores [vendor](../masterdata/partners.md) prices and is used for:
 
 - preparing purchase prices;
-- filling in prices when creating purchase orders;
+- filling in prices when creating [purchase orders](orders.md);
 - recording price changes by periods.
 
 ## Pricelist structure
 
 In a pricelist, you typically specify:
 
-- vendor;
+- [vendor](../masterdata/partners.md);
 - validity period (start/end date);
 - note.
 
@@ -24,7 +24,7 @@ In a pricelist, you typically specify:
 
 In lines, you specify:
 
-- item;
+- [item](../masterdata/items.md);
 - price;
 - if needed — vendor name/SKU (if you maintain mapping).
 

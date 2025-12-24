@@ -1,6 +1,6 @@
 # Shipments for orders
 
-A shipment records the transfer of goods to a customer and inventory movement.
+A [shipment](../inventory/shipments.md) records the transfer of goods to a customer and inventory movement.
 
 ## Where to find
 
@@ -10,8 +10,8 @@ Usually available in **“Sales” → “Operations”** (or in the “Inventor
 
 A shipment can be created based on a sales order. In this case:
 
-- the customer and delivery address are prefilled;
-- the location is prefilled;
+- the [customer](../masterdata/partners.md) and delivery address are prefilled;
+- the [location](../inventory/locations.md) is prefilled;
 - shipment lines are formed from the order lines.
 
 ## Relation between shipments and sales orders: how it works in the system
@@ -55,11 +55,11 @@ How it looks for the user:
 1. You confirm an order.
 2. The system creates (or finds) a reserve shipment for this order in status `Waiting`.
 3. In this shipment, the system automatically keeps up to date:
-   - customer;
+   - [customer](../masterdata/partners.md);
    - department (if used);
    - planned date;
    - delivery address;
-   - location.
+   - [location](../inventory/locations.md).
 
 ### How lines are formed in the reserve shipment
 

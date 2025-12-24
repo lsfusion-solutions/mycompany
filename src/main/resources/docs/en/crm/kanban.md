@@ -30,7 +30,7 @@ If the board lacks columns or shows extra ones, check status and type settings (
 The card layout may differ, but typically includes:
 
 - **Lead status**, **Name**, **Lead type**;
-- **Partner**;
+- **[Partner](../masterdata/partners.md)**;
 - forecast: **Expected revenue**, **Expected closing**;
 - **Lead priority** (including color);
 - **Lead tags** (including color);

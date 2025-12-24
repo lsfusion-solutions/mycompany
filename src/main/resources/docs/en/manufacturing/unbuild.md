@@ -1,23 +1,23 @@
 # Unbuild (item disassembly)
 
-This section describes the unbuild (disassembly) logic implemented through a special type of **manufacturing order**.
+This section describes the unbuild (disassembly) logic implemented through a special type of **[manufacturing order](orders.md)**.
 
 ## General idea
 
 Unbuild is “reverse manufacturing”:
 
 - the **source item** is consumed from stock (as a material);
-- the **components** from the Bill of Materials are received to the finished goods location (as output).
+- the **components** from the [Bill of Materials](bom.md) are received to the finished goods location (as output).
 
 In practice, the system records the operation as:
 
 1) consume the source item;
-2) receive a set of components calculated from the Bill of Materials.
+2) receive a set of components calculated from the [Bill of Materials](bom.md).
 
 ## What is required to use unbuild
 
 1. A manufacturing order type with the **“Unbuild”** flag must exist.
-2. A Bill of Materials must be specified for the item to be unbuilt — it defines what the item is disassembled into.
+2. A [Bill of Materials](bom.md) must be specified for the item to be unbuilt — it defines what the item is disassembled into.
 
 Note: in initial data there is usually an “Unbuild” type already configured as unbuild.
 
@@ -27,13 +27,13 @@ Note: in initial data there is usually an “Unbuild” type already configured 
 
 For regular production:
 
-- **materials** = Bill of Materials components;
-- **output** = the finished item (and possible by-products).
+- **materials** = [Bill of Materials](bom.md) components;
+- **output** = the finished item (and possible [by-products](by-products.md)).
 
 For unbuild:
 
-- **materials** = the source item itself (and additional items if they are specified as by-products in the Bill of Materials);
-- **output** = Bill of Materials components.
+- **materials** = the source item itself (and additional items if they are specified as by-products in the [Bill of Materials](bom.md));
+- **output** = [Bill of Materials](bom.md) components.
 
 ### Planned quantity
 
@@ -48,7 +48,7 @@ The order has a line generation action (usually “Create Lines”, available in
 For unbuild, the system performs:
 
 1. Clears existing material and output lines.
-2. Creates **output** lines from Bill of Materials components:
+2. Creates **output** lines from [Bill of Materials](bom.md) components:
    - item = component;
    - the “to produce” quantity is calculated proportionally:
      - component quantity in Bill of Materials × unbuild quantity / Bill of Materials quantity;
@@ -56,13 +56,13 @@ For unbuild, the system performs:
 3. Creates one **material** line for the source item:
    - item = order item;
    - “to consume” quantity = unbuild quantity.
-4. If the Bill of Materials contains by-products, they are added as additional **material** lines (also to be consumed).
+4. If the [Bill of Materials](bom.md) contains [by-products](by-products.md), they are added as additional **material** lines (also to be consumed).
 
 ## Reserving and starting unbuild
 
 Unbuild goes through the same statuses as regular production:
 
-1. Prepare the order: type “Unbuild”, item, Bill of Materials, quantity.
+1. Prepare the order: type “Unbuild”, item, [Bill of Materials](bom.md), quantity.
 2. Check availability and reserve materials.
    - for unbuild, the material is the source item;
    - if the source item is not available in the material location, the order cannot move to the ready status.

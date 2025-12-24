@@ -13,9 +13,9 @@ Recalculation is also available from **“Inventory valuation”** via the **“
 
 Costing is used to:
 
-- value stock in locations (how much the current stock of an item costs);
-- calculate the cost of shipments / write-offs;
-- transfer cost along with quantity when moving stock between cost accounting locations;
+- value stock in [locations](locations.md) (how much the current stock of an item costs);
+- calculate the cost of [shipments](shipments.md) / [write-offs](scrap.md);
+- transfer cost along with quantity when moving stock between cost accounting [locations](locations.md);
 - form the cost of production output (if the Manufacturing module is used).
 
 ## What the system considers “cost”
@@ -50,39 +50,39 @@ Available methods:
    - the write-off is valued at the **average** unit cost at the moment of the operation.
 
 3. **FIFO**
-   - write-off is performed by inbound batches: quantity is written off from the earliest receipts first.
+   - write-off is performed by inbound [batches](lots-and-packages.md): quantity is written off from the earliest [receipts](receipts.md) first.
 
 ## Which documents affect costing
 
 Below is a user-level description of which operations form cost.
 
-### Receipts
+### [Receipts](receipts.md)
 
 Receipts create an **inbound** operation and increase stock:
 
-- location quantity increases;
+- [location](locations.md) quantity increases;
 - stock cost increases.
 
 In some receipt types, you can enter cost manually using the **“Show cost”** flag.
 
-### Shipments (write-offs)
+### [Shipments](shipments.md) ([write-offs](scrap.md))
 
 Shipment forms an **outbound** operation:
 
-- location quantity decreases;
+- [location](locations.md) quantity decreases;
 - stock cost decreases;
 - the write-off amount is calculated automatically based on the item’s cost method.
 
-### Transfers
+### [Transfers](transfers.md)
 
-If a transfer is performed between different **cost accounting locations**, the cost is transferred together with the quantity:
+If a transfer is performed between different **cost accounting [locations](locations.md)**, the cost is transferred together with the quantity:
 
 - an outbound operation is created at the source;
 - an inbound operation is created at the destination for the same amount.
 
 If the transfer is inside one cost accounting location, cost is not transferred between sub-locations (it stays within the same accounting location).
 
-### Adjustments
+### [Adjustments](adjustments.md)
 
 Adjustments may:
 

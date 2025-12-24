@@ -1,6 +1,6 @@
 # Retail — user documentation
 
-This documentation describes how to work with the **“Retail”** section: configuring **cash registers**, managing **sessions**, processing sales and returns in **POS**, applying **discounts** and **discount cards**, and taking **payments**.
+This documentation describes how to work with the **“Retail”** section: configuring **[cash registers](settings.md)**, managing **[sessions](sessions.md)**, processing sales and returns in **[POS](pos.md)**, applying **[discounts](../sales/discounts.md)** and **[discount cards](discount-cards.md)**, and taking **[payments](payments.md)**.
 
 If some menu items or actions are missing in your configuration, this is normal: available functionality depends on enabled modules and settings.
 
@@ -69,24 +69,24 @@ Typical menu items:
 
 #### Cash register
 
-A workplace used to process sales and returns. As a rule, a cash register is linked to a specific computer/device.
+A **[cash register](settings.md)** is a workplace used to process sales and returns. As a rule, a cash register is linked to a specific computer/device.
 
 #### Session
 
-A period of cash register operation between **opening a session** and **closing a session**. POS operations are performed within an open session.
+A **[session](sessions.md)** is a period of cash register operation between **opening a session** and **closing a session**. POS operations are performed within an open session.
 
 #### POS
 
-A cashier screen for processing sales and returns: creating a receipt, adding items, applying discounts, and proceeding to payment.
+**[POS](pos.md)** is a cashier screen for processing sales and returns: creating a receipt, adding items, applying discounts, and proceeding to payment.
 
 #### Receipt
 
-The result of processing a sale or return: list of lines, prices, discounts, To pay, and payment method(s).
+The result of processing a sale or return (in **[POS](pos.md)**): list of lines, prices, discounts, To pay, and payment method(s).
 
 #### Payment method
 
-A rule by which money is received (for example, cash or bank card) and the related financial operations are formed.
+A **[payment method](payments.md)** is a rule by which money is received (for example, cash or bank card) and the related financial operations are formed.
 
 #### Discount card
 
-A customer card that can be used to provide a discount and/or identify a customer on the receipt.
+A **[discount card](discount-cards.md)** is a customer card that can be used to provide a discount and/or identify a customer on the receipt.

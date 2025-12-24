@@ -1,6 +1,6 @@
 # Vehicle services
 
-The section is intended for accounting works/services performed for vehicles: date, service type, **Vendor** (if used), **Odometer value**, and cost.
+The section is intended for accounting works/services performed for vehicles: date, service type, **[Vendor](../masterdata/partners.md)** (if used), **Odometer value**, and cost.
 
 It is convenient to use vehicle services as an “event and cost log” for a vehicle: scheduled maintenance, repairs, seasonal replacement, tire service, etc. (the set of types depends on directories).
 
@@ -16,8 +16,8 @@ Service history is also usually available in the vehicle card in the correspondi
 2. Fill in the main fields:
    - date;
    - vehicle;
-   - **Type**;
-   - **Vendor** (if used in your organization);
+   - **[Type](settings.md)**;
+   - **[Vendor](../masterdata/partners.md)** (if used in your organization);
    - **Odometer value**;
    - quantity and price (if applicable);
    - **Amount** and **Tax** (if maintained separately);
@@ -36,14 +36,14 @@ If you maintain quantity and price, after changing them the amount may be recalc
 
 ## Link to expense accounting
 
-If your organization maintains **Bill** documents for service expenses, a vehicle service can be linked to a **Bill**. This allows you to:
+If your organization maintains **[Bill](../invoicing/bills.md)** documents for service expenses, a vehicle service can be linked to a **[Bill](../invoicing/bills.md)**. This allows you to:
 
 - see which document the expense was posted by;
 - control amounts by service.
 
 The available fields and filling rules depend on configuration and permissions.
 
-Practical recommendation: if a service is linked to a **Bill**, fill in the date and **Vendor** so that they match the **Bill** — this makes control and search easier.
+Practical recommendation: if a service is linked to a **[Bill](../invoicing/bills.md)**, fill in the date and **[Vendor](../masterdata/partners.md)** so that they match the **[Bill](../invoicing/bills.md)** — this makes control and search easier.
 
 ## Controlling Odometer value
 

@@ -1,6 +1,6 @@
 # Retail settings
 
-This page describes the basic settings that affect how the cash register and POS work.
+This page describes the basic settings that affect how the **[cash register](pos.md)** and **[POS](pos.md)** work.
 
 ## Where to find it
 
@@ -22,11 +22,11 @@ Typically configured:
 
 ## Sessions
 
-Sessions usually use numbering. A session numeration parameter may be available in settings.
+**[Sessions](sessions.md)** usually use numbering. A session numeration parameter may be available in settings.
 
 ## Payment methods
 
-Settings define the list of payment methods. For each method, you typically specify:
+Settings define the list of payment methods (see also: **[Retail payments](payments.md)**). For each method, you typically specify:
 
 Where to find: usually **“Retail” → “Configuration” → “Settings”** (Payment methods tab).
 
@@ -36,6 +36,6 @@ Where to find: usually **“Retail” → “Configuration” → “Settings”
 
 ## Discount cards
 
-Discount cards may use automatic numbering. A discount card numeration parameter may be available in settings.
+**[Discount cards](discount-cards.md)** may use automatic numbering. A discount card numeration parameter may be available in settings.
 
 Where to find: usually **“Retail” → “Configuration” → “Discount cards”**.

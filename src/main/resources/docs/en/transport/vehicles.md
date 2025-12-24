@@ -1,6 +1,6 @@
 # Vehicles
 
-The section is intended for maintaining the list of vehicles and viewing all related information: driver assignments, services, contracts, and attached files.
+The section is intended for maintaining the list of vehicles and viewing all related information: [driver assignments](drivers.md), [services](service.md), [contracts](contracts.md), and attached files.
 
 A vehicle card is an “aggregation point” for a specific car: it is convenient to control who is currently assigned to the vehicle, what services were done, which contracts are active, and to store documents.
 
@@ -56,7 +56,7 @@ Deletion is usually restricted by permissions and may be unavailable if the vehi
 
 ## Tags
 
-Tags are used as additional labels for convenient filtering and control.
+Tags are used as additional labels for convenient filtering and control. The list of available tags is configured in [Configuration](settings.md).
 
 To assign tags to a vehicle:
 
@@ -90,9 +90,9 @@ Recommendations:
 
 The vehicle card usually contains blocks:
 
-- **Drivers** — driver assignments with dates.
-- **Vehicle services** — service and expense history.
-- **Contracts** — linked contracts.
+- **[Drivers](drivers.md)** — driver assignments with dates.
+- **[Vehicle services](service.md)** — service and expense history.
+- **[Contracts](contracts.md)** — linked contracts.
 
 To add a record in a related block, use **New** in the corresponding table.
 

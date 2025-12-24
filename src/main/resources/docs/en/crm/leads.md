@@ -10,7 +10,7 @@ In this section you can typically access:
 - the lead card;
 - state filters (**“Opened”** and **“Closed”**) and **“My leads”**;
 - additional tabs with communications (calls, emails) — if enabled;
-- a block of related documents (orders, invoices) — if the corresponding modules are enabled.
+- a block of related documents ([sales orders](../sales/orders.md), [invoices](../sales/invoices.md)) — if the corresponding modules are enabled.
 
 ## Lead list
 
@@ -23,7 +23,7 @@ The set of columns depends on configuration, but usually includes:
 - **ID**, **Name**;
 - **Lead status** (and the “open/closed” state);
 - **Lead type**;
-- **Partner**;
+- **[Partner](../masterdata/partners.md)**;
 - **Sales person**;
 - **Lead priority** and **Lead tags**;
 - forecast: **Expected revenue**, **Probability**, **Expected closing**;
@@ -45,7 +45,7 @@ Additional filters may also be available (depending on configuration):
 - by lead type;
 - by sales person;
 - by priority;
-- by partner.
+- by [partner](../masterdata/partners.md).
 
 Recommendation: for daily work it is usually convenient to keep **“Opened”** enabled and then narrow down to **“My leads”**.
 
@@ -66,7 +66,7 @@ Typically, the top of the card shows:
 
 - **ID** and **Name**;
 - forecast block: **Date and time**, **Expected revenue**, **Probability**, **Expected closing**;
-- main attributes: **Lead type**, **Partner**, **Email**, **Phone**, **Sales person**, **Lead priority**, **Lead tags**.
+- main attributes: **Lead type**, **[Partner](../masterdata/partners.md)**, **Email**, **Phone**, **Sales person**, **Lead priority**, **Lead tags**.
 
 Below are tabs such as:
 
@@ -76,7 +76,7 @@ Below are tabs such as:
 ### Recommended filling order
 
 1. Set **Name** — short and clear (what is requested and from whom).
-2. Set **Partner**, if known.
+2. Set **[Partner](../masterdata/partners.md)**, if known.
 3. Assign **Sales person**.
 4. Select **Lead type**.
 5. Select **Lead status**.
@@ -154,7 +154,7 @@ Delete a lead only if it was created by mistake or is an obvious duplicate.
 
 Before deleting, check:
 
-- there are no related orders and invoices;
+- there are no related [sales orders](../sales/orders.md) and [invoices](../sales/invoices.md);
 - there are no related calls and emails.
 
 If there are links, it is often better to close the lead via a status or via “Lost” rather than delete it.

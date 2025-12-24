@@ -1,12 +1,12 @@
 # Incoming payments
 
-An incoming payment records **money received from a partner** (for example, a customer) to a company **bank account** or **cash register**.
+An incoming payment records **money received from a [partner](../masterdata/partners.md)** (for example, a customer) to a company **bank account** or **cash register**.
 
 Incoming payments are typically used to:
 
 - register the fact of money receipt;
-- match payment with documents (close debt by invoices);
-- see which documents are fully/partially paid and what debt remains.
+- match payment with documents (close [debt](debt-and-calendar.md) by [invoices](invoices.md));
+- see which documents are fully/partially paid and what [debt](debt-and-calendar.md) remains.
 
 ## Where to find it
 
@@ -22,11 +22,11 @@ Open: **“Invoicing” → “Operations” → “Incoming payments”**.
 
 ### Creating an incoming payment from an invoice
 
-If you register payments by invoices, an incoming payment can be created directly from the invoice.
+If you register payments by [invoices](invoices.md), an incoming payment can be created directly from the invoice.
 
 Typical flow:
 
-1. Open the required **invoice**.
+1. Open the required **[invoice](invoices.md)**.
 2. Move the document to status **“To pay”** (if it is still Draft).
 3. Click **“Register Payment”**.
 4. The created incoming payment card opens — verify the fields and save.
@@ -58,7 +58,7 @@ The exact set of fields depends on configuration, but a typical incoming payment
 - **Number** — internal document number.
 - **Amount** — receipt amount.
 - **Partner** — who the money came from.
-- **Partner account/cash register** (if used) — partner details.
+- **Partner account/cash register** (if used) — [partner](../masterdata/partners.md) details.
 - **Company** — the organization receiving the money.
 - **Company account/cash register** — where the money was received (bank account or cash register).
 - **Note** — free text comment.
@@ -75,7 +75,7 @@ If you select an account/cash register that does not match the payment type, the
 
 ## Payments matching and debt closure
 
-To make an incoming payment decrease debt for specific documents, you need to **match** it with these documents.
+To make an incoming payment decrease [debt](debt-and-calendar.md) for specific documents, you need to **match** it with these documents.
 
 In the payment card there is typically a **“Payments matching”** section with:
 
@@ -96,12 +96,12 @@ In the payment card there is typically a **“Payments matching”** section wit
 If the payment amount is less than the document amount:
 
 - the document is paid **partially**;
-- the remaining amount stays as **debt**;
+- the remaining amount stays as **[debt](debt-and-calendar.md)**;
 - you can close it with the next payments.
 
 ### One payment for multiple documents
 
-If a partner paid several documents at once, match the payment to several lines — one per document.
+If a [partner](../masterdata/partners.md) paid several documents at once, match the payment to several lines — one per document.
 
 ### Overpayment and advance
 
@@ -110,7 +110,7 @@ If the payment amount is greater than the matched amount:
 - part of the amount remains **not matched** (until further matching),
 - or it is treated as an **advance** (if the corresponding mechanism/settings are used).
 
-Practical tip: if you expect future documents from this partner, it is convenient to keep the overpayment as an advance and then match the advance later.
+Practical tip: if you expect future documents from this [partner](../masterdata/partners.md), it is convenient to keep the overpayment as an advance and then match the advance later.
 
 ## Finding “not matched” payments
 
@@ -143,6 +143,6 @@ The usual reason is a mismatch between the payment **type** and the account/cash
 
 This is usually caused by one of the following:
 
-- the invoice is not moved to status **“To pay”**;
+- the [invoice](invoices.md) is not moved to status **“To pay”**;
 - a suitable incoming payment type is not configured for the invoice type;
 - there is no remaining amount due for the invoice (already paid or amount due is zero).

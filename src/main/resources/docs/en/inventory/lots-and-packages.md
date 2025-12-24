@@ -6,9 +6,9 @@ A lot (batch/serial) is used for traceability.
 
 If lot accounting is enabled:
 
-- a lot can be specified in receipts;
-- a lot can be required in shipments;
-- stock reports can be built with a lot breakdown.
+- a lot can be specified in [receipts](receipts.md);
+- a lot can be required in [shipments](shipments.md);
+- [stock reports](reports-and-ledgers.md) can be built with a lot breakdown.
 
 ## Packages
 
@@ -18,4 +18,4 @@ If package accounting is enabled:
 
 - you can account for package contents;
 - you can link a package to a lot;
-- you can perform transfer/shipment operations using packages.
+- you can perform [transfer](transfers.md)/[shipment](shipments.md) operations using packages.

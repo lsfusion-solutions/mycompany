@@ -1,6 +1,6 @@
 # Retail returns
 
-This page describes a typical process of returning goods by a customer in **POS**: how to find the original receipt, create a return by receipt lines, and pay out funds.
+This page describes a typical process of returning goods by a customer in **[POS](pos.md)**: how to find the original receipt, create a return by receipt lines, and pay out funds.
 
 > If some actions or fields are missing in your configuration, this is normal: the set of available features depends on enabled modules and settings.
 

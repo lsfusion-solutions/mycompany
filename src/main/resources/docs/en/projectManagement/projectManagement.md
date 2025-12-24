@@ -1,6 +1,6 @@
 # Project Management — user documentation
 
-This documentation describes how to work in the **Projects** section (Project Management): creating and managing projects, creating and controlling tasks, working with the team and roles, tracking effort via time entries, and using basic views to monitor progress.
+This documentation describes how to work in the **Projects** section (Project Management): creating and managing projects, creating and controlling tasks, working with the **[team and roles](team-and-roles.md)**, tracking effort via **[time entries](time-entries.md)**, and using basic views to monitor progress.
 
 ## Contents
 
@@ -31,8 +31,8 @@ A typical scenario “create a project → create tasks → assign assignees →
    - company and manager.
 3. Go to the project tasks and create tasks for the team.
 4. Assign assignees and due dates.
-5. While working, record effort using **time entries**.
-6. Monitor progress by task statuses and, if needed, use Kanban and the Gantt chart.
+5. While working, record effort using **[time entries](time-entries.md)**.
+6. Monitor progress by task statuses and, if needed, use **[Kanban](tasks.md#kanban)** and the **[Gantt chart](tasks.md#gantt-chart)**.
 
 ## Typical scenarios
 
@@ -42,7 +42,7 @@ A typical scenario “create a project → create tasks → assign assignees →
 2. Prepare the team: add participants and roles, or assign a team to the project (if your organization uses teams).
 3. Create tasks and assign assignees and due dates.
 4. Agree on status rules (who changes statuses, when, and by which criteria).
-5. Establish time tracking discipline: record time entries daily or when work is completed.
+5. Establish time tracking discipline: record **[time entries](time-entries.md)** daily or when work is completed.
 
 Details: see [Projects](projects.md), [Tasks](tasks.md), [Team and roles on a project](team-and-roles.md), [Time entries](time-entries.md).
 
@@ -56,10 +56,10 @@ Details: see [Projects](projects.md), [Tasks](tasks.md), [Team and roles on a pr
 
 The **Projects** section typically includes groups:
 
-- **Operations** — day-to-day work (projects, tasks, assignments, time entries).
-- **Processes** — control views (for example, Kanban, Gantt chart).
+- **Operations** — day-to-day work (**[projects](projects.md)**, **[tasks](tasks.md)**, **[assignments](team-and-roles.md#assignments)**, **[time entries](time-entries.md)**).
+- **Processes** — control views (for example, **[Kanban](tasks.md#kanban)**, **[Gantt chart](tasks.md#gantt-chart)**).
 - **Reporting** — reports for projects, tasks, and effort.
-- **Configuration** — directories and rules (types, statuses, priorities, tags, workflow).
+- **Configuration** — directories and rules (types, **[statuses](settings.md#project-statuses)**, priorities, tags, **[workflow](settings.md#workflow)**).
 
 The exact menu set and action availability depend on configuration and user permissions.
 
@@ -68,33 +68,33 @@ The exact menu set and action availability depend on configuration and user perm
 The exact set of permissions depends on your organization’s configuration. A typical responsibility split:
 
 - **Project manager** — responsible for project dates and status, team composition, and task progress control.
-- **Assignee** — works with tasks: changes statuses within available transitions, leaves comments, and records time entries.
+- **Assignee** — works with tasks: changes statuses within available transitions, leaves comments, and records **[time entries](time-entries.md)**.
 - **Observer/approver** (if used) — views the project and tasks, participates in discussions, and may confirm completion according to internal rules.
 
-If some actions are not available (for example, changing a status or creating a time entry), it is usually due to permission restrictions or workflow rules.
+If some actions are not available (for example, changing a status or creating a **[time entry](time-entries.md)**), it is usually due to permission restrictions or workflow rules.
 
 ## Terms
 
 #### Project
 
-A planning unit: contains dates, status, the responsible person (manager), and combines related tasks, team, and effort.
+A **[project](projects.md)** is a planning unit: contains dates, status, the responsible person (manager), and combines related tasks, team, and effort.
 
 #### Task
 
-A work unit within a project: what needs to be done, by what due date, and what the current execution status is.
+A **[task](tasks.md)** is a work unit within a project: what needs to be done, by what due date, and what the current execution status is.
 
 #### Assignment
 
-Linking an employee to a project and/or a task with a role and participation terms (for example, responsibility and period).
+An **[assignment](team-and-roles.md#assignments)** links an employee to a project and/or a task with a role and participation terms (for example, responsibility and period).
 
 #### Time entry
 
-A record of actual time spent on work (usually by task/project) for effort control and reporting.
+A **[time entry](time-entries.md)** is a record of actual time spent on work (usually by task/project) for effort control and reporting.
 
 #### Status
 
-The state of a project or a task. Statuses are used to control the lifecycle and may restrict available actions.
+A status is the state of a project or a task. See **[project statuses](settings.md#project-statuses)** and **[task statuses](settings.md#task-statuses)**.
 
 #### Workflow
 
-Rules for task status transitions: what changes are allowed, in what order, and by whom.
+The **[workflow](settings.md#workflow)** defines rules for task status transitions: what changes are allowed, in what order, and by whom.

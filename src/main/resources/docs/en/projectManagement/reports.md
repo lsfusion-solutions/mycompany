@@ -25,7 +25,7 @@ Typical questions:
 
 Typical questions:
 
-- tasks by statuses (in progress, waiting, completed);
+- tasks by **[statuses](settings.md#task-statuses)** (in progress, waiting, completed);
 - overdue tasks;
 - tasks without an assignee;
 - tasks blocked by dependencies.
@@ -43,8 +43,8 @@ Typical questions:
 
 #### Daily
 
-- the team updates task statuses;
-- assignees record time entries.
+- the team updates **[task statuses](settings.md#task-statuses)**;
+- assignees record **[time entries](time-entries.md)**.
 
 #### Weekly
 
@@ -64,7 +64,7 @@ Typical questions:
 
 Check:
 
-- whether all participants entered time entries for the period;
+- whether all participants entered **[time entries](time-entries.md)** for the period;
 - whether time was entered to the wrong project or task;
 - whether time entry is restricted for a closed period;
 - whether the report period is selected correctly.

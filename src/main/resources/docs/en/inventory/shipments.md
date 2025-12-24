@@ -8,8 +8,8 @@ Open **“Inventory” → “Operations” → “Shipments”**.
 
 The **Shipment** document is used for:
 
-- shipping goods from a location (regular shipment);
-- transferring goods between locations (if a type with the “Transfer” flag is selected).
+- shipping goods from a [location](locations.md) (regular shipment);
+- creating a [transfer](transfers.md) between [locations](locations.md) (if a type with the “Transfer” flag is selected).
 
 The same form is used for both shipments and transfers — the behavior depends on the selected **type**.
 
@@ -21,7 +21,7 @@ The list typically shows:
 - planned date and time;
 - type;
 - partner (for a regular shipment);
-- source location and (for transfers) destination location;
+- source [location](locations.md) and (for transfers) destination location;
 - note;
 - number of lines.
 
@@ -41,7 +41,7 @@ How editing works:
 - you can **edit planned quantity** in a cell for the corresponding shipment and item;
 - editing is available only for shipments in **Draft** or **Waiting**; for other statuses values are read-only.
 
-Additionally, the tab may show hints about stock at the source location and highlight if the total planned quantity exceeds available stock.
+Additionally, the tab may show hints about stock at the source [location](locations.md) and highlight if the total planned quantity exceeds available stock.
 
 ## Shipment card
 
@@ -49,7 +49,7 @@ Additionally, the tab may show hints about stock at the source location and high
 
 In the shipment header you typically specify:
 
-- **Type** — affects numbering, default locations and restrictions;
+- **Type** — affects numbering, default [locations](locations.md) and restrictions;
 - **Planned date**;
 - **Number**;
 - **Partner** (for a regular shipment);
@@ -102,7 +102,7 @@ Below is the exact set of statuses defined in the source code.
 2. **Waiting** — the document is marked for processing (from Draft) and awaits availability.
 3. **Ready** — availability/reservation is ensured for lines.
 4. **Done** — the shipment fact is confirmed, completion date is recorded.
-5. **Accepted** — receipt confirmation at the destination location.
+5. **Accepted** — [receipt](receipts.md) confirmation at the destination [location](locations.md).
    - this status is used when transfer requires destination confirmation;
    - after **Done**, the receipt confirmation action becomes available.
 6. **Canceled** — the document is Canceled.

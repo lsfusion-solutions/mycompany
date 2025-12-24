@@ -103,7 +103,7 @@ Recommendation: do not leave communications in the **“Ready”** filter withou
 For repeat calls, the same phone number may match different leads. In that case:
 
 1. Open the communication.
-2. Review the partner and context.
+2. Review the [partner](../masterdata/partners.md) and context.
 3. Attach it to the most relevant lead.
 
 #### If an email came from a new contact

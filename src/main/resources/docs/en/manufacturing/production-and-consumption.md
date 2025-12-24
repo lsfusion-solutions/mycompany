@@ -1,6 +1,6 @@
 # Production and consumption
 
-In a manufacturing order there are two groups of lines:
+In a [manufacturing order](orders.md) there are two groups of lines:
 
 - **output** lines (what and how much is produced);
 - **material** lines (what and how much is consumed).

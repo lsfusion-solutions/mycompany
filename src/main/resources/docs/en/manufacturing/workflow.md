@@ -1,6 +1,6 @@
 # Manufacturing order process and statuses
 
-A manufacturing order goes through a set of statuses. The status affects which actions are available and which fields are required.
+A [manufacturing order](orders.md) goes through a set of statuses. The status affects which actions are available and which fields are required.
 
 ## Statuses
 
@@ -22,7 +22,7 @@ The exact set of statuses and rules may differ depending on configuration.
 Used to enter initial data:
 
 - type, item, start date;
-- Bill of Materials selection;
+- [Bill of Materials](bom.md) selection;
 - planned quantities.
 
 To move the order to **Waiting**, run **Mark as Todo**.

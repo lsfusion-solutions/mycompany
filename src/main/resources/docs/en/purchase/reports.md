@@ -8,11 +8,11 @@ The main reports are located at **“Purchase” → “Reporting”**.
 
 The purchase orders report allows you to analyze purchase orders by:
 
-- vendors;
+- [vendors](../masterdata/partners.md);
 - statuses;
 - dates;
-- items and categories (if classification is used);
-- purchase order fields (type, payment terms, Scheduled date, etc.).
+- [items](../masterdata/items.md) and categories (if classification is used);
+- purchase order fields (type, [payment terms](../invoicing/settings.md#payment-terms), Scheduled date, etc.).
 
 ### Date filters
 
