@@ -31,6 +31,7 @@ Sekcje:
 - [Podatki](taxes.md)
 - [Raporty i drukowanie](reports-and-printing.md)
 - [Ustawienia i katalogi](settings.md)
+- [KSeF — faktury ustrukturyzowane](ksef/ksef.md)
 
 ## Szybki start
 

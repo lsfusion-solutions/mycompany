@@ -12,6 +12,8 @@ Faktura zakupu służy do:
 - obliczania [podatku](taxes.md) i sumy dokumentu;
 - kontroli płatności do dostawcy oraz [długu](debt-and-calendar.md).
 
+Jeśli w Twojej organizacji faktury zakupu są pobierane z **Krajowego Systemu e‑Faktur (KSeF)**, zobacz: [KSeF — faktury ustrukturyzowane](ksef/ksef.md).
+
 Faktura zakupu może być używana jako:
 
 - **podstawa do planowania [płatności wychodzących](outgoing-payments.md)** (jeśli używany jest [kalendarz płatności](debt-and-calendar.md));

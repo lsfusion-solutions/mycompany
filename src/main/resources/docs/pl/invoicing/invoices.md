@@ -13,6 +13,8 @@ Faktura rejestruje sprzedaż w rozliczeniach:
 - dług klienta;
 - oraz — jeśli włączony jest obszar [Magazynowania](../inventory/inventory.md) — powiązanie z [wydaniami](shipments-from-invoice.md).
 
+Jeśli w Twojej organizacji używany jest **Krajowy System e‑Faktur (KSeF)**, zobacz także: [KSeF — faktury ustrukturyzowane](ksef/ksef.md).
+
 W zależności od ustawień faktura może być:
 
 - dokumentem używanym do kontroli **[długu](debt-and-calendar.md)** (jeśli rozliczanie długu jest prowadzone na podstawie faktur);

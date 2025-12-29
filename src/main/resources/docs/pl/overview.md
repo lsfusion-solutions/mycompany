@@ -141,6 +141,7 @@ Start dokumentacji: [invoicing/invoicing.md](invoicing/invoicing.md)
 
 - [Faktury](invoicing/invoices.md)
 - [Faktury zakupu](invoicing/bills.md)
+- [KSeF — faktury ustrukturyzowane](invoicing/ksef/ksef.md)
 - [Płatności](invoicing/payments.md)
 - [Płatności przychodzące](invoicing/incoming-payments.md)
 - [Płatności wychodzące](invoicing/outgoing-payments.md)
