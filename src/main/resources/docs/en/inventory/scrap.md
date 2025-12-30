@@ -11,7 +11,7 @@ Scrap is used to record stock decreases for reasons not related to sales:
 ## Typical scenario
 
 1. Create a scrap document.
-2. Specify the location.
+2. Specify the [location](locations.md).
 3. Fill lines: item, quantity, reason (if used).
 4. Complete the document.
 

@@ -10,13 +10,13 @@ This section contains parameters and directories that define how users maintain 
 
 ### Order type
 
-The **“Order type”** parameter defines which type is prefilled when creating an order from a lead.
+The **“Order type”** parameter defines which type is prefilled when creating a [sales order](../sales/orders.md) from a lead.
 
 If it is not set, the **“Create Order”** button is not shown in the lead card.
 
 ### Invoice type
 
-The **“Invoice type”** parameter defines which type is prefilled when creating an invoice from a lead.
+The **“Invoice type”** parameter defines which type is prefilled when creating an [invoice](../sales/invoices.md) from a lead.
 
 If it is not set, the **“Create Invoice”** button is not shown in the lead card.
 

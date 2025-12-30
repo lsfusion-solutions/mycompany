@@ -1,10 +1,10 @@
 # Discount cards
 
-A discount card is used to provide a discount and/or identify the customer during the sale.
+A discount card is used to provide a **[discount](../sales/discounts.md)** and/or identify the customer during the sale.
 
 ## Where to find it
 
-Usually: **“Retail” → “Settings” → “Discount cards”**.
+Usually: **“Retail” → “Configuration” → “Discount cards”**.
 
 ## Main card data
 
@@ -27,7 +27,7 @@ You can block a card by specifying a block date.
 
 Restriction: the block date cannot be earlier than the issue date.
 
-## Using it on a receipt
+## Using it on a [receipt](pos.md)
 
 How a discount card is used depends on your configuration:
 

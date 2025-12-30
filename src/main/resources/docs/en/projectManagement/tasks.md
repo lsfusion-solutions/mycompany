@@ -28,7 +28,7 @@ The set of fields may depend on the task type and settings.
 
 ## Statuses and workflow
 
-A task goes through states defined by **task statuses**. Transitions between statuses are controlled by the **workflow**.
+A task goes through states defined by **[task statuses](settings.md#task-statuses)**. Transitions between statuses are controlled by the **[workflow](settings.md#workflow)**.
 
 The workflow helps prevent chaotic changes: for example, you may not be able to move a task directly to completed until it has been taken into work (exact rules depend on configuration).
 

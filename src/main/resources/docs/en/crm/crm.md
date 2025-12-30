@@ -10,10 +10,10 @@ This set of documents describes end-user work with leads: the lead card and list
    - **Name**
    - **Sales person**
    - **Lead type** and **Lead status** (if the pipeline is configured)
-   - if available — **Partner**, **Phone**, **Email**
+   - if available — **[Partner](../masterdata/partners.md)**, **Phone**, **Email**
 4. For control, use:
    - filters **“Opened”**, **“Closed”**, **“My leads”**;
-   - the **“Kanban”** tab (columns by status, quick drag-and-drop between stages).
+   - the **[“Kanban”](kanban.md)** tab (columns by status, quick drag-and-drop between stages).
 
 Detailed instructions:
 
@@ -28,7 +28,7 @@ Detailed instructions:
 
 #### Lead
 
-A potential sale or inquiry that goes through work stages (statuses). A lead can be linked to a partner, an owner employee, a priority and a set of tags.
+A potential sale or inquiry that goes through work stages (statuses). A lead can be linked to a [partner](../masterdata/partners.md), an owner employee, a priority and a set of tags.
 
 #### Lead type
 
@@ -53,12 +53,12 @@ Tags used to group leads (e.g., “exhibition”, “follow‑up”, “urgent�
 ## Typical scenarios
 
 1. **An incoming call / email arrived** → create a lead from the communication or attach the communication to an existing lead → then move the lead through statuses.
-2. **A document is needed** → from the lead, create a **customer order** or an **invoice** (if configured) → control related documents in the lead card.
-3. **You need to analyze the pipeline** → use the **Lead report** and date interval filters.
+2. **A document is needed** → from the lead, create a **[sales order](../sales/orders.md)** or an **[invoice](../sales/invoices.md)** (if configured) → control related documents in the lead card.
+3. **You need to analyze the pipeline** → use the **[Lead report](reports.md)** and date interval filters.
 
 ## Notes
 
-- The availability of tabs and actions depends on user permissions and configuration (for example, to create an order/invoice, the corresponding document types must be set).
+- The availability of tabs and actions depends on user permissions and configuration (for example, to create a [sales order](../sales/orders.md)/[invoice](../sales/invoices.md), the corresponding document types must be set).
 - This documentation uses section/field/button names as they are shown in the UI.
 
 ## Roles and responsibilities
@@ -93,7 +93,7 @@ Responsible for:
 
 ## FAQ
 
-#### Why don’t I see the button to create an order or an invoice?
+#### Why don’t I see the button to create a [sales order](../sales/orders.md) or an [invoice](../sales/invoices.md)?
 
 Check in **“CRM → Configuration → Settings”** whether the **“Order type”** and **“Invoice type”** parameters are set. If the parameters are not set or you do not have permissions, the buttons are not shown.
 

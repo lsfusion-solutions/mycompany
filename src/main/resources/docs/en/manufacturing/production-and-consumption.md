@@ -1,6 +1,6 @@
 # Production and consumption
 
-In a manufacturing order there are two groups of lines:
+In a [manufacturing order](orders.md) there are two groups of lines:
 
 - **output** lines (what and how much is produced);
 - **material** lines (what and how much is consumed).
@@ -37,10 +37,10 @@ If the required quantities can be reserved, the order moves to the ready state.
 
 ## Unreserve
 
-If the start is postponed or the order is **Cancelled**, you can run **Unreserve**.
+If the start is postponed or the order is **Canceled**, you can run **Unreserve**.
 
 ## Recommendations
 
-- Always check that the material warehouse/storage location is selected.
-- On order completion, specify the finished goods warehouse/storage location.
+- Always check that the material location/storage location is selected.
+- On order completion, specify the finished goods location/storage location.
 - If actual consumption differs from the plan, adjust material lines before completing the order.

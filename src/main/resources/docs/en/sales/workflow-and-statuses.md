@@ -3,7 +3,7 @@
 In the **“Sales”** section, a sales order goes through statuses. Statuses define:
 
 - whether an order can be edited;
-- whether an order can be canceled;
+- whether an order can be Canceled;
 - whether related documents can be created (shipments, invoices, manufacturing/purchase orders).
 
 ## Typical workflow
@@ -29,5 +29,5 @@ Common rules include:
 
 ## Recommendations
 
-- confirm the order only after verifying prices, warehouse/location, and delivery terms;
+- confirm the order only after verifying prices, location, and delivery terms;
 - if you need to close an order without fulfillment, use cancellation instead of deletion.

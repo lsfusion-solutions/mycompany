@@ -1,6 +1,6 @@
 # Shipments for orders
 
-A shipment records the transfer of goods to a customer and inventory movement.
+A [shipment](../inventory/shipments.md) records the transfer of goods to a customer and inventory movement.
 
 ## Where to find
 
@@ -10,8 +10,8 @@ Usually available in **“Sales” → “Operations”** (or in the “Inventor
 
 A shipment can be created based on a sales order. In this case:
 
-- the customer and delivery address are prefilled;
-- the warehouse/location is prefilled;
+- the [customer](../masterdata/partners.md) and delivery address are prefilled;
+- the [location](../inventory/locations.md) is prefilled;
 - shipment lines are formed from the order lines.
 
 ## Relation between shipments and sales orders: how it works in the system
@@ -39,7 +39,7 @@ For an order line, the system calculates:
 
 If more is shipped than ordered, the system will show an error.
 
-### “Reserve” shipment for an order (pending)
+### “Reserve” shipment for an order (status `Waiting`)
 
 The system provides a mechanism of an automatic “reserve” shipment that is kept up to date for an order.
 
@@ -47,36 +47,36 @@ Conditions under which it is created/updated:
 
 - the order is in the confirmed status;
 - the order type has a shipment type set;
-- a warehouse/location is selected in the order;
+- a location is selected in the order;
 - there is something to ship for the order (remaining to ship is greater than zero).
 
 How it looks for the user:
 
 1. You confirm an order.
-2. The system creates (or finds) a pending shipment for this order.
-3. In the pending shipment, the system automatically keeps up to date:
-   - customer;
+2. The system creates (or finds) a reserve shipment for this order in status `Waiting`.
+3. In this shipment, the system automatically keeps up to date:
+   - [customer](../masterdata/partners.md);
    - department (if used);
    - planned date;
    - delivery address;
-   - warehouse/location.
+   - [location](../inventory/locations.md).
 
-### How lines are formed in the pending shipment
+### How lines are formed in the reserve shipment
 
-When creating/updating a pending shipment, the system:
+When creating/updating the reserve shipment, the system:
 
 - adds shipment lines for those order lines that have remaining quantity to ship;
 - fills in the item (taking item transformation into account, if used);
 - stores the “initial demand” for the shipment line equal to the current remaining-to-ship value.
 
 If remaining quantity for an order line becomes zero (everything is shipped), the corresponding shipment line is removed.
-If there are no lines left in the pending shipment, the shipment is deleted.
+If there are no lines left in the reserve shipment, the shipment is deleted.
 
-After forming lines, the system performs a preliminary availability check for the pending shipment.
+After forming lines, the system performs a preliminary availability check for the reserve shipment.
 
 ### Multiple shipments for one order
 
-One order can be linked to multiple shipments. This happens, for example, for partial shipments or when splitting by warehouse.
+One order can be linked to multiple shipments. This happens, for example, for partial shipments or when splitting by location.
 
 The order card shows a list of related shipments.
 The shipment card also shows a list of related orders.
@@ -92,7 +92,7 @@ If restrictions are enabled, the system will not allow locking.
 
 ## Creating a shipment based on an invoice
 
-The “shipment from invoice” scenario is described on a separate page: [Creating a shipment based on an invoice](shipments.md).
+The “shipment from invoice” scenario is described on a separate page: [Creating a shipment based on an invoice](../invoicing/shipments-from-invoice.md).
 
 ## Typical scenario
 

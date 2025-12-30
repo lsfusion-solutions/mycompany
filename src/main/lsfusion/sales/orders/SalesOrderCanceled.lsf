@@ -5,9 +5,9 @@ REQUIRE SalesOrder, SalesOrderSelection;
 NAMESPACE Sales;
 
 EXTEND CLASS OrderStatus {
-    canceled 'Cancelled'
+    canceled 'Canceled'
 }
-canceled 'Cancelled' = DATA BOOLEAN (Order);
+canceled 'Canceled' = DATA BOOLEAN (Order);
 
 status(Order o) += WHEN canceled(o) THEN OrderStatus.canceled;
 color(OrderStatus o) += WHEN o = OrderStatus.canceled THEN RGB(252,247,149);
@@ -40,7 +40,7 @@ DESIGN order {
 
 EXTEND FORM orders    
     EXTEND FILTERGROUP status
-        FILTER 'Cancelled' status(o) = OrderStatus.canceled    
+        FILTER 'Canceled' status(o) = OrderStatus.canceled    
 ;
 
 @defineSelectionAction(orders, Order, cancel, 'Cancel', statuses);

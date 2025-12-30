@@ -1,15 +1,15 @@
 # Shipments from invoice
 
-The system may support a scenario where a shipment is created **from an invoice**.
+The system may support a scenario where a [shipment](../inventory/shipments.md) is created **from an [invoice](invoices.md)**.
 
-This is convenient when the invoice is the “main” document and the warehouse shipment is created afterwards.
+This is convenient when the invoice is the “main” document and the inventory shipment is created afterwards.
 
 ## When creation is available
 
 The shipment creation button in the invoice card is typically available if:
 
-- the invoice is active (not cancelled);
-- a shipment type is set for the invoice type;
+- the invoice is active (not Canceled);
+- a shipment type is set for the [invoice type](settings.md) (see [Inventory settings](../inventory/settings.md));
 - the invoice has lines that need to be shipped (the “to ship” quantity is greater than zero).
 
 If a shipment has already been created for all positions, the button is not shown.
@@ -20,9 +20,9 @@ When creating a shipment from an invoice, the system:
 
 1. Creates a new shipment document.
 2. Copies key fields from the invoice:
-   - partner;
-   - department (if used);
-   - warehouse/location;
+   - [partner](../masterdata/partners.md);
+   - [department](../masterdata/departments.md) (if used);
+   - [location](../inventory/locations.md);
    - delivery address.
 3. Creates shipment lines from invoice lines:
    - only item (goods) lines are included;
@@ -32,7 +32,7 @@ When creating a shipment from an invoice, the system:
 
 ## Automatic shipment creation
 
-An invoice type can have an **“Automatically create shipment”** setting.
+An [invoice type](settings.md) can have an **“Automatically create shipment”** setting.
 
 If enabled, when the invoice moves to a ready state (or when item lines appear), the system automatically creates a shipment.
 
@@ -40,7 +40,7 @@ If enabled, when the invoice moves to a ready state (or when item lines appear),
 
 If the shipment was created automatically, the system may keep the invoice and shipment synchronized in some cases:
 
-- if the invoice is cancelled and there was only one shipment — the shipment is cancelled automatically;
+- if the invoice is Canceled and there was only one shipment — the shipment is Canceled automatically;
 - if the partner was changed and there was only one shipment — the partner is updated in the shipment;
 - if the item or quantity in an invoice line was changed — the item and quantity are updated in the shipment line.
 
@@ -50,8 +50,8 @@ Practical meaning: the shipment stays consistent with the invoice while you work
 
 1. Open an invoice.
 2. Click **“Create Shipment”**.
-3. Verify the warehouse and delivery address.
+3. Verify the location and delivery address.
 4. Verify line quantities (that exactly what is needed is shipped).
 5. Post/confirm the shipment.
 
-See also: [Inventory → Shipments](../inventory/shipments.md).
+See also: [Invoicing → Invoices](invoices.md); [Inventory → Shipments](../inventory/shipments.md).

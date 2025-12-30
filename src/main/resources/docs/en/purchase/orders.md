@@ -6,7 +6,7 @@ The main forms for working with purchase orders are usually located at **“Purc
 
 ## Purpose
 
-A **purchase order** records an agreement with a vendor and is used for:
+A **purchase order** records an agreement with a [vendor](../masterdata/partners.md) and is used for:
 
 - planning purchases and delivery lead times;
 - agreeing price and quantity;
@@ -17,11 +17,11 @@ A **purchase order** records an agreement with a vendor and is used for:
 
 When creating a purchase order, you typically fill in:
 
-- **vendor**;
-- **company**;
-- **location** (if Inventory is used);
-- **currency** (if multi-currency is used);
-- **payment terms** (if used);
+- **[vendor](../masterdata/partners.md)**;
+- **[company](../masterdata/partners.md)**;
+- **[location](../inventory/locations.md)** (if [Inventory](../inventory/inventory.md) is used);
+- **[currency](../masterdata/currencies.md)** (if multi-currency is used);
+- **[payment terms](../invoicing/settings.md#payment-terms)** (if used);
 - **scheduled date** (expected delivery);
 - **note** and vendor references (for example, vendor link/reference number).
 
@@ -29,11 +29,11 @@ When creating a purchase order, you typically fill in:
 
 In lines, you specify:
 
-- item;
-- quantity and unit of measure;
+- [item](../masterdata/items.md);
+- quantity and [unit of measure](../masterdata/uom.md);
 - price;
 - amount (usually calculated automatically);
-- taxes (if used).
+- [taxes](../invoicing/taxes.md) (if used).
 
 ## Statuses and actions
 
@@ -42,7 +42,7 @@ Purchase orders typically use the following lifecycle:
 1. **Draft** — the order can be edited freely.
 2. **Sent** — the order has been sent to the vendor (if sending is used).
 3. **Confirmed** — the order is confirmed for fulfillment.
-4. **Cancelled** — the order is excluded from further processing.
+4. **Canceled** — the order is excluded from further processing.
 
 Status behavior may differ depending on settings. Usually, after confirmation there are more restrictions on changes.
 
@@ -62,15 +62,15 @@ After confirmation, related documents (for example, a receipt or a bill) and lin
 
 ### Canceling a purchase order
 
-The **“Cancel”** action marks the purchase order as cancelled.
+The **“Cancel”** action marks the purchase order as Canceled.
 
-Usually, cancelled purchase orders are excluded from further automatic operations and process selections.
+Usually, Canceled purchase orders are excluded from further automatic operations and process selections.
 
 ## Related documents and fulfillment control
 
 The set of related documents depends on enabled modules.
 
-### Receipts (if Inventory is used)
+### Receipts (if [Inventory](../inventory/inventory.md) is used)
 
 For a confirmed purchase order, the system may:
 
@@ -80,7 +80,7 @@ For a confirmed purchase order, the system may:
 
 For details, see: [Receipts for purchase orders](receipts.md).
 
-### Bills and payment (if “Invoicing” is used)
+### Bills and payment (if [“Invoicing”](../invoicing/invoicing.md) is used)
 
 The purchase order card may show a list of related **bills**.
 
@@ -88,7 +88,7 @@ A bill can be created from a purchase order (if this is enabled in your configur
 
 The chain is usually as follows:
 
-1. **Bill** — records the amount payable to the vendor.
+1. **Bill** — records the amount payable to the [vendor](../masterdata/partners.md).
 2. **Outgoing payment** — records payment and reduces debt (after allocation).
 
 See also: [Bills](../invoicing/bills.md), [Outgoing payments](../invoicing/outgoing-payments.md), [Payment allocation](../invoicing/payments.md).

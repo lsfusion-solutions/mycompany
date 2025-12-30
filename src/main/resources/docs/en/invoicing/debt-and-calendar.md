@@ -4,24 +4,24 @@
 
 Debt is calculated as the difference:
 
-- document amounts (bills, invoices, corrections);
-- minus the amount of linked/matched payments.
+- document amounts ([bills](bills.md), [invoices](invoices.md), [refunds and corrections](refunds-and-corrections.md));
+- minus the amount of linked/matched [payments](payments.md).
 
 Debt can be calculated:
 
-- by partner;
-- by contract;
+- by [partner](../masterdata/partners.md);
+- by [contract](../masterdata/contracts.md);
 - by a specific document.
 
 What is important to understand:
 
 - debt changes **only for payments that are linked/matched** with documents;
-- if a document is cancelled, it usually does not participate in calculation;
+- if a document is Canceled, it usually does not participate in calculation;
 - for partial payment, debt decreases by the matched amount.
 
 ## How debt is closed
 
-1. Create a payment.
+1. Create a [payment](payments.md).
 2. Match the payment with the document (or match with several documents).
 3. After posting/saving the payment, debt decreases.
 
@@ -44,7 +44,7 @@ The calendar is usually built based on:
 
 1. **Receipts planning**: see what amounts are expected for the next week/month by payment terms.
 2. **Overdue control**: filter documents whose planned payment date is in the past.
-3. **Payout planning**: by outgoing payments (if planned payouts are used).
+3. **Payout planning**: by [outgoing payments](outgoing-payments.md) (if planned payouts are used).
 
 ### What to check if the calendar is “empty” or dates are incorrect
 
@@ -52,6 +52,6 @@ Check:
 
 - whether **payment terms/due date** are filled in documents;
 - whether calendar settings and planned date calculation rules are enabled;
-- whether documents are excluded by status (for example, Cancelled).
+- whether documents are excluded by status (for example, Canceled).
 
 See parameters: [Settings and directories](settings.md).

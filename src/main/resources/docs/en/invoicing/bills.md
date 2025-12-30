@@ -9,24 +9,24 @@ Open **“Invoicing” → “Operations” → “Bills”**.
 A bill is used to:
 
 - record receiving goods/services from a supplier;
-- calculate tax and the document total;
-- control supplier payment and debt.
+- calculate [tax](taxes.md) and the document total;
+- control supplier payment and [debt](debt-and-calendar.md).
 
 A bill can be used as:
 
-- a **basis for planning outgoing payments** (if the payment calendar is used);
-- a **control point for supplier debt** (if debt accounting is maintained by bills).
+- a **basis for planning [outgoing payments](outgoing-payments.md)** (if the [payment calendar](debt-and-calendar.md) is used);
+- a **control point for supplier [debt](debt-and-calendar.md)** (if debt accounting is maintained by bills).
 
 ## Bill list
 
 The list typically shows:
 
 - number and date;
-- partner;
+- [partner](../masterdata/partners.md);
 - status;
 - amount;
 - currency (if used);
-- contract (if used);
+- [contract](../masterdata/contracts.md) (if used);
 - payment/debt indicators.
 
 Tip: if the list has **Paid**/**Debt** columns, they are convenient for quickly controlling partial payments.
@@ -40,8 +40,8 @@ In the bill header you typically fill:
 - type;
 - date;
 - number;
-- partner;
-- contract (if used);
+- [partner](../masterdata/partners.md);
+- [contract](../masterdata/contracts.md) (if used);
 - payment terms (if used);
 - note.
 
@@ -59,10 +59,10 @@ See: [Settings and directories](settings.md), [Debt and payment calendar](debt-a
 
 Lines typically contain:
 
-- item/service;
+- [item](../masterdata/items.md)/service;
 - quantity;
 - price;
-- tax (if used);
+- [tax](taxes.md) (if used);
 - line amount.
 
 If taxes are configured, the tax can be substituted automatically (for example, from the item/service card or from the document type).
@@ -74,7 +74,7 @@ Typical status set:
 - Draft;
 - To pay;
 - Done;
-- Cancelled.
+- Canceled.
 
 Statuses affect editing and printing availability.
 
@@ -83,11 +83,11 @@ Typical logic:
 - in **Draft** you can change the header and lines;
 - in **To pay** the document is confirmed for further actions (for example, payment registration, printing — if used);
 - in **Done** the bill is considered closed;
-- in **Cancelled** the bill is excluded from accounting.
+- in **Canceled** the bill is excluded from accounting.
 
 ### Payment and debt
 
-A bill can be linked to outgoing payments. Based on matched payments the system calculates:
+A bill can be linked to [outgoing payments](outgoing-payments.md). Based on matched payments the system calculates:
 
 - paid;
 - debt.
@@ -100,7 +100,7 @@ Typical flow:
 
 1. Move the document to status **“To pay”**.
 2. Click **“Register Payment”**.
-3. Review the created **outgoing payment** card and save it.
+3. Review the created **[outgoing payment](outgoing-payments.md)** card and save it.
 
 The system typically:
 
@@ -122,7 +122,7 @@ If the payment does not fully cover the bill:
 If the transferred amount is greater than the bill amount, behavior depends on matching rules:
 
 - the overpayment can stay as a **not matched** part of the payment;
-- or be treated as an **advance** by partner/contract.
+- or be treated as an **advance** by [partner](../masterdata/partners.md)/[contract](../masterdata/contracts.md).
 
 See: [Payments](payments.md).
 

@@ -1,6 +1,6 @@
 # Manufacturing — user documentation
 
-The documentation describes how the **“Manufacturing”** section works: maintaining Bills of Materials, creating and executing manufacturing orders, reserving materials, producing finished goods, recording **Scrap**, printing and reports.
+The documentation describes how the **“Manufacturing”** section works: maintaining [Bills of Materials](bom.md), creating and executing [manufacturing orders](orders.md), reserving materials, producing finished goods, recording **[Scrap](scrap.md)**, printing and reports.
 
 ## Contents
 
@@ -25,14 +25,14 @@ Related documents:
 
 ## Quick start
 
-Below is a typical scenario “from Bill of Materials to production output”.
+Below is a typical scenario “from [Bill of Materials](bom.md) to [production and consumption](production-and-consumption.md)”.
 
 1. Make sure a **Bill of Materials** exists for the item (see [Bill of Materials](bom.md)).
-2. Create a **Manufacturing order**:
+2. Create a **[Manufacturing order](orders.md)**:
    - select the order type;
    - specify the item to produce;
    - set the planned start date;
-   - if needed, select a Bill of Materials.
+   - if needed, select a [Bill of Materials](bom.md).
 3. Fill in planned quantities:
    - how many units to produce;
    - which materials will be consumed and in what quantities.
@@ -52,11 +52,11 @@ The section is located in the navigation tree as **“Manufacturing”** and usu
 
 ## Terms
 
-#### Manufacturing order
+#### [Manufacturing order](orders.md)
 
-A document where you plan and record production of an item (or disassembly, if the corresponding type is selected).
+A document where you plan and record production of an item (or [unbuild/disassembly](unbuild.md), if the corresponding type is selected).
 
-#### Bill of Materials
+#### [Bill of Materials](bom.md)
 
 A description of an item structure: which materials and in what quantities are required for production.
 
@@ -64,6 +64,6 @@ A description of an item structure: which materials and in what quantities are r
 
 A procedure where the system records that the required quantity of materials will be used for a specific manufacturing order.
 
-#### Production and consumption
+#### [Production and consumption](production-and-consumption.md)
 
 Production is recording the produced quantity. Consumption is recording the actually consumed materials.

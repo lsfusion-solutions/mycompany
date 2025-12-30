@@ -2,7 +2,7 @@
 
 This page describes how to work with projects: how to create a project, what information to fill in, how to manage the project state, and how to keep discussions.
 
-A project combines related tasks, the team, and effort. It is recommended to use a project as a “work container”: record dates, the responsible person, and key decisions.
+A project combines related **[tasks](tasks.md)**, the **[team and roles](team-and-roles.md)**, and effort tracked via **[time entries](time-entries.md)**. It is recommended to use a project as a “work container”: record dates, the responsible person, and key decisions.
 
 ## Project list
 
@@ -109,9 +109,9 @@ If the project is actually finished but its tasks are still being changed, check
 
 The project card typically provides related data (the set depends on configuration):
 
-- project tasks;
-- participants (team) and roles;
-- time entries;
+- **[project tasks](tasks.md)**;
+- **[participants (team) and roles](team-and-roles.md)**;
+- **[time entries](time-entries.md)**;
 - related documents and operations (if the project is used to track costs/income).
 
 Use the project as a single “accounting dimension”: this simplifies reporting and control.

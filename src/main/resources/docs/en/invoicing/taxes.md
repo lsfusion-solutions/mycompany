@@ -8,14 +8,14 @@ Most commonly used:
 
 - taxes;
 - tax groups;
-- linking taxes to items/services (if configured).
+- linking taxes to [items](../masterdata/items.md)/services (if configured).
 
 ## Usage in documents
 
 A tax can be set:
 
-- in bill/invoice lines;
-- automatically based on item settings or document type settings.
+- in [bill](bills.md)/[invoice](invoices.md) lines;
+- automatically based on [item](../masterdata/items.md) settings or document type settings (see [Settings and directories](settings.md)).
 
 ## Restrictions
 

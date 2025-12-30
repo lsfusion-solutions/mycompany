@@ -1,6 +1,6 @@
 # Discounts: application logic
 
-In the system, a discount is a separate **“Discount”** object that can be applied to sales document lines (primarily, to sales order lines).
+In the system, a discount is a separate **“Discount”** object that can be applied to sales document lines (primarily, to [sales order](orders.md) lines).
 
 A discount can be defined:
 
@@ -15,9 +15,9 @@ In the discount card, you specify:
 
 - validity period;
 - applicability conditions;
-- which items/categories it applies to;
-- which price types are allowed;
-- if needed — which warehouses/locations it applies to;
+- which [items](../masterdata/items.md)/categories it applies to;
+- which [price types](pricelists.md) are allowed;
+- if needed — which [locations](../inventory/locations.md) it applies to;
 - discount amount (percent) or a price type (if the discount is defined by price).
 
 ## How the system decides whether a discount matches a line
@@ -47,12 +47,12 @@ A discount can be restricted by price types:
 - if price types are specified in the discount, it applies only to lines with one of these price types;
 - if price types are not specified, the restriction does not apply.
 
-### 4) By warehouse/location
+### 4) By location
 
-A discount can be restricted by warehouses/locations:
+A discount can be restricted by locations:
 
-- if warehouses/locations are specified in the discount, it applies only to lines with a matching warehouse/location;
-- if warehouses/locations are not specified, the restriction does not apply.
+- if locations are specified in the discount, it applies only to lines with a matching location;
+- if locations are not specified, the restriction does not apply.
 
 ### 5) By minimum quantity and line amount
 
@@ -67,7 +67,7 @@ Important: the amount used for the check is the “full amount” (calculated fr
 
 ### 6) By cumulative conditions per customer
 
-A discount can be cumulative and enabled only if the customer has:
+A discount can be cumulative and enabled only if the [customer](../masterdata/partners.md) has:
 
 - total volume of previous purchases above a threshold;
 - or purchase volume for the previous month above a threshold.
@@ -131,7 +131,7 @@ If automatic discount recalculation is enabled, the system recalculates the disc
 - quantity;
 - price;
 - document type;
-- warehouse/location;
+- location;
 - total document amount.
 
 Automatic recalculation is performed only for discounts that are not marked as “manual”.
@@ -158,7 +158,7 @@ Discounts are usually visible:
 
 ## Typical issues
 
-- **Discount is not applied** — check date, price type, warehouse/location, quantity/amount thresholds, and item/category restrictions.
+- **Discount is not applied** — check date, price type, location, quantity/amount thresholds, and item/category restrictions.
 - **Multiple discounts match but a “wrong” one is selected** — the system selects the discount with the minimum discount price. If you need another one, use manual selection.
 - **Discount “disappears” after changing a line** — auto recalculation is enabled and the selected discount is not manual.
 

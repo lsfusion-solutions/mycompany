@@ -14,10 +14,10 @@ If your configuration has lot tracking enabled:
 
 ## Printing
 
-Printing forms may be available in a manufacturing order (for example, a production job/order form).
+Printing forms may be available in a [manufacturing order](orders.md) (for example, a production job/order form).
 
 If printing is available:
 
-1. Open the manufacturing order.
+1. Open the [manufacturing order](orders.md).
 2. Select the required print form.
 3. Verify key fields are filled in (item, quantity, dates).

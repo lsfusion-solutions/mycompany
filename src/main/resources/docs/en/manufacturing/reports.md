@@ -1,13 +1,13 @@
 # Manufacturing reports
 
-The reporting section is used to analyze manufacturing orders.
+The reporting section is used to analyze [manufacturing orders](orders.md).
 
 ## What is usually analyzed
 
 - number of orders for a period;
 - planned vs actual output;
 - material availability;
-- **Done** and **Cancelled** orders.
+- **Done** and **Canceled** orders.
 
 ## Usage recommendations
 

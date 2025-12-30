@@ -4,9 +4,9 @@
 
 In “Invoicing”, print forms are typically available for:
 
-- bills;
-- invoices;
-- payment documents.
+- [bills](bills.md);
+- [invoices](invoices.md);
+- [payment documents](payments.md).
 
 Printing availability depends on configuration and templates.
 
@@ -14,9 +14,9 @@ Printing availability depends on configuration and templates.
 
 #### What is a print template
 
-A print template is a print form that the system generates when you click **“Print”** in the **Invoice** card.
+A print template is a print form that the system generates when you click **“Print”** in the **[Invoice](invoices.md)** card.
 
-For each **invoice type**, you can enable one or more templates. If there are several templates, the user selects the required one when printing.
+For each **invoice type**, you can enable one or more templates. If there are several templates, the user selects the required one when printing (see [Settings and directories](settings.md)).
 
 A template can be:
 
@@ -25,7 +25,7 @@ A template can be:
 
 #### When printing is available in an Invoice
 
-The **“Print”** button is shown in the Invoice card only if at least one print template is enabled for its type.
+The **“Print”** button is shown in the [invoice](invoices.md) card only if at least one print template is enabled for its type.
 
 #### Where the settings are performed
 
@@ -35,7 +35,7 @@ Printing setup consists of two steps:
 
 2) **Enable the template for a specific invoice type** — link the template to the type so it appears in printing.
 
-These actions are typically performed in the Settings section:
+These actions are typically performed in the [Settings](settings.md) section:
 
 - **Invoice templates** list (create/edit templates);
 - **Invoice type** card (enable templates for a specific type).
@@ -80,7 +80,7 @@ You can enable multiple templates — then when printing, the system will ask to
 
 #### 3) Printing from an Invoice card
 
-Open the required invoice and click **“Print”**.
+Open the required [invoice](invoices.md) and click **“Print”**.
 
 Two options are possible:
 
@@ -122,12 +122,12 @@ Depending on the delivery, typical predefined print forms for an invoice may be 
 
 Most commonly used:
 
-- bills reports;
-- invoices reports;
-- payments reports;
-- debt reports.
+- [bills](bills.md) reports;
+- [invoices](invoices.md) reports;
+- [payments](payments.md) reports;
+- [debt](debt-and-calendar.md) reports.
 
 Recommendations:
 
 1. Use a date interval.
-2. For debt analysis, group by partner and contract.
+2. For debt analysis, group by [partner](../masterdata/partners.md) and [contract](../masterdata/contracts.md).

@@ -1,6 +1,6 @@
 # Retail — user documentation
 
-This documentation describes how to work with the **“Retail”** section: configuring **cash registers**, managing **sessions**, processing sales and returns in **POS**, applying **discounts** and **discount cards**, and taking **payments**.
+This documentation describes how to work with the **“Retail”** section: configuring **[cash registers](settings.md)**, managing **[sessions](sessions.md)**, processing sales and returns in **[POS](pos.md)**, applying **[discounts](../sales/discounts.md)** and **[discount cards](discount-cards.md)**, and taking **[payments](payments.md)**.
 
 If some menu items or actions are missing in your configuration, this is normal: available functionality depends on enabled modules and settings.
 
@@ -25,14 +25,13 @@ Sections:
 - [Sessions](sessions.md)
 - [Retail payments](payments.md)
 - [Discount cards](discount-cards.md)
-- [Marked goods (marking codes)](marking.md)
 - [Settings](settings.md)
 
 ## Quick start
 
 ### Scenario: open a session → process a sale → take payment → close the session
 
-1. Open **“Retail” → “Settings”** and make sure that:
+1. Open **“Retail” → “Configuration” → “Settings”** and make sure that:
    - **cash registers** are created and (if needed) linked to computers;
    - **payment methods** are configured.
 2. Open **“Retail” → “Operations” → “Sessions”**.
@@ -58,36 +57,36 @@ Details: [Returns](returns.md).
 The **“Retail”** section typically contains groups:
 
 - **Operations** — POS, sessions, receipt/operation lists within a session.
-- **Settings** — directories and parameters that affect how the cash register and payments work.
+- **Configuration** — directories and parameters that affect how the cash register and payments work.
 
 Typical menu items:
 
 - **“Retail” → “Operations” → “Sessions”** — open/close and monitor sessions.
 - **“Retail” → “Operations”** — POS.
-- **“Retail” → “Settings”** — section parameters.
+- **“Retail” → “Configuration” → “Settings”** — section parameters.
 
 ## Terms
 
 #### Cash register
 
-A workplace used to process sales and returns. As a rule, a cash register is linked to a specific computer/device.
+A **[cash register](settings.md)** is a workplace used to process sales and returns. As a rule, a cash register is linked to a specific computer/device.
 
 #### Session
 
-A period of cash register operation between **opening a session** and **closing a session**. POS operations are performed within an open session.
+A **[session](sessions.md)** is a period of cash register operation between **opening a session** and **closing a session**. POS operations are performed within an open session.
 
 #### POS
 
-A cashier screen for processing sales and returns: creating a receipt, adding items, applying discounts, and proceeding to payment.
+**[POS](pos.md)** is a cashier screen for processing sales and returns: creating a receipt, adding items, applying discounts, and proceeding to payment.
 
 #### Receipt
 
-The result of processing a sale or return: list of lines, prices, discounts, amount due, and payment method(s).
+The result of processing a sale or return (in **[POS](pos.md)**): list of lines, prices, discounts, To pay, and payment method(s).
 
 #### Payment method
 
-A rule by which money is received (for example, cash or bank card) and the related financial operations are formed.
+A **[payment method](payments.md)** is a rule by which money is received (for example, cash or bank card) and the related financial operations are formed.
 
 #### Discount card
 
-A customer card that can be used to provide a discount and/or identify a customer on the receipt.
+A **[discount card](discount-cards.md)** is a customer card that can be used to provide a discount and/or identify a customer on the receipt.

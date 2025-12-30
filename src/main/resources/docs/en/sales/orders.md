@@ -8,7 +8,7 @@ Open **“Sales” → “Operations” → “Sales orders”**.
 
 A sales order records:
 
-- the customer and sales terms;
+- the [customer](../masterdata/partners.md) and sales terms;
 - the order contents (lines);
 - prices, discounts, and taxes;
 - the planned shipping date;
@@ -19,11 +19,11 @@ A sales order records:
 In the list, you typically see:
 
 - number and date;
-- customer;
+- [customer](../masterdata/partners.md);
 - status;
 - amount;
 - planned shipping date;
-- warehouse/location.
+- [location](../inventory/locations.md).
 
 Filters and the set of columns depend on your configuration.
 
@@ -33,9 +33,9 @@ Filters and the set of columns depend on your configuration.
 
 Typically, the card includes:
 
-- **Customer**;
+- **[Customer](../masterdata/partners.md)**;
 - **Date** and **planned shipping date**;
-- **Warehouse/location**;
+- **[Location](../inventory/locations.md)**;
 - **Delivery address** (if used);
 - **Order type** (if multiple types are used);
 - **Responsible person**.
@@ -44,13 +44,13 @@ Typically, the card includes:
 
 In lines, you specify:
 
-- item;
+- [item](../masterdata/items.md);
 - quantity;
 - price;
 - discount (if used);
 - line amount.
 
-Recommendation: fill in the customer and warehouse first, then add lines — this helps the system select prices and availability more accurately.
+Recommendation: fill in the customer and location first, then add lines — this helps the system select prices and availability more accurately.
 
 ## Confirmation and cancellation
 
@@ -66,8 +66,8 @@ For details on statuses and restrictions, see: [Sales order workflow and statuse
 
 The order card may show blocks with related documents:
 
-- shipments;
-- invoices;
+- [shipments](shipments.md);
+- [invoices](invoices.md);
 - manufacturing orders;
 - purchase orders.
 

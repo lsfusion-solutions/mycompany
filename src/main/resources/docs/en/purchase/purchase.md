@@ -1,6 +1,6 @@
 # Purchase — user documentation
 
-This documentation describes how to use the **“Purchase”** section: creating **purchase orders**, working with **vendor pricelists**, creating related documents (**bills**, **receipts**, **payments**) and controlling fulfillment.
+This documentation describes how to use the **“Purchase”** section: creating [purchase orders](orders.md), working with [vendor pricelists](pricelists.md), creating related documents ([bills](bills.md), [receipts](receipts.md), [outgoing payments](../invoicing/outgoing-payments.md)) and controlling fulfillment.
 
 If some menu items or actions are missing in your configuration, that is normal: available features depend on enabled modules and settings.
 
@@ -9,8 +9,8 @@ If some menu items or actions are missing in your configuration, that is normal:
 The **“Purchase”** section is typically used by:
 
 - **Purchasing manager** — creates purchase orders, sends them to vendors, controls lead times and fulfillment.
-- **Warehouse / logistics** (if Inventory is used) — processes receipts and links them to purchase orders.
-- **Accountant / finance specialist** — creates bills and outgoing payments, controls payables to vendors.
+- **Warehouse / logistics** (if [Inventory](../inventory/inventory.md) is used) — processes [receipts](receipts.md) and links them to purchase orders.
+- **Accountant / finance specialist** — creates [bills](bills.md) and [outgoing payments](../invoicing/outgoing-payments.md), controls payables to [vendors](../masterdata/partners.md).
 
 ## Contents
 
@@ -33,18 +33,18 @@ Sections:
 
 1. Open **“Purchase” → “Operations” → “Purchase orders”**.
 2. Create a purchase order and fill in:
-   - vendor;
-   - company;
-   - location (if used);
-   - payment terms (if used);
-   - order lines (items, quantity, price, taxes).
+   - [vendor](../masterdata/partners.md);
+   - [company](../masterdata/partners.md);
+   - [location](../inventory/locations.md) (if used);
+   - [payment terms](../invoicing/settings.md#payment-terms) (if used);
+   - order lines ([items](../masterdata/items.md), quantity, price, [taxes](../invoicing/taxes.md)).
 3. If needed, send the purchase order to the vendor using **“Send”**.
 4. Confirm the purchase order using **“Confirm”**.
-5. If Inventory is used — process a **receipt** and link it to the purchase order (see: [Receipts for purchase orders](receipts.md)).
-6. Create a **bill** (a financial document) for the purchase order / based on the actual delivery (see: [Bills for purchase orders](bills.md)).
-7. Register an **outgoing payment** to the vendor and allocate it to the bill (if payment allocation is used in your configuration).
+5. If [Inventory](../inventory/inventory.md) is used — process a [receipt](receipts.md) and link it to the purchase order.
+6. Create a [bill](bills.md) (a financial document) for the purchase order / based on the actual delivery.
+7. Register an [outgoing payment](../invoicing/outgoing-payments.md) to the [vendor](../masterdata/partners.md) and allocate it to the bill (if [payment allocation](../invoicing/payments.md) is used in your configuration).
 
-See also: **“Invoicing”** documentation — [Bills](../invoicing/bills.md), [Outgoing payments](../invoicing/outgoing-payments.md), [Debt and payment calendar](../invoicing/debt-and-calendar.md).
+See also: [“Invoicing”](../invoicing/invoicing.md) documentation — [Bills](../invoicing/bills.md), [Outgoing payments](../invoicing/outgoing-payments.md), [Debt and payment calendar](../invoicing/debt-and-calendar.md).
 
 ## Navigation
 
@@ -56,18 +56,18 @@ The **“Purchase”** section usually includes the following groups:
 
 ## Terms
 
-#### Purchase order
+#### [Purchase order](orders.md)
 
-A document that records an agreement with a vendor to deliver goods/services (items, quantity, price, due dates).
+A document that records an agreement with a [vendor](../masterdata/partners.md) to deliver goods/services ([items](../masterdata/items.md), quantity, price, due dates).
 
-#### Bill
+#### [Bill](bills.md)
 
-A document that records the purchase in accounting and the amount payable to the vendor.
+A document that records the purchase in accounting and the amount payable to the [vendor](../masterdata/partners.md).
 
-#### Receipt
+#### [Receipt](receipts.md)
 
-An Inventory document that records the fact of receiving goods into a location. It can be linked to a purchase order and used to control “how much has already been received”.
+An [Inventory](../inventory/inventory.md) document that records the fact of receiving goods into a [location](../inventory/locations.md). It can be linked to a purchase order and used to control “how much has already been received”.
 
-#### Pricelist
+#### [Pricelist](pricelists.md)
 
-A vendor price list that can be used as a source of prices when creating purchase orders.
+A [vendor](../masterdata/partners.md) price list that can be used as a source of prices when creating purchase orders.

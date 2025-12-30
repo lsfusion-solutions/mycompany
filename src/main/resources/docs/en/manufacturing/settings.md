@@ -19,7 +19,7 @@ The settings include a directory of manufacturing order types. Typically, a type
 
 - name and identifier;
 - numerators (number generation);
-- material warehouse;
+- material location;
 - unbuild flag;
 - **Scrap type**.
 
@@ -28,6 +28,6 @@ If only one type exists, it is used as the default.
 ## Recommended setup order
 
 1. Create manufacturing order types.
-2. Configure numerators and material warehouses.
+2. Configure numerators and material locations.
 3. Configure statuses and edit permissions.
 4. If needed, configure the **Scrap type**.

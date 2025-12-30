@@ -1,14 +1,14 @@
 # Picking tasks
 
-Picking tasks are used to organize picking in a warehouse when executing a shipment.
+Picking tasks are used to organize picking in a [location](locations.md) when executing a [shipment](shipments.md).
 
 ## General logic
 
-1. Picking tasks are created for a shipment.
+1. Picking tasks are created for a [shipment](shipments.md).
 2. A warehouse operator performs picking (often via the mobile UI):
    - scans a bin/item (if enabled);
    - enters the actual picked quantity.
-3. Completed tasks update the shipment data.
+3. Completed tasks update the [shipment](shipments.md) data.
 
 ## Mobile UI
 

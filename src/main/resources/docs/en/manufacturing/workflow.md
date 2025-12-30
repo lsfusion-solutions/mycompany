@@ -1,6 +1,6 @@
 # Manufacturing order process and statuses
 
-A manufacturing order goes through a set of statuses. The status affects which actions are available and which fields are required.
+A [manufacturing order](orders.md) goes through a set of statuses. The status affects which actions are available and which fields are required.
 
 ## Statuses
 
@@ -11,7 +11,7 @@ The following main statuses are typically used:
 3. **Ready** — materials are reserved and the order is ready to start.
 4. **In progress** — production has started; production and consumption are recorded.
 5. **Done** — production is finished.
-6. **Cancelled** — the order is cancelled.
+6. **Canceled** — the order is Canceled.
 
 The exact set of statuses and rules may differ depending on configuration.
 
@@ -22,7 +22,7 @@ The exact set of statuses and rules may differ depending on configuration.
 Used to enter initial data:
 
 - type, item, start date;
-- Bill of Materials selection;
+- [Bill of Materials](bom.md) selection;
 - planned quantities.
 
 To move the order to **Waiting**, run **Mark as Todo**.
@@ -61,7 +61,7 @@ Important:
 - the finished goods storage location must be specified;
 - the order usually becomes read-only.
 
-### Cancelled
+### Canceled
 
 Used if the order is no longer relevant.
 

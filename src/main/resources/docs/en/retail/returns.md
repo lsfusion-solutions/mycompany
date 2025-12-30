@@ -1,6 +1,6 @@
 # Retail returns
 
-This page describes a typical process of returning goods by a customer in **POS**: how to find the original receipt, create a return by receipt lines, and pay out funds.
+This page describes a typical process of returning goods by a customer in **[POS](pos.md)**: how to find the original receipt, create a return by receipt lines, and pay out funds.
 
 > If some actions or fields are missing in your configuration, this is normal: the set of available features depends on enabled modules and settings.
 
@@ -63,17 +63,6 @@ In some configurations, there is a restriction: **you cannot return more by a sp
 Example: if the purchase was paid partly in cash and partly by bank card, then the return usually has to be split by the same payment methods within the paid amounts.
 
 After confirming the return payment, POS usually creates a new receipt for further work.
-
-## Working with marked goods
-
-If marking codes were recorded for items in the original sale, the system may perform additional checks and marking-related operations during the return.
-
-If you encounter errors when returning marked goods, check that:
-
-- marking codes were scanned correctly during the sale;
-- the return contains the same items for which the codes were recorded.
-
-Details: [Marked goods (marking codes)](marking.md).
 
 ## Common cases
 

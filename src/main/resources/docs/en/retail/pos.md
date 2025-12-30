@@ -1,6 +1,6 @@
 # Cash register and POS
 
-This page describes how a cashier and an administrator work with a cash register: selecting a cash register, opening a session, creating a receipt, searching and scanning items, and the main actions in POS.
+This page describes how a cashier and an administrator work with a cash register: selecting a cash register, opening a **[session](sessions.md)**, creating a receipt, searching and scanning items, and the main actions in POS.
 
 ## Where to find it
 
@@ -10,7 +10,7 @@ This page describes how a cashier and an administrator work with a cash register
 ## Before you start
 
 1. Make sure the cash register is configured and available on your computer (see [Settings](settings.md)).
-2. Open a session for the selected cash register.
+2. Open a **[session](sessions.md)** for the selected cash register.
 
 > If there is already an open session for the cash register, you will not be able to open a second session.
 
@@ -18,10 +18,10 @@ This page describes how a cashier and an administrator work with a cash register
 
 In POS, you usually see:
 
-- the current cash register and open session;
+- the current cash register and open **[session](sessions.md)**;
 - the customer (if selected);
 - receipt lines (item, quantity, price, discount);
-- totals: amount, discount, amount due.
+- totals: amount, discount, To pay.
 
 ### Adding items
 
@@ -50,12 +50,9 @@ See also: [Discounts in sales](../sales/discounts.md).
 
 POS provides the **“New receipt”** action — it clears the current receipt and creates a new one within the selected session.
 
-## Customer and contact to send the receipt
+## Customer
 
-You can select a customer on the receipt (for example, by discount card or manually — depends on the configuration).
-
-During payment, the **“Send receipt to”** field may be available — enter a **phone number** or an **email address** to send the receipt to the customer.
-
+You can select a customer on the receipt (for example, by **[discount card](discount-cards.md)** or manually — depends on the configuration).
 ## Proceeding to payment
 
 Payment is processed in a separate form. See details in [Retail payments](payments.md).
@@ -66,6 +63,3 @@ A return is usually processed based on the original receipt: select a receipt in
 
 The detailed procedure (including return payment and typical restrictions): [Returns](returns.md).
 
-## Marked goods
-
-If an item requires a marking code, the system may require mandatory scanning of the marking code. Details: [Marked goods (marking codes)](marking.md).

@@ -27,19 +27,19 @@ Sections:
 
 Below is a typical warehouse cycle.
 
-1. Create/review **locations** (warehouse, zones, bins) if bin-level storage is required.
-2. Create a **receipt**:
-   - specify supplier (if used) and warehouse;
+1. Create/review **[locations](locations.md)** (warehouse, zones, bins) if bin-level storage is required.
+2. Create a **[receipt](receipts.md)**:
+   - specify supplier (if used) and [location](locations.md);
    - add item lines and quantities;
    - move the receipt to execution and complete it.
-3. Create a **shipment**:
-   - specify customer (if used) and warehouse;
+3. Create a **[shipment](shipments.md)**:
+   - specify customer (if used) and [location](locations.md);
    - add item lines and quantities;
    - run availability checks and reservation (if enabled);
-   - perform picking (if used) and complete the shipment.
-4. If needed, perform a **transfer** between warehouses/zones.
-5. Use **scrap** to record discrepancies (damage, losses, defects, expiry, etc.).
-6. Periodically run **adjustments** and close them.
+   - perform picking (if [picking tasks](picking.md) are used) and complete the shipment.
+4. If needed, perform a **[transfer](transfers.md)** between locations (warehouses/zones).
+5. Use **[scrap](scrap.md)** to record discrepancies (damage, losses, defects, expiry, etc.).
+6. Periodically run **[adjustments](adjustments.md)** and close them.
 
 ## Navigation
 
@@ -52,34 +52,34 @@ The “Inventory” section typically contains groups:
 
 ## Terms
 
-#### Location
+#### [Location](locations.md)
 
 A warehouse, zone or bin where items are stored.
 
-#### Receipt
+#### [Receipt](receipts.md)
 
-A document that records goods coming into the warehouse.
+A document that records goods coming into the [location](locations.md).
 
-#### Shipment
+#### [Shipment](shipments.md)
 
-A document that records goods going out of the warehouse.
+A document that records goods going out of the [location](locations.md).
 
-#### Transfer
+#### [Transfer](transfers.md)
 
-A document that moves goods between locations.
+A document that moves goods between [locations](locations.md).
 
-#### Scrap
+#### [Scrap](scrap.md)
 
 A document for writing off goods (damage, losses, defects, expiry, etc.).
 
-#### Adjustment
+#### [Adjustment](adjustments.md)
 
 A procedure for counting stock and recording variances.
 
-#### Lot
+#### [Lot](lots-and-packages.md)
 
 A batch/serial identifier used for traceability.
 
-#### Package
+#### [Package](lots-and-packages.md)
 
 A packaging unit/container used for stock accounting.

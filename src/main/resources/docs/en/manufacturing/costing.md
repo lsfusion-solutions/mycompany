@@ -1,14 +1,14 @@
 # Costing: how it is calculated
 
-This section describes how the system calculates the cost of an item when a manufacturing order is executed.
+This section describes how the system calculates the cost of an item when a [manufacturing order](orders.md) is executed.
 
-The description is based on the logic implemented in the manufacturing order costing module.
+The description is based on the logic implemented in the [manufacturing order](orders.md) costing module.
 
 ## General idea
 
 Cost is calculated **based on actuals**:
 
-1. First, **actual material consumption** is recorded in the manufacturing order.
+1. First, **actual material consumption** is recorded in the [manufacturing order](orders.md).
 2. Based on actual consumption, the **material write-off cost** is calculated.
 3. The sum of write-offs (plus additional and labor costs, if they are specified) forms the **manufacturing order cost**.
 4. The order cost is **distributed across output** (output lines) using distribution coefficients.
@@ -17,7 +17,7 @@ Cost is calculated **based on actuals**:
 
 ### 1) Actual material consumption
 
-The manufacturing order has material lines. For each line, the actual **“Consumed”** quantity is recorded.
+The [manufacturing order](orders.md) has material lines. For each line, the actual **“Consumed”** quantity is recorded.
 
 Only lines where:
 
@@ -26,16 +26,16 @@ Only lines where:
 
 are included in costing.
 
-### 2) Material warehouse and Execution date
+### 2) Material location and Execution date
 
 Consumption cost is determined taking into account:
 
-- the **Material location** (warehouse used for write-off);
-- the **Execution date** of the manufacturing order.
+- the **Material location** (location used for write-off);
+- the **Execution date** of the [manufacturing order](orders.md).
 
 Practical meaning:
 
-- if different warehouses have different costs, write-off is valued by the material warehouse;
+- if different locations have different costs, write-off is valued by the material location;
 - the **Execution** date fixes the “valuation moment”, i.e. which date is used to take the cost.
 
 ### 3) Additional and labor costs
@@ -97,8 +97,8 @@ If actual produced is zero, unit cost cannot be calculated — record production
 
 Typically, cost is visible:
 
-- in the manufacturing orders list — fields like “Cost”, “Additional costs”, “Labor costs”, “Total cost”;
-- in manufacturing order reports (for example, in an orders report if it is enabled in reporting).
+- in the [manufacturing orders](orders.md) list — fields like “Cost”, “Additional costs”, “Labor costs”, “Total cost”;
+- in [manufacturing reports](reports.md) (for example, in an orders report if it is enabled in reporting).
 
 ## Typical situations and checks
 

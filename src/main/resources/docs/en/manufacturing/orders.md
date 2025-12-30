@@ -8,9 +8,9 @@ Open **“Manufacturing”** → **“Operations”** → **“Manufacturing ord
 
 A manufacturing order is the main manufacturing document. It is used to:
 
-- record **what** has to be produced (or unbuilt/disassembled);
+- record **what** has to be produced (or [unbuilt/disassembled](unbuild.md));
 - set the **planned quantity**;
-- specify the **Bill of Materials** (item structure) that is used to calculate materials;
+- specify the **[Bill of Materials](bom.md)** (item structure) that is used to calculate materials;
 - perform an **availability check** and reserve materials;
 - record **actual production** and **actual consumption**;
 - specify the **Products location** when the order is **Done**.
@@ -48,12 +48,12 @@ At the top of the card you typically set:
 - **Start date** — planned start date and time;
 - **Item** — the item being produced;
 - **Responsible** — may default to the current user;
-- **Bill of Materials** — item structure;
+- **[Bill of Materials](bom.md)** — item structure;
 - **Material storage location** — where materials will be consumed from.
 
 ### Bill of Materials item consistency check
 
-If a Bill of Materials is selected, the system checks that the item in the Bill of Materials matches the order item.
+If a [Bill of Materials](bom.md) is selected, the system checks that the item in the Bill of Materials matches the order item.
 
 If the items do not match, the order cannot be saved.
 
@@ -71,7 +71,7 @@ An order has a planned **To produce** quantity. Based on it, the system can:
 
 1. Create a new manufacturing order.
 2. Fill in the type, item, and start date.
-3. Select a Bill of Materials.
+3. Select a [Bill of Materials](bom.md).
 4. Make sure material and output lines are calculated.
 5. Run availability check and reserve materials.
 
