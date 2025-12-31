@@ -1,4 +1,6 @@
-# Costing: how it is calculated
+---
+title: "Costing: how it is calculated"
+---
 
 This section describes how the system calculates the cost of an item when a [manufacturing order](orders.md) is executed.
 

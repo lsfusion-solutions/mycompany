@@ -1,4 +1,6 @@
-# Purchase settings
+---
+title: Purchase settings
+---
 
 ## Where to find
 

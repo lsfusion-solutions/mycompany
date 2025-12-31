@@ -1,4 +1,6 @@
-# Lokalizacje (magazyny i strefy)
+---
+title: Lokalizacje (magazyny i strefy)
+---
 
 ## Cel
 

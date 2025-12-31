@@ -1,4 +1,6 @@
-# Reporting
+---
+title: Reporting
+---
 
 ## Lead report
 

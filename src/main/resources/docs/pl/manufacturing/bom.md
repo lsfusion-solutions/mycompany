@@ -1,4 +1,6 @@
-# Zestawienia materiałów (struktura towaru)
+---
+title: Zestawienia materiałów (struktura towaru)
+---
 
 Zestawienie materiałów opisuje strukturę towaru: jakie materiały i w jakich ilościach są wymagane do wytworzenia, a także jakie produkty uboczne powstają.
 

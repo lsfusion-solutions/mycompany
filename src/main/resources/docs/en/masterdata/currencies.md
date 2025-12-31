@@ -1,4 +1,6 @@
-# Currencies and exchange rates
+---
+title: Currencies and exchange rates
+---
 
 The **“Currencies”** and **“Exchange rates”** directories are used for settlements in different currencies and correct amount conversion by dates.
 

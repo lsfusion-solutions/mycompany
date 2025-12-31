@@ -1,4 +1,6 @@
-# Zarządzanie projektami — dokumentacja użytkownika
+---
+title: Zarządzanie projektami — dokumentacja użytkownika
+---
 
 Ta dokumentacja opisuje sposób pracy w sekcji **Projekty** (Zarządzanie projektami): tworzenie i prowadzenie projektów, tworzenie i kontrolę **[zagadnień](tasks.md)**, pracę z **[zespołem i rolami](team-and-roles.md)**, rejestrowanie nakładu pracy przez **[przepracowany czas](time-entries.md)** oraz podstawowe widoki do monitorowania postępów.
 

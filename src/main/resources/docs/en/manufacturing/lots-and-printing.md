@@ -1,4 +1,6 @@
-# Lots and printing
+---
+title: Lots and printing
+---
 
 In manufacturing, lots and printing forms can be used.
 

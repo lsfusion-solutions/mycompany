@@ -1,4 +1,6 @@
-# Discounts: application logic
+---
+title: "Discounts: application logic"
+---
 
 In the system, a discount is a separate **“Discount”** object that can be applied to sales document lines (primarily, to [sales order](orders.md) lines).
 

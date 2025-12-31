@@ -1,4 +1,6 @@
-# Transport — dokumentacja użytkownika
+---
+title: Transport — dokumentacja użytkownika
+---
 
 Ta dokumentacja opisuje, jak pracować z sekcją **„Flota”**: utrzymywanie listy pojazdów, przypisywanie kierowców, rejestrowanie serwisów pojazdów i powiązanych kosztów oraz konfigurację katalogów referencyjnych.
 

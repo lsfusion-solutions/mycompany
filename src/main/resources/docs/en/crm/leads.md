@@ -1,4 +1,6 @@
-# Leads
+---
+title: Leads
+---
 
 ## Where to find it
 

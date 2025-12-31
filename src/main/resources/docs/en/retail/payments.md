@@ -1,4 +1,6 @@
-# Retail payments
+---
+title: Retail payments
+---
 
 This page describes taking payment in **[POS](pos.md)**: payment methods, splitting amounts, and change calculation.
 

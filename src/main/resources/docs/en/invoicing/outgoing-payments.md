@@ -1,4 +1,6 @@
-# Outgoing payments
+---
+title: Outgoing payments
+---
 
 An outgoing payment records **money withdrawal** from a company bank account or cash register.
 

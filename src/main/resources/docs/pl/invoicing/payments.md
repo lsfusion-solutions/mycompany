@@ -1,4 +1,6 @@
-# Płatności
+---
+title: Płatności
+---
 
 Płatności w **„Fakturowaniu”** są podzielone na dwa typy:
 

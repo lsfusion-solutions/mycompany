@@ -1,4 +1,6 @@
-# Manufacturing order process and statuses
+---
+title: Manufacturing order process and statuses
+---
 
 A [manufacturing order](orders.md) goes through a set of statuses. The status affects which actions are available and which fields are required.
 

@@ -1,4 +1,6 @@
-# Wydania z faktury
+---
+title: Wydania z faktury
+---
 
 System może wspierać scenariusz, w którym [wydanie](../inventory/shipments.md) jest tworzone **z [faktury](invoices.md)**.
 

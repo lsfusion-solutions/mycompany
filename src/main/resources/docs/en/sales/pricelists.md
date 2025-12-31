@@ -1,4 +1,6 @@
-# Pricelists and price types
+---
+title: Pricelists and price types
+---
 
 Pricelists are used to store and apply prices in sales orders.
 

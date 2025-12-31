@@ -1,4 +1,7 @@
-# Moduły systemu — przegląd
+---
+title: Moduły systemu — przegląd
+slug: /
+---
 
 Ten dokument to **przegląd modułów funkcjonalnych MyCompany**: za co odpowiada każda sekcja, jakie zadania użytkowników rozwiązuje, jak moduły łączą się w procesy end‑to‑end oraz gdzie przejść po szczegółowe instrukcje.
 

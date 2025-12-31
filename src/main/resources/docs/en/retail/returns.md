@@ -1,4 +1,6 @@
-# Retail returns
+---
+title: Retail returns
+---
 
 This page describes a typical process of returning goods by a customer in **[POS](pos.md)**: how to find the original receipt, create a return by receipt lines, and pay out funds.
 

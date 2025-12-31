@@ -1,3 +1,7 @@
+---
+title: Установка Docker
+---
+
 Для работы с Docker-контейнерами необходимо установить [Docker](https://docs.docker.com/get-docker/) и [Docker Compose](https://docs.docker.com/compose/).
 
 ### Запуск Mycompany с помощью Docker Compose {#docker-platform}

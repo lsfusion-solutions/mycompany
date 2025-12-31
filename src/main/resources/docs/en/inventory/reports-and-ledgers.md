@@ -1,4 +1,6 @@
-# Reports and ledgers
+---
+title: Reports and ledgers
+---
 
 The Inventory reporting section typically includes reports and ledgers.
 

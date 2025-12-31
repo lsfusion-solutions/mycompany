@@ -1,4 +1,6 @@
-# Raporty sprzedaży
+---
+title: Raporty sprzedaży
+---
 
 Sekcja raportowania służy do analizy:
 

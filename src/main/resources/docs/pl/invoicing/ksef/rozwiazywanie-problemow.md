@@ -1,4 +1,6 @@
-# KSeF — najczęstsze pytania i rozwiązywanie problemów
+---
+title: KSeF — najczęstsze pytania i rozwiązywanie problemów
+---
 
 #### Nie mogę się zalogować do KSeF — od czego zacząć?
 

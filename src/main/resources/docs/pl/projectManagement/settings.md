@@ -1,4 +1,6 @@
-# Ustawienia
+---
+title: Ustawienia
+---
 
 Ta strona opisuje typowe ustawienia sekcji **Projekty**. Dokładny zestaw słowników i parametrów zależy od konfiguracji oraz uprawnień użytkownika.
 

@@ -1,4 +1,6 @@
-# Manufacturing — user documentation
+---
+title: Manufacturing — user documentation
+---
 
 The documentation describes how the **“Manufacturing”** section works: maintaining [Bills of Materials](bom.md), creating and executing [manufacturing orders](orders.md), reserving materials, producing finished goods, recording **[Scrap](scrap.md)**, printing and reports.
 

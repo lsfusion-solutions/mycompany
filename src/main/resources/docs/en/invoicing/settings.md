@@ -1,4 +1,6 @@
-# Settings and directories
+---
+title: Settings and directories
+---
 
 ## Where to find it
 

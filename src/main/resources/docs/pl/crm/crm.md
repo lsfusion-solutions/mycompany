@@ -1,4 +1,6 @@
-# Dokumentacja użytkownika do pracy z leadami
+---
+title: Dokumentacja użytkownika do pracy z leadami
+---
 
 Ten zestaw dokumentów opisuje pracę użytkownika końcowego z leadami: listę i kartę leadu, tablicę statusów (kanban), obsługę połączeń i e‑maili, tworzenie powiązanych dokumentów, raportowanie oraz konfigurację danych referencyjnych.
 

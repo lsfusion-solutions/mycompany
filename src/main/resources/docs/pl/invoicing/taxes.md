@@ -1,4 +1,6 @@
-# Podatki
+---
+title: Podatki
+---
 
 W „Fakturowaniu” podatki są używane do obliczania kwot linii oraz sum dokumentów.
 

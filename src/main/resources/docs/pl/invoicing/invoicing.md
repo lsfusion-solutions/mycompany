@@ -1,4 +1,6 @@
-# Fakturowanie — dokumentacja użytkownika
+---
+title: Fakturowanie — dokumentacja użytkownika
+---
 
 Ta dokumentacja opisuje sekcję **„Fakturowanie”**: [faktury zakupu](bills.md) i [faktury](invoices.md), [płatności](payments.md) ([przychodzące](incoming-payments.md)/[wychodzące](outgoing-payments.md)), kontrolę [długu](debt-and-calendar.md) i [kalendarz płatności](debt-and-calendar.md), [podatki](taxes.md), drukowanie i raportowanie.
 

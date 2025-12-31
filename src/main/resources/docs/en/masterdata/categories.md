@@ -1,4 +1,6 @@
-# Categories
+---
+title: Categories
+---
 
 The **“Categories”** directory is used to group items. Categories can be hierarchical (a tree): a category can have a parent category.
 

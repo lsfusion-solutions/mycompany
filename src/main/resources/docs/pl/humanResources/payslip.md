@@ -1,4 +1,6 @@
-# Odcinek płacowy
+---
+title: Odcinek płacowy
+---
 
 Odcinek płacowy jest dokumentem naliczenia wynagrodzenia pracownika za okres. Zawiera:
 

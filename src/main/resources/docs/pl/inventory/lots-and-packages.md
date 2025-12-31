@@ -1,4 +1,6 @@
-# Partie i pakiety
+---
+title: Partie i pakiety
+---
 
 ## Partie
 

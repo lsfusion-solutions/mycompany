@@ -1,4 +1,6 @@
-# Shipments from invoice
+---
+title: Shipments from invoice
+---
 
 The system may support a scenario where a [shipment](../inventory/shipments.md) is created **from an [invoice](invoices.md)**.
 

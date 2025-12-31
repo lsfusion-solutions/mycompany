@@ -1,4 +1,6 @@
-# Produkcja — dokumentacja użytkownika
+---
+title: Produkcja — dokumentacja użytkownika
+---
 
 Ta dokumentacja opisuje, jak działa sekcja **„Produkcja”**: prowadzenie [zestawień materiałów](bom.md), tworzenie i realizację [zamówień produkcji](orders.md), rezerwacje materiałów, produkcję wyrobów gotowych, rejestrowanie **[odpadu](scrap.md)**, drukowanie i raporty.
 

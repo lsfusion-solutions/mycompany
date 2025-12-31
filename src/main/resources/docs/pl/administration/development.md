@@ -1,4 +1,6 @@
-### Rozwój
+---
+title: Rozwój
+---
 
 Ponieważ projekt używa Mavena, możesz skorzystać z poniższego algorytmu konfiguracji środowiska deweloperskiego:
 

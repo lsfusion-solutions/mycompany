@@ -1,4 +1,6 @@
-# Lots and packages
+---
+title: Lots and packages
+---
 
 ## Lots
 

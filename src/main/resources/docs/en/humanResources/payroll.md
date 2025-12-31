@@ -1,4 +1,6 @@
-# Payroll: calculation and payment
+---
+title: "Payroll: calculation and payment"
+---
 
 The “Payroll: calculation and payment” section is used to calculate employee earnings and deductions for a period and (if needed) register payments.
 

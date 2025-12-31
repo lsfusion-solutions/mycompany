@@ -1,4 +1,6 @@
-# Time entries
+---
+title: Time entries
+---
 
 This page describes effort tracking via time entries: why it is needed, how to enter records correctly, and how to handle typical errors.
 

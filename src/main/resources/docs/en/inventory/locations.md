@@ -1,4 +1,6 @@
-# Locations (warehouses and zones)
+---
+title: Locations (warehouses and zones)
+---
 
 ## Purpose
 

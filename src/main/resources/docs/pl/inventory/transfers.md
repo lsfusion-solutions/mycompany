@@ -1,4 +1,6 @@
-# Przemieszczania
+---
+title: Przemieszczania
+---
 
 Przemieszczanie (`Przemieszczanie`) to dokument do przesuwania towaru pomiędzy [lokalizacjami](locations.md) (na przykład pomiędzy magazynami, strefami lub miejscami składowania).
 

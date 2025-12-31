@@ -1,4 +1,6 @@
-# Korekta zapasów
+---
+title: Korekta zapasów
+---
 
 Korekta zapasów (liczenie zapasów) służy do porównania stanu systemowego z faktyczną ilością w [lokalizacji](locations.md).
 

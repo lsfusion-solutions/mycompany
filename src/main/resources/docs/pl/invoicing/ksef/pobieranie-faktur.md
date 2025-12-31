@@ -1,4 +1,6 @@
-# KSeF — pobieranie faktur
+---
+title: KSeF — pobieranie faktur
+---
 
 MyCompany pozwala pobierać faktury z KSeF po **przedziale dat**. Pobieranie może działać w dwóch perspektywach:
 

@@ -1,4 +1,6 @@
-# KSeF — wysyłka faktur sprzedaży i statusy
+---
+title: KSeF — wysyłka faktur sprzedaży i statusy
+---
 
 ## Główna zasada: wysyłka jest powiązana z fakturą
 

@@ -1,4 +1,6 @@
-# Team and roles on a project
+---
+title: Team and roles on a project
+---
 
 This page describes how to work with project participants: teams, roles, and assignments.
 

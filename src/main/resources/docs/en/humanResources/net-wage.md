@@ -1,4 +1,6 @@
-# How the “Net wage” total is calculated
+---
+title: How the “Net wage” total is calculated
+---
 
 The **“Net wage”** total is the result of summing calculation lines for a period taking into account whether a line is an **earning** or a **deduction**.
 

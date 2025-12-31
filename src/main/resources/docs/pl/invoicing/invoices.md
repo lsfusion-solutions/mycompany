@@ -1,4 +1,6 @@
-# Faktury
+---
+title: Faktury
+---
 
 ## Gdzie znaleźć
 

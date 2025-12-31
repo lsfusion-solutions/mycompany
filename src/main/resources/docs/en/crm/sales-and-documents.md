@@ -1,4 +1,6 @@
-# Orders and invoices from a lead
+---
+title: Orders and invoices from a lead
+---
 
 A lead can be “converted” into a document so you can continue work in the accounting contour while keeping a link to the original inquiry.
 

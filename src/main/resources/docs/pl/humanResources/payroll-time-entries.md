@@ -1,4 +1,6 @@
-# Wypłata na podstawie przepracowanego czasu (Projekty)
+---
+title: Wypłata na podstawie przepracowanego czasu (Projekty)
+---
 
 W niektórych organizacjach część przychodów może być naliczana na podstawie **przepracowanego czasu** z sekcji **„Zarządzanie projektami”** (ewidencja nakładu pracy wg projektów i zadań).
 

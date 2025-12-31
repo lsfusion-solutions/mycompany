@@ -1,4 +1,6 @@
-# Incoming payments
+---
+title: Incoming payments
+---
 
 An incoming payment records **money received from a [partner](../masterdata/partners.md)** (for example, a customer) to a company **bank account** or **cash register**.
 

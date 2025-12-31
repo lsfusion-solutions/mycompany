@@ -1,4 +1,6 @@
-# Przepływ pracy zamówienia i statusy
+---
+title: Przepływ pracy zamówienia i statusy
+---
 
 W sekcji **„Sprzedaż”** zamówienie przechodzi przez statusy. Statusy definiują:
 

@@ -1,4 +1,6 @@
-# Retail settings
+---
+title: Retail settings
+---
 
 This page describes the basic settings that affect how the **[cash register](pos.md)** and **[POS](pos.md)** work.
 

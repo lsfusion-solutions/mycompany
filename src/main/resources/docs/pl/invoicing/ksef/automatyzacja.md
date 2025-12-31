@@ -1,4 +1,6 @@
-# KSeF — automatyzacja (harmonogram)
+---
+title: KSeF — automatyzacja (harmonogram)
+---
 
 MyCompany może uruchomić zadanie cykliczne, które:
 

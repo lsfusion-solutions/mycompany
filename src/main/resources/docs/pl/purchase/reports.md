@@ -1,4 +1,6 @@
-# Raporty zakupu
+---
+title: Raporty zakupu
+---
 
 ## Gdzie znaleźć
 

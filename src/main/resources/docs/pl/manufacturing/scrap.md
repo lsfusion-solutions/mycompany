@@ -1,4 +1,6 @@
-# Odpad
+---
+title: Odpad
+---
 
 W ramach [zamówienia produkcji](orders.md) można utworzyć dokument **Odpad** powiązany z zamówieniem.
 

@@ -1,4 +1,6 @@
-# Produkty uboczne
+---
+title: Produkty uboczne
+---
 
 W module **„Produkcja”** produkty uboczne są realizowane poprzez **produkty uboczne w [Zestawieniu materiałów](bom.md)**.
 

@@ -1,4 +1,6 @@
-# Administration — installation and maintenance
+---
+title: Administration — installation and maintenance
+---
 
 This section contains materials for **administrators** and **technical specialists**: installing MyCompany, running it in Docker, as well as setting up the development environment and build.
 

@@ -1,4 +1,6 @@
-# Raportowanie
+---
+title: Raportowanie
+---
 
 Ta strona opisuje typowe możliwości raportowania dla projektów, zagadnień i nakładu pracy. Dokładny zestaw raportów i metryk zależy od konfiguracji.
 

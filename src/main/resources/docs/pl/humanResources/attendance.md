@@ -1,4 +1,6 @@
-# Rejestracja czasu
+---
+title: Rejestracja czasu
+---
 
 Sekcja „Rejestracja czasu” służy do zapisywania oznaczeń czasu pracy pracowników: **Check In** oraz **Check Out**. W zależności od ustawień mogą być używane geolokacja i zdjęcie.
 

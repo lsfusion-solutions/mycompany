@@ -1,4 +1,6 @@
-# Partie i drukowanie
+---
+title: Partie i drukowanie
+---
 
 W produkcji mogą być używane partie oraz formularze wydruku.
 

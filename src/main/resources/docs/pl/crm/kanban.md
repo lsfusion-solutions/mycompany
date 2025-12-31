@@ -1,4 +1,6 @@
-# Tablica leadów (kanban)
+---
+title: Tablica leadów (kanban)
+---
 
 ## Gdzie to znaleźć
 

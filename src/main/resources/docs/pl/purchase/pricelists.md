@@ -1,4 +1,6 @@
-# Cenniki dostawcy
+---
+title: Cenniki dostawcy
+---
 
 ## Gdzie znaleźć
 

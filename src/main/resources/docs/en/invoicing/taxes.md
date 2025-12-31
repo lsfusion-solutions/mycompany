@@ -1,4 +1,6 @@
-# Taxes
+---
+title: Taxes
+---
 
 In “Invoicing”, taxes are used to calculate line amounts and document totals.
 

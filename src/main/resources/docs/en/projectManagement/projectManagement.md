@@ -1,4 +1,6 @@
-# Project Management — user documentation
+---
+title: Project Management — user documentation
+---
 
 This documentation describes how to work in the **Projects** section (Project Management): creating and managing projects, creating and controlling tasks, working with the **[team and roles](team-and-roles.md)**, tracking effort via **[time entries](time-entries.md)**, and using basic views to monitor progress.
 

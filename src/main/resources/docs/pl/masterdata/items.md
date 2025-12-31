@@ -1,4 +1,6 @@
-# Towary
+---
+title: Towary
+---
 
 Słownik **„Towary”** zawiera produkty i usługi, które są używane w pozycjach dokumentów (zamówienia, wydania, faktury, rachunki itp.).
 

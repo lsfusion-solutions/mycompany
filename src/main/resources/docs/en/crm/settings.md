@@ -1,4 +1,6 @@
-# Settings and reference data
+---
+title: Settings and reference data
+---
 
 ## Where to find it
 

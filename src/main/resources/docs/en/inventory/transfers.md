@@ -1,4 +1,6 @@
-# Transfers
+---
+title: Transfers
+---
 
 Transfer (`Transfer`) is a document for moving goods between [locations](locations.md) (for example, between warehouses, zones or bins).
 

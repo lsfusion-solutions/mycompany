@@ -1,4 +1,6 @@
-# Projekty
+---
+title: Projekty
+---
 
 Ta strona opisuje pracę z projektami: jak utworzyć projekt, jakie informacje uzupełnić, jak zarządzać stanem projektu oraz jak prowadzić dyskusje.
 

@@ -1,4 +1,6 @@
-# Umowy na pojazdy
+---
+title: Umowy na pojazdy
+---
 
 Sekcja jest przeznaczona do ewidencji umów związanych z pojazdami (np. wynajem, leasing, ubezpieczenie — w zależności od typów umów używanych w Twojej organizacji).
 

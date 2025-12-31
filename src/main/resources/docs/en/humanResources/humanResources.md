@@ -1,4 +1,6 @@
-# Human Resources — user documentation
+---
+title: Human Resources — user documentation
+---
 
 This documentation describes the **“Human Resources”** section: recruitment (candidate applications, interviews, hiring decisions), attendance tracking (check in / check out), and payroll calculation/payment (payroll batches and payslips).
 

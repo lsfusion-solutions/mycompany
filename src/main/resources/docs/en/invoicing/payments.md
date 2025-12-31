@@ -1,4 +1,6 @@
-# Payments
+---
+title: Payments
+---
 
 Payments in **“Invoicing”** are divided into two types:
 

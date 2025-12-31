@@ -1,4 +1,6 @@
-# User documentation for working with leads
+---
+title: User documentation for working with leads
+---
 
 This set of documents describes end-user work with leads: the lead card and list, the status board (kanban), handling calls and emails, creating related documents, reporting, and reference data setup.
 

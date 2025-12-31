@@ -1,4 +1,6 @@
-# Debt and payment calendar
+---
+title: Debt and payment calendar
+---
 
 ## Debt
 

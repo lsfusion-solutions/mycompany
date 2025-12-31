@@ -1,4 +1,6 @@
-# Reports and printing
+---
+title: Reports and printing
+---
 
 ## Document printing
 

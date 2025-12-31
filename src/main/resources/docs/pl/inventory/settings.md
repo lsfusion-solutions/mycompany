@@ -1,4 +1,6 @@
-# Ustawienia magazynowania
+---
+title: Ustawienia magazynowania
+---
 
 ## Gdzie znaleźć
 

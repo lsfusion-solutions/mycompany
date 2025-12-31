@@ -1,4 +1,6 @@
-# Pojazdy
+---
+title: Pojazdy
+---
 
 Sekcja jest przeznaczona do utrzymywania listy pojazdów i przeglądania wszystkich powiązanych informacji: [przypisań kierowców](drivers.md), [serwisów](service.md), [umów](contracts.md) oraz dołączonych plików.
 

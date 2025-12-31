@@ -1,4 +1,6 @@
-# Zagadnienia
+---
+title: Zagadnienia
+---
 
 Ta strona opisuje pracę z zagadnieniami projektu: tworzenie i przypisywanie zagadnień, kontrolę statusów, korzystanie z historii zmian oraz widoki do monitorowania.
 

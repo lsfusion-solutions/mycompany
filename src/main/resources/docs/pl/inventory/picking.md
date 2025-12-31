@@ -1,4 +1,6 @@
-# Zadania kompletacyjne
+---
+title: Zadania kompletacyjne
+---
 
 Zadania kompletacyjne służą do organizacji kompletacji w [lokalizacji](locations.md) podczas realizacji [wydania](shipments.md).
 

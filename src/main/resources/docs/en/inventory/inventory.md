@@ -1,4 +1,6 @@
-# Inventory — user documentation
+---
+title: Inventory — user documentation
+---
 
 This documentation describes the **“Inventory”** section: locations, receipts, shipments, transfers, scrap, adjustments, picking tasks, lots and packages, as well as reports and ledgers.
 

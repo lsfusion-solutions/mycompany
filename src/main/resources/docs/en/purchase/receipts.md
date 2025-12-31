@@ -1,4 +1,6 @@
-# Receipts for purchase orders
+---
+title: Receipts for purchase orders
+---
 
 A receipt records the fact of receiving goods into a [location](../inventory/locations.md) and helps to control purchase order fulfillment: how much has already been received and how much remains.
 

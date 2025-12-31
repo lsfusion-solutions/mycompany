@@ -1,4 +1,6 @@
-# Sales settings
+---
+title: Sales settings
+---
 
 ## Where to find
 

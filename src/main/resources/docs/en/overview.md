@@ -1,4 +1,7 @@
-# System Modules — Overview
+---
+title: System Modules — Overview
+slug: /
+---
 
 This document is an **overview of MyCompany functional modules**: what each section is responsible for, which user tasks it solves, how modules are linked into end‑to‑end processes, and where to go for detailed instructions.
 

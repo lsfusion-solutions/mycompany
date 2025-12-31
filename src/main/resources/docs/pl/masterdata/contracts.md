@@ -1,4 +1,6 @@
-# Umowy
+---
+title: Umowy
+---
 
 Słownik **„Umowy”** służy do rejestrowania umów z partnerami, a następnie wybierania umowy w dokumentach (jeśli proces tego wymaga).
 

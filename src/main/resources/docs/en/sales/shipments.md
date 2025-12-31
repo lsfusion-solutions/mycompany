@@ -1,4 +1,6 @@
-# Shipments for orders
+---
+title: Shipments for orders
+---
 
 A [shipment](../inventory/shipments.md) records the transfer of goods to a customer and inventory movement.
 

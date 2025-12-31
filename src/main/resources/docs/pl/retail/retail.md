@@ -1,4 +1,6 @@
-# Sprzedaż detaliczna — dokumentacja użytkownika
+---
+title: Sprzedaż detaliczna — dokumentacja użytkownika
+---
 
 Ta dokumentacja opisuje pracę z sekcją **„Sprzedaż detaliczna”**: konfigurację **[kas](settings.md)**, zarządzanie **[sesjami](sessions.md)**, realizację sprzedaży i zwrotów w **[POS](pos.md)**, stosowanie **[rabatów](../sales/discounts.md)** i **[kart rabatowych](discount-cards.md)** oraz przyjmowanie **[płatności](payments.md)**.
 

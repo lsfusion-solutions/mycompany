@@ -1,4 +1,6 @@
-# Manufacturing settings and directories
+---
+title: Manufacturing settings and directories
+---
 
 ## Location
 

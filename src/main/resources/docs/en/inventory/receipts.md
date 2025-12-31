@@ -1,4 +1,6 @@
-# Receipts
+---
+title: Receipts
+---
 
 ## Where to find it
 

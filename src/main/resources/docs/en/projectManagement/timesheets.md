@@ -1,4 +1,6 @@
-# Timesheets
+---
+title: Timesheets
+---
 
 This page describes two timesheet forms:
 

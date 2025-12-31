@@ -1,4 +1,6 @@
-# Creating manufacturing orders from sales orders
+---
+title: Creating manufacturing orders from sales orders
+---
 
 The system supports a scenario where **[manufacturing orders](orders.md) are created based on sales order lines**.
 

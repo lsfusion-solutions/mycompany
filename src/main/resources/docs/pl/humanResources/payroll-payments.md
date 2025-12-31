@@ -1,4 +1,6 @@
-# Wypłata wynagrodzenia i kontrola płatności
+---
+title: Wypłata wynagrodzenia i kontrola płatności
+---
 
 W niektórych organizacjach płatności są rejestrowane w systemie: można zarejestrować płatność z odcinka płacowego oraz kontrolować, ile już zapłacono i ile pozostało.
 

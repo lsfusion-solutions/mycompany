@@ -1,4 +1,6 @@
-# Faktury zakupu
+---
+title: Faktury zakupu
+---
 
 ## Gdzie znaleźć
 

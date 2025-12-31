@@ -1,4 +1,6 @@
-# Kraje
+---
+title: Kraje
+---
 
 Słownik **„Kraje”** jest używany w adresach partnerów i innych obiektach, w których należy wskazać kraj.
 

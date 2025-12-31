@@ -1,4 +1,6 @@
-# Communications: calls and emails
+---
+title: "Communications: calls and emails"
+---
 
 In the system, you can link communications to leads so you do not lose the work context:
 

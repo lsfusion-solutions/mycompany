@@ -1,4 +1,6 @@
-# Demontaż
+---
+title: Demontaż
+---
 
 Ta sekcja opisuje logikę demontażu zaimplementowaną poprzez specjalny typ **[zamówienia produkcji](orders.md)**.
 

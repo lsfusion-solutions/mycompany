@@ -1,4 +1,6 @@
-# Master Data — user documentation
+---
+title: Master Data — user documentation
+---
 
 The **“Master Data”** section contains base data used in documents and processes of other modules: **items**, **partners**, **categories**, **units of measure**, **countries**, **currencies and exchange rates**, **departments**, **contracts**.
 

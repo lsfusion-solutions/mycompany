@@ -1,4 +1,6 @@
-# Zwroty detaliczne
+---
+title: Zwroty detaliczne
+---
 
 Ta strona opisuje typowy proces zwrotu towarów przez klienta w **[POS](pos.md)**: jak znaleźć oryginalny paragon, utworzyć zwrot według pozycji paragonu oraz wypłacić środki.
 

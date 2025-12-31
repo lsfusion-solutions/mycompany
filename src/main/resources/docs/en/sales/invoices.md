@@ -1,4 +1,6 @@
-# Invoices for orders
+---
+title: Invoices for orders
+---
 
 An [invoice](../invoicing/invoices.md) records a sale in accounting terms: revenue, taxes, and totals.
 

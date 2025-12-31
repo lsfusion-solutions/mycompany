@@ -1,4 +1,6 @@
-# Production and consumption
+---
+title: Production and consumption
+---
 
 In a [manufacturing order](orders.md) there are two groups of lines:
 

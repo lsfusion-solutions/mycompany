@@ -1,4 +1,6 @@
-# Configuration
+---
+title: Configuration
+---
 
 The **“Fleet”** section uses directories that define selection options in vehicle, service, and contract cards.
 

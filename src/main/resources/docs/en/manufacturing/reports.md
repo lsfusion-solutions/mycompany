@@ -1,4 +1,6 @@
-# Manufacturing reports
+---
+title: Manufacturing reports
+---
 
 The reporting section is used to analyze [manufacturing orders](orders.md).
 

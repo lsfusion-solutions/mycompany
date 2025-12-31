@@ -1,4 +1,6 @@
-# Sesje
+---
+title: Sesje
+---
 
 Sesja to okres pracy **[kasy](settings.md)** pomiędzy otwarciem a zamknięciem. Sprzedaż i zwroty w **[POS](pos.md)** są realizowane w ramach otwartej sesji.
 

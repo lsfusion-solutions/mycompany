@@ -1,4 +1,6 @@
-# Zbiorcze tworzenie przemieszczeń
+---
+title: Zbiorcze tworzenie przemieszczeń
+---
 
 Narzędzie **„Utwórz przemieszczanie”** służy do szybkiego utworzenia kilku dokumentów [przemieszczania](transfers.md) z jednego źródła.
 

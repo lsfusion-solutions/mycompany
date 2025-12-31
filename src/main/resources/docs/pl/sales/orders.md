@@ -1,4 +1,6 @@
-# Zamówienia
+---
+title: Zamówienia
+---
 
 ## Gdzie znaleźć
 

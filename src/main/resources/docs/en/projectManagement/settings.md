@@ -1,4 +1,6 @@
-# Settings
+---
+title: Settings
+---
 
 This page describes typical settings for the **Projects** section. The exact set of directories and parameters depends on configuration and user permissions.
 

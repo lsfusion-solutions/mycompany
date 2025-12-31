@@ -1,4 +1,6 @@
-# Przyjęcia dla zamówień zakupu
+---
+title: Przyjęcia dla zamówień zakupu
+---
 
 Przyjęcie rejestruje fakt przyjęcia towaru do [lokalizacji](../inventory/locations.md) i pomaga kontrolować realizację zamówienia zakupu: ile już przyjęto i ile pozostało.
 

@@ -1,4 +1,6 @@
-# Odpad
+---
+title: Odpad
+---
 
 Odpad służy do rejestrowania zmniejszeń stanów magazynowych z przyczyn niezwiązanych ze sprzedażą:
 

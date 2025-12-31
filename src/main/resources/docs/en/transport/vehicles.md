@@ -1,4 +1,6 @@
-# Vehicles
+---
+title: Vehicles
+---
 
 The section is intended for maintaining the list of vehicles and viewing all related information: [driver assignments](drivers.md), [services](service.md), [contracts](contracts.md), and attached files.
 

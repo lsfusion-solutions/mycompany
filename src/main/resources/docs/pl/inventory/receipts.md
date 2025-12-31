@@ -1,4 +1,6 @@
-# Przyjęcia
+---
+title: Przyjęcia
+---
 
 ## Gdzie znaleźć
 

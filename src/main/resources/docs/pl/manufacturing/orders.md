@@ -1,4 +1,6 @@
-# Zamówienia produkcji: lista i karta
+---
+title: "Zamówienia produkcji: lista i karta"
+---
 
 ## Lokalizacja
 

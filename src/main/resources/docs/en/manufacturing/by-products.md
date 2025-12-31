@@ -1,4 +1,6 @@
-# By-products
+---
+title: By-products
+---
 
 In the **“Manufacturing”** module, by-products are implemented through **[Bill of Materials](bom.md) by-products**.
 

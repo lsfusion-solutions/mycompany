@@ -1,4 +1,6 @@
-# Wydania i przemieszczenia
+---
+title: Wydania i przemieszczenia
+---
 
 ## Gdzie znaleźć
 

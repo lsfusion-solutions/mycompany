@@ -1,4 +1,6 @@
-# Waluty i kursy walutowe
+---
+title: Waluty i kursy walutowe
+---
 
 Słowniki **„Waluty”** i **„Kursy walutowe”** są używane do rozliczeń w różnych walutach oraz poprawnego przeliczania kwot według dat.
 

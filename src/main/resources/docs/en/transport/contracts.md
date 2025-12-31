@@ -1,4 +1,6 @@
-# Vehicle contracts
+---
+title: Vehicle contracts
+---
 
 The section is intended for accounting contracts related to vehicles (for example, rent, leasing, insurance — depending on the contract types used in your organization).
 

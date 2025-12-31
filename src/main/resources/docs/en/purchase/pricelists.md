@@ -1,4 +1,6 @@
-# Vendor pricelists
+---
+title: Vendor pricelists
+---
 
 ## Where to find
 
