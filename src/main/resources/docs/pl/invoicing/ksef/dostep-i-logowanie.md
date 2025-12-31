@@ -1,4 +1,6 @@
-# KSeF — dostęp i logowanie
+---
+title: KSeF — dostęp i logowanie
+---
 
 W MyCompany dostępne są trzy sposoby logowania do KSeF. Wybór zależy od tego, jak w Twojej organizacji nadano dostęp do KSeF.
 

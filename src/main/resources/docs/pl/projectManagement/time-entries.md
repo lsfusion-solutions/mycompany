@@ -1,4 +1,6 @@
-# Przepracowany czas
+---
+title: Przepracowany czas
+---
 
 Ta strona opisuje rejestrowanie nakładu pracy przez przepracowany czas: po co jest potrzebny, jak poprawnie wprowadzać wpisy oraz jak radzić sobie z typowymi błędami.
 

@@ -1,4 +1,6 @@
-# Leady
+---
+title: Leady
+---
 
 ## Gdzie to znaleźć
 

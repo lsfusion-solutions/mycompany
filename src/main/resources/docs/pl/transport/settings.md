@@ -1,4 +1,6 @@
-# Konfiguracja
+---
+title: Konfiguracja
+---
 
 Sekcja **„Flota”** używa katalogów, które definiują opcje wyboru w kartach pojazdu, serwisu oraz umowy.
 

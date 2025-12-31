@@ -1,4 +1,6 @@
-# Bulk transfer creation
+---
+title: Bulk transfer creation
+---
 
 The **“Create transfers”** tool is designed to quickly create several [transfer](transfers.md) documents from one source.
 

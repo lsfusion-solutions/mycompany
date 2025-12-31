@@ -1,4 +1,6 @@
-# Inventory settings
+---
+title: Inventory settings
+---
 
 ## Where to find it
 

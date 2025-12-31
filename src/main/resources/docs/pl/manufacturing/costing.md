@@ -1,4 +1,6 @@
-# Koszt wytworzenia: jak jest liczony
+---
+title: "Koszt wytworzenia: jak jest liczony"
+---
 
 Ta sekcja opisuje, w jaki sposób system liczy koszt towaru, gdy realizowane jest [zamówienie produkcji](orders.md).
 

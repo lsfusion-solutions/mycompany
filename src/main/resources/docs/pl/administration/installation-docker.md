@@ -1,3 +1,7 @@
+---
+title: Instalacja Docker
+---
+
 Aby pracować z kontenerami Docker, musisz zainstalować [Docker](https://docs.docker.com/get-docker/) oraz [Docker Compose](https://docs.docker.com/compose/).
 
 ### Uruchamianie MyCompany przy użyciu Docker Compose {#docker-platform}

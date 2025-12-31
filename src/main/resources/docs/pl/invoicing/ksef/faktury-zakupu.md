@@ -1,4 +1,6 @@
-# KSeF — faktury zakupu na podstawie faktur z KSeF
+---
+title: KSeF — faktury zakupu na podstawie faktur z KSeF
+---
 
 Jeśli pobrana faktura dotyczy zakupu (Twoja firma jest nabywcą), MyCompany może pomóc utworzyć na jej podstawie **fakturę zakupu** w systemie.
 

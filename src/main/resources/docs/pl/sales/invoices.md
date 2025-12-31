@@ -1,4 +1,6 @@
-# Faktury do zamówień
+---
+title: Faktury do zamówień
+---
 
 [Faktura](../invoicing/invoices.md) rejestruje sprzedaż w rozliczeniach: przychody, podatki i sumy.
 

@@ -1,4 +1,6 @@
-# Reporting
+---
+title: Reporting
+---
 
 This page describes typical reporting options for projects, tasks, and effort. The exact set of reports and metrics depends on configuration.
 

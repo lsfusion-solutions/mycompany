@@ -1,4 +1,6 @@
-# Recruitment
+---
+title: Recruitment
+---
 
 The “Recruitment” section is used to work with candidates: registering applications, storing files (resume, etc.), planning interviews, and recording decisions.
 

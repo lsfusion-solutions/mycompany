@@ -1,4 +1,6 @@
-# Kategorie
+---
+title: Kategorie
+---
 
 Słownik **„Kategorie”** służy do grupowania towarów. Kategorie mogą być hierarchiczne (drzewo): kategoria może mieć kategorię nadrzędną.
 

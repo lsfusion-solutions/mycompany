@@ -1,4 +1,6 @@
-# Zakup — dokumentacja użytkownika
+---
+title: Zakup — dokumentacja użytkownika
+---
 
 Ta dokumentacja opisuje, jak korzystać z sekcji **„Zakup”**: tworzenie [zamówień zakupu](orders.md), praca z [cennikami dostawcy](pricelists.md), tworzenie powiązanych dokumentów ([faktur zakupu](bills.md), [przyjęć](receipts.md), [płatności wychodzących](../invoicing/outgoing-payments.md)) oraz kontrola realizacji.
 

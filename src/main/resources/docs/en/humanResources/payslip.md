@@ -1,4 +1,6 @@
-# Payslip
+---
+title: Payslip
+---
 
 A payslip is an employee payroll calculation document for a period. It includes:
 

@@ -1,4 +1,6 @@
-# Ustawienia i katalogi
+---
+title: Ustawienia i katalogi
+---
 
 ## Gdzie znaleźć
 

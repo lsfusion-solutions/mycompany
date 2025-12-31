@@ -1,4 +1,6 @@
-# Jednostki miary
+---
+title: Jednostki miary
+---
 
 Słownik **„Jednostki miary”** przechowuje listę jednostek używanych w towarach i pozycjach dokumentów (na przykład sztuki, kilogramy, metry).
 

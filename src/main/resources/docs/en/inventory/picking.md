@@ -1,4 +1,6 @@
-# Picking tasks
+---
+title: Picking tasks
+---
 
 Picking tasks are used to organize picking in a [location](locations.md) when executing a [shipment](shipments.md).
 

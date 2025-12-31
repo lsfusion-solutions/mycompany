@@ -1,4 +1,6 @@
-# Partnerzy
+---
+title: Partnerzy
+---
 
 Słownik **„Partnerzy”** służy do utrzymywania klientów, dostawców, innych organizacji oraz osób fizycznych (w zależności od konfiguracji). Partnerzy są wybierani w dokumentach sprzedaży, zakupu i fakturowania, a także w umowach i działach.
 

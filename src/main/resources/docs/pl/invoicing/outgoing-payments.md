@@ -1,4 +1,6 @@
-# Płatności wychodzące
+---
+title: Płatności wychodzące
+---
 
 Płatność wychodząca rejestruje **wypłatę środków** z firmowego konta bankowego lub z kasy.
 

@@ -1,4 +1,6 @@
-# Bills
+---
+title: Bills
+---
 
 ## Where to find it
 

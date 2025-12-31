@@ -1,4 +1,6 @@
-# Zamówienia i faktury z leadu
+---
+title: Zamówienia i faktury z leadu
+---
 
 Lead może zostać „przekształcony” w dokument, aby kontynuować pracę w obszarze rozliczeń, zachowując jednocześnie powiązanie z pierwotnym zapytaniem.
 

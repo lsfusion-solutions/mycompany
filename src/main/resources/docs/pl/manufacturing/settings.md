@@ -1,4 +1,6 @@
-# Ustawienia i katalogi Produkcji
+---
+title: Ustawienia i katalogi Produkcji
+---
 
 ## Lokalizacja
 

@@ -1,4 +1,6 @@
-# Purchase reports
+---
+title: Purchase reports
+---
 
 ## Where to find
 

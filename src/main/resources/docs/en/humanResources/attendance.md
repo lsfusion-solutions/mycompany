@@ -1,4 +1,6 @@
-# Attendance
+---
+title: Attendance
+---
 
 The “Attendance” section is used to record employee working time marks: **Check In** and **Check Out**. Depending on settings, geolocation and photo can be used.
 

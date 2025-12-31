@@ -1,4 +1,6 @@
-# Invoices
+---
+title: Invoices
+---
 
 ## Where to find it
 

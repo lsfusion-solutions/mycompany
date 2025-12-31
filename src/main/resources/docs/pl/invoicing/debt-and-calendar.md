@@ -1,4 +1,6 @@
-# Dług i kalendarz płatności
+---
+title: Dług i kalendarz płatności
+---
 
 ## Dług
 

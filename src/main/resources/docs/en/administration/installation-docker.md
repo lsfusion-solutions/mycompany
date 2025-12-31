@@ -1,3 +1,7 @@
+---
+title: Installation Docker
+---
+
 You must install [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/) to work with Docker containers.
 
 ### Launching Mycompany using Docker Compose {#docker-platform}
@@ -39,4 +43,3 @@ You must install [Docker](https://docs.docker.com/get-docker/) and [Docker Compo
   These directories are bind-mounted into their respective containers.
 
     - In the `docker-server` folder put the lsFusion language modules (`.lsf` files or folders with them), as well as additional resources (reports, Java files, images, CSS, JS, etc.). The server logs and the `settings.properties` file are also in the same folder.
-  

@@ -1,4 +1,6 @@
-# Invoicing — user documentation
+---
+title: Invoicing — user documentation
+---
 
 This documentation describes the **“Invoicing”** section: [bills](bills.md) and [invoices](invoices.md), [payments](payments.md) ([incoming](incoming-payments.md)/[outgoing](outgoing-payments.md)), [debt](debt-and-calendar.md) control and [payment calendar](debt-and-calendar.md), [taxes](taxes.md), printing and reporting.
 

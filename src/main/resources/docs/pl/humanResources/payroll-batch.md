@@ -1,4 +1,6 @@
-# Partia odcinków płacowych
+---
+title: Partia odcinków płacowych
+---
 
 Partia odcinków płacowych jest używana, gdy trzeba **wygenerować odcinki płacowe dla wielu pracowników** za ten sam okres.
 

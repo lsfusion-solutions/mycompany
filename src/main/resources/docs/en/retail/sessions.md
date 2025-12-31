@@ -1,4 +1,6 @@
-# Sessions
+---
+title: Sessions
+---
 
 A session is the period of **[cash register](settings.md)** operation between opening and closing. Sales and returns in **[POS](pos.md)** are processed within an open session.
 

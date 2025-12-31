@@ -1,4 +1,6 @@
-# Payslip batch
+---
+title: Payslip batch
+---
 
 A payslip batch is used when you need to **generate payslips for multiple employees** for the same period.
 

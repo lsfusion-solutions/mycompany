@@ -1,4 +1,6 @@
-# Lead board (kanban)
+---
+title: Lead board (kanban)
+---
 
 ## Where to find it
 

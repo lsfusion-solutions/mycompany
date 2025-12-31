@@ -1,4 +1,6 @@
-# Purchase — user documentation
+---
+title: Purchase — user documentation
+---
 
 This documentation describes how to use the **“Purchase”** section: creating [purchase orders](orders.md), working with [vendor pricelists](pricelists.md), creating related documents ([bills](bills.md), [receipts](receipts.md), [outgoing payments](../invoicing/outgoing-payments.md)) and controlling fulfillment.
 

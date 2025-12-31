@@ -1,4 +1,6 @@
-# Adjustment
+---
+title: Adjustment
+---
 
 Adjustment (inventory counting) is used to compare the system stock with the actual quantity in a [location](locations.md).
 

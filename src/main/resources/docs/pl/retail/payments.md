@@ -1,4 +1,6 @@
-# Płatności detaliczne
+---
+title: Płatności detaliczne
+---
 
 Ta strona opisuje przyjmowanie płatności w **[POS](pos.md)**: metody płatności, dzielenie kwot oraz wyliczanie reszty.
 

@@ -1,4 +1,6 @@
-# Zespół i role w projekcie
+---
+title: Zespół i role w projekcie
+---
 
 Ta strona opisuje pracę z uczestnikami projektu: zespoły, role i przypisania.
 

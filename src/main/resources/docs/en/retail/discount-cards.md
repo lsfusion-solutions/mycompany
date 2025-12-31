@@ -1,4 +1,6 @@
-# Discount cards
+---
+title: Discount cards
+---
 
 A discount card is used to provide a **[discount](../sales/discounts.md)** and/or identify the customer during the sale.
 

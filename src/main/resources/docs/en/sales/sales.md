@@ -1,4 +1,6 @@
-# Sales — user documentation
+---
+title: Sales — user documentation
+---
 
 This documentation describes working in the **“Sales”** section: creating [sales orders](orders.md), generating [invoices](invoices.md), processing [shipments](shipments.md), calculating [discounts](discounts.md), working with [pricelists](pricelists.md), and [reporting](reports.md).
 

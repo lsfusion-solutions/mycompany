@@ -1,4 +1,6 @@
-# Shipments and transfers
+---
+title: Shipments and transfers
+---
 
 ## Where to find it
 

@@ -1,4 +1,6 @@
-# Bills for purchase orders
+---
+title: Bills for purchase orders
+---
 
 A bill records a purchase in accounting and the amount payable to the [vendor](../masterdata/partners.md). In practice, a bill is often created from a purchase order so that header fields and lines are carried over automatically.
 

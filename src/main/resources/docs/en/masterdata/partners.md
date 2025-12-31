@@ -1,4 +1,6 @@
-# Partners
+---
+title: Partners
+---
 
 The **“Partners”** directory is used to maintain customers, suppliers, other organizations and individuals (depending on configuration). Partners are selected in sales, purchase, and invoicing documents, as well as in contracts and departments.
 

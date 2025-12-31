@@ -1,4 +1,6 @@
-# Sprzedaż — dokumentacja użytkownika
+---
+title: Sprzedaż — dokumentacja użytkownika
+---
 
 Ta dokumentacja opisuje pracę w sekcji **„Sprzedaż”**: tworzenie [zamówień](orders.md), generowanie [faktur](invoices.md), przetwarzanie [wydań](shipments.md), obliczanie [rabatów](discounts.md), praca z [cennikami](pricelists.md) oraz [raportowanie](reports.md).
 

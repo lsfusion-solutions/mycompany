@@ -1,4 +1,6 @@
-# Cenniki i typy cen
+---
+title: Cenniki i typy cen
+---
 
 Cenniki służą do przechowywania i stosowania cen w zamówieniach.
 

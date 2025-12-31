@@ -1,4 +1,6 @@
-# Bills of Materials (item structure)
+---
+title: Bills of Materials (item structure)
+---
 
 A Bill of Materials describes an item structure: which materials and in what quantities are required for production, as well as which by-products are generated.
 

@@ -1,4 +1,6 @@
-# Komunikacja: połączenia i e‑maile
+---
+title: "Komunikacja: połączenia i e‑maile"
+---
 
 W systemie możesz powiązać komunikację z leadami, aby nie tracić kontekstu pracy:
 

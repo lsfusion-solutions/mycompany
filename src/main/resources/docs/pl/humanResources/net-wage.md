@@ -1,4 +1,6 @@
-# Jak obliczana jest suma „Wynagrodzenie netto”
+---
+title: Jak obliczana jest suma „Wynagrodzenie netto”
+---
 
 Suma **„Wynagrodzenie netto”** jest wynikiem sumowania linii naliczeń dla okresu z uwzględnieniem tego, czy linia jest **przychodem** czy **potrąceniem**.
 

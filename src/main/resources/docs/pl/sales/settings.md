@@ -1,4 +1,6 @@
-# Ustawienia Sprzedaży
+---
+title: Ustawienia Sprzedaży
+---
 
 ## Gdzie znaleźć
 

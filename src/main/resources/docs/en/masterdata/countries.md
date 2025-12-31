@@ -1,4 +1,6 @@
-# Countries
+---
+title: Countries
+---
 
 The **“Countries”** directory is used for partner addresses and other objects where a country must be specified.
 

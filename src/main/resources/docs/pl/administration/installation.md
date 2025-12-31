@@ -1,3 +1,7 @@
+---
+title: Instalacja
+---
+
 Aby zainstalować rozwiązanie, potrzebujesz serwera z systemem operacyjnym Linux lub Windows, podłączonego do Internetu.
 
 Minimalne wymagania: 4 GB pamięci RAM oraz otwarte porty 8080 (dla klienta web) i 7652 (dla klienta desktop).

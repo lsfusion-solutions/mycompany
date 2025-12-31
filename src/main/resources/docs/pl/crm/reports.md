@@ -1,4 +1,6 @@
-# Raportowanie
+---
+title: Raportowanie
+---
 
 ## Raport leadów
 

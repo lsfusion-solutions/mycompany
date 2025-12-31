@@ -1,4 +1,6 @@
-# Tworzenie zamówień produkcji z zamówień sprzedaży
+---
+title: Tworzenie zamówień produkcji z zamówień sprzedaży
+---
 
 System wspiera scenariusz, w którym **[zamówienia produkcji](orders.md) są tworzone na podstawie linii zamówienia sprzedaży**.
 

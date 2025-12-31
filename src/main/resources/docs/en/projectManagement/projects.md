@@ -1,4 +1,6 @@
-# Projects
+---
+title: Projects
+---
 
 This page describes how to work with projects: how to create a project, what information to fill in, how to manage the project state, and how to keep discussions.
 

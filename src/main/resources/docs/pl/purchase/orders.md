@@ -1,4 +1,6 @@
-# Zamówienia zakupu
+---
+title: Zamówienia zakupu
+---
 
 ## Gdzie znaleźć
 

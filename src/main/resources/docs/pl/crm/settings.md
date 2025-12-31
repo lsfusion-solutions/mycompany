@@ -1,4 +1,6 @@
-# Ustawienia i dane referencyjne
+---
+title: Ustawienia i dane referencyjne
+---
 
 ## Gdzie to znaleźć
 

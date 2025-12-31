@@ -1,4 +1,6 @@
-# Raporty Produkcji
+---
+title: Raporty Produkcji
+---
 
 Sekcja raportowania służy do analizy [zamówień produkcji](orders.md).
 

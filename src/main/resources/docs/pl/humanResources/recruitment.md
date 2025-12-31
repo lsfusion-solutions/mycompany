@@ -1,4 +1,6 @@
-# Rekrutacja
+---
+title: Rekrutacja
+---
 
 Sekcja „Rekrutacja” służy do pracy z kandydatami: rejestrowania aplikacji, przechowywania plików (CV itp.), planowania rozmów kwalifikacyjnych oraz zapisywania decyzji.
 

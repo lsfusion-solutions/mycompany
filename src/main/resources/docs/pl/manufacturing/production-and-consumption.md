@@ -1,4 +1,6 @@
-# Produkcja i zużycie
+---
+title: Produkcja i zużycie
+---
 
 W [zamówieniu produkcji](orders.md) są dwie grupy linii:
 

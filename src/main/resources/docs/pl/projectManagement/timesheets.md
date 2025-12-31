@@ -1,4 +1,6 @@
-# Karty pracy (Timesheet)
+---
+title: Karty pracy (Timesheet)
+---
 
 Ta strona opisuje dwa formularze kart pracy:
 

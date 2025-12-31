@@ -1,4 +1,6 @@
-# Faktury zakupu dla zamówień zakupu
+---
+title: Faktury zakupu dla zamówień zakupu
+---
 
 Faktura zakupu rejestruje zakup w rozliczeniach oraz kwotę do zapłaty [dostawcy](../masterdata/partners.md). W praktyce faktura zakupu jest często tworzona z zamówienia zakupu, aby pola nagłówka i linie zostały automatycznie przeniesione.
 

@@ -1,4 +1,6 @@
-# Tasks
+---
+title: Tasks
+---
 
 This page describes how to work with project tasks: creating and assigning tasks, controlling statuses, using change history, and using views for monitoring.
 

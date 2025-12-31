@@ -1,4 +1,6 @@
-# Kadry — dokumentacja użytkownika
+---
+title: Kadry — dokumentacja użytkownika
+---
 
 Ta dokumentacja opisuje sekcję **„Kadry”**: rekrutację (aplikacje kandydatów, rozmowy kwalifikacyjne, decyzje o zatrudnieniu), rejestrację czasu (Check In / Check Out) oraz naliczanie i wypłatę wynagrodzeń (partie odcinków płacowych i odcinki płacowe).
 

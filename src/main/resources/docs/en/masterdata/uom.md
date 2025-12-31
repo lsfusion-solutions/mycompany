@@ -1,4 +1,6 @@
-# Units of measure
+---
+title: Units of measure
+---
 
 The **“Units of measure”** directory stores the list of units used in items and document lines (for example, pieces, kilograms, meters).
 

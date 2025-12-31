@@ -1,4 +1,6 @@
-# Raporty i drukowanie
+---
+title: Raporty i drukowanie
+---
 
 ## Drukowanie dokumentów
 

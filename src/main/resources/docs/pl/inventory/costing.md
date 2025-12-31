@@ -1,4 +1,6 @@
-# Kalkulacja kosztu pozycji (Magazynowanie)
+---
+title: Kalkulacja kosztu pozycji (Magazynowanie)
+---
 
 ## Gdzie znaleźć
 

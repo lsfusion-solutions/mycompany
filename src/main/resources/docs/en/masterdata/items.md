@@ -1,4 +1,6 @@
-# Items
+---
+title: Items
+---
 
 The **“Items”** directory contains products and services that are used in document lines (orders, shipments, invoices, bills, etc.).
 

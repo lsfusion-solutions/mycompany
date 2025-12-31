@@ -1,4 +1,6 @@
-# Płatności przychodzące
+---
+title: Płatności przychodzące
+---
 
 Płatność przychodząca rejestruje **wpływ środków od [partnera](../masterdata/partners.md)** (np. klienta) na firmowe **konto bankowe** lub do **kasy**.
 

@@ -1,4 +1,6 @@
-# Vehicle services
+---
+title: Vehicle services
+---
 
 The section is intended for accounting works/services performed for vehicles: date, service type, **[Vendor](../masterdata/partners.md)** (if used), **Odometer value**, and cost.
 

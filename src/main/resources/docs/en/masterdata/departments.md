@@ -1,4 +1,6 @@
-# Departments
+---
+title: Departments
+---
 
 The **“Departments”** directory is used to maintain branches/locations/structural units linked to a partner. A department is convenient when one partner has multiple addresses or places of work.
 

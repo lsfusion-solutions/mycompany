@@ -1,4 +1,6 @@
-# Sales reports
+---
+title: Sales reports
+---
 
 The reporting section is used to analyze:
 

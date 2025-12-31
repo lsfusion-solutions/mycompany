@@ -1,4 +1,6 @@
-### Development
+---
+title: Development
+---
 
 Since the project uses Maven, you can use the following algorithm to configure the development environment :
 

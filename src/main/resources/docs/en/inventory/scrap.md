@@ -1,4 +1,6 @@
-# Scrap
+---
+title: Scrap
+---
 
 Scrap is used to record stock decreases for reasons not related to sales:
 

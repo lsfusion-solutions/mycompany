@@ -1,4 +1,6 @@
-# Cash register and POS
+---
+title: Cash register and POS
+---
 
 This page describes how a cashier and an administrator work with a cash register: selecting a cash register, opening a **[session](sessions.md)**, creating a receipt, searching and scanning items, and the main actions in POS.
 
@@ -62,4 +64,3 @@ Payment is processed in a separate form. See details in [Retail payments](paymen
 A return is usually processed based on the original receipt: select a receipt in the list and run the **“Return”** action.
 
 The detailed procedure (including return payment and typical restrictions): [Returns](returns.md).
-

@@ -1,4 +1,6 @@
-# Sales orders
+---
+title: Sales orders
+---
 
 ## Where to find
 

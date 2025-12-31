@@ -1,4 +1,6 @@
-# Payment by time entries (Projects)
+---
+title: Payment by time entries (Projects)
+---
 
 In some organizations, part of earnings can be calculated based on **time entries** from **“Project Management”** (effort tracking by projects and tasks).
 

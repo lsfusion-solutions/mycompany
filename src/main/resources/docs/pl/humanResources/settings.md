@@ -1,4 +1,6 @@
-# Ustawienia
+---
+title: Ustawienia
+---
 
 Sekcja „Ustawienia” zawiera parametry i katalogi definiujące zachowanie Kadry: statusy i reguły rekrutacji, parametry rejestracji czasu oraz parametry naliczania/wypłaty wynagrodzeń.
 

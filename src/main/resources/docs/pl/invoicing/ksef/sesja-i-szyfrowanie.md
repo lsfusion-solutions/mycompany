@@ -1,4 +1,6 @@
-# KSeF — szyfrowanie i sesja interaktywna
+---
+title: KSeF — szyfrowanie i sesja interaktywna
+---
 
 ## Certyfikaty publiczne KSeF (szyfrowanie)
 

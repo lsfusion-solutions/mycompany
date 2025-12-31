@@ -1,4 +1,6 @@
-# Działy
+---
+title: Działy
+---
 
 Słownik **„Działy”** służy do utrzymywania oddziałów/lokalizacji/jednostek organizacyjnych powiązanych z partnerem. Dział jest wygodny, gdy jeden partner ma wiele adresów lub miejsc pracy.
 

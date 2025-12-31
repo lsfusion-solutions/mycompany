@@ -1,4 +1,6 @@
-# Raporty i rejestry
+---
+title: Raporty i rejestry
+---
 
 Sekcja raportowania Magazynowania zwykle zawiera raporty i rejestry.
 

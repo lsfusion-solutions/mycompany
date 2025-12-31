@@ -1,4 +1,6 @@
-# Retail — user documentation
+---
+title: Retail — user documentation
+---
 
 This documentation describes how to work with the **“Retail”** section: configuring **[cash registers](settings.md)**, managing **[sessions](sessions.md)**, processing sales and returns in **[POS](pos.md)**, applying **[discounts](../sales/discounts.md)** and **[discount cards](discount-cards.md)**, and taking **[payments](payments.md)**.
 

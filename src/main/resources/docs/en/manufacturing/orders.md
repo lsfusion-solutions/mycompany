@@ -1,4 +1,6 @@
-# Manufacturing orders: list and card
+---
+title: "Manufacturing orders: list and card"
+---
 
 ## Location
 

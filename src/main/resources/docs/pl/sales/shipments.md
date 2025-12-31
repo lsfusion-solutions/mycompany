@@ -1,4 +1,6 @@
-# Wydania do zamówień
+---
+title: Wydania do zamówień
+---
 
 [Wydanie](../inventory/shipments.md) rejestruje przekazanie towarów klientowi oraz ruch magazynowy.
 

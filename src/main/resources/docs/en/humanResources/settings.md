@@ -1,4 +1,6 @@
-# Settings
+---
+title: Settings
+---
 
 The “Settings” section contains parameters and directories that define Human Resources behavior: recruitment statuses and rules, attendance parameters, and payroll calculation/payment parameters.
 

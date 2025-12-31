@@ -1,4 +1,6 @@
-# Proces i statusy zamówienia produkcji
+---
+title: Proces i statusy zamówienia produkcji
+---
 
 [Zamówienie produkcji](orders.md) przechodzi przez zestaw statusów. Status wpływa na to, jakie akcje są dostępne i jakie pola są wymagane.
 

@@ -1,4 +1,6 @@
-# Purchase orders
+---
+title: Purchase orders
+---
 
 ## Where to find
 

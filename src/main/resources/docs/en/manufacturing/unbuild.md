@@ -1,4 +1,6 @@
-# Unbuild (item disassembly)
+---
+title: Unbuild (item disassembly)
+---
 
 This section describes the unbuild (disassembly) logic implemented through a special type of **[manufacturing order](orders.md)**.
 

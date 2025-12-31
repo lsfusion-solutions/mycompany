@@ -1,4 +1,6 @@
-# Serwisy pojazdów
+---
+title: Serwisy pojazdów
+---
 
 Sekcja jest przeznaczona do ewidencji prac/usług wykonanych dla pojazdów: data, typ serwisu, **[Dostawca](../masterdata/partners.md)** (jeśli używany), **Wskazanie drogomierza** oraz koszt.
 

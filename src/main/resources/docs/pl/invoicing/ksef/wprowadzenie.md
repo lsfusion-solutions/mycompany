@@ -1,4 +1,6 @@
-# KSeF — wprowadzenie i wymagania
+---
+title: KSeF — wprowadzenie i wymagania
+---
 
 Ten rozdział dotyczy integracji z **Krajowym Systemem e‑Faktur (KSeF)**: wysyłki faktur sprzedaży, pobierania faktur z KSeF oraz ich wykorzystania w procesach księgowych.
 

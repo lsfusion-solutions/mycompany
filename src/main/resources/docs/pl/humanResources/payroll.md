@@ -1,4 +1,6 @@
-# Płace: naliczanie i wypłata
+---
+title: "Płace: naliczanie i wypłata"
+---
 
 Sekcja „Płace: naliczanie i wypłata” służy do naliczania przychodów i potrąceń pracowników za okres oraz (jeśli potrzeba) do rejestrowania płatności.
 

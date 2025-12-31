@@ -1,4 +1,6 @@
-# Zwroty i korekty
+---
+title: Zwroty i korekty
+---
 
 W „Fakturowaniu” mogą być dostępne dokumenty do korygowania zobowiązań:
 

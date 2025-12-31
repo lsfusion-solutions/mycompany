@@ -1,4 +1,6 @@
-# Ustawienia sprzedaży detalicznej
+---
+title: Ustawienia sprzedaży detalicznej
+---
 
 Ta strona opisuje podstawowe ustawienia, które wpływają na działanie **[kasy](pos.md)** i **[POS](pos.md)**.
 

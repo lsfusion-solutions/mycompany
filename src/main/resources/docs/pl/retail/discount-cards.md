@@ -1,4 +1,6 @@
-# Karty rabatowe
+---
+title: Karty rabatowe
+---
 
 Karta rabatowa służy do udzielenia **[rabatu](../sales/discounts.md)** i/lub identyfikacji klienta podczas sprzedaży.
 

@@ -1,4 +1,6 @@
-# Rabaty: logika naliczania
+---
+title: "Rabaty: logika naliczania"
+---
 
 W systemie rabat jest osobnym obiektem **„Rabat”**, który można zastosować do linii dokumentów sprzedaży (przede wszystkim do linii [zamówienia](orders.md)).
 

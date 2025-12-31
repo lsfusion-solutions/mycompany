@@ -1,4 +1,6 @@
-# Magazynowanie — dokumentacja użytkownika
+---
+title: Magazynowanie — dokumentacja użytkownika
+---
 
 Ta dokumentacja opisuje sekcję **„Magazynowanie”**: lokalizacje, przyjęcia, wydania, przemieszczania, odpad, korekty zapasów, zadania kompletacyjne, partie i pakiety, a także raporty i rejestry.
 

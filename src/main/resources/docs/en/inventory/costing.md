@@ -1,4 +1,6 @@
-# Item costing (Inventory)
+---
+title: Item costing (Inventory)
+---
 
 ## Where to find it
 

@@ -1,4 +1,6 @@
-# Dane podstawowe — dokumentacja użytkownika
+---
+title: Dane podstawowe — dokumentacja użytkownika
+---
 
 Sekcja **„Dane podstawowe”** zawiera dane podstawowe wykorzystywane w dokumentach i procesach innych modułów: **towary**, **partnerzy**, **kategorie**, **jednostki miary**, **kraje**, **waluty i kursy walutowe**, **działy**, **umowy**.
 

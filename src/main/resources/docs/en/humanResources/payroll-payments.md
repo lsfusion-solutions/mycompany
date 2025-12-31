@@ -1,4 +1,6 @@
-# Payroll payment and payment control
+---
+title: Payroll payment and payment control
+---
 
 In some organizations, payments are registered in the system: you can register a payment from a payslip and control how much is already paid and how much remains.
 

@@ -1,4 +1,6 @@
-# Sales order workflow and statuses
+---
+title: Sales order workflow and statuses
+---
 
 In the **“Sales”** section, a sales order goes through statuses. Statuses define:
 

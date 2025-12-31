@@ -1,4 +1,6 @@
-# Kasa i POS
+---
+title: Kasa i POS
+---
 
 Ta strona opisuje, jak kasjer i administrator pracują z kasą: wybór kasy, otwarcie **[sesji](sessions.md)**, utworzenie paragonu, wyszukiwanie i skanowanie towarów oraz podstawowe działania w POS.
 

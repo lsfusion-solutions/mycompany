@@ -1,4 +1,6 @@
-# Scrap
+---
+title: Scrap
+---
 
 Within a [manufacturing order](orders.md), you can create a **Scrap** document linked to the order.
 

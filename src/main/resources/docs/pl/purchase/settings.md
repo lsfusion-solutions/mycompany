@@ -1,4 +1,6 @@
-# Ustawienia zakupu
+---
+title: Ustawienia zakupu
+---
 
 ## Gdzie znaleźć
 
