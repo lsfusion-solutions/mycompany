@@ -34,7 +34,8 @@ Poniżej znajdują się typowe „łańcuchy” między modułami. W konkretnej 
 1. **CRM** — praca z leadem i komunikacją.
 2. **Sprzedaż** — zamówienie klienta, warunki wysyłki.
 3. **Magazynowanie** (jeśli używany jest obszar magazynowy) — wydanie / ruch towarów.
-4. **Fakturowanie** — faktura i płatność przychodząca → kontrola należności.
+4. **Sprzedaż detaliczna** — POS, zmiany, paragon, płatność.
+5. **Fakturowanie** — faktura i płatność przychodząca → kontrola należności.
 
 ### Zakup (od zamówienia do płatności)
 
@@ -53,11 +54,6 @@ Poniżej znajdują się typowe „łańcuchy” między modułami. W konkretnej 
 
 1. **Zarządzanie projektami** — projekt → zagadnienia → przepracowany czas.
 2. **Kadry** (jeśli włączona jest płaca wg czasu) — wykorzystanie wpisów czasu w naliczaniu i wypłacie.
-
-### Sprzedaż detaliczna
-
-1. **Sprzedaż detaliczna** — POS, zmiany, paragon, płatność.
-2. W zależności od konfiguracji mogą być używane moduły **Sprzedaż** (dokumenty sprzedaży) i/lub **Fakturowanie** (płatności / rozliczanie długu).
 
 ### Transport i koszty
 

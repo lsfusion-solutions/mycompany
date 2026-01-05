@@ -34,7 +34,8 @@ Below are typical “chains” between modules. In a particular organization, so
 1. **CRM** — working with the lead and communications.
 2. **Sales** — customer order, shipment terms.
 3. **Inventory** (if the warehouse contour is used) — shipment / goods movement.
-4. **Invoicing** — invoice and incoming payment → accounts receivable control.
+4. **Retail** — POS, sessions, receipt, payment.
+5. **Invoicing** — invoice and incoming payment → accounts receivable control.
 
 ### Purchase (procure-to-pay)
 
@@ -53,11 +54,6 @@ Below are typical “chains” between modules. In a particular organization, so
 
 1. **Project Management** — project → tasks → time entries.
 2. **Human Resources** (if time-based payroll is enabled) — using time entries in payroll calculation and payment.
-
-### Retail
-
-1. **Retail** — POS, sessions, receipt, payment.
-2. Depending on the configuration, **Sales** (sales documents) and/or **Invoicing** (payments / debt accounting) may be involved.
 
 ### Transport and expenses
 
