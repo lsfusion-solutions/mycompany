@@ -111,6 +111,7 @@ Start documentation: [inventory/inventory.md](inventory/inventory.md)
 - [Transfers](inventory/transfers.md)
 - [Adjustments](inventory/adjustments.md)
 - [Picking tasks](inventory/picking.md)
+- [Inventory SKUs](inventory/product-sku.md)
 - [Lots and packages](inventory/lots-and-packages.md)
 
 ### Invoicing

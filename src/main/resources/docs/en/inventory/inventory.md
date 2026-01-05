@@ -20,6 +20,7 @@ Sections:
 - [Scrap](scrap.md)
 - [Adjustments](adjustments.md)
 - [Picking tasks](picking.md)
+- [Inventory SKUs](product-sku.md)
 - [Lots and packages](lots-and-packages.md)
 - [Reports and ledgers](reports-and-ledgers.md)
 - [Item costing](costing.md)
@@ -85,3 +86,11 @@ A batch/serial identifier used for traceability.
 #### [Package](lots-and-packages.md)
 
 A packaging unit/container used for stock accounting.
+
+#### [Inventory SKU](product-sku.md)
+
+The base item in which the physical stock accounting is maintained.
+
+#### [Number of packages](product-sku.md#alternative-accounting-in-packages-units-in-documents)
+
+The quantity of an item expressed in packaging units (packages), used for convenience of data entry in documents.

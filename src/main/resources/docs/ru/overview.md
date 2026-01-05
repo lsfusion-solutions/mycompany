@@ -111,6 +111,7 @@ slug: /
 - [Перемещения](inventory/transfers.md)
 - [Инвентаризация](inventory/adjustments.md)
 - [Задания на сборку](inventory/picking.md)
+- [Складские единицы учета](inventory/product-sku.md)
 - [Партии и упаковки](inventory/lots-and-packages.md)
 
 ### Расчёты

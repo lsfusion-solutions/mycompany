@@ -70,6 +70,15 @@ Typical fields:
 - **Description**;
 - **Archived**.
 
+### Inventory settings
+
+If the inventory contour is enabled in the system, additional parameters may be available in the item card on the **Inventory** tab:
+
+- **Weight** and **Volume**;
+- **Inventory SKU** and **Coefficient** (used for automatic recalculation and accounting of the current item's stock through another base item). For more details, see the [Inventory SKUs](../inventory/product-sku.md) section.
+
+Also, conversion coefficients for packages can be configured for items (on the **Units of measure** tab), and default packages can be selected on the **Purchases** and **Sales** tabs. This allows for the use of the packaging accounting mechanism directly in documents.
+
 ### Filling recommendations for products
 
 - Make sure **Category** and **Unit of measure** are selected (e.g., “pcs”, “kg”, “m”).

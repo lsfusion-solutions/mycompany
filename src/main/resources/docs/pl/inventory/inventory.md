@@ -20,6 +20,7 @@ Sekcje:
 - [Odpad](scrap.md)
 - [Korekta zapasów](adjustments.md)
 - [Zadania kompletacyjne](picking.md)
+- [Magazynowe jednostki SKU](product-sku.md)
 - [Partie i pakiety](lots-and-packages.md)
 - [Raporty i rejestry](reports-and-ledgers.md)
 - [Kalkulacja kosztu pozycji](costing.md)
@@ -85,3 +86,11 @@ Identyfikator partii/serii używany do śledzenia (traceability).
 #### [Pakiet](lots-and-packages.md)
 
 Jednostka opakowania/kontener używany w ewidencji zapasów.
+
+#### [Magazynowa jednostka SKU](product-sku.md)
+
+Podstawowa pozycja asortymentowa, w której prowadzona jest fizyczna ewidencja towarów w magazynie.
+
+#### [Liczba pakietów](product-sku.md#alternatywa-ewidencja-w-opakowaniach-pakietach-w-dokumentach)
+
+Ilość towaru wyrażona w jednostkach opakowania (pakietach), używana dla wygody wprowadzania danych w dokumentach.

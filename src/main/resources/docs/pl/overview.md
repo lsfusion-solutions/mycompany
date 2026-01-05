@@ -111,6 +111,7 @@ Start dokumentacji: [inventory/inventory.md](inventory/inventory.md)
 - [Przemieszczania](inventory/transfers.md)
 - [Korekty](inventory/adjustments.md)
 - [Zadania kompletacyjne](inventory/picking.md)
+- [Magazynowe jednostki SKU](inventory/product-sku.md)
 - [Partie i pakiety](inventory/lots-and-packages.md)
 
 ### Fakturowanie {#invoicing}
