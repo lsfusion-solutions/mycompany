@@ -5,7 +5,10 @@ REQUIRE MarkdownViewer;
 NAMESPACE Utils;
 
 showDocumentation 'Documentation' () {
-    showMarkdownResourceViewer('Documentation', 'docs/' + language(currentUser()) + '/overview.md');
+    FOR STRING f = 'docs/' + language(currentUser()) + '/overview.md' DO {
+        readResource(f);
+        showMarkdownResourceViewer('Documentation', IF resource() THEN f ELSE 'docs/en/overview.md');
+    }
 }
 
 NAVIGATOR {
