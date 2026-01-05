@@ -70,6 +70,15 @@ Typowe pola:
 - **Opis**;
 - **Zarchiwizowane**.
 
+### Ustawienia magazynowe
+
+Jeśli w systemie włączony jest obszar magazynowy, w karcie towaru na zakładce **Magazynowanie** mogą być dostępne dodatkowe parametry:
+
+- **Waga** i **Objętość**;
+- **Jednostka SKU** i **Współczynnik** (używane do automatycznego przeliczania i ewidencji stanów bieżącego towaru poprzez inną pozycję bazową). Więcej szczegółów w sekcji [Magazynowe jednostki SKU](../inventory/product-sku.md).
+
+Dla towarów można również skonfigurować współczynniki przeliczeniowe dla pakietów (na zakładce **Jednostki miary**), a na zakładkach **Zakup** i **Sprzedaż** — wybrać domyślne pakiety. Pozwala to na korzystanie z mechanizmu ewidencji opakowań bezpośrednio w dokumentach.
+
 ### Zalecenia dotyczące uzupełniania dla produktów
 
 - Upewnij się, że wybrano **Kategorię** i **Jednostkę miary** (np. „szt.”, „kg”, „m”).

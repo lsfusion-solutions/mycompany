@@ -98,8 +98,8 @@ createToken (Company c) {
 
         IMPORT JSON FROM resultFile() TO() referenceNumber, authenticationToken;
         referenceNumber(t) <- referenceNumber();
-        authentication(t) <- fieldText(authenticationToken(), 'token');
-        authenticationValidUntil(t) <- toDateTimeZone(fieldText(authenticationToken(), 'validUntil'));
+        authentication(t) <- fieldText(authenticationToken(), r'token');
+        authenticationValidUntil(t) <- toDateTimeZone(fieldText(authenticationToken(), r'validUntil'));
     }
 }
 
@@ -157,9 +157,9 @@ getStatus 'Get status' (Token t) {
             LOCAL status = JSON ();
             IMPORT JSON FROM resultFile() TO() status;
             
-            statusCode(t) <- INTEGER(fieldText(status(), 'code'));
-            statusDescription(t) <- fieldText(status(), 'description');
-            statusDetails(t) <- fieldText(status(), 'details');
+            statusCode(t) <- INTEGER(fieldText(status(), r'code'));
+            statusDescription(t) <- fieldText(status(), r'description');
+            statusDetails(t) <- fieldText(status(), r'details');
 
             APPLY;
         } CATCH { catchException('Get status'); }
@@ -186,11 +186,11 @@ redeemAccess 'Redeem access token' (Token t) {
             LOCAL refreshToken = JSON ();
             IMPORT JSON FROM resultFile() TO() accessToken, refreshToken;
 
-            access(t) <- fieldText(accessToken(), 'token');
-            accessValidUntil(t) <- toDateTimeZone(fieldText(accessToken(), 'validUntil'));
+            access(t) <- fieldText(accessToken(), r'token');
+            accessValidUntil(t) <- toDateTimeZone(fieldText(accessToken(), r'validUntil'));
 
-            refresh(t) <- fieldText(refreshToken(), 'token');
-            refreshValidUntil(t) <- toDateTimeZone(fieldText(refreshToken(), 'validUntil'));
+            refresh(t) <- fieldText(refreshToken(), r'token');
+            refreshValidUntil(t) <- toDateTimeZone(fieldText(refreshToken(), r'validUntil'));
 
             APPLY;
         } CATCH { catchException('Redeem token'); }
@@ -203,13 +203,13 @@ refreshAccessToken 'Refresh access token' (Token t) {
             LOCAL localHeaders = STRING(STRING);
             localHeaders(r'Authorization') <- r'Bearer ' + refresh(t);
 
-            EXTERNAL HTTP POST hostApi() + '/auth/token/refresh' HEADERS localHeaders TO resultFile;
+            EXTERNAL HTTP POST hostApi() + r'/auth/token/refresh' HEADERS localHeaders TO resultFile;
 
             LOCAL accessToken = JSON ();
             IMPORT JSON FROM resultFile() TO() accessToken;
 
-            access(t) <- fieldText(accessToken(), 'token');
-            accessValidUntil(t) <- toDateTimeZone(fieldText(accessToken(), 'validUntil'));
+            access(t) <- fieldText(accessToken(), r'token');
+            accessValidUntil(t) <- toDateTimeZone(fieldText(accessToken(), r'validUntil'));
 
             APPLY;
         } CATCH { catchException('Refresh token'); }

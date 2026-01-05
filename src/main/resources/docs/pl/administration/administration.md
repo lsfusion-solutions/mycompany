@@ -9,3 +9,4 @@ Ta sekcja zawiera materiały dla **administratorów** i **specjalistów technicz
 - [Instalacja](installation.md)
 - [Uruchamianie w Dockerze](installation-docker.md)
 - [Rozwój](development.md)
+- [Ustawienia polityki bezpieczeństwa](https://docs.lsfusion.org/Security_policy)

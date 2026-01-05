@@ -1,0 +1,110 @@
+MODULE MarkdownViewer;
+
+REQUIRE SystemEvents;
+
+NAMESPACE Utils;
+
+onWebClientInit() + {
+    onWebClientInit(r'markdownviewer.css') <- 1;
+    onWebClientInit(r'markdownviewer.js') <- 2;
+}
+
+onWebClientLoad() + {
+    INTERNAL CLIENT WAIT r'https://cdn.jsdelivr.net/npm/marked/marked.min.js';
+    INTERNAL CLIENT WAIT r'https://cdn.jsdelivr.net/npm/marked-gfm-heading-id/lib/index.umd.js';
+}
+
+markdown = DATA LOCAL TEXT();
+
+loadMarkdownResource (STRING fn) {
+    readResource(fn);
+    fileToString(resource());
+    markdown() <- resultString();
+}
+
+historyPath = DATA LOCAL STRING(INTEGER);
+currentHistoryIndex = DATA LOCAL INTEGER();
+maxHistoryIndex = DATA LOCAL INTEGER();
+
+FORM markdownResourceViewer
+    OBJECTS c = STRING PANEL
+    
+    OBJECTS f = STRING PANEL
+    PROPERTIES(f) fileName '' = VALUE READONLY
+;
+
+DESIGN markdownResourceViewer {
+    caption = c;
+}
+
+backMarkdown '' () {
+    IF currentHistoryIndex() > 1 THEN {
+        currentHistoryIndex() <- currentHistoryIndex() - 1;
+        loadMarkdownResource(historyPath(currentHistoryIndex()));
+        SEEK markdownResourceViewer.f = historyPath(currentHistoryIndex());
+    }
+} IMAGE 'angle-left';
+
+forwardMarkdown '' () {
+    IF currentHistoryIndex() < maxHistoryIndex() THEN {
+        currentHistoryIndex() <- currentHistoryIndex() + 1;
+        loadMarkdownResource(historyPath(currentHistoryIndex()));
+        SEEK markdownResourceViewer.f = historyPath(currentHistoryIndex());
+    }
+} IMAGE 'angle-right';
+
+changePath(STRING newPath) {
+    IF newPath AND NOT newPath = historyPath(currentHistoryIndex()) THEN {
+        maxHistoryIndex() <- currentHistoryIndex() + 1;
+        currentHistoryIndex() <- maxHistoryIndex();
+        historyPath(currentHistoryIndex()) <- newPath;
+        
+        loadMarkdownResource(newPath);
+        SEEK markdownResourceViewer.f = newPath;
+    }
+}
+
+EXTEND FORM markdownResourceViewer
+    PROPERTIES() backMarkdown DISABLEIF NOT currentHistoryIndex() > 1, 
+                 forwardMarkdown DISABLEIF NOT currentHistoryIndex() < maxHistoryIndex()
+
+    EVENTS ON INIT { 
+        currentHistoryIndex() <- 1;
+        maxHistoryIndex() <- 1;
+        historyPath(1) <- f;
+        loadMarkdownResource(f); 
+    }
+;
+
+showMarkdownResourceViewer(STRING caption, STRING file) {
+    NEWSESSION {
+        SHOW markdownResourceViewer OBJECTS c = caption, f = file DOCKED NOWAIT;
+    }
+}
+
+EXTEND FORM markdownResourceViewer
+    PROPERTIES markdown '' = JSON FROM url = f, markdown = markdown() CUSTOM 'markdownViewer' ON CHANGE {
+        INPUT j = JSON DO {
+            changePath(fieldText(j, r'path'));
+        }
+    }
+;
+
+DESIGN markdownResourceViewer {
+    OBJECTS {
+        NEW header {
+            alignment = STRETCH;
+            horizontal = TRUE;
+            MOVE PROPERTY(backMarkdown());
+            MOVE PROPERTY(forwardMarkdown());
+            MOVE PROPERTY(fileName);
+        }
+        NEW content {
+            fill = 1;
+            MOVE PROPERTY(markdown) { 
+                fill = 1;
+                height = 200;
+            }
+        }
+    }
+}
