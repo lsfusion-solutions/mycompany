@@ -65,9 +65,9 @@ Dodatkowo w wierszu pracownika mogą być pokazane stanowisko i role w projekcie
 
 Lista pracowników w karcie pracy zwykle jest tworzona na podstawie:
 
-- uczestników przypisanych do wybranego projektu w wybranym okresie;
-- pracowników, którzy już mają godziny/wpisy przepracowanego czasu w wybranym okresie;
-- (w niektórych konfiguracjach) użytkowników z rozszerzonymi uprawnieniami, którzy mają dostęp do wszystkich projektów.
+- **aktywnych** uczestników przypisanych do wybranego projektu w wybranym okresie;
+- pracowników, którzy już mają godziny/wpisy przepracowanego czasu w wybranym okresie (niezależnie od ich statusu aktywności);
+- (in some configurations) **aktywnych** pracowników dostępnych dla użytkownika z rozszerzonymi uprawnieniami ("dostęp do wszystkich projektów").
 
 ### Wprowadzanie i akcje
 

@@ -65,9 +65,9 @@ Additionally, the employee row may show position and project roles (if roles are
 
 The employee list in the timesheet is typically formed from:
 
-- participants assigned to the selected project in the selected period;
-- employees who already have hours/time entries in the selected period;
-- (in some configurations) users with extended permissions who are allowed access to all projects.
+- **active** participants assigned to the selected project in the selected period;
+- employees who already have hours/time entries in the selected period (regardless of their active status);
+- (in some configurations) **active** employees available to a user with extended permissions ("access to all projects").
 
 ### Input and actions
 
