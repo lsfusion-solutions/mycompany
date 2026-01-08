@@ -33,6 +33,7 @@ numberDate 'Description' (Order o) = number(o) + ' (' + dateTime(o) + ')' IN id;
 
 // customer
 customer 'Customer' = DATA Partner (Order) NONULL;
+idCustomer 'Customer code' (Order o) = id(customer(o));
 nameCustomer 'Customer' (Order o) = name(customer(o)) IN id;
 addressCsvCustomer 'Customer address' (Order o) = addressCsv(customer(o));
 @definePropertyValue(order, customer, 'Customer', nameCustomer);
@@ -306,7 +307,7 @@ background = ABSTRACT CASE COLOR (Order);
 FORM orders 'Sales orders'
      OBJECTS o = Order BACKGROUND background(o)
      PROPERTIES(o) READONLYIF isReadonly()
-                            number, dateTime, nameCustomer, 
+                            number, dateTime, idCustomer, nameCustomer, 
                             nameType, nameDepartment, nameCompany,
                             validity,
                             namePaymentTerms, addressCsvCustomer,

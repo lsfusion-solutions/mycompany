@@ -51,6 +51,7 @@ CONSTRAINT isTransfer(type(Shipment s)) AND NOT toLocation(s) MESSAGE 'Destinati
 
 // customer
 customer = DATA Partner (Shipment) INDEXED;
+idCustomer 'Customer code' (Shipment s) = id(customer(s));
 nameCustomer 'Customer' (Shipment s) = name(customer(s));
 addressCsvCustomer 'Customer address' (Shipment s) = addressCsv(customer(s)); 
 
@@ -207,7 +208,7 @@ background = ABSTRACT CASE COLOR (Shipment);
 FORM shipments 'Shipments'
     OBJECTS s = Shipment BACKGROUND background(s)
     PROPERTIES(s) READONLYIF isReadonly()
-                           number, scheduledDateTime, nameCustomer,
+                           number, scheduledDateTime, idCustomer, nameCustomer,
                            nameType,
                            nameLocation, nameToLocation,
                            note, countLines

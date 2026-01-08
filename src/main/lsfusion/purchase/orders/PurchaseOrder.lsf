@@ -35,6 +35,7 @@ WHEN LOCAL SET(Order o IS Order) AND NOT CHANGED(dateTime(o)) DO { dateTime(o) <
 numberDate 'Description' (Order o) = number(o) + ' (' + dateTime(o) + ')' IN id;
 
 vendor 'Vendor' = DATA Partner (Order) NONULL;
+idVendor 'Vendor code' (Order o) = id(vendor(o));
 nameVendor 'Vendor' (Order o) = name(vendor(o));
 @definePropertyValue(order, vendor, 'Vendor', nameVendor);
 
@@ -264,7 +265,7 @@ background = ABSTRACT CASE COLOR (Order);
 FORM orders 'Purchase orders'
     OBJECTS o = Order BACKGROUND background(o)
     PROPERTIES(o) READONLYIF isReadonly()
-                           number, dateTime, nameVendor,
+                           number, dateTime, idVendor, nameVendor,
                            nameType, nameCompany, namePaymentTerms,
                            scheduledDateTime, nameLocation,
                            nameRepresentative, vendorReference, note,

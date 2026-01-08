@@ -37,6 +37,7 @@ executionDateTime(Bill i) += dateTime(i);
 
 // vendor
 vendor 'Vendor' = DATA Partner (Bill);
+idVendor 'Vendor code' (Bill b) = id(vendor(b));
 nameVendor 'Vendor' (Bill b) = name(vendor(b));
 
 WHEN LOCAL SETCHANGED(type(Bill b)) AND vendor(type(b)) AND NOT CHANGED(vendor(b)) DO vendor(b) <- vendor(type(b));  
@@ -268,7 +269,7 @@ background = ABSTRACT CASE COLOR (Bill);
 FORM bills 'Bills'
     OBJECTS b = Bill BACKGROUND background(b)
     PROPERTIES(b) READONLYIF isReadonly()
-                           number, dateTime, deliveryDateTime, nameVendor,
+                           number, dateTime, deliveryDateTime, idVendor, nameVendor,
                            nameType, nameCompany,
                                namePaymentTerms, dueDateTime, nameVendorAccount, nameCompanyAccount,
                            vendorReference, note
