@@ -16,6 +16,7 @@ Sections:
 
 - [Partners](partners.md)
 - [Items](items.md)
+- [Activities](activities.md)
 - [Categories](categories.md)
 - [Units of measure](uom.md)
 - [Departments](departments.md)
@@ -42,6 +43,7 @@ Master data is usually available via the **“Master Data”** menu section. Mos
 
 - **Partners**
 - **Items**
+- **Activities**
 - **Categories**
 - **Units of measure**
 - **Departments**

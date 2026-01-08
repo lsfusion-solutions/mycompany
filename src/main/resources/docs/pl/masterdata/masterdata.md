@@ -16,6 +16,7 @@ Sekcje:
 
 - [Partnerzy](partners.md)
 - [Towary](items.md)
+- [Aktywności](activities.md)
 - [Kategorie](categories.md)
 - [Jednostki miary](uom.md)
 - [Działy](departments.md)
@@ -42,6 +43,7 @@ Dane podstawowe są zwykle dostępne w sekcji menu **„Dane podstawowe”**. Na
 
 - **Partnerzy**
 - **Towary**
+- **Aktywności**
 - **Kategorie**
 - **Jednostki miary**
 - **Działy**
