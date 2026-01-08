@@ -25,6 +25,7 @@ Detailed instructions:
 - [Orders and invoices from a lead](sales-and-documents.md)
 - [Lead report](reports.md)
 - [Settings and reference data](settings.md)
+- [Zadarma IP Telephony](zadarma.md)
 
 ## Terms and guidance
 

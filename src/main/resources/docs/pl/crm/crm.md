@@ -25,6 +25,7 @@ Szczegółowe instrukcje:
 - [Zamówienia i faktury z leadu](sales-and-documents.md)
 - [Raport leadów](reports.md)
 - [Ustawienia i dane referencyjne](settings.md)
+- [Telefonia IP Zadarma](zadarma.md)
 
 ## Terminy i wskazówki
 
