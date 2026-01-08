@@ -16,13 +16,13 @@ Sekcje:
 
 - [Partnerzy](partners.md)
 - [Towary](items.md)
-- [Aktywności](activities.md)
 - [Kategorie](categories.md)
 - [Jednostki miary](uom.md)
 - [Działy](departments.md)
 - [Kraje](countries.md)
 - [Waluty i kursy walutowe](currencies.md)
 - [Umowy](contracts.md)
+- [Aktywności](activities.md)
 
 ## Szybki start
 
@@ -43,7 +43,6 @@ Dane podstawowe są zwykle dostępne w sekcji menu **„Dane podstawowe”**. Na
 
 - **Partnerzy**
 - **Towary**
-- **Aktywności**
 - **Kategorie**
 - **Jednostki miary**
 - **Działy**
@@ -51,6 +50,7 @@ Dane podstawowe są zwykle dostępne w sekcji menu **„Dane podstawowe”**. Na
 - **Waluty**
 - **Kursy walutowy**
 - **Umowy**
+- **Aktywności**
 
 ## Ogólne zasady pracy ze słownikami
 

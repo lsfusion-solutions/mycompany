@@ -16,13 +16,13 @@ Sections:
 
 - [Partners](partners.md)
 - [Items](items.md)
-- [Activities](activities.md)
 - [Categories](categories.md)
 - [Units of measure](uom.md)
 - [Departments](departments.md)
 - [Countries](countries.md)
 - [Currencies and exchange rates](currencies.md)
 - [Contracts](contracts.md)
+- [Activities](activities.md)
 
 ## Quick start
 
@@ -43,7 +43,6 @@ Master data is usually available via the **“Master Data”** menu section. Mos
 
 - **Partners**
 - **Items**
-- **Activities**
 - **Categories**
 - **Units of measure**
 - **Departments**
@@ -51,6 +50,7 @@ Master data is usually available via the **“Master Data”** menu section. Mos
 - **Currencies**
 - **Exchange rates**
 - **Contracts**
+- **Activities**
 
 ## General rules for working with directories
 
