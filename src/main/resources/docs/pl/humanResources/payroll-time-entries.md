@@ -25,11 +25,16 @@ Kwota przychodu jest zaokrąglana do 2 miejsc po przecinku.
 
 Stawka **„Wynagrodzenie za godzinę”** może być ustawiana zależnie od modelu w Twojej organizacji:
 
-- na poziomie pracownika;
+- na poziomie pracownika (jako pojedyncza wartość lub jako historia stawek);
 - na przypisaniu pracownika do projektu;
 - na poziomie zespołu (jeśli używane).
 
-Dla konkretnego wpisu przepracowanego czasu używana jest stawka dopasowana do pracownika i projektu **na dzień wpisu**.
+Dla konkretnego wpisu przepracowanego czasu stawka jest określana zgodnie z następującym priorytetem (używana jest pierwsza znaleziona wartość niezerowa):
+
+1. **Stawka w przypisaniu do projektu** — jeśli dla pracownika ustawiono konkretną stawkę w przypisaniu do danego projektu.
+2. **Stawka zespołu** — jeśli pracownik jest przypisany do projektu jako część zespołu i dla tego członka zespołu ustawiono stawkę.
+3. **Historyczna stawka pracownika** — jeśli w tabeli historii wynagrodzeń pracownika istnieje wpis pasujący do daty przepracowanego czasu.
+4. **Podstawowa stawka pracownika** — ogólna wartość „Wynagrodzenie za godzinę” ustawiona w kartotece pracownika.
 
 ## Gdzie zweryfikować dane źródłowe
 
