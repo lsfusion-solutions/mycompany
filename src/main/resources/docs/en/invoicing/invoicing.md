@@ -31,6 +31,7 @@ Sections:
   - [Outgoing payments](outgoing-payments.md)
 - [Debt and payment calendar](debt-and-calendar.md)
 - [Taxes](taxes.md)
+- [Cost distribution](bill-cost.md)
 - [Reports and printing](reports-and-printing.md)
 - [Settings and directories](settings.md)
 
