@@ -1,0 +1,81 @@
+MODULE WorkOrder;
+
+REQUIRE ManufacturingOrder, WorkCenter;
+
+NAMESPACE Manufacturing;
+
+CLASS WorkOrder 'Work order';
+
+name '{Name}' = DATA ISTRING[100] (WorkOrder) CHARWIDTH 20;
+
+manufacturingOrder 'Manufacturing order' = DATA ManufacturingOrder (WorkOrder) NONULL DELETE;
+numberManufacturingOrder 'Manufacturing order' (WorkOrder w) = number(manufacturingOrder(w));
+nameItemManufacturingOrder '{Item}' (WorkOrder w) = nameItem(manufacturingOrder(w));
+countWorkOrder (ManufacturingOrder o) = GROUP SUM 1 IF manufacturingOrder(WorkOrder wo) = o;
+
+nameNumberManufacturingOrder (WorkOrder wo) = CONCAT ' ', name(wo), number(manufacturingOrder(wo));
+
+workCenter 'Work center' = DATA WorkCenter (WorkOrder) NONULL;
+nameWorkCenter 'Work center' (WorkOrder w) = name(workCenter(w));
+
+startDate 'Start date' = DATA DATE (WorkOrder);
+startDate(WorkOrder w) <- scheduledDate(manufacturingOrder(w)) WHEN SET(manufacturingOrder(w));
+
+startTime 'Start time' = DATA TIME (WorkOrder);
+duration 'Duration' = DATA NUMERIC[8,2] (WorkOrder);
+durationToChar (NUMERIC[8,2] h) = STRING(rtrim(toChar(h, 'FM99999.99'),'.'));
+
+FORM workOrder 'Work order'
+    OBJECTS w = WorkOrder PANEL
+    PROPERTIES(w) name, numberManufacturingOrder, nameItemManufacturingOrder READONLY, nameWorkCenter, startDate, startTime, duration
+    
+    EDIT WorkOrder OBJECT w
+;
+
+DESIGN workOrder {
+    caption = badged('Work order', nameNumberManufacturingOrder(w));
+    OBJECTS {
+        NEW header {
+            alignment = STRETCH;
+            horizontal = TRUE;
+            NEW headerLeft {
+                MOVE PROPERTY(name(w));
+                MOVE PROPERTY(numberManufacturingOrder(w));
+                MOVE PROPERTY(nameWorkCenter(w)) { notNull = TRUE; }
+            }
+            NEW headerRight {
+                MOVE PROPERTY(nameItemManufacturingOrder(w));
+                MOVE PROPERTY(startDate(w));
+                MOVE PROPERTY(startTime(w));
+                MOVE PROPERTY(duration(w));
+            }
+        }
+    }
+}
+
+FORM workOrders 'Work orders'
+    OBJECTS w = WorkOrder
+    PROPERTIES(w) READONLY name, numberManufacturingOrder, nameItemManufacturingOrder, nameWorkCenter, startDate, startTime, duration
+    PROPERTIES(w) NEWSESSION NEW, EDIT, DELETE
+    
+    LIST WorkOrder OBJECT w
+;
+
+NAVIGATOR {
+    operations {
+        NEW workOrders;
+    }
+}
+
+EXTEND FORM manufacturingOrder
+    OBJECTS wo = WorkOrder
+    PROPERTIES(wo) name, nameWorkCenter, startDate, startTime, duration
+    PROPERTIES(wo) NEW, DELETE
+    FILTERS manufacturingOrder(wo) = o
+;
+
+DESIGN manufacturingOrder {
+    details {
+        MOVE BOX(wo) { caption = badged('Work orders', countWorkOrder(o)); }
+    }
+}

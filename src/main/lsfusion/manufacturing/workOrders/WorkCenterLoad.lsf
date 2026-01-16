@@ -1,0 +1,122 @@
+MODULE WorkCenterLoad;
+
+REQUIRE WorkOrder, DateUtils;
+
+NAMESPACE Manufacturing;
+
+duration 'Duration' (DATE d, WorkCenter c) = 
+    GROUP SUM duration(WorkOrder w) IF startDate(w) = d AND workCenter(w) = c;
+
+loadManufacturingOrder = DATA LOCAL ManufacturingOrder ();
+numberDateLoadManufacturingOrder 'Manufacturing order' () = numberDate(loadManufacturingOrder());
+nameItemLoadManufacturingOrder '{Item}' () = nameItem(loadManufacturingOrder());
+
+CONSTRAINT loadManufacturingOrder() AND NOT opened(loadManufacturingOrder())
+    CHECKED BY loadManufacturingOrder[]
+    MESSAGE 'Manufacturing order is already closed';
+
+workOrder (DATE d, WorkCenter c, ManufacturingOrder mo) =
+    GROUP LAST WorkOrder w ORDER w WHERE startDate(w) = d AND workCenter(w) = c AND manufacturingOrder(w) = mo;
+
+duration 'Duration' (DATE d, WorkCenter c, ManufacturingOrder mo) = 
+    duration(workOrder(d, c, mo));
+
+durationLoad (DATE d, WorkCenter c, ManufacturingOrder mo) = 
+    HTML(CONCAT '', '<b>' + durationToChar(duration(d, c, mo)) + '</b>', 
+                    '<font size="-2">(' + durationToChar(duration(d, c)) + ')</font>'); 
+
+changeDuration (DATE d, WorkCenter c, ManufacturingOrder mo, NUMERIC[8,2] n) {
+    IF n THEN {
+        IF workOrder(d, c, mo) THEN {
+            duration(WorkOrder w) <- n WHERE w = workOrder(d, c, mo);
+        } ELSE {
+            NEW w = WorkOrder {
+                startDate(w) <- d;
+                workCenter(w) <- c;
+                manufacturingOrder(w) <- mo;
+                duration(w) <- n;
+            }
+        }
+    } ELSE {
+        DELETE WorkOrder w WHERE w = workOrder(d, c, mo);
+    }
+}
+
+backgroundDuration (DATE d) = CASE WHEN d = currentDate() THEN RGB(224,255,224) 
+                                   WHEN extractDOWNumber(d) = 0 OR extractDOWNumber(d) = 6 THEN RGB(255,224,224);
+
+backgroundDuration (DATE d, WorkCenter c, ManufacturingOrder mo) =
+    IF duration(d, c, mo) THEN RGB(224,224,255)
+    ELSE backgroundDuration(d);
+
+FORM workOrderDateWorkCenter 'Work orders'
+    OBJECTS d = DATE PANEL
+    OBJECTS c = WorkCenter PANEL
+
+    OBJECTS w = WorkOrder
+    PROPERTIES(w) READONLY numberManufacturingOrder, name, startTime, duration
+    PROPERTIES(w) NEWSESSION NEW, EDIT, DELETE
+    FILTERS startDate(w) = d,
+            workCenter(w) = c
+;
+
+FORM workCenterLoad 'Work center load'
+    OBJECTS dates = INTERVAL[DATE] PANEL NULL
+    PROPERTIES dates '' = VALUE(dates)
+
+    PROPERTIES() numberDateLoadManufacturingOrder, nameItemLoadManufacturingOrder
+
+    OBJECTS d = DATE
+    FILTERS iterate(d, from(dates), to(dates))
+    
+    OBJECTS c = WorkCenter
+    PROPERTIES(c) READONLY name, id
+    PROPERTIES duration 'Duration' = IF duration(d, c, loadManufacturingOrder()) THEN 
+                                            durationLoad(d, c, loadManufacturingOrder()) ELSE 
+                                            HTML(durationToChar(duration(d, c))) 
+               COLUMNS (d) HEADER extractDay(d) BACKGROUND backgroundDuration(d, c, loadManufacturingOrder())
+               ON CHANGE {
+                   IF loadManufacturingOrder() THEN {
+                       INPUT n = duration(d, c, loadManufacturingOrder()) DO
+                           changeDuration(d, c, loadManufacturingOrder(), n);
+                   } ELSE {
+                       SHOW workOrderDateWorkCenter OBJECTS d = d, c = c FLOAT;
+                   }
+               }
+               
+    EVENTS ON INIT {
+        SEEK workCenterLoad.dates = interval(firstDayOfMonth(currentDate()), lastDayOfMonth(currentDate()));
+    }
+    
+    PROPERTIES prevInterval '<' = { SEEK workCenterLoad.dates = prevMonthInterval(dates); },
+               nextInterval '>' = { SEEK workCenterLoad.dates = nextMonthInterval(dates); }
+;
+
+DESIGN workCenterLoad {
+    OBJECTS {
+        NEW header {
+            alignment = STRETCH;
+            horizontal = TRUE;
+            NEW interval {
+                horizontal = TRUE;
+                MOVE PROPERTY(prevInterval);
+                MOVE PROPERTY(dates);
+                MOVE PROPERTY(nextInterval);
+            }
+            MOVE PROPERTY(numberDateLoadManufacturingOrder());
+            MOVE PROPERTY(nameItemLoadManufacturingOrder());
+        }
+        MOVE BOX(c) {
+            caption = '';
+            PROPERTY(duration) {
+                charWidth = 4;
+            }
+        }
+    }
+}
+
+NAVIGATOR {
+    dashboards {
+        NEW workCenterLoad;
+    }
+}
