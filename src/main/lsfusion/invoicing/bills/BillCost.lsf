@@ -1,0 +1,97 @@
+MODULE BillCost;
+
+REQUIRE MasterData, Bill, BarCode, Utils, ItemCost;
+
+NAMESPACE Invoicing;
+
+// cost allocation base
+CLASS CostAllocationBase 'Distribution base';
+TABLE CostAllocationBase (CostAllocationBase);
+
+CLASS ABSTRACT CostAllocationTarget;
+name '{Name}' (CostAllocationBase o) = staticCaption(o) IF o IS CostAllocationBase CHARWIDTH 15;
+
+FORM dialogCostAllocationBases 'Distribution base'
+    OBJECTS o = CostAllocationBase
+    PROPERTIES(o) READONLY name
+
+    LIST CostAllocationBase OBJECT o
+;
+
+EXTEND CLASS CostAllocationBase {
+    amount 'Amount',
+    cost 'Cost',
+    salesPrice 'Sales price',
+    weight 'Weight',
+    volume 'Volume',
+    quantity 'Quantity'
+}
+
+// item form
+costAllocationBase 'Distribution base' = DATA CostAllocationBase (Service);
+nameCostAllocationBase 'Distribution base' (Service s) = name(costAllocationBase(s));
+
+EXTEND FORM item PROPERTIES nameCostAllocationBase(i);
+
+DESIGN item {
+    column2 {
+        MOVE PROPERTY(nameCostAllocationBase(i));
+    }
+}
+
+// cost allocation line
+costAllocationBase 'Distribution base' = DATA CostAllocationBase (BillLine);
+nameCostAllocationBase 'Distribution base' (BillLine bsl) = name(costAllocationBase(bsl));
+
+WHEN LOCAL CHANGED(item(BillLine bsl)) DO costAllocationBase(bsl) <- costAllocationBase(item(bsl) AS Service);
+
+// base
+allocationBase (t, b) = ABSTRACT CASE NUMERIC[14,3] (CostAllocationTarget, CostAllocationBase);
+
+allocationBase 'Distribution base' (CostAllocationTarget t, BillLine bsl) = allocationBase(t, costAllocationBase(bsl));
+
+serviceLine 'Distribute' = ABSTRACT BOOLEAN (CostAllocationTarget, BillLine);
+costAllocated 'Distributed' = ABSTRACT NUMERIC[14,2] (CostAllocationTarget, BillLine);
+
+costAllocated 'Distributed' (BillLine bsl) = GROUP SUM costAllocated(CostAllocationTarget t, bsl) IF serviceLine(t, bsl);
+
+CONSTRAINT costAllocated(BillLine bsl) AND NOT costAllocated(bsl) <= untaxedAmount(bsl)
+    MESSAGE 'The allocated amount cannot exceed the cost of the service';
+
+calcCostAllocated 'Distributed' (CostAllocationTarget t, BillLine bsl) = PARTITION UNGROUP untaxedAmount
+    PROPORTION STRICT ROUND(2) allocationBase(t, bsl) IF serviceLine(t, bsl)
+    ORDER t BY bsl;
+
+allocate 'Distribute' (BillLine bsl) {
+    costAllocated (CostAllocationTarget t, bsl) <- calcCostAllocated(t, bsl);
+}
+
+EXTEND FORM bill
+    OBJECTS bsl = BillLine
+    PROPERTIES(bsl) nameCostAllocationBase, untaxedAmount, allocate TOOLBAR
+    PROPERTIES(bsl) READONLY index, nameItem, nameUom, idBarCodeItem, idItem, referenceItem
+    FILTERS b = bill(bsl),
+            item(bsl) IS Service
+;
+
+DESIGN bill {
+    OBJECTS {
+        details {
+            NEW cost {
+                showIf = countServiceLine(b);
+                caption = 'Cost distribution';
+                MOVE BOX(bsl) {
+                    caption = '';
+                    flex = 0;
+                    GRID(bsl) {
+                        autoSize = TRUE;
+                    }
+                }
+                NEW costAllocationPane {
+                    tabbed = TRUE;
+                    fill = 1;
+                } 
+            }
+        }
+    }
+}

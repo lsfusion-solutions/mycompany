@@ -1,0 +1,39 @@
+MODULE WorkCenter;
+
+REQUIRE ManufacturingSettings;
+
+NAMESPACE Manufacturing;
+
+CLASS WorkCenter 'Work center';
+
+name 'Name' = DATA ISTRING[100] (WorkCenter) NONULL CHARWIDTH 20;
+id 'ID' = DATA STRING[20] (WorkCenter) CHARWIDTH 10;
+description 'Description' = DATA ISTRING (WorkCenter) CHARWIDTH 30;
+
+FORM workCenter 'Work center'
+    OBJECTS w = WorkCenter PANEL
+    PROPERTIES(w) name, id, description
+    
+    EDIT WorkCenter OBJECT w
+;
+
+FORM workCenters 'Work centers'
+    OBJECTS w = WorkCenter
+    PROPERTIES(w) READONLY name, id, description
+    PROPERTIES(w) NEWSESSION NEW, EDIT, DELETE
+    
+    LIST WorkCenter OBJECT w
+;
+
+FORM dialogWorkCenters 'Work centers'
+    OBJECTS w = WorkCenter
+    PROPERTIES(w) READONLY name, id, description
+    
+    LIST WorkCenter OBJECT w
+;
+
+NAVIGATOR {
+    settings {
+        NEW workCenters;
+    }
+}

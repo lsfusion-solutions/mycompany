@@ -22,6 +22,7 @@ Related documents:
 - [By-products](by-products.md)
 - [Lots and printing](lots-and-printing.md)
 - [Scrap](scrap.md)
+- [Work centers and work orders](work-orders.md)
 - [Reports](reports.md)
 - [Manufacturing settings and directories](settings.md)
 

@@ -22,6 +22,7 @@ Dokumenty powiązane:
 - [Produkty uboczne](by-products.md)
 - [Partie i drukowanie](lots-and-printing.md)
 - [Odpad](scrap.md)
+- [Stanowiska robocze i zlecenia produkcyjne](work-orders.md)
 - [Raporty](reports.md)
 - [Ustawienia i katalogi Produkcji](settings.md)
 

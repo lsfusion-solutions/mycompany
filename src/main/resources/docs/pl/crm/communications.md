@@ -49,6 +49,9 @@ Zwykle dostępne:
    - jeśli potrzebny jest inny lead — użyj **„Dołącz”**;
    - jeśli połączenie nie dotyczy pracy z leadami — oznacz jako **„Ignorowany”**.
 
+Więcej informacji o konfiguracji konkretnych dostawców telefonii znajdziesz tutaj:
+- [Telefonia IP Zadarma](zadarma.md)
+
 ## E‑maile
 
 ### Napisz e‑mail z leadu

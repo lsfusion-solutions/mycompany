@@ -22,6 +22,7 @@ Sections:
 - [Countries](countries.md)
 - [Currencies and exchange rates](currencies.md)
 - [Contracts](contracts.md)
+- [Activities](activities.md)
 
 ## Quick start
 
@@ -49,6 +50,7 @@ Master data is usually available via the **“Master Data”** menu section. Mos
 - **Currencies**
 - **Exchange rates**
 - **Contracts**
+- **Activities**
 
 ## General rules for working with directories
 

@@ -31,6 +31,7 @@ Sekcje:
   - [Płatności wychodzące](outgoing-payments.md)
 - [Dług i kalendarz płatności](debt-and-calendar.md)
 - [Podatki](taxes.md)
+- [Alokacja kosztów](bill-cost.md)
 - [Raporty i drukowanie](reports-and-printing.md)
 - [Ustawienia i katalogi](settings.md)
 - [KSeF — faktury ustrukturyzowane](ksef/ksef.md)

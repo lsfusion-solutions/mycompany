@@ -33,7 +33,8 @@ FORM timesheetSupervisor 'Supervisor timesheet'
                    } ELSE
                        SHOW timesheetDateEmployee OBJECTS i = interval(d, d), e = e FLOAT;
                } ON CONTEXTMENU copyHours(d) ON CONTEXTMENU clearHours(d) FOOTER hours(d, timesheetProject())
-    FILTERS assigned(timesheetProject(), e, dates) OR hours(e, timesheetProject(), dates) OR (NOT countAssignments(timesheetProject()) AND accessAllProjects(currentUser()))
+    FILTERS ((assigned(timesheetProject(), e, dates) OR (NOT countAssignments(timesheetProject()) AND accessAllProjects(currentUser()))) AND active(e)) 
+            OR hours(e, timesheetProject(), dates)
 
     EVENTS ON INIT {
         timesheetProject() <- defaultProject(currentUser());

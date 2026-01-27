@@ -4,15 +4,44 @@ REQUIRE ProjectAssignment, ProjectTimeEntryPayslip, Team;
 
 NAMESPACE ProjectManagement;
 
+CLASS EmployeeSalary 'Employee salary';
+employee 'Employee' = DATA Employee (EmployeeSalary) NONULL DELETE;
+date 'Date' = DATA DATE (EmployeeSalary) NONULL;
+rateSalary 'Salary per hour' = DATA NUMERIC[10,2] (EmployeeSalary);
+
+INDEX employee(EmployeeSalary s), date(s);
+
 rateSalary 'Salary per hour' = DATA NUMERIC[10,2] (Employee);
-EXTEND FORM employee PROPERTIES(e) rateSalary;
+
+rateSalary 'Salary per hour' (Employee e, DATE d) = 
+    GROUP LAST rateSalary(EmployeeSalary s) ORDER date(s), s WHERE date(s) <= d BY employee(s);
+
+currentRateSalary 'Salary per hour' (Employee e) = rateSalary(e, currentDate());
+
+EXTEND FORM employee
+    PROPERTIES(e) rateSalary
+    
+    OBJECTS es = EmployeeSalary
+    PROPERTIES(es) date, rateSalary, NEW, DELETE
+    FILTERS employee(es) = e
+;
+
 DESIGN employee {
-    projectsHeader {
-        MOVE PROPERTY(rateSalary(e));
+    projects {
+        NEW salary {
+            caption = 'Salary';
+            fill = 1;
+            NEW salaryHeader {
+                lines = 3;
+                MOVE PROPERTY(rateSalary(e));
+            }
+            MOVE BOX(es) { caption = ''; }
+        }
     }
 }
 
 rateSalary (TimeEntry e) += rateSalary(employee(e));
+rateSalary (TimeEntry e) += rateSalary(employee(e), date(e));
 
 rateSalary 'Salary per hour' = DATA NUMERIC[10,2] (TeamMember);
 EXTEND FORM team PROPERTIES(m) rateSalary;

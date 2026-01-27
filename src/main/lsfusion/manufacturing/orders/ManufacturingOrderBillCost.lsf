@@ -1,0 +1,53 @@
+MODULE ManufacturingOrderBillCost;
+
+REQUIRE BillCost, ManufacturingOrderCost;
+
+NAMESPACE Manufacturing;
+
+EXTEND CLASS ManufacturingOrder : CostAllocationTarget;
+
+allocationBase (ManufacturingOrder mo, CostAllocationBase b) += 
+    WHEN mo IS ManufacturingOrder AND b = CostAllocationBase.amount THEN NUMERIC[14,3](toManufacture(mo) * (cost(mo) (+) extraCost(mo)));
+allocationBase (ManufacturingOrder mo, CostAllocationBase b) += 
+    WHEN mo IS ManufacturingOrder AND b = CostAllocationBase.cost THEN NUMERIC[14,3](toManufacture(mo) * cost(mo));
+allocationBase (ManufacturingOrder mo, CostAllocationBase b) += 
+    WHEN mo IS ManufacturingOrder AND b = CostAllocationBase.salesPrice THEN NUMERIC[14,3](toManufacture(mo) * salesPrice(item(mo)));
+allocationBase (ManufacturingOrder mo, CostAllocationBase b) += 
+    WHEN mo IS ManufacturingOrder AND b = CostAllocationBase.weight THEN NUMERIC[14,3](toManufacture(mo) * weight(item(mo)));
+allocationBase (ManufacturingOrder mo, CostAllocationBase b) += 
+    WHEN mo IS ManufacturingOrder AND b = CostAllocationBase.volume THEN NUMERIC[14,3](toManufacture(mo) * volume(item(mo)));
+allocationBase (ManufacturingOrder mo, CostAllocationBase b) +=
+    WHEN mo IS ManufacturingOrder AND b = CostAllocationBase.quantity THEN NUMERIC[14,3](toManufacture(mo));
+
+serviceLine 'Distribute' = DATA BOOLEAN (ManufacturingOrder, BillLine) CHARWIDTH 12;
+serviceLine(ManufacturingOrder t, BillLine b) += serviceLine(t, b);
+
+countServiceLineManufacturingOrder (BillLine l) = GROUP SUM 1 IF serviceLine(ManufacturingOrder o, l);
+
+costAllocated 'Distributed' = DATA NUMERIC[14,2] (ManufacturingOrder, BillLine);
+costAllocated(ManufacturingOrder t, BillLine b) += costAllocated(t, b);
+
+serviceCost(ManufacturingOrder mo) += GROUP SUM costAllocated(mo, BillLine bsl);
+
+EXTEND FORM bill
+    OBJECTS mo = ManufacturingOrder
+    PROPERTIES(mo, bsl) serviceLine, costAllocated
+    PROPERTIES(mo, bsl) READONLY allocationBase
+    PROPERTIES(mo) READONLY number, scheduledDateTime, nameType, imagedNameStatus BACKGROUND colorStatus(mo), nameCompany, nameItem, descriptionBom, toManufacture, nameUom,
+                            cost
+    FILTERS opened(mo)
+;
+
+DESIGN bill {
+    costAllocationPane {
+        NEW manufacturingOrderCostAllocationPane {
+            caption = badged('Manufacturing orders', countServiceLineManufacturingOrder(bsl));
+            MOVE BOX(mo) { 
+                caption = '';
+                GRID(mo) {
+                    height = 100;
+                }
+            }
+        }
+    }
+}

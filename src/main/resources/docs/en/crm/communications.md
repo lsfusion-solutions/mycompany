@@ -49,6 +49,9 @@ Typically available:
    - if a different lead is needed — use **“Attach”**;
    - if the call is not related to lead work — mark **“Ignored”**.
 
+For more information on setting up specific telephony providers, see:
+- [Zadarma IP Telephony](zadarma.md)
+
 ## Emails
 
 ### Write an email from a lead

@@ -25,11 +25,16 @@ The earning amount is rounded to 2 decimals.
 
 The **“Hourly wage”** rate can be set depending on your organization model:
 
-- on the employee level;
+- on the employee level (as a single value or as a history of rates);
 - on the employee assignment to a project;
 - on the team level (if used).
 
-For a specific time entry, the rate used is the one that matches the employee and project **on the time entry date**.
+For a specific time entry, the rate is determined according to the following priority (the first non-zero value found is used):
+
+1. **Project Assignment rate** — if a specific rate is set for the employee in the project assignment.
+2. **Team rate** — if the employee is assigned to the project as part of a team, and a rate is set for that team member.
+3. **Employee historical rate** — if there is a record in the employee's salary history table matching the time entry date.
+4. **Employee base rate** — the general "Salary per hour" value set in the employee's record.
 
 ## Where to verify source data
 
