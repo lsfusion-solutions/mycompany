@@ -27,7 +27,7 @@ source <(curl -s https://download.lsfusion.org/solutions/install-mycompany-cento
 ```
 
 ## 🛠 Support
-- 📚 [Documentation](https://mycompany-docs.lsfusion.org/en)
+- 📚 [Documentation](https://mycompany-docs.lsfusion.org)
 - 💬 [Slack](https://join.slack.com/t/lsfusion/shared_invite/zt-1itj7vlmf-9aBIP__nj9iMJglDaecqXg)
 - 📢 [Telegram](https://t.me/lsfusion_official)
 
