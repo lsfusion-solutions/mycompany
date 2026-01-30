@@ -1,0 +1,22 @@
+MODULE SalesPriceReportInventory;
+
+REQUIRE SalesPriceReport, InvLedger, Location;
+
+NAMESPACE Sales;
+
+EXTEND FORM priceReport
+    OBJECTS l = Location PANEL NULL BEFORE i
+    PROPERTIES(l) 'Location' = name SELECTOR
+
+    PROPERTIES READONLY AFTER nameUom(i) 
+                        onHandARec(l, i, c) BACKGROUND RGB(230, 248, 255) SHOWIF c,
+                        onHandARec(l, i, d)
+
+    FILTERS onHandARec(l, i, d) OR NOT l
+;
+
+DESIGN priceReport {
+    header {
+        MOVE PROPERTY(name(l));
+    }
+}

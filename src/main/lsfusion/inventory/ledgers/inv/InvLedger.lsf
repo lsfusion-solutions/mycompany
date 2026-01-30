@@ -68,6 +68,10 @@ onHandRec 'On hand (including nesting)' (Location l, Product p) =
     GROUP SUM onHand(Location child, p) IF level(child, l) MATERIALIZED;
 prevOnHandRec 'On hand (including nesting)' (Location l, Product p) = PREV(onHandRec(l, p));
 
+onHandARec 'On hand (including nesting)' (Location l, Product p, DATETIME dt) =
+    GROUP SUM onHandA(Location child, p, dt) IF level(child, l);
+prevOnHandARec 'On hand (including nesting)' (Location l, Product p, DATETIME dt) = PREV(onHandARec(l, p, dt));
+
 locations 'Locations' (Location l, Product p) = GROUP CONCAT name(Location child) IF onHand(child, p) AND level(child, l), ', ' ORDER child;
 
 // dates

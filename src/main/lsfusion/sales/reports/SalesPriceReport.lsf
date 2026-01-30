@@ -1,0 +1,55 @@
+MODULE SalesPriceReport;
+
+REQUIRE SalesPriceType, SalesPricelistValue, Item, DateUtils, ItemAttribute, BarCode;
+
+NAMESPACE Sales;
+
+priceDiffPercent '%' (PriceType t, Item i, DATETIME d1, DATETIME d2) = 
+    round2((priceA(t, i, d1) - priceA(t, i, d2)) * 100.0 / priceA(t, i, d2));
+
+priceDiffPercentBackground (Item i, PriceType t, DATETIME d1, DATETIME d2) = 
+    CASE WHEN priceDiffPercent(t, i, d1, d2) > 0 THEN RGB(187, 242, 210)
+         WHEN priceDiffPercent(t, i, d1, d2) < 0 THEN RGB(245, 184, 184);
+
+FORM priceReport 'Price report'
+    OBJECTS d = DATETIME PANEL
+    PROPERTIES(d) date 'Date' = VALUE
+
+    OBJECTS c = DATETIME PANEL NULL
+    PROPERTIES(c) compare 'Compare' = VALUE BACKGROUND RGB(230, 248, 255)
+
+    OBJECTS t = PriceType PANEL NULL
+    PROPERTIES(t) 'Price type' = name SELECTOR
+
+    OBJECTS i = Item
+    PROPERTIES(i) READONLY name, id, idBarCode, nameUom
+
+    OBJECTS pt = PriceType
+    PROPERTIES READONLY COLUMNS 'price' (pt)
+                            'Compare' = priceA(pt, i, c) HEADER (name(pt) + ' (' + 'Compare' + ')') BACKGROUND RGB(230, 248, 255) SHOWIF c,
+                            priceDiffPercent(pt, i, d, c) HEADER (name(pt) + ' (%)') BACKGROUND priceDiffPercentBackground(i, pt, d, c) SHOWIF c,
+                            priceA(pt, i, d) HEADER (name(pt) + ' (' + 'Price' + ')')
+    FILTERS pt = t OR NOT t
+
+    OBJECTS a = ItemAttribute
+    PROPERTIES(i) READONLY level1, level2, level3, level4, canonicalNameCategory
+    PROPERTIES READONLY value(i, a) COLUMNS (a) HEADER name(a)
+    FILTERS priceA(t, i, d) OR NOT t
+;
+
+DESIGN priceReport {
+    OBJECTS {
+        NEW header FIRST {
+            horizontal = TRUE;
+            MOVE PROPERTY(date);
+            MOVE PROPERTY(compare);
+            MOVE PROPERTY(name(t));
+        }
+    }
+}
+
+NAVIGATOR {
+    reporting {
+        NEW priceReport;
+    }
+}
