@@ -8,9 +8,8 @@ NAMESPACE Sales;
 priceType = DATA PriceType (OrderType);
 namePriceType 'Price type' (OrderType t) = name(priceType(t));
 
-EXTEND FORM orderType
-    PROPERTIES(o) namePriceType
-;
+EXTEND FORM orderType PROPERTIES(o) namePriceType;
+DESIGN orderType { price { MOVE PROPERTY(namePriceType(o)); } }
 
 taxValid (OrderType it, PriceType pt) = 
     NOT taxIncluded(it) OR taxIncluded(pt);
