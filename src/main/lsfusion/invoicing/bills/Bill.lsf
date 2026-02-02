@@ -133,7 +133,7 @@ quantity 'Qty' = DATA NUMERIC[16,3] (BillLine);
 price 'Price' = DATA NUMERIC[10,2] (BillLine);
 
 defaultPrice = ABSTRACT CASE NUMERIC[10,2] (BillLine);
-WHEN LOCAL SETCHANGED(item(BillLine l)) AND NOT CHANGED(price(l)) DO price(l) <- defaultPrice(l);
+WHEN LOCAL SETCHANGED(item(BillLine l)) AND defaultPrice(l) AND NOT CHANGED(price(l)) DO price(l) <- defaultPrice(l);
 
 defaultPrice (BillLine l) += WHEN cost(item(l), DATE(dateTime(bill(l)))) THEN cost(item(l)); 
 
