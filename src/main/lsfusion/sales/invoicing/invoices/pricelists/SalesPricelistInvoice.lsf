@@ -8,9 +8,8 @@ NAMESPACE Sales;
 priceType = DATA PriceType (InvoiceType);
 namePriceType 'Price type' (InvoiceType t) = name(priceType(t));
 
-EXTEND FORM invoiceType
-    PROPERTIES(o) namePriceType
-;
+EXTEND FORM invoiceType PROPERTIES(o) namePriceType;
+DESIGN invoiceType { price { MOVE PROPERTY(namePriceType(o)); } }
 
 taxValid (InvoiceType it, PriceType pt) = 
     NOT taxIncluded(it) OR taxIncluded(pt);

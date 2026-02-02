@@ -9,6 +9,16 @@ namePaymentType 'Payment type' (BillType t) = name(paymentType(t));
 
 EXTEND FORM billType PROPERTIES namePaymentType(o);
 
+DESIGN billType {
+    pane {
+        NEW payment {
+            horizontal = TRUE;
+            caption = 'Payment';
+            MOVE PROPERTY(namePaymentType(o));
+        }
+    }
+}
+
 fill ABSTRACT LIST (OutgoingPayment, Bill);
 fill (OutgoingPayment p, Bill b) + {
     type(p) <- paymentType(type(b));

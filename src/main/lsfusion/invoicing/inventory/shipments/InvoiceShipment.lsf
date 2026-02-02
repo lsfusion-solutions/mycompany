@@ -9,6 +9,16 @@ nameShipmentType 'Shipment type' (InvoiceType t) = name(shipmentType(t));
 
 EXTEND FORM invoiceType PROPERTIES nameShipmentType(o);
 
+DESIGN invoiceType {
+    pane {
+        NEW shipment {
+            lines = 3;
+            caption = 'Shipment';
+            MOVE PROPERTY(nameShipmentType(o));
+        }
+    }
+}
+
 // location
 location 'Location' = DATA Location (Invoice);
 nameLocation 'Location' (Invoice i) = name(location(i));
@@ -53,6 +63,12 @@ invoiceShipmentCreated = DATA LOCAL Shipment ();
 
 plannedShipment 'Create planned shipment' = DATA BOOLEAN (InvoiceType);
 EXTEND FORM invoiceType PROPERTIES plannedShipment(o) SHOWIF shipmentType(o);
+
+DESIGN invoiceType {
+    shipment {
+        MOVE PROPERTY(plannedShipment(o));
+    }
+}
 
 newShipment (Invoice i) {
     NEW r = Shipment {
@@ -135,6 +151,12 @@ clone (Invoice to, Invoice from) + {
 // auto create
 autoCreateShipment 'Automatically create shipment' = DATA BOOLEAN (InvoiceType);
 EXTEND FORM invoiceType PROPERTIES autoCreateShipment(o) SHOWIF shipmentType(o);
+
+DESIGN invoiceType {
+    shipment {
+        MOVE PROPERTY(autoCreateShipment(o));
+    }
+}
 
 WHEN (SET(ready(Invoice i)) OR SET(countProductLines(i))) AND ready(i) AND autoCreateShipment(type(i)) AND countProductLines(i) DO 
     newShipment(i);

@@ -10,6 +10,16 @@ nameReceiptType 'Receipt type' (BillType t) = name(receiptType(t));
 
 EXTEND FORM billType PROPERTIES nameReceiptType(o);
 
+DESIGN billType {
+    pane {
+        NEW receipt {
+            lines = 3;
+            caption = 'Receipt';
+            MOVE PROPERTY(nameReceiptType(o));
+        }
+    }
+}
+
 // location
 location 'Location' = DATA Location (Bill);
 nameLocation 'Location' (Bill b) = name(location(b));
@@ -118,6 +128,7 @@ clone (Bill to, Bill from) + {
 // auto create
 autoCreateReceipt 'Automatically create receipt' = DATA BOOLEAN (BillType);
 EXTEND FORM billType PROPERTIES autoCreateReceipt(o) SHOWIF receiptType(o);
+DESIGN billType { receipt { MOVE PROPERTY(autoCreateReceipt(o)); } }
 
 WHEN (SET(ready(Bill b)) OR SET(countProductLines(b))) AND ready(b) AND autoCreateReceipt(type(b)) AND countProductLines(b) DO 
     newReceipt(b);
