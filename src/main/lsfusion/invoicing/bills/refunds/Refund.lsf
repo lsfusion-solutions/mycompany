@@ -7,6 +7,7 @@ NAMESPACE Invoicing;
 // types
 isRefund 'Return' = DATA BOOLEAN (InvoiceType);
 EXTEND FORM invoiceType PROPERTIES(o) isRefund;
+DESIGN invoiceType { return { MOVE PROPERTY(isRefund(o)); } }
 
 isRefund (Invoice i) = isRefund(type(i));
 isCustomer(Invoice i) += isRefund(i) AND isVendor(customer(i));
@@ -14,6 +15,7 @@ isCustomer(Invoice i) += isRefund(i) AND isVendor(customer(i));
 invoiceType = DATA InvoiceType (BillType);
 nameInvoiceType 'Return type' (BillType t) = name(invoiceType(t));
 EXTEND FORM billType PROPERTIES(o) nameInvoiceType;
+DESIGN billType { return { MOVE PROPERTY(nameInvoiceType(o)); } }
 
 // lines
 @defineDocLineRelation(bill, invoice, 'Bill', 'Refund', b, i);
@@ -90,6 +92,7 @@ DESIGN bill {
 // returned quantity
 checkReturnedQuantity 'Check returned quantity' = DATA BOOLEAN (BillType);
 EXTEND FORM billType PROPERTIES(o) checkReturnedQuantity;
+DESIGN billType { return { MOVE PROPERTY(checkReturnedQuantity(o)); } }
 
 returned 'Returned' (BillLine bl) = 
     GROUP SUM quantity(InvoiceLine il) IF billLine(il) = bl AND active(invoice(il));

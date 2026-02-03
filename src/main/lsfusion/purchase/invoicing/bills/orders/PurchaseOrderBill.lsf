@@ -9,7 +9,17 @@ NAMESPACE Purchase;
 // type
 billType = DATA BillType (OrderType);
 nameBillType 'Bill type' (OrderType t) = name(billType(t));
-EXTEND FORM orderType PROPERTIES nameBillType(o);
+
+EXTEND FORM orderType PROPERTIES(o) nameBillType;
+
+DESIGN orderType {
+    pane {
+        NEW bill {
+            caption = 'Bill';
+            MOVE PROPERTY(nameBillType(o));
+        }
+    }
+}
 
 // invoicing policy
 CLASS InvoicingPolicy 'Bill control' {
@@ -19,10 +29,22 @@ name '{First_name}' (InvoicingPolicy p) = staticCaption(p) IF p IS InvoicingPoli
 
 invoicingPolicy = DATA InvoicingPolicy (OrderType);
 nameInvoicingPolicy 'Bill control' (OrderType t) = name(invoicingPolicy(t)); 
-EXTEND FORM orderType PROPERTIES nameInvoicingPolicy(o);
 
 forbidLockNotFullyPaid 'Forbid to lock orders that are not fully paid' = DATA BOOLEAN (OrderType);
-EXTEND FORM orderType PROPERTIES(o) forbidLockNotFullyPaid;
+
+EXTEND FORM orderType
+    PROPERTIES(o) nameInvoicingPolicy, forbidLockNotFullyPaid
+;
+
+DESIGN orderType {
+    pane {
+        NEW invoicing {
+            caption = 'Invoicing';
+            MOVE PROPERTY(nameInvoicingPolicy(o));
+            MOVE PROPERTY(forbidLockNotFullyPaid(o));
+        }
+    }
+}
 
 // lines
 @defineDocLineRelation(order, bill, '{Order}', 'Bill', o, b);

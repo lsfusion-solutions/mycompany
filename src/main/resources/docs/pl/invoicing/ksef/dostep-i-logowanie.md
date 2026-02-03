@@ -15,14 +15,19 @@ Ten wariant jest przydatny, gdy:
 
 Typowy przebieg:
 
-1. Wygeneruj w MyCompany **żądanie do podpisu** i zapisz plik na dysku.
-2. Podpisz plik zgodnie z zasadami obowiązującymi w Twojej organizacji (np. podpisem kwalifikowanym / narzędziem firmowym).
-3. Wczytaj podpisany plik do MyCompany, aby zakończyć logowanie.
+1. Otwórz **Administracja → Integracja → KSeF** i przejdź do zakładki **General**.
+2. Wybierz firmę w panelu po lewej stronie. Dla firmy musi być zdefiniowany NIP.
+3. Kliknij przycisk **Pobierz żądanie autoryzacyjne** i zapisz plik na dysku.
+4. Podpisz plik zgodnie z zasadami obowiązującymi w Twojej organizacji (np. podpisem kwalifikowanym / narzędziem firmowym).
+5. Kliknij przycisk **Zaloguj podpisanym żądaniem autoryzacyjnym** i wczytaj podpisany plik do MyCompany, aby zakończyć logowanie.
+6. Na liście tokenów kliknij **Get status** dla nowo utworzonego wpisu.
+7. Następnie kliknij **Redeem access token**, aby pobrać token dostępowy.
 
 Co warto wiedzieć:
 
 - jest to wariant „na żądanie” — zwykle wymaga ręcznego podpisu poza systemem,
 - jeśli podpis lub wczytanie zakończy się błędem, zacznij od ponownego wygenerowania żądania i upewnienia się, że podpisujesz właściwy plik.
+- po zalogowaniu **koniecznie** uruchom akcje **Get status** oraz **Redeem access token** dla nowo utworzonego wpisu tokenu.
 
 ## 2) Logowanie certyfikatem KSeF
 
@@ -35,12 +40,13 @@ W tym wariancie MyCompany może:
 
 Typowy przebieg:
 
-1. Pobierz certyfikaty publiczne KSeF (jeśli nie były pobrane wcześniej) — są potrzebne do operacji szyfrowania i bezpiecznej komunikacji.
-2. Utwórz zgłoszenie certyfikatu (nadaj nazwę i wybierz typ) zgodnie z procedurą Twojej organizacji.
-3. Sprawdzaj status zgłoszenia do momentu, aż pojawi się informacja, że certyfikat jest gotowy do pobrania.
-4. Po nadaniu numeru seryjnego pobierz certyfikat.
-5. Ustaw certyfikat jako domyślny (jeśli chcesz, aby system używał go automatycznie przy logowaniu).
-6. Zaloguj się certyfikatem.
+1. Otwórz **Administracja → Integracja → KSeF** i przejdź do zakładki **Certificates**.
+2. Kliknij przycisk **Get public key certificates** (jeśli certyfikaty publiczne nie były jeszcze pobrane).
+3. W sekcji **Generate** uzupełnij pola **Name** i **Type**, a następnie kliknij przycisk **Certificate enrollment**.
+4. Zaznacz certyfikat na liście i kliknij **Get status**, aż pojawi się numer seryjny.
+5. Kliknij **Retrieve**, aby pobrać certyfikat.
+6. Ustaw certyfikat jako domyślny w kolumnie **Default**.
+7. Wróć do zakładki **Podstawowe** i kliknij **Zaloguj certyfikatem KSeF**.
 
 Wskazówka praktyczna:
 
@@ -58,9 +64,12 @@ W tym wariancie MyCompany pozwala zarządzać tokenami KSeF:
 
 Typowy przebieg:
 
-1. Utwórz token (nadaj opis i wybierz wymagane uprawnienia).
-2. Ustaw token jako domyślny.
-3. Zaloguj się tokenem.
+1. Otwórz **Administracja → Integracja → KSeF** i przejdź do zakładki **Tokens**.
+2. (Opcjonalnie) kliknij **Get tokens**, aby pobrać listę z KSeF.
+3. W sekcji **Tokens** wybierz uprawnienia w polu **Permissions** (okno **KSeF permission**) i wpisz opis w polu **Description**.
+4. Kliknij przycisk **Generate token KSeF**.
+5. Ustaw token jako domyślny w kolumnie **Default**.
+6. Wróć do zakładki **General** i kliknij **Zaloguj tokenem KSeF**.
 
 Wskazówka: jeśli nie wiesz, jakie uprawnienia są potrzebne, zacznij od uprawnień związanych z **odczytem faktur** i **wysyłką/pobieraniem faktur**, a potem dopasuj je do procesu w Twojej organizacji.
 

@@ -7,13 +7,16 @@ NAMESPACE Inventory;
 // types
 isReturn 'Return' = DATA BOOLEAN (ReceiptType);
 EXTEND FORM receiptType PROPERTIES(o) isReturn;
+DESIGN receiptType { return { MOVE PROPERTY(isReturn(o)); } }
 
 isReturn (Receipt r) = isReturn(type(r));
 isVendor(Receipt r) += isReturn(r) AND isCustomer(vendor(r));
 
 receiptType = DATA ReceiptType (ShipmentType);
 nameReceiptType 'Return type' (ShipmentType t) = name(receiptType(t));
+
 EXTEND FORM shipmentType PROPERTIES(o) nameReceiptType;
+DESIGN shipmentType { return { MOVE PROPERTY(nameReceiptType(o)); } }
 
 // line
 @defineDocLineRelation (shipment, receipt, 'Shipment', 'Receipt', s, r);
@@ -60,6 +63,7 @@ DESIGN shipment {
 // returned quantity
 checkReturnedQuantity 'Check returned quantity' = DATA BOOLEAN (ShipmentType);
 EXTEND FORM shipmentType PROPERTIES(o) checkReturnedQuantity;
+DESIGN shipmentType { return { MOVE PROPERTY(checkReturnedQuantity(o)); } }
 
 returned 'Returned' (ShipmentLine sl) = 
     GROUP SUM done(ReceiptLine rl) IF shipmentLine(rl) = sl AND active(receipt(rl)) MATERIALIZED;

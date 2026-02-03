@@ -6,6 +6,7 @@ NAMESPACE Inventory;
 
 increaseAvailableStock 'Increase available stock' = DATA BOOLEAN (ReceiptType);
 EXTEND FORM receiptType PROPERTIES(o) increaseAvailableStock;
+DESIGN receiptType { otherInformation { MOVE PROPERTY(increaseAvailableStock(o)); } }
 
 CLASS ReceiptResLedger 'Receipt' : ResLedger;
 resLedger = AGGR ReceiptResLedger WHERE initialDemand(ReceiptLine line) > 0 AND ready(receipt(line)) AND NOT done(receipt(line));

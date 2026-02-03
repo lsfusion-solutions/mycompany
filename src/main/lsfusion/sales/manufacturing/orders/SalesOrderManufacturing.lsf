@@ -16,6 +16,15 @@ CONSTRAINT bom(OrderLine l) AND NOT item(l) = item(bom(l)) CHECKED BY bom[OrderL
 manufacturingOrderType 'Manufacturing order type' = DATA ManufacturingOrderType (OrderType);
 nameManufacturingOrderType 'Manufacturing order type' (OrderType t) = name(manufacturingOrderType(t));
 EXTEND FORM orderType PROPERTIES nameManufacturingOrderType(o);
+DESIGN orderType {
+    pane {
+        NEW manufacturing {
+            caption = 'Manufacturing';
+            lines = 2;
+            MOVE PROPERTY(nameManufacturingOrderType(o));
+        }
+    }
+}
 
 WHEN LOCAL CHANGED(item(OrderLine l)) AND manufacturingOrderType(type(Order o))
     DO bom(l) <- defaultBom(item(l));
@@ -121,6 +130,7 @@ DESIGN order {
 
 autoCreateManufacturingOrder 'Automatically create a production order' = DATA BOOLEAN (OrderType);
 EXTEND FORM orderType PROPERTIES autoCreateManufacturingOrder(o) SHOWIF manufacturingOrderType(o);
+DESIGN orderType { manufacturing { MOVE PROPERTY(autoCreateManufacturingOrder(o)); } }
 
 WHEN SET(confirmed(Order o)) AND autoCreateManufacturingOrder(type(o)) DO
     createManufacturingOrders(o);

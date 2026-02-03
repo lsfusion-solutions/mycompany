@@ -150,7 +150,7 @@ weight 'Weight' (InvoiceLine l) = NUMERIC[16,3](quantity(l) * weight(item(l)));
 price 'Price' = DATA NUMERIC[10,2] (InvoiceLine);
 
 defaultPrice = ABSTRACT CASE NUMERIC[10,2] (InvoiceLine);
-WHEN LOCAL SETCHANGED(item(InvoiceLine l)) AND NOT CHANGED(price(l)) DO price(l) <- defaultPrice(l);
+WHEN LOCAL SETCHANGED(item(InvoiceLine l)) AND defaultPrice(l) AND NOT CHANGED(price(l)) DO price(l) <- defaultPrice(l);
 
 defaultPrice (InvoiceLine l) += WHEN salesPrice(item(l)) THEN salesPrice(item(l)); 
 

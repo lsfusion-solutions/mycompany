@@ -11,6 +11,15 @@ invoiceType = DATA InvoiceType (OrderType);
 nameInvoiceType 'Invoice type' (OrderType t) = name(invoiceType(t));
 EXTEND FORM orderType PROPERTIES nameInvoiceType(o);
 
+DESIGN orderType {
+    pane {
+        NEW invoice {
+            caption = 'Invoice';
+            MOVE PROPERTY(nameInvoiceType(o));
+        }
+    }
+}
+
 // invoicing policy
 CLASS InvoicingPolicy 'Invoicing policy' {
     ordered 'Ordered quantity'
@@ -20,9 +29,11 @@ name '{First_name}' (InvoicingPolicy p) = staticCaption(p) IF p IS InvoicingPoli
 invoicingPolicy = DATA InvoicingPolicy (OrderType);
 nameInvoicingPolicy 'Invoicing policy' (OrderType t) = name(invoicingPolicy(t)); 
 EXTEND FORM orderType PROPERTIES nameInvoicingPolicy(o);
+DESIGN orderType { invoice { MOVE PROPERTY(nameInvoicingPolicy(o)); } } 
 
 forbidLockNotFullyPaid 'Forbid to lock orders that are not fully paid' = DATA BOOLEAN (OrderType);
 EXTEND FORM orderType PROPERTIES(o) forbidLockNotFullyPaid;
+DESIGN orderType { invoice { MOVE PROPERTY(forbidLockNotFullyPaid(o)); } }
 
 // lines
 @defineDocLineRelation(order, invoice, '{Order}', 'Invoice', o, i);

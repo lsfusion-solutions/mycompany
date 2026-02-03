@@ -135,7 +135,7 @@ quantity '{Quantity}' = DATA NUMERIC[16,3] (OrderLine);
 price 'Price' = DATA NUMERIC[10,2] (OrderLine);
 
 defaultPrice = ABSTRACT CASE NUMERIC[10,2] (OrderLine);
-WHEN LOCAL SETCHANGED(item(OrderLine l)) AND NOT CHANGED(price(l)) DO price(l) <- defaultPrice(l);
+WHEN LOCAL SETCHANGED(item(OrderLine l)) AND defaultPrice(l) AND NOT CHANGED(price(l)) DO price(l) <- defaultPrice(l);
 
 defaultPrice (OrderLine l) += WHEN salesPrice(item(l)) THEN salesPrice(item(l)); 
 

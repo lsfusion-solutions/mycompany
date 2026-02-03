@@ -11,6 +11,16 @@ setPriceToCost 'Set price to cost' = DATA BOOLEAN (BillType);
 
 EXTEND FORM billType PROPERTIES namePricelistType(o), setPriceToCost(o) SHOWIF pricelistType(o);
 
+DESIGN billType {
+    pane {
+        NEW priceList {
+            caption = 'Pricelist';
+            MOVE PROPERTY(namePricelistType(o));
+            MOVE PROPERTY(setPriceToCost(o));
+        }
+    }
+}
+
 // lines
 @defineDocLineRelation(bill, pricelist, 'Bill', 'Pricelist', b, p);
 

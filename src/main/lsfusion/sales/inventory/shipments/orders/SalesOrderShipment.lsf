@@ -84,6 +84,17 @@ EXTEND FORM orderType PROPERTIES(o) forbidLockActiveShipments;
 forbidLockNotFullyShipped 'Forbid to lock orders that are not fully shipped' = DATA BOOLEAN (OrderType);
 EXTEND FORM orderType PROPERTIES(o) forbidLockNotFullyShipped;
 
+DESIGN orderType {
+    pane {
+        NEW shipment {
+            caption = 'Shipment';
+            MOVE PROPERTY(nameShipmentType(o));
+            MOVE PROPERTY(forbidLockActiveShipments(o));
+            MOVE PROPERTY(forbidLockNotFullyShipped(o));
+        }
+    }
+}
+
 WHEN SET(locked(Order o)) AND NOT forbidLockActiveShipments(type(o)) DO {
     DELETE Shipment s WHERE s = reserveShipment(o) AND toReserve(s);
 }

@@ -26,6 +26,32 @@ FORM manufacturingOrderType 'Manufacturing order type'
     EDIT ManufacturingOrderType OBJECT o;
 ;
 
+DESIGN manufacturingOrderType {
+    OBJECTS {
+        NEW header {
+            horizontal = TRUE;
+            MOVE PROPERTY(name(o)) { charWidth = 30; }
+            MOVE PROPERTY(id(o));
+            MOVE PROPERTY(nameNumerator(o));
+        }
+        NEW pane {
+            lines = 3;
+            NEW default {
+                caption = 'Default';
+                MOVE PROPERTY(nameMaterialsLocation(o));
+            }
+            NEW otherInformation {
+                caption = 'Other information';
+                MOVE PROPERTY(unbuild(o));
+            }
+        }
+        NEW tabbedPane {
+            fill = 1;
+            tabbed = TRUE;
+        }
+    }
+}
+
 FORM manufacturingOrderTypes 'Types of production orders'
     OBJECTS o = ManufacturingOrderType
     PROPERTIES(o) READONLY name, id, unbuild

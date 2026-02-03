@@ -10,6 +10,15 @@ receiptType = DATA ReceiptType (OrderType);
 nameReceiptType 'Receipt type' (OrderType t) = name(receiptType(t));
 EXTEND FORM orderType PROPERTIES nameReceiptType(o);
 
+DESIGN orderType {
+    pane {
+        NEW bill {
+            caption = 'Bill';
+            MOVE PROPERTY(nameReceiptType(o));
+        }
+    }
+}
+
 // relation
 @defineDocLineRelation(order, receipt, '{Order}', 'Receipt', o, r);
 
@@ -68,9 +77,11 @@ WHEN ([GROUP SUM 1 IF CHANGED(toReceive(OrderLine l)) BY order(l)](Order o) OR S
 
 forbidLockActiveReceipts 'Forbid to lock orders with active receipts' = DATA BOOLEAN (OrderType);
 EXTEND FORM orderType PROPERTIES(o) forbidLockActiveReceipts;
+DESIGN orderType { bill { MOVE PROPERTY(forbidLockActiveReceipts(o)); } }
 
 forbidLockNotFullyReceived 'Forbid to lock orders that are not fully received' = DATA BOOLEAN (OrderType);
 EXTEND FORM orderType PROPERTIES(o) forbidLockNotFullyReceived;
+DESIGN orderType { bill { MOVE PROPERTY(forbidLockNotFullyReceived(o)); } }
 
 WHEN SET(locked(Order o)) AND NOT forbidLockActiveReceipts(type(o)) DO {
     DELETE Receipt r WHERE r = reserveReceipt(o) AND status(reserveReceipt(o)) = ReceiptStatus.ready;
