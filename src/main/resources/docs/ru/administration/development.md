@@ -39,12 +39,38 @@ title: Разработка
 3. Перезапускаем службу сервера (как описано выше).
 4. Если нужно подключить дополнительные модули, то помещаем их также в папку /var/lib/lsfusion, и добавляем их в REQUIRE модуля MyCompanyCustom.
 
-Пример модуля MyCompanyCustom :
+Пример модуля `MyCompanyCustom`, который зависит от всего модуля `MyCompanyRu`:
 
-```
+```lsf
 MODULE MyCompanyCustom;
 
 REQUIRE MyCompanyRu;
 
-<новый код>
+// new code
 ```
+
+Пример модуля `MyCompanyCustom`, который зависит от выбранных модулей `MyCompany`:
+
+```lsf
+MODULE MyCompanyCustom;
+
+REQUIRE Eval, ProcessMonitor, Backup, Chat, Documentation,
+        MasterDataP,
+        IndividualRu, LegalEntityRu, LegalEntityImportRu, DaDataLegalEntityFind,
+        Inventory, InventoryRu,
+        Invoicing, InvoicingInventory, InvoicingRu,
+        Purchase, PurchaseRu,
+        Sales, SalesRu,
+        CashRegisterAtol, PosDashboardCRPT,
+//        Retail,  
+//        Manufacturing,
+//        ProjectManagement,
+//        HumanResources,
+//        CRM,
+//        Fleet,
+        BillReceiptCost, BillReceiptCostService; 
+
+// new code
+```
+
+Чтобы увидеть, какие модули можно подключить, вы можете посмотреть раздел `REQUIRE` в файле `MyCompany.lsf` и `MyCompanyRu.lsf`.
