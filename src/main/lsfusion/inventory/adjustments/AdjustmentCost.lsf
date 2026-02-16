@@ -62,3 +62,9 @@ quantity(AdjustmentInCostLedger l) += quantity(line(l));
 calcAmount(AdjustmentInCostLedger l) += cost(line(l));
 
 edit(AdjustmentInCostLedger l) + { edit(line(l)); }
+
+// cost
+costAmount (InvAdjustment i) = amount(adjustmentLedger(i));
+costAmountIn (InvAdjustment i) = amount(adjustmentInLedger(i));
+
+costAmount (Adjustment a) = GROUP SUM costAmount(InvAdjustment i) (+) costAmountIn(i) IF adjustment(i) = a;
