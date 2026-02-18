@@ -2,7 +2,8 @@ MODULE Adjustment;
 
 REQUIRE InventorySettings, LocationEmployee, Comments, 
         Product, InvLedger, DateUtils,
-        Company, BarCode, Doc;
+        Company, BarCode, Doc,
+        AdjustmentType;
                                   
 NAMESPACE Inventory;
 
@@ -36,37 +37,6 @@ addressLinesCompany 'Address' (Adjustment a) = addressLines(company(a));
 phoneCompany 'Phone' (Adjustment a) = phone(company(a));
 emailCompany 'Email' (Adjustment a) = email(company(a));
 websiteCompany 'Web site' (Adjustment a) = website(company(a));
-
-// type
-CLASS AdjustmentType 'Adjustment type' {
-    all 'All',
-    category 'By category',
-    manual 'Manually'
-}
-name '{Name}' (AdjustmentType o) = ISTRING[100](staticCaption(o)) IF o IS AdjustmentType CHARWIDTH 15;
-
-FORM adjustmentType 'Adjustment type'
-    OBJECTS o = AdjustmentType PANEL
-    PROPERTIES(o) name
-    
-    EDIT AdjustmentType OBJECT o  
-;
-
-DESIGN adjustmentType {
-    OBJECTS {
-        NEW tabbedPane {
-            fill = 1;
-            tabbed = TRUE;
-        }
-    }
-}
-
-FORM adjustmentTypes 'Adjustment types'
-    OBJECTS o = AdjustmentType
-    PROPERTIES(o) READONLY name
-
-    LIST AdjustmentType OBJECT o
-;
 
 type 'Type' =  DATA AdjustmentType (Adjustment) NONULL;
 nameType 'Type' (Adjustment a) = name(type(a));

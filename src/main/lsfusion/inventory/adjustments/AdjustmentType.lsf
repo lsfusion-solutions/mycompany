@@ -1,0 +1,48 @@
+MODULE AdjustmentType;
+
+REQUIRE InventorySettings;
+
+NAMESPACE Inventory;
+
+// type
+CLASS AdjustmentType 'Adjustment type' {
+    all 'All',
+    category 'By category',
+    manual 'Manually'
+}
+name '{Name}' (AdjustmentType o) = ISTRING[100](caption(o)) IF o IS AdjustmentType CHARWIDTH 15;
+
+FORM adjustmentType 'Adjustment type'
+    OBJECTS o = AdjustmentType PANEL
+    PROPERTIES(o) '{Name}' = caption
+
+    EDIT AdjustmentType OBJECT o
+;
+
+DESIGN adjustmentType {
+    OBJECTS {
+        NEW tabbedPane {
+            fill = 1;
+            tabbed = TRUE;
+        }
+    }
+}
+
+FORM adjustmentTypes 'Adjustment types'
+    OBJECTS o = AdjustmentType
+    PROPERTIES(o) READONLY name
+
+    LIST AdjustmentType OBJECT o
+;
+
+EXTEND FORM options
+    OBJECTS adt = AdjustmentType
+    PROPERTIES(adt) READONLY name
+    PROPERTIES(adt) NEWSESSION NEW, EDIT, DELETE DISABLEIF name[StaticObject](adt)
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(adt) { caption = 'Adjustment types'; }
+    }
+}
