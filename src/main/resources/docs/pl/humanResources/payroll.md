@@ -16,20 +16,20 @@ Sekcja „Płace: naliczanie i wypłata” służy do naliczania przychodów i p
 
 #### Partia odcinków płacowych
 
-Dokument używany do **zbiorczego generowania odcinków płacowych** dla pracowników dla wybranego **przedsiębiorstwa** i **okresu**.
+Dokument używany do **zbiorczego generowania odcinków płacowych** dla pracowników dla wybranego **przedsiębiorstwa**, **okresu** i **typu**.
 
 Szczegóły: [Partia odcinków płacowych](payroll-batch.md).
 
 #### Odcinek płacowy
 
-Dokument naliczenia pracownika za okres. Zawiera linie przychodów/potrąceń oraz sumę **„Wynagrodzenie netto”**.
+Dokument naliczenia pracownika za okres. Zawiera linie przychodów/potrąceń, typ odcinka płacowego oraz sumę **„Wynagrodzenie netto”**.
 
 Szczegóły: [Odcinek płacowy](payslip.md).
 
 ## Typowy scenariusz „naliczenie płac i przygotowanie wypłaty”
 
 1. Otwórz **„Kadry” → „Operacje” → „Partii odcinków płacowych”**.
-2. Utwórz partię i wskaż przedsiębiorstwo oraz okres.
+2. Utwórz partię i wskaż przedsiębiorstwo, okres oraz typ.
 3. Uruchom **„Wygeneruj”**.
 4. Otwórz odcinki płacowe pracowników i sprawdź linie naliczeń oraz sumę **„Wynagrodzenie netto”**.
 5. Jeśli w organizacji używa się rejestracji płatności — zarejestruj płatność.

@@ -45,7 +45,7 @@ A typical scenario “record attendance”:
 A typical scenario “calculate payroll and prepare payment”:
 
 1. Open **“Human Resources” → “Operations” → “Payslip batches”**.
-2. Create a batch, specify legal entity and period.
+2. Create a batch, specify legal entity, period, and type.
 3. Run **“Generate”** — the system creates payslips for employees.
 4. Review payslips and the **“Net wage”** total.
 5. If payroll payments are registered in the system — register payment from the payslip.
@@ -100,7 +100,7 @@ A screen/device for fast check in / check out when employees identify themselves
 
 #### Payslip batch
 
-A document for generating payslips for multiple employees for a period.
+A document for generating payslips for multiple employees for a period and type.
 
 #### Payslip
 

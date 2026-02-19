@@ -1,0 +1,54 @@
+MODULE PayslipType;
+
+REQUIRE HumanResourcesSettings, MasterData, Numerator;
+
+PRIORITY HumanResources;
+
+NAMESPACE Payroll;
+
+CLASS PayslipType 'Payslip type';
+name '{master.data.name}' = DATA ISTRING[50] (PayslipType) NONULL CHARWIDTH 15;
+
+numerator = DATA Numerator (PayslipType);
+nameNumerator 'Numerator' (PayslipType o) = name(numerator(o));
+
+FORM payslipType 'Payslip type'
+    OBJECTS o = PayslipType PANEL
+    PROPERTIES(o) name, nameNumerator
+
+    EDIT PayslipType OBJECT o
+;
+
+DESIGN payslipType {
+    OBJECTS {
+        NEW tabbedPane {
+            fill = 1;
+            tabbed = TRUE;
+        }
+    }
+}
+
+FORM payslipTypes 'Payslip types'
+    OBJECTS o = PayslipType
+    PROPERTIES(o) READONLY name
+
+    LIST PayslipType OBJECT o
+;
+
+EXTEND FORM options
+    OBJECTS pst = PayslipType
+    PROPERTIES(pst) READONLY name
+    PROPERTIES(pst) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(pst) { caption = 'Payslip types'; }
+    }
+}
+
+// default type
+countPayslipType 'Number of types' () = GROUP SUM 1 IF t IS PayslipType;
+firstPayslipType = GROUP LAST PayslipType t ORDER DESC t WHERE t IS PayslipType;
+
+defaultPayslipType = firstPayslipType() IF countPayslipType() = 1;

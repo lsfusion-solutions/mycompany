@@ -14,7 +14,10 @@ Before reviewing calculation, make sure the payslip correctly specifies:
 
 - **Employee**;
 - **Legal entity**;
-- **Period**.
+- **Period**;
+- **Type** (for example, Regular).
+
+If only one payslip type exists in the system, it is selected automatically by default.
 
 ## Calculation lines
 

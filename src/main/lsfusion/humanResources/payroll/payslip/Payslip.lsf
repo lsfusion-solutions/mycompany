@@ -1,14 +1,12 @@
 MODULE Payslip;
 
-REQUIRE HumanResourcesSettings, Employee, FileUtils, Doc, Currency;
+REQUIRE HumanResourcesSettings, Employee, FileUtils, Doc, Currency, PayslipType;
 
 PRIORITY HumanResources, MasterData;
 
 NAMESPACE Payroll;
 
 CLASS Payslip 'Payslip';
-
-@defineNumber(payslip, 'Payslips', 'SLP');
 
 period 'Period' = DATA INTERVAL[DATE] (Payslip);
 
@@ -31,12 +29,18 @@ company 'Company' = DATA Company (Payslip) NONULL;
 nameCompany 'Company' (Payslip o) = name(company(o));
 WHEN LOCAL SET(Payslip p IS Payslip) AND NOT CHANGED(company(p)) DO company(p) <- defaultCompany();
 
-payslip = GROUP AGGR Payslip p BY period(p), employee(p), company(p);
+type 'Type' = DATA PayslipType (Payslip) NONULL;
+nameType 'Type' (Payslip p) = name(type(p));
+WHEN LOCAL SET(Payslip p IS Payslip) AND NOT CHANGED(type(p)) DO type(p) <- defaultPayslipType();
+
+@defineNumberType(payslip);
+
+payslip = GROUP AGGR Payslip p BY period(p), employee(p), company(p), type(p);
 
 FORM payslip 'Payslip'
     OBJECTS p = Payslip PANEL
     PROPERTIES(p) number, period, dueDate, 
-                  nameEmployee, nameCompany, nameCurrency
+                  nameEmployee, nameCompany, nameType, nameCurrency
     
     EDIT Payslip OBJECT p
 ;
@@ -54,6 +58,7 @@ DESIGN payslip {
             }
             MOVE PROPERTY(nameEmployee(p)) { notNull = TRUE; alignment = STRETCH; }
             MOVE PROPERTY(nameCompany(p)) { alignment = STRETCH; }
+            MOVE PROPERTY(nameType(p)) { alignment = STRETCH; }
             MOVE PROPERTY(nameCurrency(p)) { alignment = STRETCH; }
         }
         NEW details {
@@ -69,7 +74,7 @@ DESIGN payslip {
 
 FORM payslips 'Payslips'
     OBJECTS p = Payslip
-    PROPERTIES(p) READONLY number, startDate, endDate, firstNameEmployee, lastNameEmployee, namePositionEmployee, nameCompany
+    PROPERTIES(p) READONLY number, startDate, endDate, firstNameEmployee, lastNameEmployee, namePositionEmployee, nameCompany, nameType
     PROPERTIES(p) NEWSESSION NEW, EDIT, DELETE
     
     LIST Payslip OBJECT p
@@ -94,6 +99,7 @@ clone (Payslip to, Payslip from) + {
     period(to) <- period(from);
     employee(to) <- employee(from);
     company(to) <- company(from);
+    type(to) <- type(from);
 }
 
 copy 'Copy' (Payslip p) {

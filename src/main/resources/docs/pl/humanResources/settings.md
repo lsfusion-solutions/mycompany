@@ -29,6 +29,7 @@ Zwykle konfigurowane są:
 
 Zwykle konfigurowane są:
 
+- **typy odcinków płacowych** (na przykład Standardowy) oraz ustawienia ich numeracji;
 - **typy naliczeń** (np. przychody i potrącenia);
 - parametry generowania partii odcinków płacowych;
 - typ płatności używany przy rejestracji płatności po odcinkach płacowych (jeśli Twoja organizacja rejestruje płatności w systemie).

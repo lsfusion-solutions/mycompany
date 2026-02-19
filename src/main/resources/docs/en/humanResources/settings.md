@@ -29,6 +29,7 @@ Typically configured:
 
 Typically configured:
 
+- **payslip types** (for example, Regular) and their numbering settings;
 - **calculation types** (e.g., earnings and deductions);
 - payslip batch generation parameters;
 - payment type used when registering payments by payslips (if your organization registers payments in the system).

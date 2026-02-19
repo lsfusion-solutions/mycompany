@@ -14,7 +14,10 @@ Przed analizą naliczeń upewnij się, że w odcinku płacowym poprawnie wskazan
 
 - **Pracownik**;
 - **Przedsiębiorstwo**;
-- **Okres**.
+- **Okres**;
+- **Typ** (na przykład Standardowy).
+
+Jeśli w systemie istnieje tylko jeden typ odcinka płacowego, zostanie domyślnie ustawiony automatycznie.
 
 ## Linie naliczeń
 

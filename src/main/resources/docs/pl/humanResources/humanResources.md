@@ -45,7 +45,7 @@ Typowy scenariusz „rejestrowanie czasu”:
 Typowy scenariusz „naliczenie płac i przygotowanie wypłaty”:
 
 1. Otwórz **„Kadry” → „Operacje” → „Partii odcinków płacowych”**.
-2. Utwórz partię, wskaż przedsiębiorstwo i okres.
+2. Utwórz partię, wskaż przedsiębiorstwo, okres oraz typ.
 3. Uruchom **„Wygeneruj”** — system utworzy odcinki płacowe dla pracowników.
 4. Sprawdź odcinki płacowe i sumę **„Wynagrodzenie netto”**.
 5. Jeśli w organizacji rejestrowane są płatności w systemie — zarejestruj płatność z odcinka płacowego.
@@ -100,7 +100,7 @@ Ekran/urządzenie do szybkiego Check In / Check Out, gdy pracownicy identyfikuj�
 
 #### Partia odcinków płacowych
 
-Dokument do generowania odcinków płacowych dla wielu pracowników w okresie.
+Dokument do generowania odcinków płacowych dla wielu pracowników w okresie i typie.
 
 #### Odcinek płacowy
 

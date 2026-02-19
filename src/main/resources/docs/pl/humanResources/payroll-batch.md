@@ -6,7 +6,7 @@ Partia odcinków płacowych jest używana, gdy trzeba **wygenerować odcinki pł
 
 Typowy przebieg pracy:
 
-1. utwórz partię odcinków płacowych (przedsiębiorstwo + okres);
+1. utwórz partię odcinków płacowych (przedsiębiorstwo + okres + typ);
 2. uruchom **„Wygeneruj”**;
 3. otwórz odcinki płacowe pracowników i sprawdź linie naliczeń oraz sumę **„Wynagrodzenie netto”**;
 4. w razie potrzeby zarejestruj płatności.
@@ -21,7 +21,10 @@ W partii zwykle wypełnia się:
 
 - **Przedsiębiorstwo** — dla jakiego przedsiębiorstwa generowane są płace;
 - **Okres** — daty, które obejmuje naliczenie;
+- **Typ** — typ odcinka płacowego, który zostanie przypisany do wygenerowanych dokumentów;
 - **Nazwa** (jeśli używane) — dowolny komentarz, np. „Odcinki płacowe za grudzień”.
+
+Jeśli w systemie istnieje tylko jeden typ odcinka płacowego, jest on domyślnie wybierany automatycznie.
 
 ## Co jest w środku partii
 
@@ -38,9 +41,9 @@ Z partii możesz otworzyć odcinek płacowy i przejść do szczegółów nalicze
 
 Akcja **„Wygeneruj”** wykonuje dwa kluczowe kroki:
 
-1. **Tworzy odcinki płacowe** dla pracowników przedsiębiorstwa dla wybranego okresu.
+1. **Tworzy odcinki płacowe** dla pracowników przedsiębiorstwa dla wybranego okresu i typu.
    - Z reguły odcinki płacowe są tworzone dla **aktywnych pracowników**.
-   - Jeśli odcinek płacowy dla okresu już istnieje, system **nie tworzy duplikatu**.
+   - Jeśli dla pracownika istnieje już odcinek płacowy z takim samym **okresem + przedsiębiorstwem + typem**, system **nie tworzy duplikatu**.
 2. **Wypełnia (lub aktualizuje) linie naliczeń** w odcinkach płacowych partii.
    - Niektóre linie mogą być liczone automatycznie (np. na podstawie przepracowanego czasu).
    - Po wygenerowaniu zaleca się otworzyć kilka odcinków płacowych i sprawdzić wynik.
@@ -53,7 +56,7 @@ Jeśli pracownik nie należy do wybranego przedsiębiorstwa lub nie jest aktywny
 
 #### Jeśli odcinek płacowy został utworzony osobno
 
-Jeśli odcinek płacowy dla okresu już istnieje, partia nie tworzy go ponownie.
+Jeśli istnieje już odcinek płacowy z takim samym **okresem + pracownikiem + przedsiębiorstwem + typem**, partia nie tworzy go ponownie.
 
 Jednocześnie w partii zwykle widać **tylko odcinki płacowe powiązane z tą partią**. Dlatego jeśli odcinek płacowy został utworzony osobno (nie z partii), może nie pojawić się na liście bieżącej partii.
 
@@ -68,14 +71,14 @@ Możesz uruchomić generowanie ponownie, jeśli zmieniły się dane źródłowe 
 Sprawdź typowe przyczyny:
 
 1. Pracownik jest **nieaktywny** lub nie należy do wybranego przedsiębiorstwa.
-2. Odcinek płacowy dla tego okresu został już wcześniej utworzony.
+2. Dla tego pracownika został już wcześniej utworzony odcinek płacowy z takim samym okresem, przedsiębiorstwem i typem.
 3. Brak danych źródłowych dla automatycznych przychodów (np. brak wpisów przepracowanego czasu z wybranym projektem — zobacz [Wypłata na podstawie przepracowanego czasu](payroll-time-entries.md)).
 
 ## Kopiowanie partii
 
 Jeśli dostępna jest akcja **„Kopiuj”**, pomaga utworzyć nową partię na podstawie istniejącej:
 
-- kopiuje główne pola (zwykle przedsiębiorstwo i nazwę);
+- kopiuje główne pola (zwykle przedsiębiorstwo, typ i nazwę);
 - kopiuje powiązane odcinki płacowe.
 
 Po skopiowaniu sprawdź okres i odcinki płacowe w nowej partii oraz w razie potrzeby uruchom **„Wygeneruj”**.
