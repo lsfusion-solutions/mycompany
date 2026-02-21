@@ -102,6 +102,7 @@ quantity = DATA NUMERIC[16,3] (FaWiersz);
 price = DATA NUMERIC[10,2] (FaWiersz);
 untaxedAmount = DATA NUMERIC[14,2] (FaWiersz);
 taxes = DATA STRING (FaWiersz);
+correction 'Correction' = DATA INTEGER (FaWiersz);
 
 // KSeF result and status stored on Faktura
 referenceNumber 'Reference' = DATA STRING[200] (Faktura) INDEXED;
@@ -156,7 +157,7 @@ FORM faktura 'Faktura KSeF'
     FILTERS faktura(z) = f
 
     OBJECTS w = FaWiersz
-    PROPERTIES(w) READONLY NrWierszaFa, description, GTIN, nameUom, quantity, price, untaxedAmount, taxes
+    PROPERTIES(w) READONLY NrWierszaFa, description, GTIN, nameUom, quantity, price, untaxedAmount, taxes, correction
     FILTERS faktura(w) = f
     
     EDIT Faktura OBJECT f
@@ -250,7 +251,6 @@ DESIGN faktura {
 FORM faktury 'Faktury KSeF'
     OBJECTS f = Faktura
     PROPERTIES(f) READONLYIF isReadonly()
-                    referenceNumberSession, referenceNumber, statusCode, statusDescription, statusDetails,
                     number, invoiceNumber, invoiceDate, KodWaluty,
                     p1_NIP, p1_Nazwa, p1_AdresL1, p1_AdresL2, p1_Email, p1_Telefon,
                     p2_NIP, p2_Nazwa, p2_AdresL1, p2_AdresL2, p2_Email, p2_Telefon, p2_NrKlienta,
@@ -258,7 +258,8 @@ FORM faktury 'Faktury KSeF'
                     taxAmount1, taxAmount2, taxAmount3, amount,
                     metodaKasowa, samofakturowanie, odwrotneObciazenie, mpp, weUproszczona,
                     KursWalutyZ, RodzajFaktury,
-                    PrzyczynaKorekty, DataWystFaKorygowanej, NrFaKorygowanej, NrKSeFFaKorygowanej
+                    PrzyczynaKorekty, DataWystFaKorygowanej, NrFaKorygowanej, NrKSeFFaKorygowanej,
+                    referenceNumberSession, referenceNumber, statusCode, statusDescription, statusDetails
     PROPERTIES(f) getStatus GRID BEFORE statusCode(f)
     PROPERTIES(f) NEWSESSION EDIT, DELETE
 ;

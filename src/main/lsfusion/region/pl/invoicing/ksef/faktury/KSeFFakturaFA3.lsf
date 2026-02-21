@@ -80,7 +80,7 @@ FORM FA3XmlExport
 
     // FaWiersz
     OBJECTS w = FaWiersz EXTID 'FaWiersz' IN Fa
-    PROPERTIES(w) NrWierszaFa, description EXTID 'P_7', GTIN, nameUom EXTID 'P_8A', quantity EXTID 'P_8B', price EXTID 'P_9A', untaxedAmount EXTID 'P_11', taxes EXTID 'P_12'
+    PROPERTIES(w) NrWierszaFa, description EXTID 'P_7', GTIN, nameUom EXTID 'P_8A', quantity EXTID 'P_8B', price EXTID 'P_9A', untaxedAmount EXTID 'P_11', taxes EXTID 'P_12', correction EXTID 'StanPrzed'
     FILTERS faktura(w) = f
 ;
 
@@ -145,6 +145,7 @@ P_8B = DATA LOCAL NUMERIC[16,3](INTEGER);
 P_9A = DATA LOCAL NUMERIC[10,2](INTEGER);
 P_11 = DATA LOCAL NUMERIC[14,2](INTEGER);
 P_12 = DATA LOCAL STRING(INTEGER);
+StanPrzed = DATA LOCAL INTEGER(INTEGER);
 
 FORM FA3XmlImport FORMEXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Faktura'
     PROPERTIES ATTR ='http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2022/01/05/eD/DefinicjeTypy/' EXTID 'xmlns:etd', ='http://www.w3.org/2001/XMLSchema' EXTID 'xmlns:xsd', ='http://www.w3.org/2001/XMLSchema-instance' EXTID 'xmlns:xsi'
@@ -166,7 +167,7 @@ FORM FA3XmlImport FORMEXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Faktura'
     PROPERTIES(z) NrKSeFFaZaliczkowej
 
     OBJECTS faWiersz = INTEGER EXTID ':FaWiersz' IN Fa
-    PROPERTIES(faWiersz) NrWierszaFa, UU_ID, P_7, GTIN, P_8A, P_8B, P_9A, P_11, P_12
+    PROPERTIES(faWiersz) NrWierszaFa, UU_ID, P_7, GTIN, P_8A, P_8B, P_9A, P_11, P_12, StanPrzed
     FILTERS imported(faWiersz)
 ;
 
@@ -216,5 +217,6 @@ import (Faktura nf) {
         price(fw) <- P_9A(faWiersz);
         untaxedAmount(fw) <- P_11(faWiersz);
         taxes(fw) <- P_12(faWiersz);
+        correction(fw) <- StanPrzed(faWiersz);
     }
 }

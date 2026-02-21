@@ -37,7 +37,7 @@ createBill 'Create Bill' (Faktura f) {
             
             original(b) <- bill(fakturaKSeFNumber(NrKSeFFaKorygowanej(f)));
 
-            FOR faktura(FaWiersz w) = f ORDER NrWierszaFa(w) DO NEW l = BillLine {
+            FOR faktura(FaWiersz w) = f AND NOT correction(w) ORDER NrWierszaFa(w) DO NEW l = BillLine {
                 bill(l) <- b;
                 item(l) <- itemBarCode(GTIN(w));
                 description(l) <- description(w);
