@@ -5,25 +5,25 @@ REQUIRE KSeFFaktura;
 NAMESPACE KSeF;
 
 // XML groups for export
-GROUP Naglowek;
-GROUP Podmiot1;
-GROUP Podmiot2;
-GROUP Fa;
-GROUP KodFormularza : Naglowek;
-GROUP Adnotacje : Fa;
+GROUP Naglowek EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Naglowek';
+GROUP Podmiot1 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Podmiot1';
+GROUP Podmiot2 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Podmiot2';
+GROUP Fa EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Fa';
+GROUP KodFormularza EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:KodFormularza' : Naglowek;
+GROUP Adnotacje EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Adnotacje' : Fa;
 GROUP Zwolnienie : Adnotacje;
 GROUP NoweSrodkiTransportu : Adnotacje;
 GROUP PMarzy : Adnotacje;
-GROUP DaneFaKorygowanej : Fa;
+GROUP DaneFaKorygowanej EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:DaneFaKorygowanej' : Fa;
 
 // Nested groups
-GROUP P1DaneId EXTID 'DaneIdentyfikacyjne' : Podmiot1;
-GROUP P1Adres EXTID 'Adres' : Podmiot1;
-GROUP P1Kontakt EXTID 'DaneKontaktowe' : Podmiot1;
+GROUP P1DaneId EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:DaneIdentyfikacyjne' : Podmiot1;
+GROUP P1Adres EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Adres' : Podmiot1;
+GROUP P1Kontakt EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:DaneKontaktowe' : Podmiot1;
 
-GROUP P2DaneId EXTID 'DaneIdentyfikacyjne' : Podmiot2;
-GROUP P2Adres EXTID 'Adres' : Podmiot2;
-GROUP P2Kontakt EXTID 'DaneKontaktowe' : Podmiot2;
+GROUP P2DaneId EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:DaneIdentyfikacyjne' : Podmiot2;
+GROUP P2Adres EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Adres' : Podmiot2;
+GROUP P2Kontakt EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:DaneKontaktowe' : Podmiot2;
 
 // export
 FORM FA3XmlExport
@@ -149,25 +149,76 @@ StanPrzed = DATA LOCAL INTEGER(INTEGER);
 
 FORM FA3XmlImport FORMEXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Faktura'
     PROPERTIES ATTR ='http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2022/01/05/eD/DefinicjeTypy/' EXTID 'xmlns:etd', ='http://www.w3.org/2001/XMLSchema' EXTID 'xmlns:xsd', ='http://www.w3.org/2001/XMLSchema-instance' EXTID 'xmlns:xsi'
-    PROPERTIES() IN Naglowek KodFormularza, WariantFormularza, DataWytworzeniaFa, SystemInfo
-    PROPERTIES() IN P1DaneId p1_NIP EXTID ':NIP', p1_Nazwa EXTID ':Nazwa'
-    PROPERTIES() IN P1Adres p1_KodKraju EXTID ':KodKraju', p1_AdresL1 EXTID ':AdresL1', p1_AdresL2 EXTID ':AdresL2'
-    PROPERTIES() IN P1Kontakt p1_Email EXTID ':Email', p1_Telefon EXTID ':Telefon'
-    PROPERTIES() IN Podmiot2 NrKlienta
-    PROPERTIES() IN P2DaneId p2_NIP EXTID ':NIP', p2_Nazwa EXTID ':Nazwa'
-    PROPERTIES() IN P2Adres p2_KodKraju EXTID ':KodKraju', p2_AdresL1 EXTID ':AdresL1', p2_AdresL2 EXTID ':AdresL2'
-    PROPERTIES() IN P2Kontakt p2_Email EXTID ':Email', p2_Telefon EXTID ':Telefon'
-    PROPERTIES() IN Fa KodWaluty, P_1, P_2, P_6, P_13_1, P_13_2, P_13_3, P_13_6, P_13_7, P_14_1, P_14_2, P_14_3, P_15
-    PROPERTIES() IN Adnotacje P_16, P_17, P_18, P_18A, P_23
-    PROPERTIES() IN Fa KursWalutyZ, RodzajFaktury
-    PROPERTIES() IN Fa PrzyczynaKorekty
-    PROPERTIES() IN DaneFaKorygowanej DataWystFaKorygowanej, NrFaKorygowanej, NrKSeFFaKorygowanej
+    PROPERTIES() IN Naglowek
+        KodFormularza EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:KodFormularza',
+        WariantFormularza EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:WariantFormularza',
+        DataWytworzeniaFa EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:DataWytworzeniaFa',
+        SystemInfo EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:SystemInfo'
+    PROPERTIES() IN P1DaneId
+        p1_NIP EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:NIP',
+        p1_Nazwa EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Nazwa'
+    PROPERTIES() IN P1Adres
+        p1_KodKraju EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:KodKraju',
+        p1_AdresL1 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:AdresL1',
+        p1_AdresL2 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:AdresL2'
+    PROPERTIES() IN P1Kontakt
+        p1_Email EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Email',
+        p1_Telefon EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Telefon'
+    PROPERTIES() IN Podmiot2 NrKlienta EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:NrKlienta'
+    PROPERTIES() IN P2DaneId
+        p2_NIP EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:NIP',
+        p2_Nazwa EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Nazwa'
+    PROPERTIES() IN P2Adres
+        p2_KodKraju EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:KodKraju',
+        p2_AdresL1 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:AdresL1',
+        p2_AdresL2 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:AdresL2'
+    PROPERTIES() IN P2Kontakt
+        p2_Email EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Email',
+        p2_Telefon EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Telefon'
+    PROPERTIES() IN Fa
+        KodWaluty EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:KodWaluty',
+        P_1 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_1',
+        P_2 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_2',
+        P_6 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_6',
+        P_13_1 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_13_1',
+        P_13_2 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_13_2',
+        P_13_3 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_13_3',
+        P_13_6 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_13_6',
+        P_13_7 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_13_7',
+        P_14_1 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_14_1',
+        P_14_2 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_14_2',
+        P_14_3 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_14_3',
+        P_15 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_15'
+    PROPERTIES() IN Adnotacje
+        P_16 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_16',
+        P_17 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_17',
+        P_18 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_18',
+        P_18A EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_18A',
+        P_23 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_23'
+    PROPERTIES() IN Fa
+        KursWalutyZ EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:KursWalutyZ',
+        RodzajFaktury EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:RodzajFaktury'
+    PROPERTIES() IN Fa PrzyczynaKorekty EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:PrzyczynaKorekty'
+    PROPERTIES() IN DaneFaKorygowanej
+        DataWystFaKorygowanej EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:DataWystFaKorygowanej',
+        NrFaKorygowanej EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:NrFaKorygowanej',
+        NrKSeFFaKorygowanej EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:NrKSeFFaKorygowanej'
 
-    OBJECTS z = INTEGER EXTID ':FakturaZaliczkowa' IN Fa
-    PROPERTIES(z) NrKSeFFaZaliczkowej
+    OBJECTS z = INTEGER EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:FakturaZaliczkowa' IN Fa
+    PROPERTIES(z) NrKSeFFaZaliczkowej EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:NrKSeFFaZaliczkowej'
 
-    OBJECTS faWiersz = INTEGER EXTID ':FaWiersz' IN Fa
-    PROPERTIES(faWiersz) NrWierszaFa, UU_ID, P_7, GTIN, P_8A, P_8B, P_9A, P_11, P_12, StanPrzed
+    OBJECTS faWiersz = INTEGER EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:FaWiersz' IN Fa
+    PROPERTIES(faWiersz)
+        NrWierszaFa EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:NrWierszaFa',
+        UU_ID EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:UU_ID',
+        P_7 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_7',
+        GTIN EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:GTIN',
+        P_8A EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_8A',
+        P_8B EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_8B',
+        P_9A EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_9A',
+        P_11 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_11',
+        P_12 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_12',
+        StanPrzed EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:StanPrzed'
     FILTERS imported(faWiersz)
 ;
 
