@@ -15,6 +15,8 @@ GROUP Zwolnienie : Adnotacje;
 GROUP NoweSrodkiTransportu : Adnotacje;
 GROUP PMarzy : Adnotacje;
 GROUP DaneFaKorygowanej EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:DaneFaKorygowanej' : Fa;
+GROUP Platnosc EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Platnosc' : Fa;
+GROUP TerminPlatnosci EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:TerminPlatnosci' : Platnosc;
 
 // Nested groups
 GROUP P1DaneId EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:DaneIdentyfikacyjne' : Podmiot1;
@@ -82,6 +84,17 @@ FORM FA3XmlExport
     OBJECTS w = FaWiersz EXTID 'FaWiersz' IN Fa
     PROPERTIES(w) NrWierszaFa, description EXTID 'P_7', GTIN, nameUom EXTID 'P_8A', quantity EXTID 'P_8B', price EXTID 'P_9A', untaxedAmount EXTID 'P_11', taxes EXTID 'P_12', correction EXTID 'StanPrzed'
     FILTERS faktura(w) = f
+
+    // TerminPlatnosci
+    OBJECTS tp = TerminPlatnosci EXTID 'TerminPlatnosci' IN Platnosc
+    PROPERTIES(tp) date EXTID 'Termin'
+    FILTERS faktura(tp) = f
+
+    PROPERTIES(f) IN Platnosc FormaPlatnosci EXTID 'FormaPlatnosci'
+
+    OBJECTS rb = RachunekBankowy EXTID 'RachunekBankowy' IN Platnosc
+    PROPERTIES(rb) number EXTID 'NrRB'
+    FILTERS faktura(rb) = f
 ;
 
 // import
@@ -151,6 +164,10 @@ Indeks = DATA LOCAL STRING (INTEGER);
 PKWIU = DATA LOCAL STRING (INTEGER);
 CN = DATA LOCAL STRING (INTEGER);
 PKOB = DATA LOCAL STRING (INTEGER);
+
+Termin = DATA LOCAL DATE (INTEGER);
+FormaPlatnosci = DATA LOCAL INTEGER();
+RachunekBankowyNumber = DATA LOCAL STRING (INTEGER);
 
 FORM FA3XmlImport FORMEXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Faktura'
     PROPERTIES ATTR ='http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2022/01/05/eD/DefinicjeTypy/' EXTID 'xmlns:etd', ='http://www.w3.org/2001/XMLSchema' EXTID 'xmlns:xsd', ='http://www.w3.org/2001/XMLSchema-instance' EXTID 'xmlns:xsi'
@@ -229,6 +246,15 @@ FORM FA3XmlImport FORMEXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Faktura'
         CN EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:CN',
         PKOB EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:PKOB'
     FILTERS imported(faWiersz)
+
+    OBJECTS tp = INTEGER EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:TerminPlatnosci' IN Platnosc
+    PROPERTIES(tp) Termin EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Termin'
+
+    PROPERTIES() IN Platnosc
+        FormaPlatnosci EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:FormaPlatnosci'
+
+    OBJECTS rb = INTEGER EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:RachunekBankowy' IN Platnosc
+    PROPERTIES(rb) RachunekBankowyNumber EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:NrRB'
 ;
 
 import (Faktura nf) {
@@ -284,5 +310,17 @@ import (Faktura nf) {
         PKWIU(fw) <- PKWIU(faWiersz);
         CN(fw) <- CN(faWiersz);
         PKOB(fw) <- PKOB(faWiersz);
+    }
+
+    FOR Termin(INTEGER tp) DO NEW t = TerminPlatnosci {
+        faktura(t) <- nf;
+        date(t) <- Termin(tp);
+    }
+
+    FormaPlatnosci(nf) <- FormaPlatnosci();
+
+    FOR RachunekBankowyNumber(INTEGER rb) DO NEW r = RachunekBankowy {
+        faktura(r) <- nf;
+        number(r) <- RachunekBankowyNumber(rb);
     }
 }

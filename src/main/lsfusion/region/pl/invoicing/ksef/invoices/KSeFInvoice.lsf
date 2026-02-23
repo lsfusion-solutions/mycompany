@@ -1,7 +1,7 @@
 MODULE KSeFInvoice;
 
 REQUIRE Invoice, InvoiceCurrency, InvoiceCorrection, InvoiceAdvance,
-        LegalEntityPl, KSeFFaktura;
+        LegalEntityPl, CashAccount, KSeFFaktura;
 
 NAMESPACE KSeF;
 
@@ -66,6 +66,19 @@ createFaktura 'Build Faktura' (Invoice i) {
         taxAmount2(f) <- correctionTaxAmount(tax(r'8%'), i);
         taxAmount3(f) <- correctionTaxAmount(tax(r'5%'), i);
         amount(f) <- correctionAmount(i);
+        
+        IF dueDate(i) THEN
+            NEW t = TerminPlatnosci {
+                faktura(t) <- f;
+                date(t) <- dueDate(i);
+            }
+            
+        FormaPlatnosci(f) <- IF companyAccount(i) IS CashAccount THEN 1 ELSE 6;
+        IF numberCompanyAccount(i) THEN
+            NEW rb = RachunekBankowy {
+                faktura(rb) <- f;
+                number(rb) <- numberCompanyAccount(i);
+            }
         
         metodaKasowa(f) <- 2;
         samofakturowanie(f) <- 2;

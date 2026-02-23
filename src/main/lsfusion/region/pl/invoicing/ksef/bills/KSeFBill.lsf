@@ -32,8 +32,10 @@ createBill 'Create Bill' (Faktura f) {
             dateTime(b) <- DATETIME(invoiceDate(f));
             deliveryDateTime(b) <- DATETIME(deliveryDate(f));
             vendorReference(b) <- invoiceNumber(f);
+            dueDateTime(b) <- DATETIME(GROUP LAST date(TerminPlatnosci tp) ORDER tp WHERE faktura(tp) = f);
 
             currency(b) <- currency(KodWaluty(f));
+            vendorAccount(b) <- account(vendor(b), GROUP LAST number(RachunekBankowy r) ORDER r WHERE faktura(r) = f);
             
             original(b) <- bill(fakturaKSeFNumber(NrKSeFFaKorygowanej(f)));
 

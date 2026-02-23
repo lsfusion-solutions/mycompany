@@ -7,6 +7,8 @@ NAMESPACE KSeF;
 // Core FA(3) data classes without any dependency on Invoice
 CLASS Faktura 'Faktura';
 
+xmlFile 'XML FA(3)' = DATA XMLFILE (Faktura);
+
 number 'KSeF number' = DATA STRING[36] (Faktura) INDEXED;
 fakturaKSeFNumber = GROUP AGGR Faktura f BY number(f);
 
@@ -32,22 +34,22 @@ SystemInfo = DATA STRING[100] (Faktura);
 
 // Podmiot1 (seller)
 p1_NIP 'NIP (1)' = DATA STRING[20] (Faktura);
-p1_Nazwa 'Nazwa (1)' = DATA ISTRING[200] (Faktura);
+p1_Nazwa 'Nazwa (1)' = DATA ISTRING[200] (Faktura) CHARWIDTH 20;
 p1_KodKraju 'Kod Kraju (1)' = DATA STRING[5] (Faktura);
-p1_AdresL1 'Adres L1 (1)' = DATA ISTRING[200] (Faktura);
-p1_AdresL2 'Adres L2 (1)' = DATA ISTRING[200] (Faktura);
-p1_Email 'Email (1)' = DATA ISTRING[400] (Faktura);
-p1_Telefon 'Telefon (1)' = DATA ISTRING[100] (Faktura);
+p1_AdresL1 'Adres L1 (1)' = DATA ISTRING[200] (Faktura) CHARWIDTH 20;
+p1_AdresL2 'Adres L2 (1)' = DATA ISTRING[200] (Faktura) CHARWIDTH 20;
+p1_Email 'Email (1)' = DATA ISTRING[400] (Faktura) CHARWIDTH 15;
+p1_Telefon 'Telefon (1)' = DATA ISTRING[100] (Faktura) CHARWIDTH 15;
 
 // Podmiot2 (buyer)
 p2_NIP 'NIP (2)' = DATA STRING[20] (Faktura);
-p2_Nazwa 'Nazwa (2)' = DATA ISTRING[200] (Faktura);
+p2_Nazwa 'Nazwa (2)' = DATA ISTRING[200] (Faktura) CHARWIDTH 20;
 p2_KodKraju 'Kod Kraju (2)' = DATA STRING[5] (Faktura);
-p2_AdresL1 'Adres L1 (2)' = DATA ISTRING[200] (Faktura);
-p2_AdresL2 'Adres L2 (2)' = DATA ISTRING[200] (Faktura);
-p2_Email 'Email (2)' = DATA ISTRING[400] (Faktura);
-p2_Telefon 'Telefon (2)' = DATA ISTRING[100] (Faktura);
-p2_NrKlienta 'Nr Klienta (2)' = DATA STRING[50] (Faktura);
+p2_AdresL1 'Adres L1 (2)' = DATA ISTRING[200] (Faktura) CHARWIDTH 20;
+p2_AdresL2 'Adres L2 (2)' = DATA ISTRING[200] (Faktura) CHARWIDTH 20;
+p2_Email 'Email (2)' = DATA ISTRING[400] (Faktura) CHARWIDTH 15;
+p2_Telefon 'Telefon (2)' = DATA ISTRING[100] (Faktura) CHARWIDTH 15;
+p2_NrKlienta 'Nr Klienta (2)' = DATA STRING[50] (Faktura) CHARWIDTH 10;
 
 // Fa totals and fields
 KodWaluty = DATA STRING[3] (Faktura);
@@ -111,10 +113,25 @@ CN 'CN' = DATA STRING (FaWiersz);
 PKOB 'PKOB' = DATA STRING (FaWiersz);
 
 // KSeF result and status stored on Faktura
-referenceNumber 'Reference' = DATA STRING[200] (Faktura) INDEXED;
+referenceNumber 'Reference' = DATA STRING[200] (Faktura) INDEXED CHARWIDTH 30; 
 statusCode 'Status code' = DATA INTEGER (Faktura);
 statusDescription 'Status' = DATA STRING (Faktura);
 statusDetails 'Details' = DATA STRING (Faktura);
+
+CLASS TerminPlatnosci 'TerminPlatnosci';
+faktura 'Faktura' = DATA Faktura (TerminPlatnosci) NONULL DELETE INDEXED;
+date 'Termin' = DATA DATE (TerminPlatnosci);
+
+FormaPlatnosci 'Forma platnosci' = DATA INTEGER (Faktura);
+
+CLASS RachunekBankowy 'Rachunek bankowy';
+faktura 'Faktura' = DATA Faktura (RachunekBankowy) NONULL DELETE INDEXED;
+number 'Rachunek bankowy' = DATA STRING[100] (RachunekBankowy);
+
+openXml 'Open XML' (Faktura f) {
+    IF xmlFile(f) THEN
+        open(xmlFile(f), 'FA3-XML');
+}
 
 getStatus 'Get status' (Faktura f) {
     NEWSESSION {
@@ -153,14 +170,22 @@ FORM faktura 'Faktura KSeF'
                   untaxedAmount2, taxAmount2,
                   untaxedAmount3, taxAmount3,
                   untaxedAmount6, untaxedAmount7,
-                  amount, 
+                  amount, FormaPlatnosci,
                   metodaKasowa, samofakturowanie, odwrotneObciazenie, mpp, weUproszczona,
                   KursWalutyZ, RodzajFaktury,
                   PrzyczynaKorekty, DataWystFaKorygowanej, NrFaKorygowanej, NrKSeFFaKorygowanej
 
     OBJECTS z = FakturaZaliczkowa
-    PROPERTIES(z) READONLY number
+    PROPERTIES(z) READONLY '' = number
     FILTERS faktura(z) = f
+
+    OBJECTS tp = TerminPlatnosci
+    PROPERTIES(tp) READONLY '' = date
+    FILTERS faktura(tp) = f
+
+    OBJECTS rb = RachunekBankowy
+    PROPERTIES(rb) READONLY '' = number
+    FILTERS faktura(rb) = f
 
     OBJECTS w = FaWiersz
     PROPERTIES(w) READONLY NrWierszaFa, description, GTIN, nameUom, quantity, price, untaxedAmount, taxes, correction,
@@ -187,6 +212,7 @@ DESIGN faktura {
                 MOVE PROPERTY(statusDetails(f)) { alignment = STRETCH; }
                 NEW invoicing FIRST {
                     horizontal = TRUE;
+                    alignment = STRETCH;
                     MOVE PROPERTY(DataWytworzeniaFa(f));
                     MOVE PROPERTY(invoiceNumber(f));
                     MOVE PROPERTY(invoiceDate(f));
@@ -194,7 +220,9 @@ DESIGN faktura {
                     MOVE PROPERTY(KursWalutyZ(f));
                 }
                 NEW parties {
+                    alignment = STRETCH;
                     NEW seller {
+                        alignment = STRETCH;
                         caption = 'Podmiot 1';
                         lines = 3;
                         MOVE PROPERTY(namePodmiot1(f));
@@ -206,6 +234,7 @@ DESIGN faktura {
                         MOVE PROPERTY(p1_Telefon(f));
                     }
                     NEW buyer {
+                        alignment = STRETCH;
                         caption = 'Podmiot 2';
                         lines = 3;
                         MOVE PROPERTY(namePodmiot2(f));
@@ -225,11 +254,18 @@ DESIGN faktura {
                     MOVE PROPERTY(untaxedAmount3(f));
                     MOVE PROPERTY(untaxedAmount6(f));
                     MOVE PROPERTY(untaxedAmount7(f));
+                }
+                NEW totalsTax {
+                    horizontal = TRUE;
                     MOVE PROPERTY(taxAmount1(f));
                     MOVE PROPERTY(taxAmount2(f));
                     MOVE PROPERTY(taxAmount3(f));
                     MOVE PROPERTY(amount(f));
+                }
+                NEW type {
+                    horizontal = TRUE;
                     MOVE PROPERTY(RodzajFaktury(f));
+                    MOVE PROPERTY(FormaPlatnosci(f));
                 }
                 NEW korekta {
                     horizontal = TRUE;
@@ -248,7 +284,19 @@ DESIGN faktura {
                 }
             }
             NEW headerRight {
-                MOVE BOX(z);
+                alignment = STRETCH;
+                MOVE BOX(z) {
+                    GRID(z) { height = 55; }
+                    REMOVE TOOLBARBOX(z);
+                }
+                MOVE BOX(tp) {
+                    GRID(tp) { height = 55; }
+                    REMOVE TOOLBARBOX(tp);
+                }
+                MOVE BOX(rb) { 
+                    GRID(rb) { height = 55; }
+                    REMOVE TOOLBARBOX(rb);
+                }
             }
         }
         MOVE BOX(w) { caption = 'Lines'; fill = 1; }
@@ -267,6 +315,7 @@ FORM faktury 'Faktury KSeF'
                     KursWalutyZ, RodzajFaktury,
                     PrzyczynaKorekty, DataWystFaKorygowanej, NrFaKorygowanej, NrKSeFFaKorygowanej,
                     referenceNumberSession, referenceNumber, statusCode, statusDescription, statusDetails
+    PROPERTIES(f) openXml TOOLBAR SHOWIF TRUE IF xmlFile(f)
     PROPERTIES(f) getStatus GRID BEFORE statusCode(f)
     PROPERTIES(f) NEWSESSION EDIT, DELETE
 ;
