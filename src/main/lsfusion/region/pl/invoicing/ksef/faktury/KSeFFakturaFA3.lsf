@@ -137,7 +137,6 @@ NrKSeFFaKorygowanej = DATA STRING[36] ();
 NrKSeFFaZaliczkowej = DATA LOCAL STRING[36](INTEGER);
 
 NrWierszaFa = DATA LOCAL STRING(INTEGER);
-UU_ID = DATA LOCAL STRING(INTEGER);
 P_7 = DATA LOCAL STRING(INTEGER);
 GTIN = DATA LOCAL STRING(INTEGER);
 P_8A = DATA LOCAL STRING(INTEGER);
@@ -146,6 +145,12 @@ P_9A = DATA LOCAL NUMERIC[10,2](INTEGER);
 P_11 = DATA LOCAL NUMERIC[14,2](INTEGER);
 P_12 = DATA LOCAL STRING(INTEGER);
 StanPrzed = DATA LOCAL INTEGER(INTEGER);
+
+UU_ID = DATA LOCAL STRING(INTEGER);
+Indeks = DATA LOCAL STRING (INTEGER);
+PKWIU = DATA LOCAL STRING (INTEGER);
+CN = DATA LOCAL STRING (INTEGER);
+PKOB = DATA LOCAL STRING (INTEGER);
 
 FORM FA3XmlImport FORMEXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Faktura'
     PROPERTIES ATTR ='http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2022/01/05/eD/DefinicjeTypy/' EXTID 'xmlns:etd', ='http://www.w3.org/2001/XMLSchema' EXTID 'xmlns:xsd', ='http://www.w3.org/2001/XMLSchema-instance' EXTID 'xmlns:xsi'
@@ -210,7 +215,6 @@ FORM FA3XmlImport FORMEXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Faktura'
     OBJECTS faWiersz = INTEGER EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:FaWiersz' IN Fa
     PROPERTIES(faWiersz)
         NrWierszaFa EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:NrWierszaFa',
-        UU_ID EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:UU_ID',
         P_7 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_7',
         GTIN EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:GTIN',
         P_8A EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_8A',
@@ -218,7 +222,12 @@ FORM FA3XmlImport FORMEXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Faktura'
         P_9A EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_9A',
         P_11 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_11',
         P_12 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_12',
-        StanPrzed EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:StanPrzed'
+        StanPrzed EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:StanPrzed',
+        UU_ID EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:UU_ID',
+        Indeks EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Indeks',
+        PKWIU EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:PKWIU',
+        CN EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:CN',
+        PKOB EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:PKOB'
     FILTERS imported(faWiersz)
 ;
 
@@ -269,5 +278,11 @@ import (Faktura nf) {
         untaxedAmount(fw) <- P_11(faWiersz);
         taxes(fw) <- P_12(faWiersz);
         correction(fw) <- StanPrzed(faWiersz);
+
+        id(fw) <- UU_ID(faWiersz);
+        index(fw) <- Indeks(faWiersz);
+        PKWIU(fw) <- PKWIU(faWiersz);
+        CN(fw) <- CN(faWiersz);
+        PKOB(fw) <- PKOB(faWiersz);
     }
 }
