@@ -107,10 +107,10 @@ taxes = DATA STRING (FaWiersz);
 correction 'Correction' = DATA INTEGER (FaWiersz);
 
 id 'ID' = DATA STRING (FaWiersz);
-index 'Index' = DATA STRING[50] (FaWiersz) CHARWIDTH 15;
-PKWIU 'PKWIU' = DATA STRING (FaWiersz);
-CN 'CN' = DATA STRING (FaWiersz);
-PKOB 'PKOB' = DATA STRING (FaWiersz);
+index r'Indeks' = DATA STRING[50] (FaWiersz) CHARWIDTH 15;
+PKWIU r'PKWIU' = DATA STRING (FaWiersz);
+CN r'CN' = DATA STRING (FaWiersz);
+PKOB r'PKOB' = DATA STRING (FaWiersz);
 
 // KSeF result and status stored on Faktura
 referenceNumber 'Reference' = DATA STRING[200] (Faktura) INDEXED CHARWIDTH 30; 
@@ -127,6 +127,11 @@ FormaPlatnosci 'Forma platnosci' = DATA INTEGER (Faktura);
 CLASS RachunekBankowy 'Rachunek bankowy';
 faktura 'Faktura' = DATA Faktura (RachunekBankowy) NONULL DELETE INDEXED;
 number 'Rachunek bankowy' = DATA STRING[100] (RachunekBankowy);
+
+CLASS DodatkowyOpis 'Dodatkowy opis';
+faktura 'Faktura' = DATA Faktura (DodatkowyOpis) NONULL DELETE INDEXED;
+Klucz 'Klucz' = DATA STRING[256] (DodatkowyOpis) CHARWIDTH 10;
+Wartosc 'Wartosc' = DATA STRING[1000] (DodatkowyOpis) CHARWIDTH 20;
 
 openXml 'Open XML' (Faktura f) {
     IF xmlFile(f) THEN
@@ -186,6 +191,10 @@ FORM faktura 'Faktura KSeF'
     OBJECTS rb = RachunekBankowy
     PROPERTIES(rb) READONLY '' = number
     FILTERS faktura(rb) = f
+
+    OBJECTS dof = DodatkowyOpis
+    PROPERTIES(dof) READONLY Klucz, Wartosc
+    FILTERS faktura(dof) = f
 
     OBJECTS w = FaWiersz
     PROPERTIES(w) READONLY NrWierszaFa, description, GTIN, nameUom, quantity, price, untaxedAmount, taxes, correction,
@@ -284,18 +293,24 @@ DESIGN faktura {
                 }
             }
             NEW headerRight {
+                fill = 0.5;
                 alignment = STRETCH;
                 MOVE BOX(z) {
-                    GRID(z) { height = 55; }
+                    GRID(z) { width = 200; height = 55; }
                     REMOVE TOOLBARBOX(z);
                 }
                 MOVE BOX(tp) {
-                    GRID(tp) { height = 55; }
+                    GRID(tp) { width = 200;  height = 55; }
                     REMOVE TOOLBARBOX(tp);
                 }
                 MOVE BOX(rb) { 
-                    GRID(rb) { height = 55; }
+                    GRID(rb) { width = 200;  height = 55; }
                     REMOVE TOOLBARBOX(rb);
+                }
+                MOVE BOX(dof) {
+                    fill = 5;
+                    GRID(dof) { width = 200; height = 55; }
+                    REMOVE TOOLBARBOX(dof);
                 }
             }
         }

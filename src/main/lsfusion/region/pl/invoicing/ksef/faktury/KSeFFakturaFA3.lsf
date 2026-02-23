@@ -17,6 +17,7 @@ GROUP PMarzy : Adnotacje;
 GROUP DaneFaKorygowanej EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:DaneFaKorygowanej' : Fa;
 GROUP Platnosc EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Platnosc' : Fa;
 GROUP TerminPlatnosci EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:TerminPlatnosci' : Platnosc;
+GROUP DodatkowyOpis EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:DodatkowyOpis' : Fa;
 
 // Nested groups
 GROUP P1DaneId EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:DaneIdentyfikacyjne' : Podmiot1;
@@ -95,6 +96,10 @@ FORM FA3XmlExport
     OBJECTS rb = RachunekBankowy EXTID 'RachunekBankowy' IN Platnosc
     PROPERTIES(rb) number EXTID 'NrRB'
     FILTERS faktura(rb) = f
+
+    OBJECTS dof = DodatkowyOpis EXTID 'DodatkowyOpis' IN Fa
+    PROPERTIES(dof) Klucz EXTID 'Klucz', Wartosc EXTID 'Wartosc'
+    FILTERS faktura(dof) = f
 ;
 
 // import
@@ -168,6 +173,8 @@ PKOB = DATA LOCAL STRING (INTEGER);
 Termin = DATA LOCAL DATE (INTEGER);
 FormaPlatnosci = DATA LOCAL INTEGER();
 RachunekBankowyNumber = DATA LOCAL STRING (INTEGER);
+DodatkowyOpisKlucz = DATA LOCAL STRING (INTEGER);
+DodatkowyOpisWartosc = DATA LOCAL STRING (INTEGER);
 
 FORM FA3XmlImport FORMEXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Faktura'
     PROPERTIES ATTR ='http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2022/01/05/eD/DefinicjeTypy/' EXTID 'xmlns:etd', ='http://www.w3.org/2001/XMLSchema' EXTID 'xmlns:xsd', ='http://www.w3.org/2001/XMLSchema-instance' EXTID 'xmlns:xsi'
@@ -255,6 +262,11 @@ FORM FA3XmlImport FORMEXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Faktura'
 
     OBJECTS rb = INTEGER EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:RachunekBankowy' IN Platnosc
     PROPERTIES(rb) RachunekBankowyNumber EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:NrRB'
+
+    OBJECTS dof = INTEGER EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:DodatkowyOpis' IN Fa
+    PROPERTIES(dof)
+        DodatkowyOpisKlucz EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Klucz',
+        DodatkowyOpisWartosc EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Wartosc'
 ;
 
 import (Faktura nf) {
@@ -291,6 +303,12 @@ import (Faktura nf) {
     FOR NrKSeFFaZaliczkowej(INTEGER fz) DO NEW z = FakturaZaliczkowa {
         faktura(z) <- nf;
         number(z) <- NrKSeFFaZaliczkowej(fz);
+    }
+
+    FOR imported(INTEGER dof) DO NEW d = DodatkowyOpis {
+        faktura(d) <- nf;
+        Klucz(d) <- DodatkowyOpisKlucz(dof);
+        Wartosc(d) <- DodatkowyOpisWartosc(dof);
     }
 
     FOR imported(INTEGER faWiersz) DO NEW fw = FaWiersz {
