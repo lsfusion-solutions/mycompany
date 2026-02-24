@@ -14,6 +14,7 @@ countToBillFaktura = GROUP SUM 1 IF toBill(Faktura f);
 // Selector to keep compatibility: find Faktura by Bill
 faktura (Bill b) = GROUP LAST Faktura f ORDER f WHERE bill(f) = b;
 
+editFaktura '{logics.edit}' (Bill b) { edit(faktura(b)); } 
 fakturaReference 'KSeF reference' (Bill b) = referenceNumber(faktura(b));
 fakturaStatusCode 'KSeF status code' (Bill b) = statusCode(faktura(b));
 fakturaStatusDescription 'KSeF status' (Bill b) = statusDescription(faktura(b));
@@ -64,6 +65,7 @@ EXTEND FORM bills
 ;
 
 EXTEND FORM bill
+    PROPERTIES(b)          editFaktura
     PROPERTIES(b) READONLY fakturaReference, fakturaStatusCode, fakturaStatusDescription, fakturaStatusDetails, fakturaNumber
 ;
 
@@ -73,6 +75,7 @@ DESIGN bill {
             alignment = STRETCH;
             caption = 'KSeF';
             lines = 3;
+            MOVE PROPERTY(editFaktura(b));
             MOVE PROPERTY(fakturaReference(b));
             MOVE PROPERTY(fakturaStatusCode(b));
             MOVE PROPERTY(fakturaStatusDescription(b));
@@ -94,7 +97,6 @@ DESIGN bills {
     tabbedPane {
         MOVE BOX(f) { 
             caption = badged('KSeF', countToBillFaktura());
-            GRID(f) { size = (100, -1); }
         }
     }
 }
