@@ -1,0 +1,47 @@
+MODULE WorkOrderInProgress;
+
+REQUIRE WorkOrderSelection;
+
+NAMESPACE Manufacturing;
+
+EXTEND CLASS WorkOrderStatus {
+    inProgress 'In progress'
+}
+inProgress 'In progress' = DATA BOOLEAN (WorkOrder);
+
+status(WorkOrder w) += WHEN inProgress(w) THEN WorkOrderStatus.inProgress;
+color(WorkOrderStatus s) += WHEN s = WorkOrderStatus.inProgress THEN RGB(252,247,149);
+
+start '{Start}' (WorkOrder w) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    NEWSESSION {
+        inProgress(w) <- TRUE;
+        APPLY;
+    }
+}
+
+EXTEND FORM workOrder
+    PROPERTIES(o) start SHOWIF status(o) = WorkOrderStatus.ready,
+                  inProgress
+;
+
+DESIGN workOrder {
+    primaryActions {
+        MOVE PROPERTY(start(o)) { valueClass = 'btn-primary'; }
+    }
+    statusGroup {
+        MOVE PROPERTY(inProgress(o)) {
+            valueClass = 'btn-check';
+            captionClass = 'btn btn-outline-primary btn-arrow-right';
+        }
+    }
+}
+
+EXTEND FORM workOrders
+    EXTEND FILTERGROUP status
+        FILTER 'In progress' status(o) = WorkOrderStatus.inProgress
+;
+
+@defineSelectionAction(workOrders, WorkOrder, start, '{Start}', statuses);

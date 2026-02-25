@@ -48,8 +48,31 @@ Zlecenia produkcyjne są zazwyczaj tworzone w kontekście **Zamówienia produkcj
 
 Aby zobaczyć globalny widok wszystkich zadań produkcyjnych, przejdź do **Produkcja** → **Operacje** → **Zlecenia produkcyjne**. Lista ta pozwala kierownikom:
 - Śledzić postęp operacji w różnych zamówieniach produkcji.
-- Filtrować zadania według stanowiska roboczego lub daty.
+- Filtrować zadania według stanowiska roboczego, daty rozpoczęcia lub produktu (z zamówienia produkcji).
+- Masowo aktualizować zlecenia produkcyjne przy użyciu multi-selekcji: wybierz wiele linii i użyj akcji **Rozpocznij** lub **Oznacz jako wykonane**.
 - Edytować szczegóły operacji bez otwierania poszczególnych zamówień produkcji.
+
+### Statusy zleceń produkcyjnych
+
+Każde zlecenie produkcyjne przechodzi przez określony proces w celu śledzenia postępów:
+- **Gotowe**: Stan początkowy dla nowych zleceń produkcyjnych.
+- **W toku**: Stan aktywny po rozpoczęciu pracy (oznaczony żółtym tłem).
+- **Wykonano**: Stan końcowy po zakończeniu operacji.
+
+#### Akcje:
+- **Rozpocznij**: Przenosi zlecenie produkcyjne ze stanu *Gotowe* do *W toku*.
+- **Oznacz jako wykonane**: Przenosi zlecenie produkcyjne ze stanu *W toku* do *Wykonano*.
+
+Akcje te są dostępne zarówno na formularzu zlecenia produkcyjnego, jak i na globalnej liście zleceń.
+
+### Filtrowanie i wybór
+
+Lista **Zlecenia produkcyjne** zawiera ulepszone filtrowanie:
+- **Otwarte**: Wyświetla zlecenia produkcyjne w statusie *Gotowe* lub *W toku*.
+- **Zamknięte**: Wyświetla zlecenia produkcyjne w statusie *Wykonano*.
+- **Filtry według daty, stanowiska roboczego i produktu**: Użyj panelu filtrów, aby zawęzić listę operacji.
+
+**Multi-selekcja** jest obsługiwana w widoku listy, co umożliwia wykonywanie operacji masowych na wielu zleceniach produkcyjnych jednocześnie.
 
 ### Synchronizacja i zachowanie przy kopiowaniu
 

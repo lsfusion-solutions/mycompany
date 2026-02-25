@@ -16,6 +16,7 @@ Zamówienie produkcji jest głównym dokumentem produkcyjnym. Służy do:
 - wykonania **kontroli dostępności** i rezerwacji materiałów;
 - rejestracji **faktycznej produkcji** i **faktycznego zużycia**;
 - wskazania **„Lokalizacji produktów”** po zakończeniu zamówienia w statusie **„Wykonano”**;
+- monitorowania statusów [zleceń produkcyjnych](work-orders.md) bezpośrednio z karty zamówienia.
 - generowania zleceń produkcyjnych na podstawie operacji Zestawienia materiałów podczas generowania/przeliczania linii.
 
 ## Lista zamówień produkcji
@@ -76,11 +77,14 @@ Zamówienie ma planowaną ilość **Do produkowania**. Na jej podstawie system m
 2. Wypełnij typ, towar i datę rozpoczęcia.
 3. Wybierz [Zestawienie materiałów](bom.md).
 4. Upewnij się, że linie materiałów i wyjścia są wyliczone.
-   - Jednocześnie zlecenia produkcyjne są generowane na podstawie operacji Zestawienia materiałów.
+   - Jednocześnie [zlecenia produkcyjne](work-orders.md) są generowane na podstawie operacji Zestawienia materiałów.
 5. Uruchom kontrolę dostępności i zarezerwuj materiały.
 
 ### Uruchomić produkcję i zakończyć zamówienie
 
 1. Przenieś zamówienie do statusu **„W trakcie”**.
-2. Wprowadź faktyczną produkcję (w razie potrzeby skoryguj faktyczne zużycie).
-3. Uruchom **„Zatwierdż”** i wskaż **„Lokalizacja produktów”**.
+2. Zarządzaj wykonaniem zleceń produkcyjnych (opcjonalnie):
+   - Przejdź do zakładki **Zlecenia produkcyjne**.
+   - Użyj akcji **Rozpocznij** i **Oznacz jako wykonane**, aby śledzić postęp operacji.
+3. Wprowadź faktyczną produkcję (w razie potrzeby skoryguj faktyczne zużycie).
+4. Uruchom **„Zatwierdż”** i wskaż **„Lokalizacja produktów”**.

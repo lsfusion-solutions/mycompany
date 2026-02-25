@@ -48,8 +48,31 @@ Work orders are typically created within the context of a **Manufacturing order*
 
 To see a global view of all production tasks, go to **Manufacturing** → **Operations** → **Work orders**. This list allows supervisors to:
 - Track the progress of operations across different manufacturing orders.
-- Filter tasks by work center or date.
+- Filter tasks by work center, start date, or item (from the manufacturing order).
+- Bulk update work orders using multi-selection: select multiple lines and use **Start** or **Mark as Done** actions.
 - Edit operation details without opening individual manufacturing orders.
+
+### Work order statuses
+
+Each work order follows a specific workflow to track its progress:
+- **Ready**: Initial state for new work orders.
+- **In Progress**: Active state when work has started (indicated by a yellow background).
+- **Done**: Final state when the operation is completed.
+
+#### Actions:
+- **Start**: Moves a work order from *Ready* to *In Progress*.
+- **Mark as Done**: Moves a work order from *In Progress* to *Done*.
+
+These actions are available on both the work order form and in the global work orders list.
+
+### Filtering and Selection
+
+The **Work orders** list includes enhanced filtering:
+- **Opened**: Displays work orders in *Ready* or *In Progress* status.
+- **Closed**: Displays work orders in *Done* status.
+- **Filters by Date, Work Center, and Item**: Use the filter panel to narrow down the list of operations.
+
+**Multi-selection** is supported in the list view, enabling bulk operations on multiple work orders simultaneously.
 
 ### Synchronization and copy behavior
 
