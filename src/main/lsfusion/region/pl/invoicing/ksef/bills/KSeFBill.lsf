@@ -22,6 +22,9 @@ fakturaStatusDetails 'KSeF details' (Bill b) = statusDetails(faktura(b));
 fakturaNumber 'KSeF number' (Bill b) = number(faktura(b));
 
 // Create Bill from Faktura (FA3) without attachments
+fill ABSTRACT LIST (BillLine, FaWiersz);
+fill ABSTRACT LIST (Bill, Faktura);
+
 createBill 'Create Bill' (Faktura f) {
     NEWSESSION {
         NEW b = Bill {
@@ -39,6 +42,8 @@ createBill 'Create Bill' (Faktura f) {
             vendorAccount(b) <- account(vendor(b), GROUP LAST number(RachunekBankowy r) ORDER r WHERE faktura(r) = f);
             
             original(b) <- bill(fakturaKSeFNumber(NrKSeFFaKorygowanej(f)));
+            
+            fill(b, f);
 
             FOR faktura(FaWiersz w) = f AND NOT correction(w) ORDER NrWierszaFa(w) DO NEW l = BillLine {
                 bill(l) <- b;
@@ -49,6 +54,8 @@ createBill 'Create Bill' (Faktura f) {
                 untaxedAmount(l) <- untaxedAmount(w);
                 
                 in(l, Tax t) <- taxes(w) = (OVERRIDE (toChar(value(t), '99') IF value(t) > 0), name(t));
+
+                fill(l, w);
             }
 
             SHOW bill OBJECTS b = b DOCKED;
