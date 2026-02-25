@@ -10,6 +10,8 @@ In the system, a Bill of Materials is used as a source of planned norms: based o
 
 Bills of Materials are usually available in the **“Manufacturing”** section (depending on your configuration — in **Operations** or **Settings**).
 
+The list of BoM operations is available in **Manufacturing → Settings → Operations**.
+
 ## What a Bill of Materials is used for
 
 A Bill of Materials is used for:
@@ -17,6 +19,7 @@ A Bill of Materials is used for:
 - automatically filling material lines in a manufacturing order;
 - calculating planned consumption and planned output;
 - generating by-products during production;
+- defining operation templates for work orders (work center, start time, duration);
 - unbuild (disassembly) — usually using the same Bill of Materials;
 - analyzing the item structure and planned norms.
 
@@ -74,6 +77,17 @@ Each line usually contains:
 
 How by-product quantities are calculated in the order — see [By-products](by-products.md).
 
+### Operations
+
+The "Operations" tab defines planned production steps used to create work orders.
+
+Each line typically contains:
+
+- **Name** - operation name;
+- **Work center** - where the operation is performed;
+- **Start time** - planned time of day;
+- **Duration** - planned duration in hours.
+
 ## Using the Bill of Materials in a manufacturing order
 
 ### Bill of Materials auto-selection
@@ -97,12 +111,16 @@ For regular production:
 - Bill of Materials components generate material lines;
 - the order item generates an output line;
 - Bill of Materials by-products are added to output lines.
+- work orders are generated from Bill of Materials operations.
 
 For unbuild (disassembly):
 
 - Bill of Materials components generate output lines;
 - the order item generates a material line;
 - Bill of Materials by-products are added to material lines.
+- work orders are generated from Bill of Materials operations.
+
+Important: when the order lines are generated or recalculated, work orders are rebuilt from the current Bill of Materials operations.
 
 For details about unbuild, see [Unbuild (disassembly)](unbuild.md).
 
@@ -124,6 +142,14 @@ Recommendations:
 1. Do not edit archived Bills of Materials.
 2. When the item structure changes, create a new Bill of Materials (new number) and make it the default.
 3. Archive the old Bill of Materials so it is not selected for new orders.
+
+## Copying a Bill of Materials
+
+When you copy a Bill of Materials, the system copies:
+
+- components;
+- by-products;
+- operations (including work center, start time, and duration).
 
 ## Mass entry via tables (import/export)
 

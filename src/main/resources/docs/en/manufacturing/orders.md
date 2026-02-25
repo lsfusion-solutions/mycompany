@@ -16,6 +16,7 @@ A manufacturing order is the main manufacturing document. It is used to:
 - perform an **availability check** and reserve materials;
 - record **actual production** and **actual consumption**;
 - specify the **Products location** when the order is **Done**.
+- generate work orders from Bill of Materials operations during line generation/recalculation.
 
 ## Manufacturing orders list
 
@@ -75,6 +76,7 @@ An order has a planned **To produce** quantity. Based on it, the system can:
 2. Fill in the type, item, and start date.
 3. Select a [Bill of Materials](bom.md).
 4. Make sure material and output lines are calculated.
+   - At the same time, work orders are generated from Bill of Materials operations.
 5. Run availability check and reserve materials.
 
 ### Manufacture and mark as Done

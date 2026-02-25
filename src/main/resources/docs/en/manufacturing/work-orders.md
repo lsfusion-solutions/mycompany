@@ -28,6 +28,8 @@ A **Work order** represents a specific operation or task performed at a work cen
 
 ### Creating work orders
 
+Work orders can be entered manually, but they are also automatically generated from Bill of Materials operations when manufacturing order lines are generated or recalculated.
+
 Work orders are typically created within the context of a **Manufacturing order**. You can break down a single production process into multiple sequential or parallel operations.
 
 #### Steps to add a work order:
@@ -40,6 +42,7 @@ Work orders are typically created within the context of a **Manufacturing order*
    - **Start date** — the day the operation is scheduled to begin (defaults to the manufacturing order's scheduled date).
    - **Start time** — the specific time of day the operation should start.
    - **Duration** — the estimated time required for the operation (in hours).
+   - **Source operation** - a direct link to the Bill of Materials operation used to create the work order.
 
 ### Managing all work orders
 
@@ -47,6 +50,11 @@ To see a global view of all production tasks, go to **Manufacturing** → **Oper
 - Track the progress of operations across different manufacturing orders.
 - Filter tasks by work center or date.
 - Edit operation details without opening individual manufacturing orders.
+
+### Synchronization and copy behavior
+
+- When manufacturing order lines are generated/recalculated, existing work orders in that order are rebuilt from Bill of Materials operations.
+- When a manufacturing order is copied, its work orders are copied as well, including operation link, start date/time, and duration.
 
 ---
 

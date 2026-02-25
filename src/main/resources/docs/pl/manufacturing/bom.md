@@ -10,6 +10,8 @@ W systemie Zestawienie materiałów jest używane jako źródło planowanych nor
 
 Zestawienia materiałów są zwykle dostępne w sekcji **„Produkcja”** (w zależności od konfiguracji — w **Operacjach** lub **Ustawieniach**).
 
+Lista operacji Zestawień materiałów jest dostępna w **Produkcja → Ustawienia → Operacje**.
+
 ## Do czego służy Zestawienie materiałów
 
 Zestawienie materiałów jest używane do:
@@ -17,6 +19,7 @@ Zestawienie materiałów jest używane do:
 - automatycznego wypełniania linii materiałów w zamówieniu produkcji;
 - obliczania planowanego zużycia i planowanej produkcji;
 - generowania produktów ubocznych podczas produkcji;
+- definiowania szablonów operacji dla zleceń produkcyjnych (stanowisko robocze, czas rozpoczęcia, czas trwania);
 - demontażu — zwykle z użyciem tego samego Zestawienia materiałów;
 - analizy struktury towaru i planowanych norm.
 
@@ -74,6 +77,17 @@ Każda linia zwykle zawiera:
 
 Jak ilości produktów ubocznych są liczone w zamówieniu — zobacz: [Produkty uboczne](by-products.md).
 
+### Operacje
+
+Zakładka „Operacje” definiuje planowane kroki produkcji używane do tworzenia zleceń produkcyjnych.
+
+Każda linia zwykle zawiera:
+
+- **Nazwa** — nazwa operacji;
+- **Stanowisko robocze** — gdzie wykonywana jest operacja;
+- **Godzina rozpoczęcia** — planowana godzina rozpoczęcia;
+- **Czas trwania** — planowany czas trwania w godzinach.
+
 ## Użycie Zestawienia materiałów w zamówieniu produkcji
 
 ### Automatyczny wybór Zestawienia materiałów
@@ -97,12 +111,16 @@ Dla zwykłej produkcji:
 - komponenty Zestawienia generują linie materiałów;
 - towar z zamówienia generuje linię wyjścia;
 - produkty uboczne ze Zestawienia są dodawane do linii wyjścia.
+- zlecenia produkcyjne są generowane na podstawie operacji Zestawienia materiałów.
 
 Dla demontażu:
 
 - komponenty Zestawienia generują linie wyjścia;
 - towar z zamówienia generuje linię materiału;
 - produkty uboczne ze Zestawienia są dodawane do linii materiałów.
+- zlecenia produkcyjne są generowane na podstawie operacji Zestawienia materiałów.
+
+Ważne: przy generowaniu lub przeliczaniu linii zamówienia, zlecenia produkcyjne są przebudowywane na podstawie aktualnych operacji Zestawienia materiałów.
 
 Szczegóły demontażu: [Demontaż](unbuild.md).
 
@@ -124,6 +142,14 @@ Rekomendacje:
 1. Nie edytuj zarchiwizowanych Zestawień materiałów.
 2. Gdy struktura towaru się zmienia, utwórz nowe Zestawienie materiałów (nowy numer) i ustaw je jako domyślne.
 3. Zarchiwizuj stare Zestawienie, aby nie było wybierane dla nowych zamówień.
+
+## Kopiowanie Zestawienia materiałów
+
+Podczas kopiowania Zestawienia materiałów system kopiuje:
+
+- komponenty;
+- produkty uboczne;
+- operacje (w tym stanowisko robocze, godzinę rozpoczęcia i czas trwania).
 
 ## Masowe wprowadzanie w tabelach (import/eksport)
 

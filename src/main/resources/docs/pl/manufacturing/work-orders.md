@@ -28,6 +28,8 @@ Stanowiska robocze służą do grupowania zleceń produkcyjnych i analizy całko
 
 ### Tworzenie zleceń produkcyjnych
 
+Zlecenia produkcyjne mogą być wprowadzane ręcznie, ale są też automatycznie generowane na podstawie operacji Zestawienia materiałów, gdy linie zamówienia produkcji są generowane lub przeliczane.
+
 Zlecenia produkcyjne są zazwyczaj tworzone w kontekście **Zamówienia produkcji**. Możesz podzielić pojedynczy proces produkcyjny na wiele sekwencyjnych lub równoległych operacji.
 
 #### Kroki dodawania zlecenia produkcyjnego:
@@ -40,6 +42,7 @@ Zlecenia produkcyjne są zazwyczaj tworzone w kontekście **Zamówienia produkcj
    - **Data rozpoczęcia** — dzień, w którym zaplanowano rozpoczęcie operacji (domyślnie data zaplanowana zamówienia produkcji).
    - **Godzina rozpoczęcia** — konkretna godzina, o której powinna rozpocząć się operacja.
    - **Czas trwania** — szacowany czas potrzebny na operację (w godzinach).
+   - **Operacja źródłowa** — bezpośrednie powiązanie z operacją Zestawienia materiałów używaną do utworzenia zlecenia.
 
 ### Zarządzanie wszystkimi zleceniami produkcyjnymi
 
@@ -47,6 +50,11 @@ Aby zobaczyć globalny widok wszystkich zadań produkcyjnych, przejdź do **Prod
 - Śledzić postęp operacji w różnych zamówieniach produkcji.
 - Filtrować zadania według stanowiska roboczego lub daty.
 - Edytować szczegóły operacji bez otwierania poszczególnych zamówień produkcji.
+
+### Synchronizacja i zachowanie przy kopiowaniu
+
+- Gdy linie zamówienia produkcji są generowane/przeliczane, istniejące zlecenia produkcyjne w tym zamówieniu są przebudowywane na podstawie operacji Zestawienia materiałów.
+- Gdy zamówienie produkcji jest kopiowane, kopiowane są również jego zlecenia produkcyjne, w tym powiązanie z operacją, data/godzina rozpoczęcia oraz czas trwania.
 
 ---
 
