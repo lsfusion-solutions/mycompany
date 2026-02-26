@@ -1,0 +1,29 @@
+MODULE Campaign;
+
+REQUIRE CRMSettings;
+
+NAMESPACE CRM;
+
+CLASS Campaign 'Campaign';
+name '{Name}' = DATA ISTRING[50] (Campaign) NONULL CHARWIDTH 15;
+
+FORM campaign 'Campaign'
+    OBJECTS o = Campaign PANEL
+    PROPERTIES(o) name
+
+    EDIT Campaign OBJECT o;
+;
+
+FORM campaigns 'Campaigns'
+    OBJECTS o = Campaign
+    PROPERTIES(o) READONLY name
+    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+
+    LIST Campaign OBJECT o
+;
+
+NAVIGATOR {
+    settings {
+        NEW campaigns;
+    }
+}

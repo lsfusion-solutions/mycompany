@@ -23,7 +23,7 @@ The report is built as a pivot table: you can change dimensions and groupings de
 
 The report typically includes:
 
-- main attributes: **ID**, **Name**, **Lead status**, **Lead type**, **[Partner](../masterdata/partners.md)**, **Sales person**, **Lead priority**, **Lead tags**;
+- main attributes: **ID**, **Name**, **Lead status**, **Lead type**, **[Partner](../masterdata/partners.md)**, **Sales person**, **Campaign**, **Medium**, **Source**, **Lead priority**, **Lead tags**;
 - forecast: **Probability**, **Expected closing**, **Expected revenue**;
 - contacts: **Phone**, **Email**;
 - description and additional data (address, website, contact person) — if filled.
@@ -64,6 +64,9 @@ Below are examples of questions this report is convenient for:
    - group by sales person;
    - add dimension by lead status;
    - compare expected revenue and count.
+4. **Marketing effectiveness**
+   - group by campaign, medium, or source;
+   - analyze lead count and expected revenue.
 
 ### Data quality recommendations
 

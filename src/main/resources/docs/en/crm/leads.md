@@ -27,6 +27,7 @@ The set of columns depends on configuration, but usually includes:
 - **Lead type**;
 - **[Partner](../masterdata/partners.md)**;
 - **Sales person**;
+- **Campaign**, **Medium**, **Source**;
 - **Lead priority** and **Lead tags**;
 - forecast: **Expected revenue**, **Probability**, **Expected closing**;
 - contacts: **Phone**, **Email**;
@@ -68,6 +69,7 @@ Typically, the top of the card shows:
 
 - **ID** and **Name**;
 - forecast block: **Date and time**, **Expected revenue**, **Probability**, **Expected closing**;
+- marketing: **Campaign**, **Medium**, **Source**;
 - main attributes: **Lead type**, **[Partner](../masterdata/partners.md)**, **Email**, **Phone**, **Sales person**, **Lead priority**, **Lead tags**.
 
 Below are tabs such as:
@@ -175,7 +177,7 @@ A good description format:
 
 Tags are convenient for cross-cutting marks across statuses, for example:
 
-- source: “exhibition”, “website”, “referral”;
+- source: “exhibition”, “website”, “referral” (alternatively, use the dedicated marketing fields);
 - request type: “delivery”, “selection”, “urgent”.
 
 Do not use tags instead of statuses: a status is a process stage, a tag is an additional attribute.

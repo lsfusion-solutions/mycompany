@@ -89,6 +89,24 @@ Jak to wygląda dla użytkownika:
 
 Rekomendacja: utwórz powody tak, aby dało się z nich wyciągać wnioski (np. „za drogo”, „wybrał konkurencję”, „brak budżetu”, „nie udało się dodzwonić”, „nie dotyczy”).
 
+## Ustawienia marketingu
+
+Aby analizować skąd przychodzą leady, możesz skonfigurować dane referencyjne marketingu.
+
+### Kampanie
+
+Kampania to konkretna aktywność marketingowa (np. „Wyprzedaż lato 2026”, „Black Friday”).
+
+### Kanały
+
+Kanał to użyta ścieżka reklamowa (np. „Email”, „Web”, „Social media”).
+
+### Źródła
+
+Źródło to konkretny zasób, z którego lead dowiedział się o ofercie (np. „Google”, „Facebook”, „Polecenie”).
+
+Rekomendacja: połączenie Kampanii, Kanału i Źródła pozwala na szczegółowe śledzenie efektywności marketingu.
+
 ## Rekomendowana kolejność konfiguracji początkowej
 
 1. Utwórz statusy leadu i ustaw kolejność sortowania.
@@ -96,4 +114,5 @@ Rekomendacja: utwórz powody tak, aby dało się z nich wyciągać wnioski (np. 
 3. Utwórz typy leadu i ustaw dozwolone statusy.
 4. Skonfiguruj priorytety i tagi (jeśli potrzebne).
 5. Uzupełnij powody porażki.
-6. Ustaw „Typ zamówienia” i „Typ faktury”, jeśli planujesz tworzyć dokumenty z leadów.
+6. Skonfiguruj dane referencyjne marketingu (Kampanie, Kanały, Źródła).
+7. Ustaw „Typ zamówienia” i „Typ faktury”, jeśli planujesz tworzyć dokumenty z leadów.

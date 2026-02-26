@@ -27,6 +27,7 @@ Zestaw kolumn zależy od konfiguracji, ale zwykle zawiera:
 - **Typ leadu**;
 - **[Partner](../masterdata/partners.md)**;
 - **Sprzedawca**;
+- **Kampania**, **Kanał**, **Źródło**;
 - **Priorytet leadu** i **Tagi leadu**;
 - prognoza: **Spodziewany przychód**, **Prawdopodobieństwo**, **Spodziewane zamknięcie**;
 - kontakty: **Telefon**, **Email**;
@@ -68,6 +69,7 @@ Zwykle u góry karty są widoczne:
 
 - **ID** i **Nazwa**;
 - blok prognozy: **Data i czas**, **Spodziewany przychód**, **Prawdopodobieństwo**, **Spodziewane zamknięcie**;
+- marketing: **Kampania**, **Kanał**, **Źródło**;
 - główne atrybuty: **Typ leadu**, **[Partner](../masterdata/partners.md)**, **Email**, **Telefon**, **Sprzedawca**, **Priorytet leadu**, **Tagi leadu**.
 
 Niżej znajdują się zakładki, takie jak:
@@ -175,7 +177,7 @@ Dobry format opisu:
 
 Tagi są wygodne jako przekrojowe oznaczenia niezależnie od statusów, np.:
 
-- źródło: „targi”, „strona”, „polecenie”;
+- źródło: „targi”, „strona”, „polecenie” (alternatywnie użyj dedykowanych pól marketingowych);
 - typ zapytania: „dostawa”, „dobór”, „pilne”.
 
 Nie używaj tagów zamiast statusów: status to etap procesu, tag to dodatkowy atrybut.

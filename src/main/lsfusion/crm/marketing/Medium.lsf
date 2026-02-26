@@ -1,0 +1,29 @@
+MODULE Medium;
+
+REQUIRE CRMSettings;
+
+NAMESPACE CRM;
+
+CLASS Medium 'Medium';
+name '{Name}' = DATA ISTRING[50] (Medium) NONULL CHARWIDTH 15;
+
+FORM medium 'Medium'
+    OBJECTS o = Medium PANEL
+    PROPERTIES(o) name
+
+    EDIT Medium OBJECT o;
+;
+
+FORM mediums 'Mediums'
+    OBJECTS o = Medium
+    PROPERTIES(o) READONLY name
+    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+
+    LIST Medium OBJECT o
+;
+
+NAVIGATOR {
+    settings {
+        NEW mediums;
+    }
+}

@@ -23,7 +23,7 @@ Raport jest budowany jako tabela przestawna: możesz zmieniać wymiary i grupowa
 
 Raport zwykle zawiera:
 
-- główne atrybuty: **ID**, **Nazwa**, **Status leadu**, **Typ leadu**, **[Partner](../masterdata/partners.md)**, **Sprzedawca**, **Priorytet leadu**, **Tagi leadu**;
+- główne atrybuty: **ID**, **Nazwa**, **Status leadu**, **Typ leadu**, **[Partner](../masterdata/partners.md)**, **Sprzedawca**, **Kampania**, **Kanał**, **Źródło**, **Priorytet leadu**, **Tagi leadu**;
 - prognoza: **Prawdopodobieństwo**, **Spodziewane zamknięcie**, **Spodziewany przychód**;
 - kontakty: **Telefon**, **Email**;
 - opis i dodatkowe dane (adres, strona internetowa, osoba kontaktowa) — jeśli uzupełnione.
@@ -64,6 +64,9 @@ Poniżej znajdują się przykłady pytań, do których ten raport jest wygodny:
    - grupuj wg sprzedawcy;
    - dodaj wymiar wg statusu leadu;
    - porównaj spodziewany przychód i liczbę.
+4. **Efektywność marketingu**
+   - grupuj wg kampanii, kanału lub źródła;
+   - analizuj liczbę leadów i spodziewany przychód.
 
 ### Rekomendacje jakości danych
 
