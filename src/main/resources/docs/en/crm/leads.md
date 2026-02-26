@@ -23,6 +23,7 @@ The list is intended for daily work: quickly see what is in progress, who is res
 The set of columns depends on configuration, but usually includes:
 
 - **ID**, **Name**;
+- **Item**;
 - **Lead status** (and the “open/closed” state);
 - **Lead type**;
 - **[Partner](../masterdata/partners.md)**;
@@ -68,6 +69,7 @@ The lead card is used to maintain full information about the lead and perform ac
 Typically, the top of the card shows:
 
 - **ID** and **Name**;
+- **Item**;
 - forecast block: **Date and time**, **Expected revenue**, **Probability**, **Expected closing**;
 - marketing: **Campaign**, **Medium**, **Source**;
 - main attributes: **Lead type**, **[Partner](../masterdata/partners.md)**, **Email**, **Phone**, **Sales person**, **Lead priority**, **Lead tags**.
@@ -79,12 +81,13 @@ Below are tabs such as:
 
 ### Recommended filling order
 
-1. Set **Name** — short and clear (what is requested and from whom).
-2. Set **[Partner](../masterdata/partners.md)**, if known.
-3. Assign **Sales person**.
-4. Select **Lead type**.
-5. Select **Lead status**.
-6. Add contacts and description.
+1. Select **Item** (if specified) — the lead **Name** will be filled automatically from the item name if it was empty.
+2. Set **Name** — short and clear (what is requested and from whom), if not filled automatically.
+3. Set **[Partner](../masterdata/partners.md)**, if known.
+4. Assign **Sales person**.
+5. Select **Lead type**.
+6. Select **Lead status**.
+7. Add contacts and description.
 
 ### Lead type and allowed statuses
 

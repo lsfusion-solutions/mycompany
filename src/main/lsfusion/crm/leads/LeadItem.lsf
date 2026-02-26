@@ -1,0 +1,27 @@
+MODULE LeadItem;
+
+REQUIRE Lead, Item;
+
+NAMESPACE CRM;
+
+item '{Item}' = DATA Item (Lead) INDEXED;
+nameItem '{Item}' (Lead l) = name(item(l));
+
+WHEN LOCAL CHANGED(item(Lead l)) AND NOT name(l) DO
+    name(l) <- nameItem(l);
+
+EXTEND FORM lead
+    PROPERTIES(l) nameItem
+;
+
+DESIGN lead {
+    params {
+        MOVE PROPERTY(nameItem(l));
+    }
+}
+
+EXTEND FORM leads
+    PROPERTIES(l) READONLY nameItem
+;
+
+@defineDocFilter(lead, Item, item, l, '{Item}');

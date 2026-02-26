@@ -23,6 +23,7 @@ Lista jest przeznaczona do codziennej pracy: szybko zobaczyć, co jest w toku, k
 Zestaw kolumn zależy od konfiguracji, ale zwykle zawiera:
 
 - **ID**, **Nazwa**;
+- **Produkt**;
 - **Status leadu** (oraz stan „otwarta/zamknięta”);
 - **Typ leadu**;
 - **[Partner](../masterdata/partners.md)**;
@@ -68,6 +69,7 @@ Karta leadu służy do prowadzenia pełnej informacji o leadzie i wykonywania ak
 Zwykle u góry karty są widoczne:
 
 - **ID** i **Nazwa**;
+- **Produkt**;
 - blok prognozy: **Data i czas**, **Spodziewany przychód**, **Prawdopodobieństwo**, **Spodziewane zamknięcie**;
 - marketing: **Kampania**, **Kanał**, **Źródło**;
 - główne atrybuty: **Typ leadu**, **[Partner](../masterdata/partners.md)**, **Email**, **Telefon**, **Sprzedawca**, **Priorytet leadu**, **Tagi leadu**.
@@ -79,12 +81,13 @@ Niżej znajdują się zakładki, takie jak:
 
 ### Rekomendowana kolejność uzupełniania
 
-1. Ustaw **Nazwa** — krótko i jasno (o co chodzi i od kogo).
-2. Ustaw **[Partner](../masterdata/partners.md)**, jeśli znany.
-3. Przypisz **Sprzedawca**.
-4. Wybierz **Typ leadu**.
-5. Wybierz **Status leadu**.
-6. Dodaj kontakty i opis.
+1. Wybierz **Produkt** (jeśli określono) — **Nazwa** leadu zostanie uzupełniona automatycznie z nazwy produktu, jeśli była pusta.
+2. Ustaw **Nazwa** — krótko i jasno (o co chodzi i od kogo), jeśli nie została uzupełniona automatycznie.
+3. Ustaw **[Partner](../masterdata/partners.md)**, jeśli znany.
+4. Przypisz **Sprzedawca**.
+5. Wybierz **Typ leadu**.
+6. Wybierz **Status leadu**.
+7. Dodaj kontakty i opis.
 
 ### Typ leadu i dozwolone statusy
 
