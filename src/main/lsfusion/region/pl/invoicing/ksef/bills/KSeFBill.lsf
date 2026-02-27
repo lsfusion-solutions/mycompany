@@ -50,9 +50,9 @@ createBill 'Create Bill' (Faktura f) {
                 bill(l) <- b;
                 item(l) <- itemBarCode(GTIN(w));
                 description(l) <- description(w);
-                quantity(l) <- IF correction(w) THEN -quantity(w) ELSE quantity(w);
+                quantity(l) <- IF correction(w) THEN -abs(quantity(w)) ELSE quantity(w);
                 price(l) <- price(w);
-                untaxedAmount(l) <- IF correction(w) THEN -(OVERRIDE untaxedAmount(w), amount(w)) ELSE (OVERRIDE untaxedAmount(w), amount(w));
+                untaxedAmount(l) <- IF correction(w) THEN -abs(OVERRIDE untaxedAmount(w), amount(w)) ELSE (OVERRIDE untaxedAmount(w), amount(w));
                 
                 in(l, Tax t) <- taxes(w) = (OVERRIDE (ltrim(toChar(value(t), '99')) IF value(t) > 0), name(t));
 
