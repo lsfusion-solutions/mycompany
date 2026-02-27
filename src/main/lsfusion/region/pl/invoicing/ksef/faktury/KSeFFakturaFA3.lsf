@@ -83,7 +83,7 @@ FORM FA3XmlExport
 
     // FaWiersz
     OBJECTS w = FaWiersz EXTID 'FaWiersz' IN Fa
-    PROPERTIES(w) NrWierszaFa, description EXTID 'P_7', GTIN, nameUom EXTID 'P_8A', quantity EXTID 'P_8B', price EXTID 'P_9A', untaxedAmount EXTID 'P_11', taxes EXTID 'P_12', correction EXTID 'StanPrzed'
+    PROPERTIES(w) NrWierszaFa, description EXTID 'P_7', GTIN, nameUom EXTID 'P_8A', quantity EXTID 'P_8B', price EXTID 'P_9A', untaxedAmount EXTID 'P_11', amount EXTID 'P_11A', taxes EXTID 'P_12', correction EXTID 'StanPrzed'
     FILTERS faktura(w) = f
 
     // TerminPlatnosci
@@ -323,7 +323,8 @@ import (Faktura nf) {
         nameUom(fw) <- P_8A(faWiersz);
         quantity(fw) <- P_8B(faWiersz);
         price(fw) <- OVERRIDE P_9A(faWiersz), P_9B(faWiersz);
-        untaxedAmount(fw) <- OVERRIDE P_11(faWiersz), P_11A(faWiersz);
+        untaxedAmount(fw) <- P_11(faWiersz);
+        amount(fw) <- P_11A(faWiersz);
         taxes(fw) <- P_12(faWiersz);
         correction(fw) <- StanPrzed(faWiersz);
 
