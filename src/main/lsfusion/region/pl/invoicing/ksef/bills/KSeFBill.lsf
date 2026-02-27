@@ -42,14 +42,15 @@ createBill 'Create Bill' (Faktura f) {
             vendorAccount(b) <- account(vendor(b), GROUP LAST number(RachunekBankowy r) ORDER r WHERE faktura(r) = f);
             
             original(b) <- bill(fakturaKSeFNumber(NrKSeFFaKorygowanej(f)));
+            reversal(b) <- TRUE IF bill(fakturaKSeFNumber(NrKSeFFaKorygowanej(f)));
             
-            FOR faktura(FaWiersz w) = f AND NOT correction(w) ORDER NrWierszaFa(w) DO NEW l = BillLine {
+            FOR faktura(FaWiersz w) = f ORDER NrWierszaFa(w) DO NEW l = BillLine {
                 bill(l) <- b;
                 item(l) <- itemBarCode(GTIN(w));
                 description(l) <- description(w);
-                quantity(l) <- quantity(w);
+                quantity(l) <- IF correction(w) THEN -quantity(w) ELSE quantity(w);
                 price(l) <- price(w);
-                untaxedAmount(l) <- untaxedAmount(w);
+                untaxedAmount(l) <- IF correction(w) THEN -untaxedAmount(w) ELSE untaxedAmount(w);
                 
                 in(l, Tax t) <- taxes(w) = (OVERRIDE (ltrim(toChar(value(t), '99')) IF value(t) > 0), name(t));
 
