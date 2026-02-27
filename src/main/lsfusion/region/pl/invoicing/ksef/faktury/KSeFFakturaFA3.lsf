@@ -160,7 +160,9 @@ GTIN = DATA LOCAL STRING(INTEGER);
 P_8A = DATA LOCAL STRING(INTEGER);
 P_8B = DATA LOCAL NUMERIC[16,3](INTEGER);
 P_9A = DATA LOCAL NUMERIC[10,2](INTEGER);
+P_9B = DATA LOCAL NUMERIC[10,2](INTEGER);
 P_11 = DATA LOCAL NUMERIC[14,2](INTEGER);
+P_11A = DATA LOCAL NUMERIC[14,2](INTEGER);
 P_12 = DATA LOCAL STRING(INTEGER);
 StanPrzed = DATA LOCAL INTEGER(INTEGER);
 
@@ -244,7 +246,9 @@ FORM FA3XmlImport FORMEXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Faktura'
         P_8A EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_8A',
         P_8B EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_8B',
         P_9A EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_9A',
+        P_9B EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_9B',
         P_11 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_11',
+        P_11A EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_11A',
         P_12 EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:P_12',
         StanPrzed EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:StanPrzed',
         UU_ID EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:UU_ID',
@@ -318,8 +322,8 @@ import (Faktura nf) {
         description(fw) <- P_7(faWiersz);
         nameUom(fw) <- P_8A(faWiersz);
         quantity(fw) <- P_8B(faWiersz);
-        price(fw) <- P_9A(faWiersz);
-        untaxedAmount(fw) <- P_11(faWiersz);
+        price(fw) <- OVERRIDE P_9A(faWiersz), P_9B(faWiersz);
+        untaxedAmount(fw) <- OVERRIDE P_11(faWiersz), P_11A(faWiersz);
         taxes(fw) <- P_12(faWiersz);
         correction(fw) <- StanPrzed(faWiersz);
 
