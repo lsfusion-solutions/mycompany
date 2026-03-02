@@ -19,6 +19,8 @@ sendInteractive 'Wyślij do KSeF' (Faktura f) {
         // Export FA(3) XML for this Faktura
         EXPORT FA3XmlExport OBJECTS f = f XML;
 
+        xmlFile(f) <- XMLFILE(exportFile());
+        
         // Encrypt content with session key
         cipherAESCBCPKCS7(RAWFILE(exportFile()), aesKey(session()), ivB64(session()));
 

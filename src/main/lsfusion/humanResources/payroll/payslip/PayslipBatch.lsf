@@ -1,6 +1,6 @@
 MODULE PayslipBatch;
 
-REQUIRE PayslipLedger;
+REQUIRE PayslipLedger, PayslipType;
 
 PRIORITY HumanResources, MasterData;
 
@@ -20,6 +20,10 @@ company 'Company' = DATA Company (PayslipBatch) NONULL;
 nameCompany 'Company' (PayslipBatch o) = name(company(o));
 WHEN LOCAL SET(PayslipBatch p IS PayslipBatch) AND NOT CHANGED(company(p)) DO company(p) <- defaultCompany();
 
+type 'Type' = DATA PayslipType (PayslipBatch);
+nameType 'Type' (PayslipBatch b) = name(type(b));
+WHEN LOCAL SET(PayslipBatch b IS PayslipBatch) AND NOT CHANGED(type(b)) DO type(b) <- defaultPayslipType();
+
 payslipBatch (Company c, INTERVAL[DATE] i) = GROUP MIN PayslipBatch b BY company(b), period(b); 
 
 batch 'Payslip batch' = DATA PayslipBatch (Payslip) INDEXED;
@@ -31,14 +35,18 @@ WHEN LOCAL CHANGED(period(batch(Payslip p))) AND batch(p) AND NOT CHANGED(period
 WHEN LOCAL CHANGED(company(batch(Payslip p))) AND batch(p) AND NOT CHANGED(company(p)) DO
     company(p) <- company(batch(p));
 
+WHEN LOCAL CHANGED(type(batch(Payslip p))) AND batch(p) AND NOT CHANGED(type(p)) DO
+    type(p) <- type(batch(p));
+
 generate ABSTRACT LIST (Payslip);
 
 generate 'Generate' (PayslipBatch b) {
-    FOR legalEntity(Employee e AS Employee) = company(b) AND active(e) AND NOT payslip(period(b), e, company(b)) DO NEW p = Payslip {
+    FOR legalEntity(Employee e AS Employee) = company(b) AND active(e) AND NOT payslip(period(b), e, company(b), type(b)) DO NEW p = Payslip {
         batch(p) <- b;
         employee(p) <- e;
         period(p) <- period(b);
         company(p) <- company(b);
+        type(p) <- type(b);
     }
     FOR batch(Payslip p) = b INLINE DO
         generate(p);
@@ -46,7 +54,7 @@ generate 'Generate' (PayslipBatch b) {
 
 FORM payslipBatch 'Payslip batch'
     OBJECTS b = PayslipBatch PANEL
-    PROPERTIES(b) number, period, name, nameCompany
+    PROPERTIES(b) number, period, name, nameCompany, nameType
     
     OBJECTS p = Payslip
     PROPERTIES(p) READONLY number, firstNameEmployee, lastNameEmployee, namePositionEmployee, netWage
@@ -79,6 +87,7 @@ DESIGN payslipBatch {
                     }
                     MOVE PROPERTY(name(b)) { alignment = STRETCH; }
                     MOVE PROPERTY(nameCompany(b)) { notNull = TRUE; alignment = STRETCH; }
+                    MOVE PROPERTY(nameType(b)) { alignment = STRETCH; }
                 }
             }
         }
@@ -96,7 +105,7 @@ DESIGN payslipBatch {
 
 FORM payslipBatches 'Payslip batches'
     OBJECTS b = PayslipBatch
-    PROPERTIES(b) READONLY number, startDate, endDate, name, nameCompany
+    PROPERTIES(b) READONLY number, startDate, endDate, name, nameCompany, nameType
     PROPERTIES(b) NEWSESSION NEW, EDIT, DELETE
 
     LIST PayslipBatch OBJECT b
@@ -117,6 +126,7 @@ copy 'Copy' (PayslipBatch b) {
         NEW nb = PayslipBatch {
             name(nb) <- name(b);
             company(nb) <- company(b);
+            type(nb) <- type(b);
 
             FOR batch(Payslip p) = b DO NEW np = Payslip {
                 batch(np) <- nb;

@@ -1,0 +1,67 @@
+MODULE BomOperation;
+
+REQUIRE Bom, WorkCenter;
+
+NAMESPACE Manufacturing;
+
+CLASS Operation 'Operation';
+
+bom 'Bill of Materials' = DATA Bom (Operation) NONULL DELETE;
+nameBom 'Bill of Materials' (Operation o) = name(bom(o));
+
+countOperation 'Operations' (Bom b) = GROUP SUM 1 IF bom(Operation o) = b MATERIALIZED;
+
+name '{Name}' = DATA ISTRING[100] (Operation) CHARWIDTH 20;
+
+workCenter 'Work center' = DATA WorkCenter (Operation) NONULL;
+nameWorkCenter 'Work center' (Operation o) = name(workCenter(o));
+
+startTime 'Start time' = DATA TIME (Operation);
+duration 'Duration' = DATA NUMERIC[8,2] (Operation);
+
+FORM operation 'Operation'
+    OBJECTS o = Operation PANEL
+    PROPERTIES(o) name, nameBom, nameWorkCenter, startTime, duration
+
+    EDIT Operation OBJECT o
+;
+
+FORM operations 'Operations'
+    OBJECTS o = Operation
+    PROPERTIES(o) READONLY name, nameBom, nameWorkCenter, startTime, duration
+    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+
+    LIST Operation OBJECT o
+;
+
+NAVIGATOR {
+    settings {
+        NEW bomOperations = operations;
+    }
+}
+
+EXTEND FORM bom
+    OBJECTS o = Operation
+    PROPERTIES(o) name, nameWorkCenter, startTime, duration, NEW, DELETE
+    FILTERS bom(o) = b
+;
+
+DESIGN bom {
+    details {
+        MOVE BOX(o) { caption = badged('Operations', countOperation(b)); }
+    }
+}
+
+extraCopy ABSTRACT (Operation, Operation);
+
+extraCopy (Bom s, Bom d) + {
+    FOR bom(Operation so) = s DO NEW oo = Operation {
+        bom(oo) <- d;
+        name(oo) <- name(so);
+        workCenter(oo) <- workCenter(so);
+        startTime(oo) <- startTime(so);
+        duration(oo) <- duration(so);
+
+        extraCopy(so, oo);
+    }
+}

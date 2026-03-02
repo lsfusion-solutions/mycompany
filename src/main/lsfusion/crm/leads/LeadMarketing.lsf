@@ -1,0 +1,38 @@
+MODULE LeadMarketing;
+
+REQUIRE Lead, Campaign, Medium, Source;
+
+NAMESPACE CRM;
+
+campaign 'Campaign' = DATA Campaign (Lead);
+nameCampaign 'Campaign' (Lead l) = name(campaign(l));
+
+medium 'Medium' = DATA Medium (Lead);
+nameMedium 'Medium' (Lead l) = name(medium(l));
+
+source 'Source' = DATA Source (Lead);
+nameSource 'Source' (Lead l) = name(source(l));
+
+EXTEND FORM lead
+    PROPERTIES(l) nameCampaign, nameMedium, nameSource
+;
+
+DESIGN lead {
+    otherInformation {
+        NEW marketing {
+            caption = 'Marketing';
+            alignment = STRETCH;
+            MOVE PROPERTY(nameCampaign(l));
+            MOVE PROPERTY(nameMedium(l));
+            MOVE PROPERTY(nameSource(l));
+        }
+    }
+}
+
+EXTEND FORM leads
+    PROPERTIES(l) READONLY nameCampaign, nameMedium, nameSource
+;
+
+@defineDocFilter(lead, Campaign, campaign, l, 'Campaign');
+@defineDocFilter(lead, Medium, medium, l, 'Medium');
+@defineDocFilter(lead, Source, source, l, 'Source');

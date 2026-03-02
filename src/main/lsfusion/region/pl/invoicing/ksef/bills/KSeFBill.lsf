@@ -14,6 +14,7 @@ countToBillFaktura = GROUP SUM 1 IF toBill(Faktura f);
 // Selector to keep compatibility: find Faktura by Bill
 faktura (Bill b) = GROUP LAST Faktura f ORDER f WHERE bill(f) = b;
 
+editFaktura '{logics.edit}' (Bill b) { edit(faktura(b)); } 
 fakturaReference 'KSeF reference' (Bill b) = referenceNumber(faktura(b));
 fakturaStatusCode 'KSeF status code' (Bill b) = statusCode(faktura(b));
 fakturaStatusDescription 'KSeF status' (Bill b) = statusDescription(faktura(b));
@@ -21,6 +22,9 @@ fakturaStatusDetails 'KSeF details' (Bill b) = statusDetails(faktura(b));
 fakturaNumber 'KSeF number' (Bill b) = number(faktura(b));
 
 // Create Bill from Faktura (FA3) without attachments
+fill ABSTRACT LIST (BillLine, FaWiersz);
+fill ABSTRACT LIST (Bill, Faktura);
+
 createBill 'Create Bill' (Faktura f) {
     NEWSESSION {
         NEW b = Bill {
@@ -32,21 +36,30 @@ createBill 'Create Bill' (Faktura f) {
             dateTime(b) <- DATETIME(invoiceDate(f));
             deliveryDateTime(b) <- DATETIME(deliveryDate(f));
             vendorReference(b) <- invoiceNumber(f);
+            dueDateTime(b) <- DATETIME(GROUP LAST date(TerminPlatnosci tp) ORDER tp WHERE faktura(tp) = f);
 
             currency(b) <- currency(KodWaluty(f));
+            vendorAccount(b) <- account(vendor(b), GROUP LAST number(RachunekBankowy r) ORDER r WHERE faktura(r) = f);
             
             original(b) <- bill(fakturaKSeFNumber(NrKSeFFaKorygowanej(f)));
-
+            reversal(b) <- TRUE IF bill(fakturaKSeFNumber(NrKSeFFaKorygowanej(f)));
+            
+            taxIncluded(b) <- TRUE IF GROUP SUM 1 IF faktura(FaWiersz w) = f AND amount(w) AND NOT untaxedAmount(w);
+            
             FOR faktura(FaWiersz w) = f ORDER NrWierszaFa(w) DO NEW l = BillLine {
                 bill(l) <- b;
                 item(l) <- itemBarCode(GTIN(w));
                 description(l) <- description(w);
-                quantity(l) <- quantity(w);
+                quantity(l) <- IF correction(w) THEN -abs(quantity(w)) ELSE quantity(w);
                 price(l) <- price(w);
-                untaxedAmount(l) <- untaxedAmount(w);
+                untaxedAmount(l) <- IF correction(w) THEN -abs(OVERRIDE untaxedAmount(w), amount(w)) ELSE (OVERRIDE untaxedAmount(w), amount(w));
                 
-                in(l, Tax t) <- taxes(w) = (OVERRIDE (toChar(value(t), '99') IF value(t) > 0), name(t));
+                in(l, Tax t) <- taxes(w) = (OVERRIDE (ltrim(toChar(value(t), '99')) IF value(t) > 0), name(t));
+
+                fill(l, w);
             }
+
+            fill(b, f);
 
             SHOW bill OBJECTS b = b DOCKED;
         }
@@ -62,6 +75,7 @@ EXTEND FORM bills
 ;
 
 EXTEND FORM bill
+    PROPERTIES(b)          editFaktura
     PROPERTIES(b) READONLY fakturaReference, fakturaStatusCode, fakturaStatusDescription, fakturaStatusDetails, fakturaNumber
 ;
 
@@ -71,6 +85,7 @@ DESIGN bill {
             alignment = STRETCH;
             caption = 'KSeF';
             lines = 3;
+            MOVE PROPERTY(editFaktura(b));
             MOVE PROPERTY(fakturaReference(b));
             MOVE PROPERTY(fakturaStatusCode(b));
             MOVE PROPERTY(fakturaStatusDescription(b));
@@ -92,7 +107,6 @@ DESIGN bills {
     tabbedPane {
         MOVE BOX(f) { 
             caption = badged('KSeF', countToBillFaktura());
-            GRID(f) { size = (100, -1); }
         }
     }
 }

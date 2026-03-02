@@ -2,7 +2,8 @@ MODULE Adjustment;
 
 REQUIRE InventorySettings, LocationEmployee, Comments, 
         Product, InvLedger, DateUtils,
-        Company, BarCode, Doc;
+        Company, BarCode, Doc,
+        AdjustmentType;
                                   
 NAMESPACE Inventory;
 
@@ -29,27 +30,13 @@ nameLocation 'Location' (Adjustment a) = name(location(a));
 CONSTRAINT SETCHANGED(location(Adjustment o)) AND internalUse(location(o)) CHECKED BY location[Adjustment]
     MESSAGE 'The selected location is for internal use';
 
-// type
-CLASS AdjustmentType 'Adjustment type' {
-    all 'All',
-    category 'By category',
-    manual 'Manually'
-}
-name '{Name}' (AdjustmentType o) = ISTRING[100](staticCaption(o)) IF o IS AdjustmentType CHARWIDTH 15;
+company 'Company' (Adjustment a) = company(location(a));
+nameCompany 'Company' (Adjustment a) = name(company(a));
 
-FORM adjustmentType 'Adjustment type'
-    OBJECTS t = AdjustmentType PANEL
-    PROPERTIES(t) name
-    
-    EDIT AdjustmentType OBJECT t  
-;
-
-FORM adjustmentTypes 'Adjustment types'
-    OBJECTS t = AdjustmentType
-    PROPERTIES(t) READONLY name
-
-    LIST AdjustmentType OBJECT t
-;
+addressLinesCompany 'Address' (Adjustment a) = addressLines(company(a));
+phoneCompany 'Phone' (Adjustment a) = phone(company(a));
+emailCompany 'Email' (Adjustment a) = email(company(a));
+websiteCompany 'Web site' (Adjustment a) = website(company(a));
 
 type 'Type' =  DATA AdjustmentType (Adjustment) NONULL;
 nameType 'Type' (Adjustment a) = name(type(a));

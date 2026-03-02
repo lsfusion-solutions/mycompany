@@ -52,7 +52,8 @@ As a rule, the following is transferred automatically:
 - a link to the source lead;
 - **[partner](../masterdata/partners.md)** from the lead;
 - **type** = value of the **“Order type”** parameter;
-- **delivery address** — built from the lead address data (if filled).
+- **delivery address** — built from the lead address data (if filled);
+- **items** — if an **Item** is selected in the lead, an order line will be created for it with the **Expected revenue** as the amount.
 
 If some data is missing in the lead (for example, no [partner](../masterdata/partners.md)), you will need to fill it in the order manually.
 

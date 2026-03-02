@@ -1,6 +1,6 @@
 MODULE LeadSalesOrder;
 
-REQUIRE Lead, SalesOrderCanceled, LocationEmployee;
+REQUIRE Lead, LeadItem, SalesOrderCanceled, LocationEmployee;
 
 NAMESPACE CRM;
 
@@ -51,6 +51,12 @@ newOrder (Lead l) {
         fill(o, l);
 
         leadOrderCreated() <- o;
+        
+        IF (item(l)) THEN NEW ol = OrderLine {
+            order(ol) <- o;
+            item(ol) <- item(l);
+            untaxedAmount(ol) <- expectedRevenue(l);
+        }
     }
 }
 

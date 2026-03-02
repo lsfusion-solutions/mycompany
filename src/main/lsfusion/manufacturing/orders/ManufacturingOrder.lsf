@@ -271,9 +271,9 @@ NAVIGATOR {
 }
 
 // copy
-extraCopy ABSTRACT (ManufacturingOrder, ManufacturingOrder);
+clone ABSTRACT LIST (ManufacturingOrder, ManufacturingOrder);
 
-clone(ManufacturingOrder to, ManufacturingOrder from) {
+clone(ManufacturingOrder to, ManufacturingOrder from) +{
     type(to) <- type(from);
 
     item(to) <- item(from);
@@ -294,8 +294,6 @@ clone(ManufacturingOrder to, ManufacturingOrder from) {
         toProduce(ol) <- toProduce(ml);
         costRatio(ol) <- costRatio(ml);
     }
-    
-    extraCopy(to, from);
 }
 
 copy 'Copy' (ManufacturingOrder from) {
@@ -318,7 +316,9 @@ DESIGN manufacturingOrder {
 }
 
 // fill
-fillByQuantity (ManufacturingOrder o, NUMERIC[16,3] q) {
+fillByQuantity ABSTRACT LIST (ManufacturingOrder, NUMERIC[16,3]);
+
+fillByQuantity (ManufacturingOrder o, NUMERIC[16,3] q) +{
     DELETE ConsumedLine l WHERE manufacturingOrder(l) = o; 
     DELETE FinishedLine l WHERE manufacturingOrder(l) = o;
 

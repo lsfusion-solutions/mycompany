@@ -52,7 +52,8 @@ Zwykle automatycznie przenoszone są:
 - powiązanie z leadem źródłowym;
 - **[partner](../masterdata/partners.md)** z leadu;
 - **typ** = wartość parametru **„Typ zamówienia”**;
-- **adres dostawy** — zbudowany z danych adresowych leadu (jeśli uzupełnione).
+- **adres dostawy** — zbudowany z danych adresowych leadu (jeśli uzupełnione);
+- **produkty** — jeśli w leadzie wybrano **Produkt**, zostanie dla niego utworzony wiersz zamówienia z kwotą równą **Spodziewanemu przychodowi**.
 
 Jeśli w leadzie brakuje części danych (np. nie ma [partnera](../masterdata/partners.md)), trzeba je uzupełnić w zamówieniu ręcznie.
 

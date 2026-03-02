@@ -88,8 +88,14 @@ META defineDocLot (doc, line, item, quantity, status, caption)
     lots###quantity 'Lots' (line l) = 
         GROUP CONCAT
             (CONCAT '', id(Lot lot) IF quantity(l, lot), '(' + (STRING(DOUBLE(quantity(l, lot))) IF (quantity(l, lot) != 1)) + ')'), 
-            ',' ORDER lot CHARWIDTH 15; 
-    
+            ',' ORDER lot CHARWIDTH 15;
+
+    lots###quantity 'Lots' (###doc d) =
+        GROUP CONCAT
+            (CONCAT '', id(Lot lot) IF quantity(line l, lot), '(' + (STRING(DOUBLE(quantity(l, lot))) IF (quantity(l, lot) != 1)) + ')')
+                IF doc(l) = d,
+            ',' ORDER lot CHARWIDTH 15;
+
     quantity##Lot 'Lot quantity'##caption (line rl) = GROUP SUM quantity(rl, Lot l);
     quantity##LotLeft (line rl) = quantity(rl) - OVERRIDE quantity##Lot(rl), 0;
 
@@ -102,7 +108,7 @@ META defineDocLot (doc, line, item, quantity, status, caption)
     CONSTRAINT quantity(line rl, Lot l) AND item(rl) != product(l)
                     MESSAGE 'Document line product is not equal to lot product';
     CONSTRAINT SET(((OVERRIDE quantity(line rl), 0.0) - quantity##Lot(rl) < 0) AND status(doc(rl))) AND useLot(item(rl))
-                    MESSAGE 'Mismatch between quantity and quantity in lots'##caption;                   
+        MESSAGE 'Mismatch between quantity and quantity in lots'##caption;                   
 END 
 
 META defineDocLot (doc, item, quantity, status, caption)
@@ -236,13 +242,13 @@ META defineDocLotGenerate(doc, docLine, item, line, quantity)
                 id(l) <- CONCAT '', prefixLot(p), incrementedValue();
                 product(l) <- item(rl);
                 
-                quantity(rl, l) <- 1;
+                quantity(rl, l) <- IF useSerialNumbers(p) THEN 1 ELSE quantity##LotLeft(rl);
             }
         }        
     }
     
     EXTEND FORM doc
-        PROPERTIES(line) generateLot DRAW lot###line SHOWIF numeratorLot(item(l)) AND quantity##LotLeft(line) > 0
+        PROPERTIES(line) generateLot DRAW lot###line TOOLBAR SHOWIF numeratorLot(item(l)) AND quantity##LotLeft(line) > 0
     ;
 END
 

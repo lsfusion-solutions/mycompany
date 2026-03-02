@@ -1,0 +1,31 @@
+MODULE WorkOrderOperation;
+
+REQUIRE WorkOrder, BomOperation;
+
+NAMESPACE Manufacturing;
+
+operation 'Operation' = DATA Operation (WorkOrder);
+
+fillByQuantity (ManufacturingOrder o, NUMERIC[16,3] q) + {
+    DELETE WorkOrder w WHERE manufacturingOrder(w) = o;
+    FOR bom(Operation op) = bom(o) DO NEW w = WorkOrder {
+        manufacturingOrder(w) <- o;
+        operation(w) <- op;
+        name(w) <- name(op);
+        workCenter(w) <- workCenter(op);
+        startTime(w) <- startTime(op);
+        duration(w) <- duration(op);
+    }
+}
+
+clone(ManufacturingOrder to, ManufacturingOrder from) + {
+    FOR manufacturingOrder(WorkOrder sw) = from NEW dw = WorkOrder DO {
+        manufacturingOrder(dw) <- to;
+        operation(dw) <- operation(sw);
+        name(dw) <- name(sw);
+        workCenter(dw) <- workCenter(sw);
+        startDate(dw) <- startDate(sw);
+        startTime(dw) <- startTime(sw);
+        duration(dw) <- duration(sw);
+    }
+}

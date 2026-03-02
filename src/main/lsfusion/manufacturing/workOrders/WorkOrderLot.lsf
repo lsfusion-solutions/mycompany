@@ -1,0 +1,17 @@
+MODULE WorkOrderLot;
+
+REQUIRE WorkOrder, ManufacturingOrderLot;
+
+NAMESPACE Manufacturing;
+
+lotsToProduce 'Lots' (WorkOrder o) = lotsToProduce(manufacturingOrder(o));
+
+EXTEND FORM workOrder
+    PROPERTIES(o) READONLY SHOWIF useLot(itemManufacturingOrder(o)) lotsToProduce
+;
+
+DESIGN workOrder {
+    headerRight {
+        MOVE PROPERTY(lotsToProduce(o)) AFTER PROPERTY(nameItemManufacturingOrder(o));
+    }
+}

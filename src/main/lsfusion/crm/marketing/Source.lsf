@@ -1,0 +1,29 @@
+MODULE Source;
+
+REQUIRE CRMSettings;
+
+NAMESPACE CRM;
+
+CLASS Source 'Source';
+name '{Name}' = DATA ISTRING[50] (Source) NONULL CHARWIDTH 15;
+
+FORM source 'Source'
+    OBJECTS o = Source PANEL
+    PROPERTIES(o) name
+
+    EDIT Source OBJECT o;
+;
+
+FORM sources 'Sources'
+    OBJECTS o = Source
+    PROPERTIES(o) READONLY name
+    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+
+    LIST Source OBJECT o
+;
+
+NAVIGATOR {
+    settings {
+        NEW sources;
+    }
+}

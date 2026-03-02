@@ -33,17 +33,48 @@ Za pomocą artefaktu możesz podmienić stary plik, który znajduje się na serw
 
 Jeśli musisz podłączyć nowe moduły, możesz to zrobić nie przez pliki jar, ale przez dodanie nowych plików do classpath. W takim przypadku kroki są następujące:
 
-1. Utwórz na przykład nowy moduł `MyCompanyCustom.lsf`, zależny od modułu `MyCompanyRu`, i umieść go w `/var/lib/lsfusion`.
+1. Utwórz na przykład nowy moduł `MyCompanyCustom.lsf`, zależny od modułu `MyCompanyPl`, i umieść go w `/var/lib/lsfusion`.
 2. Zmień top moduł aplikacji. W tym celu w pliku `/etc/lsfusion6-server/settings.properties` zmień (lub dodaj) parametr `logics.topModule = MyCompanyCustom`.
 3. Zrestartuj usługę serwera (jak opisano wyżej).
 4. Jeśli musisz podłączyć dodatkowe moduły, umieść je również w `/var/lib/lsfusion` i dodaj je do sekcji REQUIRE modułu `MyCompanyCustom`.
 
-Przykład modułu `MyCompanyCustom`:
+Przykład modułu `MyCompanyCustom`, który zależy od całego modułu `MyCompanyPl`:
 
-```
+```lsf
 MODULE MyCompanyCustom;
 
 REQUIRE MyCompanyPl;
 
-<new code>
+// new code
 ```
+
+Przykład modułu `MyCompanyCustom`, który zależy od wybranych modułów `MyCompany`:
+
+```lsf
+MODULE MyCompanyCustom;
+
+REQUIRE Eval, ProcessMonitor, Backup, Chat, Documentation,
+        LegalEntityPl, LegalEntityImportPl, TaxInitialPl,
+        RegonDaneSzukajPodmity,
+        MasterDataP,
+        Inventory,
+    
+        Invoicing, InvoicingInventory, InvoicePrintInitialPl,
+        BillCorrection, BillCorrectionDebt, InvoiceCorrection, InvoiceCorrectionDebt,
+        InvoiceAdvance,
+        KSeF, KSeFToken, KSeFFakturaQuery, KSeFBill, KSeFInvoiceSend, KSeFScheduler,
+    
+        Purchase, PurchaseOrderPrintInitialPl,
+        Sales, SalesOrderPrintInitialPl,
+//        Retail,
+//        Manufacturing,
+//        ProjectManagement,
+//        HumanResources,
+//        CRM,
+//        Fleet,
+        BillReceiptCost, BillReceiptCostService; 
+
+// new code
+```
+
+Aby zobaczyć, jakie moduły można podłączyć, możesz przejrzeć sekcję `REQUIRE` w pliku `MyCompany.lsf` a `MyCompanyPl.lsf`.

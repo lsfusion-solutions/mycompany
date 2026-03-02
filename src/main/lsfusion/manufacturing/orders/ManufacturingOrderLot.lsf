@@ -24,9 +24,21 @@ beforeProcessFinishedLineLotBarCode(ManufacturingOrder r, STRING s) + {
     }
 }
 
-@defineDocDesignLotTab(manufacturingOrder, FinishedLine, produced, item, l, finishedLinesTab);
+@defineDocLot (manufacturingOrder, FinishedLine, item, toProduce, done, ' (manufacture)');
 
-@defineDocLotGenerate(manufacturingOrder, FinishedLine, item, l, produced);
+toProduceOrProduced(FinishedLine fl, Lot l) = toProduce(fl, l) OR produced(fl, l);
+
+@defineDocDesignLotTab(manufacturingOrder, FinishedLine, produced, item, l, finishedLinesTab, toProduceOrProduced);
+
+@defineDocLotGenerate(manufacturingOrder, FinishedLine, item, l, toProduce);
+
+EXTEND FORM manufacturingOrder
+    PROPERTIES (l, lotL) BEFORE produced(l, lotL) toProduce
+    PROPERTIES (lotL) DELETE GRID
+;
+
+WHEN SET(done(manufacturingOrder(FinishedLine l))) AND toProduce(l) = produced(l) DO
+    produced(l, Lot lt) <- toProduce(l, lt);
 
 //ledger
 quantity(ManufacturingOrderInv i, Lot l) += produced(line(i), l);

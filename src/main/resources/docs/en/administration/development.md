@@ -33,17 +33,41 @@ With the artifact you can replace the old file, which is on the server in the fo
 
 If you need to connect new modules, you can do it not via jar files but by simply adding new files to the classpath. In this case, the steps are as follows:
 
-1. Create, for example, a new module `MyCompanyCustom.lsf` that depends on the `MyCompanyRu` module and put it into `/var/lib/lsfusion`.
+1. Create, for example, a new module `MyCompanyCustom.lsf` that depends on the `MyCompany` module and put it into `/var/lib/lsfusion`.
 2. Change the top module of the application. To do this, in `/etc/lsfusion6-server/settings.properties` change (or add) the parameter `logics.topModule = MyCompanyCustom`.
 3. Restart the server service (as described above).
 4. If you need to connect additional modules, put them into `/var/lib/lsfusion` as well and add them to the REQUIRE section of the `MyCompanyCustom` module.
 
-Example `MyCompanyCustom` module:
+Example `MyCompanyCustom` module that depends on the whole `MyCompany` module:
 
-```
+```lsf
 MODULE MyCompanyCustom;
 
 REQUIRE MyCompany;
 
-<new code>
+// new code
 ```
+
+Example `MyCompanyCustom` module that depends on the selected `MyCompany` modules:
+
+```lsf
+MODULE MyCompanyCustom;
+
+REQUIRE Eval, ProcessMonitor, Backup, Chat, Documentation,
+        MasterDataP,
+        Inventory,
+        Invoicing, InvoicingInventory,
+        Purchase,
+        Sales,
+//        Retail,  
+//        Manufacturing,
+//        ProjectManagement,
+//        HumanResources,
+//        CRM,
+//        Fleet,
+        BillReceiptCost, BillReceiptCostService; 
+
+// new code
+```
+
+To see which modules you can connect, you can look at the `REQUIRE` section in the `MyCompany.lsf` file.

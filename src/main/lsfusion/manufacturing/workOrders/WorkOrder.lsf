@@ -1,17 +1,21 @@
 MODULE WorkOrder;
 
-REQUIRE ManufacturingOrder, WorkCenter;
+REQUIRE ManufacturingOrder, WorkCenter, Doc;
 
 NAMESPACE Manufacturing;
 
 CLASS WorkOrder 'Work order';
 
+@defineDocStatus(workOrder, 'Work order status', ready, 'Ready');
+
 name '{Name}' = DATA ISTRING[100] (WorkOrder) CHARWIDTH 20;
 
 manufacturingOrder 'Manufacturing order' = DATA ManufacturingOrder (WorkOrder) NONULL DELETE;
-numberManufacturingOrder 'Manufacturing order' (WorkOrder w) = number(manufacturingOrder(w));
-nameItemManufacturingOrder '{Item}' (WorkOrder w) = nameItem(manufacturingOrder(w));
 countWorkOrder (ManufacturingOrder o) = GROUP SUM 1 IF manufacturingOrder(WorkOrder wo) = o;
+
+numberManufacturingOrder 'Manufacturing order' (WorkOrder w) = number(manufacturingOrder(w));
+itemManufacturingOrder '{Item}' (WorkOrder w) = item(manufacturingOrder(w));
+nameItemManufacturingOrder '{Item}' (WorkOrder w) = nameItem(manufacturingOrder(w));
 
 nameNumberManufacturingOrder (WorkOrder wo) = CONCAT ' ', name(wo), number(manufacturingOrder(wo));
 
@@ -25,41 +29,71 @@ startTime 'Start time' = DATA TIME (WorkOrder);
 duration 'Duration' = DATA NUMERIC[8,2] (WorkOrder);
 durationToChar (NUMERIC[8,2] h) = STRING(rtrim(toChar(h, 'FM99999.99'),'.'));
 
+note 'Note' = DATA ISTRING (WorkOrder) CHARWIDTH 20;
+
 FORM workOrder 'Work order'
-    OBJECTS w = WorkOrder PANEL
-    PROPERTIES(w) name, numberManufacturingOrder, nameItemManufacturingOrder READONLY, nameWorkCenter, startDate, startTime, duration
+    OBJECTS o = WorkOrder PANEL
+    PROPERTIES(o) name, numberManufacturingOrder, nameItemManufacturingOrder READONLY, nameWorkCenter, 
+                  startDate, startTime, duration,
+                  note
     
-    EDIT WorkOrder OBJECT w
+    EDIT WorkOrder OBJECT o
 ;
 
 DESIGN workOrder {
-    caption = badged('Work order', nameNumberManufacturingOrder(w));
+    caption = badged('Work order', nameNumberManufacturingOrder(o));
     OBJECTS {
         NEW header {
             alignment = STRETCH;
             horizontal = TRUE;
             NEW headerLeft {
-                MOVE PROPERTY(name(w));
-                MOVE PROPERTY(numberManufacturingOrder(w));
-                MOVE PROPERTY(nameWorkCenter(w)) { notNull = TRUE; }
+                MOVE PROPERTY(name(o));
+                MOVE PROPERTY(numberManufacturingOrder(o));
+                MOVE PROPERTY(nameWorkCenter(o)) { notNull = TRUE; }
             }
             NEW headerRight {
-                MOVE PROPERTY(nameItemManufacturingOrder(w));
-                MOVE PROPERTY(startDate(w));
-                MOVE PROPERTY(startTime(w));
-                MOVE PROPERTY(duration(w));
+                MOVE PROPERTY(nameItemManufacturingOrder(o));
+                MOVE PROPERTY(startDate(o));
+                MOVE PROPERTY(startTime(o));
+                MOVE PROPERTY(duration(o));
             }
+        }
+        MOVE PROPERTY(note(o));
+        NEW details {
+            fill = 1;
+            tabbed = TRUE;
         }
     }
 }
 
+@defineHistoryObject(workOrder);
+@defineHistoryProperty(workOrder, status, 'Status', nameStatus);
+@defineHistoryProperty(workOrder, workCenter, 'Work center', nameWorkCenter);
+
+background = ABSTRACT CASE COLOR (WorkOrder);
+
 FORM workOrders 'Work orders'
-    OBJECTS w = WorkOrder
-    PROPERTIES(w) READONLY name, numberManufacturingOrder, nameItemManufacturingOrder, nameWorkCenter, startDate, startTime, duration
-    PROPERTIES(w) NEWSESSION NEW, EDIT, DELETE
-    
-    LIST WorkOrder OBJECT w
+    OBJECTS o = WorkOrder BACKGROUND background(o)
+    PROPERTIES(o) READONLYIF isReadonly()
+                           name, numberManufacturingOrder, nameItemManufacturingOrder, nameWorkCenter, 
+                           startDate, startTime, duration
+    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+
+    FILTERGROUP active
+        FILTER 'Opened' opened(o) DEFAULT
+        FILTER 'Closed' closed(o)
+
+    LIST WorkOrder OBJECT o
 ;
+
+@extendFormEditable(workOrders);
+
+@defineDocObjectsForm(workOrders, o, 'Work orders');
+@defineDocStatusForm(workOrder, o, name, ready, 'Ready');
+
+@defineHistoryForm(workOrder, workOrder, o);
+
+@defineObjectComments(workOrder, o, details);
 
 NAVIGATOR {
     operations {
@@ -69,7 +103,7 @@ NAVIGATOR {
 
 EXTEND FORM manufacturingOrder
     OBJECTS wo = WorkOrder
-    PROPERTIES(wo) name, nameWorkCenter, startDate, startTime, duration
+    PROPERTIES(wo) name, imagedNameStatus BACKGROUND colorStatus(wo), nameWorkCenter, startDate, startTime, duration
     PROPERTIES(wo) NEW, DELETE
     FILTERS manufacturingOrder(wo) = o
 ;

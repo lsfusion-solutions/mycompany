@@ -1,0 +1,47 @@
+MODULE WorkOrderDone;
+
+REQUIRE WorkOrderInProgress, WorkOrderSelection;
+
+NAMESPACE Manufacturing;
+
+EXTEND CLASS WorkOrderStatus {
+    done 'Done'
+}
+done 'Done' = DATA BOOLEAN (WorkOrder);
+
+status(WorkOrder w) += WHEN done(w) THEN WorkOrderStatus.done;
+closed(WorkOrderStatus s) += WHEN s = WorkOrderStatus.done THEN TRUE;
+
+markAsDone 'Mark as Done' (WorkOrder w) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    NEWSESSION {
+        done(w) <- TRUE;
+        APPLY;
+    }
+}
+
+EXTEND FORM workOrder
+    PROPERTIES(o) markAsDone SHOWIF status(o) = WorkOrderStatus.inProgress,
+                  done
+;
+
+DESIGN workOrder {
+    secondaryActions {
+        MOVE PROPERTY(markAsDone(o)) { valueClass = 'btn-secondary'; }
+    }
+    statusGroup {
+        MOVE PROPERTY(done(o)) {
+            valueClass = 'btn-check';
+            captionClass = 'btn btn-outline-primary';
+        }
+    }
+}
+
+EXTEND FORM workOrders
+    EXTEND FILTERGROUP status
+        FILTER 'Done' status(o) = WorkOrderStatus.done
+;
+
+@defineSelectionAction(workOrders, WorkOrder, markAsDone, 'Mark as Done', statuses);

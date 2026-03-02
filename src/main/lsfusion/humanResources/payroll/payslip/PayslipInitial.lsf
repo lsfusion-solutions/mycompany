@@ -1,0 +1,36 @@
+MODULE PayslipInitial;
+
+REQUIRE PayslipCategory, PayslipType, DefaultData;
+
+NAMESPACE Payroll;
+
+loadDefaultData () + {
+    NEW t = PayslipType {
+        name(t) <- 'Regular';
+
+        NEW n = Numerator {
+            name(n) <- ISTRING[100]('Payslips');
+            series(n) <- STRING[10](r'PSL');
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+            numerator(t) <- n;
+        }
+    }
+
+    NEW c = PayslipCategory {
+        name(c) <- 'Salary';
+        editable(c) <- TRUE;
+    }
+
+    NEW c = PayslipCategory {
+        name(c) <- 'Bonus';
+        editable(c) <- TRUE;
+    }
+
+    NEW c = PayslipCategory {
+        name(c) <- 'Tax';
+        deduction(c) <- TRUE;
+        editable(c) <- TRUE;
+    }
+}

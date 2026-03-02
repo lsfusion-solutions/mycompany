@@ -28,6 +28,8 @@ Stanowiska robocze służą do grupowania zleceń produkcyjnych i analizy całko
 
 ### Tworzenie zleceń produkcyjnych
 
+Zlecenia produkcyjne mogą być wprowadzane ręcznie, ale są też automatycznie generowane na podstawie operacji Zestawienia materiałów, gdy linie zamówienia produkcji są generowane lub przeliczane.
+
 Zlecenia produkcyjne są zazwyczaj tworzone w kontekście **Zamówienia produkcji**. Możesz podzielić pojedynczy proces produkcyjny na wiele sekwencyjnych lub równoległych operacji.
 
 #### Kroki dodawania zlecenia produkcyjnego:
@@ -40,13 +42,42 @@ Zlecenia produkcyjne są zazwyczaj tworzone w kontekście **Zamówienia produkcj
    - **Data rozpoczęcia** — dzień, w którym zaplanowano rozpoczęcie operacji (domyślnie data zaplanowana zamówienia produkcji).
    - **Godzina rozpoczęcia** — konkretna godzina, o której powinna rozpocząć się operacja.
    - **Czas trwania** — szacowany czas potrzebny na operację (w godzinach).
+   - **Operacja źródłowa** — bezpośrednie powiązanie z operacją Zestawienia materiałów używaną do utworzenia zlecenia.
 
 ### Zarządzanie wszystkimi zleceniami produkcyjnymi
 
 Aby zobaczyć globalny widok wszystkich zadań produkcyjnych, przejdź do **Produkcja** → **Operacje** → **Zlecenia produkcyjne**. Lista ta pozwala kierownikom:
 - Śledzić postęp operacji w różnych zamówieniach produkcji.
-- Filtrować zadania według stanowiska roboczego lub daty.
+- Filtrować zadania według stanowiska roboczego, daty rozpoczęcia lub produktu (z zamówienia produkcji).
+- Masowo aktualizować zlecenia produkcyjne przy użyciu multi-selekcji: wybierz wiele linii i użyj akcji **Rozpocznij** lub **Oznacz jako wykonane**.
 - Edytować szczegóły operacji bez otwierania poszczególnych zamówień produkcji.
+
+### Statusy zleceń produkcyjnych
+
+Każde zlecenie produkcyjne przechodzi przez określony proces w celu śledzenia postępów:
+- **Gotowe**: Stan początkowy dla nowych zleceń produkcyjnych.
+- **W toku**: Stan aktywny po rozpoczęciu pracy (oznaczony żółtym tłem).
+- **Wykonano**: Stan końcowy po zakończeniu operacji.
+
+#### Akcje:
+- **Rozpocznij**: Przenosi zlecenie produkcyjne ze stanu *Gotowe* do *W toku*.
+- **Oznacz jako wykonane**: Przenosi zlecenie produkcyjne ze stanu *W toku* do *Wykonano*.
+
+Akcje te są dostępne zarówno na formularzu zlecenia produkcyjnego, jak i na globalnej liście zleceń.
+
+### Filtrowanie i wybór
+
+Lista **Zlecenia produkcyjne** zawiera ulepszone filtrowanie:
+- **Otwarte**: Wyświetla zlecenia produkcyjne w statusie *Gotowe* lub *W toku*.
+- **Zamknięte**: Wyświetla zlecenia produkcyjne w statusie *Wykonano*.
+- **Filtry według daty, stanowiska roboczego i produktu**: Użyj panelu filtrów, aby zawęzić listę operacji.
+
+**Multi-selekcja** jest obsługiwana w widoku listy, co umożliwia wykonywanie operacji masowych na wielu zleceniach produkcyjnych jednocześnie.
+
+### Synchronizacja i zachowanie przy kopiowaniu
+
+- Gdy linie zamówienia produkcji są generowane/przeliczane, istniejące zlecenia produkcyjne w tym zamówieniu są przebudowywane na podstawie operacji Zestawienia materiałów.
+- Gdy zamówienie produkcji jest kopiowane, kopiowane są również jego zlecenia produkcyjne, w tym powiązanie z operacją, data/godzina rozpoczęcia oraz czas trwania.
 
 ---
 

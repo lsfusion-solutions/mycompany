@@ -1,7 +1,7 @@
 MODULE KSeFInvoice;
 
 REQUIRE Invoice, InvoiceCurrency, InvoiceCorrection, InvoiceAdvance,
-        LegalEntityPl, KSeFFaktura;
+        LegalEntityPl, CashAccount, KSeFFaktura;
 
 NAMESPACE KSeF;
 
@@ -67,6 +67,19 @@ createFaktura 'Build Faktura' (Invoice i) {
         taxAmount3(f) <- correctionTaxAmount(tax(r'5%'), i);
         amount(f) <- correctionAmount(i);
         
+        IF dueDate(i) THEN
+            NEW t = TerminPlatnosci {
+                faktura(t) <- f;
+                date(t) <- dueDate(i);
+            }
+            
+        FormaPlatnosci(f) <- IF companyAccount(i) IS CashAccount THEN 1 ELSE 6;
+        IF numberCompanyAccount(i) THEN
+            NEW rb = RachunekBankowy {
+                faktura(rb) <- f;
+                number(rb) <- numberCompanyAccount(i);
+            }
+        
         metodaKasowa(f) <- 2;
         samofakturowanie(f) <- 2;
         odwrotneObciazenie(f) <- 2;
@@ -87,16 +100,19 @@ createFaktura 'Build Faktura' (Invoice i) {
             number(z) <- number(faktura(ad));
         }
         
-        FOR invoice(InvoiceLine l) = i DO NEW w = FaWiersz {
+        FOR invoice(InvoiceLine l) = i OR invoice(l) = prevCorrection(i) DO NEW w = FaWiersz {
             faktura(w) <- f;
             NrWierszaFa(w) <- index(l);
             description(w) <- OVERRIDE description(l), nameItem(l);
             GTIN(w) <- idBarCodeItem(l);
+            id(w) <- STRING(l);
+            index(w) <- idItem(l); 
             nameUom(w) <- nameUom(l);
             quantity(w) <- quantity(l);
             price(w) <- resultPrice(l);
             untaxedAmount(w) <- untaxedAmount(l);
-            taxes(w) <- OVERRIDE (toChar(taxPercent(l), '99') IF taxPercent(l) > 0), taxes(l);
+            taxes(w) <- OVERRIDE (ltrim(toChar(taxPercent(l), '99')) IF taxPercent(l) > 0), taxes(l);
+            correction(w) <- 1 IF invoice(l) = original(i);
         }
     }
 }

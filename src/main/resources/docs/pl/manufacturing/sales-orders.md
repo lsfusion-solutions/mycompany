@@ -50,7 +50,8 @@ Automatycznie wypełniane są pola:
 - **lokalizacja magazynowa wyrobów gotowych** — pobierana z lokalizacji / lokalizacji magazynowej zamówienia sprzedaży;
 - **towar** — pobierany z linii zamówienia sprzedaży;
 - **[Zestawienie materiałów](bom.md)** — pobierane z linii zamówienia sprzedaży;
-- linie materiałów i wyjścia są generowane na podstawie ilości z linii zamówienia sprzedaży.
+- linie materiałów i wyjścia są generowane na podstawie ilości z linii zamówienia sprzedaży;
+- zlecenia produkcyjne są generowane na podstawie operacji Zestawienia materiałów.
 
 Dodatkowo może być wykonane dodatkowe, konfigurowalne wypełnianie (w zależności od ustawień).
 
@@ -69,6 +70,7 @@ Jeśli automatyczne tworzenie jest włączone, zmiany w liniach zamówienia sprz
 - gdy zmienia się ilość w linii — przeliczane są linie materiałów i wyjścia zamówienia produkcji;
 - gdy zmienia się towar w linii — aktualizowany jest towar zamówienia produkcji i linie są przeliczane;
 - gdy zmienia się Zestawienie materiałów — aktualizowane jest Zestawienie w zamówieniu produkcji i linie są przeliczane.
+- przy każdym przeliczeniu linii zlecenia produkcyjne są regenerowane na podstawie aktualnych operacji Zestawienia materiałów.
 
 Ograniczenia:
 

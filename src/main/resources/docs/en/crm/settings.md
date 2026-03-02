@@ -89,6 +89,24 @@ What it looks like to the user:
 
 Recommendation: create reasons so you can draw conclusions from them (e.g., “too expensive”, “chose a competitor”, “no budget”, “could not reach”, “not relevant”).
 
+## Marketing settings
+
+To analyze where leads come from, you can configure marketing reference data.
+
+### Campaigns
+
+A campaign is a specific marketing activity (e.g., “Summer 2026 Sale”, “Black Friday”).
+
+### Mediums
+
+A medium is the advertising channel used (e.g., “Email”, “Web”, “Social media”).
+
+### Sources
+
+A source is the specific resource where the lead found the information (e.g., “Google”, “Facebook”, “Referral”).
+
+Recommendation: the combination of Campaign, Medium, and Source allows for detailed tracking of marketing efficiency.
+
 ## Recommended initial setup order
 
 1. Create lead statuses and set sorting order.
@@ -96,4 +114,5 @@ Recommendation: create reasons so you can draw conclusions from them (e.g., “t
 3. Create lead types and set allowed statuses.
 4. Configure priorities and tags (if needed).
 5. Fill lost reasons.
-6. Set “Order type” and “Invoice type” if you plan to create documents from leads.
+6. Configure marketing reference data (Campaigns, Mediums, Sources).
+7. Set “Order type” and “Invoice type” if you plan to create documents from leads.
