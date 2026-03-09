@@ -64,6 +64,11 @@ WHEN (SETCHANGED(reference(IncomingPayment p)) OR SETCHANGED(partner(p)) OR SET(
     
 countPaid 'Number of payments' (IncomingDebt p) = GROUP SUM 1 IF paid(p, OutgoingDebt d) AND active(d) MATERIALIZED;
 
+countIncomingPayment (OutgoingDebt d) = GROUP SUM 1 IF paid(IncomingPayment p, d) AND active(p);
+
+lastIncomingPayment (OutgoingDebt d) = GROUP LAST IncomingPayment p ORDER dateTime(p), p WHERE paid(p, d) AND active(p);
+dateLastIncomingPayment 'Payment date' (OutgoingDebt d) = date(lastIncomingPayment(d));
+
 EXTEND FORM incomingPayments
     PROPERTIES(p) READONLY AFTER amount(p) paid BACKGROUND backgroundPaid(p), countPaid
 

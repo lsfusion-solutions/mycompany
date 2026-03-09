@@ -1,6 +1,7 @@
 MODULE KSeFInvoice;
 
-REQUIRE Invoice, InvoiceCurrency, InvoiceCorrection, InvoiceAdvance,
+REQUIRE Invoice, InvoiceCurrency, InvoiceCorrection, InvoiceAdvance, InvoiceDebt,
+        IncomingPaymentDebt,
         LegalEntityPl, CashAccount, KSeFFaktura;
 
 NAMESPACE KSeF;
@@ -72,8 +73,13 @@ createFaktura 'Build Faktura' (Invoice i) {
                 faktura(t) <- f;
                 date(t) <- dueDate(i);
             }
-            
+
+        IF NOT left(i) AND dateLastIncomingPayment(i) THEN {
+            Zaplacono(f) <- 1;
+            DataZaplaty(f) <- dateLastIncomingPayment(i);
+        }
         FormaPlatnosci(f) <- IF companyAccount(i) IS CashAccount THEN 1 ELSE 6;
+        
         IF numberCompanyAccount(i) THEN
             NEW rb = RachunekBankowy {
                 faktura(rb) <- f;

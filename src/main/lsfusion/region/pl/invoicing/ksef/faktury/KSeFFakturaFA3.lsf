@@ -91,7 +91,7 @@ FORM FA3XmlExport
     PROPERTIES(tp) date EXTID 'Termin'
     FILTERS faktura(tp) = f
 
-    PROPERTIES(f) IN Platnosc FormaPlatnosci EXTID 'FormaPlatnosci'
+    PROPERTIES(f) IN Platnosc Zaplacono EXTID 'Zaplacono', DataZaplaty EXTID 'DataZaplaty', FormaPlatnosci EXTID 'FormaPlatnosci'
 
     OBJECTS rb = RachunekBankowy EXTID 'RachunekBankowy' IN Platnosc
     PROPERTIES(rb) number EXTID 'NrRB'
@@ -173,6 +173,8 @@ CN = DATA LOCAL STRING (INTEGER);
 PKOB = DATA LOCAL STRING (INTEGER);
 
 Termin = DATA LOCAL DATE (INTEGER);
+Zaplacono = DATA LOCAL INTEGER();
+DataZaplaty = DATA LOCAL DATE();
 FormaPlatnosci = DATA LOCAL INTEGER();
 RachunekBankowyNumber = DATA LOCAL STRING (INTEGER);
 DodatkowyOpisKlucz = DATA LOCAL STRING (INTEGER);
@@ -262,6 +264,8 @@ FORM FA3XmlImport FORMEXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Faktura'
     PROPERTIES(tp) Termin EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Termin'
 
     PROPERTIES() IN Platnosc
+        Zaplacono EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Zaplacono',
+        DataZaplaty EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:DataZaplaty',
         FormaPlatnosci EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:FormaPlatnosci'
 
     OBJECTS rb = INTEGER EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:RachunekBankowy' IN Platnosc
@@ -340,6 +344,8 @@ import (Faktura nf) {
         date(t) <- Termin(tp);
     }
 
+    Zaplacono(nf) <- Zaplacono();
+    DataZaplaty(nf) <- DataZaplaty();
     FormaPlatnosci(nf) <- FormaPlatnosci();
 
     FOR RachunekBankowyNumber(INTEGER rb) DO NEW r = RachunekBankowy {
