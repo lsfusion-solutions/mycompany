@@ -39,3 +39,10 @@ quantity(ShipmentInCostLedger l) += done(line(l));
 calcAmount (ShipmentInCostLedger l) += amount(outCostLedger(line(l)));
 
 edit(ShipmentInCostLedger l) + { edit(line(l)); }
+
+// cost 
+
+costPrice (ShipmentLine l) = price(outCostLedger(l));
+costAmount (ShipmentLine l) = amount(outCostLedger(l));
+
+costAmount(Shipment s) = GROUP SUM costAmount(ShipmentLine l) IF shipment(l) = s;

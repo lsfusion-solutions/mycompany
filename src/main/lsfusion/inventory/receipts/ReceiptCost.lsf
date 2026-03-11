@@ -35,3 +35,6 @@ cost (ReceiptLine l) += WHEN dataCost(l) THEN dataCost(l);
 EXTEND FORM receipt
     PROPERTIES(l) READONLYIF readonly(r) cost SHOWIF showCost(type(r)) ON CHANGE { INPUT c = cost(l) DO dataCost(l) <- c; }
 ;
+
+costAmount (ReceiptLine l) = amount(costLedger(l));
+costAmount (Receipt r) = GROUP SUM costAmount(ReceiptLine l) IF receipt(l) = r;
