@@ -47,6 +47,7 @@ createJournalEntries 'Generate' (Asset a) {
             asset(j) <- a;
 
             company(j) <- company(a);
+            journal(j) <- journal(type(a));
             date(j) <- acquisitionDate(a);
             number(j) <- number(a);
             description(j) <- 'Asset acquisition' + ' : ' + CONCAT ' / ', number(a), nameItem(a);
@@ -91,11 +92,11 @@ regenerateJournalEntries 'Regenerate' (Asset a) {
 } CONFIRM;
 
 generateJournalEntries (Company c, DATE df, DATE dt) +{
-    FOR acquisitionDate(Asset a) >= df AND acquisitionDate(a) <= dt AND company(a) = c AND NOT acquisitionJournal(a) INLINE DO {
+    FOR acquisitionDate(Asset a) >= df AND acquisitionDate(a) <= dt AND company(a) = c AND journal(type(a)) AND NOT acquisitionJournal(a) INLINE DO {
         createJournalEntries(a);
     }
 
-    FOR date(AssetDepreciation d) >= df AND date(d) <= dt AND company(d) = c AND NOT journalEntry(d) INLINE DO {
+    FOR date(AssetDepreciation d) >= df AND date(d) <= dt AND company(d) = c AND journal(typeAsset(d)) AND NOT journalEntry(d) INLINE DO {
         createJournalEntries(d);
     }
 }
