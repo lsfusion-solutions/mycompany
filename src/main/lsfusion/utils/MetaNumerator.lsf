@@ -37,7 +37,7 @@ META defineNumber(class, caption, srs)
     }
 END
 
-META defineNumberType(class)
+META defineNumberType(class, type)
     number 'Number' = DATA STRING[50] (###class) NONULL CHARWIDTH 11 IN id;
     class (STRING[50] number) = GROUP MAX ###class o BY number(o);
 
@@ -45,6 +45,10 @@ META defineNumberType(class)
         number(o) <- CONCAT '/', series(numerator(type(o))), curStringValue(numerator(type(o)));
         incrementValueSession(numerator(type(o)));
     }
+END
+
+META defineNumberType(class)
+    @defineNumberType(class, type);
 END
 
 META defineID(class, caption, srs, width)
