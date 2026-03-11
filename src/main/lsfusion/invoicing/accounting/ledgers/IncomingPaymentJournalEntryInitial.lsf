@@ -5,29 +5,29 @@ REQUIRE IncomingPaymentJournalEntry, GLAccountInitial, IncomingPaymentInitial, O
 NAMESPACE Invoicing;
 
 loadDefaultData () + {
-    journal(IncomingPaymentType t) <- journal('bank') WHERE id(t) = r'customerbank';
+    journal(IncomingPaymentType t) <- journal(r'bank') WHERE id(t) = r'customerbank';
     amountDebitAccount(IncomingPaymentType t) <- GLAccount('1020') WHERE id(t) = r'customerbank';
     amountCreditAccount(IncomingPaymentType t) <- GLAccount('1100') WHERE id(t) = r'customerbank';
 
-    journal(IncomingPaymentType t) <- journal('cash') WHERE id(t) = r'customercash';
+    journal(IncomingPaymentType t) <- journal(r'cash') WHERE id(t) = r'customercash';
     amountDebitAccount(IncomingPaymentType t) <- GLAccount('1010') WHERE id(t) = r'customercash';
     amountCreditAccount(IncomingPaymentType t) <- GLAccount('1100') WHERE id(t) = r'customercash';
 
-    journal(IncomingPaymentType t) <- journal('bank') WHERE id(t) = r'vendorbank';
+    journal(IncomingPaymentType t) <- journal(r'bank') WHERE id(t) = r'vendorbank';
     amountDebitAccount(IncomingPaymentType t) <- GLAccount('1020') WHERE id(t) = r'vendorbank';
     amountCreditAccount(IncomingPaymentType t) <- GLAccount('2100') WHERE id(t) = r'vendorbank';
 
-    journal(IncomingPaymentType t) <- journal('cash') WHERE id(t) = r'vendorcash';
+    journal(IncomingPaymentType t) <- journal(r'cash') WHERE id(t) = r'vendorcash';
     amountDebitAccount(IncomingPaymentType t) <- GLAccount('1010') WHERE id(t) = r'vendorcash';
     amountCreditAccount(IncomingPaymentType t) <- GLAccount('2100') WHERE id(t) = r'vendorcash';
 
-    journal(IncomingPaymentType t) <- journal('miscellaneous') WHERE id(t) = r'transfer';
+    journal(IncomingPaymentType t) <- journal(r'miscellaneous') WHERE id(t) = r'transfer';
     amountDebitAccount(IncomingPaymentType t) <- GLAccount('1020') WHERE id(t) = r'transfer';
     amountCreditAccount(IncomingPaymentType t) <- GLAccount('1020') WHERE id(t) = r'transfer';
 
-    journal(OutgoingPaymentType t) <- journal('miscellaneous') WHERE id(t) = r'transfer';
+    journal(OutgoingPaymentType t) <- journal(r'miscellaneous') WHERE id(t) = r'transfer';
 
-    journal(IncomingPaymentType t) <- journal('miscellaneous') WHERE id(t) = r'initial';
+    journal(IncomingPaymentType t) <- journal(r'miscellaneous') WHERE id(t) = r'initial';
     amountDebitAccount(IncomingPaymentType t) <- GLAccount('1010') WHERE id(t) = r'initial';
     amountCreditAccount(IncomingPaymentType t) <- GLAccount('3300') WHERE id(t) = r'initial';
 }

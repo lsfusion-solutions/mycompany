@@ -5,20 +5,20 @@ REQUIRE BillJournalEntry, GLAccountInitial, BillInitial, CreditNoteInitial, Bill
 NAMESPACE Invoicing;
 
 loadDefaultData () + {
-    journal(BillType t) <- journal('purchase') WHERE id(t) = r'bill';
+    journal(BillType t) <- journal(r'purchase') WHERE id(t) = r'bill';
     amountCreditAccount(BillType t) <- GLAccount('2100') WHERE id(t) = r'bill';
     nettoAmountDebitAccount(BillType t) <- GLAccount('2600') WHERE id(t) = r'bill';
     taxAmountDebitAccount(BillType t) <- GLAccount('1400') WHERE id(t) = r'bill';
 
-    journal(BillType t) <- journal('sales') WHERE id(t) = r'creditnote';
+    journal(BillType t) <- journal(r'sales') WHERE id(t) = r'creditnote';
     amountCreditAccount(BillType t) <- GLAccount('1100') WHERE id(t) = r'creditnote';
     nettoAmountDebitAccount(BillType t) <- GLAccount('4200') WHERE id(t) = r'creditnote';
     taxAmountDebitAccount(BillType t) <- GLAccount('2200') WHERE id(t) = r'creditnote';
 
-    journal(BillType t) <- journal('sales') WHERE id(t) = r'retailreturn';
+    journal(BillType t) <- journal(r'sales') WHERE id(t) = r'retailreturn';
     amountCreditAccount(BillType t) <- GLAccount('1010') WHERE id(t) = r'retailreturn';
     nettoAmountDebitAccount(BillType t) <- GLAccount('4200') WHERE id(t) = r'retailreturn';
     taxAmountDebitAccount(BillType t) <- GLAccount('2200') WHERE id(t) = r'retailreturn';
 
-    journal(BillType t) <- journal('purchase') WHERE id(t) = r'import';
+    journal(BillType t) <- journal(r'purchase') WHERE id(t) = r'import';
 }
