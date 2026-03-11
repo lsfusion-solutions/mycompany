@@ -123,6 +123,8 @@ CLASS TerminPlatnosci 'TerminPlatnosci';
 faktura 'Faktura' = DATA Faktura (TerminPlatnosci) NONULL DELETE INDEXED;
 date 'Termin' = DATA DATE (TerminPlatnosci);
 
+Zaplacono 'Paid' = DATA INTEGER (Faktura);
+DataZaplaty 'Payment date' = DATA DATE (Faktura);
 FormaPlatnosci 'Forma platnosci' = DATA INTEGER (Faktura);
 
 CLASS RachunekBankowy 'Rachunek bankowy';
@@ -176,7 +178,7 @@ FORM faktura 'Faktura KSeF'
                   untaxedAmount2, taxAmount2,
                   untaxedAmount3, taxAmount3,
                   untaxedAmount6, untaxedAmount7,
-                  amount, FormaPlatnosci,
+                  amount,
                   metodaKasowa, samofakturowanie, odwrotneObciazenie, mpp, weUproszczona,
                   KursWalutyZ, RodzajFaktury,
                   PrzyczynaKorekty, DataWystFaKorygowanej, NrFaKorygowanej, NrKSeFFaKorygowanej
@@ -188,6 +190,8 @@ FORM faktura 'Faktura KSeF'
     OBJECTS tp = TerminPlatnosci
     PROPERTIES(tp) READONLY '' = date
     FILTERS faktura(tp) = f
+
+    PROPERTIES(f) READONLY Zaplacono, DataZaplaty, FormaPlatnosci
 
     OBJECTS rb = RachunekBankowy
     PROPERTIES(rb) READONLY '' = number
@@ -275,6 +279,8 @@ DESIGN faktura {
                 NEW type {
                     horizontal = TRUE;
                     MOVE PROPERTY(RodzajFaktury(f));
+                    MOVE PROPERTY(Zaplacono(f));
+                    MOVE PROPERTY(DataZaplaty(f));
                     MOVE PROPERTY(FormaPlatnosci(f));
                 }
                 NEW korekta {
@@ -327,6 +333,7 @@ FORM faktury 'Faktury KSeF'
                     p2_NIP, p2_Nazwa, p2_AdresL1, p2_AdresL2, p2_Email, p2_Telefon, p2_NrKlienta,
                     untaxedAmount1, untaxedAmount2, untaxedAmount3, untaxedAmount6, untaxedAmount7,
                     taxAmount1, taxAmount2, taxAmount3, amount,
+                    Zaplacono, DataZaplaty, FormaPlatnosci,
                     metodaKasowa, samofakturowanie, odwrotneObciazenie, mpp, weUproszczona,
                     KursWalutyZ, RodzajFaktury,
                     PrzyczynaKorekty, DataWystFaKorygowanej, NrFaKorygowanej, NrKSeFFaKorygowanej, SystemInfo,
