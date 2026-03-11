@@ -1,0 +1,22 @@
+MODULE InvoiceJournalEntryInitial;
+
+REQUIRE InvoiceJournalEntry, GLAccountInitial, InvoiceInitial, RefundInitial, Journal;
+
+NAMESPACE Invoicing;
+
+loadDefaultData () + {
+    journal(InvoiceType t) <- journal('sales') WHERE id(t) = r'invoice';
+    amountDebitAccount(InvoiceType t) <- GLAccount('1100') WHERE id(t) = r'invoice';
+    nettoAmountCreditAccount(InvoiceType t) <- GLAccount('4100') WHERE id(t) = r'invoice';
+    taxAmountCreditAccount(InvoiceType t) <- GLAccount('2200') WHERE id(t) = r'invoice';
+
+    journal(InvoiceType t) <- journal('sales') WHERE id(t) = r'retail';
+    amountDebitAccount(InvoiceType t) <- GLAccount('1100') WHERE id(t) = r'retail';
+    nettoAmountCreditAccount(InvoiceType t) <- GLAccount('4100') WHERE id(t) = r'retail';
+    taxAmountCreditAccount(InvoiceType t) <- GLAccount('2200') WHERE id(t) = r'retail';
+
+    journal(InvoiceType t) <- journal('purchase') WHERE id(t) = r'refund';
+    amountDebitAccount(InvoiceType t) <- GLAccount('2100') WHERE id(t) = r'refund';
+    nettoAmountCreditAccount(InvoiceType t) <- GLAccount('2600') WHERE id(t) = r'refund';
+    taxAmountCreditAccount(InvoiceType t) <- GLAccount('1400') WHERE id(t) = r'refund';
+}

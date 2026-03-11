@@ -1,0 +1,26 @@
+MODULE AssetInitial;
+
+REQUIRE Asset, GLAccountInitial, Journal;
+
+NAMESPACE Accounting;
+
+loadDefaultData () + {
+    NEW i = AssetType {
+        name(i) <- 'Asset';
+        journal(i) <- journal('miscellaneous');
+        NEW n = Numerator {
+            name(n) <- 'Asset';
+            series(n) <- r'AST';
+            minValue(n) <- 1;
+            maxValue(n) <- 999;
+            stringLength(n) <- 3;
+            numerator(i) <- n;
+        }
+
+        depreciationAccount(i) <- GLAccount('1600');
+        expenseAccount(i) <- GLAccount('5600');
+        
+        fixedAssetAccount(i) <- GLAccount('1500');
+        acquisitionAccount(i) <- GLAccount('2600');
+    }
+}

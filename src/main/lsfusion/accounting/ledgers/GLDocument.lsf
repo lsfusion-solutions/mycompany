@@ -1,0 +1,174 @@
+MODULE GLDocument;
+
+REQUIRE JournalEntry;
+
+NAMESPACE Accounting;
+
+CLASS ABSTRACT GLDocument;
+
+source 'Source' = DATA GLDocument (JournalEntry) INDEXED;
+journalEntry (GLDocument d) = GROUP AGGR JournalEntry j BY source(j);
+countJournalEntryLine (GLDocument d) = countJournalEntryLine(journalEntry(d));
+
+source 'Source' (JournalEntryLine l) = source(journalEntry(l));
+
+editSource 'Source' (JournalEntry l) { edit(source(l)); }
+editSource 'Source' (JournalEntryLine l) { edit(source(l)); }
+
+EXTEND FORM journalEntry
+    PROPERTIES(j) NEWSESSION editSource
+;
+
+DESIGN journalEntry {
+    statusActions {
+        MOVE PROPERTY(editSource(j)) { valueClass = 'btn-secondary'; }
+    }
+}
+
+EXTEND FORM journalEntries
+    PROPERTIES(j) NEWSESSION editSource GRID DISABLEIF NOT source(j)
+;
+
+deleteJournalEntries (Company c, DATE df, DATE dt) +{
+    DELETE JournalEntry j WHERE date(j) >= df AND date(j) <= dt AND company(j) = c AND source(j);
+}
+
+META defineGLDocumentJournalEntryGenerate(doc, postedProp, dateProp)
+
+    journal 'Journal' = DATA Journal (###doc##Type);
+    nameJournal 'Journal' (###doc##Type t) = name(journal(t));
+    
+    EXTEND FORM doc##Type PROPERTIES(o) nameJournal;
+    DESIGN doc##Type {
+        tabbedPane {
+            NEW accounting {
+                caption = 'Accounting';
+                MOVE PROPERTY(nameJournal(o));
+            }
+        }
+    }
+
+    createLines ABSTRACT LIST (###doc, JournalEntry);
+
+    createJournalEntries (###doc d) {
+        NEW j = JournalEntry {
+            posted(j) <- postedProp(d);
+            source(j) <- d;
+
+            company(j) <- company(d);
+            journal(j) <- journal(type(d));
+            date(j) <- dateProp(d);
+            number(j) <- number(d);
+            description(j) <- journalDescription(d);
+
+            createLines(d, j);
+        }
+    }
+
+    generateJournalEntries 'Generate' (###doc d) {
+        APPLY;
+        IF canceled() THEN RETURN;
+        
+        createJournalEntries(d);
+    }
+
+    generateJournalEntries (Company c, DATE df, DATE dt) +{
+        FOR dateProp(###doc d) >= df AND dateProp(d) <= dt AND company(d) = c AND 
+            postedProp(d) AND active(d) AND NOT journalEntry(d) INLINE DO {
+            createJournalEntries(d);
+        }
+    }
+
+    regenerateJournalEntries 'Regenerate' (###doc d) {
+        APPLY;
+        IF canceled() THEN RETURN;
+
+        DELETE JournalEntryLine jl WHERE journalEntry(jl) = journalEntry(d);
+        DELETE JournalEntry j WHERE j = journalEntry(d);
+        createJournalEntries(d);
+    } CONFIRM;
+
+END
+
+META defineGLDocumentJournalEntryGenerate(doc, prop)
+    @defineGLDocumentJournalEntryGenerate(doc, prop, date);
+END
+
+META defineGLDocumentJournalEntryForm(doc, let)
+    
+    EXTEND FORM doc
+        PROPERTIES(let) generateJournalEntries SHOWIF NOT journalEntry(let),
+                        regenerateJournalEntries SHOWIF journalEntry(let) DISABLEIF locked(journalEntry(let))
+
+        OBJECTS je = JournalEntry PANEL
+        PROPERTIES(je) posted
+        PROPERTIES(je) READONLYIF readonly(je) nameCompany, nameJournal, number, date, description
+        FILTERS source(je) = let
+
+        OBJECTS jel = JournalEntryLine
+        PROPERTIES(jel) READONLYIF readonly(jel) idNameAccount, debit, credit, NEW, DELETE
+        FILTERS journalEntry(jel) = je
+    ;
+
+    DESIGN doc {
+        details {
+            NEW accounting {
+                caption = badged('Journal entries', countJournalEntryLine(let));
+                NEW accountingActions {
+                    horizontal = TRUE;
+                    MOVE PROPERTY(generateJournalEntries(let));
+                    MOVE PROPERTY(regenerateJournalEntries(let));
+                }
+                NEW accountingHeader {
+                    horizontal = TRUE;
+                    alignment = STRETCH;
+                    MOVE PROPERTY(posted(je));
+                    MOVE PROPERTY(nameCompany(je));
+                    MOVE PROPERTY(nameJournal(je));
+                    MOVE PROPERTY(number(je));
+                    MOVE PROPERTY(date(je));
+                    MOVE PROPERTY(description(je));
+                }
+                MOVE BOX(jel);
+            }
+        }
+    }
+
+END
+
+META defineGLDocumentJournalEntryProperty(doc, prop, capt)
+    prop##DebitAccount = DATA GLAccount (###doc##Type);
+    idName###prop##DebitAccount 'Debit' (###doc##Type t) = idName(prop##DebitAccount(t));
+
+    prop##CreditAccount = DATA GLAccount (###doc##Type);
+    idName###prop##CreditAccount 'Credit' (###doc##Type t) = idName(prop##CreditAccount(t));
+
+    EXTEND FORM doc##Type
+        PROPERTIES(o) idName###prop##DebitAccount, idName###prop##CreditAccount
+    ;
+
+    DESIGN doc##Type {
+        accounting {
+            NEW prop##Accounts {
+                caption = capt;
+                horizontal = TRUE;
+                MOVE PROPERTY(idName###prop##DebitAccount(o));
+                MOVE PROPERTY(idName###prop##CreditAccount(o));
+            }
+        }
+    }
+
+    createLines (###doc i, JournalEntry j) +{
+        IF prop##DebitAccount(type(i)) THEN NEW dl = JournalEntryLine {
+            journalEntry(dl) <- j;
+            account(dl) <- prop##DebitAccount(type(i));
+            debit(dl) <- prop(i);
+        }
+        IF prop##CreditAccount(type(i)) THEN NEW dl = JournalEntryLine {
+            journalEntry(dl) <- j;
+            account(dl) <- prop##CreditAccount(type(i));
+            credit(dl) <- prop(i);
+        }
+    }
+END
+

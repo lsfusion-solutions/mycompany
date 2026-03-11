@@ -1,0 +1,15 @@
+MODULE ShipmentJournalEntry;
+
+REQUIRE ShipmentCanceled, ShipmentCost, GLDocument;
+
+NAMESPACE Inventory;
+
+EXTEND CLASS Shipment : GLDocument;
+
+journalDescription (Shipment s) = 'Shipment' + ' : ' + CONCAT ' / ', nameType(s), nameCustomer(s);
+
+@defineGLDocumentJournalEntryGenerate(shipment, done, executionDate);
+
+@defineGLDocumentJournalEntryForm(shipment, s);
+
+@defineGLDocumentJournalEntryProperty(shipment, costAmount, 'Cost');

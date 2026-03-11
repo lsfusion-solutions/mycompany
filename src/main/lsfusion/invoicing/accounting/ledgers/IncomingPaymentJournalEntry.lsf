@@ -1,0 +1,15 @@
+MODULE IncomingPaymentJournalEntry;
+
+REQUIRE IncomingPaymentCanceled, GLDocument;
+
+NAMESPACE Invoicing;
+
+EXTEND CLASS IncomingPayment : GLDocument;
+
+journalDescription (IncomingPayment p) = 'Incoming payment' + ' : ' + CONCAT ' / ', nameType(p), namePartner(p);
+
+@defineGLDocumentJournalEntryGenerate(incomingPayment, done);
+
+@defineGLDocumentJournalEntryForm(incomingPayment, p);
+
+@defineGLDocumentJournalEntryProperty(incomingPayment, amount, '{Amount}');

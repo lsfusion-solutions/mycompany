@@ -1,0 +1,94 @@
+MODULE GLAccount;
+
+REQUIRE AccountingSettings;
+
+NAMESPACE Accounting;
+
+CLASS GLAccount 'General Ledger Account';
+
+CLASS GLAccountType 'Account Type' {
+    asset 'Asset',
+    liability 'Liability',
+    equity 'Equity',
+    revenue 'Revenue',
+    expense 'Expense'
+}
+name '{Name}' (GLAccountType t) = staticCaption(t AS StaticObject) IF t IS GLAccountType CHARWIDTH 15;
+
+id 'ID' = DATA ISTRING[20] (GLAccount) IN id INDEXED NONULL CHARWIDTH 8;
+GLAccount (ISTRING[20] id) = GROUP AGGR GLAccount a BY id(a);
+
+name '{Name}' = DATA ISTRING[100] (GLAccount) IN id NONULL CHARWIDTH 15;
+
+idName '{Name}' (GLAccount a) = id(a) + ' ' + name(a) CHARWIDTH 20; 
+
+parent 'Parent' = DATA GLAccount (GLAccount) INDEXED;
+idNameParent 'Parent' (GLAccount a) = name(parent(a));
+
+level 'Level' (GLAccount child, GLAccount parent) = RECURSION 1l IF child IS GLAccount AND parent == child
+                                                                 STEP 2l IF parent == parent($parent) MATERIALIZED;
+
+level 'Level' (GLAccount a) = GROUP SUM 1 IF level(a, GLAccount parent);
+
+dataType 'Type' = DATA GLAccountType (GLAccount);
+nearestType (GLAccount child) = GROUP LAST dataType(GLAccount parent) ORDER level(child, parent) WHERE dataType(parent);
+type 'Type' (GLAccount a) = OVERRIDE dataType(a), nearestType(a) MATERIALIZED;
+nameType 'Type' (GLAccount a) = name(type(a));
+
+CONSTRAINT SET(GLAccount a IS GLAccount) AND NOT type(a) 
+    MESSAGE 'Account type must be specified for the account or one of its parents';
+
+dataIsCashEquivalent 'Cash equivalent' = DATA BOOLEAN (GLAccount);
+isCashEquivalent (GLAccount child) = GROUP LAST dataIsCashEquivalent(GLAccount parent) ORDER level(child, parent) WHERE dataIsCashEquivalent(parent) MATERIALIZED;
+
+canonicalName 'Canonical name' (GLAccount c) =
+    GROUP CONCAT idName(GLAccount parent), ' / ' ORDER DESC level(c, parent) CHARWIDTH 50 IN id;
+
+nameDataType 'Type' (GLAccount a) = name(dataType(a));
+
+FORM GLAccount 'General Ledger Account'
+    OBJECTS a = GLAccount PANEL
+    PROPERTIES(a) id, name, nameDataType, dataIsCashEquivalent, idNameParent
+
+    EDIT GLAccount OBJECT a
+;
+
+DESIGN GLAccount {
+    OBJECTS {
+        NEW pane {
+            NEW id {
+                horizontal = TRUE;
+                alignment = STRETCH;
+                MOVE PROPERTY(id(a));
+                MOVE PROPERTY(name(a));
+                MOVE PROPERTY(dataIsCashEquivalent(a));
+            }
+            MOVE PROPERTY(nameDataType(a)) { alignment = STRETCH; }
+            MOVE PROPERTY(idNameParent(a)) { alignment = STRETCH; }
+        }
+    }
+}
+
+newGLAccount 'Account' (GLAccount p) {
+    NEWSESSION {
+        NEW na = GLAccount {
+            parent(na) <- p;
+            SHOW GLAccount OBJECTS a = na DOCKED;
+        }
+    }
+} IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+
+FORM GLAccounts 'Chart of accounts'
+    TREE tree a = GLAccount PARENT parent(a)
+    PROPERTIES(a) READONLY id, name, nameType, isCashEquivalent, canonicalName
+    PROPERTIES(a) NEWSESSION EDIT, DELETE
+    PROPERTIES(a) newGLAccount DRAW a TOOLBAR
+;
+
+NAVIGATOR {
+    accounting {
+        settings {
+            NEW GLAccounts;
+        }
+    }
+}

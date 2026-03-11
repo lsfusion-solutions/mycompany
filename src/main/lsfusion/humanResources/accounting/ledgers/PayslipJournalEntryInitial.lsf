@@ -1,0 +1,16 @@
+MODULE PayslipJournalEntryInitial;
+
+REQUIRE PayslipJournalEntry, GLAccountInitial, PayslipInitial,
+        OutgoingPaymentJournalEntry, PayslipOutgoingPaymentInitial, Journal;
+
+NAMESPACE Payroll;
+
+loadDefaultData () + {
+    journal(PayslipType t) <- journal('miscellaneous') WHERE t IS PayslipType;
+    netWageDebitAccount(PayslipType t) <- GLAccount('5200') WHERE t IS PayslipType;
+    netWageCreditAccount(PayslipType t) <- GLAccount('2300') WHERE t IS PayslipType;
+
+    journal(OutgoingPaymentType t) <- journal('bank') WHERE id(t) = r'employeebank';
+    amountDebitAccount(OutgoingPaymentType t) <- GLAccount('2300') WHERE id(t) = r'employeebank';
+    amountCreditAccount(OutgoingPaymentType t) <- GLAccount('1020') WHERE id(t) = r'employeebank';
+}

@@ -1,0 +1,57 @@
+MODULE BillAsset;
+
+REQUIRE Bill, Asset;
+
+NAMESPACE Invoicing;
+
+assetType 'Asset type' = DATA AssetType (BillType);
+nameAssetType 'Asset type' (BillType t) = name(assetType(t));
+
+EXTEND FORM billType PROPERTIES(o) nameAssetType;
+DESIGN billType {
+    default {
+        MOVE PROPERTY(nameAssetType(o));
+    }
+}
+
+billLine 'Bill line' = DATA BillLine (Asset) INDEXED;
+countAssetLine 'Assets' (BillLine l) = GROUP SUM 1 IF billLine(Asset a) = l;
+
+lineToCreateAsset (BillLine l) = item(l) IS Product AND quantity(l) > OVERRIDE countAssetLine(l), 0;
+
+createAsset 'Create asset' (BillLine l) {
+    APPLY;
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {
+        NEW na = Asset {
+            item(na) <- item(l);
+            company(na) <- company(bill(l));
+            type(na) <- assetType(type(bill(l)));
+            acquisitionDate(na) <- date(bill(l));
+            acquisitionCost(na) <- untaxedAmount(l);
+            note(na) <- description(l);
+            billLine(na) <- l;
+
+            SHOW asset OBJECTS a = na DOCKED;
+        }
+    }
+}
+
+EXTEND FORM bill
+    OBJECTS as = Asset
+    PROPERTIES(as) '' = number READONLY, '' = EDIT GRID
+    FILTERS billLine(as) = l
+
+    PROPERTIES(l) createAsset DRAW as TOOLBAR DISABLEIF NOT (item(l) IS Product AND quantity(l) > OVERRIDE countAssetLine(l), 0)
+;
+
+DESIGN bill {
+    linesFooter {
+        MOVE BOX(as) FIRST {
+            showIf = assetType(type(l)) OR countAssetLine(l);
+            caption = '';
+            GRID(as) { size = (100, -1); }
+        }
+    }
+}

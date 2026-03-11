@@ -1,0 +1,17 @@
+MODULE BillJournalEntry;
+
+REQUIRE BillCanceled, GLDocument;
+
+NAMESPACE Invoicing;
+
+EXTEND CLASS Bill : GLDocument;
+
+journalDescription (Bill i) = 'Bill' + ' : ' + CONCAT ' / ', nameType(i), nameVendor(i);
+
+@defineGLDocumentJournalEntryGenerate(bill, ready);
+
+@defineGLDocumentJournalEntryForm(bill, b);
+
+@defineGLDocumentJournalEntryProperty(bill, amount, 'Total amount');
+@defineGLDocumentJournalEntryProperty(bill, nettoAmount, 'Netto amount');
+@defineGLDocumentJournalEntryProperty(bill, taxAmount, 'Tax');

@@ -1,0 +1,15 @@
+MODULE ScrapJournalEntry;
+
+REQUIRE ScrapCanceled, ScrapCost, GLDocument;
+
+NAMESPACE Inventory;
+
+EXTEND CLASS Scrap : GLDocument;
+
+journalDescription (Scrap s) = 'Scrap' + ' : ' + CONCAT ' / ', nameType(s), nameLocation(s);
+
+@defineGLDocumentJournalEntryGenerate(scrap, done);
+
+@defineGLDocumentJournalEntryForm(scrap, s);
+
+@defineGLDocumentJournalEntryProperty(scrap, costAmount, 'Cost');

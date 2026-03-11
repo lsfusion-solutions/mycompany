@@ -1,0 +1,15 @@
+MODULE ReceiptJournalEntryInitial;
+
+REQUIRE ReceiptJournalEntry, GLAccountInitial, ReceiptInitial, ShipmentReceiptInitial, Journal;
+
+NAMESPACE Inventory;
+
+loadDefaultData () + {
+    journal(ReceiptType t) <- journal('purchase') WHERE id(t) = 'receipt';
+    costAmountDebitAccount(ReceiptType t) <- GLAccount('1200') WHERE id(t) = 'receipt';
+    costAmountCreditAccount(ReceiptType t) <- GLAccount('2600') WHERE id(t) = 'receipt';
+
+    journal(ReceiptType t) <- journal('sales') WHERE id(t) = 'return';
+    costAmountDebitAccount(ReceiptType t) <- GLAccount('1200') WHERE id(t) = 'return';
+    costAmountCreditAccount(ReceiptType t) <- GLAccount('5100') WHERE id(t) = 'return';
+}

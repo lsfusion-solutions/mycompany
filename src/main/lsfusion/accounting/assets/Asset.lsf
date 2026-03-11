@@ -1,0 +1,130 @@
+MODULE Asset;
+
+REQUIRE AssetType, Item, Time, Company, ObjectUtils, FileUtils;
+
+NAMESPACE Accounting;
+
+CLASS Asset 'Asset';
+
+readonly = ABSTRACT CASE BOOLEAN (Asset);
+
+item '{Item}' = DATA Item (Asset);
+nameItem '{Item}' (Asset a) = name(item(a));
+
+company 'Company' = DATA Company (Asset) NONULL;
+nameCompany 'Company' (Asset a) = name(company(a));
+WHEN LOCAL SET(Asset a IS Asset) AND NOT CHANGED(company(a)) DO company(a) <- defaultCompany();
+
+type 'Type' = DATA AssetType (Asset);
+nameType 'Type' (Asset a) = name(type(a));
+
+@defineNumberType(asset);
+
+acquisitionDate 'Acquisition date' = DATA DATE (Asset);
+
+depreciationStartDate 'Depreciation start date' = DATA DATE (Asset);
+depreciationStartDate(Asset a) <- acquisitionDate(a) WHEN SETCHANGED(acquisitionDate(a));
+
+usefulLifeMonths 'Useful life, months' = DATA INTEGER (Asset);
+WHEN LOCAL SETCHANGED(type(Asset a)) AND usefulLifeMonths(type(a)) AND NOT CHANGED(usefulLifeMonths(a)) DO 
+    usefulLifeMonths(a) <- usefulLifeMonths(type(a));
+
+depreciationEndDate 'Depreciation end date' (Asset a) = sumMonth(depreciationStartDate(a), usefulLifeMonths(a) - 1);
+
+acquisitionCost 'Acquisition cost' = DATA NUMERIC[14,2] (Asset);
+salvageValue 'Salvage value' = DATA NUMERIC[14,2] (Asset);
+depreciableAmount 'Depreciable amount' (Asset a) = (acquisitionCost(a) (-) salvageValue(a));
+
+monthlyDepreciation 'Monthly depreciation' (Asset a) = depreciableAmount(a) / usefulLifeMonths(a);
+
+note 'Note' = DATA ISTRING (Asset);
+
+FORM asset 'Asset'
+    OBJECTS a = Asset PANEL
+    PROPERTIES(a) number, nameItem, nameCompany, nameType,
+                  acquisitionDate, depreciationStartDate, usefulLifeMonths,
+                  acquisitionCost, salvageValue,
+                  note
+    PROPERTIES(a) READONLY depreciableAmount, monthlyDepreciation, depreciationEndDate
+
+    EDIT Asset OBJECT a
+;
+
+DESIGN asset {
+    OBJECTS {
+        NEW statusPane FIRST {
+            horizontal = TRUE;
+            alignment = STRETCH;
+            NEW statusActions {
+                horizontal = TRUE;
+                flex = 1;
+                NEW primaryActions {
+                    horizontal = TRUE;
+                }
+                NEW secondaryActions {
+                    horizontal = TRUE;
+                }
+            }
+        }
+        NEW header {
+            NEW row1 {
+                horizontal = TRUE;
+                alignment = STRETCH;
+                MOVE PROPERTY(number(a));
+                MOVE PROPERTY(nameItem(a));
+                MOVE PROPERTY(nameCompany(a));
+                MOVE PROPERTY(nameType(a));
+            }
+            NEW row2 {
+                caption = 'Period';
+                horizontal = TRUE;
+                alignment = STRETCH;
+                MOVE PROPERTY(acquisitionDate(a));
+                MOVE PROPERTY(depreciationStartDate(a));
+                MOVE PROPERTY(usefulLifeMonths(a));
+                MOVE PROPERTY(depreciationEndDate(a));
+            }
+            NEW row3 {
+                caption = 'Cost';
+                horizontal = TRUE;
+                alignment = STRETCH;
+                MOVE PROPERTY(acquisitionCost(a));
+                MOVE PROPERTY(salvageValue(a));
+                MOVE PROPERTY(depreciableAmount(a));
+                MOVE PROPERTY(monthlyDepreciation(a));
+            }
+            MOVE PROPERTY(note(a));
+        }
+        NEW details {
+            tabbed = TRUE;
+            fill = 1;
+        }
+    }
+}
+
+@defineHistoryObject(asset);
+@defineHistoryProperty(asset, company, 'Company', nameCompany);
+@defineHistoryProperty(asset, type, 'Type', nameType);
+
+FORM assets 'Assets'
+    OBJECTS a = Asset
+    PROPERTIES(a) READONLY number, nameItem, nameCompany, nameType, 
+                           acquisitionDate, depreciationStartDate, usefulLifeMonths,
+                           acquisitionCost, salvageValue, monthlyDepreciation
+    PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE
+
+    LIST Asset OBJECT a
+;
+
+@defineHistoryForm(asset, asset, a);
+
+@defineObjectFiles(asset, a, 'Asset file');
+@defineObjectComments(asset, a, details);
+
+NAVIGATOR {
+    accounting {
+        operations {
+            NEW assets;
+        }
+    }
+}

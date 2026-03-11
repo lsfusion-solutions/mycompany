@@ -1,0 +1,52 @@
+MODULE AssetType;
+
+REQUIRE AccountingSettings, GLAccount, Journal, Numerator;
+
+NAMESPACE Accounting;
+
+CLASS AssetType 'Asset type';
+
+name '{Name}' = DATA ISTRING[100] (AssetType) NONULL CHARWIDTH 20;
+
+numerator 'Numerator' = DATA Numerator (AssetType);
+nameNumerator 'Numerator' (AssetType t) = name(numerator(t));
+
+journal 'Journal' = DATA Journal (AssetType);
+nameJournal 'Journal' (AssetType t) = name(journal(t));
+
+depreciationAccount 'Depreciation account' = DATA GLAccount (AssetType);
+nameDepreciationAccount 'Depreciation account' (AssetType t) = idName(depreciationAccount(t));
+
+expenseAccount 'Expense account' = DATA GLAccount (AssetType);
+nameExpenseAccount 'Expense account' (AssetType t) = idName(expenseAccount(t));
+
+fixedAssetAccount 'Fixed asset account' = DATA GLAccount (AssetType);
+nameFixedAssetAccount 'Fixed asset account' (AssetType t) = idName(fixedAssetAccount(t));
+
+acquisitionAccount 'Acquisition account' = DATA GLAccount (AssetType);
+nameAcquisitionAccount 'Acquisition account' (AssetType t) = idName(acquisitionAccount(t));
+
+usefulLifeMonths 'Useful life, months' = DATA INTEGER (AssetType);
+
+FORM assetType 'Asset type'
+    OBJECTS t = AssetType PANEL
+    PROPERTIES(t) name, nameNumerator, nameJournal,
+                  nameFixedAssetAccount, nameAcquisitionAccount,
+                  nameDepreciationAccount, nameExpenseAccount, usefulLifeMonths
+
+    EDIT AssetType OBJECT t
+;
+
+EXTEND FORM options
+    OBJECTS at = AssetType
+    PROPERTIES(at) READONLY name, nameNumerator, nameJournal,
+                            nameFixedAssetAccount, nameAcquisitionAccount,
+                            nameDepreciationAccount, nameExpenseAccount, usefulLifeMonths
+    PROPERTIES(at) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(at) { caption = 'Asset types'; }
+    }
+}

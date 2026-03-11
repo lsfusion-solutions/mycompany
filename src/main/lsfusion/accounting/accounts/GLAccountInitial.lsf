@@ -1,0 +1,178 @@
+MODULE GLAccountInitial;
+
+REQUIRE GLAccount, DefaultData;
+
+NAMESPACE Accounting;
+
+loadDefaultData () + {
+    IF NOT GROUP SUM 1 IF GLAccount a IS GLAccount THEN {
+        NEW a = GLAccount {
+            id(a) <- '1';
+            name(a) <- 'Assets';
+            dataType(a) <- GLAccountType.asset;
+        
+            NEW c = GLAccount {
+                parent(c) <- a;
+                id(c) <- '1010';
+                name(c) <- 'Cash';
+
+                dataIsCashEquivalent(c) <- TRUE;
+            }
+            NEW c = GLAccount {
+                parent(c) <- a;
+                id(c) <- '1020';
+                name(c) <- 'Bank';
+
+                dataIsCashEquivalent(c) <- TRUE;
+            }
+            NEW c = GLAccount {
+                parent(c) <- a;
+                id(c) <- '1100';
+                name(c) <- 'Accounts Receivable';
+            }
+            NEW c = GLAccount {
+                parent(c) <- a;
+                id(c) <- '1200';
+                name(c) <- 'Inventory';
+            }
+            NEW c = GLAccount {
+                parent(c) <- a;
+                id(c) <- '1300';
+                name(c) <- 'Prepaid expenses';
+            }
+            NEW c = GLAccount {
+                parent(c) <- a;
+                id(c) <- '1400';
+                name(c) <- 'Taxes Receivable';
+            }
+            NEW c = GLAccount {
+                parent(c) <- a;
+                id(c) <- '1500';
+                name(c) <- 'Fixed assets';
+            }
+            NEW c = GLAccount {
+                parent(c) <- a;
+                id(c) <- '1600';
+                name(c) <- 'Accumulated depreciation';
+            }
+        }
+
+        NEW l = GLAccount {
+            id(l) <- '2';
+            name(l) <- 'Liabilities';
+            dataType(l) <- GLAccountType.liability;
+
+            NEW c = GLAccount {
+                parent(c) <- l;
+                id(c) <- '2100';
+                name(c) <- 'Accounts Payable';
+            }
+            NEW c = GLAccount {
+                parent(c) <- l;
+                id(c) <- '2200';
+                name(c) <- 'Taxes payable';
+            }
+            NEW c = GLAccount {
+                parent(c) <- l;
+                id(c) <- '2300';
+                name(c) <- 'Wages payable';
+            }
+            NEW c = GLAccount {
+                parent(c) <- l;
+                id(c) <- '2400';
+                name(c) <- 'Loans payable';
+            }
+            NEW c = GLAccount {
+                parent(c) <- l;
+                id(c) <- '2500';
+                name(c) <- 'Customer advances';
+            }
+            NEW c = GLAccount {
+                parent(c) <- l;
+                id(c) <- '2600';
+                name(c) <- 'Goods Received Not Purchased';
+            }
+        }
+
+        NEW e = GLAccount {
+            id(e) <- '3';
+            name(e) <- 'Equity';
+            dataType(e) <- GLAccountType.equity;
+
+            NEW c = GLAccount {
+                parent(c) <- e;
+                id(c) <- '3100';
+                name(c) <- 'Share capital';
+            }
+            NEW c = GLAccount {
+                parent(c) <- e;
+                id(c) <- '3200';
+                name(c) <- 'Retained earnings';
+            }
+            NEW c = GLAccount {
+                parent(c) <- e;
+                id(c) <- '3300';
+                name(c) <- 'Current year P&L';
+            }
+        }
+
+        NEW r = GLAccount {
+            id(r) <- '4';
+            name(r) <- 'Revenue';
+            dataType(r) <- GLAccountType.revenue;
+
+            NEW c = GLAccount {
+                parent(c) <- r;
+                id(c) <- '4100';
+                name(c) <- 'Sales revenue';
+            }
+            NEW c = GLAccount {
+                parent(c) <- r;
+                id(c) <- '4200';
+                name(c) <- 'Sales returns/discounts';
+            }
+        }
+
+        NEW e = GLAccount {
+            id(e) <- '5';
+            name(e) <- 'Expenses';
+            dataType(e) <- GLAccountType.expense;
+
+            NEW c = GLAccount {
+                parent(c) <- e;
+                id(c) <- '5100';
+                name(c) <- 'Cost of Goods Sold';
+            }
+            NEW c = GLAccount {
+                parent(c) <- e;
+                id(c) <- '5200';
+                name(c) <- 'Wages Expenses';
+            }
+            NEW c = GLAccount {
+                parent(c) <- e;
+                id(c) <- '5300';
+                name(c) <- 'Rent Expenses';
+            }
+            NEW c = GLAccount {
+                parent(c) <- e;
+                id(c) <- '5400';
+                name(c) <- 'Utilities Expenses';
+            }
+            NEW c = GLAccount {
+                parent(c) <- e;
+                id(c) <- '5500';
+                name(c) <- 'Marketing Expenses';
+            }
+            NEW c = GLAccount {
+                parent(c) <- e;
+                id(c) <- '5600';
+                name(c) <- 'Depreciation Expenses';
+            }
+            NEW c = GLAccount {
+                parent(c) <- e;
+                id(c) <- '5900';
+                name(c) <- 'Other Expenses';
+            }
+        }
+    }
+}

@@ -1,0 +1,85 @@
+MODULE GeneralLedger;
+
+REQUIRE JournalEntry, GLAccount, GLDocument, Company;
+
+NAMESPACE Accounting;
+
+// Initial balance (before dFrom)
+balanceB 'Initial balance' (Company c, GLAccount a, INTERVAL[DATE] i) = balanceB(c, a, from(i));
+balanceA 'Final balance' (Company c, GLAccount a, INTERVAL[DATE] i) = balanceA(c, a, to(i));
+
+generateJournalEntries 'Generate journal entries' (Company c, INTERVAL[DATE] i) { 
+    NEWSESSION {
+        generateJournalEntries(c, from(i), to(i));
+        APPLY;
+    } 
+}
+deleteJournalEntries 'Delete journal entries' (Company c, INTERVAL[DATE] i) {
+    NEWSESSION {
+        deleteJournalEntries(c, from(i), to(i));
+        APPLY;
+    }
+}
+
+FORM generalLedger 'General ledger'
+    OBJECTS i = INTERVAL[DATE] PANEL
+    PROPERTIES dates 'Date interval' = VALUE(i)
+    
+    OBJECTS c = Company PANEL
+    PROPERTIES(c) 'Company' = name SELECTOR
+
+    PROPERTIES() lockDate
+    PROPERTIES(c, i) generateJournalEntries, deleteJournalEntries
+
+    TREE tree a = GLAccount PARENT parent(a)
+    PROPERTIES(a) READONLY id, name
+    PROPERTIES(c, a, i) READONLY balanceB, debit, credit, balanceA
+    
+    FILTERGROUP balance
+        FILTER 'Non-zero' balanceB(c, a, i) OR debit(c, a, i) OR credit(c, a, i) OR balanceA(c, a, i) DEFAULT
+
+    OBJECTS l = JournalEntryLine
+    PROPERTIES(l) READONLY date, number, idNameAccount, idNameCounterAccounts, nameJournal, description, debit, credit
+    PROPERTIES(l) NEWSESSION editSource GRID DISABLEIF NOT source(l) 
+    PROPERTIES(l) NEWSESSION EDIT
+    FILTERS level(account(l), a),
+            company(l) = c,
+            date(l) >= from(i),
+            date(l) <= to(i),
+            posted(l)
+;
+
+DESIGN generalLedger {
+    OBJECTS {
+        NEW header {
+            horizontal = TRUE;
+            MOVE PROPERTY(dates);
+            MOVE PROPERTY(name(c));
+            MOVE PROPERTY(lockDate());
+            
+            MOVE PROPERTY(generateJournalEntries(c, i));
+            MOVE PROPERTY(deleteJournalEntries(c, i));
+        }
+        NEW reports {
+            horizontal = TRUE;
+            caption = 'Reports';
+        }
+        NEW body {
+            fill = 1;
+            horizontal = TRUE;
+            MOVE BOX(TREE tree);
+            MOVE BOX(l) {
+                width = 200;
+                fill = 2; 
+            }
+        }
+    }
+}
+
+NAVIGATOR {
+    accounting {
+        reporting {
+            NEW generalLedger;
+        }
+    }
+}

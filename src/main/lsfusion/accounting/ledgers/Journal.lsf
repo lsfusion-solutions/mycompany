@@ -1,0 +1,41 @@
+MODULE Journal;
+
+REQUIRE AccountingSettings, Numerator;
+
+NAMESPACE Accounting;
+
+CLASS Journal 'Journal';
+
+id 'ID' = DATA STRING[20] (Journal) CHARWIDTH 8;
+journal (STRING[20] id) = GROUP AGGR Journal j BY id(j);
+
+name 'Name' = DATA ISTRING[100] (Journal) NONULL CHARWIDTH 10;
+
+numerator 'Numerator' = DATA Numerator (Journal);
+nameNumerator 'Numerator' (Journal o) = name(numerator(o));
+
+FORM journal 'Journal'
+    OBJECTS jr = Journal PANEL
+    PROPERTIES(jr) id, name, nameNumerator
+
+    EDIT Journal OBJECT jr
+;
+
+FORM dialogJournals 'Journals'
+    OBJECTS j = Journal
+    PROPERTIES(j) READONLY name, id
+
+    LIST Journal OBJECT j
+;
+
+EXTEND FORM options
+    OBJECTS jrn = Journal
+    PROPERTIES(jrn) READONLY name, id
+    PROPERTIES(jrn) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(jrn) { caption = 'Journals'; }
+    }
+}

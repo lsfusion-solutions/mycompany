@@ -1,0 +1,72 @@
+MODULE CashFlowItem;
+
+REQUIRE GLAccount;
+
+NAMESPACE Accounting;
+
+CLASS CashFlowActivity 'Cash Flow Activity' {
+    operating 'Operating',
+    investing 'Investing',
+    financing 'Financing'
+}
+name 'Name' (CashFlowActivity t) = caption(t) IF t IS CashFlowActivity CHARWIDTH 15;
+
+CLASS CashFlowItem 'Cash Flow Item';
+name 'Name' = DATA ISTRING[100] (CashFlowItem) CHARWIDTH 50;
+
+activity 'Activity' = DATA CashFlowActivity (CashFlowItem) NONULL;
+nameActivity 'Activity' (CashFlowItem i) = name(activity(i));
+
+FORM cashFlowItem 'Cash Flow Item'
+    OBJECTS i = CashFlowItem PANEL
+    PROPERTIES(i) name, nameActivity
+    
+    EDIT CashFlowItem OBJECT i
+;
+
+FORM cashFlowItems 'Cash Flow Items'
+    OBJECTS i = CashFlowItem
+    PROPERTIES(i) READONLY name, nameActivity
+    PROPERTIES(i) NEWSESSION NEW, EDIT, DELETE
+    
+    LIST CashFlowItem OBJECT i
+;
+
+NAVIGATOR {
+    accounting {
+        settings {
+            NEW cashFlowItems;
+        }
+    }
+}
+
+dataCashFlowItemDebit 'Cash Flow Item (Debit)' = DATA CashFlowItem (GLAccount);
+nearestCashFlowItemDebit (GLAccount child) = GROUP LAST dataCashFlowItemDebit(GLAccount parent) ORDER level(child, parent) WHERE dataCashFlowItemDebit(parent);
+cashFlowItemDebit 'Cash Flow Item (Debit)' (GLAccount a) = OVERRIDE dataCashFlowItemDebit(a), nearestCashFlowItemDebit(a) MATERIALIZED;
+nameCashFlowItemDebit 'Cash Flow Item (Debit)' (GLAccount a) = name(cashFlowItemDebit(a));
+
+dataCashFlowItemCredit 'Cash Flow Item (Credit)' = DATA CashFlowItem (GLAccount);
+nearestCashFlowItemCredit (GLAccount child) = GROUP LAST dataCashFlowItemCredit(GLAccount parent) ORDER level(child, parent) WHERE dataCashFlowItemCredit(parent);
+cashFlowItemCredit 'Cash Flow Item (Credit)' (GLAccount a) = OVERRIDE dataCashFlowItemCredit(a), nearestCashFlowItemCredit(a) MATERIALIZED;
+nameCashFlowItemCredit 'Cash Flow Item (Credit)' (GLAccount a) = name(cashFlowItemCredit(a));
+
+cashFlowActivityDebit 'Cash Flow Activity (Debit)' (GLAccount a) = activity(cashFlowItemDebit(a));
+nameCashFlowActivityDebit 'Cash Flow Activity (Debit)' (GLAccount a) = name(cashFlowActivityDebit(a));
+
+cashFlowActivityCredit 'Cash Flow Activity (Credit)' (GLAccount a) = activity(cashFlowItemCredit(a));
+nameCashFlowActivityCredit 'Cash Flow Activity (Credit)' (GLAccount a) = name(cashFlowActivityCredit(a));
+
+EXTEND FORM GLAccount
+    PROPERTIES(a) nameCashFlowItemDebit, nameCashFlowItemCredit
+;
+
+DESIGN GLAccount {
+    pane {
+        MOVE PROPERTY(nameCashFlowItemDebit(a));
+        MOVE PROPERTY(nameCashFlowItemCredit(a));
+    }
+}
+
+EXTEND FORM GLAccounts
+    PROPERTIES(a) READONLY nameCashFlowItemDebit, nameCashFlowItemCredit
+;

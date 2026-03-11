@@ -1,0 +1,17 @@
+MODULE PayslipJournalEntry;
+
+REQUIRE PayslipLedger, PayslipCategory, GLDocument;
+
+NAMESPACE Payroll;
+
+EXTEND CLASS Payslip : GLDocument;
+
+journalDescription (Payslip p) = 'Payslip' + ' : ' + CONCAT ' / ', number(p), nameEmployee(p);
+
+active (Payslip p) = p IS Payslip;
+
+@defineGLDocumentJournalEntryGenerate(payslip, active, dueDate);
+
+@defineGLDocumentJournalEntryForm(payslip, p);
+
+@defineGLDocumentJournalEntryProperty(payslip, netWage, 'Net wage');

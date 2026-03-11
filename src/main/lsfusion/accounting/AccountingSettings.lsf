@@ -1,0 +1,36 @@
+MODULE AccountingSettings;
+
+NAMESPACE Accounting;
+
+readonlyPostedJournalEntries 'Readonly posted journal entries' = DATA BOOLEAN ();
+
+FORM options 'Settings'
+    PROPERTIES() readonlyPostedJournalEntries
+;
+
+DESIGN options {
+    OBJECTS {
+        NEW tabbedPane {
+            tabbed = TRUE;
+            fill = 1;
+            NEW commons {
+                caption = 'Main';
+                MOVE PROPERTY(readonlyPostedJournalEntries());
+            }
+        }
+    }
+}
+
+NAVIGATOR {
+    NEW FOLDER accounting 'Accounting' WINDOW toolbar {
+        NEW FOLDER operations 'Operations' {
+        }
+        NEW FOLDER dashboards 'Processes' {
+        }
+        NEW FOLDER reporting 'Reporting' {
+        }
+        NEW FOLDER settings 'Configuration' {
+            NEW options;
+        }
+    }
+}

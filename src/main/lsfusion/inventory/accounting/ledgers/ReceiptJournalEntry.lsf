@@ -1,0 +1,15 @@
+MODULE ReceiptJournalEntry;
+
+REQUIRE ReceiptCanceled, ReceiptCost, GLDocument;
+
+NAMESPACE Inventory;
+
+EXTEND CLASS Receipt : GLDocument;
+
+journalDescription (Receipt r) = 'Receipt' + ' : ' + CONCAT ' / ', nameType(r), nameVendor(r);
+
+@defineGLDocumentJournalEntryGenerate(receipt, done, executionDate);
+
+@defineGLDocumentJournalEntryForm(receipt, r);
+
+@defineGLDocumentJournalEntryProperty(receipt, costAmount, 'Cost');

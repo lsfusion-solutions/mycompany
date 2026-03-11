@@ -14,6 +14,7 @@ Jeśli w Twojej konfiguracji brakuje niektórych pozycji menu lub akcji, jest to
 - [Mapa modułów i procesy end-to-end](#module-map-and-end-to-end-processes)
 - [Moduły](#modules)
   - [Dane podstawowe](#master-data)
+  - [Księgowość](#accounting)
   - [Magazynowanie](#inventory)
   - [Fakturowanie](#invoicing)
   - [Zakup](#purchase)
@@ -55,6 +56,12 @@ Poniżej znajdują się typowe „łańcuchy” między modułami. W konkretnej 
 1. **Zarządzanie projektami** — projekt → zagadnienia → przepracowany czas.
 2. **Kadry** (jeśli włączona jest płaca wg czasu) — wykorzystanie wpisów czasu w naliczaniu i wypłacie.
 
+### Księgowość i zamknięcie okresu
+
+1. **Magazynowanie**, **Fakturowanie** i **Kadry** - dokumenty źródłowe, z których tworzone są zapisy księgowe.
+2. **Księgowość** - zapisy księgowe, kontrola księgowania, data blokady zmian i środki trwałe.
+3. **Księgowość** - Księga główna, Bilans, Rachunek zysków i strat oraz Rachunek przepływów pieniężnych.
+
 ### Transport i koszty
 
 1. **Transport** — pojazdy / kierowcy / serwisy / umowy.
@@ -83,6 +90,36 @@ Start dokumentacji: [masterdata/masterdata.md](masterdata/masterdata.md)
 **Czytaj dalej:**
 
 - [Dane podstawowe](masterdata/masterdata.md)
+
+### Księgowość {#accounting}
+
+Start dokumentacji: [accounting/accounting.md](accounting/accounting.md)
+
+**Cel.** Obszar księgowy oparty na Księdze Głównej: plan kont, dzienniki, zapisy księgowe, środki trwałe, amortyzacja i podstawowa sprawozdawczość finansowa.
+
+**Typowe scenariusze:**
+
+- skonfigurować plan kont, dzienniki i klasyfikację przepływów pieniężnych;
+- przypisać dzienniki oraz konta debetu/kredytu na typach dokumentów;
+- generować i weryfikować zapisy księgowe z dokumentów operacyjnych;
+- tworzyć ręczne zapisy i zamykać okres datą blokady zmian;
+- prowadzić środki trwałe i amortyzację;
+- drukować Bilans, Rachunek zysków i strat oraz Rachunek przepływów pieniężnych.
+
+**Kluczowe obiekty/dokumenty:** konto Księgi Głównej, dziennik, zapis księgowy, środek trwały, typ środka trwałego, pozycja przepływu pieniężnego.
+
+**Dla kogo:** księgowi, specjaliści finansowi, kontrolerzy oraz użytkownicy odpowiedzialni za konfigurację księgowania.
+
+**Integracje:** korzysta z dokumentów źródłowych z modułów [Magazynowanie](#inventory), [Fakturowanie](#invoicing) i [Kadry](#human-resources), a następnie tworzy końcowe raporty księgowe.
+
+**Czytaj dalej:**
+
+- [Księgowość](accounting/accounting.md)
+- [Ustawienia i słowniki](accounting/settings.md)
+- [Księgowanie z dokumentów źródłowych](accounting/source-documents.md)
+- [Zapisy księgowe](accounting/journal-entries.md)
+- [Środki trwałe i amortyzacja](accounting/assets.md)
+- [Raporty](accounting/reports.md)
 
 ### Magazynowanie {#inventory}
 

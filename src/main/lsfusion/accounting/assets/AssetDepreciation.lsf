@@ -1,0 +1,100 @@
+MODULE AssetDepreciation;
+
+REQUIRE Asset;
+
+NAMESPACE Accounting;
+
+CLASS AssetDepreciation 'Asset depreciation';
+
+asset 'Asset' = DATA Asset (AssetDepreciation) NONULL DELETE;
+nameItemAsset 'Asset' (AssetDepreciation d) = nameItem(asset(d));
+countDepreciation (Asset a) = GROUP SUM 1 IF asset(AssetDepreciation d) = a MATERIALIZED;
+
+numberAsset 'Number' (AssetDepreciation d) = number(asset(d));
+
+typeAsset 'Asset type' (AssetDepreciation d) = type(asset(d));
+nameTypeAsset 'Asset type' (AssetDepreciation d) = nameType(asset(d));
+
+company 'Company' (AssetDepreciation d) = company(asset(d));
+nameCompany 'Company' (AssetDepreciation d) = name(company(d));
+
+date 'Date' = DATA DATE (AssetDepreciation) NONULL;
+date(AssetDepreciation d) <- lastDayOfMonth(currentDate()) WHEN SET(d IS AssetDepreciation);
+amount 'Amount' = DATA NUMERIC[14,2] (AssetDepreciation);
+
+assetDepreciation (Asset a, DATE d) = GROUP AGGR AssetDepreciation ad BY asset(ad), date(ad);
+
+accumulatedDepreciation(Asset a, DATE dt) = GROUP SUM amount(AssetDepreciation d) IF asset(d) = a AND date(d) <= dt;
+
+bookValue(Asset a, DATE dt) = acquisitionCost(a) (-) accumulatedDepreciation(a, dt);
+bookValue 'Book value' (Asset a) = bookValue(a, currentDate());
+
+index '№' = PARTITION SUM 1 ORDER AssetDepreciation d BY asset(d) IN id MATERIALIZED CHARWIDTH 3;
+numberIndex (AssetDepreciation d) = numberAsset(d) + '/' + index(d); 
+
+calculateDepreciation 'Calculate depreciation' (Asset a) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    IF monthlyDepreciation(a) AND depreciationStartDate(a) AND usefulLifeMonths(a) > 0 THEN {
+        NEWSESSION {
+            FOR iterate(INTEGER monthIndex, 0, usefulLifeMonths(a)) AND DATE lastDay = lastDayOfMonth(sumMonth(firstDayOfMonth(depreciationStartDate(a)), monthIndex))
+                AND NOT assetDepreciation(a, lastDay) DO {
+                NEW d = AssetDepreciation {
+                    asset(d) <- a;
+                    date(d) <- lastDay;
+                    amount(d) <- IF monthIndex = usefulLifeMonths(a) THEN
+                                     depreciableAmount(a) (-) (GROUP SUM amount(AssetDepreciation ad) IF asset(ad) = a)
+                                 ELSE IF monthIndex = 0 THEN
+                                     monthlyDepreciation(a) * (daysBetweenDates(lastDayOfMonth(depreciationStartDate(a)), depreciationStartDate(a)) + 1)
+                                         / (daysBetweenDates(lastDayOfMonth(depreciationStartDate(a)), firstDayOfMonth(depreciationStartDate(a))) + 1)
+                                 ELSE
+                                     monthlyDepreciation(a);
+                    IF NOT amount(d) > 0 THEN DELETE d;
+                }
+            }
+            APPLY;
+        }
+    }
+} CONFIRM;
+
+edit (AssetDepreciation ad) +{ edit(asset(ad)); }
+
+FORM assetDepreciations 'Asset depreciations'
+    OBJECTS d = AssetDepreciation
+    PROPERTIES(d) READONLY numberAsset, nameTypeAsset, nameItemAsset, nameCompany, date, amount
+    PROPERTIES(d) NEWSESSION EDIT, DELETE
+;
+
+EXTEND FORM asset
+    PROPERTIES(a) calculateDepreciation
+
+    OBJECTS d = AssetDepreciation
+    PROPERTIES(d) index, date, amount
+    PROPERTIES(d) NEW, DELETE
+    FILTERS asset(d) = a
+    ORDERS date(d)
+;
+
+DESIGN asset {
+    primaryActions {
+        MOVE PROPERTY(calculateDepreciation(a));
+    }
+    details {
+        MOVE BOX(d) FIRST {
+            caption = badged('Depreciation', countDepreciation(a));
+        }
+    }
+}
+
+EXTEND FORM assets
+    PROPERTIES(a) READONLY bookValue
+;
+
+NAVIGATOR {
+    accounting {
+        operations {
+            NEW assetDepreciations;
+        }
+    }
+}

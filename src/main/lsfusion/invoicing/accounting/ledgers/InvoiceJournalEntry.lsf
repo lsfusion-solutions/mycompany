@@ -1,0 +1,17 @@
+MODULE InvoiceJournalEntry;
+
+REQUIRE InvoiceCanceled, GLDocument;
+
+NAMESPACE Invoicing;
+
+EXTEND CLASS Invoice : GLDocument;
+
+journalDescription (Invoice i) = 'Invoice' + ' : ' + CONCAT ' / ', nameType(i), nameCustomer(i);
+
+@defineGLDocumentJournalEntryGenerate(invoice, ready);
+
+@defineGLDocumentJournalEntryForm(invoice, i);
+
+@defineGLDocumentJournalEntryProperty(invoice, amount, 'Total amount');
+@defineGLDocumentJournalEntryProperty(invoice, nettoAmount, 'Netto amount');
+@defineGLDocumentJournalEntryProperty(invoice, taxAmount, 'Tax');

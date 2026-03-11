@@ -1,0 +1,60 @@
+MODULE CashFlowStatement;
+
+REQUIRE GeneralLedger, JournalEntry, CashFlowItem, Company;
+
+NAMESPACE Accounting;
+
+cashFlowItemCredit (JournalEntryLine dl) = GROUP MIN cashFlowItemCredit(account(JournalEntryLine cl)) IF credit(cl) AND journalEntry(dl) = journalEntry(cl);
+cashFlowItemDebit (JournalEntryLine dl) = GROUP MIN cashFlowItemDebit(account(JournalEntryLine cl)) IF debit(cl) AND journalEntry(dl) = journalEntry(cl);
+
+cashDebit (Company c, CashFlowItem f, DATE df, DATE dt) =
+    GROUP SUM debit(JournalEntryLine l)
+        IF posted(l)
+        AND company(l) = c
+        AND isCashEquivalent(account(l))
+        AND date(l) >= df
+        AND date(l) <= dt
+        AND cashFlowItemCredit(l) = f;
+
+cashCredit (Company c, CashFlowItem f, DATE df, DATE dt) =
+    GROUP SUM credit(JournalEntryLine l)
+        IF posted(l)
+        AND company(l) = c
+        AND isCashEquivalent(account(l))
+        AND date(l) >= df
+        AND date(l) <= dt
+        AND cashFlowItemDebit(l) = f;
+
+cashAmount (Company c, CashFlowItem f, DATE df, DATE dt) = cashDebit(c, f, df, dt) (-) cashCredit(c, f, df, dt);
+
+receipt (Company c, CashFlowItem f, DATE df, DATE dt) = cashAmount(c, f, df, dt) > 0;
+
+FORM cashFlowStatement 'Cash flow statement'
+    OBJECTS c = Company PANEL
+    PROPERTIES(c) name SELECTOR
+
+    OBJECTS (df = DATE, dt = DATE) PANEL
+    PROPERTIES dFrom = VALUE(df), dTo = VALUE(dt)
+
+    OBJECTS f = CashFlowItem
+    PROPERTIES(f) READONLY name, nameActivity, activity
+    PROPERTIES(c, f, df, dt) READONLY cashAmount, receipt
+    FILTERS cashAmount(c, f, df, dt)
+    ORDERS activity(f), receipt(c, f, df, dt), name(f)
+
+    PROPERTIES READONLY cashBalanceB(c, df), cashBalanceA(c, dt)
+;
+
+printCashFlowStatement 'Cash flow statement' (Company c, INTERVAL[DATE] i) {
+    PRINT cashFlowStatement OBJECTS c = c, df = from(i), dt = to(i);
+}
+
+EXTEND FORM generalLedger
+    PROPERTIES(c, i) printCashFlowStatement
+;
+
+DESIGN generalLedger {
+    reports {
+        MOVE PROPERTY(printCashFlowStatement(c, i));
+    }
+}

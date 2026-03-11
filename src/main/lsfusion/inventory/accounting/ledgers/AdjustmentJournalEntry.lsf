@@ -1,0 +1,15 @@
+MODULE AdjustmentJournalEntry;
+
+REQUIRE AdjustmentCanceled, AdjustmentCost, GLDocument;
+
+NAMESPACE Inventory;
+
+EXTEND CLASS Adjustment : GLDocument;
+
+journalDescription (Adjustment a) = 'Adjustment' + ' : ' + CONCAT ' / ', nameType(a), nameLocation(a);
+
+@defineGLDocumentJournalEntryGenerate(adjustment, done);
+
+@defineGLDocumentJournalEntryForm(adjustment, a);
+
+@defineGLDocumentJournalEntryProperty(adjustment, costAmount, 'Cost');

@@ -1,0 +1,74 @@
+MODULE BalanceSheet;
+
+REQUIRE JournalEntry, GLAccount, GeneralLedger, Company;
+
+NAMESPACE Accounting;
+
+balanceA (Company c, GLAccountType t, DATE d) = GROUP SUM balanceA(c, GLAccount a, d) IF type(a) = t AND NOT parent(a);
+
+totalLiabilitiesEquity (Company c, DATE d) = OVERRIDE (balanceA(c, GLAccountType.liability, d) (+) balanceA(c, GLAccountType.equity, d)), 0.0;
+
+FORM balanceSheet 'Balance sheet'
+    OBJECTS d = DATE PANEL
+    PROPERTIES(d) dateValue = VALUE
+    
+    OBJECTS c = Company PANEL
+    PROPERTIES(c) name 
+    
+    OBJECTS l1 = GLAccount
+    PROPERTIES(l1) READONLY id, name
+    PROPERTIES(c, l1, d) READONLY balanceA
+    PROPERTIES(l1) nameType
+    FILTERS balanceA(c, l1, d),
+            NOT parent(l1)
+    FILTERS type(l1) = GLAccountType.asset OR type(l1) = GLAccountType.liability OR type(l1) = GLAccountType.equity
+
+    OBJECTS l2 = GLAccount
+    PROPERTIES(l2) READONLY id, name
+    PROPERTIES(c, l2, d) READONLY balanceA
+    FILTERS parent(l2) = l1,
+            balanceA(c, l2, d)
+
+    OBJECTS l3 = GLAccount
+    PROPERTIES(l3) READONLY id, name
+    PROPERTIES(c, l3, d) READONLY balanceA
+    FILTERS parent(l3) = l2 OR l3 = l2,
+            balanceA(c, l3, d)
+
+    PROPERTIES(c, d) totalLiabilitiesEquity
+;
+
+DESIGN balanceSheet {
+    OBJECTS {
+        NEW header {
+            horizontal = TRUE;
+            MOVE PROPERTY(dateValue);
+            MOVE PROPERTY(name(c));
+        }
+        NEW body {
+            fill = 1;
+            horizontal = TRUE;
+            MOVE BOX(l1);
+            MOVE BOX(l2);
+            MOVE BOX(l3);
+        }
+    }
+}
+
+printBalanceSheet 'Balance sheet' (Company c, DATE d) {
+    PRINT balanceSheet OBJECTS c = c, d = d;
+}
+
+printBalanceSheet 'Balance sheet' (Company c, INTERVAL[DATE] i) { 
+    printBalanceSheet(c, to(i));
+}
+
+EXTEND FORM generalLedger
+    PROPERTIES(c, i) printBalanceSheet 
+;
+
+DESIGN generalLedger {
+    reports {
+        MOVE PROPERTY(printBalanceSheet(c, i));
+    }
+}

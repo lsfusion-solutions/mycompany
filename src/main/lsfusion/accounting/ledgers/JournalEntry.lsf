@@ -1,0 +1,235 @@
+MODULE JournalEntry;
+
+REQUIRE AccountingSettings, Journal, GLAccount, Doc, MetaNumerator, Company, Time, ObjectUtils, FileUtils;
+
+NAMESPACE Accounting;
+
+CLASS JournalEntry 'Journal entry';
+
+readonly = ABSTRACT CASE BOOLEAN (JournalEntry);
+
+company 'Company' = DATA Company (JournalEntry) NONULL IN id;
+nameCompany 'Company' (JournalEntry j) = name(company(j));
+WHEN LOCAL SET(JournalEntry j IS JournalEntry) AND NOT CHANGED(company(j)) DO company(j) <- defaultCompany();
+
+journal 'Journal' = DATA Journal (JournalEntry) INDEXED;
+nameJournal 'Journal' (JournalEntry j) = name(journal(j));
+
+date 'Date' = DATA DATE (JournalEntry) NONULL INDEXED IN id;
+date (JournalEntry j) <- currentDate() WHEN SET(j IS JournalEntry);
+
+@defineNumber(journalEntry, 'Journal entries', 'GE');
+
+description 'Description' = DATA ISTRING (JournalEntry) CHARWIDTH 30 IN id;
+
+CLASS JournalEntryLine 'Journal entry line';
+
+journalEntry 'Journal entry' = DATA JournalEntry (JournalEntryLine) NONULL DELETE;
+countJournalEntryLine (JournalEntry j) = GROUP SUM 1 IF journalEntry(JournalEntryLine l) = j;
+
+readonly (JournalEntryLine l) = readonly(journalEntry(l));
+
+account 'Account' = DATA GLAccount (JournalEntryLine) NONULL;
+idAccount 'Account' (JournalEntryLine l) = id(account(l));
+nameAccount 'Account' (JournalEntryLine l) = name(account(l));
+idNameAccount 'Account' (JournalEntryLine l) = idName(account(l));
+
+debit 'Debit' = DATA NUMERIC[14,2] (JournalEntryLine);
+credit 'Credit' = DATA NUMERIC[14,2] (JournalEntryLine);
+
+amount 'Amount' (JournalEntryLine l) = debit(l) (-) credit(l);
+
+journal 'Journal' (JournalEntryLine l) = journal(journalEntry(l));
+nameJournal 'Journal' (JournalEntryLine l) = nameJournal(journalEntry(l));
+
+company 'Company' (JournalEntryLine l) = company(journalEntry(l)) MATERIALIZED;
+date 'Date' (JournalEntryLine l) = date(journalEntry(l)) MATERIALIZED;
+
+number 'Number' (JournalEntryLine l) = number(journalEntry(l));
+description 'Description' (JournalEntryLine l) = description(journalEntry(l));
+
+edit (JournalEntryLine l) +{ edit(journalEntry(l)); }
+
+INDEX company(JournalEntryLine l), date(l), account(l);
+
+// Posting
+posted 'Posted' = DATA BOOLEAN (JournalEntry);
+posted 'Posted' (JournalEntryLine l) = posted(journalEntry(l)) MATERIALIZED;
+
+readonly(JournalEntry j) += WHEN posted(j) AND readonlyPostedJournalEntries() THEN TRUE;
+
+// Locking
+lockDate 'Lock date' = DATA DATE () PREREAD;
+
+unlockedJournalEntryDate (DATE d) = NOT lockDate() OR d > lockDate();
+
+locked = ABSTRACT CASE BOOLEAN (JournalEntry);
+locked (JournalEntryLine l) = locked(journalEntry(l));
+
+locked (JournalEntry j) += WHEN date(j) < lockDate() THEN TRUE;
+readonly(JournalEntry j) += WHEN locked(j) THEN TRUE;
+
+CONSTRAINT (SET(JournalEntry j IS JournalEntry) OR DROPPED(j IS JournalEntry) OR CHANGED(company(j)) OR
+    CHANGED(date(j)) OR CHANGED(posted(j)))
+    AND (locked(j) OR PREV(locked(j)))
+    MESSAGE 'It is forbidden to change journal entries on or before the lock date';
+
+CONSTRAINT (SET(JournalEntryLine l IS JournalEntryLine) OR DROPPED(l IS JournalEntryLine) OR CHANGED(journalEntry(l)) OR
+    CHANGED(account(l)) OR CHANGED(debit(l)) OR CHANGED(credit(l)))
+    AND (locked(l) OR PREV(locked(l)))
+    MESSAGE 'It is forbidden to change journal entry lines on or before the lock date';
+
+// Totals
+debit 'Debit' (JournalEntry j) = GROUP SUM debit(JournalEntryLine l) BY journalEntry(l) MATERIALIZED;
+credit 'Credit' (JournalEntry j) = GROUP SUM credit(JournalEntryLine l) BY journalEntry(l) MATERIALIZED;
+
+amount (JournalEntry j) = debit(j) (-) credit(j);
+
+// Accounts
+firstDebitLine (JournalEntry j) = GROUP MIN JournalEntryLine l IF debit(l) AND journalEntry(l) = j MATERIALIZED;
+firstDebitAccount (JournalEntry j) = account(firstDebitLine(j));
+
+idNameDebitAccounts 'Debit accounts' (JournalEntry j) = GROUP CONCAT idName(account(JournalEntryLine l)) IF debit(l), ',' ORDER l BY journalEntry(l) CHARWIDTH 20;
+idNameDebitAccounts 'Debit accounts' (JournalEntryLine l) = idNameDebitAccounts(journalEntry(l));
+
+firstCreditLine (JournalEntry j) = GROUP MIN JournalEntryLine l IF credit(l) AND journalEntry(l) = j MATERIALIZED;
+firstCreditAccount (JournalEntry j) = account(firstCreditLine(j));
+
+idNameCreditAccounts 'Credit accounts' (JournalEntry j) = GROUP CONCAT idName(account(JournalEntryLine l)) IF credit(l), ',' ORDER l BY journalEntry(l) CHARWIDTH 20;
+idNameCreditAccounts 'Credit accounts' (JournalEntryLine l) = idNameCreditAccounts(journalEntry(l));
+
+firstCounterAccount (JournalEntryLine l) = IF debit(l) THEN firstCreditAccount(journalEntry(l)) ELSE firstDebitAccount(journalEntry(l));
+idNameCounterAccounts 'Counter accounts' (JournalEntryLine l) = IF debit(l) THEN idNameCreditAccounts(l) ELSE idNameDebitAccounts(l);
+
+CONSTRAINT posted(JournalEntry j) AND amount(j)
+    MESSAGE 'Journal entry must be balanced (Total Debit must equal Total Credit)';
+
+post 'Post' (JournalEntry j) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    NEWSESSION {
+        posted(j) <- TRUE;
+        APPLY;
+    }
+}
+
+unpost 'Unpost' (JournalEntry j) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    NEWSESSION {
+        posted(j) <- NULL;
+        APPLY;
+    }
+}
+
+FORM journalEntry 'Journal entry'
+    OBJECTS j = JournalEntry PANEL
+    PROPERTIES(j) READONLYIF readonly(j) date, number, nameCompany, nameJournal, description 
+    PROPERTIES(j) READONLY             posted, debit, credit READONLY
+    PROPERTIES(j) post SHOWIF NOT posted(j) DISABLEIF locked(j),
+                  unpost SHOWIF posted(j) DISABLEIF locked(j)
+
+    OBJECTS l = JournalEntryLine
+    PROPERTIES(l) READONLYIF readonly(l) idNameAccount, debit, credit, NEW, DELETE
+    FILTERS journalEntry(l) = j
+
+    EDIT JournalEntry OBJECT j
+;
+
+DESIGN journalEntry {
+    OBJECTS {
+        NEW statusPane {
+            horizontal = TRUE;
+            alignment = STRETCH;
+            NEW statusActions {
+                horizontal = TRUE;
+                MOVE PROPERTY(post(j)) { focusable = FALSE; }
+                MOVE PROPERTY(unpost(j)) { focusable = FALSE; }
+            }
+            NEW statusContainer {
+                fill = 1;
+                NEW status {
+                    alignment = END;
+                    horizontal = TRUE;
+                    MOVE PROPERTY(posted(j)) { valueClass = 'btn-check'; };
+                }
+            }
+        }
+        NEW header {
+            lines = 2;
+            MOVE PROPERTY(date(j));
+            MOVE PROPERTY(number(j));
+            MOVE PROPERTY(nameCompany(j));
+            MOVE PROPERTY(nameJournal(j));
+        }
+        MOVE PROPERTY(description(j)) { alignment = STRETCH; }
+        NEW details {
+            fill = 1;
+            tabbed = TRUE;
+            MOVE BOX(l);
+        }
+        NEW totals {
+            horizontal = TRUE;
+            alignment = STRETCH;
+            MOVE PROPERTY(debit(j));
+            MOVE PROPERTY(credit(j));
+        }
+    }
+}
+
+WHEN LOCAL FORMS journalEntry SET(JournalEntryLine l IS JournalEntryLine) AND NOT debit(l) AND NOT credit(l) DO {
+    debit(l) <- -amount(journalEntry(l)) IF amount(journalEntry(l)) < 0;
+    credit(l) <- amount(journalEntry(l)) IF amount(journalEntry(l)) > 0;
+}
+
+FORM journalEntries 'Journal entries'
+    OBJECTS j = JournalEntry
+    PROPERTIES(j) READONLY BACKGROUND RGB(212,255,212) IF NOT posted(j)
+                    posted, date, number, nameCompany, nameJournal, description, debit, credit,
+                    idNameDebitAccounts, idNameCreditAccounts
+    PROPERTIES(j) NEWSESSION NEW, EDIT, DELETE
+;
+
+@defineObjectFiles(journalEntry, j, 'Journal entry');
+@defineObjectComments(journalEntry, j, details);
+
+NAVIGATOR {
+    accounting {
+        operations {
+            NEW journalEntries;
+        }
+    }
+}
+
+// Account totals
+balanceNode 'Balance' (Company c, GLAccount a) = GROUP SUM (debit(JournalEntryLine l) (-) credit(l)) IF posted(l) AND account(l) = a AND company(l) = c MATERIALIZED;
+balance (Company c, GLAccount a) = GROUP SUM balanceNode(c, GLAccount child) IF level(child, a); 
+
+balanceA (Company c, GLAccount a, DATE dt) = balance(c, a) (-)
+    GROUP SUM amount(JournalEntryLine l) IF posted(l) AND level(account(l), a) AND company(l) = c AND date(l) > dt;
+
+balanceB (Company c, GLAccount a, DATE dt) = balance(c, a) (-)
+    GROUP SUM amount(JournalEntryLine l) IF posted(l) AND level(account(l), a) AND company(l) = c AND date(l) >= dt;
+
+debit 'Debit' (Company c, GLAccount a, DATE from, DATE to) =
+    GROUP SUM debit(JournalEntryLine l) IF posted(l) AND level(account(l), a) AND company(l) = c AND date(l) >= from AND date(l) <= to;
+debit 'Debit' (Company c, GLAccount a, INTERVAL[DATE] i) = debit(c, a, from(i), to(i));
+
+credit 'Credit' (Company c, GLAccount a, DATE from, DATE to) =
+    GROUP SUM credit(JournalEntryLine l) IF posted(l) AND level(account(l), a) AND company(l) = c AND date(l) >= from AND date(l) <= to;
+credit 'Credit' (Company c, GLAccount a, INTERVAL[DATE] i) = credit(c, a, from(i), to(i));
+
+// cash
+cashBalanceB 'Balance' (Company c, DATE dt) =
+    GROUP SUM balanceB(c, GLAccount a, dt) IF isCashEquivalent(a);
+cashBalanceB 'Balance' (Company c, INTERVAL[DATE] i) = cashBalanceB(c, from(i));
+
+cashBalanceA 'Balance' (Company c, DATE dt) =
+    GROUP SUM balanceA(c, GLAccount a, dt) IF isCashEquivalent(a);
+cashBalanceA 'Balance' (Company c, INTERVAL[DATE] i) = cashBalanceA(c, to(i));
+
+// generate
+generateJournalEntries ABSTRACT LIST (Company, DATE, DATE);
+deleteJournalEntries ABSTRACT LIST (Company, DATE, DATE);

@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.12.2.final using JasperReports Library version 6.12.2-75c5e90a222ab406e416cbf590a5397028a52de3  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Accounting.cashFlowStatement" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" uuid="7463023d-5ba4-4f3d-bcde-08948791e01c">
+	<property name="net.sf.jasperreports.export.xls.print.page.width" value="842"/>
+	<property name="net.sf.jasperreports.export.xls.print.page.height" value="595"/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<style name="DefaultStyle" isDefault="true" vTextAlign="Middle" fontName="DejaVu Sans" pdfFontName="DejaVu Sans" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="TitleCompany" fontSize="14" isBold="true"/>
+	<style name="TitleReport" forecolor="#1F4E79" fontSize="16" isBold="true"/>
+	<style name="SectionHeader" mode="Opaque" forecolor="#FFFFFF" backcolor="#2F5597" fontSize="11" isBold="true">
+		<box>
+			<pen lineWidth="0.0"/>
+		</box>
+		<paragraph leftIndent="6" rightIndent="6"/>
+	</style>
+	<style name="SubSectionHeader" fontSize="10" isBold="true">
+		<box>
+			<pen lineWidth="0.0"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="LineLabel" fontSize="10"/>
+	<style name="LineLabelIndented" fontSize="10">
+		<paragraph leftIndent="18" rightIndent="2"/>
+	</style>
+	<style name="Amount" fontSize="10" isBold="false">
+		<paragraph leftIndent="2" rightIndent="6"/>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$V{REPORT_COUNT} != null && $F{cashAmount(c,f,df,dt)} != null && $F{cashAmount(c,f,df,dt)}.signum() < 0]]></conditionExpression>
+			<style forecolor="#C00000"/>
+		</conditionalStyle>
+	</style>
+	<style name="TotalLine" mode="Opaque" backcolor="#F2F2F2" fontSize="10" isBold="true">
+		<box>
+			<pen lineWidth="0.0"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="6"/>
+	</style>
+	<style name="GroupCellStyle3" vTextAlign="Middle" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle2" mode="Opaque" backcolor="#D5D5D5" vTextAlign="Middle" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle1" mode="Opaque" backcolor="#EAEAEA" vTextAlign="Middle" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle0" vTextAlign="Middle" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<field name="c.object" class="java.lang.Long"/>
+	<field name="name(c)" class="java.lang.String"/>
+	<field name="df.object" class="java.time.LocalDate"/>
+	<field name="dt.object" class="java.time.LocalDate"/>
+	<field name="dFrom" class="java.time.LocalDate"/>
+	<field name="dTo" class="java.time.LocalDate"/>
+	<field name="cashBalanceB(c,df)" class="java.math.BigDecimal"/>
+	<field name="cashBalanceA(c,dt)" class="java.math.BigDecimal"/>
+	<field name="f.object" class="java.lang.Long"/>
+	<field name="name(f)" class="java.lang.String"/>
+	<field name="nameActivity(f)" class="java.lang.String"/>
+	<field name="cashAmount(c,f,df,dt)" class="java.math.BigDecimal"/>
+	<field name="receipt(c,f,df,dt)" class="java.lang.Boolean"/>
+	<variable name="ActivitySum" class="java.math.BigDecimal" resetType="Group" resetGroup="activityGroup" calculation="Sum">
+		<variableExpression><![CDATA[$F{cashAmount(c,f,df,dt)}]]></variableExpression>
+	</variable>
+	<variable name="TotalSum" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{cashAmount(c,f,df,dt)}]]></variableExpression>
+	</variable>
+	<group name="activityGroup">
+		<groupExpression><![CDATA[$F{nameActivity(f)}]]></groupExpression>
+		<groupHeader>
+			<band height="16" splitType="Prevent">
+				<textField isBlankWhenNull="true">
+					<reportElement style="SectionHeader" x="0" y="0" width="555" height="16" uuid="3511c1b5-94a9-4e91-a087-39f4fa9e2499">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Left"/>
+					<textFieldExpression><![CDATA[$F{nameActivity(f)} + " Activities"]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="16" splitType="Prevent">
+				<textField>
+					<reportElement style="TotalLine" x="0" y="0" width="460" height="16" uuid="38d4d84c-3f75-4ac9-961d-8f32a9c51fc6">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Left"/>
+					<textFieldExpression><![CDATA["Net Cash Flow from " + $F{nameActivity(f)} + " Activities"]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="ScaleFont" pattern="#,##0">
+					<reportElement style="TotalLine" x="460" y="0" width="95" height="16" uuid="b4d96f13-1d02-48e1-a15c-6c3bb8f8e5b4">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
+					</reportElement>
+					<box>
+						<topPen lineWidth="1.0"/>
+					</box>
+					<textElement textAlignment="Right">
+						<paragraph rightIndent="2"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{ActivitySum}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="receiptGroup">
+		<groupExpression><![CDATA[$F{receipt(c,f,df,dt)}]]></groupExpression>
+		<groupHeader>
+			<band height="16" splitType="Prevent">
+				<textField>
+					<reportElement style="SubSectionHeader" x="0" y="0" width="555" height="16" uuid="13a96f17-0003-42d0-acff-09550f2d2696"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Left"/>
+					<textFieldExpression><![CDATA[Boolean.TRUE.equals($F{receipt(c,f,df,dt)}) ? "Cash receipts from" : "Cash paid for"]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<title>
+		<band height="83">
+			<textField isBlankWhenNull="true">
+				<reportElement style="TitleCompany" x="0" y="0" width="555" height="19" uuid="0f2cc8a3-503c-4a78-9df6-2af9f6234f08">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{name(c)}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="TitleReport" x="0" y="19" width="555" height="32" uuid="c941cfc3-a3d2-43b5-a840-8dbf7232c5b3"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Cash Flow Statement]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="51" width="460" height="16" uuid="e84d951d-7303-4d22-997a-1ec88141e4f4"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[For the Year Ending]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="67" width="460" height="16" uuid="60cabd0f-b2b9-4086-b15f-12cd43cf3565"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[Cash at Beginning of Year]]></text>
+			</staticText>
+			<textField textAdjust="ScaleFont" pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="460" y="67" width="95" height="16" uuid="2fce78e7-49ad-4a0e-93a3-445fbd8f571d"/>
+				<box>
+					<pen lineWidth="0.25" lineColor="#808080"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$F{cashBalanceB(c,df)}]]></textFieldExpression>
+			</textField>
+			<textField pattern="yyyy-MM-dd" isBlankWhenNull="true">
+				<reportElement x="460" y="51" width="95" height="16" uuid="164dce1f-f26c-4c60-a1f6-5d664b7b0b3a"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$F{dTo}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<detail>
+		<band height="16" splitType="Prevent">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement style="LineLabelIndented" stretchType="ElementGroupHeight" x="0" y="0" width="460" height="16" uuid="aa5c7145-6a1f-4b67-a275-5c9b5a9fa55e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression><![CDATA[$F{name(f)}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="ScaleFont" pattern="#,##0" isBlankWhenNull="true">
+				<reportElement style="Amount" stretchType="ElementGroupHeight" x="460" y="0" width="95" height="16" uuid="60684261-e1b3-438b-b7de-f94bf51e2d15">
+					<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25" lineColor="#808080"/>
+				</box>
+				<textElement textAlignment="Right">
+					<paragraph rightIndent="2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{cashAmount(c,f,df,dt)}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="32" splitType="Prevent">
+			<textField>
+				<reportElement style="TotalLine" x="0" y="0" width="460" height="16" uuid="b790d08f-0f91-4080-b48b-b8f0a0380c8e">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression><![CDATA["Net Increase in Cash"]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="ScaleFont" pattern="#,##0">
+				<reportElement style="TotalLine" x="460" y="0" width="95" height="16" uuid="1b1829b5-e9b9-423f-8a43-1f91d476b61d">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Right">
+					<paragraph rightIndent="2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{TotalSum}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="16" width="460" height="16" uuid="a9087bb9-90b1-4f96-9ef7-1f43c46b6d49">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[Cash at End of Year]]></text>
+			</staticText>
+			<textField textAdjust="ScaleFont" pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="460" y="16" width="95" height="16" uuid="9841c6b8-f43b-41f1-848e-86f7f57f5cea">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25" lineColor="#808080"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$F{cashBalanceA(c,dt)}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

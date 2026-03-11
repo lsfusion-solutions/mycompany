@@ -1,0 +1,87 @@
+MODULE ProfitAndLoss;
+
+REQUIRE JournalEntry, GLAccount, GeneralLedger, Company, Time;
+
+NAMESPACE Accounting;
+
+// Profit and Loss calculations
+profitAndLoss (Company c, GLAccount a, DATE df, DATE dt) =
+    CASE
+        WHEN type(a) = GLAccountType.revenue THEN credit(c, a, df, dt) (-) debit(c, a, df, dt)
+        WHEN type(a) = GLAccountType.expense THEN debit(c, a, df, dt) (-) credit(c, a, df, dt)
+    ;
+
+totalProfitAndLoss (Company c, GLAccountType t, DATE df, DATE dt) =
+    GROUP SUM profitAndLoss(c, GLAccount a, df, dt) IF type(a) = t AND NOT parent(a);
+
+revenue (Company c, DATE df, DATE dt) = totalProfitAndLoss(c, GLAccountType.revenue, df, dt);
+expense (Company c, DATE df, DATE dt) = totalProfitAndLoss(c, GLAccountType.expense, df, dt);
+
+netIncome (Company c, DATE df, DATE dt) = OVERRIDE (revenue(c, df, dt) (-) expense(c, df, dt)), 0.0;
+
+FORM profitAndLoss 'Profit and Loss'
+    OBJECTS c = Company PANEL
+    PROPERTIES(c) name
+
+    OBJECTS (df = DATE, dt = DATE) PANEL
+    PROPERTIES dFrom = VALUE(df), dTo = VALUE(dt)
+    
+    OBJECTS l1 = GLAccount
+    PROPERTIES(l1) READONLY id, name
+    PROPERTIES(c, l1, df, dt) READONLY profitAndLoss
+    FILTERS profitAndLoss(c, l1, df, dt),
+            NOT parent(l1),
+            (type(l1) = GLAccountType.revenue OR type(l1) = GLAccountType.expense)
+
+    OBJECTS l2 = GLAccount
+    PROPERTIES(l2) READONLY id, name
+    PROPERTIES(c, l2, df, dt) READONLY profitAndLoss
+    FILTERS parent(l2) = l1,
+            profitAndLoss(c, l2, df, dt)
+
+    OBJECTS l3 = GLAccount
+    PROPERTIES(l3) READONLY id, name
+    PROPERTIES(c, l3, df, dt) READONLY profitAndLoss
+    FILTERS parent(l3) = l2 OR l3 = l2,
+            profitAndLoss(c, l3, df, dt)
+
+    PROPERTIES(c, df, dt) READONLY revenue, expense, netIncome
+;
+
+DESIGN profitAndLoss {
+    OBJECTS {
+        NEW header {
+            horizontal = TRUE;
+            MOVE PROPERTY(dFrom);
+            MOVE PROPERTY(dTo);
+            MOVE PROPERTY(name(c));
+        }
+        NEW body {
+            fill = 1;
+            horizontal = TRUE;
+            MOVE BOX(l1);
+            MOVE BOX(l2);
+            MOVE BOX(l3);
+        }
+        NEW totals {
+            horizontal = TRUE;
+            MOVE PROPERTY(revenue(c, df, dt));
+            MOVE PROPERTY(expense(c, df, dt));
+            MOVE PROPERTY(netIncome(c, df, dt)) { background = RGB(212,255,212); }
+        }
+    }
+}
+
+printProfitAndLoss 'Profit and Loss' (Company c, INTERVAL[DATE] i) {
+    PRINT profitAndLoss OBJECTS c = c, df = from(i), dt = to(i);
+}
+
+EXTEND FORM generalLedger
+    PROPERTIES(c, i) printProfitAndLoss
+;
+
+DESIGN generalLedger {
+    reports {
+        MOVE PROPERTY(printProfitAndLoss(c, i));
+    }
+}

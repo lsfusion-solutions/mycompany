@@ -14,6 +14,7 @@ If some menu items or actions are missing in your configuration, that is normal:
 - [Module map and end-to-end processes](#module-map-and-end-to-end-processes)
 - [Modules](#modules)
   - [Master Data](#master-data)
+  - [Accounting](#accounting)
   - [Inventory](#inventory)
   - [Invoicing](#invoicing)
   - [Purchase](#purchase)
@@ -55,6 +56,12 @@ Below are typical “chains” between modules. In a particular organization, so
 1. **Project Management** — project → tasks → time entries.
 2. **Human Resources** (if time-based payroll is enabled) — using time entries in payroll calculation and payment.
 
+### General accounting and closing
+
+1. **Inventory**, **Invoicing**, and **Human Resources** - source documents that create accounting postings.
+2. **Accounting** - journal entries, posting control, lock date, and fixed assets.
+3. **Accounting** - General ledger, Balance Sheet, Profit and Loss, and Cash Flow Statement.
+
 ### Transport and expenses
 
 1. **Transport** — vehicles / drivers / services / contracts.
@@ -83,6 +90,36 @@ Start documentation: [masterdata/masterdata.md](masterdata/masterdata.md)
 **Read next:**
 
 - [Master Data](masterdata/masterdata.md)
+
+### Accounting
+
+Start documentation: [accounting/accounting.md](accounting/accounting.md)
+
+**Purpose.** General Ledger accounting contour: chart of accounts, journals, journal entries, fixed assets, depreciation, and core financial statements.
+
+**Typical scenarios:**
+
+- configure the chart of accounts, journals, and cash flow mapping;
+- assign journals and debit/credit accounts on document types;
+- generate and review journal entries from operational documents;
+- create manual journal entries and close the period with a lock date;
+- maintain fixed assets and depreciation;
+- print the Balance Sheet, Profit and Loss, and Cash Flow Statement.
+
+**Key objects/documents:** GL account, journal, journal entry, asset, asset type, cash flow item.
+
+**Who it's useful for:** accountants, finance specialists, controllers, and users responsible for posting setup.
+
+**Integrations:** receives source documents from [Inventory](#inventory), [Invoicing](#invoicing), and [Human Resources](#human-resources), then produces the final accounting reports.
+
+**Read next:**
+
+- [Accounting overview](accounting/accounting.md)
+- [Settings and reference data](accounting/settings.md)
+- [Posting from source documents](accounting/source-documents.md)
+- [Journal entries](accounting/journal-entries.md)
+- [Assets and depreciation](accounting/assets.md)
+- [Reports](accounting/reports.md)
 
 ### Inventory
 

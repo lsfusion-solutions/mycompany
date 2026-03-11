@@ -1,0 +1,152 @@
+MODULE AssetJournalEntry;
+
+REQUIRE AssetDepreciation, GLDocument;
+
+NAMESPACE Accounting;
+
+asset = DATA Asset (JournalEntry) INDEXED;
+nameItemAsset 'Asset' (JournalEntry l) = nameItem(asset(l));
+countJournalEntry(Asset a) = GROUP SUM 1 IF asset(JournalEntry je) = a; 
+
+EXTEND CLASS AssetDepreciation : GLDocument;
+journalDescription (AssetDepreciation d) = 'Asset depreciation' + ' : ' + CONCAT ' / ', number(asset(d)), nameItemAsset(d);
+
+createJournalEntries 'Generate' (AssetDepreciation d) {
+    IF expenseAccount(typeAsset(d)) AND depreciationAccount(typeAsset(d)) THEN
+        NEW j = JournalEntry {
+            posted(j) <- TRUE;
+            asset(j) <- asset(d);
+            source(j) <- d;
+
+            company(j) <- company(d);
+            journal(j) <- journal(typeAsset(d));
+            date(j) <- date(d);
+            number(j) <- STRING[50](numberIndex(d));
+            description(j) <- journalDescription(d);
+
+            NEW dl = JournalEntryLine {
+                journalEntry(dl) <- j;
+                account(dl) <- depreciationAccount(typeAsset(d));
+                debit(dl) <- amount(d);
+            }
+            NEW cl = JournalEntryLine {
+                journalEntry(cl) <- j;
+                account(cl) <- expenseAccount(typeAsset(d));
+                credit(cl) <- amount(d);
+            }
+        }
+}
+
+// acqusition
+acquisitionJournal = DATA JournalEntry (Asset) INDEXED;
+
+createJournalEntries 'Generate' (Asset a) {
+    IF fixedAssetAccount(type(a)) AND acquisitionAccount(type(a)) THEN
+        NEW j = JournalEntry {
+            posted(j) <- TRUE;
+            asset(j) <- a;
+
+            company(j) <- company(a);
+            date(j) <- acquisitionDate(a);
+            number(j) <- number(a);
+            description(j) <- 'Asset acquisition' + ' : ' + CONCAT ' / ', number(a), nameItem(a);
+
+            NEW dl = JournalEntryLine {
+                journalEntry(dl) <- j;
+                account(dl) <- fixedAssetAccount(type(a));
+                debit(dl) <- acquisitionCost(a);
+            }
+            NEW cl = JournalEntryLine {
+                journalEntry(cl) <- j;
+                account(cl) <- acquisitionAccount(type(a));
+                credit(cl) <- acquisitionCost(a);
+            }
+
+            acquisitionJournal(a) <- j;
+        }
+}
+
+generateJournalEntries 'Generate' (Asset a) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    IF NOT acquisitionDate(a) < lockDate()  THEN
+        createJournalEntries(a);
+    
+    FOR asset(AssetDepreciation ad) = a AND date(ad) <= currentDate() AND NOT date(ad) < lockDate() DO
+        createJournalEntries(ad);
+}
+
+regenerateJournalEntries 'Regenerate' (Asset a) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    DELETE JournalEntryLine jl WHERE asset(journalEntry(jl)) = a AND NOT locked(jl);
+    DELETE JournalEntry j WHERE asset(j) = a AND NOT locked(j);
+
+    IF NOT acquisitionDate(a) < lockDate()  THEN
+        createJournalEntries(a);
+    FOR asset(AssetDepreciation ad) = a AND date(ad) <= currentDate() AND NOT date(ad) < lockDate() DO
+        createJournalEntries(ad);
+} CONFIRM;
+
+generateJournalEntries (Company c, DATE df, DATE dt) +{
+    FOR acquisitionDate(Asset a) >= df AND acquisitionDate(a) <= dt AND company(a) = c AND NOT acquisitionJournal(a) INLINE DO {
+        createJournalEntries(a);
+    }
+
+    FOR date(AssetDepreciation d) >= df AND date(d) <= dt AND company(d) = c AND NOT journalEntry(d) INLINE DO {
+        createJournalEntries(d);
+    }
+}
+
+generateJournalEntries 'Generate' (AssetDepreciation d) {
+    createJournalEntries(d);
+}
+
+EXTEND FORM asset
+    PROPERTIES(a) generateJournalEntries SHOWIF NOT countJournalEntry(a),
+                  regenerateJournalEntries SHOWIF countJournalEntry(a)
+
+    OBJECTS je = JournalEntry
+    PROPERTIES(je) posted
+    PROPERTIES(je) READONLYIF readonly(je) nameCompany, nameJournal, number, date, description
+    PROPERTIES(je) DISABLEIF readonly(je) NEW, DELETE
+    ORDERS date(je)
+    FILTERS asset(je) = a
+
+    OBJECTS jel = JournalEntryLine
+    PROPERTIES(jel) READONLYIF readonly(jel) idNameAccount, debit, credit, NEW, DELETE
+    FILTERS journalEntry(jel) = je
+;
+
+DESIGN asset {
+    details {
+        NEW accounting {
+            caption = badged('Journal entries', countJournalEntry(a));
+            NEW accountingActions {
+                horizontal = TRUE;
+                MOVE PROPERTY(generateJournalEntries(a));
+                MOVE PROPERTY(regenerateJournalEntries(a));
+            }
+            NEW accountingPane {
+                fill = 1;
+                horizontal = TRUE;
+                alignment = STRETCH;
+                MOVE BOX(je);
+                MOVE BOX(jel);
+            }
+        }
+    }
+}
+
+numberJournalEntry 'Journal Entry' (AssetDepreciation d) = number(journalEntry(d));
+postedJournalEntry 'Posted' (AssetDepreciation d) = posted(journalEntry(d));
+
+EXTEND FORM asset
+    PROPERTIES(d) READONLY numberJournalEntry, postedJournalEntry
+;
+
+EXTEND FORM assetDepreciations
+    PROPERTIES(d) READONLY numberJournalEntry, postedJournalEntry
+;

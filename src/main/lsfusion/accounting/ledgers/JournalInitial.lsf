@@ -1,0 +1,49 @@
+MODULE JournalInitial;
+
+REQUIRE Journal, DefaultData;
+
+NAMESPACE Accounting;
+
+loadDefaultData () + {
+
+    IF NOT GROUP SUM 1 IF Journal j IS Journal THEN {
+
+        NEW n = Numerator {
+            name(n) <- ISTRING[100]('Journal entries');
+            series(n) <- STRING[10]('GE');
+            minValue(n) <- 1;
+            maxValue(n) <- 999999;
+            stringLength(n) <- 6;
+
+            NEW j = Journal {
+                id(j) <- r'bank';
+                name(j) <- 'Bank';
+                numerator(j) <- n;
+            }
+
+            NEW j = Journal {
+                id(j) <- r'cash';
+                name(j) <- 'Cash';
+                numerator(j) <- n;
+            }
+
+            NEW j = Journal {
+                id(j) <- r'sales';
+                name(j) <- 'Sales';
+                numerator(j) <- n;
+            }
+
+            NEW j = Journal {
+                id(j) <- r'purchase';
+                name(j) <- 'Purchase';
+                numerator(j) <- n;
+            }
+
+            NEW j = Journal {
+                id(j) <- r'miscellaneous';
+                name(j) <- 'Miscellaneous';
+                numerator(j) <- n;
+            }
+        }
+    }
+}

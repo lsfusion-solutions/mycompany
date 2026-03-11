@@ -1,0 +1,101 @@
+MODULE CashFlowItemInitial;
+
+REQUIRE CashFlowItem, GLAccountInitial, DefaultData;
+
+NAMESPACE Accounting;
+
+loadDefaultData () + {
+    IF NOT GROUP SUM 1 IF CashFlowItem i IS CashFlowItem THEN {
+        NEW receiptsCustomers = CashFlowItem {
+            name(receiptsCustomers) <- 'Cash receipts from customers';
+            activity(receiptsCustomers) <- CashFlowActivity.operating;
+
+            dataCashFlowItemDebit(GLAccount('1100')) <- receiptsCustomers;
+            dataCashFlowItemCredit(GLAccount('1100')) <- receiptsCustomers;
+
+            dataCashFlowItemDebit(GLAccount('2500')) <- receiptsCustomers;
+            dataCashFlowItemCredit(GLAccount('2500')) <- receiptsCustomers;
+        }
+
+        NEW paidSuppliers = CashFlowItem {
+            name(paidSuppliers) <- 'Cash paid to suppliers';
+            activity(paidSuppliers) <- CashFlowActivity.operating;
+
+            dataCashFlowItemDebit(GLAccount('2100')) <- paidSuppliers;
+            dataCashFlowItemCredit(GLAccount('2100')) <- paidSuppliers;
+        }
+
+        NEW taxes = CashFlowItem {
+            name(taxes) <- 'Cash paid for taxes';
+            activity(taxes) <- CashFlowActivity.operating;
+
+            dataCashFlowItemDebit(GLAccount('1400')) <- taxes;
+            dataCashFlowItemCredit(GLAccount('1400')) <- taxes;
+
+            dataCashFlowItemDebit(GLAccount('2200')) <- taxes;
+            dataCashFlowItemCredit(GLAccount('2200')) <- taxes;
+        }
+
+        NEW wages = CashFlowItem {
+            name(wages) <- 'Cash paid for wages';
+            activity(wages) <- CashFlowActivity.operating;
+
+            dataCashFlowItemDebit(GLAccount('2300')) <- wages;
+            dataCashFlowItemCredit(GLAccount('2300')) <- wages;
+        }
+
+        NEW rent = CashFlowItem {
+            name(rent) <- 'Cash paid for rent';
+            activity(rent) <- CashFlowActivity.operating;
+
+            dataCashFlowItemDebit(GLAccount('5300')) <- rent;
+            dataCashFlowItemCredit(GLAccount('5300')) <- rent;
+        }
+
+        NEW it = CashFlowItem {
+            name(it) <- 'Cash paid for utilities';
+            activity(it) <- CashFlowActivity.operating;
+
+            dataCashFlowItemDebit(GLAccount('5400')) <- it;
+            dataCashFlowItemCredit(GLAccount('5400')) <- it;
+        }
+
+        NEW marketing = CashFlowItem {
+            name(marketing) <- 'Cash paid for marketing';
+            activity(marketing) <- CashFlowActivity.operating;
+
+            dataCashFlowItemDebit(GLAccount('5500')) <- marketing;
+            dataCashFlowItemCredit(GLAccount('5500')) <- marketing;
+        }
+
+        NEW capex = CashFlowItem {
+            name(capex) <- 'Purchase of fixed assets';
+            activity(capex) <- CashFlowActivity.investing;
+
+            dataCashFlowItemDebit(GLAccount('1500')) <- capex;
+        }
+
+        NEW capexSale = CashFlowItem {
+            name(capexSale) <- 'Sale of fixed assets';
+            activity(capexSale) <- CashFlowActivity.investing;
+
+            dataCashFlowItemCredit(GLAccount('1500')) <- capexSale;
+        }
+
+        NEW debt = CashFlowItem {
+            name(debt) <- 'Loans';
+            activity(debt) <- CashFlowActivity.financing;
+
+            dataCashFlowItemDebit(GLAccount('2400')) <- debt;
+            dataCashFlowItemCredit(GLAccount('2400')) <- debt;
+        }
+
+        NEW equity = CashFlowItem {
+            name(equity) <- 'Share capital';
+            activity(equity) <- CashFlowActivity.financing;
+
+            dataCashFlowItemDebit(GLAccount('3100')) <- equity;
+            dataCashFlowItemCredit(GLAccount('3100')) <- equity;
+        }
+    }
+}
