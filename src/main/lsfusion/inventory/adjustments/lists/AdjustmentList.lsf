@@ -35,7 +35,7 @@ countLines 'Number of lines' (AdjustmentList a) = GROUP SUM 1 IF adjustmentList(
 index '№' = PARTITION SUM 1 ORDER AdjustmentListLine l BY adjustmentList(l) IN id MATERIALIZED CHARWIDTH 3;
 
 product 'Product' = DATA Product (AdjustmentListLine);
-nameProduct 'Product' (AdjustmentListLine l) = name(product(l));
+nameProduct 'Product' (AdjustmentListLine l) = name(product(l)) IN id;
 idBarCodeProduct 'Barcode' (AdjustmentListLine l) = idBarCode(product(l));
 idProduct '{ID}' (AdjustmentListLine l) = id(product(l));
 
@@ -43,7 +43,7 @@ uom (AdjustmentListLine l) = uom(product(l));
 nameUom 'UoM' (AdjustmentListLine l) = name(uom(l));
 
 location 'Location' = DATA Location (AdjustmentListLine);
-nameLocation 'Location' (AdjustmentListLine l) = canonicalName(location(l));
+nameLocation 'Location' (AdjustmentListLine l) = canonicalName(location(l)) IN id;
 
 WHEN LOCAL SETCHANGED(location(adjustmentList(AdjustmentListLine l))) AND NOT location(l) DO location(l) <- location(adjustmentList(l));
 

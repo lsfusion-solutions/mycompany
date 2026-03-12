@@ -9,21 +9,21 @@ NAMESPACE ProjectManagement;
 CLASS ProjectAssignment 'Project assignment';
 
 project 'Project' = DATA Project (ProjectAssignment) NONULL DELETE;
-nameProject 'Project' (ProjectAssignment a) = name(project(a));
+nameProject 'Project' (ProjectAssignment a) = name(project(a)) IN id;
 countAssignments = GROUP SUM 1 BY project(ProjectAssignment a) MATERIALIZED;
 
 // todo : rename to assignee
 employee 'Employee' = DATA Assignee (ProjectAssignment) NONULL INDEXED;
-nameEmployee 'Employee' (ProjectAssignment a) = name(employee(a));
+nameEmployee 'Employee' (ProjectAssignment a) = name(employee(a)) IN id;
 nameTypeAssignee 'Type' (ProjectAssignment a) = nameType(employee(a));
 countAssignments = GROUP SUM 1 BY employee(ProjectAssignment a) MATERIALIZED;
 
 assigned (ProjectAssignment a, Employee e) = in(employee(a), e) MATERIALIZED;
 
 role 'Project role' = DATA ProjectRole (ProjectAssignment);
-nameRole 'Project role' (ProjectAssignment a) = name(role(a));
+nameRole 'Project role' (ProjectAssignment a) = name(role(a)) IN id;
 
-fromDate 'Date from' = DATA DATE (ProjectAssignment);
+fromDate 'Date from' = DATA DATE (ProjectAssignment) IN id;
 fromDate (ProjectAssignment a) <- currentDate() WHEN SET(a IS ProjectAssignment);
 
 toDate 'Date to' = DATA DATE (ProjectAssignment);
