@@ -9,10 +9,10 @@ CLASS Pos 'Cash register';
 id '{ID}' = DATA STRING[20] (Pos) IN id;
 pos (STRING[20] id) = GROUP AGGR Pos d BY id(d);
 
-name '{Name}' = DATA ISTRING[100] (Pos) NONULL CHARWIDTH 15;
+name '{Name}' = DATA ISTRING[100] (Pos) NONULL CHARWIDTH 15 IN id;
 
 company 'Company' = DATA Company (Pos);
-nameCompany 'Company' (Pos p) = name(company(p));
+nameCompany 'Company' (Pos p) = name(company(p)) IN id;
 WHEN LOCAL SET(Pos p IS Pos) AND NOT CHANGED(company(p)) DO company(p) <- defaultCompany();
 
 in 'Incl.' = DATA BOOLEAN (Pos, Computer);

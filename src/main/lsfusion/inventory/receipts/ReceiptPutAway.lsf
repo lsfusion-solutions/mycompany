@@ -52,9 +52,11 @@ EXTEND FORM receipts
 CLASS ReceiptPutAway 'Put away';
 
 receiptLine 'Receipt line' = DATA ReceiptLine (ReceiptPutAway) NONULL DELETE;
+number 'Number' (ReceiptPutAway p) = number(receiptLine(p)) IN id;
+nameProduct 'Product' (ReceiptPutAway p) = nameProduct(receiptLine(p)) IN id;
 
 location 'Location' = DATA Location (ReceiptPutAway);
-nameLocation 'Location' (ReceiptPutAway p) = name(location(p));
+nameLocation 'Location' (ReceiptPutAway p) = name(location(p)) IN id;
 
 CONSTRAINT location(ReceiptPutAway p) AND NOT level(location(p), location(receipt(receiptLine(p)))) 
            CHECKED BY location[ReceiptPutAway]

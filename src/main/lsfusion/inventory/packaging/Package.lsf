@@ -15,6 +15,7 @@ description 'Description' (Package p) = CONCAT '/', id(p), reference(p);
 CLASS PackageLine 'Package line';
 
 package = DATA Package (PackageLine) NONULL DELETE INDEXED;
+descriptionPackage 'Package' (PackageLine l) = description(package(l)) IN id;
 
 countLines 'Number of lines' (Package p) = GROUP SUM 1 IF package(PackageLine l) = p MATERIALIZED;
 index '№' = PARTITION SUM 1 ORDER PackageLine l BY package(l) IN id MATERIALIZED CHARWIDTH 3;

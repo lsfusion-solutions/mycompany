@@ -67,7 +67,7 @@ countConsumedLine 'Material lines' (ManufacturingOrder m) = GROUP SUM 1 IF manuf
 index '№' = PARTITION SUM 1 ORDER ConsumedLine l BY manufacturingOrder(l) IN id MATERIALIZED CHARWIDTH 3;
 
 item '{Item}' = DATA Item (ConsumedLine);
-nameItem '{Item}' (ConsumedLine l) = name(item(l));
+nameItem '{Item}' (ConsumedLine l) = name(item(l)) IN id;
 idBarCodeItem 'Barcode' (ConsumedLine l) = idBarCode(item(l));
 idItem '{ID}' (ConsumedLine l) = id(item(l));
 
@@ -89,7 +89,7 @@ countFinishedLine 'Product lines' (ManufacturingOrder m) = GROUP SUM 1 IF manufa
 index '№' = PARTITION SUM 1 ORDER FinishedLine l BY manufacturingOrder(l) IN id MATERIALIZED CHARWIDTH 3;
 
 item '{Item}' = DATA Item (FinishedLine);
-nameItem '{Item}' (FinishedLine l) = name(item(l));
+nameItem '{Item}' (FinishedLine l) = name(item(l)) IN id;
 idBarCodeItem 'Barcode' (FinishedLine l) = idBarCode(item(l));
 idItem '{ID}' (FinishedLine l) = id(item(l));
 
@@ -126,6 +126,9 @@ descriptionBom 'Bill of Materials' (ConsumedLine l) = descriptionBom(manufacturi
 
 responsible (ConsumedLine l) = responsible(manufacturingOrder(l));
 nameResponsible 'Responsible' (ConsumedLine l) = MasterData.name(responsible(l));
+
+scheduledDateTime 'Start date' (FinishedLine l) = scheduledDateTime(manufacturingOrder(l)) IN id;
+number 'Number' (FinishedLine l) = number(manufacturingOrder(l)) IN id;
 
 FORM manufacturingOrder 'Manufacturing order'
     OBJECTS o = ManufacturingOrder PANEL 
