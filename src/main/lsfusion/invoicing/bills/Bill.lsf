@@ -69,7 +69,7 @@ WHEN LOCAL (SETCHANGED(paymentTerms(Bill b)) OR SETCHANGED(dateTime(b))) AND pay
 // partner account
 vendorAccount 'Vendor account' = DATA Account (Bill);
 nameVendorAccount 'Vendor account' (Bill b) = name(vendorAccount(b));
-WHEN LOCAL CHANGED (vendor(Bill b)) DO vendorAccount(b) <- defaultAccount(vendor(b));
+WHEN LOCAL CHANGED (vendor(Bill b)) AND NOT CHANGED(vendorAccount(b)) DO vendorAccount(b) <- defaultAccount(vendor(b));
 
 CONSTRAINT vendorAccount(Bill b) AND NOT vendor(b) = holder(vendorAccount(b))
     CHECKED BY vendorAccount

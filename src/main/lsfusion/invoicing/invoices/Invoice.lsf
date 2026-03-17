@@ -75,7 +75,7 @@ WHEN LOCAL (SETCHANGED(paymentTerms(Invoice i)) OR SETCHANGED(dateTime(i))) AND 
 customerAccount 'Customer account' = DATA Account (Invoice);
 nameCustomerAccount 'Customer account' (Invoice b) = name(customerAccount(b));
 numberCustomerAccount (Invoice b) = number(customerAccount(b));
-WHEN LOCAL CHANGED (customer(Invoice b)) DO customerAccount(b) <- defaultAccount(customer(b));
+WHEN LOCAL CHANGED (customer(Invoice b)) AND NOT CHANGED(customerAccount(b)) DO customerAccount(b) <- defaultAccount(customer(b));
 
 CONSTRAINT customerAccount(Invoice b) AND NOT customer(b) = holder(customerAccount(b))
     CHECKED BY customerAccount
