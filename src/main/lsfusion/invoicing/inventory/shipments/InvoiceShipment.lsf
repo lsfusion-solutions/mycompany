@@ -57,6 +57,7 @@ toShip (InvoiceLine il) =
 toShip (Invoice i) = GROUP SUM toShip(InvoiceLine il) IF invoice(il) = i;
 
 fill ABSTRACT LIST (Shipment, Invoice);
+fill ABSTRACT LIST (Invoice, Shipment);
 fill ABSTRACT LIST (ShipmentLine, InvoiceLine);
 invoiceShipmentCreated = DATA LOCAL Shipment ();
 
@@ -182,6 +183,8 @@ createShipmentsInvoice 'Create Invoice' () {
                 
                 location(i) <- location(s);
                 deliveryAddress(i) <- deliveryAddress(s);
+
+                fill(i, s);
             }
 
             FOR NUMERIC[16,3] q = [GROUP SUM done(ShipmentLine sl) IF in(shipment(sl)) AND NOT invoiceLine(sl) BY product(sl)](Product p)
