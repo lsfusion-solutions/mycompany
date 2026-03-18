@@ -19,3 +19,36 @@ EXTEND FORM printShipment
                innCompany(o), okpoCompany(o)
     PROPERTIES legalCodeUom(l)
 ;
+
+DESIGN shipment {
+    details {
+        NEW shipmentPrint {
+            caption = 'Print';
+            showIf = countShipmentTemplate(type(s));
+        }
+    }
+}
+
+@defineEmployee(allowed, 'Отпуск разрешил', shipment, s, shipmentPrint);
+@defineEmployee(accountant, 'Главный (старший) бухгалтер', shipment, s, shipmentPrint);
+@defineEmployee(performed, 'Отпуск произвел', shipment, s, shipmentPrint);
+@defineEmployee(received, 'Получил', shipment, s, shipmentPrint);
+
+WHEN LOCAL SETCHANGED(location(Shipment s)) DO {
+    allowed(s) <- GROUP LAST allowed(Location parent) ORDER DESC level(location(s),parent);
+    accountant(s) <- GROUP LAST accountant(Location parent) ORDER DESC level(location(s),parent);
+    performed(s) <- GROUP LAST performed(Location parent) ORDER DESC level(location(s),parent);
+}
+
+WHEN LOCAL SETCHANGED(toLocation(Shipment s)) DO {
+    received(s) <- GROUP LAST performed(Location parent) ORDER DESC level(location(s),parent);
+}
+
+// print
+
+EXTEND FORM printShipment
+    PROPERTIES(o) positionAllowed, nameAllowed,
+                  positionAccountant, nameAccountant,
+                  positionPerformed, namePerformed,
+                  positionReceived, nameReceived
+;
