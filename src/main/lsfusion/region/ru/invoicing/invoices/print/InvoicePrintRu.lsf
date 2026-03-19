@@ -1,7 +1,7 @@
 MODULE InvoicePrintRu;
 
 REQUIRE InvoicePrint, InvoicePrintShipment, InvoicePack, LegalEntityRu, UomRu,
-        Individual, LocationEmployeeRu, BillCustomsDeclaration, BankRu;
+        Individual, EmployeePrint, LocationEmployeeRu, BillCustomsDeclaration, BankRu;
 
 NAMESPACE Invoicing;
 
@@ -40,6 +40,10 @@ DESIGN invoice {
 @defineEmployee(accountant, 'Главный (старший) бухгалтер', invoice, i, invoicePrint);
 @defineEmployee(performed, 'Отпуск произвел', invoice, i, invoicePrint);
 
+facsimileAllowed (Invoice o) = facsimile(allowed(o) AS Employee);
+facsimileAccountant (Invoice o) = facsimile(accountant(o) AS Employee);
+facsimilePerformed (Invoice o) = facsimile(performed(o) AS Employee);
+
 WHEN LOCAL SETCHANGED(location(Invoice i)) DO {
     allowed(i) <- GROUP LAST allowed(Location parent) ORDER DESC level(location(i),parent);
     accountant(i) <- GROUP LAST accountant(Location parent) ORDER DESC level(location(i),parent);
@@ -49,7 +53,7 @@ WHEN LOCAL SETCHANGED(location(Invoice i)) DO {
 // print
 
 EXTEND FORM printInvoice
-    PROPERTIES(o) positionAllowed, nameAllowed,
-                  positionAccountant, nameAccountant,
-                  positionPerformed, namePerformed 
+    PROPERTIES(o) positionAllowed, nameAllowed, facsimileAllowed,
+                  positionAccountant, nameAccountant, facsimileAccountant,
+                  positionPerformed, namePerformed, facsimilePerformed 
 ;

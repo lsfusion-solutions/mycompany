@@ -3,7 +3,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Реализация" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" isFloatColumnFooter="true" uuid="6bd93037-92c4-40c3-a1cd-08ed0257cb36">
 	<property name="net.sf.jasperreports.export.xls.print.page.width" value="842"/>
 	<property name="net.sf.jasperreports.export.xls.print.page.height" value="595"/>
-	<style name="DefaultStyle" isDefault="true" vTextAlign="Middle" fontName="DejaVu Sans" pdfFontName="DejaVu Sans" pdfEncoding="cp1251" fontSize="10">
+	<style name="DefaultStyle" isDefault="true" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10" pdfFontName="DejaVu Sans" pdfEncoding="cp1251">
 		<box>
 			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 		</box>
@@ -38,6 +38,9 @@
 	<field name="nameAccountant(o)" class="java.lang.String"/>
 	<field name="positionPerformed(o)" class="java.lang.Long"/>
 	<field name="namePerformed(o)" class="java.lang.String"/>
+	<field name="facsimileAllowed(o)" class="java.lang.Object"/>
+	<field name="facsimileAccountant(o)" class="java.lang.Object"/>
+	<field name="facsimilePerformed(o)" class="java.lang.Object"/>
 	<field name="l.object" class="java.lang.Long"/>
 	<field name="nameItem(l)" class="java.lang.String"/>
 	<field name="idItem(l)" class="java.lang.String"/>
@@ -1293,19 +1296,16 @@
 				</textElement>
 				<textFieldExpression><![CDATA["Руководитель организации или иное уполномоченное лицо"]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="252" y="12" width="90" height="49" uuid="0b7df29d-82eb-46e2-bc13-0b0b854cfd1f"/>
+			<image scaleImage="RetainShape" hAlign="Center" vAlign="Middle" onErrorType="Blank">
+				<reportElement x="252" y="12" width="90" height="49" uuid="03497eac-3f75-48fc-a5a2-11d4ea9d6fb8"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.75" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement verticalAlignment="Bottom">
-					<font isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[""]]></textFieldExpression>
-			</textField>
+				<imageExpression><![CDATA[$F{facsimileAllowed(o)} == null ? null : ((lsfusion.base.file.RawFileData)$F{facsimileAllowed(o)}).getInputStream()]]></imageExpression>
+			</image>
 			<textField isBlankWhenNull="true">
 				<reportElement x="342" y="12" width="105" height="49" uuid="4f604d17-91ec-446c-aabc-8661a154e62e"/>
 				<box>
@@ -1358,19 +1358,16 @@
 				</textElement>
 				<textFieldExpression><![CDATA["Главный бухгалтер или иное уполномоченное лицо"]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="582" y="47" width="75" height="14" uuid="450b0991-6a70-4427-8d6d-5717f65bb4f3"/>
+			<image scaleImage="RetainShape" hAlign="Center" vAlign="Middle" onErrorType="Blank">
+				<reportElement x="582" y="47" width="75" height="14" uuid="95e8c8b0-fcb8-4cb2-b567-d74b8c2ebdef"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.75" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement verticalAlignment="Middle">
-					<font isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[""]]></textFieldExpression>
-			</textField>
+				<imageExpression><![CDATA[$F{facsimileAccountant(o)} == null ? null : ((lsfusion.base.file.RawFileData)$F{facsimileAccountant(o)}).getInputStream()]]></imageExpression>
+			</image>
 			<textField isBlankWhenNull="true">
 				<reportElement x="657" y="47" width="145" height="14" uuid="ae76551d-1afb-4457-9c42-8b91ee49a5e7"/>
 				<box>
@@ -1693,6 +1690,10 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{positionPerformed(o)}]]></textFieldExpression>
 			</textField>
+			<image scaleImage="RetainShape" hAlign="Center" vAlign="Middle" onErrorType="Blank">
+				<reportElement x="100" y="202" width="122" height="14" uuid="e57cd5ad-f6a1-4c37-83b9-a1d7bf4fdf64"/>
+				<imageExpression><![CDATA[$F{facsimilePerformed(o)} == null ? null : ((lsfusion.base.file.RawFileData)$F{facsimilePerformed(o)}).getInputStream()]]></imageExpression>
+			</image>
 			<textField>
 				<reportElement x="0" y="216" width="100" height="12" uuid="83d77d45-1c79-464c-b0d7-6f6c06cfd5af"/>
 				<box>
@@ -1862,6 +1863,10 @@
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
+			<image scaleImage="RetainShape" hAlign="Center" vAlign="Middle" onErrorType="Blank">
+				<reportElement x="100" y="305" width="122" height="16" uuid="c1fd6279-64db-43f0-b51d-4a91dcb03cf8"/>
+				<imageExpression><![CDATA[$F{facsimileAllowed(o)} == null ? null : ((lsfusion.base.file.RawFileData)$F{facsimileAllowed(o)}).getInputStream()]]></imageExpression>
+			</image>
 			<textField>
 				<reportElement x="100" y="321" width="122" height="12" uuid="233a341e-3712-40f5-b061-b1ac00c1258d"/>
 				<box>
