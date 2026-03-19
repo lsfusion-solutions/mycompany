@@ -78,12 +78,22 @@ print 'Print' (Employee e) {
     printEmployee();
 }
 
+facsimile 'Facsimile' = DATA IMAGEFILE (Employee);
+
 EXTEND FORM employee
     PROPERTIES(e) print SHOWIF countPrintEmployeeTypes()
+    
+    PROPERTIES(e) facsimile
 ;
 
 DESIGN employee {
     secondaryActions {
         MOVE PROPERTY(print(e));
+    }
+    details {
+        NEW print {
+            caption = 'Print';
+            MOVE PROPERTY(facsimile(e)) { captionVertical = TRUE; }
+        }
     }
 }

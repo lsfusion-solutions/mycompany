@@ -1,6 +1,6 @@
 MODULE ShipmentPrintRu;
 
-REQUIRE ShipmentPrint, LocationEmployeeRu, LegalEntityRu, UomRu;
+REQUIRE ShipmentPrint, LocationEmployeeRu, LegalEntityRu, UomRu, EmployeePrint;
 
 NAMESPACE Inventory;
 
@@ -43,6 +43,11 @@ WHEN LOCAL SETCHANGED(location(Shipment s)) DO {
 WHEN LOCAL SETCHANGED(toLocation(Shipment s)) DO {
     received(s) <- GROUP LAST performed(Location parent) ORDER DESC level(location(s),parent);
 }
+
+facsimileAllowed (Shipment o) = facsimile(allowed(o) AS Employee);
+facsimileAccountant (Shipment o) = facsimile(accountant(o) AS Employee);
+facsimilePerformed (Shipment o) = facsimile(performed(o) AS Employee);
+facsimileReceived (Shipment o) = facsimile(received(o) AS Employee);
 
 // print
 
