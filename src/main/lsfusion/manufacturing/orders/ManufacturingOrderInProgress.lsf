@@ -21,9 +21,16 @@ produced 'Produced' (ManufacturingOrder o) = GROUP SUM produced(FinishedLine l) 
 // manufacture
 manufactured 'Produced' (ManufacturingOrder o) = IF unbuild(o) THEN consumed(o) ELSE produced(o);
 
+setProduced (ManufacturingOrder o, NUMERIC[16,3] q) {
+    produced(FinishedLine l) <- NUMERIC[16,3](toProduce(l) * q / toManufacture(o)) WHERE manufacturingOrder(l) = o;
+}
+setConsumed (ManufacturingOrder o, NUMERIC[16,3] q) {
+    consumed(ConsumedLine l) <- NUMERIC[16,3](toConsume(l) * q / toManufacture(o)) WHERE manufacturingOrder(l) = o;
+}
+
 setManufactured (ManufacturingOrder o, NUMERIC[16,3] q) {
-    produced(FinishedLine l) <- NUMERIC[16,3](toProduce(l) * q / toManufacture(o)) WHERE manufacturingOrder(l) = o; 
-    consumed(ConsumedLine l) <- NUMERIC[16,3](toConsume(l) * q / toManufacture(o)) WHERE manufacturingOrder(l) = o; 
+    setProduced(o, q);
+    setConsumed(o, q);
 }
 
 changeManufactured (ManufacturingOrder o) {
