@@ -4,10 +4,21 @@ REQUIRE Partner, Geo, GeoUtils;
 
 NAMESPACE MasterData;
 
+doNotFitBounds = DATA LOCAL BOOLEAN ();
+
 META defineObjectMap(object, lobj, container)
     latitude 'Latitude'= DATA NUMERIC[11,6] (###object);
     longitude 'Longitude' = DATA NUMERIC[11,6] (###object);
 
+    coordinates 'Coordinates' (###object o) = CONCAT ' ', latitude(o), longitude(o) CHARWIDTH 20;
+    changeCoordinates (###object o) {
+        INPUT s = STRING[50] DO {
+            latitude(o) <- NUMERIC[11,6](getWord(replace(s, ', ', ' '), ' ', 1));
+            longitude(o) <- NUMERIC[11,6](getWord(replace(s, ', ', ' '), ' ', 2));
+            doNotFitBounds() <- NULL;
+        }
+    }
+    
     distance (###object p) = abs(longitude(p) - longitude()) + abs(latitude(p) - latitude());
     near(###object p) = distance(p) <= (OVERRIDE distanceAccuracy(), 0.001);
 
@@ -25,16 +36,30 @@ META defineObjectMap(object, lobj, container)
             longitude(p) <- readLongitude();
 
             afterInputGoogleAddress(p, a);
+
+            doNotFitBounds() <- NULL;
         }
+    }
+        
+    // temporary instead of inputGoogleAddress
+    WHEN LOCAL CHANGED(addressCsv(###object o)) AND autoSynchronizeCoordinates() DO {
+        getCoordinates (addressCsv(o));
+        latitude(o) <- readLatitude();
+        longitude(o) <- readLongitude();
+
+        doNotFitBounds() <- NULL;
     }
 
     EXTEND FORM object
-        PROPERTIES addressCsv(lobj) ON CHANGE inputGoogleAddress(lobj) SHOWIF apiKey(MapProvider.google)
-        PROPERTIES(lobj) latitude, longitude
+//        temporary disabled
+//        PROPERTIES addressCsv(lobj) ON CHANGE inputGoogleAddress(lobj) SHOWIF apiKey(MapProvider.google)
+        PROPERTIES(lobj) coordinates ON CHANGE changeCoordinates(lobj)
 
         OBJECTS lobj##g = ###object MAP
-        PROPERTIES(lobj##g) name READONLY, latitude, longitude
-        PROPERTIES fitBounds = TRUE IF lobj##g IS ###object
+        PROPERTIES(lobj##g) name READONLY, 
+                            latitude ON CHANGE { INPUT n = latitude(lobj##g) CHANGE DO doNotFitBounds() <- TRUE; },
+                            longitude ON CHANGE { INPUT n = longitude(lobj##g) CHANGE DO doNotFitBounds() <- TRUE; }
+        PROPERTIES fitBounds = TRUE IF lobj##g IS ###object AND NOT doNotFitBounds()
         FILTERS lobj##g = lobj
     ;
 
@@ -42,11 +67,10 @@ META defineObjectMap(object, lobj, container)
         container {
             NEW geo {
                 caption = 'Coordinates';
-                MOVE PROPERTY(addressCsv(lobj)) { alignment = STRETCH; }
+//                MOVE PROPERTY(addressCsv(lobj)) { alignment = STRETCH; }
                 NEW coordinates {
                     horizontal = TRUE;
-                    MOVE PROPERTY(latitude(lobj));
-                    MOVE PROPERTY(longitude(lobj));
+                    MOVE PROPERTY(coordinates(lobj));
                 }
                 MOVE BOX(lobj##g) {
                     height = 300;
