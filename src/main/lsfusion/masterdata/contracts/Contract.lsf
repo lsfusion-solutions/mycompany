@@ -1,10 +1,12 @@
 MODULE Contract;
 
-REQUIRE MetaNumerator, Company, ContractType;
+REQUIRE MetaNumerator, Company, ContractType, FileUtils;
 
 NAMESPACE MasterData;
 
 CLASS Contract 'Contract';
+
+readonly = ABSTRACT CASE BOOLEAN (Contract);
 
 @defineID(contract, 'Contracts', 'CN', 6);
 
@@ -36,9 +38,12 @@ namePartner 'Partner' (Contract p) = name(partner(p)) IN id;
 countContract (Company c, Partner p) = GROUP SUM 1 IF company(Contract ct) = c AND partner(ct) = p;
 countContract (Partner p) = GROUP SUM 1 IF partner(Contract ct) = p;
 
+text 'Text' = DATA RICHTEXT (Contract); 
+
 FORM contract 'Contract'
     OBJECTS c = Contract PANEL
-    PROPERTIES(c) id, name, nameType, date, endDate, number, nameCompany, namePartner 
+    PROPERTIES(c) id, name, nameType, date, endDate, number, nameCompany, namePartner,
+                  text
     
     EDIT Contract OBJECT c
 ;
@@ -75,8 +80,17 @@ DESIGN contract {
                 width = 200;
             }
         }
+        NEW details {
+            tabbed = TRUE;
+            fill = 1;
+            MOVE PROPERTY(text(c));
+        }
     }
 }
+
+@defineObjectComments(contract, c, details);
+
+@defineObjectFiles(contract, c, 'Vehicle file');
 
 FORM contracts 'Contracts'
     OBJECTS c = Contract
