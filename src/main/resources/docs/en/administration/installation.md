@@ -22,6 +22,10 @@ To increase the amount of memory allocated to the application, you need to edit 
 
 ### Windows installation
 
+Download and run MyCompany installer: https://download.lsfusion.org/solutions/mycompany-6.1-x64.exe.
+
+Otherwise follow the steps below:
+
 1. Download and run lsFusion platform installer (execution) : https://docs.lsfusion.org/Execution_auto/.
 2. Download the assembled jar file with MyCompany logic from https://download.lsfusion.org/solutions/mycompany-6.1.jar.
 3. Put the downloaded jar file to the directory C:\Program Files\lsFusion 6\Server\lib.

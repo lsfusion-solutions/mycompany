@@ -34,6 +34,11 @@ systemctl start lsfusion6-client
 
 ### Windows
 
+Скачайте и запустите файл по ссылке https://download.lsfusion.org/solutions/mycompany-6.1-x64.exe. Все необходимые
+компоненты будут установлены.
+
+Или выполните следующие действия:
+
 1. Скачать и запустить установщик платформы lsFusion для выполнения: https://docs.lsfusion.org/ru/Execution_auto/.
 2. Скачать собранный jar-файл с логикой MyCompany по ссылке https://download.lsfusion.org/solutions/mycompany-6.1.jar.
 3. Поместить скачанный jar-файл в директорию C:\Program Files\lsFusion 6\Server\lib.
