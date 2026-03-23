@@ -54,7 +54,7 @@ function comments() {
                 deleteButton.appendChild(deleteIcon);
 
                 deleteButton.addEventListener("click", function() {
-                    controller.changeProperty("delete", comment);
+                    controller.changeProperty("DELETE", comment);
                 });
 
                 let message = document.createElement("div");
