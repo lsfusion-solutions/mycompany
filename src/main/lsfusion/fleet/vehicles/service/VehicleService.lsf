@@ -140,3 +140,16 @@ DESIGN vehicle {
         }
     }
 }
+
+// type
+service (Vehicle v, VehicleServiceType t) = GROUP LAST VehicleService c ORDER date(c), c WHERE vehicle(c) = v AND type(c) = t;
+dateService 'Vehicle service date' (Vehicle v, VehicleServiceType t) = date(service(v, t));
+odometerValueService 'Vehicle service odometer value' (Vehicle v, VehicleServiceType t) = odometerValue(service(v, t));
+
+EXTEND FORM vehicles
+    OBJECTS vst = VehicleServiceType BEFORE v
+
+    PROPERTIES COLUMNS 'service' (vst) READONLY
+                    dateService(v, vst) HEADER name(vst),
+                    odometerValueService(v, vst) HEADER 'Odometer value' + ' ' + name(vst)
+;

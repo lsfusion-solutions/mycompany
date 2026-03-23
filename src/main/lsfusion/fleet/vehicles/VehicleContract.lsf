@@ -72,3 +72,20 @@ DESIGN vehicle {
         }
     }
 }
+
+// type
+
+contract (Vehicle v, ContractType t) = GROUP LAST Contract c ORDER date(c), c WHERE vehicle(c) = v AND type(c) = t;
+numberContract 'Contract number' (Vehicle v, ContractType t) = number(contract(v, t));
+dateContract 'Contract date' (Vehicle v, ContractType t) = date(contract(v, t));
+endDateContract 'Contract end date' (Vehicle v, ContractType t) = endDate(contract(v, t));
+
+EXTEND FORM vehicles
+    OBJECTS ct = ContractType BEFORE v
+    FILTERS vehicle(ct)
+    
+    PROPERTIES COLUMNS 'contract' (ct) READONLY 
+                        numberContract(v, ct) HEADER name(ct),
+                        dateContract(v, ct) HEADER 'Date' + ' ' + name(ct),
+                        endDateContract(v, ct) HEADER 'End date' + ' ' + name(ct)
+;
