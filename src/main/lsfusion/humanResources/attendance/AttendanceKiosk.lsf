@@ -73,12 +73,19 @@ DESIGN attendanceKioskMessage {
 }
 
 FORM attendanceKiosk 'Attendance kiosk'
+    OBJECTS a = Attendance
+    PROPERTIES(a) READONLY nameEmployee, checkInTime
+    FILTERS abs(checkInLongitude(a) - longitude()) + abs(checkInLatitude(a) - latitude()) <= 0.001,
+            NOT checkOut(a)
+;
+
+EXTEND FORM attendanceKiosk
     PROPERTIES '' = barcodeReader()  CUSTOM 'barcodeReader' ON CHANGE {
         readBarcode();
         IF decodedText() AND (NOT decodedText() = lastDecodedText() OR NOT subtractSeconds(lastReadBarcodeTime(), currentDateTime()) < 10) THEN {
             lastDecodedText() <- decodedText();
             lastReadBarcodeTime() <- currentDateTime();
-            
+
             FOR STRING(Employee ee AS Employee) = decodedText() DO {
                 IF openedLastAttendance(ee) THEN {
                     DIALOG attendanceKioskMessage OBJECTS e = ee, s = 'Check Out', c = r'#ff6666' DO {
@@ -87,17 +94,15 @@ FORM attendanceKiosk 'Attendance kiosk'
                 } ELSE {
                     DIALOG attendanceKioskMessage OBJECTS e = ee, s = 'Check In', c = r'#66ff66' FLOAT DO {
                         start(ee);
+                        IF newAttendance() THEN {
+                            SEEK attendanceKiosk.a = newAttendance();
+                        }
                     }
                 }
             } ELSE
                 SHOW attendanceKioskMessage OBJECTS s = 'Employee not found', c = r'#ff0000' WAIT FLOAT;
         }
     }
-    
-    OBJECTS a = Attendance
-    PROPERTIES(a) READONLY nameEmployee, checkInTime
-    FILTERS abs(checkInLongitude(a) - longitude()) + abs(checkInLatitude(a) - latitude()) <= 0.001,
-            NOT checkOut(a)
 ;
 
 DESIGN attendanceKiosk {
