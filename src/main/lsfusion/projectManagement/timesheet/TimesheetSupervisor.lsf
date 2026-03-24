@@ -21,12 +21,12 @@ FORM timesheetSupervisor 'Supervisor timesheet'
     
     OBJECTS e = Employee
     PROPERTIES(e) READONLY firstName, lastName, namePosition, rolesTimesheet
-    PROPERTIES hoursTimesheet(d, e) WAIT COLUMNS (d) HEADER extractDay(d) BACKGROUND backgroundHoursTimesheet(d, e)
+    PROPERTIES timeEntryHoursTimesheet(d, e) WAIT COLUMNS (d) HEADER extractDay(d) BACKGROUND backgroundHoursTimesheet(d, e)
                ON CHANGE {
                    FOR TimeEntryType et = timesheetTimeEntryType() AND (timesheetProject() OR NOT project(timeEntry(d, e, timesheetTimeEntryType()))) DO {
                        IF NOT timesheetTimeEntryHours() THEN {
-                           INPUT n = hoursTimesheet(d, e) DO {
-                               changeSaveTimesheetHours(d, e, et, n, NULL, autoSaveTimesheetHours());
+                           INPUT s = timeEntryHoursTimesheet(d, e) LIST name(TimeEntryHours th) DO {
+                               changeSaveTimesheetHours(d, e, (OVERRIDE type(timeEntryHours(s)), et), (OVERRIDE NUMERIC(s), hours(timeEntryHours(s))), timeEntryHours(s), autoSaveTimesheetHours());
                            }
                        } ELSE
                            changeSaveTimesheetHours(d, e, et, hours(timesheetTimeEntryHours()), timesheetTimeEntryHours(), autoSaveTimesheetHours());
@@ -79,8 +79,9 @@ DESIGN timesheetSupervisor {
                 }
                 MOVE BOX(e) {
                     caption = '';
-                    PROPERTY(hoursTimesheet(d, e)) {
+                    PROPERTY(timeEntryHoursTimesheet(d, e)) {
                         charWidth = 2;
+                        valueAlignmentHorz = END;
                         //                valueTooltip = timeEntries(d, e);
                     }
                 }
