@@ -22,8 +22,8 @@ duration 'Duration' (DATE d, WorkCenter c, ManufacturingOrder mo) =
     duration(workOrder(d, c, mo));
 
 durationLoad (DATE d, WorkCenter c, ManufacturingOrder mo) = 
-    HTML(CONCAT '', '<b>' + durationToChar(duration(d, c, mo)) + '</b>', 
-                    '<font size="-2">(' + durationToChar(duration(d, c)) + ')</font>'); 
+    HTML(CONCAT '', '<b>' + trimScale(duration(d, c, mo)) + '</b>', 
+                    '<font size="-2">(' + trimScale(duration(d, c)) + ')</font>'); 
 
 changeDuration (DATE d, WorkCenter c, ManufacturingOrder mo, NUMERIC[8,2] n) {
     IF n THEN {
@@ -73,7 +73,7 @@ FORM workCenterLoad 'Work center load'
     PROPERTIES(c) READONLY name, id
     PROPERTIES duration 'Duration' = IF duration(d, c, loadManufacturingOrder()) THEN 
                                             durationLoad(d, c, loadManufacturingOrder()) ELSE 
-                                            HTML(durationToChar(duration(d, c))) 
+                                            HTML(trimScale(duration(d, c))) 
                COLUMNS (d) HEADER extractDay(d) BACKGROUND backgroundDuration(d, c, loadManufacturingOrder())
                ON CHANGE {
                    IF loadManufacturingOrder() THEN {

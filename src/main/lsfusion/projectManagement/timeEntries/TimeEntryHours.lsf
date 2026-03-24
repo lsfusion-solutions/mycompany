@@ -11,7 +11,9 @@ type = DATA TimeEntryType (TimeEntryHours);
 name '{Name}' = DATA STRING (TimeEntryHours) CHARWIDTH 10;
 hours 'Hours' = DATA NUMERIC[8,2] (TimeEntryHours);
 
-nameHours (TimeEntryHours h) = OVERRIDE name(h), hoursToChar(hours(h));
+timeEntryHours (STRING name) = GROUP MAX TimeEntryHours th IF name(th) = name;
+
+nameHours (TimeEntryHours h) = OVERRIDE name(h), trimScale(hours(h));
 
 color 'Color' = DATA Color (TimeEntryHours);
 nameColor 'Color' (TimeEntryHours t) = name(color(t));

@@ -1,6 +1,6 @@
 MODULE Timesheet;
 
-REQUIRE ProjectAssignment, ProjectTimeEntry, TimeEntryHours, Time;
+REQUIRE ProjectAssignment, ProjectTimeEntry, TimeEntryHours, Time, NumericUtils;
 
 NAMESPACE ProjectManagement;
 
@@ -34,7 +34,11 @@ rolesTimesheet 'Roles' (Employee e) = roles(timesheetProject(), e);
 
 hoursTimesheet 'Hours' (DATE d, Employee e)=
     IF timesheetProject() THEN hours(d, e, timesheetProject())
-    ELSE hours(d, e);
+                          ELSE hours(d, e);
+
+timeEntryHoursTimesheet 'Hours' (DATE d, Employee e)=
+    IF timesheetProject() THEN (OVERRIDE trimScale(hours(d, e, timesheetProject())), nameTimeEntryHours(timeEntry(d, e, timesheetProject())))
+                          ELSE (OVERRIDE trimScale(hours(d, e)), nameTimeEntryHours(timeEntry(d, e)));
 
 hoursTimesheet 'Hours' (INTERVAL[DATE] i) = hours(timesheetProject(), i);
 
