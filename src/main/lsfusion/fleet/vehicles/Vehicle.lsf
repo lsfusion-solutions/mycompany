@@ -39,6 +39,12 @@ automaticTransmission 'Automatic transmission' = DATA BOOLEAN (Vehicle);
 fuelType 'Fuel type' = DATA FuelType (Vehicle);
 nameFuelType 'Fuel type' (Vehicle v) = name(fuelType(v));
 
+acquisitionDate 'Acquisition date' = DATA DATE (Vehicle);
+acquisitionCost 'Acquisition cost' = DATA NUMERIC[14,2] (Vehicle);
+
+inspectionDate 'Inspection date' = DATA DATE (Vehicle);
+inspectionDueDate 'Inspection due date' = DATA DATE (Vehicle);
+
 note 'Note' = DATA ISTRING (Vehicle) CHARWIDTH 20;
 
 description 'Description' = DATA RICHTEXT (Vehicle);
@@ -50,6 +56,7 @@ FORM vehicle 'Vehicle'
                   nameVehicleCategory, color, yearOfManufacture,
                   seatsNumber, doorsNumber,
                   automaticTransmission, nameFuelType, engineDisplacement,
+                  acquisitionDate, acquisitionCost, inspectionDate, inspectionDueDate,
                   note, description
 
     EDIT Vehicle OBJECT v
@@ -95,6 +102,14 @@ DESIGN vehicle {
                     MOVE PROPERTY(nameFuelType(v));
                     MOVE PROPERTY(engineDisplacement(v));
                 }
+                NEW ownership {
+                    lines = 2;
+                    alignment = STRETCH;
+                    MOVE PROPERTY(acquisitionDate(v));
+                    MOVE PROPERTY(acquisitionCost(v));
+                    MOVE PROPERTY(inspectionDate(v));
+                    MOVE PROPERTY(inspectionDueDate(v));
+                }
                 MOVE PROPERTY(note(v));
                 NEW details {
                     fill = 1;
@@ -120,6 +135,7 @@ FORM vehicles 'Vehicles'
                            nameVehicleCategory, color, yearOfManufacture,
                            seatsNumber, doorsNumber,
                            automaticTransmission, nameFuelType, engineDisplacement,
+                           acquisitionDate, acquisitionCost, inspectionDate, inspectionDueDate,
                            note
 
     PROPERTIES(v) NEWSESSION NEW, EDIT, DELETE
