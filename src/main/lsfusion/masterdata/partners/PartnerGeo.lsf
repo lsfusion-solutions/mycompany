@@ -43,11 +43,13 @@ META defineObjectMap(object, lobj, container)
         
     // temporary instead of inputGoogleAddress
     WHEN LOCAL CHANGED(addressCsv(###object o)) AND autoSynchronizeCoordinates() DO {
-        getCoordinates (addressCsv(o));
-        latitude(o) <- readLatitude();
-        longitude(o) <- readLongitude();
+        TRY {
+            getCoordinates (addressCsv(o));
+            latitude(o) <- readLatitude();
+            longitude(o) <- readLongitude();
 
-        doNotFitBounds() <- NULL;
+            doNotFitBounds() <- NULL;
+        }
     }
 
     EXTEND FORM object
