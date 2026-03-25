@@ -11,9 +11,8 @@ FORM timesheetSupervisor 'Supervisor timesheet'
     OBJECTS dates = INTERVAL[DATE] PANEL NULL
     PROPERTIES dates '' = VALUE(dates)
     
-    PROPERTIES() nameTimesheetProject, nameTimesheetTimeEntryType SELECT 'buttonGroup', 
-                 nameTimesheetTimeEntryHours SHOWIF timesheetTimeEntryType() AND countHours(timesheetTimeEntryType()) SELECT 'buttonGroup' 
-    
+    PROPERTIES() nameTimesheetProject, nameTimesheetTimeEntryType SELECT 'buttonGroup'
+   
     PROPERTIES READONLY hoursTimesheet(dates)
     
     OBJECTS d = DATE
@@ -21,20 +20,24 @@ FORM timesheetSupervisor 'Supervisor timesheet'
     
     OBJECTS e = Employee
     PROPERTIES(e) READONLY firstName, lastName, namePosition, rolesTimesheet
-    PROPERTIES timeEntryHoursTimesheet(d, e) WAIT COLUMNS (d) HEADER extractDay(d) BACKGROUND backgroundHoursTimesheet(d, e)
+    PROPERTIES hours = timeEntryHoursTimesheet(d, e) WAIT COLUMNS (d) HEADER extractDay(d) BACKGROUND backgroundHoursTimesheet(d, e)
                ON CHANGE {
                    FOR TimeEntryType et = timesheetTimeEntryType() AND (timesheetProject() OR NOT project(timeEntry(d, e, timesheetTimeEntryType()))) DO {
-                       IF NOT timesheetTimeEntryHours() THEN {
-                           INPUT s = timeEntryHoursTimesheet(d, e) LIST name(TimeEntryHours th) DO {
-                               changeSaveTimesheetHours(d, e, (OVERRIDE type(timeEntryHours(s)), et), (OVERRIDE NUMERIC(s), hours(timeEntryHours(s))), timeEntryHours(s), autoSaveTimesheetHours());
-                           }
-                       } ELSE
-                           changeSaveTimesheetHours(d, e, et, hours(timesheetTimeEntryHours()), timesheetTimeEntryHours(), autoSaveTimesheetHours());
+                       INPUT s = timeEntryHoursTimesheet(d, e) LIST name(TimeEntryHours th) DO {
+                           changeSaveTimesheetHours(d, e, (OVERRIDE type(timeEntryHours(s)), et), (OVERRIDE NUMERIC(s), hours(timeEntryHours(s))), timeEntryHours(s), autoSaveTimesheetHours());
+                       }
                    } ELSE
                        SHOW timesheetDateEmployee OBJECTS i = interval(d, d), e = e FLOAT;
                } ON CONTEXTMENU copyHours(d) ON CONTEXTMENU clearHours(d) FOOTER hours(d, timesheetProject())
     FILTERS ((assigned(timesheetProject(), e, dates) OR (NOT countAssignments(timesheetProject()) AND accessAllProjects(currentUser()))) AND active(e)) 
             OR hours(e, timesheetProject(), dates)
+
+    OBJECTS h = TimeEntryHours
+    PROPERTIES NOWAIT changeHours = {
+                    FOR [SELECT timesheetSupervisor.e](Employee ee) AND [SELECT PROPERTY timesheetSupervisor.hours](DATE dd) DO
+                        changeSaveTimesheetHours(dd, ee, timesheetTimeEntryType(), hours(h), h, autoSaveTimesheetHours()); 
+               } COLUMNS (h) HEADER nameHours(h) BACKGROUND rgbColor(h)
+    FILTERS type(h) = timesheetTimeEntryType()
 
     EVENTS ON INIT {
         timesheetProject() <- defaultProject(currentUser());
@@ -72,14 +75,14 @@ DESIGN timesheetSupervisor {
                         caption = '';
                         placeholder = 'Type';
                     }
-                    MOVE PROPERTY(nameTimesheetTimeEntryHours()) {
-                        caption = '';
-                        placeholder = 'Hours';
+                    MOVE PROPERTY(changeHours) {
+                        alignment = STRETCH;
+                        focusable = FALSE;
                     }
                 }
                 MOVE BOX(e) {
                     caption = '';
-                    PROPERTY(timeEntryHoursTimesheet(d, e)) {
+                    PROPERTY(hours) {
                         charWidth = 2;
                         valueAlignmentHorz = END;
                         //                valueTooltip = timeEntries(d, e);
