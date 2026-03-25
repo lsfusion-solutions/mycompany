@@ -51,7 +51,7 @@ The following fields are filled automatically:
 - **item** — taken from the sales order line;
 - **[Bill of Materials](bom.md)** — taken from the sales order line;
 - material and output lines are generated based on the sales order line quantity.
-- work orders are generated from Bill of Materials operations.
+- work orders are generated from Bill of Materials operations, including operations from nested intermediate Bills of Materials.
 
 Additionally, extra configurable filling may be performed (depending on your setup).
 
@@ -70,7 +70,7 @@ If automatic creation is enabled, changes in sales order lines are synchronized 
 - when line quantity changes — manufacturing order material and output lines are recalculated;
 - when line item changes — the manufacturing order item is updated and lines are recalculated;
 - when the Bill of Materials changes — the manufacturing order Bill of Materials is updated and lines are recalculated.
-- whenever lines are recalculated, work orders are regenerated from the current Bill of Materials operations.
+- whenever lines are recalculated, work orders are regenerated from the current Bill of Materials operations, including operations from nested intermediate Bills of Materials.
 
 Restrictions:
 

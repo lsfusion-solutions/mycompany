@@ -28,7 +28,7 @@ A **Work order** represents a specific operation or task performed at a work cen
 
 ### Creating work orders
 
-Work orders can be entered manually, but they are also automatically generated from Bill of Materials operations when manufacturing order lines are generated or recalculated.
+Work orders can be entered manually, but they are also automatically generated from Bill of Materials operations when manufacturing order lines are generated or recalculated. This generation also includes operations from nested intermediate Bills of Materials, and each generated work order keeps a link to the Bill of Materials from which it was created.
 
 Work orders are typically created within the context of a **Manufacturing order**. You can break down a single production process into multiple sequential or parallel operations.
 
@@ -76,8 +76,8 @@ The **Work orders** list includes enhanced filtering:
 
 ### Synchronization and copy behavior
 
-- When manufacturing order lines are generated/recalculated, existing work orders in that order are rebuilt from Bill of Materials operations.
-- When a manufacturing order is copied, its work orders are copied as well, including operation link, start date/time, and duration.
+- When manufacturing order lines are generated/recalculated, existing work orders in that order are rebuilt from Bill of Materials operations, including operations from nested intermediate Bills of Materials.
+- When a manufacturing order is copied, its work orders are copied as well, including operation link, source Bill of Materials link, start date/time, and duration.
 
 ---
 
