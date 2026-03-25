@@ -1,13 +1,17 @@
 MODULE BomOperation;
 
-REQUIRE Bom, WorkCenter;
+REQUIRE Bom, WorkCenter, Selection;
 
 NAMESPACE Manufacturing;
 
 CLASS Operation 'Operation';
 
+background = ABSTRACT CASE COLOR (Operation);
+
 bom 'Bill of Materials' = DATA Bom (Operation) NONULL DELETE;
 nameBom 'Bill of Materials' (Operation o) = name(bom(o));
+numberBom 'Number' (Operation o) = number(bom(o));
+nameItem '{Item}' (Operation o) = nameItem(bom(o));
 
 countOperation 'Operations' (Bom b) = GROUP SUM 1 IF bom(Operation o) = b MATERIALIZED;
 
@@ -18,6 +22,8 @@ nameWorkCenter 'Work center' (Operation o) = name(workCenter(o));
 
 startTime 'Start time' = DATA TIME (Operation);
 duration 'Duration' = DATA NUMERIC[8,2] (Operation);
+
+@defineSelection(Operation);
 
 FORM operation 'Operation'
     OBJECTS o = Operation PANEL
@@ -34,15 +40,50 @@ FORM operations 'Operations'
     LIST Operation OBJECT o
 ;
 
+FORM dialogBomOperations 'Operations'
+    OBJECTS b = Bom
+
+    OBJECTS o = Operation BACKGROUND background(o)
+    PROPERTIES(o) READONLY numberBom, nameItem, nameBom, name, nameWorkCenter, startTime, duration
+    FILTERS bom(o) != b
+;
+
+DESIGN dialogBomOperations {
+    size = (1100, 600);
+    OBJECTS {
+        MOVE BOX(o) { fill = 1; }
+    }
+    PROPERTY(formOk()) { changeKey = 'ENTER'; }
+}
+
+@defineSelectionForm(dialogBomOperations, Operation, o);
+
 NAVIGATOR {
     settings {
         NEW bomOperations = operations;
     }
 }
 
+copyOperations 'Copy existing operations' (Bom b) {
+    selected(Operation o) <- NULL WHERE selected(o);
+    DIALOG dialogBomOperations OBJECTS b = b DO {
+        FOR selected(Operation so) DO NEW oo = Operation {
+            bom(oo) <- b;
+            name(oo) <- name(so);
+            workCenter(oo) <- workCenter(so);
+            startTime(oo) <- startTime(so);
+            duration(oo) <- duration(so);
+        }
+        selected(Operation o) <- NULL WHERE selected(o);
+    } ELSE {
+        selected(Operation o) <- NULL WHERE selected(o);
+    }
+}
+
 EXTEND FORM bom
     OBJECTS o = Operation
     PROPERTIES(o) name, nameWorkCenter, startTime, duration, NEW, DELETE
+    PROPERTIES(b) copyOperations DRAW o TOOLBAR READONLYIF readonly(b)
     FILTERS bom(o) = b
 ;
 

@@ -88,6 +88,8 @@ Każda linia zwykle zawiera:
 - **Godzina rozpoczęcia** — planowana godzina rozpoczęcia;
 - **Czas trwania** — planowany czas trwania w godzinach.
 
+Na tej zakładce możesz także skopiować operacje z innego Zestawienia materiałów. Użyj akcji **„Kopiuj istniejące operacje”**, wybierz w oknie dialogowym jeden lub kilka wierszy i potwierdź wybór. Wybrane operacje zostaną dodane do bieżącego Zestawienia materiałów.
+
 ## Użycie Zestawienia materiałów w zamówieniu produkcji
 
 ### Automatyczny wybór Zestawienia materiałów

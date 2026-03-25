@@ -88,6 +88,8 @@ Each line typically contains:
 - **Start time** - planned time of day;
 - **Duration** - planned duration in hours.
 
+You can also copy operations from another Bill of Materials directly on this tab. Use **Copy existing operations**, select one or more rows in the dialog, and confirm. The selected operations are added to the current Bill of Materials.
+
 ## Using the Bill of Materials in a manufacturing order
 
 ### Bill of Materials auto-selection
