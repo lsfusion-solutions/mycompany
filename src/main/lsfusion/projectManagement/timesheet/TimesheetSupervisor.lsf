@@ -37,7 +37,8 @@ FORM timesheetSupervisor 'Supervisor timesheet'
             OR hours(e, timesheetProject(), dates)
 
     EVENTS ON INIT {
-        timesheetProject() <- defaultProject(currentUser());
+        IF NOT timesheetProject() THEN
+            timesheetProject() <- defaultProject(currentUser());
         timesheetTimeEntryType() <- defaultTimeEntryType();
         SEEK timesheetSupervisor.dates = interval(firstDayOfMonth(currentDate()), lastDayOfMonth(currentDate()));
     }
@@ -93,5 +94,22 @@ DESIGN timesheetSupervisor {
 NAVIGATOR {
     dashboards {
         NEW timesheetSupervisor;
+    }
+}
+
+showTimesheetSupervisor 'Supervisor timesheet' (Project p) {
+    NEWSESSION {
+        timesheetProject() <- p;
+        SHOW timesheetSupervisor DOCKED;
+    }
+}
+
+EXTEND FORM project
+    PROPERTIES(p) showTimesheetSupervisor DRAW te TOOLBAR SHOWIF PREV(p IS Project)
+;
+
+DESIGN project {
+    footer {
+        MOVE PROPERTY(showTimesheetSupervisor(p));
     }
 }
