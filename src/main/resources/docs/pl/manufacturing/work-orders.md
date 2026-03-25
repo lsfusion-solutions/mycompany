@@ -28,7 +28,7 @@ Stanowiska robocze służą do grupowania zleceń produkcyjnych i analizy całko
 
 ### Tworzenie zleceń produkcyjnych
 
-Zlecenia produkcyjne mogą być wprowadzane ręcznie, ale są też automatycznie generowane na podstawie operacji Zestawienia materiałów, gdy linie zamówienia produkcji są generowane lub przeliczane.
+Zlecenia produkcyjne mogą być wprowadzane ręcznie, ale są też automatycznie generowane na podstawie operacji Zestawienia materiałów, gdy linie zamówienia produkcji są generowane lub przeliczane. Generowanie obejmuje także operacje z zagnieżdżonych pośrednich Zestawień materiałów, a każde automatycznie utworzone zlecenie zachowuje powiązanie z Zestawieniem materiałów, z którego zostało utworzone.
 
 Zlecenia produkcyjne są zazwyczaj tworzone w kontekście **Zamówienia produkcji**. Możesz podzielić pojedynczy proces produkcyjny na wiele sekwencyjnych lub równoległych operacji.
 
@@ -76,8 +76,8 @@ Lista **Zlecenia produkcyjne** zawiera ulepszone filtrowanie:
 
 ### Synchronizacja i zachowanie przy kopiowaniu
 
-- Gdy linie zamówienia produkcji są generowane/przeliczane, istniejące zlecenia produkcyjne w tym zamówieniu są przebudowywane na podstawie operacji Zestawienia materiałów.
-- Gdy zamówienie produkcji jest kopiowane, kopiowane są również jego zlecenia produkcyjne, w tym powiązanie z operacją, data/godzina rozpoczęcia oraz czas trwania.
+- Gdy linie zamówienia produkcji są generowane/przeliczane, istniejące zlecenia produkcyjne w tym zamówieniu są przebudowywane na podstawie operacji Zestawienia materiałów, w tym operacji z zagnieżdżonych pośrednich Zestawień materiałów.
+- Gdy zamówienie produkcji jest kopiowane, kopiowane są również jego zlecenia produkcyjne, w tym powiązanie z operacją, powiązanie ze źródłowym Zestawieniem materiałów, data/godzina rozpoczęcia oraz czas trwania.
 
 ---
 

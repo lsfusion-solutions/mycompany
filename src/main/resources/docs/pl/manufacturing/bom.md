@@ -113,16 +113,16 @@ Dla zwykłej produkcji:
 - komponenty Zestawienia generują linie materiałów;
 - towar z zamówienia generuje linię wyjścia;
 - produkty uboczne ze Zestawienia są dodawane do linii wyjścia.
-- zlecenia produkcyjne są generowane na podstawie operacji Zestawienia materiałów.
+- zlecenia produkcyjne są generowane na podstawie operacji Zestawienia materiałów, w tym operacji z zagnieżdżonych pośrednich Zestawień materiałów.
 
 Dla demontażu:
 
 - komponenty Zestawienia generują linie wyjścia;
 - towar z zamówienia generuje linię materiału;
 - produkty uboczne ze Zestawienia są dodawane do linii materiałów.
-- zlecenia produkcyjne są generowane na podstawie operacji Zestawienia materiałów.
+- zlecenia produkcyjne są generowane na podstawie operacji Zestawienia materiałów, w tym operacji z zagnieżdżonych pośrednich Zestawień materiałów.
 
-Ważne: przy generowaniu lub przeliczaniu linii zamówienia, zlecenia produkcyjne są przebudowywane na podstawie aktualnych operacji Zestawienia materiałów.
+Ważne: przy generowaniu lub przeliczaniu linii zamówienia, zlecenia produkcyjne są przebudowywane na podstawie aktualnych operacji Zestawienia materiałów, a utworzone zlecenia zachowują powiązanie ze źródłowym Zestawieniem materiałów.
 
 Szczegóły demontażu: [Demontaż](unbuild.md).
 

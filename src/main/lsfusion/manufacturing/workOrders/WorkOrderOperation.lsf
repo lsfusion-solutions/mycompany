@@ -1,20 +1,38 @@
 MODULE WorkOrderOperation;
 
-REQUIRE WorkOrder, BomOperation;
+REQUIRE WorkOrder, BomOperation, BomNested;
 
 NAMESPACE Manufacturing;
 
 operation 'Operation' = DATA Operation (WorkOrder);
 
+bom 'Bill of Materials' = DATA Bom (WorkOrder);
+descriptionBom 'Bill of Materials' (WorkOrder w) = description(bom(w));
+
+WHEN LOCAL CHANGED(operation(WorkOrder o)) AND NOT CHANGED(bom(o)) DO
+    bom(o) <- bom(operation(o));
+
+fill (WorkOrder w, Operation o) {
+    operation(w) <- o;
+    name(w) <- name(o);
+    workCenter(w) <- workCenter(o);
+    startTime(w) <- startTime(o);
+    duration(w) <- duration(o);
+}
+
 fillByQuantity (ManufacturingOrder o, NUMERIC[16,3] q) + {
     DELETE WorkOrder w WHERE manufacturingOrder(w) = o;
+
     FOR bom(Operation op) = bom(o) DO NEW w = WorkOrder {
         manufacturingOrder(w) <- o;
-        operation(w) <- op;
-        name(w) <- name(op);
-        workCenter(w) <- workCenter(op);
-        startTime(w) <- startTime(op);
-        duration(w) <- duration(op);
+        fill(w, op);
+    }
+
+    // Generate routing for intermediate nested BoMs produced inside the same order.
+    FOR intermediateBom(bom(o), ComponentLine cl, TEXT path) AND intermediate(nestedBom(cl)) AND bom(Operation op) = nestedBom(cl) DO NEW w = WorkOrder {
+        manufacturingOrder(w) <- o;
+
+        fill(w, op);
     }
 }
 
@@ -29,3 +47,11 @@ clone(ManufacturingOrder to, ManufacturingOrder from) + {
         duration(dw) <- duration(sw);
     }
 }
+
+EXTEND FORM workOrders
+    PROPERTIES(o) READONLY descriptionBom
+;
+
+EXTEND FORM manufacturingOrder
+    PROPERTIES(wo) descriptionBom
+;

@@ -113,16 +113,16 @@ For regular production:
 - Bill of Materials components generate material lines;
 - the order item generates an output line;
 - Bill of Materials by-products are added to output lines.
-- work orders are generated from Bill of Materials operations.
+- work orders are generated from Bill of Materials operations, including operations from nested intermediate Bills of Materials.
 
 For unbuild (disassembly):
 
 - Bill of Materials components generate output lines;
 - the order item generates a material line;
 - Bill of Materials by-products are added to material lines.
-- work orders are generated from Bill of Materials operations.
+- work orders are generated from Bill of Materials operations, including operations from nested intermediate Bills of Materials.
 
-Important: when the order lines are generated or recalculated, work orders are rebuilt from the current Bill of Materials operations.
+Important: when the order lines are generated or recalculated, work orders are rebuilt from the current Bill of Materials operations, and generated work orders keep a link to the originating Bill of Materials.
 
 For details about unbuild, see [Unbuild (disassembly)](unbuild.md).
 
