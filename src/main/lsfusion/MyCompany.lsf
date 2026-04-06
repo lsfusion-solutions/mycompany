@@ -14,3 +14,18 @@ REQUIRE Eval, ProcessMonitor, Backup, Chat, OpenAI, Documentation, SQLUtils,
         CRM,
         Fleet,
         BillReceiptCost, BillReceiptCostService; // initialize after Purchase
+
+FORM testInputMulti
+    PROPERTIES
+    trigger = 'Change trigger' ON CHANGE {
+        INPUT MULTI f = NAMEDFILE DO {
+            MESSAGE 'row = ' + STRING(row) + ', name = ' + name(f) + ', ext = ' + extension(f);
+        } ELSE {
+            MESSAGE 'cancel';
+        }
+    }
+;
+
+run() {
+    SHOW testInputMulti;
+}
