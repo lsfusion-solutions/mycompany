@@ -32,9 +32,32 @@ WHEN LOCAL SET(Employee e IS Employee) AND NOT CHANGED(legalEntity(e)) DO legalE
 
 photo = DATA IMAGEFILE (Employee);
 
+// change password
+FORM changePassword '{authentication.change.password}'
+    OBJECTS s '' = BPSTRING[30] PANEL
+    PROPERTIES(s) password '{authentication.password}' = VALUE
+;
+DESIGN changePassword {
+    BOX(s) { caption = ''; }
+    PROPERTY(password) { echoSymbols = TRUE; } 
+}
+
+changePassword '{authentication.change.password}' (Employee e) {
+    APPLY;
+    IF canceled() THEN RETURN;
+    
+    NEWSESSION {
+        DIALOG changePassword OBJECTS s INPUT DO {
+            setSHA256Password(e, s);
+            APPLY;
+            MESSAGE '{authentication.change.password.complete}';
+        }
+    }
+}
+
 FORM employee 'Employee'
     OBJECTS e = Employee PANEL
-    PROPERTIES(e) id, login, sha256Password ON CHANGE changeSHA256Password(e), photo, isLocked, archived, 
+    PROPERTIES(e) id, login, changePassword, photo, isLocked, archived, 
                  nameLegalEntity, nameDepartment, lastName, firstName, middleName, namePosition, email, phone, address, city, state,
                  zip, birthday
     
@@ -58,6 +81,7 @@ DESIGN employee {
                 }
                 NEW secondaryActions {
                     horizontal = TRUE;
+                    MOVE PROPERTY(changePassword(e)) { valueClass = 'btn-secondary'; }
                 }
             }
             NEW status {
@@ -77,7 +101,6 @@ DESIGN employee {
                         caption = '{authentication.custom.user.login}';
                         MOVE PROPERTY(id(e));
                         MOVE PROPERTY(login(e));
-                        MOVE PROPERTY(sha256Password(e));
                         MOVE PROPERTY(isLocked(e));
                         MOVE PROPERTY(archived(e));
                     }
