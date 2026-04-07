@@ -25,6 +25,8 @@ toSendToKSeF (Invoice i) = (statusCode(faktura(i)) != 200 OR NOT faktura(i)) AND
 readonly(Invoice i) += WHEN faktura(i) AND NOT statusCode(faktura(i)) != 200 THEN TRUE;
 
 // Build Faktura from Invoice (adapter)
+fill ABSTRACT LIST (Faktura, Invoice);
+
 createFaktura 'Build Faktura' (Invoice i) {
     NEW f = Faktura {
         invoice(f) <- i;
@@ -105,6 +107,12 @@ createFaktura 'Build Faktura' (Invoice i) {
             faktura(z) <- f;
             number(z) <- number(faktura(ad));
         }
+
+        IF note(i) AND NOT original(i) THEN
+            NEW si = StopkaInformacja {
+                faktura(si) <- f;
+                value(si) <- note(i);
+            }
         
         FOR invoice(InvoiceLine l) = i OR invoice(l) = prevCorrection(i) DO NEW w = FaWiersz {
             faktura(w) <- f;
@@ -120,6 +128,8 @@ createFaktura 'Build Faktura' (Invoice i) {
             taxes(w) <- OVERRIDE (ltrim(toChar(taxPercent(l), '99')) IF taxPercent(l) > 0), taxes(l);
             correction(w) <- 1 IF invoice(l) = original(i);
         }
+        
+        fill(f, i);
     }
 }
 

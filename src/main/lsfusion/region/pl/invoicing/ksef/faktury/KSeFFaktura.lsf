@@ -136,6 +136,10 @@ faktura 'Faktura' = DATA Faktura (DodatkowyOpis) NONULL DELETE INDEXED;
 Klucz 'Klucz' = DATA STRING[256] (DodatkowyOpis) CHARWIDTH 10;
 Wartosc 'Wartosc' = DATA STRING[1000] (DodatkowyOpis) CHARWIDTH 20;
 
+CLASS StopkaInformacja 'Stopka informacja';
+faktura 'Faktura' = DATA Faktura (StopkaInformacja) NONULL DELETE INDEXED;
+value 'Stopka faktury' = DATA ISTRING[3500] (StopkaInformacja) CHARWIDTH 40;
+
 openXml 'Open XML' (Faktura f) {
     IF xmlFile(f) THEN
         open(xmlFile(f), 'FA3-XML');
@@ -200,6 +204,10 @@ FORM faktura 'Faktura KSeF'
     OBJECTS dof = DodatkowyOpis
     PROPERTIES(dof) READONLY Klucz, Wartosc
     FILTERS faktura(dof) = f
+
+    OBJECTS si = StopkaInformacja
+    PROPERTIES(si) READONLY '' = value
+    FILTERS faktura(si) = f
 
     OBJECTS w = FaWiersz
     PROPERTIES(w) READONLY NrWierszaFa, description, GTIN, nameUom, quantity, price, untaxedAmount, amount, taxes, correction,
@@ -319,6 +327,11 @@ DESIGN faktura {
                     fill = 5;
                     GRID(dof) { width = 200; height = 55; }
                     REMOVE TOOLBARBOX(dof);
+                }
+                MOVE BOX(si) {
+                    fill = 2;
+                    GRID(si) { width = 320; height = 55; }
+                    REMOVE TOOLBARBOX(si);
                 }
             }
         }
