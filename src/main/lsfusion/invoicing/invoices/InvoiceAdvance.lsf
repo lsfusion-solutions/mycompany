@@ -34,6 +34,9 @@ WHEN SETCHANGED(amount(Invoice ad)) AND amount(ad) < advanced(Invoice i, ad) DO
 CONSTRAINT advanced(Invoice i, Invoice ad) AND NOT isAdvance(ad)
     MESSAGE 'Invoices not marked as advances cannot be advanced';
 
+CONSTRAINT advanced(Invoice i, Invoice ad) AND i = ad
+    MESSAGE 'Invoice cannot be connected to itself as an advance';
+
 countAdvanced (Invoice i) = GROUP SUM 1 IF advanced(i, Invoice ad) IF active(ad);
 advanced 'Advanced' (Invoice i) = GROUP SUM advanced(i, Invoice ad) IF active(ad) MATERIALIZED;
 toAdvance 'To advance' (Invoice i) = amount(i) (-) advanced(i);
@@ -42,7 +45,7 @@ invoiced 'Invoiced' (Invoice ad) = GROUP SUM advanced(Invoice i, ad) IF active(i
 toInvoice 'To invoice' (Invoice ad) = (amount(ad) (-) invoiced(ad)) IF isAdvance(ad);
 
 canBeAdvanced (Invoice i, Invoice ad) =
-    customer(i) = customer(ad) AND company(i) = company(ad) AND isAdvance(ad) AND active(ad) AND toInvoice(ad);
+    i != ad AND customer(i) = customer(ad) AND company(i) = company(ad) AND isAdvance(ad) AND active(ad) AND toInvoice(ad);
 
 // pay
 toAdvance 'Match' ABSTRACT LIST (Invoice, Invoice) CHANGEMOUSE 'DBLCLK';
