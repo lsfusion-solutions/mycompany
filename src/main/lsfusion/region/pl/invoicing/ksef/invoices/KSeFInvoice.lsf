@@ -22,7 +22,11 @@ fakturaNumber 'KSeF number' (Invoice i) = number(faktura(i));
 toSendToKSeF (Invoice i) = (statusCode(faktura(i)) != 200 OR NOT faktura(i)) AND
     (status(i) = InvoiceStatus.ready OR status(i) = InvoiceStatus.done);
 
-readonly(Invoice i) += WHEN faktura(i) AND NOT statusCode(faktura(i)) != 200 THEN TRUE;
+editableSentInvoice 'Zezwól na edycję wysłanych faktur' = DATA BOOLEAN () PREREAD;
+EXTEND FORM integrationData PROPERTIES() editableSentInvoice;
+DESIGN integrationData { KSeFHeader { MOVE PROPERTY(editableSentInvoice()); } }
+
+readonly(Invoice i) += WHEN faktura(i) AND NOT statusCode(faktura(i)) != 200 AND NOT editableSentInvoice() THEN TRUE;
 
 // Build Faktura from Invoice (adapter)
 fill ABSTRACT LIST (Faktura, Invoice);
