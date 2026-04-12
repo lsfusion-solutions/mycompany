@@ -1,10 +1,12 @@
 MODULE Employee;
 
-REQUIRE Individual, Company, Authentication, Security, ObjectUtils;
+REQUIRE Individual, Company, Authentication, Security, ObjectUtils, FileUtils;
 
 NAMESPACE MasterData;
 
 CLASS Employee 'Employee' : Individual, CustomUser;
+
+readonly = ABSTRACT CASE BOOLEAN (Employee);
 
 name '{Name}' (Employee e) = name[Partner](e) IF e IS Employee CHARWIDTH 15;
 archived 'Archived' (Employee e) = archived[Partner](e) IF e IS Employee;
@@ -57,7 +59,8 @@ changePassword '{authentication.change.password}' (Employee e) {
 
 FORM employee 'Employee'
     OBJECTS e = Employee PANEL
-    PROPERTIES(e) id, login, changePassword, photo, isLocked, archived, 
+    PROPERTIES(e) READONLYIF readonly(e)
+                 id, login, changePassword, photo, isLocked, archived, 
                  nameLegalEntity, nameDepartment, lastName, firstName, middleName, namePosition, email, phone, address, city, state,
                  zip, birthday
     
@@ -160,6 +163,8 @@ FORM employees 'Employees'
         FILTER '{Active}' active(e) 'F10' DEFAULT
         FILTER 'Archived' archived(e) 'F9'
 ;
+
+@defineObjectFiles(employee, e, 'Employee file');
 
 FORM dialogEmployees 'Employees'
     OBJECTS e = Employee

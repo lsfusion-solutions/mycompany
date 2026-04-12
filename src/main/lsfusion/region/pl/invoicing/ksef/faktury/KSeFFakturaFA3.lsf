@@ -18,6 +18,7 @@ GROUP DaneFaKorygowanej EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:DaneFaK
 GROUP Platnosc EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Platnosc' : Fa;
 GROUP TerminPlatnosci EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:TerminPlatnosci' : Platnosc;
 GROUP DodatkowyOpis EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:DodatkowyOpis' : Fa;
+GROUP Stopka EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Stopka';
 
 // Nested groups
 GROUP P1DaneId EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:DaneIdentyfikacyjne' : Podmiot1;
@@ -78,7 +79,9 @@ FORM FA3XmlExport
 
     // zaliczka
     OBJECTS z = FakturaZaliczkowa EXTID 'FakturaZaliczkowa' IN Fa
-    PROPERTIES(z) number EXTID 'NrKSeFFaZaliczkowej'
+    PROPERTIES NrKSeFZN = 1 IF NOT number(z),
+               NrFaZaliczkowej = invoiceNumber(z) IF NOT number(z),
+               number(z) EXTID 'NrKSeFFaZaliczkowej'
     FILTERS faktura(z) = f
 
     // FaWiersz
@@ -102,6 +105,10 @@ FORM FA3XmlExport
     OBJECTS dof = DodatkowyOpis EXTID 'DodatkowyOpis' IN Fa
     PROPERTIES(dof) Klucz EXTID 'Klucz', Wartosc EXTID 'Wartosc'
     FILTERS faktura(dof) = f
+
+    OBJECTS si = StopkaInformacja EXTID 'Informacje' IN Stopka
+    PROPERTIES(si) value EXTID 'StopkaFaktury'
+    FILTERS faktura(si) = f
 ;
 
 // import
@@ -154,6 +161,8 @@ DataWystFaKorygowanej = DATA STRING ();
 NrFaKorygowanej = DATA STRING[50] ();
 NrKSeFFaKorygowanej = DATA STRING[36] ();
 
+NrKSeFZN = DATA LOCAL INTEGER(INTEGER);
+NrFaZaliczkowej = DATA LOCAL STRING[50](INTEGER);
 NrKSeFFaZaliczkowej = DATA LOCAL STRING[36](INTEGER);
 
 NrWierszaFa = DATA LOCAL STRING(INTEGER);
@@ -181,6 +190,7 @@ FormaPlatnosci = DATA LOCAL INTEGER();
 RachunekBankowyNumber = DATA LOCAL STRING (INTEGER);
 DodatkowyOpisKlucz = DATA LOCAL STRING (INTEGER);
 DodatkowyOpisWartosc = DATA LOCAL STRING (INTEGER);
+StopkaFaktury = DATA LOCAL ISTRING[3500] (INTEGER);
 
 FORM FA3XmlImport FORMEXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Faktura'
     PROPERTIES ATTR ='http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2022/01/05/eD/DefinicjeTypy/' EXTID 'xmlns:etd', ='http://www.w3.org/2001/XMLSchema' EXTID 'xmlns:xsd', ='http://www.w3.org/2001/XMLSchema-instance' EXTID 'xmlns:xsi'
@@ -240,7 +250,10 @@ FORM FA3XmlImport FORMEXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Faktura'
         NrKSeFFaKorygowanej EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:NrKSeFFaKorygowanej'
 
     OBJECTS z = INTEGER EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:FakturaZaliczkowa' IN Fa
-    PROPERTIES(z) NrKSeFFaZaliczkowej EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:NrKSeFFaZaliczkowej'
+    PROPERTIES(z)
+        NrKSeFZN EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:NrKSeFZN',
+        NrFaZaliczkowej EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:NrFaZaliczkowej',
+        NrKSeFFaZaliczkowej EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:NrKSeFFaZaliczkowej'
 
     OBJECTS faWiersz = INTEGER EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:FaWiersz' IN Fa
     PROPERTIES(faWiersz)
@@ -279,6 +292,9 @@ FORM FA3XmlImport FORMEXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Faktura'
     PROPERTIES(dof)
         DodatkowyOpisKlucz EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Klucz',
         DodatkowyOpisWartosc EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Wartosc'
+
+    OBJECTS si = INTEGER EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:Informacje' IN Stopka
+    PROPERTIES(si) StopkaFaktury EXTID '=http://crd.gov.pl/wzor/2025/06/25/13775/:StopkaFaktury'
 ;
 
 import (Faktura nf) {
@@ -312,15 +328,21 @@ import (Faktura nf) {
     PrzyczynaKorekty(nf) <- PrzyczynaKorekty(); DataWystFaKorygowanej(nf) <- DATE(DataWystFaKorygowanej());
     NrFaKorygowanej(nf) <- NrFaKorygowanej(); NrKSeFFaKorygowanej(nf) <- NrKSeFFaKorygowanej();
 
-    FOR NrKSeFFaZaliczkowej(INTEGER fz) DO NEW z = FakturaZaliczkowa {
+    FOR NrFaZaliczkowej(INTEGER fz) OR NrKSeFFaZaliczkowej(fz) DO NEW z = FakturaZaliczkowa {
         faktura(z) <- nf;
-        number(z) <- NrKSeFFaZaliczkowej(fz);
+        invoiceNumber(z) <- NrFaZaliczkowej(fz);
+        number(z) <- NrKSeFFaZaliczkowej(fz) IF NOT NrFaZaliczkowej(fz);
     }
 
     FOR DodatkowyOpisKlucz(INTEGER dof) DO NEW d = DodatkowyOpis {
         faktura(d) <- nf;
         Klucz(d) <- DodatkowyOpisKlucz(dof);
         Wartosc(d) <- DodatkowyOpisWartosc(dof);
+    }
+
+    FOR StopkaFaktury(INTEGER si) DO NEW s = StopkaInformacja {
+        faktura(s) <- nf;
+        value(s) <- StopkaFaktury(si);
     }
 
     FOR imported(INTEGER faWiersz) DO NEW fw = FaWiersz {

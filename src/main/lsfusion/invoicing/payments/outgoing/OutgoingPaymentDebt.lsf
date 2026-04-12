@@ -43,7 +43,7 @@ EXTEND FORM outgoingPayment
 DESIGN outgoingPayment {
     details {
         NEW debts FIRST {
-            caption = 'Payments matching';
+            caption = badged('Payments matching', countPaid(p));
             MOVE BOX(d) { 
                 caption = 'Matched';
                 GRID(d) { height = 100; }
@@ -62,8 +62,6 @@ WHEN (SETCHANGED(reference(OutgoingPayment p)) OR SETCHANGED(partner(p)) OR SET(
      canBePaid(d, p) DO
     paid(d, p) <- left(d, p);
     
-countPaid 'Number of debts' (OutgoingDebt p) = GROUP SUM 1 IF paid(IncomingDebt d, p) AND active(d) MATERIALIZED;
-
 EXTEND FORM outgoingPayments
     PROPERTIES(p) READONLY AFTER amount(p) paid BACKGROUND backgroundPaid(p), countPaid
     

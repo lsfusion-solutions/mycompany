@@ -43,7 +43,7 @@ EXTEND FORM incomingPayment
 DESIGN incomingPayment {
     details {
         NEW debts FIRST {
-            caption = 'Payments matching';
+            caption = badged('Payments matching', countPaid(p));
             MOVE BOX(d) { 
                 caption = 'Matched';
                 GRID(d) { height = 100; }
@@ -62,8 +62,6 @@ WHEN (SETCHANGED(reference(IncomingPayment p)) OR SETCHANGED(partner(p)) OR SET(
      canBePaid(p, d) DO
     paid(p, d) <- left(p, d);
     
-countPaid 'Number of payments' (IncomingDebt p) = GROUP SUM 1 IF paid(p, OutgoingDebt d) AND active(d) MATERIALIZED;
-
 countIncomingPayment (OutgoingDebt d) = GROUP SUM 1 IF paid(IncomingPayment p, d) AND active(p);
 
 lastIncomingPayment (OutgoingDebt d) = GROUP LAST IncomingPayment p ORDER dateTime(p), p WHERE paid(p, d) AND active(p);

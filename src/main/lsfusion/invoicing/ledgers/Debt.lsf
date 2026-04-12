@@ -67,6 +67,9 @@ skipMatched = ABSTRACT BOOLEAN (IncomingDebt, OutgoingDebt);
 canBeMatched (IncomingDebt id, OutgoingDebt od) =
     id IS IncomingDebt AND od IS OutgoingDebt AND partner(id) = partner(od) AND company(id) = company(od) AND NOT skipMatched(id, od);
 
+countPaid 'Number of debts' (OutgoingDebt od) = GROUP SUM 1 IF paid(IncomingDebt id, od) AND active(id) MATERIALIZED;
+countPaid 'Number of debts' (IncomingDebt id) = GROUP SUM 1 IF paid(id, OutgoingDebt od) AND active(od) MATERIALIZED;
+
 paid 'Paid' (IncomingDebt id) = GROUP SUM paid(id, OutgoingDebt od) IF active(od) MATERIALIZED;
 paid 'Paid' (OutgoingDebt od) = GROUP SUM paid(IncomingDebt id, od) IF active(id) MATERIALIZED;  
 paid 'Paid' (Debt d) = MULTI paid[IncomingDebt](d), paid[OutgoingDebt](d);
