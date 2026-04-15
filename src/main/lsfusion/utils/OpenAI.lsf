@@ -1,0 +1,406 @@
+MODULE OpenAI;
+
+REQUIRE Utils, Authentication, MasterData, FileUtils;
+
+NAMESPACE OpenAI;
+
+customUrl r'Url' = DATA STRING () CHARWIDTH 50;
+apiKey r'API key' = DATA STRING () CHARWIDTH 60;
+defaultModel 'Default model' = DATA STRING () CHARWIDTH 20;
+
+apiUrl() = r'https://api.openai.com/v1/responses';
+
+baseApiUrl() = replace(apiUrl(), r'/responses', '');
+fileContentUrl (STRING fileId) = baseApiUrl() + r'/files/' + fileId + r'/content';
+containerFileContentUrl (STRING containerId, STRING fileId) = baseApiUrl() + r'/containers/' + containerId + r'/files/' + fileId + r'/content';
+
+headers (STRING header) = CASE
+    WHEN header = r'Authorization' THEN r'Bearer ' + apiKey()
+;
+
+EXTEND FORM integrationData
+    PROPERTIES() openAIApiKey = apiKey, openAIDefaultModel = defaultModel
+;
+
+DESIGN integrationData {
+    pane {
+        NEW openAI {
+            caption = r'OpenAI';
+            NEW openAIHeader {
+                lines = 2;
+                alignment = STRETCH;
+                MOVE PROPERTY(openAIDefaultModel);
+                MOVE PROPERTY(openAIApiKey);
+            }
+        }
+    }
+}
+
+CLASS GPTRequest 'GPT request';
+
+model 'Model' = DATA STRING (GPTRequest) CHARWIDTH 20;
+imageGeneration 'Image generation' = DATA BOOLEAN (GPTRequest);
+prompt 'Prompt' = DATA TEXT (GPTRequest);
+response 'Response' = DATA TEXT (GPTRequest);
+
+status 'Status' = DATA STRING (GPTRequest) CHARWIDTH 15;
+requestId 'Response ID' = DATA STRING (GPTRequest) CHARWIDTH 30;
+sentDateTime 'Sent at' = DATA DATETIME (GPTRequest);
+inputTokens 'Input tokens' = DATA INTEGER (GPTRequest);
+outputTokens 'Output tokens' = DATA INTEGER (GPTRequest);
+totalTokens 'Total tokens' = DATA INTEGER (GPTRequest);
+errorMessage 'Error' = DATA TEXT (GPTRequest);
+
+requestBody 'Request' = DATA FILE (GPTRequest);
+responseBody 'Response' = DATA FILE (GPTRequest);
+openResponseBody 'Response' (GPTRequest r) { open(responseBody(r)); }
+
+effectiveModel 'Model' (GPTRequest r) = OVERRIDE model(r), defaultModel(), r'gpt-5';
+
+// input file
+CLASS GPTInputFile 'Input file';
+
+request 'Request' = DATA GPTRequest (GPTInputFile) INDEXED NONULL DELETE;
+
+file = DATA NAMEDFILE (GPTInputFile);
+
+name '{Name}' (GPTInputFile f) = ISTRING(name(file(f)));
+extension 'Extension' (GPTInputFile f) = ISTRING(extension(file(f)));
+
+open 'Open' (GPTInputFile f) { open(file(f)); } IMAGE 'open.png';
+
+index '{Index}' (GPTInputFile f) = PARTITION SUM 1 ORDER f BY request(f) MATERIALIZED CHARWIDTH 3;
+
+newInputFile 'File' (GPTRequest r) {
+    INPUT uf = NAMEDFILE DO NEW uof = GPTInputFile {
+        request(uof) <- r;
+        file(uof) <- uf;
+    }
+} IMAGE 'add.png' CHANGEKEY 'INSERT' HIDE;
+
+// output
+CLASS GPTOutputFile 'Output file';
+
+request 'Request' = DATA GPTRequest (GPTOutputFile) INDEXED NONULL DELETE;
+
+file = DATA RAWFILE (GPTOutputFile);
+
+name '{Name}' = DATA ISTRING (GPTOutputFile) CHARWIDTH 15;
+
+open 'Open' (GPTOutputFile f) { open(file(f), name(f)); } IMAGE 'open.png';
+
+countInputFiles 'Input files' (GPTRequest r) = GROUP SUM 1 IF request(GPTInputFile f) = r;
+countOutputFiles 'Output files' (GPTRequest r) = GROUP SUM 1 IF request(GPTOutputFile f) = r;
+
+// request
+inputRequestFile (GPTRequest r, INTEGER i) = GROUP MIN GPTInputFile f IF request(f) = r AND index(f) = i;
+
+isImage (GPTInputFile f) = isImage(extension(f));
+mimeType (GPTInputFile f) = mimeType(extension(f));
+dataUrl (GPTInputFile f) = r'data:' + mimeType(f) + r';base64,' + encodeBase64Unchunked(file(f));
+
+includeContent (GPTRequest r, INTEGER i) = i = 0 OR inputRequestFile(r, i);
+
+contentType (GPTRequest r, INTEGER i) = CASE
+    WHEN i = 0 THEN r'input_text'
+    WHEN isImage(inputRequestFile(r, i)) THEN r'input_image'
+    ELSE r'input_file'
+;
+
+contentFilename (GPTRequest r, INTEGER i) = name(inputRequestFile(r, i)) IF i != 0 AND NOT isImage(inputRequestFile(r, i));
+contentFileData (GPTRequest r, INTEGER i) = dataUrl(inputRequestFile(r, i)) IF i != 0 AND NOT isImage(inputRequestFile(r, i));
+contentImageUrl (GPTRequest r, INTEGER i) = dataUrl(inputRequestFile(r, i)) IF i != 0 AND isImage(inputRequestFile(r, i));
+
+contentJSON (GPTRequest r) = JSON FROM type = contentType(r, INTEGER i) IF includeContent(r, i),
+                                                   text = prompt(r) IF i = 0,
+                                                   filename = name(inputRequestFile(r, i)) IF NOT isImage(inputRequestFile(r, i)),
+                                                   file_data = dataUrl(inputRequestFile(r, i)) IF NOT isImage(inputRequestFile(r, i)),
+                                                   image_url = dataUrl(inputRequestFile(r, i)) IF isImage(inputRequestFile(r, i));
+
+inputJSON (GPTRequest r) = JSON FROM role = r'user' IF INTEGER i = 0, 
+                                                 content = contentJSON(r) IF i = 0;
+
+toolType (GPTRequest r, INTEGER i) = CASE
+    WHEN i = 1 THEN r'code_interpreter'
+    WHEN i = 2 AND imageGeneration(r) THEN r'image_generation'
+;
+toolContainer() = JSON FROM type = r'auto';
+
+toolsJSON (GPTRequest r) = JSON FROM type = toolType(r, INTEGER i),
+                                                 container = (JSON FROM type = r'auto') IF i = 1;
+
+requestJSON (GPTRequest r) = JSON FROM model = effectiveModel(r),
+                                              input = inputJSON(r),
+                                              tools = toolsJSON(r),
+                                              instructions = r'If you create output files, use the code interpreter tool and cite each created file in the response text.',
+                                              store = TFALSE;
+showRequestJSON 'Request' (GPTRequest r) { MESSAGE requestJSON(r);  }
+
+importAnnotations (GPTRequest r, JSON annotations) {
+    IMPORT JSON FROM annotations FIELDS STRING type = type,
+                                        STRING fileId = file_id,
+                                        STRING containerId = container_id,
+                                        STRING fileName = filename DO {
+        IF fileId AND (containerId OR type = r'file_path') THEN {
+            LOCAL downloadFile = FILE();
+
+            EXTERNAL HTTP GET IF containerId THEN containerFileContentUrl(containerId, fileId) ELSE fileContentUrl(fileId)
+                          HEADERS headers TO downloadFile;
+
+            IF downloadFile() THEN
+                NEW of = GPTOutputFile {
+                    name(of) <- OVERRIDE fileName, r'output_' + STRING((countOutputFiles(r)) (+) 1);
+                    request(of) <- r;
+                    file(of) <- RAWFILE(downloadFile());
+                }
+        }
+    }
+}
+
+importContent (GPTRequest r, JSON itemContent) {
+    IMPORT JSON FROM itemContent FIELDS STRING contentType = type, TEXT contentText = text, TEXT refusalText = refusal, TEXT annotations = annotations DO {
+        IF contentType = r'output_text' THEN {
+            IF contentText THEN
+                response(r) <- CONCAT '\n', response(r), contentText;
+            IF annotations THEN
+                importAnnotations(r, JSON FROM annotations);
+        }
+        IF contentType = r'refusal' AND refusalText THEN
+            response(r) <- CONCAT '\n', response(r), refusalText;
+    }
+}
+
+request (GPTRequest r) {
+    IF NOT apiKey() OR trim(apiKey()) = '' THEN {
+        MESSAGE 'Specify OpenAI API key';
+        RETURN;
+    }
+    
+    model(r) <- effectiveModel(r);
+    sentDateTime(r) <- currentDateTime();
+
+    LOCAL apiResponse = FILE();
+
+    TRY {
+        EXTERNAL HTTP POST apiUrl() HEADERS headers PARAMS requestJSON(r) TO apiResponse;
+
+        responseBody(r) <- apiResponse();
+
+        LOCAL responseId = STRING();
+        LOCAL responseStatus = STRING();
+        LOCAL output = JSON();
+        LOCAL responseError = JSON();
+        LOCAL incompleteDetails = JSON();
+        LOCAL usage = JSON();
+
+        IMPORT JSON FROM apiResponse() TO() responseId = id,
+                responseStatus = status,
+                output,
+                responseError = error,
+                incompleteDetails = incomplete_details,
+                usage;
+
+        IF usage() THEN
+            IMPORT JSON FROM usage() FIELDS() INTEGER input_tokens,
+            INTEGER output_tokens,
+            INTEGER total_tokens DO {
+                inputTokens(r) <- input_tokens;
+                outputTokens(r) <- output_tokens;
+                totalTokens(r) <- total_tokens;
+            }
+
+        requestId(r) <- responseId();
+        status(r) <- responseStatus();
+
+        IF responseError() THEN
+            errorMessage(r) <- fieldText(responseError(), r'message');
+        IF NOT errorMessage(r) AND incompleteDetails() THEN
+            errorMessage(r) <- fieldText(incompleteDetails(), r'reason');
+
+        IF output() THEN
+            IMPORT JSON FROM output() FIELDS STRING itemType = type, TEXT itemContent = content, TEXT imageResult = result, TEXT revisedPrompt = revised_prompt DO {
+                IF itemType = r'message' AND itemContent THEN {
+                    importContent(r, JSON FROM itemContent);
+                }
+                IF itemType = r'image_generation_call' AND imageResult THEN
+                    NEW of = GPTOutputFile {
+                        name(of) <- r'image_' + STRING((countOutputFiles(r)) (+) 1) + '.png';
+                        request(of) <- r;
+                        file(of) <- decode(imageResult, r'base64');
+                    }
+            };
+
+    } CATCH {
+        IF apiResponse() THEN
+            responseBody(r) <- apiResponse();
+        status(r) <- 'Failed';
+        errorMessage(r) <- (OVERRIDE (CONCAT '\n', messageCaughtException(), resultString()), 'OpenAI request failed');
+    }
+}
+
+
+send 'Send' (GPTRequest r) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    NEWSESSION {
+        request(r);
+        APPLY;
+    }
+}
+
+FORM GPTRequest 'GPT Request'
+    OBJECTS r = GPTRequest PANEL
+    PROPERTIES(r) model, imageGeneration
+    PROPERTIES(r) send
+    PROPERTIES(r) prompt
+    PROPERTIES(r) READONLY response, status, requestId, sentDateTime, 
+                           inputTokens, outputTokens, totalTokens, errorMessage
+    PROPERTIES(r) showRequestJSON, openResponseBody SHOWIF responseBody(r)
+
+    OBJECTS fi = GPTInputFile
+    PROPERTIES(fi) READONLY index
+    PROPERTIES(fi) name, extension
+    PROPERTIES(fi) GRID open, DELETE
+    FILTERS request(fi) = r
+
+    PROPERTIES(r) newInputFile DRAW fi TOOLBAR
+
+    OBJECTS fo = GPTOutputFile
+    PROPERTIES(fo) READONLY name
+    PROPERTIES(fo) GRID open
+    FILTERS request(fo) = r
+
+    EDIT GPTRequest OBJECT r
+;
+
+DESIGN GPTRequest {
+    OBJECTS {
+        NEW actions {
+            horizontal = TRUE;
+            alignment = STRETCH;
+            MOVE PROPERTY(send(r));
+        }
+        NEW body {
+            horizontal = TRUE;
+            fill = 1;
+            NEW leftPane {
+                fill = 3;
+                NEW header {
+                    lines = 3;
+                    alignment = STRETCH;
+                    MOVE PROPERTY(model(r));
+                    MOVE PROPERTY(imageGeneration(r));
+                    MOVE PROPERTY(status(r));
+                    MOVE PROPERTY(requestId(r));
+                    MOVE PROPERTY(sentDateTime(r));
+                }
+                NEW prompt {
+                    caption = 'Prompt';
+                    fill = 1;
+                    MOVE PROPERTY(prompt(r)) {
+                        fill = 1;
+                        caption = '';
+                        valueHeight = 10;
+                    }
+                }
+                NEW response {
+                    caption = 'Response';
+                    fill = 1;
+                    MOVE PROPERTY(response(r)) {
+                        fill = 1;
+                        caption = '';
+                        valueHeight = 10;
+                    }
+                }
+            }
+            NEW rightPane {
+                fill = 1;
+                NEW inputFiles {
+                    caption = 'Input files';
+                    fill = 1;
+                    MOVE BOX(fi) { caption = ''; }
+                }
+                NEW outputFiles {
+                    caption = 'Output files';
+                    fill = 1;
+                    MOVE BOX(fo) { caption = ''; }
+                }
+                NEW debug {
+                    caption = 'Debug';
+                    fill = 1;
+                    NEW debugRequestResponse {
+                        horizontal = TRUE;
+                        alignment = STRETCH;
+                        MOVE PROPERTY(showRequestJSON(r)) { fill = 1; }
+                        MOVE PROPERTY(openResponseBody(r)) { fill = 1; }
+                    }
+                    NEW tokens {
+                        horizontal = TRUE;
+                        alignment = STRETCH;
+                        MOVE PROPERTY(inputTokens(r));
+                        MOVE PROPERTY(outputTokens(r));
+                        MOVE PROPERTY(totalTokens(r));
+                    }
+                    MOVE PROPERTY(errorMessage(r)) { captionVertical = TRUE; fill = 1; }
+                }
+            }
+        }
+    }
+}
+
+EXTEND FORM integrationData
+    OBJECTS oair = GPTRequest
+    PROPERTIES(oair) READONLY model, imageGeneration, sentDateTime, status, requestId, inputTokens, outputTokens, totalTokens, 
+                              countInputFiles, countOutputFiles
+    PROPERTIES(oair) NEWSESSION NEW, EDIT, DELETE
+;
+
+DESIGN integrationData {
+    openAI {
+        MOVE BOX(oair);
+    }
+}
+
+// actions
+GPTRequest = DATA LOCAL NESTED GPTRequest();
+
+requestGPT (TEXT prompt, NAMEDFILE file1, NAMEDFILE file2, NAMEDFILE file3) {
+    NEWSESSION {
+        NEW r = GPTRequest {
+            prompt(r) <- prompt;
+            IF file1 THEN {
+                NEW f = GPTInputFile {
+                    request(f) <- r;
+                    file(f) <- file1;
+                }
+            }
+            IF file2 THEN {
+                NEW f = GPTInputFile {
+                    request(f) <- r;
+                    file(f) <- file2;
+                }
+            }
+            IF file3 THEN {
+                NEW f = GPTInputFile {
+                    request(f) <- r;
+                    file(f) <- file3;
+                }
+            }
+            
+            send(r);
+            APPLY;
+            
+            GPTRequest() <- r;
+        }
+    }
+}
+requestGPT (TEXT prompt, NAMEDFILE file1, NAMEDFILE file2) { requestGPT(prompt, file1, file2, NULL); }
+requestGPT (TEXT prompt, NAMEDFILE file1) { requestGPT(prompt, file1, NULL, NULL); }
+
+// example
+//INPUT f = NAMEDFILE DO {
+//    requestGPT('Extract the invoice data from the attached file and return a valid JSON object. Output only the JSON.', f);
+//
+//    MESSAGE JSON FROM response(GPTRequest());
+//}

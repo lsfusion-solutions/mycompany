@@ -145,3 +145,27 @@ META defineObjectFiles(object, fobj, classCaption)
     @defineObjectFilesForm(object, object, fobj);
 
 END
+
+isImage (ISTRING extension) = lower(extension) = r'jpg' OR 
+                                         lower(extension) = r'jpeg' OR 
+                                         lower(extension) = r'png' OR 
+                                         lower(extension) = r'gif' OR 
+                                         lower(extension) = r'webp' OR 
+                                         lower(extension) = r'bmp';
+
+mimeType (ISTRING extension) = CASE
+    WHEN lower(extension) = r'png' THEN 'image/png'
+    WHEN lower(extension) = r'jpg' OR lower(extension) = r'jpeg' THEN r'image/jpeg'
+    WHEN lower(extension) = r'gif' THEN r'image/gif'
+    WHEN lower(extension) = r'webp' THEN r'image/webp'
+    WHEN lower(extension) = r'bmp' THEN r'image/bmp'
+    WHEN lower(extension) = r'pdf' THEN r'application/pdf'
+    WHEN lower(extension) = r'txt' THEN r'text/plain'
+    WHEN lower(extension) = r'csv' THEN r'text/csv'
+    WHEN lower(extension) = r'json' THEN r'application/json'
+    WHEN lower(extension) = r'xml' THEN r'application/xml'
+    WHEN lower(extension) = r'md' THEN r'text/markdown'
+    WHEN lower(extension) = r'html' OR lower(extension) = r'htm' THEN r'text/html'
+    WHEN lower(extension) = r'docx' THEN r'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    WHEN lower(extension) = r'xlsx' THEN r'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ELSE r'application/octet-stream';
