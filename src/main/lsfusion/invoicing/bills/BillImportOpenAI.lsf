@@ -75,6 +75,13 @@ importOpenAI 'Import (GPT)' (Bill b) {
         }
 
         import(b, JSON FROM response(GPTRequest()));
+
+        NEW bf = BillFile {
+            bill(bf) <- b;
+            file(bf) <- RAWFILE(f);
+            name(bf) <- name(f);
+            extension(bf) <- extension(f);
+        }
     }
 } WAIT;
 
