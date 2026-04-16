@@ -1,0 +1,89 @@
+MODULE BillImportOpenAI;
+
+REQUIRE BillImport, BillType, OpenAI, FileUtils;
+
+NAMESPACE Invoicing;
+
+importOpenAIPrompt 'Prompt' = DATA TEXT (BillType);
+
+fillDefaultImportOpenAIPrompt 'Default' (BillType t) {
+    importOpenAIPrompt(t) <-
+    r'Extract one purchase bill from the attached file and return only a valid JSON object. 
+      No markdown, no code fences, no explanations.
+      Use this schema: {"number":"...","date":"YYYY-MM-DD","deliveryDate":"YYYY-MM-DD","paymentDate":"YYYY-MM-DD","vendor":"VENDOR_ID","currency":"EUR","lines":[{"description":"...","item":"ITEM_ID","quantity":1,"price":10.00,"untaxedAmount":10.00,"taxes":["TAX_ID"]}]}.
+      Use only IDs from the attached reference JSON file.
+      For items, match by id, name, reference, or barcode, but output only the item id.
+      For partners, match by id, name, and addressCsv, but output only the partner id.
+      For currencies and taxes, output only the provided id values.
+      If an ID cannot be matched from the reference JSON, omit that field or use null.
+      Do not invent master data or IDs.';        
+}
+
+EXTEND FORM billType
+    PROPERTIES(o) fillDefaultImportOpenAIPrompt,
+        importOpenAIPrompt
+;
+
+DESIGN billType {
+    tabbedPane {
+        NEW aiImport {
+            caption = 'Import (GPT)';
+            MOVE PROPERTY(fillDefaultImportOpenAIPrompt(o));
+            MOVE PROPERTY(importOpenAIPrompt(o)) {
+                captionVertical = TRUE;
+                fill = 1;
+            }
+        }
+    }
+}
+
+importOpenAI 'Import (GPT)' (Bill b) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
+    INPUT f = NAMEDFILE DO {
+        stringToFile(STRING(JSON FROM
+                                items = (JSON FROM
+                                    id(Item i),
+                                    name(i),
+                                    reference(i),
+                                    barcode = idBarCode(i)
+                                    WHERE id(i) AND active(i)),
+                                partners = (JSON FROM
+                                    id(Partner p),
+                                    name(p),
+                                    addressCsv = addressCsv(p)
+                                    WHERE id(p) AND active(p)),
+                                currencies = (JSON FROM
+                                    id(Currency c),
+                                    name(c)
+                                    WHERE id(c)),
+                                taxes = (JSON FROM
+                                    id = name(Tax t),
+                                    value(t)
+                                    WHERE name(t))));
+
+        requestGPT(importOpenAIPrompt(type(b)), f, NULL,
+            namedFile(resultFile(), r'import-reference-data'));
+
+        IF NOT GPTRequest() THEN
+            RETURN;
+
+        IF errorMessage(GPTRequest()) THEN {
+            MESSAGE errorMessage(GPTRequest());
+            RETURN;
+        }
+
+        import(b, JSON FROM response(GPTRequest()));
+    }
+} WAIT;
+
+EXTEND FORM bill
+    PROPERTIES(b) importOpenAI SHOWIF importOpenAIPrompt(type(b)) READONLYIF readonly(b)
+;
+
+DESIGN bill {
+    secondaryActions {
+        MOVE PROPERTY(importOpenAI(b)) { valueClass = r'btn-secondary'; }
+    }
+}

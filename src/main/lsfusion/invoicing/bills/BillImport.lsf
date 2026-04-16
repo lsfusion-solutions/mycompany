@@ -1,0 +1,88 @@
+MODULE BillImport;
+
+REQUIRE BillCurrency;
+
+NAMESPACE Invoicing;
+
+importNumber = DATA LOCAL STRING[50] ();
+
+importDate = DATA LOCAL DATETIME ();
+importDeliveryDate = DATA LOCAL DATETIME ();
+importPaymentDate = DATA LOCAL DATETIME ();
+
+importVendorId = DATA LOCAL STRING[50] ();
+importCurrencyId = DATA LOCAL STRING[3] ();
+
+lineDescription = DATA LOCAL STRING (INTEGER);
+lineItemId = DATA LOCAL STRING[50] (INTEGER);
+lineQuantity = DATA LOCAL NUMERIC[16,3] (INTEGER);
+linePrice = DATA LOCAL NUMERIC[10,2] (INTEGER);
+lineUntaxedAmount = DATA LOCAL NUMERIC[14,2] (INTEGER);
+
+lineTaxId = DATA LOCAL STRING[50] (LONG);
+lineTaxLine = DATA LOCAL INTEGER (LONG);
+
+FORM importBillJson
+    PROPERTIES() importNumber EXTID 'number',
+                 importDate EXTID 'date',
+                 importDeliveryDate EXTID 'deliveryDate',
+                 importPaymentDate EXTID 'paymentDate',
+                 importVendorId EXTID 'vendor',
+                 importCurrencyId EXTID 'currency'
+
+    OBJECTS lines = INTEGER
+    PROPERTIES(lines) lineDescription EXTID 'description',
+                      lineItemId EXTID 'item',
+                      lineQuantity EXTID 'quantity',
+                      linePrice EXTID 'price',
+                      lineUntaxedAmount EXTID 'untaxedAmount'
+    FILTERS imported(lines)
+
+    OBJECTS taxes = LONG
+    PROPERTIES(taxes) lineTaxId EXTID 'value'
+    FILTERS lineTaxLine(taxes) = lines
+;
+
+
+import (Bill b, JSON json) {
+    LOCAL importedLine = BillLine (INTEGER);
+
+    IMPORT importBillJson JSON FROM json;
+
+    number(b) <- importNumber();
+
+    vendor(b) <- partner(importVendorId());
+    currency(b) <- currencyId(importCurrencyId());
+
+    dateTime(b) <- importDate();
+    deliveryDateTime(b) <- importDeliveryDate();
+    dueDateTime(b) <- importPaymentDate();
+
+    FOR imported(INTEGER line) INLINE NEW l = BillLine DO {
+        importedLine(line) <- l;
+
+        bill(l) <- b;
+        item(l) <- item(lineItemId(line));
+        description(l) <- lineDescription(line);
+        quantity(l) <- lineQuantity(line);
+        price(l) <- linePrice(line);
+        untaxedAmount(l) <- lineUntaxedAmount(line);
+    }
+
+    FOR lineTaxId(LONG taxLine) DO
+        in(importedLine(lineTaxLine(taxLine)), tax(lineTaxId(taxLine))) <- TRUE;
+}
+
+importBill (JSON json) {
+    NEWSESSION {
+        NEW b = Bill {
+            import(b, json);
+
+            APPLY;
+            IF canceled() THEN
+                throwException(applyMessage());
+
+            EXPORT JSON FROM id = b, number(b);
+        }
+    }
+} @@api;
