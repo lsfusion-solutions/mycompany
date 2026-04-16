@@ -42,29 +42,29 @@ importOpenAI 'Import (GPT)' (Bill b) {
     IF canceled() THEN RETURN;
 
     INPUT f = NAMEDFILE DO {
-        stringToFile(STRING(JSON FROM
-                                items = (JSON FROM
-                                    id(Item i),
-                                    name(i),
-                                    reference(i),
-                                    barcode = idBarCode(i)
-                                    WHERE id(i) AND active(i)),
-                                partners = (JSON FROM
-                                    id(Partner p),
-                                    name(p),
-                                    addressCsv = addressCsv(p)
-                                    WHERE id(p) AND active(p)),
-                                currencies = (JSON FROM
-                                    id(Currency c),
-                                    name(c)
-                                    WHERE id(c)),
-                                taxes = (JSON FROM
-                                    id = name(Tax t),
-                                    value(t)
-                                    WHERE name(t))));
+        EXPORT JSON FROM
+                items = (JSON FROM
+                    id(Item i),
+                    name(i),
+                    reference(i),
+                    barcode = idBarCode(i)
+                    WHERE id(i) AND active(i)),
+                partners = (JSON FROM
+                    id(Partner p),
+                    name(p),
+                    addressCsv = addressCsv(p)
+                    WHERE id(p) AND active(p)),
+                currencies = (JSON FROM
+                    id(Currency c),
+                    name(c)
+                    WHERE id(c)),
+                taxes = (JSON FROM
+                    id = name(Tax t),
+                    value(t)
+                    WHERE name(t));
 
-        requestGPT(importOpenAIPrompt(type(b)), f, NULL,
-            namedFile(RAWFILE(resultFile()), r'bill-import-reference-data', r'json'));
+        requestGPT(importOpenAIPrompt(type(b)), f,
+            namedFile(exportFile(), r'import-reference-data'));
 
         IF NOT GPTRequest() THEN
             RETURN;

@@ -69,6 +69,41 @@ Lines typically contain:
 
 If taxes are configured, the tax can be substituted automatically (for example, from the item/service card or from the document type).
 
+### File import with OpenAI
+
+If the selected bill type has a configured prompt, the bill card shows an action for importing data from a file with OpenAI.
+
+#### What to prepare
+
+- fill in the OpenAI API key and optionally specify the default model;
+- configure the prompt in the bill type;
+- check vendors, items, currencies, and taxes in master data in advance.
+
+Preparation details: [Settings and directories](settings.md).
+
+#### How to use it
+
+1. Open a bill that is available for editing.
+2. Make sure the current document changes are valid. Before import, the system tries to save the bill, and if validation fails, import does not start.
+3. Start the import and select the supplier document file. The standard scenario expects one document per file.
+4. After import, review the header and lines of the bill and adjust the result manually if needed.
+
+#### What is usually filled in
+
+The system tries to determine from the file:
+
+- in the header: number, date, delivery date, payment due date, vendor, and currency;
+- in the lines: description, item/service, quantity, price, untaxed amount, and taxes.
+
+#### Limitations and specifics
+
+- New master data is not created automatically. OpenAI matches values only against data that already exists in the system.
+- Item matching uses code, name, reference, and barcode. Vendor matching uses code, name, and address.
+- If a value cannot be recognized or matched, the corresponding field may stay empty.
+- When importing into a bill that already contains data, the header is overwritten with values from the file, and new lines are added to existing ones. Repeated import is more convenient into a new bill or after manual line cleanup.
+- If the bill type does not have a configured prompt, the import action is hidden.
+- If the OpenAI API key is missing or the external request fails, the system shows a message and does not perform the import.
+
 ### Statuses
 
 Typical status set:
