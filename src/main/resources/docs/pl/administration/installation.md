@@ -31,3 +31,26 @@ Aby zwiększyć ilość pamięci przydzielonej aplikacji, należy zmienić param
 
 1. Otwórz interfejs web MyCompany w przeglądarce: **http://your-server-ip:8080**
 2. W otwartym oknie zaloguj się używając loginu `admin` bez hasła.
+
+### Aktualizacja MyCompany
+
+Aby zaktualizować tylko logikę aplikacji MyCompany, wymień plik jar MyCompany w classpath serwera lsFusion. Zastąp `6.2-SNAPSHOT` wymaganą wersją. Plik jar jest publikowany pod adresem `https://download.lsfusion.org/solutions/mycompany-<version>.jar`.
+
+#### Linux
+
+1. Zatrzymaj usługę `lsfusion6-server`.
+2. Usuń stary plik `mycompany*.jar` z `/var/lib/lsfusion`.
+3. Pobierz `https://download.lsfusion.org/solutions/mycompany-6.2-SNAPSHOT.jar`.
+4. Umieść pobrany plik jar w `/var/lib/lsfusion`.
+5. Uruchom usługę `lsfusion6-server`.
+6. Sprawdź log uruchomienia w `/var/log/lsfusion6-server/start.log`.
+
+#### Windows
+
+1. Zatrzymaj usługę `lsFusion 6 Server`.
+2. Usuń stary plik `mycompany*.jar` z `C:\Program Files\lsFusion 6\Server\lib`.
+3. Pobierz `https://download.lsfusion.org/solutions/mycompany-6.2-SNAPSHOT.jar`.
+4. Umieść pobrany plik jar w `C:\Program Files\lsFusion 6\Server\lib`.
+5. Uruchom usługę `lsFusion 6 Server`.
+
+W katalogu classpath powinien pozostać tylko jeden plik jar MyCompany przed uruchomieniem usługi.
