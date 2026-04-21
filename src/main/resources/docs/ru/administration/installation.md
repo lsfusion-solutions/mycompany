@@ -31,7 +31,6 @@ systemctl stop lsfusion6-client
 systemctl start lsfusion6-client
 ```
 
-
 ### Windows
 
 Скачайте и запустите файл по ссылке https://download.lsfusion.org/solutions/mycompany-6.1-x64.exe. Все необходимые
@@ -51,3 +50,26 @@ systemctl start lsfusion6-client
 2.  В открывшемся окне авторизоваться под пользователем **admin** без пароля
 
 ![](/img/Installation_1.png)
+
+### Обновление MyCompany
+
+Чтобы обновить только логику приложения MyCompany, замените jar-файл MyCompany в classpath сервера lsFusion. Замените `6.2-SNAPSHOT` на нужную версию. Jar-файл публикуется по адресу `https://download.lsfusion.org/solutions/mycompany-<version>.jar`.
+
+#### Linux
+
+1. Остановите службу `lsfusion6-server`.
+2. Удалите старый файл `mycompany*.jar` из `/var/lib/lsfusion`.
+3. Скачайте `https://download.lsfusion.org/solutions/mycompany-6.2-SNAPSHOT.jar`.
+4. Поместите скачанный jar-файл в `/var/lib/lsfusion`.
+5. Запустите службу `lsfusion6-server`.
+6. Проверьте лог запуска в `/var/log/lsfusion6-server/start.log`.
+
+#### Windows
+
+1. Остановите службу `lsFusion 6 Server`.
+2. Удалите старый файл `mycompany*.jar` из `C:\Program Files\lsFusion 6\Server\lib`.
+3. Скачайте `https://download.lsfusion.org/solutions/mycompany-6.2-SNAPSHOT.jar`.
+4. Поместите скачанный jar-файл в `C:\Program Files\lsFusion 6\Server\lib`.
+5. Запустите службу `lsFusion 6 Server`.
+
+В каталоге classpath должен остаться только один jar-файл MyCompany до запуска службы.
