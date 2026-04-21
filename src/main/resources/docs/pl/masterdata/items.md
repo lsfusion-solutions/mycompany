@@ -44,6 +44,41 @@ Zaleca się uzupełnienie z wyprzedzeniem:
 - **Jednostki miary** (co najmniej podstawowe);
 - **Kategorie**, jeśli planujesz grupowanie towarów.
 
+## Import produktów z pliku z użyciem OpenAI
+
+Jeśli skonfigurowano opis importu produktów, na pasku narzędzi listy towarów dla drzewa kategorii pojawia się działanie **Import (GPT)**. Działanie służy do początkowego uzupełnienia lub rozszerzenia katalogu produktów z pliku dostawcy, arkusza, PDF, obrazu albo innego załączonego pliku, który OpenAI może odczytać.
+
+#### Co trzeba przygotować
+
+- uzupełnić klucz API OpenAI i w razie potrzeby wskazać model domyślny w ogólnych ustawieniach integracji;
+- otworzyć **Dane podstawowe → Ustawienia** i na karcie **Towary** uzupełnić **Import (GPT) → Prompt**. Użyj **Default**, aby wczytać standardowy opis, a następnie dostosuj go do swoich plików katalogowych, jeśli trzeba;
+- sprawdzić, czy jednostki miary mają stabilne ID, ponieważ import nie tworzy nowych jednostek miary;
+- sprawdzić istniejące kategorie i produkty w wybranej gałęzi: są one wysyłane do OpenAI jako dane referencyjne, aby można było wykluczyć duplikaty.
+
+#### Jak używać
+
+1. Otwórz **Dane podstawowe → Towary**.
+2. Wybierz kategorię, której gałąź ma zostać użyta jako zakres referencyjny do sprawdzania duplikatów.
+3. Kliknij **Import (GPT)** i wybierz plik źródłowy.
+4. W oknie podglądu sprawdź nowo rozpoznane kategorie i produkty. Możesz poprawić pola oraz usunąć wiersze, które nie powinny zostać utworzone.
+5. Zatwierdź/zapisz podgląd, aby utworzyć pozostałe kategorie i produkty, albo zamknij/anuluj go, aby odrzucić wynik.
+
+#### Co jest tworzone
+
+- kategorie z nazwą i kategorią nadrzędną;
+- produkty z nazwą, kategorią, referencją i jednostką miary.
+
+ID nowych kategorii i produktów są generowane przez system.
+
+#### Ograniczenia i cechy działania
+
+- Działanie jest ukryte, dopóki opis importu jest pusty.
+- Istniejące kategorie i produkty nie są aktualizowane; scenariusz tworzy tylko nowe pozycje zwrócone przez OpenAI.
+- Nowe jednostki miary nie są tworzone automatycznie. Jeśli OpenAI nie zwróci ID istniejącej jednostki, jednostka produktu może pozostać pusta.
+- Dopasowanie kategorii wykorzystuje ID istniejących kategorii albo nazwy kategorii tworzonych w tym samym podglądzie. Jeśli kategorii nie uda się dopasować, system umieści wiersz w kategorii głównej.
+- Zawsze sprawdzaj podgląd przed zapisem: rozpoznawanie przez OpenAI zależy od jakości pliku i skonfigurowanego opisu.
+- Jeśli nie uzupełniono klucza API OpenAI albo żądanie zakończy się błędem, system pokaże komunikat i niczego nie zaimportuje.
+
 ## Lista towarów
 
 Lista zwykle pokazuje:
