@@ -50,7 +50,7 @@ If the product import prompt is configured, the item list shows **Import (GPT)**
 
 #### What to prepare
 
-- fill in the OpenAI API key and optionally specify the default model in the global integration settings;
+- fill in the OpenAI API key and, if needed, create GPT configurations for model, reasoning, and additional prompt settings in the global integration settings;
 - open **Master Data → Settings** and on the **Items** tab fill **Import (GPT) → Prompt**. Use **Default** to load the standard prompt, then adjust it to your catalog files if needed;
 - check that units of measure have stable IDs, because import does not create new units of measure;
 - review existing categories and products in the selected branch: they are sent to OpenAI as reference data so duplicates can be excluded.
@@ -59,7 +59,7 @@ If the product import prompt is configured, the item list shows **Import (GPT)**
 
 1. Open **Master Data → Items**.
 2. Select the category whose branch should be used as the reference scope for duplicate checking.
-3. Click **Import (GPT)** and select the source file.
+3. Click **Import (GPT)** and select the source file. If several GPT configurations exist, select the one to use.
 4. In the preview window, review newly detected categories and products. You can edit fields and delete rows that should not be created.
 5. Confirm/save the preview to create the remaining categories and products, or close/cancel it to discard the result.
 

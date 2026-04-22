@@ -38,8 +38,10 @@ Payment terms are used for:
 
 If your configuration uses bill recognition from files, prepare two groups of settings in advance:
 
-- in the global OpenAI integration settings, fill in the API key. You can optionally specify the **default model**; if it is not set, the service default model is used;
+- in the global OpenAI integration settings, fill in the API key. To control the model, reasoning, or common additional instructions, create GPT configurations (see [OpenAI and GPT configurations](../administration/openai.md)). If neither the request nor the configuration specifies a model, `gpt-5` is used;
 - in the **bill type** card, fill in the recognition **prompt**. For the initial setup, it is convenient to load the **default** text first and then adjust it to your documents if needed.
+
+If several GPT configurations are available, the import action asks which configuration to use before sending the file. With one configuration, it is selected automatically.
 
 Before starting recognition, also check your master data:
 

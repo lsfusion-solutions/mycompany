@@ -11,4 +11,5 @@ title: Администрирование — установка и сопров
 - [Установка](installation.md)
 - [Запуск в Docker](installation-docker.md)
 - [Разработка](development.md)
+- [OpenAI и GPT-конфигурации](openai.md)
 - [Настройка политики безопасности](https://docs.lsfusion.org/ru/Security_policy)

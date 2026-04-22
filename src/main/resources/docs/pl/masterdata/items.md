@@ -50,7 +50,7 @@ Jeśli skonfigurowano opis importu produktów, na pasku narzędzi listy towarów
 
 #### Co trzeba przygotować
 
-- uzupełnić klucz API OpenAI i w razie potrzeby wskazać model domyślny w ogólnych ustawieniach integracji;
+- uzupełnić klucz API OpenAI i w razie potrzeby utworzyć konfiguracje GPT dla modelu, rozumowania i dodatkowego promptu w ogólnych ustawieniach integracji;
 - otworzyć **Dane podstawowe → Ustawienia** i na karcie **Towary** uzupełnić **Import (GPT) → Prompt**. Użyj **Default**, aby wczytać standardowy opis, a następnie dostosuj go do swoich plików katalogowych, jeśli trzeba;
 - sprawdzić, czy jednostki miary mają stabilne ID, ponieważ import nie tworzy nowych jednostek miary;
 - sprawdzić istniejące kategorie i produkty w wybranej gałęzi: są one wysyłane do OpenAI jako dane referencyjne, aby można było wykluczyć duplikaty.
@@ -59,7 +59,7 @@ Jeśli skonfigurowano opis importu produktów, na pasku narzędzi listy towarów
 
 1. Otwórz **Dane podstawowe → Towary**.
 2. Wybierz kategorię, której gałąź ma zostać użyta jako zakres referencyjny do sprawdzania duplikatów.
-3. Kliknij **Import (GPT)** i wybierz plik źródłowy.
+3. Kliknij **Import (GPT)** i wybierz plik źródłowy. Jeśli skonfigurowano kilka konfiguracji GPT, wybierz tę, której chcesz użyć.
 4. W oknie podglądu sprawdź nowo rozpoznane kategorie i produkty. Możesz poprawić pola oraz usunąć wiersze, które nie powinny zostać utworzone.
 5. Zatwierdź/zapisz podgląd, aby utworzyć pozostałe kategorie i produkty, albo zamknij/anuluj go, aby odrzucić wynik.
 

@@ -9,4 +9,5 @@ This section contains materials for **administrators** and **technical specialis
 - [Installation](installation.md)
 - [Running in Docker](installation-docker.md)
 - [Development](development.md)
+- [OpenAI and GPT configurations](openai.md)
 - [Security policy settings](https://docs.lsfusion.org/Security_policy)

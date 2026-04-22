@@ -38,8 +38,10 @@ Warunki płatności są używane do:
 
 Jeśli w konfiguracji używane jest rozpoznawanie faktur zakupu z pliku, przygotuj wcześniej dwie grupy ustawień:
 
-- w ogólnych ustawieniach integracji OpenAI uzupełnij klucz API. **Model domyślny** możesz podać dodatkowo; jeśli nie jest ustawiony, używany jest standardowy model usługi;
+- w ogólnych ustawieniach integracji OpenAI uzupełnij klucz API. Jeśli chcesz sterować modelem, rozumowaniem albo wspólnymi dodatkowymi instrukcjami, utwórz konfiguracje GPT (zobacz [OpenAI i konfiguracje GPT](../administration/openai.md)). Jeśli model nie jest podany ani w żądaniu, ani w konfiguracji, używany jest `gpt-5`;
 - w karcie **typu faktury zakupu** uzupełnij opis rozpoznawania. Przy pierwszej konfiguracji wygodnie jest najpierw wstawić tekst **domyślny**, a potem dopasować go do własnych dokumentów.
+
+Jeśli dostępnych jest kilka konfiguracji GPT, podczas importu system poprosi o wybór konfiguracji przed wysłaniem pliku. Jeśli istnieje jedna konfiguracja, zostanie wybrana automatycznie.
 
 Przed uruchomieniem rozpoznawania sprawdź też dane słownikowe:
 

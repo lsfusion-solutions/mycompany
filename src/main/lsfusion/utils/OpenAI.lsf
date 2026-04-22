@@ -6,7 +6,6 @@ NAMESPACE OpenAI;
 
 customUrl r'Url' = DATA STRING () CHARWIDTH 50;
 apiKey r'API key' = DATA STRING () CHARWIDTH 60;
-defaultModel 'Default model' = DATA STRING () CHARWIDTH 20;
 
 apiUrl() = r'https://api.openai.com/v1/responses';
 
@@ -19,7 +18,7 @@ headers (STRING header) = CASE
 ;
 
 EXTEND FORM integrationData
-    PROPERTIES() openAIApiKey = apiKey, openAIDefaultModel = defaultModel
+    PROPERTIES() openAIApiKey = apiKey
 ;
 
 DESIGN integrationData {
@@ -29,18 +28,70 @@ DESIGN integrationData {
             NEW openAIHeader {
                 lines = 2;
                 alignment = STRETCH;
-                MOVE PROPERTY(openAIDefaultModel);
                 MOVE PROPERTY(openAIApiKey);
             }
         }
     }
 }
 
+// configuration
+CLASS GPTConfiguration 'GPT configuration';
+
+name '{Name}' = DATA ISTRING[50] (GPTConfiguration) IN id;
+model 'Model' = DATA STRING (GPTConfiguration) CHARWIDTH 20;
+reasoning 'Reasoning' = DATA STRING (GPTConfiguration) CHARWIDTH 10;
+additionalPrompt 'Additional prompt' = DATA TEXT (GPTConfiguration);
+
+FORM GPTConfiguration 'GPT configuration'
+    OBJECTS c = GPTConfiguration PANEL
+    PROPERTIES(c) name, model, reasoning, additionalPrompt
+
+    EDIT GPTConfiguration OBJECT c
+;
+
+DESIGN GPTConfiguration {
+    OBJECTS {
+        NEW header {
+            horizontal = TRUE;
+            alignment = STRETCH;
+            MOVE PROPERTY(name(c));
+            MOVE PROPERTY(model(c));
+            MOVE PROPERTY(reasoning(c));
+        }
+        NEW prompt {
+            caption = 'Additional prompt';
+            fill = 1;
+            MOVE PROPERTY(additionalPrompt(c)) {
+                caption = '';
+                fill = 1;
+            }
+        }
+    }
+}
+
+FORM dialogGPTConfigurations 'GPT configurations'
+    OBJECTS c = GPTConfiguration
+    PROPERTIES(c) READONLY name, model, reasoning
+
+    LIST GPTConfiguration OBJECT c
+;
+
+countConfiguration 'Configurations' () = GROUP SUM 1 IF c IS GPTConfiguration;
+defaultConfiguration 'Configuration' () = GROUP LAST GPTConfiguration c ORDER DESC c WHERE c IS GPTConfiguration IF countConfiguration() = 1;
+
+// request
 CLASS GPTRequest 'GPT request';
 
+configuration 'Configuration' = DATA GPTConfiguration (GPTRequest);
+nameConfiguration 'Configuration' (GPTRequest r) = name(configuration(r));
+configuration(GPTRequest r) <- defaultConfiguration() WHEN SET(r IS GPTRequest);
+    
 model 'Model' = DATA STRING (GPTRequest) CHARWIDTH 20;
+reasoning 'Reasoning' = DATA STRING (GPTRequest) CHARWIDTH 10;
 imageGeneration 'Image generation' = DATA BOOLEAN (GPTRequest);
 prompt 'Prompt' = DATA TEXT (GPTRequest);
+additionalPrompt 'Additional prompt' = DATA TEXT (GPTRequest);
+
 response 'Response' = DATA TEXT (GPTRequest);
 
 status 'Status' = DATA STRING (GPTRequest) CHARWIDTH 15;
@@ -55,7 +106,10 @@ requestBody 'Request' = DATA FILE (GPTRequest);
 responseBody 'Response' = DATA FILE (GPTRequest);
 openResponseBody 'Response' (GPTRequest r) { open(responseBody(r)); }
 
-effectiveModel 'Model' (GPTRequest r) = OVERRIDE model(r), defaultModel(), r'gpt-5';
+effectiveModel 'Model' (GPTRequest r) = OVERRIDE model(r), model(configuration(r)), r'gpt-5';
+effectiveReasoning 'Reasoning' (GPTRequest r) = OVERRIDE reasoning(r), reasoning(configuration(r));
+effectiveAdditionalPrompt 'Additional prompt' (GPTRequest r) = OVERRIDE additionalPrompt(r), additionalPrompt(configuration(r));
+effectivePrompt 'Prompt' (GPTRequest r) = CONCAT '\n\n', prompt(r), effectiveAdditionalPrompt(r);
 
 // input file
 CLASS GPTInputFile 'Input file';
@@ -112,13 +166,15 @@ contentFileData (GPTRequest r, INTEGER i) = dataUrl(inputRequestFile(r, i)) IF i
 contentImageUrl (GPTRequest r, INTEGER i) = dataUrl(inputRequestFile(r, i)) IF i != 0 AND isImage(inputRequestFile(r, i));
 
 contentJSON (GPTRequest r) = JSON FROM type = contentType(r, INTEGER i) IF includeContent(r, i),
-                                                   text = prompt(r) IF i = 0,
+                                                   text = effectivePrompt(r) IF i = 0,
                                                    filename = name(inputRequestFile(r, i)) IF NOT isImage(inputRequestFile(r, i)),
                                                    file_data = dataUrl(inputRequestFile(r, i)) IF NOT isImage(inputRequestFile(r, i)),
                                                    image_url = dataUrl(inputRequestFile(r, i)) IF isImage(inputRequestFile(r, i));
 
 inputJSON (GPTRequest r) = JSON FROM role = r'user' IF INTEGER i = 0, 
                                                  content = contentJSON(r) IF i = 0;
+
+reasoningJSON (GPTRequest r) = JSON FROM effort = effectiveReasoning(r);
 
 toolType (GPTRequest r, INTEGER i) = CASE
     WHEN i = 1 THEN r'code_interpreter'
@@ -130,6 +186,7 @@ toolsJSON (GPTRequest r) = JSON FROM type = toolType(r, INTEGER i),
                                                  container = (JSON FROM type = r'auto') IF i = 1;
 
 requestJSON (GPTRequest r) = JSON FROM model = effectiveModel(r),
+                                              reasoning = reasoningJSON(r) IF effectiveReasoning(r),
                                               input = inputJSON(r),
                                               tools = toolsJSON(r),
                                               instructions = r'If you create output files, use the code interpreter tool and cite each created file in the response text.',
@@ -177,11 +234,14 @@ request (GPTRequest r) {
     }
     
     model(r) <- effectiveModel(r);
+    reasoning(r) <- effectiveReasoning(r);
+    additionalPrompt(r) <- effectiveAdditionalPrompt(r);
     sentDateTime(r) <- currentDateTime();
 
     LOCAL apiResponse = FILE();
 
     TRY {
+        timeoutHttp() <- 3600000;
         EXTERNAL HTTP POST apiUrl() HEADERS headers PARAMS requestJSON(r) TO apiResponse;
 
         responseBody(r) <- apiResponse();
@@ -251,7 +311,8 @@ send 'Send' (GPTRequest r) {
 
 FORM GPTRequest 'GPT Request'
     OBJECTS r = GPTRequest PANEL
-    PROPERTIES(r) model, imageGeneration
+    PROPERTIES(r) nameConfiguration
+    PROPERTIES(r) model, reasoning, imageGeneration
     PROPERTIES(r) send
     PROPERTIES(r) prompt
     PROPERTIES(r) READONLY response, status, requestId, sentDateTime, 
@@ -289,7 +350,9 @@ DESIGN GPTRequest {
                 NEW header {
                     lines = 3;
                     alignment = STRETCH;
+                    MOVE PROPERTY(nameConfiguration(r));
                     MOVE PROPERTY(model(r));
+                    MOVE PROPERTY(reasoning(r));
                     MOVE PROPERTY(imageGeneration(r));
                     MOVE PROPERTY(status(r));
                     MOVE PROPERTY(requestId(r));
@@ -349,15 +412,20 @@ DESIGN GPTRequest {
 }
 
 EXTEND FORM integrationData
+    OBJECTS oaic = GPTConfiguration
+    PROPERTIES(oaic) READONLY name, model, reasoning
+    PROPERTIES(oaic) NEWSESSION NEW, EDIT, DELETE
+
     OBJECTS oair = GPTRequest
-    PROPERTIES(oair) READONLY model, imageGeneration, sentDateTime, status, requestId, inputTokens, outputTokens, totalTokens, 
+    PROPERTIES(oair) READONLY nameConfiguration, model, reasoning, imageGeneration, sentDateTime, status, requestId, inputTokens, outputTokens, totalTokens,
                               countInputFiles, countOutputFiles
     PROPERTIES(oair) NEWSESSION NEW, EDIT, DELETE
 ;
 
 DESIGN integrationData {
     openAI {
-        MOVE BOX(oair);
+        MOVE BOX(oaic);
+        MOVE BOX(oair) { fill = 3; }
     }
 }
 
@@ -387,7 +455,13 @@ requestGPT (TEXT prompt, NAMEDFILE file1, NAMEDFILE file2, NAMEDFILE file3) {
                 }
             }
             
-            send(r);
+            IF countConfiguration() > 1 THEN {
+                DIALOG dialogGPTConfigurations OBJECTS c INPUT DO {
+                    configuration(r) <- c;
+                } ELSE RETURN;
+            }
+
+            request(r);
             APPLY;
             
             GPTRequest() <- r;

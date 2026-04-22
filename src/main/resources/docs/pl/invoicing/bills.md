@@ -77,7 +77,7 @@ Jeśli dla wybranego typu faktury zakupu skonfigurowano opis rozpoznawania, na k
 
 #### Co trzeba przygotować
 
-- uzupełnić klucz API OpenAI i w razie potrzeby wskazać model domyślny;
+- uzupełnić klucz API OpenAI i w razie potrzeby utworzyć konfiguracje GPT dla modelu, rozumowania i dodatkowego promptu;
 - skonfigurować opis rozpoznawania w typie faktury zakupu;
 - wcześniej sprawdzić dane dostawców, towarów i usług, walut oraz podatków.
 
@@ -87,7 +87,7 @@ Szczegóły przygotowania: [Ustawienia i katalogi](settings.md).
 
 1. Otwórz fakturę zakupu dostępną do edycji.
 2. Upewnij się, że bieżące zmiany w dokumencie są poprawne. Przed importem system próbuje zapisać dokument i jeśli walidacja się nie powiedzie, import nie rozpocznie się.
-3. Uruchom import i wskaż plik z dokumentem od dostawcy. Standardowy scenariusz zakłada jeden dokument w jednym pliku.
+3. Uruchom import i wskaż plik z dokumentem od dostawcy. Jeśli skonfigurowano kilka konfiguracji GPT, wybierz tę, której chcesz użyć. Standardowy scenariusz zakłada jeden dokument w jednym pliku.
 4. Po uzupełnieniu sprawdź nagłówek i linie faktury zakupu, a w razie potrzeby popraw wynik ręcznie.
 
 #### Co zwykle jest uzupełniane

@@ -75,7 +75,7 @@ If the selected bill type has a configured prompt, the bill card shows an action
 
 #### What to prepare
 
-- fill in the OpenAI API key and optionally specify the default model;
+- fill in the OpenAI API key and, if needed, create GPT configurations for model, reasoning, and additional prompt settings;
 - configure the prompt in the bill type;
 - check vendors, items, currencies, and taxes in master data in advance.
 
@@ -85,7 +85,7 @@ Preparation details: [Settings and directories](settings.md).
 
 1. Open a bill that is available for editing.
 2. Make sure the current document changes are valid. Before import, the system tries to save the bill, and if validation fails, import does not start.
-3. Start the import and select the supplier document file. The standard scenario expects one document per file.
+3. Start the import and select the supplier document file. If several GPT configurations exist, select the one to use. The standard scenario expects one document per file.
 4. After import, review the header and lines of the bill and adjust the result manually if needed.
 
 #### What is usually filled in
