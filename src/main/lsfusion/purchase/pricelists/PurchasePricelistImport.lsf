@@ -46,9 +46,16 @@ FORM pricelistImportTypes 'Pricelist import types'
     LIST PricelistImportType OBJECT o
 ;
 
+defaultPricelistImportType 'Default pricelist import type' = DATA PricelistImportType ();
+default 'Default' (PricelistImportType it) = defaultPricelistImportType() = it;
+
+EXTEND FORM pricelistImportType
+    PROPERTIES default(o)
+;
+
 EXTEND FORM options
     OBJECTS pit = PricelistImportType
-    PROPERTIES(pit) READONLY name
+    PROPERTIES(pit) READONLY name, default
     PROPERTIES(pit) NEWSESSION NEW, EDIT, DELETE
 ;
 
@@ -84,15 +91,16 @@ EXTEND FORM options
 ;
 
 // import into pricelist
+importType (Pricelist p) = OVERRIDE pricelistImportType(vendor(p)), defaultPricelistImportType();
 
-importScript (Pricelist p) = script(pricelistImportType(vendor(p)));
-
-import 'Import' (Pricelist p) {
-    EVAL ACTION replace(importScript(p), 'PRICE_LIST', '$1') PARAMS p; 
+import 'Import' ABSTRACT LIST (Pricelist);
+import (Pricelist p) + { 
+    IF trim(script(importType(p))) != '' THEN
+        EVAL ACTION replace(script(importType(p)), 'PRICE_LIST', '$1') PARAMS p;
 }
 
 EXTEND FORM pricelist
-    PROPERTIES(p) DISABLEIF readonly(p) import SHOWIF importScript(p)
+    PROPERTIES(p) DISABLEIF readonly(p) import SHOWIF importType(p)
 ;
 
 DESIGN pricelist {

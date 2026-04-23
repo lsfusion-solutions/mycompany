@@ -1,0 +1,138 @@
+MODULE PurchasePricelistOpenAI;
+
+REQUIRE PurchasePricelistImport, OpenAI, FileUtils;
+
+NAMESPACE Purchase;
+
+importOpenAIPrompt 'Prompt' = DATA TEXT (PricelistImportType);
+
+fillDefaultImportOpenAIPrompt 'Default' (PricelistImportType t) {
+    importOpenAIPrompt(t) <-
+    r'Extract one vendor purchase pricelist from the attached file and return only a valid JSON object.
+      No markdown, no code fences, no explanations.
+      Use this schema: {"vendor":"VENDOR_ID","startDate":"YYYY-MM-DD","endDate":"YYYY-MM-DD","lines":[{"vendorReference":"...","vendorName":"...","item":"ITEM_ID","price":10.00}]}.
+      Use only item IDs from the attached reference JSON file.
+      For items, match by id, name, reference, barcode, vendorReference, or vendorName, but output only the item id.
+      For vendors, match by id, name, and addressCsv, but output only the partner id.
+      Copy the vendor article code or SKU from the source file into vendorReference when present.
+      Copy the vendor item name or description from the source file into vendorName when present.
+      For price, output a number without currency symbols.
+      If an item ID cannot be matched from the reference JSON, omit item or use null, but keep vendorReference, vendorName, and price if available.
+      Do not omit lines when an item cannot be matched; always include every line from the source file in the output.
+      Do not invent master data or IDs.';
+}
+
+EXTEND FORM pricelistImportType
+    PROPERTIES(o) fillDefaultImportOpenAIPrompt,
+                  importOpenAIPrompt
+;
+
+DESIGN pricelistImportType {
+    tabbedPane {
+        NEW aiImport FIRST {
+            caption = 'Import (GPT)';
+            MOVE PROPERTY(fillDefaultImportOpenAIPrompt(o));
+            MOVE PROPERTY(importOpenAIPrompt(o)) {
+                captionVertical = TRUE;
+                fill = 1;
+            }
+        }
+    }
+}
+
+importStartDateTime = DATA LOCAL DATETIME ();
+importEndDateTime = DATA LOCAL DATETIME ();
+importVendorId = DATA LOCAL STRING[50] ();
+
+importItemId = DATA LOCAL STRING[50] (INTEGER);
+importVendorName = DATA LOCAL STRING[200] (INTEGER);
+importVendorReference = DATA LOCAL STRING[50] (INTEGER);
+importPrice = DATA LOCAL NUMERIC[10,2] (INTEGER);
+
+FORM importPricelistOpenAIJson
+    PROPERTIES() importStartDateTime EXTID 'startDate',
+                 importEndDateTime EXTID 'endDate',
+                 importVendorId EXTID 'vendor'
+
+    OBJECTS lines = INTEGER
+    PROPERTIES(lines) importVendorReference EXTID 'vendorReference',
+                      importVendorName EXTID 'vendorName',
+                      importItemId EXTID 'item',
+                      importPrice EXTID 'price'
+    FILTERS imported(lines)
+;
+
+importPricelistOpenAI (Pricelist p, JSON json) {
+    IMPORT importPricelistOpenAIJson JSON FROM json;
+
+    startDateTime(p) <- importStartDateTime();
+    endDateTime(p) <- importEndDateTime();
+    IF importVendorId() THEN
+        vendor(p) <- partner(importVendorId());
+
+    FOR imported(INTEGER line) INLINE NEW l = PricelistLine DO {
+        pricelist(l) <- p;
+        item(l) <- item(importItemId(line));
+        vendorName(l) <- importVendorName(line);
+        vendorReference(l) <- importVendorReference(line);
+        price(l) <- importPrice(line);
+    }
+}
+
+importOpenAI 'Import (GPT)' (Pricelist p) {
+    APPLY;
+    IF canceled() THEN RETURN;
+    
+    DIALOG categories OBJECTS c = rootCategory() INPUT DO {
+        INPUT f = NAMEDFILE DO {
+            EXPORT JSON FROM
+                    currentVendor = (JSON FROM
+                        id(Partner v),
+                        name(v),
+                        addressCsv = addressCsv(v)
+                        WHERE v = vendor(p)),
+                    vendors = (JSON FROM
+                        id(Partner v),
+                        name(v),
+                        addressCsv = addressCsv(v)
+                        WHERE id(v) AND active(v) AND isVendor(v)),
+                    items = (JSON FROM
+                        id(Item i),
+                        name(i),
+                        reference(i),
+                        barcode = idBarCode(i),
+                        uom = nameUom(i)
+                        WHERE id(i) AND active(i) AND canBePurchased(i) AND level(category(i), c)),
+                    vendorItems = (JSON FROM
+                        item = id(item(PricelistLine pl)),
+                        vendorName(pl),
+                        vendorReference(pl)
+                        WHERE vendor(pricelist(pl)) = vendor(p) AND item(pl) AND level(category(item(pl)), c) AND (vendorName(pl) OR vendorReference(pl)));
+
+            requestGPT(importOpenAIPrompt(importType(p)), f,
+                namedFile(exportFile(), r'import-reference-data'));
+
+            IF NOT GPTRequest() THEN
+                RETURN;
+
+            IF errorMessage(GPTRequest()) THEN {
+                MESSAGE errorMessage(GPTRequest());
+                RETURN;
+            }
+
+            importPricelistOpenAI(p, JSON FROM response(GPTRequest()));
+
+            NEW pf = PricelistFile {
+                pricelist(pf) <- p;
+                file(pf) <- RAWFILE(f);
+                name(pf) <- name(f);
+                extension(pf) <- extension(f);
+            }
+        }
+    }
+} WAIT;
+
+import(Pricelist p) + {
+    IF importOpenAIPrompt(importType(p)) THEN
+        importOpenAI(p);
+}
