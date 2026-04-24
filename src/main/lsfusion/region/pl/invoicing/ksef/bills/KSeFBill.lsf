@@ -25,6 +25,8 @@ fakturaNumber 'KSeF number' (Bill b) = number(faktura(b));
 fill ABSTRACT LIST (BillLine, FaWiersz);
 fill ABSTRACT LIST (Bill, Faktura);
 
+match (FaWiersz w, Tax t) = taxes(w) = (OVERRIDE (ltrim(toChar(value(t), '99')) IF value(t) > 0), name(t));
+
 createBill 'Create Bill' (Faktura f) {
     NEWSESSION {
         NEW b = Bill {
@@ -54,7 +56,8 @@ createBill 'Create Bill' (Faktura f) {
                 price(l) <- price(w);
                 untaxedAmount(l) <- IF correction(w) THEN -abs(OVERRIDE untaxedAmount(w), amount(w)) ELSE (OVERRIDE untaxedAmount(w), amount(w));
                 
-                in(l, Tax t) <- taxes(w) = (OVERRIDE (ltrim(toChar(value(t), '99')) IF value(t) > 0), name(t));
+                in(l, Tax t) <- match(w, t);
+                taxAmount(Tax t, l) <- (IF correction(w) THEN -abs(vatAmount(w)) ELSE vatAmount(w)) WHERE match(w, t);
 
                 fill(l, w);
             }
