@@ -1,6 +1,6 @@
 MODULE PurchasePricelist;
 
-REQUIRE ItemPurchase, PartnerPurchase, PurchaseSettings, BarCode, Doc, FileUtils;
+REQUIRE ItemPurchase, PartnerPurchase, PurchaseSettings, BarCode, Doc, FileUtils, DateUtils;
 
 NAMESPACE Purchase; 
 
@@ -10,6 +10,8 @@ CLASS Pricelist 'Vendor pricelist';
 
 startDateTime 'Start date' = DATA DATETIME (Pricelist);
 startDateTime(Pricelist l) <- currentDateTime() WHEN SET(l IS Pricelist);
+
+@defineDateTimeAggregation(Pricelist, start, '(start)');
  
 endDateTime 'End date' = DATA DATETIME (Pricelist);
 
@@ -123,14 +125,7 @@ FORM pricelists 'Vendor pricelists'
     LIST Pricelist OBJECT p
 ;
 
-DESIGN pricelists {
-    OBJECTS {
-        NEW filters FIRST { 
-            caption = 'Filters';
-            horizontal = TRUE;
-        }
-    }
-}
+@defineDocObjectsForm(pricelists, p, 'Vendor pricelists');
 
 @defineDocStatusForm(pricelist, p, note);
 @defineDocLinesCount(pricelist, p);
