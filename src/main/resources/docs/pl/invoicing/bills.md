@@ -71,6 +71,8 @@ Linie zwykle zawierają:
 
 Jeśli podatki są skonfigurowane, podatek może zostać podstawiony automatycznie (np. z karty towaru/usługi albo z typu dokumentu).
 
+Jeśli w typie rachunku jest ustawiony **domyślny towar**, jest on automatycznie podstawiany do nowej linii, gdy towar nie został jeszcze wskazany (analogicznie do tego, jak **domyślny dostawca** jest podstawiany do nagłówka rachunku). Przyspiesza to wprowadzanie dla typów, w których zwykle używany jest ten sam towar/usługa.
+
 ### Statusy
 
 Typowy zestaw statusów:
