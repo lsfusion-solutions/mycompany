@@ -69,6 +69,8 @@ Lines typically contain:
 
 If taxes are configured, the tax can be substituted automatically (for example, from the item/service card or from the document type).
 
+If a **default item** is set on the bill type, it is automatically substituted into a new line when the item is not yet specified (similar to how the **default vendor** is substituted into the bill header). This speeds up entry for bill types where the same item/service is typically used.
+
 ### File import with OpenAI
 
 If the selected bill type has a configured prompt, the bill card shows an action for importing data from a file with OpenAI.

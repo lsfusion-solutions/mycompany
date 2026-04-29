@@ -1,6 +1,6 @@
 MODULE BillType;
 
-REQUIRE Partner, Numerator, InvoicingSettings;
+REQUIRE Partner, Numerator, InvoicingSettings, Item;
 
 NAMESPACE Invoicing;
 
@@ -16,11 +16,14 @@ nameNumerator 'Numerator' (BillType o) = name(numerator(o));
 vendor = DATA Partner (BillType);
 nameVendor 'Vendor' (BillType o) = name(vendor(o));
 
+item = DATA Item (BillType);
+nameItem 'Item' (BillType o) = name(item(o));
+
 taxIncluded 'Price includes taxes' = DATA BOOLEAN (BillType);
 
 FORM billType 'Bill type'
     OBJECTS o = BillType PANEL 
-    PROPERTIES(o) name, id, nameNumerator, nameVendor, taxIncluded
+    PROPERTIES(o) name, id, nameNumerator, nameVendor, nameItem, taxIncluded
      
     EDIT BillType OBJECT o;
 ;
@@ -45,6 +48,7 @@ DESIGN billType {
             NEW default {
                 caption = 'Default';
                 MOVE PROPERTY(nameVendor(o));
+                MOVE PROPERTY(nameItem(o));
             }
             NEW otherInformation {
                 caption = 'Other information';

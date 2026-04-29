@@ -71,6 +71,8 @@ Linie zwykle zawierają:
 
 Jeśli podatki są skonfigurowane, podatek może zostać podstawiony automatycznie (np. z karty towaru/usługi albo z typu dokumentu).
 
+Jeśli w typie rachunku jest ustawiony **domyślny towar**, jest on automatycznie podstawiany do nowej linii, gdy towar nie został jeszcze wskazany (analogicznie do tego, jak **domyślny dostawca** jest podstawiany do nagłówka rachunku). Przyspiesza to wprowadzanie dla typów, w których zwykle używany jest ten sam towar/usługa.
+
 ### Import z pliku z użyciem OpenAI
 
 Jeśli dla wybranego typu faktury zakupu skonfigurowano opis rozpoznawania, na karcie dokumentu pojawia się działanie importu z pliku z użyciem OpenAI.
@@ -105,6 +107,8 @@ Z pliku system próbuje określić:
 - Przy imporcie do już uzupełnionej faktury zakupu nagłówek jest nadpisywany danymi z pliku, a nowe linie są dodawane do istniejących. Ponowny import wygodniej wykonywać do nowej faktury zakupu albo po ręcznym usunięciu linii.
 - Jeśli dla typu faktury zakupu nie uzupełniono opisu rozpoznawania, działanie importu nie jest pokazywane.
 - Jeśli nie uzupełniono klucza API OpenAI albo zewnętrzne żądanie zakończyło się błędem, system pokaże komunikat i nie wykona importu.
+
+Jeśli w typie rachunku jest ustawiony **domyślny towar**, jest on automatycznie podstawiany do nowej linii, gdy towar nie został jeszcze wskazany (analogicznie do tego, jak **domyślny dostawca** jest podstawiany do nagłówka rachunku). Przyspiesza to wprowadzanie dla typów, w których zwykle używany jest ten sam towar/usługa.
 
 ### Statusy
 
