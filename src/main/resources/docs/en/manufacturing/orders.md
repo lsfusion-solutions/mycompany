@@ -88,3 +88,22 @@ An order has a planned **To produce** quantity. Based on it, the system can:
    - Use **Start** and **Mark as Done** to track operation progress.
 3. Enter actual production (adjust actual consumption if needed).
 4. Run **Mark as Done** and specify the **Products location**.
+
+### Create purchase orders for materials
+
+From the manufacturing orders list you can create [purchase orders](../purchase/orders.md) for the materials required by selected manufacturing orders.
+
+1. In the filters, set **Materials location** — only manufacturing orders for this location will be processed.
+2. Select the manufacturing orders you want to procure materials for.
+3. Run the **Create orders** action.
+
+The system:
+
+- aggregates required materials (only consumption lines that are not yet linked to a purchase order) across the selected manufacturing orders;
+- groups items by their default [vendor](../masterdata/partners.md) and creates one purchase order per vendor;
+- creates an additional purchase order (without a vendor) for items that have no default vendor;
+- sets the chosen materials location as the location of each new purchase order;
+- links every processed consumption line to the corresponding new purchase order line, so the relation between the manufacturing order and the purchase order is preserved;
+- opens each created purchase order for review.
+
+If no **Materials location** is set, the action displays a message and does not create any orders.

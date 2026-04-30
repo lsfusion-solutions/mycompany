@@ -1,0 +1,58 @@
+MODULE PurchaseOrderManufacturingPricelist;
+
+REQUIRE PurchaseOrderManufacturing, PurchasePricelistValue, PurchaseOrderSearch,
+        ManufacturingOrderFilter, ManufacturingOrderSelection;
+
+NAMESPACE Purchase;
+
+createOrders 'Create orders' () {
+    IF NOT manufacturingOrderMaterialsLocation() THEN {
+        MESSAGE 'No materials location selected';
+        RETURN;
+    }
+    
+    NEWSESSION NESTED (selected[ManufacturingOrder]) {
+        LOCAL NESTED toOrder = NUMERIC[16,3] (Item);
+        toOrder(Item i) <- GROUP SUM toConsume(ConsumedLine l) IF selected(manufacturingOrder(l)) AND
+                                                                  NOT orderLine(l) AND
+                                                                  materialsLocation(manufacturingOrder(l)) = manufacturingOrderMaterialsLocation() AND
+                                                                  item(l) = i;
+        
+        FOR [GROUP SUM 1 IF toOrder(Item i) BY vendorA(i)] (Partner p) DO NEWSESSION 
+            NEW o = Order {
+                location(o) <- manufacturingOrderMaterialsLocation();
+                vendor(o) <- p;
+                FOR toOrder(Item it) AND vendorA(it) = p INLINE NEW l = OrderLine DO {
+                    order(l) <- o;
+                    item(l) <- it;
+                    quantity(l) <- toOrder(it);
+                }
+                orderLine(ConsumedLine l) <- lastOrderLine(o, item(l)) WHERE selected(manufacturingOrder(l)) AND materialsLocation(manufacturingOrder(l)) = manufacturingOrderMaterialsLocation() AND
+                                                                            vendorA(item(l)) = p;
+                SHOW order OBJECTS o = o DOCKED;
+            }
+
+        IF [GROUP SUM 1 IF toOrder(Item i) AND NOT vendorA(i)]() THEN NEWSESSION
+            NEW o = Order {
+                location(o) <- manufacturingOrderMaterialsLocation();
+                FOR toOrder(Item it) AND NOT vendorA(it) INLINE NEW l = OrderLine DO {
+                    order(l) <- o;
+                    item(l) <- it;
+                    quantity(l) <- toOrder(it);
+                }
+                orderLine(ConsumedLine l) <- lastOrderLine(o, item(l)) WHERE selected(manufacturingOrder(l)) AND materialsLocation(manufacturingOrder(l)) = manufacturingOrderMaterialsLocation() AND
+                                                                            NOT vendorA(item(l));
+                SHOW order OBJECTS o = o DOCKED;
+            }
+    }
+}
+
+EXTEND FORM manufacturingOrders
+    PROPERTIES() createOrders SHOWIF countSelectedManufacturingOrders()
+;
+
+DESIGN manufacturingOrders {
+    actions {
+        MOVE PROPERTY(createOrders()) { alignment = STRETCH; }
+    }
+}
