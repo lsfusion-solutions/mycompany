@@ -79,6 +79,12 @@ Typowe pola:
 - **Telefon**, **Email**;
 - **Zarchiwizowane** — flaga wyłączająca partnera z aktywnego użycia.
 
+### Ustawienia zakupowe dostawcy
+
+Jeśli włączona jest automatyzacja zakupów, a partner jest oznaczony jako **Dostawca**, karta partnera zawiera zakładkę **Zakup** z polem **Okres zamówienia**.
+
+**Okres zamówienia** to liczba dni używana przez automatyczne wypełnianie zamówienia zakupu do wyznaczenia domyślnego okresu analizy popytu dla tego dostawcy. Jeśli pole jest puste, zamówienia zakupu używają 7 dni. Wartość tylko domyślnie wypełnia **Datę od** i **Datę do**; użytkownik nadal może zmienić okres w zamówieniu zakupu.
+
 ### Jak wybrać właściwy typ
 
 Stosuj prostą zasadę:

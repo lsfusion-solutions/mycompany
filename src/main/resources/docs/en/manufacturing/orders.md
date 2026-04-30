@@ -107,3 +107,14 @@ The system:
 - opens each created purchase order for review.
 
 If no **Materials location** is set, the action displays a message and does not create any orders.
+
+### Manufacturing demand in purchase auto order
+
+When purchase order auto filling is enabled, manufacturing demand is included in the purchase order **Auto order** calculation.
+
+In the purchase order item grid, the system shows:
+
+- **Awaiting consumption** — material quantities from manufacturing orders waiting for execution;
+- **Consumed** — material quantities from Done manufacturing orders in the selected order period.
+
+These quantities increase the suggested **Auto order** amount together with shipment demand, so purchase orders can cover both sales shipment needs and manufacturing material needs.

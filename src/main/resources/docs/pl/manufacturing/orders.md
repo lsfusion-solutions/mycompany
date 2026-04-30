@@ -107,3 +107,14 @@ System:
 - otwiera każde utworzone zamówienie zakupu do przeglądu.
 
 Jeśli **Lokalizacja materiałów** nie jest ustawiona, akcja wyświetla komunikat i nie tworzy żadnych zamówień.
+
+### Zapotrzebowanie produkcyjne w automatycznym zamówieniu zakupu
+
+Gdy włączone jest automatyczne wypełnianie zamówień zakupu, zapotrzebowanie produkcyjne jest uwzględniane w kalkulacji **Auto order** w zamówieniu zakupu.
+
+W siatce towarów zamówienia zakupu system pokazuje:
+
+- **Oczekujące zużycie** — ilości materiałów z zamówień produkcji oczekujących na wykonanie;
+- **Zużyte** — ilości materiałów z zamówień produkcji w statusie Wykonano w wybranym okresie zamówienia.
+
+Te ilości zwiększają sugerowaną wartość **Auto order** razem z zapotrzebowaniem z wydań, dzięki czemu zamówienia zakupu mogą pokrywać zarówno potrzeby wysyłek sprzedaży, jak i potrzeby materiałowe produkcji.

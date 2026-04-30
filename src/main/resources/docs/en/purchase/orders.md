@@ -37,6 +37,25 @@ In lines, you specify:
 - amount (usually calculated automatically);
 - [taxes](../invoicing/taxes.md) (if used).
 
+### Automatic order filling
+
+If inventory shipment planning is enabled, the purchase order card can calculate suggested purchase quantities in the item grid.
+
+1. Select **Vendor**, **Location**, and **Date**.
+2. Check **Date from** and **Date to** above the item grid. When you select a vendor, the system fills this period from the order date: the vendor **Order period** days back through the day before the order date. If the vendor has no order period, 7 days are used. You can adjust the period manually before filling the order. If you change the order date afterwards, review these dates before running **Auto order**.
+3. Use the **Auto order** filter to show only items with a suggested quantity.
+4. Run **Auto order**.
+
+The item grid shows reference columns for the selected period:
+
+- **Planned** and **Shipped** — shipment quantities for the period;
+- **Awaiting shipment** — shipment demand not yet shipped;
+- **Auto order** — suggested quantity to purchase, rounded up to the item purchase pack when a pack is configured.
+
+The **Auto order** action adds lines only for items that are currently visible in the item grid, have a positive **Auto order** value, and are not already present in the order. Existing line quantities are not overwritten.
+
+If manufacturing is enabled, the same calculation also considers material demand: **Awaiting consumption** from manufacturing orders waiting for execution and **Consumed** materials from Done manufacturing orders in the selected period.
+
 ## Statuses and actions
 
 Purchase orders typically use the following lifecycle:

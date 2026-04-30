@@ -79,6 +79,12 @@ Typical fields:
 - **Phone**, **Email**;
 - **Archived** — a flag to exclude the partner from active use.
 
+### Vendor purchase settings
+
+If purchase automation is enabled and the partner is marked as **Vendor**, the partner card contains a **Purchase** tab with **Order period**.
+
+**Order period** is the number of days used by purchase order auto filling to build the default demand analysis period for this vendor. If it is empty, purchase orders use 7 days. The value only fills **Date from** and **Date to** by default; the user can still change the period in the purchase order.
+
 ### How to choose the right type
 
 Use a simple rule:
