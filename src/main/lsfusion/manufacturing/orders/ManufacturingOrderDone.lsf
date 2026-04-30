@@ -12,7 +12,12 @@ closed(ManufacturingOrderStatus s) += WHEN s = ManufacturingOrderStatus.done THE
 done 'Done' = DATA BOOLEAN (ManufacturingOrder);
 
 executionDateTime 'Execution date' = DATA DATETIME (ManufacturingOrder);
-WHEN SET(done(ManufacturingOrder o)) AND NOT CHANGED(executionDateTime(o)) DO executionDateTime(o) <- currentDateTime(); 
+WHEN SET(done(ManufacturingOrder o)) AND NOT CHANGED(executionDateTime(o)) DO executionDateTime(o) <- currentDateTime();
+
+@defineDateTimeAggregation(ManufacturingOrder, execution, '(execution)');
+
+executionDateTime 'Execution date' (ConsumedLine l) = executionDateTime(manufacturingOrder(l));
+executionDate 'Execution date' (ConsumedLine l) = executionDate(manufacturingOrder(l));
 
 productsLocation 'Products location' = DATA Location (ManufacturingOrder);
 nameProductsLocation 'Products location' (ManufacturingOrder m) = name(productsLocation(m));

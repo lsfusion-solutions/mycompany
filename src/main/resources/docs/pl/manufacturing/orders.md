@@ -88,3 +88,33 @@ Zamówienie ma planowaną ilość **Do produkowania**. Na jej podstawie system m
    - Użyj akcji **Rozpocznij** i **Oznacz jako wykonane**, aby śledzić postęp operacji.
 3. Wprowadź faktyczną produkcję (w razie potrzeby skoryguj faktyczne zużycie).
 4. Uruchom **„Zatwierdż”** i wskaż **„Lokalizacja produktów”**.
+
+### Utworzyć zamówienia zakupu na materiały
+
+Z listy zamówień produkcji można utworzyć [zamówienia zakupu](../purchase/orders.md) na materiały wymagane przez wybrane zamówienia produkcji.
+
+1. W filtrach ustaw **Lokalizację materiałów** — przetwarzane będą tylko zamówienia produkcji dla tej lokalizacji.
+2. Zaznacz zamówienia produkcji, dla których chcesz zakupić materiały.
+3. Uruchom akcję **Utwórz zamówienia**.
+
+System:
+
+- agreguje wymagane materiały (uwzględniając tylko linie zużycia, które nie są jeszcze powiązane z zamówieniem zakupu) z wybranych zamówień produkcji;
+- grupuje towary według domyślnego [dostawcy](../masterdata/partners.md) i tworzy jedno zamówienie zakupu na dostawcę;
+- tworzy dodatkowe zamówienie zakupu (bez dostawcy) dla towarów, które nie mają domyślnego dostawcy;
+- ustawia wybraną lokalizację materiałów jako lokalizację każdego nowego zamówienia zakupu;
+- wiąże każdą przetworzoną linię zużycia z odpowiednią linią nowego zamówienia zakupu, aby zachować powiązanie między zamówieniem produkcji a zamówieniem zakupu;
+- otwiera każde utworzone zamówienie zakupu do przeglądu.
+
+Jeśli **Lokalizacja materiałów** nie jest ustawiona, akcja wyświetla komunikat i nie tworzy żadnych zamówień.
+
+### Zapotrzebowanie produkcyjne w automatycznym zamówieniu zakupu
+
+Gdy włączone jest automatyczne wypełnianie zamówień zakupu, zapotrzebowanie produkcyjne jest uwzględniane w kalkulacji **Auto order** w zamówieniu zakupu.
+
+W siatce towarów zamówienia zakupu system pokazuje:
+
+- **Oczekujące zużycie** — ilości materiałów z zamówień produkcji oczekujących na wykonanie;
+- **Zużyte** — ilości materiałów z zamówień produkcji w statusie Wykonano w wybranym okresie zamówienia.
+
+Te ilości zwiększają sugerowaną wartość **Auto order** razem z zapotrzebowaniem z wydań, dzięki czemu zamówienia zakupu mogą pokrywać zarówno potrzeby wysyłek sprzedaży, jak i potrzeby materiałowe produkcji.

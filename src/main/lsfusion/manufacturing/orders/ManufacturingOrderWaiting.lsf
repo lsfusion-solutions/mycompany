@@ -44,3 +44,10 @@ EXTEND FORM manufacturingOrders
 ;
 
 @defineSelectionAction(manufacturingOrders, ManufacturingOrder, markAsToDo, 'Mark as Todo', statuses);
+
+waitingConsumed 'Awaiting consumption' (Location l, Product p) =
+    GROUP SUM toConsume(ConsumedLine cl) IF status(manufacturingOrder(cl)) = ManufacturingOrderStatus.waiting AND
+        materialsLocation(manufacturingOrder(cl)) = l AND item(cl) = p;
+
+waitingConsumedRec 'Awaiting consumption' (Location l, Product p) =
+    GROUP SUM waitingConsumed(Location child, p) IF level(child, l);

@@ -37,6 +37,25 @@ W liniach określa się:
 - kwotę (zwykle wyliczana automatycznie);
 - [podatki](../invoicing/taxes.md) (jeśli używane).
 
+### Automatyczne wypełnianie zamówienia
+
+Jeśli włączone jest planowanie wydań magazynowych, karta zamówienia zakupu może obliczać sugerowane ilości zakupu w siatce towarów.
+
+1. Wybierz **Dostawcę**, **Lokalizację** i **Datę**.
+2. Sprawdź pola **Data od** i **Data do** nad siatką towarów. Po wybraniu dostawcy system uzupełnia ten okres względem daty zamówienia: od liczby dni określonej w polu **Okres zamówienia** dostawcy do dnia poprzedzającego datę zamówienia. Jeśli dla dostawcy nie podano okresu, używane jest 7 dni. Okres można zmienić ręcznie przed wypełnieniem zamówienia. Jeśli później zmienisz datę zamówienia, sprawdź te daty przed uruchomieniem **Auto order**.
+3. Użyj filtra **Auto order**, aby pokazać tylko towary z sugerowaną ilością.
+4. Uruchom akcję **Auto order**.
+
+Siatka towarów pokazuje kolumny pomocnicze dla wybranego okresu:
+
+- **Planowane** i **Wysłane** — ilości wydań dla okresu;
+- **Oczekujące wydanie** — zapotrzebowanie z wydań, które nie zostało jeszcze wysłane;
+- **Auto order** — sugerowana ilość zakupu, zaokrąglana w górę do opakowania zakupu towaru, jeśli jest skonfigurowane.
+
+Akcja **Auto order** dodaje linie tylko dla towarów, które są aktualnie widoczne w siatce, mają dodatnią wartość **Auto order** i nie występują jeszcze w zamówieniu. Istniejące ilości w liniach nie są nadpisywane.
+
+Jeśli włączona jest produkcja, ten sam mechanizm uwzględnia również zapotrzebowanie materiałowe: **Oczekujące zużycie** z zamówień produkcji oczekujących na wykonanie oraz **Zużyte** materiały z zamówień produkcji w statusie Wykonano w wybranym okresie.
+
 ## Statusy i akcje
 
 Zamówienia zakupu zwykle mają następujący cykl życia:

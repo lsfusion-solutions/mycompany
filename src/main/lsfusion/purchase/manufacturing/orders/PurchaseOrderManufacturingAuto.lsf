@@ -1,0 +1,25 @@
+MODULE PurchaseOrderManufacturingAuto;
+
+REQUIRE PurchaseOrderManufacturing, PurchaseOrderShipmentAuto, ManufacturingOrderCanceled;
+
+NAMESPACE Purchase;
+
+toConsumePeriodic (Location l, Product p, DATE dFrom, DATE dTo) =
+    GROUP SUM (OVERRIDE toConsume(ConsumedLine cl), consumed(cl)) IF active(manufacturingOrder(cl)) AND
+                                                                     materialsLocation(manufacturingOrder(cl)) = l AND item(cl) = p AND
+                                                                     executionDate(cl) >= dFrom AND executionDate(cl) <= dTo;
+
+toConsumePeriodicRec (Location l, Product p, DATE dFrom, DATE dTo) =
+    GROUP SUM toConsumePeriodic(Location child, p, dFrom, dTo) IF level(child, l);
+
+waitingConsumedRec 'Awaiting consumption' (Order o, Item itm) = waitingConsumedRec(location(o), itm);
+
+toConsumePeriodic 'Consumed' (Order o, Item itm) =
+    toConsumePeriodicRec(location(o), itm, purchasePeriodFrom(o), purchasePeriodTo(o));
+
+extraWaitingRec(Order o, Item itm) += waitingConsumedRec(o, itm);
+extraDemandedPeriodic(Order o, Item itm) += toConsumePeriodic(o, itm);
+
+EXTEND FORM order
+    PROPERTIES(o, itm) READONLY toConsumePeriodic, waitingConsumedRec
+;

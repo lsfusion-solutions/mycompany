@@ -29,7 +29,12 @@ waitingRec 'Awaiting shipment' (Order o, Item itm) = waitingRec(location(o), itm
 demandedPeriodic 'Planned' (Order o, Item itm) = demandedPeriodicRec(location(o), itm, purchasePeriodFrom(o), purchasePeriodTo(o));
 shippedPeriodic 'Shipped' (Order o, Item itm) = shippedPeriodicRec(location(o), itm, purchasePeriodFrom(o), purchasePeriodTo(o));
 
-forecastPeriodic (Order o, Item itm) = max(prevAvailableRec(location(o), itm), 0) (-) waitingRec(location(o), itm) (-) demandedPeriodic(o, itm);
+extraWaitingRec = ABSTRACT VALUE NUMERIC[16,3] (Order, Item);
+extraDemandedPeriodic = ABSTRACT VALUE NUMERIC[16,3] (Order, Item);
+
+forecastPeriodic (Order o, Item itm) = max(prevAvailableRec(location(o), itm), 0) (-) 
+                                                            waitingRec(location(o), itm) (-) demandedPeriodic(o, itm)
+                                                            (-) extraWaitingRec(o, itm) (-) extraDemandedPeriodic(o, itm);
 toOrderPeriodic 'Auto order' (Order o, Item itm) = ceil(- forecastPeriodic(o, itm) IF forecastPeriodic(o, itm) < 0
                                                       , OVERRIDE purchasePackRatio(itm), 1);
 
@@ -47,6 +52,9 @@ EXTEND FORM order
     PROPERTIES(o, itm) READONLY demandedPeriodic, shippedPeriodic, waitingRec, toOrderPeriodic
     
     PROPERTIES(o) fillAuto DRAW itm TOOLBAR
+    
+    FILTERGROUP toOrder
+        FILTER 'Auto order' toOrderPeriodic(o, itm); 
 ;
 
 DESIGN order {
