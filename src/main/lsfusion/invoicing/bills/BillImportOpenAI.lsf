@@ -37,44 +37,48 @@ DESIGN billType {
     }
 }
 
+processOpenAI 'Import (GPT)' (Bill b, NAMEDFILE f) {
+    EXPORT JSON FROM
+            items = (JSON FROM
+                id(Item i),
+                name(i),
+                reference(i),
+                barcode = idBarCode(i)
+                WHERE id(i) AND active(i)),
+            partners = (JSON FROM
+                id(Partner p),
+                name(p),
+                addressCsv = addressCsv(p)
+                WHERE id(p) AND active(p)),
+            currencies = (JSON FROM
+                id(Currency c),
+                name(c)
+                WHERE id(c)),
+            taxes = (JSON FROM
+                id = name(Tax t),
+                value(t)
+                WHERE name(t));
+
+    requestGPT(importOpenAIPrompt(type(b)), f,
+        namedFile(exportFile(), r'import-reference-data'));
+
+    IF NOT GPTRequest() THEN
+        RETURN;
+
+    IF errorMessage(GPTRequest()) THEN {
+        MESSAGE errorMessage(GPTRequest());
+        RETURN;
+    }
+
+    import(b, JSON FROM response(GPTRequest()));
+}
+
 importOpenAI 'Import (GPT)' (Bill b) {
     APPLY;
     IF canceled() THEN RETURN;
 
     INPUT f = NAMEDFILE DO {
-        EXPORT JSON FROM
-                items = (JSON FROM
-                    id(Item i),
-                    name(i),
-                    reference(i),
-                    barcode = idBarCode(i)
-                    WHERE id(i) AND active(i)),
-                partners = (JSON FROM
-                    id(Partner p),
-                    name(p),
-                    addressCsv = addressCsv(p)
-                    WHERE id(p) AND active(p)),
-                currencies = (JSON FROM
-                    id(Currency c),
-                    name(c)
-                    WHERE id(c)),
-                taxes = (JSON FROM
-                    id = name(Tax t),
-                    value(t)
-                    WHERE name(t));
-
-        requestGPT(importOpenAIPrompt(type(b)), f,
-            namedFile(exportFile(), r'import-reference-data'));
-
-        IF NOT GPTRequest() THEN
-            RETURN;
-
-        IF errorMessage(GPTRequest()) THEN {
-            MESSAGE errorMessage(GPTRequest());
-            RETURN;
-        }
-
-        import(b, JSON FROM response(GPTRequest()));
+        processOpenAI(b, f);
 
         NEW bf = BillFile {
             bill(bf) <- b;

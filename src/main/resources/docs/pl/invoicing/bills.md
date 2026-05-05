@@ -6,6 +6,8 @@ title: Faktury zakupu
 
 Otwórz **„Fakturowanie” → „Operacje” → „Faktury zakupu”**.
 
+Dla kompaktowego wprowadzania z telefonu lub tabletu zobacz [Mobilne faktury zakupu](mobile-bills.md).
+
 ## Przeznaczenie
 
 Faktura zakupu służy do:

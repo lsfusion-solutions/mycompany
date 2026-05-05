@@ -6,6 +6,8 @@ title: Bills
 
 Open **“Invoicing” → “Operations” → “Bills”**.
 
+For the compact phone/tablet workflow, see [Mobile bills](mobile-bills.md).
+
 ## Purpose
 
 A bill is used to:

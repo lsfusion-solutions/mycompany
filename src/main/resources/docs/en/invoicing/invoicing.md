@@ -23,6 +23,7 @@ If some documents or menu items are missing in your configuration, that is norma
 Sections:
 
 - [Bills](bills.md)
+- [Mobile bills](mobile-bills.md)
 - [Invoices](invoices.md)
 - [Shipments from invoice (if Inventory is used)](shipments-from-invoice.md)
 - [Refunds and corrections](refunds-and-corrections.md)

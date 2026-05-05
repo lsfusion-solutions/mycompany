@@ -23,6 +23,7 @@ Jeśli w Twojej konfiguracji brakuje części dokumentów lub pozycji menu, jest
 Sekcje:
 
 - [Faktury zakupu](bills.md)
+- [Mobilne faktury zakupu](mobile-bills.md)
 - [Faktury](invoices.md)
 - [Wydania z faktury (jeśli używane jest Magazynowanie)](shipments-from-invoice.md)
 - [Zwroty i korekty](refunds-and-corrections.md)

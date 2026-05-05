@@ -1,0 +1,217 @@
+MODULE BillMobile;
+
+REQUIRE Bill, BillPayment, Account, BillImportOpenAI;
+
+NAMESPACE Invoicing;
+
+mobile 'Mobile' = DATA BOOLEAN (BillType);
+EXTEND FORM billType PROPERTIES(o) mobile;
+DESIGN billType { otherInformation { MOVE PROPERTY(mobile(o)); } }
+
+firstMobileBillType = GROUP LAST BillType r ORDER DESC r WHERE mobile(r);
+
+changeUntaxedAmount (Bill b) {
+    INPUT q = untaxedAmount(b) DO {
+        IF lastBillLine(b) THEN
+            untaxedAmount(BillLine l) <- q IF l = lastBillLine(b);
+        ELSE {
+            NEW l = BillLine {
+                bill(l) <- b;
+                untaxedAmount(l) <- q;
+            }
+        }
+    }
+}
+
+loadSingleFile 'Upload' (Bill b) {
+    INPUT uf = NAMEDFILE DO {
+        DELETE BillFile f WHERE bill(f) = b;
+
+        NEW uof = BillFile {
+            bill(uof) <- b;
+            file(uof) <- RAWFILE(uf);
+            name(uof) <- name(uf);
+            extension(uof) <- extension(uf);
+        }
+
+        IF importOpenAIPrompt(type(b)) THEN { processOpenAI(b, uf); }
+    }
+} WAIT;
+
+// payment
+createMobilePayment (Bill b) {
+    IF NOT lastOutgoingPayment(b) THEN {
+        companyAccount(b) <- cashAccount(representative(b));
+
+        NEW p = OutgoingPayment {
+            done(p) <- TRUE;
+
+            fill(p, b);
+
+            amount(p) <- sourceLeft(b);
+            paid(b, p) <- left(b, p);
+        }
+    }
+}
+
+deleteMobilePayment (Bill b) {
+    DELETE OutgoingPayment p WHERE paid(b, p);
+}
+
+changeMobileDone (Bill b) {
+    INPUT done = done(b) CHANGE DO {
+        IF done THEN
+            createMobilePayment(b);
+        ELSE
+            deleteMobilePayment(b);
+    }
+}
+
+FORM billMobile 'Mobile bill'
+    OBJECTS b = Bill PANEL
+    PROPERTIES READONLY image = IMAGEFILE(fileFirstFile(b))
+    PROPERTIES(b) loadSingleFile READONLYIF readonly(b)
+
+    PROPERTIES(b) READONLYIF readonly(b)
+                  nameType SHOWIF NOT firstMobileBillType(), dateTime, number,
+                  nameVendor, note
+    
+    OBJECTS l = BillLine
+    PROPERTIES(l) READONLYIF readonly(b)
+                  description, untaxedAmount
+    PROPERTIES(l) READONLYIF readonly(b) NEW, DELETE
+    PROPERTIES(l) PANEL READONLYIF readonly(b) nameItem, quantity, price
+    PROPERTIES(l) PANEL READONLY               taxAmount
+    FILTERS bill(l) = b
+
+    PROPERTIES(b) untaxedAmount ON CHANGE changeUntaxedAmount(b) READONLYIF readonly(b) OR countBillLine(b) > 1
+    PROPERTIES(b) READONLY taxAmount
+    PROPERTIES(b) done ON CHANGE changeMobileDone(b) SHOWIF cashAccount(representative(b))
+;
+
+DESIGN billMobile {
+    caption = badged('{Bill}', number(b));
+
+    OBJECTS {
+        class = '';
+        border = FALSE;
+        NEW header {
+            horizontal = TRUE;
+            alignment = STRETCH;
+            MOVE PROPERTY(nameType(b)) { notNull = TRUE; }
+            NEW bill {
+                fill = 2;
+                MOVE PROPERTY(dateTime(b)) { notNull = TRUE; }
+                MOVE PROPERTY(number(b));
+                MOVE PROPERTY(untaxedAmount(b));
+                MOVE PROPERTY(taxAmount(b));
+                MOVE PROPERTY(done(b)) {
+                    alignment = STRETCH;
+                    valueClass = 'btn-check';
+                    captionClass = 'btn btn-outline-success col-12';
+                }
+            }
+            NEW file {
+                fill = 1;
+                caption = 'File';
+                MOVE PROPERTY(loadSingleFile(b)) { alignment = STRETCH; }
+                MOVE PROPERTY(image) { size = (100, 100); fill = 1; caption = ''; }
+            }
+        }
+        MOVE PROPERTY(nameVendor(b)) { alignment = STRETCH; }
+        MOVE PROPERTY(note(b)) { alignment = STRETCH; }
+
+        NEW lines {
+            fill = 1;
+            MOVE GRID(l) { height = 100; }
+            MOVE TOOLBARBOX(l);
+            MOVE PROPERTY(nameItem(l));
+            NEW lineAmount {
+                horizontal = TRUE;
+                alignment = STRETCH;
+                MOVE PROPERTY(quantity(l)) { caption = ''; charWidth = 8; }
+                MOVE PROPERTY(price(l)) { caption = r'X'; charWidth = 7; }
+                MOVE PROPERTY(taxAmount(l)) { charWidth = 6; }
+            }
+            REMOVE TOOLBARSYSTEM(l);
+        }
+        
+        REMOVE TOOLBARBOX;
+        NEW actions {
+            horizontal = TRUE;
+            alignment = STRETCH;
+            MOVE PROPERTY(formOk()) { fill = 1; }
+            MOVE PROPERTY(formClose()) { fill = 1; }
+        }
+    }
+}
+
+newMobile 'Add' () {
+    NEWSESSION {
+        NEW b = Bill {
+            type(b) <- firstMobileBillType();
+            
+            representative(b) <- currentUser();
+            company(b) <- legalEntity(currentUser());
+            companyAccount(b) <- cashAccount(currentUser());
+            
+            DIALOG billMobile OBJECTS b = b DOCKED DO seek(b);
+        }
+    }
+} IMAGE 'add.png';
+
+editMobile 'Edit' (Bill b) {
+    NEWSESSION {
+        SHOW billMobile OBJECTS b = b DOCKED;
+    }
+} IMAGE 'edit.png' CHANGEMOUSE 'DBLCLK';
+
+vendorFilter = DATA LOCAL Partner ();
+nameVendorFilter 'Vendor' = name(vendorFilter());
+
+FORM billsMobile 'Bills'
+    OBJECTS b = Bill BACKGROUND background(b)
+    PROPERTIES(b) READONLY dateTime, nameVendor, amount,
+                           imagedNameStatus BACKGROUND colorStatus(b)
+    PROPERTIES newMobile() DRAW b TOOLBAR,
+               editMobile(b) TOOLBAR,
+               '' = DELETE(b) NEWSESSION READONLYIF readonly(b)
+
+    PROPERTIES() nameVendorFilter
+    FILTERS representative(b) = currentUser(),
+            vendor(b) = vendorFilter() OR NOT vendorFilter()
+    ORDERS dateTime(b) DESC
+;
+
+DESIGN billsMobile {
+    OBJECTS {
+        class = '';
+        border = FALSE;
+        NEW filters {
+            horizontal = TRUE;
+            alignment = STRETCH;
+            MOVE PROPERTY(nameVendorFilter());
+            MOVE FILTERGROUPS(b);
+            MOVE PROPERTY(formRefresh());
+        }
+        MOVE BOX(b) {
+            caption = '';
+            PROPERTY(nameVendor(b)) { charWidth = 10; }
+            PROPERTY(amount(b)) { charWidth = 8; }
+            TOOLBARSYSTEM(b) {
+                showSettings = FALSE;
+            }
+        }
+        MOVE TOOLBAR(b) { 
+            alignment = STRETCH;
+            PROPERTY(newMobile()) { fill = 1; }
+        };
+        REMOVE TOOLBARBOX;
+    }
+}
+
+NAVIGATOR {
+    dashboards {
+        NEW 'Mobile bill' = billsMobile;
+    }
+}
