@@ -61,7 +61,12 @@ WHEN (SETCHANGED(reference(OutgoingPayment p)) OR SETCHANGED(partner(p)) OR SET(
      isISubstring(reference(p), number(IncomingDebt d)) AND 
      canBePaid(d, p) DO
     paid(d, p) <- left(d, p);
-    
+
+countOutgoingPayment (IncomingDebt d) = GROUP SUM 1 IF paid(d, OutgoingPayment p) AND active(p);
+
+lastOutgoingPayment (IncomingDebt d) = GROUP LAST OutgoingPayment p ORDER dateTime(p), p WHERE paid(d, p) AND active(p);
+dateLastOutgoingPayment 'Payment date' (IncomingDebt d) = date(lastOutgoingPayment(d));
+
 EXTEND FORM outgoingPayments
     PROPERTIES(p) READONLY AFTER amount(p) paid BACKGROUND backgroundPaid(p), countPaid
     
