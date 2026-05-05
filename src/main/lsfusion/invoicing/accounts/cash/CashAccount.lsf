@@ -62,3 +62,10 @@ FORM cashAccounts 'Cash accounts'
 countCashAccount (Partner p) = GROUP SUM 1 IF CashAccount a IS CashAccount AND holder(a) = p; 
 calcDefaultCashAccount (Partner p) = GROUP LAST CashAccount a ORDER a WHERE holder(a) = p IF countCashAccount(p) = 1;
 defaultCashAccount (Partner p) = OVERRIDE defaultAccount(p) AS CashAccount, calcDefaultCashAccount(p);
+
+cashAccount (Employee e) = GROUP LAST CashAccount a ORDER a WHERE holder(a) = legalEntity(e) AND responsible(a) = e;
+nameCashAccount 'Cash account' (Employee e) = name(cashAccount(e));
+
+EXTEND FORM employees
+    PROPERTIES(e) READONLY nameCashAccount
+;
