@@ -47,7 +47,7 @@ Rekomendowane podejście:
 
 1. Wygeneruj listę (po lokalizacji/strefie/miejscu składowania, opcjonalnie z filtrem grupy towarowej).
 2. Wydrukuj/udostępnij listę wykonawcom i zbierz ilości policzone.
-3. Załaduj/wprowadź wyniki do listy.
+3. Prześlij/wprowadź wyniki do listy.
 4. Przenieś wyniki do dokumentu korekty i wykonaj kroki **„Przegląd i uzgodnienie” → „Wygenerowanie rozbieżności” → „Zakończenie”**.
 
 ## Typowe problemy
