@@ -55,14 +55,14 @@ Pola i akcje w karcie szablonu:
 - **Nazwa** — jak formularz będzie się nazywał na liście wyboru podczas drukowania.
 - **Nazwa pliku szablonu** — używana dla predefiniowanych układów (gdy nie wgrano pliku).
 - **Pobierz** — otwiera/pobiera bieżący szablon do podglądu (predefiniowany lub wgrany).
-- **Załaduj** — wgraj swój plik układu (po wgraniu będzie używany).
+- **Prześlij** — wgraj swój plik układu (po wgraniu będzie używany).
 - **Zresetuj** — usuń wgrany plik i wróć do predefiniowanego układu (jeśli jest wskazany).
 - **Format** — określa, jak generowany jest wynik drukowania.
 - **Nazwa pliku eksportu** — nazwa pliku podczas zapisywania wyniku (jeśli wybrany format generuje plik).
 
 Rekomendacje:
 
-- Jeśli chcesz **zastąpić standardową formę** swoją wersją — użyj **Załaduj**.
+- Jeśli chcesz **zastąpić standardową formę** swoją wersją — użyj **Prześlij**.
 - Jeśli chcesz **wrócić do standardowej formy** — użyj **Zresetuj**.
 
 ---
@@ -118,7 +118,7 @@ Otwórz szablon i kliknij **Zresetuj** (jeśli wcześniej wgrano plik).
 
 #### Przykłady predefiniowanych formularzy
 
-W zależności od dostawy mogą być dostępne typowe predefiniowane wydruki faktury (np. WZ, faktura, uniwersalny dokument przekazania, faktura proforma). Możesz używać ich bez zmian albo zastąpić własnymi plikami przez **Załaduj**.
+W zależności od dostawy mogą być dostępne typowe predefiniowane wydruki faktury (np. WZ, faktura, uniwersalny dokument przekazania, faktura proforma). Możesz używać ich bez zmian albo zastąpić własnymi plikami przez **Prześlij**.
 
 ## Raporty
 
