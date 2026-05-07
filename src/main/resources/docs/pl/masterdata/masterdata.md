@@ -24,6 +24,10 @@ Sekcje:
 - [Umowy](contracts.md)
 - [Aktywności](activities.md)
 
+Powiązane integracje:
+
+- [Autodesk](autodesk/autodesk.md) — łączenie modeli 3D z Autodesk Platform Services (APS) z projektami, zestawieniami materiałów i zamówieniami produkcji.
+
 ## Szybki start
 
 Poniżej znajduje się typowa kolejność uzupełniania słowników przed rozpoczęciem pracy.

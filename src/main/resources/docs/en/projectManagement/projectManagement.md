@@ -20,6 +20,10 @@ Sections:
 - [Reporting](reports.md)
 - [Settings](settings.md)
 
+Related integrations:
+
+- [Autodesk](../masterdata/autodesk/autodesk.md) — link Autodesk Platform Services (APS) 3D models to projects.
+
 ## Quick start
 
 A typical scenario “create a project → create tasks → assign assignees → track time”:

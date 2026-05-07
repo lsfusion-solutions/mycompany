@@ -1,0 +1,54 @@
+MODULE AutodeskBucket;
+
+REQUIRE Autodesk;
+
+NAMESPACE Autodesk;
+
+CLASS Bucket;
+
+key 'Key' = DATA STRING (Bucket) IN id;
+
+CLASS PolicyKey { transient, temporary, persistent }
+id '{ID}' (PolicyKey p) = getWord(name(p), '.', 2) IF p IS PolicyKey CHARWIDTH 10;
+name '{Name}' (PolicyKey p) = caption(p) IF p IS PolicyKey CHARWIDTH 15;
+
+policy 'Policy' = DATA PolicyKey (Bucket);
+idPolicy (Bucket b) = id(policy(b));
+namePolicy (Bucket b) = name(policy(b));
+
+create 'Create' (Bucket b) {
+    getToken();
+
+    EXTERNAL HTTP POST apiUrl() + '/oss/v2/buckets' HEADERS accessHeaders
+        PARAMS JSON FROM bucketKey = key(b), policyKey = idPolicy(b);
+}
+
+delete 'Delete' (Bucket b) {
+    getToken();
+
+    EXTERNAL HTTP DELETE apiUrl() + '/oss/v2/buckets/' + key(b) HEADERS accessHeaders;
+} CONFIRM;
+
+getBuckets 'Get buckets' () {
+    getToken();
+
+    EXTERNAL HTTP GET apiUrl() + '/oss/v2/buckets' HEADERS accessHeaders TO resultFile;
+    open(resultFile());
+}
+
+EXTEND FORM integrationData
+    OBJECTS adBucket = Bucket
+    PROPERTIES(adBucket) key, namePolicy, NEW, DELETE,
+                         create GRID, delete GRID
+    PROPERTIES() getBuckets DRAW adBucket TOOLBAR
+;
+
+DESIGN integrationData {
+    autodeskPane {
+        NEW autodeskObjects {
+            horizontal = TRUE;
+            caption = 'Objects';
+            MOVE BOX(adBucket);
+        }
+    }
+}

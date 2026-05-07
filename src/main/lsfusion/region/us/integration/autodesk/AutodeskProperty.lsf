@@ -1,0 +1,80 @@
+MODULE AutodeskProperty;
+
+REQUIRE AutodeskElement;
+
+NAMESPACE Autodesk;
+
+externalId 'External id' = DATA STRING (Element);
+
+elementExternal (Model m, STRING id) = GROUP MAX Element e BY model(e), externalId(e);
+
+CLASS PropertyCategory 'Property category';
+name '{Name}' = DATA STRING (PropertyCategory) CHARWIDTH 20;
+propertyCategory = GROUP AGGR PropertyCategory pc BY name(pc);
+
+CLASS Property;
+category = DATA PropertyCategory (Property);
+nameCategory 'Category' (Property p) = name(category(p));
+
+name '{Name}' = DATA STRING (Property) CHARWIDTH 20;
+
+property = GROUP AGGR Property pc BY category(pc), name(pc);
+
+value 'Value' = DATA ISTRING (Element, Property);
+hasValue (Element e, PropertyCategory pc) = GROUP SUM 1 IF value(e, Property p) AND category(p) = pc;
+
+EXTEND FORM element
+    PROPERTIES(e) externalId
+    
+    TREE properties pc = PropertyCategory, p = Property
+    PROPERTIES READONLY name(pc), name(p), value(e, p)
+    FILTERS category(p) = pc,
+            hasValue(e, pc),
+            value(e, p)
+;
+
+// import
+externalId = DATA LOCAL STRING (INTEGER);
+
+propObjectId = DATA LOCAL INTEGER (INTEGER);
+propCategory = DATA LOCAL STRING (INTEGER);
+propName = DATA LOCAL STRING (INTEGER);
+propValue = DATA LOCAL STRING (INTEGER);
+
+importAutodeskProperties INTERNAL 'region.us.integration.autodesk.AutodeskPropertiesImportAction' (STRING);
+
+getProperties 'Properties' (Viewable v) {
+    NEWSESSION {
+        getToken();
+        EXTERNAL HTTP GET apiUrl() + '/modelderivative/v2/designdata/' + base64Urn(model(v)) + r'/metadata/' + guid(v) + r'/properties?forceget=true' HEADERS accessHeaders
+            TO resultFile;
+
+        fileToString(resultFile());
+
+        importAutodeskProperties(resultString());
+
+        FOR Element e = element(model(v), objectId(INTEGER i)) DO {
+            externalId(e) <- externalId(i);
+        }
+        
+        FOR [GROUP SUM 1 BY propCategory(INTEGER i)] (STRING catName) AND NOT propertyCategory(catName) NEW c = PropertyCategory DO {
+            name(c) <- catName;
+        }
+
+        FOR [GROUP SUM 1 BY propCategory(INTEGER i), propName(i)] (STRING catName, STRING propName) AND NOT property(propertyCategory(catName), propName) NEW p = Property DO {
+            category(p) <- propertyCategory(catName);
+            name(p) <- propName;
+        }
+        
+        value(Element e, Property p) <- NULL WHERE model(e) = model(v);
+        FOR Element e = element(model(v), propObjectId(INTEGER i)) AND Property p = property(propertyCategory(propCategory(i)), propName(i)) DO            
+            value(e, p) <- propValue(i);
+        
+        APPLY;
+    }
+}
+
+EXTEND FORM autodesk
+    PROPERTIES(e) READONLY externalId
+    PROPERTIES(v) getProperties DRAW e TOOLBAR
+;

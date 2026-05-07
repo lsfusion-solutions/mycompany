@@ -1,0 +1,24 @@
+MODULE BomAutodeskViewer;
+
+REQUIRE Bom, AutodeskViewer;
+
+NAMESPACE Manufacturing;
+
+bom = DATA Bom (Model);
+nameBom 'Bill of Materials' (Model m) = description(bom(m));
+
+EXTEND FORM autodesk
+    PROPERTIES(m) nameBom
+;
+
+@defineAutodeskViewer(bom);
+
+EXTEND FORM bom
+    FILTERS bom(adm) = b
+;
+
+NAVIGATOR {
+    masterData {
+        NEW autodesk;
+    }
+}

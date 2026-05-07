@@ -20,6 +20,10 @@ Sekcje:
 - [Raportowanie](reports.md)
 - [Ustawienia](settings.md)
 
+Powiązane integracje:
+
+- [Autodesk](../masterdata/autodesk/autodesk.md) — łączenie modeli 3D z Autodesk Platform Services (APS) z projektami.
+
 ## Szybki start
 
 Typowy scenariusz „utwórz projekt → utwórz zagadnienia → przypisz wykonawców → rejestruj czas”:

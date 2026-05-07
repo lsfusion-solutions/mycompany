@@ -1,0 +1,156 @@
+MODULE AutodeskModel;
+
+REQUIRE AutodeskBucket, FileUtils;
+
+NAMESPACE Autodesk;
+
+CLASS Model;
+
+bucket = DATA Bucket (Model);
+
+key = DATA STRING (Model) IN id;
+urn = DATA STRING (Model);
+
+base64Urn (Model m) = encodeBase64Unchunked(urn(m));
+
+file = DATA FILE (Model);
+hasFile (Model m) = TRUE IF file(m); 
+openFile 'Open' (Model m) { open(file(m), key(m)); }
+
+dataChunkSize = DATA INTEGER ();
+chunkSize = OVERRIDE dataChunkSize(), 52428800;
+
+loadModel 'Load model' (Bucket b) {
+    NEWSESSION {
+        INPUT f = NAMEDFILE DO NEW m = Model {
+            bucket(m) <- b;
+            file(m) <- FILE(f);
+            key(m) <- name(f) + '.' + extension(f);
+        }
+        APPLY;
+    }
+} 
+
+// put
+put 'Put' (Model m) {
+    NEWSESSION {
+        getToken();
+
+        LOCAL fRaw = RAWFILE();
+        fRaw() <- RAWFILE(file(m));
+
+        LOCAL size = INTEGER();
+        size() <- octetLength(fRaw());
+
+        EXTERNAL HTTP GET apiUrl() + '/oss/v2/buckets/' + key(bucket(m)) + '/objects/' + key(m) + '/signeds3upload?parts=' + INTEGER(ceil(NUMERIC(size())/chunkSize())) HEADERS accessHeaders
+            TO resultFile;
+        
+        LOCAL uploadKey = STRING();
+        LOCAL urls = JSON();
+        IMPORT JSON FROM resultFile() TO() uploadKey, urls;
+
+        LOCAL partNo = INTEGER();
+        partNo() <- 1;
+
+        LOCAL offset = INTEGER();
+        LOCAL remaining = INTEGER();
+        LOCAL len = INTEGER();
+        
+        IMPORT JSON FROM urls() FIELDS STRING value DO {
+            offset() <- (partNo() - 1) * chunkSize();
+            remaining() <- size() - offset();
+            len() <- (IF remaining() > chunkSize() THEN chunkSize() ELSE remaining());
+
+            EXTERNAL HTTP PUT value NOENCODE PARAMS filePart(fRaw(), offset() + 1, len());
+
+            partNo() <- partNo() + 1;
+        }
+
+        EXTERNAL HTTP POST apiUrl() + '/oss/v2/buckets/' + key(bucket(m)) + '/objects/' + key(m) + '/signeds3upload' HEADERS accessHeaders
+            PARAMS JSON FROM uploadKey() TO resultFile;
+
+        LOCAL objectId = STRING();
+        
+        IMPORT JSON FROM resultFile() TO() objectId;
+        
+        urn(m) <- objectId();
+        
+        APPLY;
+    }    
+}
+
+CLASS ConversionMethod { legacy, v3, v4, modern }
+id '{ID}' (ConversionMethod m) = getWord(name(m), '.', 2) IF m IS ConversionMethod CHARWIDTH 10;
+name '{Name}' (ConversionMethod m) = caption(m) IF m IS ConversionMethod CHARWIDTH 15;
+
+conversionMethod 'Conversion method' = DATA ConversionMethod (Model);
+idConversionMethod 'Conversion method' (Model m) = id(conversionMethod(m));
+nameConversionMethod 'Conversion method' (Model m) = name(conversionMethod(m));
+
+// transform
+transform 'Transform' (Model m) {
+    NEWSESSION {
+        getToken();
+        EXTERNAL HTTP POST apiUrl() + '/modelderivative/v2/designdata/job' HEADERS accessHeaders
+            PARAMS JSON FROM input = (JSON FROM urn = base64Urn(m)), 
+                             output = (JSON FROM formats = 
+                                            (JSON FROM type = 'svf2' IF INTEGER i = 0,
+                                                       views = (JSON FROM value = CASE WHEN INTEGER j = 0 THEN '3d' 
+                                                                                       WHEN         j = 1 THEN '2d') 
+                                                               IF i = 0,
+                                                       advanced = (JSON FROM conversionMethod = (OVERRIDE idConversionMethod(m), 'modern')) IF i = 0))
+                                                        
+                        TO resultFile;
+    }
+}
+
+transformStatus 'Transform status' = DATA STRING (Model);
+transformProgress 'Transform progress' = DATA STRING (Model);
+
+ready (Model m) = transformStatus(m) = 'success';
+
+getTransformStatus 'Get status' (Model m) {
+    NEWSESSION {
+        getToken();
+        EXTERNAL HTTP GET apiUrl() + '/modelderivative/v2/designdata/' + base64Urn(m) + '/manifest' HEADERS accessHeaders
+            TO resultFile;
+        
+        IMPORT JSON FROM resultFile() FIELDS() STRING status, STRING progress DO {
+            transformStatus(m) <- status;
+            transformProgress(m) <- progress;
+            
+            APPLY;
+        } 
+    }
+}
+
+FORM autodesk r'Autodesk'
+    OBJECTS b = Bucket PANEL
+    PROPERTIES(b) 'Bucket' = key SELECTOR
+    
+    OBJECTS m = Model
+    PROPERTIES loadModel(b) DRAW m TOOLBAR 
+    PROPERTIES(m) GRID openFile DISABLEIF NOT hasFile(m)
+    PROPERTIES(m) key, 
+                        put GRID DISABLEIF NOT hasFile(m), urn READONLY
+    PROPERTIES(m) GRID DISABLEIF NOT urn(m) nameConversionMethod, transform, getTransformStatus
+    PROPERTIES(m) READONLY transformStatus, transformProgress
+    PROPERTIES(m) DELETE
+    
+    FILTERS bucket(m) = b
+;
+
+DESIGN autodesk {
+    OBJECTS {
+        BOX(b) { caption = ''; }
+        NEW models {
+            fill = 1;
+            horizontal = TRUE;
+            MOVE BOX(m) { caption = ''; }
+        }
+        NEW details {
+            fill = 10;
+            horizontal = TRUE;
+        }
+    }
+}

@@ -1,0 +1,57 @@
+MODULE AutodeskViewable;
+
+REQUIRE AutodeskModel;
+
+NAMESPACE Autodesk;
+
+CLASS Viewable 'Viewable';
+model = DATA Model (Viewable) NONULL DELETE;
+
+name '{Name}' = DATA STRING (Viewable) IN id;
+role 'Role' = DATA STRING (Viewable);
+guid r'GUID' = DATA STRING (Viewable);
+
+viewable = GROUP AGGR Viewable v BY model(v), guid(v);
+
+getViewables 'Get' (Model m) {
+    NEWSESSION {
+        getToken();
+
+        EXTERNAL HTTP GET apiUrl() + '/modelderivative/v2/designdata/' + base64Urn(m) + '/metadata' HEADERS accessHeaders
+            TO resultFile;
+
+        LOCAL data = JSON ();
+        IMPORT JSON FROM resultFile() TO() data;
+
+        LOCAL metadata = JSON ();
+        IMPORT JSON FROM data() TO() metadata;
+
+        IMPORT JSON FROM metadata() FIELDS STRING name, STRING role, STRING guid DO {
+            IF NOT viewable(m, guid) THEN NEW v = Viewable {
+                model(v) <- m;
+                guid(v) <- guid;
+            }
+            
+            FOR guid(Viewable v) = guid DO {
+                name(v) <- name;
+                role(v) <- role;
+            }
+        }
+
+        APPLY;
+    }
+}
+
+EXTEND FORM autodesk
+    OBJECTS v = Viewable
+    PROPERTIES(v) READONLY name, role, guid
+    FILTERS model(v) = m
+    
+    PROPERTIES(m) getViewables DRAW v TOOLBAR
+;
+
+DESIGN autodesk {
+   models {
+        MOVE BOX(v) { fill = 0.2; }
+   }
+}

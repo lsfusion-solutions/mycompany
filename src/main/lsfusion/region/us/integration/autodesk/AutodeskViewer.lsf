@@ -1,0 +1,116 @@
+MODULE AutodeskViewer;
+
+REQUIRE AutodeskModel, SystemEvents, AutodeskElement, AutodeskProperty, Employee;
+
+NAMESPACE Autodesk;
+
+useAutodesk r'Autodesk' = DATA BOOLEAN (CustomUser);
+EXTEND FORM editProfile
+    PROPERTIES(u) useAutodesk
+;
+DESIGN editProfile {
+    commons { 
+        MOVE PROPERTY(useAutodesk(u));
+    }
+}
+useAutodesk () = useAutodesk(currentUser());
+
+onWebClientInit() + {
+    IF useAutodesk() THEN {
+        onWebClientInit('https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/style.min.css') <- 1;
+        onWebClientInit('https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.min.js') <- 2;
+        onWebClientInit('autodeskviewer.js') <- 3;
+    }
+}
+
+
+selected = DATA LOCAL BOOLEAN (Element);
+isolated = DATA LOCAL BOOLEAN (Element);
+adel (Model m) = JSON FROM urn = 'urn:' + base64Urn(m) IF ready(m),
+                                     accessToken = accessToken(),
+                                     expiresIn = subtractSeconds(currentDateTime(), accessExpiresAt()),
+                                     selected = (JSON FROM value = externalId(Element e) WHERE selected(e)),
+                                     isolated = (JSON FROM value = externalId(Element e) WHERE isolated(e));
+                    
+
+viewerDefaultActions(JSON j) {
+    CASE WHEN fieldText(j, 'action') = 'getAccessToken' THEN { getToken(); }
+}
+
+EXTEND FORM autodesk
+    PROPERTIES SHOWIF useAutodesk() '' = adel(m) CUSTOM 'autodeskViewer' PANEL ON CHANGE {
+        INPUT j = JSON DO {
+            viewerDefaultActions(j);
+            IF fieldText(j, 'action') = 'selectionChanged' THEN {
+                FOR Element el = elementExternal(m, arrayText(field(j, 'selection'), 1)) AND el != e DO {
+                    EXPAND UP autodesk.e OBJECTS e = el;
+                    SEEK autodesk.e = el;
+                }
+            }
+        }
+    }
+    
+//    EVENTS ON INIT { getToken(); }
+//    EVENTS ON SCHEDULE PERIOD 60 { getToken(); }
+//    
+    EVENTS ON CHANGE e { selected(Element ee) <- ee = e; } 
+;
+
+DESIGN autodesk {
+    details {
+        MOVE PROPERTY(adel(m)) {
+            fill = 3;
+        }
+    }
+}
+
+META defineAutodeskViewer(form)
+    EXTEND FORM form
+        OBJECTS adm = Model PANEL
+        PROPERTIES(adm) 'Model' = key SELECTOR
+        FILTERS ready(adm)
+
+        OBJECTS adv = Viewable PANEL
+        PROPERTIES(adv) 'Viewable' = name SELECTOR
+        FILTERS model(adv) = adm
+
+        TREE adElements ade = Element PARENT parent(ade)
+        PROPERTIES(ade) READONLY name
+        PROPERTIES(ade) EDIT
+        FILTERS model(ade) = adm, in(adv, ade)
+
+        PROPERTIES '' = adel(adm) CUSTOM 'autodeskViewer' ON CHANGE {
+            INPUT j = JSON DO {
+                viewerDefaultActions(j);
+                IF fieldText(j, 'action') = 'selectionChanged' THEN {
+                    FOR Element adel = elementExternal(adm, arrayText(field(j, 'selection'), 1)) AND adel != ade DO {
+                        EXPAND UP form.ade OBJECTS ade = adel;
+                        SEEK form.ade = adel;
+                    }
+                }
+            }
+        }
+
+        EVENTS ON CHANGE ade { selected(Element adel) <- adel = ade; }
+    ;
+
+    DESIGN form {
+        details {
+            NEW autodesk {
+                caption = r'Autodesk';
+                showIf = useAutodesk();
+                NEW autodeskHeader {
+                    horizontal = TRUE;
+                    MOVE BOX(adm) { caption = ''; }
+                    MOVE BOX(adv) { caption = ''; }
+                }
+                NEW autodeskElements {
+                    horizontal = TRUE;
+                    fill = 1;
+                    MOVE BOX(TREE adElements);
+                    MOVE PROPERTY(adel(adm)) { fill = 3; }
+                }
+            }
+        }
+    }
+END

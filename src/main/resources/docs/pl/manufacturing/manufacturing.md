@@ -26,6 +26,10 @@ Dokumenty powiązane:
 - [Raporty](reports.md)
 - [Ustawienia i katalogi Produkcji](settings.md)
 
+Powiązane integracje:
+
+- [Autodesk](../masterdata/autodesk/autodesk.md) — łączenie modeli 3D z Autodesk Platform Services (APS) z zestawieniami materiałów i zamówieniami produkcji.
+
 ## Szybki start
 
 Poniżej znajduje się typowy scenariusz „od [Zestawienia materiałów](bom.md) do [produkcji i zużycia](production-and-consumption.md)”.

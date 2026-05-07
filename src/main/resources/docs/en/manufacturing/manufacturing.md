@@ -26,6 +26,10 @@ Related documents:
 - [Reports](reports.md)
 - [Manufacturing settings and directories](settings.md)
 
+Related integrations:
+
+- [Autodesk](../masterdata/autodesk/autodesk.md) — link Autodesk Platform Services (APS) 3D models to Bills of Materials and manufacturing orders.
+
 ## Quick start
 
 Below is a typical scenario “from [Bill of Materials](bom.md) to [production and consumption](production-and-consumption.md)”.

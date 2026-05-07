@@ -1,0 +1,56 @@
+MODULE Autodesk;
+
+REQUIRE Utils;
+
+// used API :
+// Data Management API
+// Model Derivative API
+
+apiUrl = 'https://developer.api.autodesk.com'; 
+apiKey 'Key' = DATA STRING () CHARWIDTH 40;
+apiSecret 'Secret' = DATA STRING () CHARWIDTH 40;
+
+EXTEND FORM integrationData
+    PROPERTIES() autodeskApiKey = apiKey, autodeskApiSecret = apiSecret
+;
+
+DESIGN integrationData {
+    pane {
+        NEW autodesk {
+            caption = r'Autodesk';
+            NEW autodeskHeader {
+                lines = 3;
+                MOVE PROPERTY(autodeskApiKey);
+                MOVE PROPERTY(autodeskApiSecret);
+            }
+            NEW autodeskPane {
+                fill = 1;
+                tabbed = TRUE;
+            }
+        }
+    }
+}
+
+authHeaders (STRING h) = CASE
+    WHEN h = r'Authorization' THEN r'Basic ' + encodeBase64Unchunked(apiKey() + ':' + apiSecret());
+
+accessToken = DATA STRING ();
+accessExpiresAt = DATA DATETIME ();
+
+getToken() {
+    IF apiKey() AND NOT currentDateTime() < subtractSeconds(accessExpiresAt(), 60) THEN 
+        NEWSESSION {
+            EXTERNAL HTTP POST apiUrl() + '/authentication/v2/token' HEADERS authHeaders 
+                               BODYURL 'grant_type=client_credentials&scope=data:read data:write data:create bucket:read bucket:create bucket:delete' TO resultFile;
+    
+            LOCAL expiresIn = INTEGER();
+    
+            IMPORT JSON FROM resultFile() TO () accessToken = access_token, expiresIn = expires_in;
+            accessExpiresAt() <- sumSeconds(currentDateTime(), expiresIn());
+            
+            APPLY;
+        }
+}
+
+accessHeaders (STRING h) = CASE
+    WHEN h = r'Authorization' THEN r'Bearer ' + accessToken();

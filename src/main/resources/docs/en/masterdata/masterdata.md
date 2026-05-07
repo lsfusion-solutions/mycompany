@@ -24,6 +24,10 @@ Sections:
 - [Contracts](contracts.md)
 - [Activities](activities.md)
 
+Related integrations:
+
+- [Autodesk](autodesk/autodesk.md) — connect 3D models from Autodesk Platform Services (APS) to projects, Bills of Materials, and manufacturing orders.
+
 ## Quick start
 
 Below is a typical sequence for filling directories before you start working.
