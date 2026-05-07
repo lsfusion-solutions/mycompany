@@ -8,7 +8,7 @@ Konfiguracja to jednorazowa praca administratora. Codzienni użytkownicy **nie**
 
 ## 1. Utwórz aplikację APS
 
-1. Przejdź na <https://aps.autodesk.com/myapps/> i zaloguj się kontem Autodesk.
+1. Przejdź na https://aps.autodesk.com/myapps/ i zaloguj się kontem Autodesk.
 2. Kliknij **Create Application**.
 3. Wybierz nazwę (jest widoczna tylko w konsoli APS) i zaznacz API potrzebne integracji:
    - **Data Management API** — dla bucketów i przesyłania plików źródłowych.

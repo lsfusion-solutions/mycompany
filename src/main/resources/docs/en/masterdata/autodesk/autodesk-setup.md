@@ -8,7 +8,7 @@ The setup is one-time work for an administrator. Day-to-day users do **not** nee
 
 ## 1. Create an APS application
 
-1. Go to <https://aps.autodesk.com/myapps/> and sign in with an Autodesk account.
+1. Go to https://aps.autodesk.com/myapps/ and sign in with an Autodesk account.
 2. Click **Create Application**.
 3. Pick a name (it is shown only inside the APS console) and tick the APIs the integration needs:
    - **Data Management API** — for buckets and source-file uploads.
