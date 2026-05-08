@@ -14,7 +14,9 @@ The standalone Autodesk page lives at **Master Data → Autodesk**. The page has
 
 A **bucket** is an Autodesk Platform Services storage container. All your source files (Revit, IFC, DWG, NWD, …) live inside one or more buckets.
 
-> ⚠️ **Bucket keys are globally unique across all of APS, not just your tenant.** If you try to create a bucket called `models` or `test`, you will likely get a `409 Conflict — Bucket already exists` because someone else somewhere on APS already owns that key. Use a tenant-specific prefix such as `mycompany-prod-models`.
+:::warning
+**Bucket keys are globally unique across all of APS, not just your tenant.** If you try to create a bucket called `models` or `test`, you will likely get a `409 Conflict — Bucket already exists` because someone else somewhere on APS already owns that key. Use a tenant-specific prefix such as `mycompany-prod-models`.
+:::
 
 #### Create a bucket
 
@@ -59,7 +61,9 @@ Click **Put** on the model row. MyCompany then:
 
 When the action completes, the **URN** field is populated. The file now lives inside APS and can be translated.
 
-> Files up to ~10 GB are supported. The upload uses APS's modern *signed S3* approach, so the size is limited only by APS's per-bucket policy and your network.
+:::note
+Files up to ~10 GB are supported. The upload uses APS's modern *signed S3* approach, so the size is limited only by APS's per-bucket policy and your network.
+:::
 
 #### Transform — translate to SVF2
 
@@ -112,7 +116,9 @@ Selecting an element in the tree highlights the corresponding geometry in the 3D
 
 Click **Properties** on the Elements toolbar. MyCompany pulls the full property set for every element of the selected viewable and stores it. Properties are grouped into **categories** (Identity Data, Constraints, Materials, …) and shown as a tree under each element.
 
-> Properties calls can take a while for large models. The first call after a translation may return an empty payload while APS is still preparing the data — wait a minute and click again.
+:::note
+Properties calls can take a while for large models. The first call after a translation may return an empty payload while APS is still preparing the data — wait a minute and click again.
+:::
 
 ## Linking to a Project
 

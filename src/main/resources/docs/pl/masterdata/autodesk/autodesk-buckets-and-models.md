@@ -14,7 +14,9 @@ Samodzielna strona Autodesk znajduje się w **Dane podstawowe → Autodesk**. St
 
 **Bucket** to kontener przechowywania w Autodesk Platform Services. Wszystkie pliki źródłowe (Revit, IFC, DWG, NWD, …) znajdują się w jednym lub kilku bucketach.
 
-> ⚠️ **Klucze bucketów są globalnie unikalne w całym APS, a nie tylko w obrębie Twojego tenanta.** Jeśli spróbujesz utworzyć bucket o nazwie `models` lub `test`, najprawdopodobniej otrzymasz błąd `409 Conflict — Bucket already exists`, ponieważ ktoś gdzieś w APS już posiada ten klucz. Użyj prefiksu charakterystycznego dla tenanta, np. `mycompany-prod-models`.
+:::warning
+**Klucze bucketów są globalnie unikalne w całym APS, a nie tylko w obrębie Twojego tenanta.** Jeśli spróbujesz utworzyć bucket o nazwie `models` lub `test`, najprawdopodobniej otrzymasz błąd `409 Conflict — Bucket already exists`, ponieważ ktoś gdzieś w APS już posiada ten klucz. Użyj prefiksu charakterystycznego dla tenanta, np. `mycompany-prod-models`.
+:::
 
 #### Utworzenie bucketa
 
@@ -59,7 +61,9 @@ Kliknij **Put** w wierszu modelu. MyCompany następnie:
 
 Po zakończeniu akcji pole **URN** zostanie wypełnione. Plik znajduje się teraz w APS i może zostać skonwertowany.
 
-> Obsługiwane są pliki do ok. 10 GB. Przesyłanie korzysta z nowoczesnego podejścia *signed S3* w APS, więc rozmiar ograniczony jest jedynie polityką bucketa w APS oraz Twoją siecią.
+:::note
+Obsługiwane są pliki do ok. 10 GB. Przesyłanie korzysta z nowoczesnego podejścia *signed S3* w APS, więc rozmiar ograniczony jest jedynie polityką bucketa w APS oraz Twoją siecią.
+:::
 
 #### Transform — konwersja do SVF2
 
@@ -112,7 +116,9 @@ Wybranie elementu w drzewie podświetla odpowiadającą mu geometrię w przeglą
 
 Kliknij **Properties** na pasku narzędzi Elementy. MyCompany pobiera pełny zestaw właściwości każdego elementu wybranego widoku i zapisuje je. Właściwości są pogrupowane w **kategorie** (Identity Data, Constraints, Materials, …) i wyświetlane jako drzewo pod każdym elementem.
 
-> Wywołania właściwości mogą trwać dłużej dla dużych modeli. Pierwsze wywołanie po konwersji może zwrócić pustą zawartość, gdy APS nadal przygotowuje dane — odczekaj minutę i kliknij ponownie.
+:::note
+Wywołania właściwości mogą trwać dłużej dla dużych modeli. Pierwsze wywołanie po konwersji może zwrócić pustą zawartość, gdy APS nadal przygotowuje dane — odczekaj minutę i kliknij ponownie.
+:::
 
 ## Powiązanie z projektem
 
