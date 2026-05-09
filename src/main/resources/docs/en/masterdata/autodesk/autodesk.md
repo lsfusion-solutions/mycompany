@@ -67,13 +67,17 @@ A **[viewable](autodesk-buckets-and-models.md#viewables)** is one renderable vie
 
 A **[element](autodesk-buckets-and-models.md#elements-and-properties)** is one object inside a viewable — a wall, a column, a fixture. The element tree mirrors the Revit / IFC hierarchy.
 
+#### Item
+
+An **[item](../items.md)** can have one or more Autodesk models linked — see [Linking to an Item](autodesk-buckets-and-models.md#linking-to-an-item). This is the broadest linkage: an item-linked model automatically appears on the item form, on every BoM for that item, and on every manufacturing order for that item.
+
 #### Bill of Materials (BoM)
 
-A **[Bill of Materials](../../manufacturing/bom.md)** in MyCompany can be linked to one or more Autodesk models — see [Linking to a BoM](autodesk-buckets-and-models.md#linking-to-a-bom) — so that the corresponding 3D geometry is shown next to the BoM components.
+A **[Bill of Materials](../../manufacturing/bom.md)** in MyCompany can be linked to one or more Autodesk models — see [Linking to a BoM](autodesk-buckets-and-models.md#linking-to-a-bom) — so that the corresponding 3D geometry is shown next to the BoM components. Models linked to the BoM's item also appear here.
 
 #### Manufacturing order
 
-A **[manufacturing order](../../manufacturing/orders.md)** displays the Autodesk model linked to its Bill of Materials, so a shop-floor user sees the geometry that matches the production order — see [On a manufacturing order](autodesk-viewer.md#on-a-manufacturing-order).
+A **[manufacturing order](../../manufacturing/orders.md)** displays the Autodesk model linked to its Bill of Materials **or** to its item, so a shop-floor user sees the geometry that matches the production order — see [On a manufacturing order](autodesk-viewer.md#on-a-manufacturing-order).
 
 #### Project
 

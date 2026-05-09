@@ -1,6 +1,6 @@
 MODULE BomAutodeskViewer;
 
-REQUIRE Bom, AutodeskViewer;
+REQUIRE Bom, AutodeskViewer, ItemAutodeskViewer;
 
 NAMESPACE Manufacturing;
 
@@ -11,14 +11,8 @@ EXTEND FORM autodesk
     PROPERTIES(m) nameBom
 ;
 
-@defineAutodeskViewer(bom);
+@defineAutodeskViewer(bom, details);
 
 EXTEND FORM bom
-    FILTERS bom(adm) = b
+    FILTERS bom(adm) = b OR item(adm) = item(b)
 ;
-
-NAVIGATOR {
-    masterData {
-        NEW autodesk;
-    }
-}

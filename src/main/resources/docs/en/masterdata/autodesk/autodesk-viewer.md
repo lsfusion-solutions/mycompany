@@ -38,17 +38,31 @@ The tab is laid out in two rows:
 
 The **Model** selector lets you switch between them. Linking is many-to-one (many models → one project), so a project that combines architecture + structure + MEP can keep all three models linked and switch on demand. The link itself is set on the standalone Autodesk page — see [Linking to a Project](autodesk-buckets-and-models.md#linking-to-a-project).
 
+## On an item
+
+1. Open **Master Data → Items** — see [Items](../items.md) for the underlying article.
+2. Pick an item and open it.
+3. Switch to the **Autodesk** tab.
+
+This is the most useful linkage for catalogue / product-design work: link a model to an item once and it shows up on:
+
+- the item's own **Autodesk** tab;
+- every [BoM](../../manufacturing/bom.md) whose item matches;
+- every [manufacturing order](../../manufacturing/orders.md) whose item matches.
+
+The link itself is set on the standalone Autodesk page — see [Linking to an Item](autodesk-buckets-and-models.md#linking-to-an-item).
+
 ## On a Bill of Materials
 
 1. Open **Manufacturing → Operations → Bills of Materials** — see [Bills of Materials](../../manufacturing/bom.md) for the underlying article.
 2. Pick a [BoM](../../manufacturing/bom.md) and open it.
 3. Switch to the **Autodesk** tab.
 
-The layout matches the project form: **Model** selector on top, **Viewable** selector beside it, element tree on the left, 3D viewer on the right. The link from the model to this BoM is set on the standalone Autodesk page — see [Linking to a BoM](autodesk-buckets-and-models.md#linking-to-a-bom).
+The layout matches the project form: **Model** selector on top, **Viewable** selector beside it, element tree on the left, 3D viewer on the right. The **Model** selector lists models linked **either directly to this BoM** (via the *Bill of Materials* field on the model) **or to the BoM's item** (via the *Item* field on the model). See [Linking to a BoM](autodesk-buckets-and-models.md#linking-to-a-bom) and [Linking to an Item](autodesk-buckets-and-models.md#linking-to-an-item) for how to set up either link.
 
 #### Use case
 
-Link the model that contains the assembly to the BoM, then component lines on the BoM and elements in the model can be cross-referenced visually — useful for engineering reviews and for checking that the BoM matches what the design actually requires.
+Link the model that contains the assembly to the BoM (or to the BoM's item), then component lines on the BoM and elements in the model can be cross-referenced visually — useful for engineering reviews and for checking that the BoM matches what the design actually requires.
 
 ## On a manufacturing order
 
@@ -56,12 +70,12 @@ Link the model that contains the assembly to the BoM, then component lines on th
 2. Pick an [order](../../manufacturing/orders.md) and open it.
 3. Switch to the **Autodesk** tab.
 
-The viewer shows models linked to **the [BoM](../../manufacturing/bom.md) that the order is built against**, not models linked directly to the manufacturing order. So for a model to appear here:
+The viewer picks up models that are linked **either to the [BoM](../../manufacturing/bom.md) the order is built against** **or to the order's item**. So a model appears here if any of the following is true:
 
-- The manufacturing order must have a **Bill of Materials** assigned (the **descriptionBom** field on the order header).
-- That BoM must have at least one Autodesk model linked — see [Linking to a BoM](autodesk-buckets-and-models.md#linking-to-a-bom).
+- the model has its **Bill of Materials** field set to the order's BoM — see [Linking to a BoM](autodesk-buckets-and-models.md#linking-to-a-bom);
+- the model has its **Item** field set to the order's item — see [Linking to an Item](autodesk-buckets-and-models.md#linking-to-an-item).
 
-If both conditions are true, the viewer renders the geometry the shop floor is supposed to build.
+In practice the *Item* link is the cleanest path for catalogue items that get manufactured repeatedly: link once, every order for that item shows the model.
 
 ## What the viewer can do
 

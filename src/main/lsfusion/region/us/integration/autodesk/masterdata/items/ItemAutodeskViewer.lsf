@@ -1,0 +1,24 @@
+MODULE ItemAutodeskViewer;
+
+REQUIRE Item, AutodeskViewer;
+
+NAMESPACE MasterData;
+
+item = DATA Item (Model);
+nameItem 'Item' (Model m) = name(item(m));
+
+EXTEND FORM autodesk
+    PROPERTIES(m) nameItem
+;
+
+@defineAutodeskViewer(item, tabs);
+
+EXTEND FORM item
+    FILTERS item(adm) = i
+;
+
+NAVIGATOR {
+    masterData {
+        NEW autodesk;
+    }
+}

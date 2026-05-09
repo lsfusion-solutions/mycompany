@@ -38,17 +38,31 @@ Zakładka jest rozplanowana w dwóch wierszach:
 
 Selektor **Model** umożliwia przełączanie się między nimi. Powiązanie jest wiele-do-jednego (wiele modeli → jeden projekt), więc projekt łączący architekturę + konstrukcję + MEP może mieć wszystkie trzy modele powiązane i przełączać je na żądanie. Samo powiązanie ustawia się na samodzielnej stronie Autodesk — zobacz: [Powiązanie z projektem](autodesk-buckets-and-models.md#linking-to-a-project).
 
+## W towarze
+
+1. Otwórz **Dane podstawowe → Towary** — zobacz: [Towary](../items.md), aby zapoznać się z artykułem źródłowym.
+2. Wybierz towar i otwórz go.
+3. Przejdź do zakładki **Autodesk**.
+
+Jest to najbardziej użyteczne powiązanie do pracy z katalogiem / projektowaniem produktów: powiąż model z towarem raz, a pojawi się on:
+
+- w zakładce **Autodesk** samego towaru;
+- w każdym [zestawieniu materiałów](../../manufacturing/bom.md), którego towar pasuje;
+- w każdym [zamówieniu produkcji](../../manufacturing/orders.md), którego towar pasuje.
+
+Samo powiązanie ustawia się na samodzielnej stronie Autodesk — zobacz: [Powiązanie z towarem](autodesk-buckets-and-models.md#linking-to-an-item).
+
 ## W zestawieniu materiałów
 
 1. Otwórz **Produkcja → Operacje → Zestawienia materiałów** — zobacz: [Zestawienia materiałów](../../manufacturing/bom.md), aby zapoznać się z artykułem źródłowym.
 2. Wybierz [zestawienie materiałów](../../manufacturing/bom.md) i otwórz je.
 3. Przejdź do zakładki **Autodesk**.
 
-Układ jest taki sam jak w formularzu projektu: selektor **Model** u góry, obok niego selektor **Widok**, drzewo elementów po lewej, przeglądarka 3D po prawej. Powiązanie modelu z tym zestawieniem materiałów ustawia się na samodzielnej stronie Autodesk — zobacz: [Powiązanie z zestawieniem materiałów](autodesk-buckets-and-models.md#linking-to-a-bom).
+Układ jest taki sam jak w formularzu projektu: selektor **Model** u góry, obok niego selektor **Widok**, drzewo elementów po lewej, przeglądarka 3D po prawej. Selektor **Model** wyświetla modele powiązane **bezpośrednio z tym zestawieniem materiałów** (poprzez pole *Zestawienie materiałów* w modelu) **lub z towarem zestawienia** (poprzez pole *Towar* w modelu). Zobacz: [Powiązanie z zestawieniem materiałów](autodesk-buckets-and-models.md#linking-to-a-bom) oraz [Powiązanie z towarem](autodesk-buckets-and-models.md#linking-to-an-item), aby skonfigurować dowolne z tych powiązań.
 
 #### Przykład zastosowania
 
-Powiąż model zawierający zespół z zestawieniem materiałów, a wówczas linie komponentów w zestawieniu i elementy w modelu można powiązywać wzrokowo — przydatne podczas przeglądów inżynieryjnych oraz do sprawdzenia, czy zestawienie materiałów odpowiada faktycznym wymaganiom projektu.
+Powiąż model zawierający zespół z zestawieniem materiałów (lub z towarem zestawienia), a wówczas linie komponentów w zestawieniu i elementy w modelu można powiązywać wzrokowo — przydatne podczas przeglądów inżynieryjnych oraz do sprawdzenia, czy zestawienie materiałów odpowiada faktycznym wymaganiom projektu.
 
 ## W zamówieniu produkcji
 
@@ -56,12 +70,12 @@ Powiąż model zawierający zespół z zestawieniem materiałów, a wówczas lin
 2. Wybierz [zamówienie](../../manufacturing/orders.md) i otwórz je.
 3. Przejdź do zakładki **Autodesk**.
 
-Przeglądarka pokazuje modele powiązane z **[zestawieniem materiałów](../../manufacturing/bom.md), na podstawie którego budowane jest zamówienie**, a nie modele powiązane bezpośrednio z zamówieniem produkcji. Aby model pojawił się tutaj:
+Przeglądarka pobiera modele powiązane **z [zestawieniem materiałów](../../manufacturing/bom.md), na podstawie którego budowane jest zamówienie**, **lub z towarem zamówienia**. Model pojawia się tutaj, jeśli spełniony jest którykolwiek z poniższych warunków:
 
-- Zamówienie produkcji musi mieć przypisane **Zestawienie materiałów** (pole **descriptionBom** w nagłówku zamówienia).
-- To zestawienie materiałów musi mieć powiązany przynajmniej jeden model Autodesk — zobacz: [Powiązanie z zestawieniem materiałów](autodesk-buckets-and-models.md#linking-to-a-bom).
+- model ma pole **Zestawienie materiałów** ustawione na zestawienie materiałów zamówienia — zobacz: [Powiązanie z zestawieniem materiałów](autodesk-buckets-and-models.md#linking-to-a-bom);
+- model ma pole **Towar** ustawione na towar zamówienia — zobacz: [Powiązanie z towarem](autodesk-buckets-and-models.md#linking-to-an-item).
 
-Jeśli oba warunki są spełnione, przeglądarka renderuje geometrię, którą hala produkcyjna ma wytworzyć.
+W praktyce powiązanie poprzez *Towar* jest najczystszą drogą dla towarów katalogowych, które są wytwarzane wielokrotnie: wystarczy powiązać raz, a każde zamówienie dla tego towaru wyświetli model.
 
 ## Co potrafi przeglądarka
 

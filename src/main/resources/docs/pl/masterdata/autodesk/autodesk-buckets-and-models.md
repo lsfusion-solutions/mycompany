@@ -120,6 +120,16 @@ Kliknij **Properties** na pasku narzędzi Elementy. MyCompany pobiera pełny zes
 Wywołania właściwości mogą trwać dłużej dla dużych modeli. Pierwsze wywołanie po konwersji może zwrócić pustą zawartość, gdy APS nadal przygotowuje dane — odczekaj minutę i kliknij ponownie.
 :::
 
+## Powiązanie z towarem
+
+Aby model pojawił się w zakładce **Autodesk** [towaru](../items.md):
+
+1. Otwórz samodzielną stronę **Dane podstawowe → Autodesk**.
+2. Wybierz model.
+3. Ustaw jego pole **Towar** na wybrany towar.
+
+Powiązanie z towarem jest opcją o najszerszym zasięgu: oprócz pojawienia się w samym formularzu towaru, ten sam model jest automatycznie wyświetlany w **każdym** [zestawieniu materiałów](../../manufacturing/bom.md) i [zamówieniu produkcji](../../manufacturing/orders.md) dla tego towaru — bez konieczności ustawiania osobnego powiązania z zestawieniem materiałów lub zamówieniem. Zobacz: [Przeglądarka w formularzach → W towarze](autodesk-viewer.md#on-an-item).
+
 ## Powiązanie z projektem
 
 Aby model pojawił się w zakładce **Autodesk** [projektu](../../projectManagement/projects.md):
@@ -132,9 +142,9 @@ Przeglądarka 3D pojawi się w formularzu projektu dla każdego użytkownika z w
 
 ## Powiązanie z zestawieniem materiałów
 
-Tak samo jak powyżej, ale ustaw pole **[Zestawienie materiałów](../../manufacturing/bom.md)** zamiast (lub oprócz) projektu. Jeden model może być jednocześnie powiązany zarówno z [projektem](../../projectManagement/projects.md), jak i z [zestawieniem materiałów](../../manufacturing/bom.md). Efekt na formularzu opisany jest w [Przeglądarka w formularzach → W zestawieniu materiałów](autodesk-viewer.md#on-a-bill-of-materials).
+Ustaw pole **[Zestawienie materiałów](../../manufacturing/bom.md)** w modelu, gdy chcesz, aby model był powiązany z jednym konkretnym zestawieniem materiałów (a nie z każdym zestawieniem, które używa tego samego towaru). Jeden model może być jednocześnie powiązany z [projektem](../../projectManagement/projects.md), [zestawieniem materiałów](../../manufacturing/bom.md) i [towarem](../items.md) — formularz pobiera modele dopasowane przez *dowolne* z tych powiązań. Efekt na formularzu opisany jest w [Przeglądarka w formularzach → W zestawieniu materiałów](autodesk-viewer.md#on-a-bill-of-materials).
 
-Gdy otwierane jest [zamówienie produkcji](../../manufacturing/orders.md), MyCompany automatycznie pobiera model powiązany z zestawieniem materiałów tego zamówienia — nie ma osobnego powiązania „Zamówienie produkcji”. Zobacz: [Przeglądarka w formularzach → W zamówieniu produkcji](autodesk-viewer.md#on-a-manufacturing-order).
+Gdy otwierane jest [zamówienie produkcji](../../manufacturing/orders.md), MyCompany automatycznie pobiera model powiązany z zestawieniem materiałów tego zamówienia **lub** z towarem tego zamówienia — nie ma osobnego powiązania „Zamówienie produkcji”. Zobacz: [Przeglądarka w formularzach → W zamówieniu produkcji](autodesk-viewer.md#on-a-manufacturing-order).
 
 ## Rozwiązywanie problemów
 

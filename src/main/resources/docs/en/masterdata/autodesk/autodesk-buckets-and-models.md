@@ -120,6 +120,16 @@ Click **Properties** on the Elements toolbar. MyCompany pulls the full property 
 Properties calls can take a while for large models. The first call after a translation may return an empty payload while APS is still preparing the data — wait a minute and click again.
 :::
 
+## Linking to an Item
+
+To make a model show up on an [item](../items.md)'s **Autodesk** tab:
+
+1. Open the standalone **Master Data → Autodesk** page.
+2. Select the model.
+3. Set its **Item** field to the item you want.
+
+Linking to an item is the most powerful option: in addition to appearing on the item form itself, the same model is automatically surfaced on **every** [BoM](../../manufacturing/bom.md) and [manufacturing order](../../manufacturing/orders.md) for that item — without setting a separate BoM or order link. See [Viewer in forms → On an item](autodesk-viewer.md#on-an-item).
+
 ## Linking to a Project
 
 To make a model show up on a [project](../../projectManagement/projects.md)'s **Autodesk** tab:
@@ -132,9 +142,9 @@ The 3D viewer will appear on the project form for any user with **Autodesk** ena
 
 ## Linking to a BoM
 
-Same as above, but set the **[Bill of Materials](../../manufacturing/bom.md)** field instead of (or in addition to) the project. One model can be linked to both a [project](../../projectManagement/projects.md) and a [BoM](../../manufacturing/bom.md) at the same time. The result on the form is described in [Viewer in forms → On a Bill of Materials](autodesk-viewer.md#on-a-bill-of-materials).
+Set the **[Bill of Materials](../../manufacturing/bom.md)** field on the model when you want the model to be tied to one specific BoM (rather than every BoM that uses the same item). One model can be linked to a [project](../../projectManagement/projects.md), a [BoM](../../manufacturing/bom.md), and an [item](../items.md) simultaneously — the form picks up models matched by *any* of those links. The result on the form is described in [Viewer in forms → On a Bill of Materials](autodesk-viewer.md#on-a-bill-of-materials).
 
-When a [manufacturing order](../../manufacturing/orders.md) is opened, MyCompany automatically picks up the model that is linked to the order's BoM — there is no separate "Manufacturing order" link to set. See [Viewer in forms → On a manufacturing order](autodesk-viewer.md#on-a-manufacturing-order).
+When a [manufacturing order](../../manufacturing/orders.md) is opened, MyCompany automatically picks up the model linked to the order's BoM **or** to the order's item — there is no separate "Manufacturing order" link to set. See [Viewer in forms → On a manufacturing order](autodesk-viewer.md#on-a-manufacturing-order).
 
 ## Troubleshooting
 

@@ -67,13 +67,17 @@ Jeśli zakładka **Autodesk** nie pojawia się w formularzu, sprawdź: *(a)* zna
 
 **[Element](autodesk-buckets-and-models.md#elements-and-properties)** to jeden obiekt w widoku — ściana, kolumna, instalacja. Drzewo elementów odzwierciedla hierarchię Revit / IFC.
 
+#### Towar
+
+**[Towar](../items.md)** może mieć powiązany jeden lub więcej modeli Autodesk — zobacz: [Powiązanie z towarem](autodesk-buckets-and-models.md#linking-to-an-item). Jest to najszersze powiązanie: model powiązany z towarem automatycznie pojawia się w formularzu towaru, w każdym zestawieniu materiałów dla tego towaru oraz w każdym zamówieniu produkcji dla tego towaru.
+
 #### Zestawienie materiałów (BoM)
 
-**[Zestawienie materiałów](../../manufacturing/bom.md)** w MyCompany może być powiązane z jednym lub wieloma modelami Autodesk — zobacz: [Powiązanie z zestawieniem materiałów](autodesk-buckets-and-models.md#linking-to-a-bom) — dzięki czemu odpowiednia geometria 3D jest wyświetlana obok komponentów zestawienia.
+**[Zestawienie materiałów](../../manufacturing/bom.md)** w MyCompany może być powiązane z jednym lub wieloma modelami Autodesk — zobacz: [Powiązanie z zestawieniem materiałów](autodesk-buckets-and-models.md#linking-to-a-bom) — dzięki czemu odpowiednia geometria 3D jest wyświetlana obok komponentów zestawienia. Modele powiązane z towarem zestawienia również pojawiają się w tym miejscu.
 
 #### Zamówienie produkcji
 
-**[Zamówienie produkcji](../../manufacturing/orders.md)** wyświetla model Autodesk powiązany z jego zestawieniem materiałów, dzięki czemu użytkownik na hali produkcyjnej widzi geometrię odpowiadającą zamówieniu — zobacz: [W zamówieniu produkcji](autodesk-viewer.md#on-a-manufacturing-order).
+**[Zamówienie produkcji](../../manufacturing/orders.md)** wyświetla model Autodesk powiązany z jego zestawieniem materiałów **lub** z jego towarem, dzięki czemu użytkownik na hali produkcyjnej widzi geometrię odpowiadającą zamówieniu produkcji — zobacz: [W zamówieniu produkcji](autodesk-viewer.md#on-a-manufacturing-order).
 
 #### Projekt
 
