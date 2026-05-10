@@ -24,7 +24,7 @@ odometerValue 'Odometer value' = DATA INTEGER (VehicleDriver);
 note 'Note' = DATA ISTRING (VehicleDriver) CHARWIDTH 30;
 
 lastVehicleDriver (Vehicle v, VehicleDriver vd) = GROUP LAST VehicleDriver d ORDER date(d), d WHERE d != vd BY vehicle(d);
-WHEN LOCAL SETCHANGED(vehicle(VehicleDriver d)) DO {
+WHEN LOCAL SETCHANGED(vehicle(VehicleDriver d)) AND NOT CHANGED(employee(d)) DO {
     employee(d) <- employee(lastVehicleDriver(vehicle(d), d));
 }
 
