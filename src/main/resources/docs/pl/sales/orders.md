@@ -40,7 +40,7 @@ Zwykle karta zawiera:
 - **[Lokalizację](../inventory/locations.md)**;
 - **Adres dostawy** (jeśli używany);
 - **Typ zamówienia** (jeśli używanych jest wiele typów);
-- **Osobę odpowiedzialną**.
+- **Nasz przedstawiciel** — pracownik firmy odpowiedzialny za zamówienie; domyślnie podstawiany jest bieżący użytkownik, jeśli jest powiązany z pracownikiem.
 
 ### Linie zamówienia
 

@@ -40,7 +40,7 @@ Typically, the card includes:
 - **[Location](../inventory/locations.md)**;
 - **Delivery address** (if used);
 - **Order type** (if multiple types are used);
-- **Responsible person**.
+- **Our representative** — the company employee responsible for the order; defaults to the current user if they are linked to an employee.
 
 ### Order lines
 

@@ -71,10 +71,15 @@ Ważne: do sprawdzenia progu używana jest „pełna kwota” (wyliczona z iloś
 
 Rabat może być kumulacyjny i włączany dopiero, jeśli [klient](../masterdata/partners.md) ma:
 
-- łączny wolumen wcześniejszych zakupów powyżej progu;
-- albo wolumen zakupów za poprzedni miesiąc powyżej progu.
+- łączny wolumen wcześniejszych zakupów powyżej progu (pole rabatu **„Sprzedaż klientowi od”**);
+- albo wolumen zakupów za poprzedni miesiąc kalendarzowy powyżej progu (pole rabatu **„Sprzedaż klientowi w poprzednim miesiącu od”**).
 
-Wartości te pochodzą z historii sprzedaży klienta.
+Wartości porównywane z progami są akumulowane przez system:
+
+- **„Sprzedaż”** w karcie klienta — suma z całego rejestru sprzedaży (z uwzględnieniem ręcznie wprowadzonej wartości początkowej, jeśli taka jest);
+- **„Sprzedaż w poprzednim miesiącu”** w karcie klienta — suma sprzedaży z poprzedniego miesiąca kalendarzowego.
+
+Porównanie używa wartości na początek bieżącej sesji (tj. zakupy w tej samej sesji nie przesuwają progu).
 
 ## Jak wyliczana jest cena dla rabatu
 
