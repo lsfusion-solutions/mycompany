@@ -33,6 +33,20 @@ Najczęściej przyjęcie staje się dostępne po tym, jak:
 
 Jeśli w zamówieniu zakupu wciąż jest coś „do przyjęcia”, system może utworzyć (lub wybrać już utworzone) przyjęcie gotowe do przetworzenia.
 
+### Przyjęcie rezerwowe (utrzymywane automatycznie)
+
+Przy potwierdzeniu zamówienia (i przy kolejnych zmianach) system automatycznie:
+
+1. Sprawdza, czy w zamówieniu jest pozostała ilość do przyjęcia (pole **„Gotowe”** w liniach).
+2. Albo wybiera powiązane przyjęcie w statusie **„Gotowe”**, albo tworzy nowe z typem przyjęcia skonfigurowanym w typie zamówienia.
+3. Synchronizuje nagłówek tego przyjęcia (dostawca, zaplanowana data, lokalizacja) z zamówieniem.
+4. Dodaje/usuwa linie odpowiednio do aktualnej pozostałej ilości; pierwotne zapotrzebowanie linii przyjęcia jest ustawiane równe wartości „Gotowe” z linii zamówienia.
+5. Jeśli żadna linia zamówienia nie ma już pozostałej ilości, przyjęcie rezerwowe jest usuwane.
+
+To przyjęcie jest tworzone/aktualizowane przy zmianie pola „Gotowe” w linii, dostawcy, zaplanowanej daty, lokalizacji lub numeru zamówienia; jest też odbudowywane przy powrocie zamówienia z „Zablokowane” do „Potwierdzone”.
+
+Jeśli przyjęcie miałoby przekroczyć ilość zamówioną w linii (nadwyżka), system pokazuje komunikat *„Przyjęcie przekracza ilość w zamówieniu”* i odrzuca zapis.
+
 Uwaga: przyjęcia są zwykle tworzone **dla towarów ([towary](../masterdata/items.md))**. Jeśli zamówienie zakupu zawiera usługi, zwykle nie są one przyjmowane magazynowo.
 
 ## Jak przetworzyć przyjęcie na podstawie zamówienia zakupu
@@ -70,11 +84,11 @@ Na karcie zamówienia zakupu zwykle dostępne są wskaźniki na poziomie linii:
 
 ## Ograniczenia przy zamykaniu/blokowaniu zamówienia zakupu
 
-W niektórych konfiguracjach mogą obowiązywać ograniczenia związane z przyjęciami, na przykład:
+[Typ zamówienia](settings.md) ma dwie niezależne flagi wpływające na akcję **„Zablokuj”**:
 
-- nie można zamknąć/zablokować zamówienia zakupu, jeśli ma aktywne przyjęcia;
-- nie można zamknąć/zablokować zamówienia zakupu, jeśli nie jest w całości przyjęte.
+- **„Zakaz blokowania przy aktywnych przyjęciach”** — system nie pozwoli zablokować zamówienia, dopóki ma ono przyjęcie rezerwowe w statusie „Gotowe”. Gdy flaga jest wyłączona, takie przyjęcie jest po prostu usuwane przy blokowaniu.
+- **„Zakaz blokowania przy niepełnym przyjęciu”** — system nie pozwoli zablokować zamówienia, jeśli pozostała ilość `Gotowe > 0` (są linie, które nie zostały w pełni przyjęte).
 
-Jeśli napotkasz takie ograniczenie, sprawdź listę przyjęć w zamówieniu zakupu oraz faktyczną realizację linii.
+W przypadku naruszenia którejkolwiek z tych reguł wyświetlany jest odpowiedni komunikat, a zamówienie pozostaje w statusie „Potwierdzone”.
 
 Zobacz też: [Ustawienia](settings.md).

@@ -37,6 +37,25 @@ Karta cennika może zawierać strumień komentarzy:
 - dodawaj komentarze, aby rejestrować uzgodnienia i źródło cen;
 - przeglądaj datę/godzinę i autora komentarzy.
 
+## Statusy cennika
+
+Cennik zwykle przechodzi przez dwa statusy:
+
+1. **Projekt** — wartości cen można zmieniać; lista nowych cenników jest domyślnie filtrowana do tego statusu.
+2. **Gotowe** — cennik jest aktywny; ceny stają się źródłem podstawiania w zamówieniach zakupu.
+
+Przejście do „Gotowe” wykonuje się akcją **„Oznacz jako gotowy”** w karcie cennika.
+
+## Import cen z zewnętrznego źródła
+
+Jeśli dla [dostawcy](../masterdata/partners.md) skonfigurowano **typ importu cennika**, w karcie cennika tego dostawcy pojawia się akcja **„Import”**:
+
+1. W ustawieniach utwórz/wybierz typ importu i zdefiniuj jego skrypt (na przykład parser XLSX/CSV lub wywołanie zewnętrznego API).
+2. W karcie [dostawcy](../masterdata/partners.md) ustaw ten typ importu.
+3. Utwórz cennik dla tego dostawcy i kliknij **„Import”** — skrypt automatycznie wypełni linie.
+
+Akcja pojawia się tylko wtedy, gdy istnieje skrypt importu dla typu dostawcy; dla cennika przeniesionego do „Gotowe” (tylko do odczytu) akcja jest niedostępna.
+
 ## Kopiowanie cennika
 
 Jeśli chcesz szybko utworzyć nowy cennik na podstawie poprzedniego (na przykład dla nowego okresu), użyj kopiowania:

@@ -24,11 +24,27 @@ Znaczenie praktyczne: jedno zamówienie zakupu może być pokryte **wieloma fakt
 
 Zwykle faktura zakupu na podstawie zamówienia zakupu jest używana, gdy włączony jest przepływ finansowy ([„Fakturowanie”](../invoicing/invoicing.md)) i trzeba zarejestrować kwotę do zapłaty [dostawcy](../masterdata/partners.md).
 
-Z reguły tworzenie faktury zakupu jest dostępne, gdy:
+Akcja **„Utwórz fakturę zakupu”** pojawia się w karcie zamówienia, gdy:
 
-1. Zamówienie zakupu przechodzi w status **„Potwierdzone”**.
-2. Dla typu zamówienia zakupu skonfigurowano typ faktury zakupu (jeśli jest to wymagane w konfiguracji).
-3. Zamówienie zakupu ma linie, które nie są jeszcze pokryte fakturą zakupu.
+1. Zamówienie jest w statusie **„Potwierdzone”**.
+2. Dla typu zamówienia skonfigurowano typ faktury zakupu i tryb fakturowania (zob. niżej).
+3. Po zamówieniu pozostała ilość do zafakturowania (pole **„Do faktury”** w liniach).
+
+### Tryb fakturowania
+
+Typ zamówienia określa, jaka ilość jest przenoszona do faktury z linii zamówienia:
+
+- **„Ilość zamówiona”** — do faktury podstawiana jest ilość zamówiona pomniejszona o ilości już zafakturowane w aktywnych fakturach. Tryb domyślny.
+- **„Ilość przyjęta”** — do faktury podstawiane są tylko te ilości, dla których jest fakt przyjęcia (z powiązanych aktywnych przyjęć). Dostępne przy włączonym module magazynowym; akcja „Utwórz fakturę zakupu” w tym trybie pojawi się dopiero po przyjęciu części towaru.
+
+### Kontrola po liniach
+
+Linie zamówienia pokazują dwa pola pomocnicze:
+
+- **„Zafakturowano”** — ilość pokryta aktywnymi fakturami (nieanulowane, status „do zapłaty” lub wyżej);
+- **„Zapłacono”** — ilość pokryta w pełni opłaconymi fakturami.
+
+Linie są podświetlane, gdy „Zafakturowano”/„Zapłacono” jest mniejsze niż ilość zamówiona; kliknięcie pola otwiera listę powiązanych faktur zakupu.
 
 ## Jak utworzyć fakturę zakupu na podstawie zamówienia zakupu
 

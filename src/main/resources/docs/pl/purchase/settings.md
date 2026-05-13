@@ -6,31 +6,51 @@ title: Ustawienia zakupu
 
 Ustawienia zwykle znajdują się w: **„Zakup” → „Konfiguracja” → „Ustawienia”**.
 
-## Parametry wpływające na zamówienia zakupu
+## Typ zamówienia zakupu
 
-Zestaw parametrów zależy od konfiguracji. W praktyce zachowanie zakupów najczęściej zależy od:
+Większość zachowań zakupów konfiguruje się w **typie zamówienia zakupu**. Dla każdego typu można ustawić:
 
-- typów zamówień zakupu (i powiązanych reguł);
-- tego, czy używane są [przyjęcia](receipts.md) (przepływ [Magazynowania](../inventory/inventory.md));
-- tego, czy używane są [faktury zakupu](bills.md) i [płatności wychodzące](../invoicing/outgoing-payments.md) (przepływ [„Fakturowanie”](../invoicing/invoicing.md));
-- szablonów wydruku i reguł wysyłania zamówień zakupu do [dostawców](../masterdata/partners.md).
+### Pola podstawowe
 
-### Ograniczenia przy zamykaniu/blokowaniu zamówienia zakupu
+- **numerator** — format i licznik numerów zamówień;
+- **walutę domyślną** oraz flagę „cena zawiera podatki”;
+- **lokalizację domyślną** (jeśli używany jest przepływ [Magazynowania](../inventory/inventory.md));
+- **warunki płatności** (jeśli używany jest przepływ [Fakturowania](../invoicing/invoicing.md)).
 
-W niektórych konfiguracjach mogą obowiązywać ograniczenia przy zakończeniu (blokowaniu) zamówienia zakupu, na przykład:
+### Powiązania z innymi dokumentami
 
-- nie wolno zakończyć zamówienia zakupu, jeśli ma aktywne [przyjęcia](receipts.md);
-- nie wolno zakończyć zamówienia zakupu, jeśli nie jest w całości przyjęte;
-- nie wolno zakończyć zamówienia zakupu, jeśli nie jest opłacone w całości.
+- **Typ przyjęcia** — jaki dokument tworzony jest jako przyjęcie rezerwowe przy potwierdzeniu zamówienia (zob. [Przyjęcia do zamówień zakupu](receipts.md));
+- **Typ faktury zakupu** — jaki dokument tworzy akcja „Utwórz fakturę zakupu” (zob. [Faktury zakupu do zamówień zakupu](bills.md));
+- **Tryb fakturowania** — „Ilość zamówiona” lub „Ilość przyjęta”; określa, jaka ilość trafia do faktury;
+- **Typ zlecenia produkcji** — przy potwierdzeniu zamówienia zakupu może być automatycznie tworzone zlecenie produkcji dla odpowiednich pozycji.
 
-Jeśli napotkasz takie ograniczenie, sprawdź dokumenty powiązane oraz faktyczną realizację linii.
+### Wysyłanie zamówienia zakupu do dostawcy
 
-## Szablony i wysyłanie zamówienia zakupu
+Pola używane przez akcję **„Wyślij”**:
 
-Jeśli używane jest wysyłanie zamówienia zakupu do dostawcy, zwykle konfiguruje się:
+- **szablon załącznika** — wydruk zamówienia załączany do wiadomości;
+- **Temat** — tytuł wiadomości;
+- **treść wiadomości**;
+- adres **Kopia do** (Cc).
 
-- szablon wydruku zamówienia zakupu;
-- **Temat** i treść e-maila;
-- adres **Kopia do** (BCC).
+Po konfiguracji w karcie zamówienia w statusie „Projekt” pojawia się akcja **„Wyślij”** przenosząca zamówienie do statusu „Wysłane”.
 
-Po konfiguracji akcja **„Wysłij”** będzie dostępna dla użytkowników na karcie zamówienia zakupu.
+### Ograniczenia blokowania
+
+Trzy niezależne flagi wpływające na akcję **„Zablokuj”**:
+
+- **„Zakaz blokowania przy aktywnych przyjęciach”** — nie pozwoli zablokować zamówienia z przyjęciem rezerwowym w statusie „Gotowe”;
+- **„Zakaz blokowania przy niepełnym przyjęciu”** — nie pozwoli zablokować zamówienia, w którym jest jeszcze pozostała ilość do przyjęcia;
+- **„Zakaz blokowania przy niepełnej zapłacie”** — nie pozwoli zablokować zamówienia, w którym nie cała ilość jest opłacona.
+
+Bez tych flag blokowanie odbywa się bez kontroli (a przyjęcie rezerwowe jest po prostu usuwane).
+
+## Typ importu cennika
+
+Osobno konfigurowany jest **typ importu cennika** ze skryptem, który obsługuje akcję **„Import”** w karcie cennika dostawcy. Zobacz: [Cenniki dostawców → Import cen](pricelists.md#import-cen-z-zewnętrznego-źródła).
+
+## Inne słowniki wpływające na pracę zakupów
+
+- **[dostawcy](../masterdata/partners.md)** — pola nagłówka, lokalizacja domyślna, typ importu cennika, okres autozamówienia;
+- **[towary](../masterdata/items.md)** i **opakowania zakupowe** — używane przez autozamówienie do zaokrąglania ilości;
+- **[podatki](../invoicing/taxes.md)** i **[waluty](../masterdata/currencies.md)** — wspólne słowniki.
