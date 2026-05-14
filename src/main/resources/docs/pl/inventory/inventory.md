@@ -48,10 +48,10 @@ Poniżej przedstawiono typowy cykl magazynowy.
 
 Sekcja „Magazynowanie” zazwyczaj zawiera grupy:
 
-- **Operacje** — dokumenty (przyjęcia, wydania, przemieszczania, odpad, korekty zapasów).
-- **Procesy** — zadania i panele przetwarzania (np. kompletacja).
-- **Raportowanie** — raporty stanów i ruchów.
-- **Ustawienia** — parametry i katalogi.
+- **Operacje** — dokumenty ([przyjęcia](receipts.md), [wydania i przemieszczania](shipments.md), [odpad](scrap.md), [korekty zapasów](adjustments.md)), a także katalogi [partii](lots-and-packages.md) i [pakietów](lots-and-packages.md).
+- **Procesy** — widoki kontrolne oraz scenariusze mobilne / wsadowe (na przykład mobilne zadanie kompletacyjne, mobilne przemieszczanie).
+- **Raportowanie** — raporty stanów i ruchów oraz podgląd rejestrów ([raporty i rejestry](reports-and-ledgers.md)).
+- **Konfiguracja** — katalogi ([lokalizacje](locations.md), typy dokumentów) oraz formularz **„Ustawienia”** z parametrami przekrojowymi.
 
 ## Terminy
 
@@ -69,7 +69,7 @@ Dokument rejestrujący wydanie towaru z [lokalizacji](locations.md).
 
 #### [Przemieszczanie](transfers.md)
 
-Dokument przemieszczający towar pomiędzy [lokalizacjami](locations.md).
+Dokument przemieszczający towar pomiędzy [lokalizacjami](locations.md). Technicznie jest to [wydanie](shipments.md), którego **typ** ma ustawioną flagę **„Przemieszczanie”**; wtedy wypełniane są jednocześnie „Lokalizacja źródłowa” i „Lokalizacja docelowa”, a system tworzy odpowiednie zapisy w rejestrze kosztów po obu stronach.
 
 #### [Odpad](scrap.md)
 

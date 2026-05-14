@@ -46,12 +46,12 @@ Below is a typical warehouse cycle.
 
 ## Navigation
 
-The “Inventory” section typically contains groups:
+The "Inventory" section typically contains groups:
 
-- **Operations** — documents (receipts, shipments, transfers, scrap, adjustments).
-- **Processes** — tasks and processing panels (e.g., picking).
-- **Reporting** — stock and movement reports.
-- **Settings** — parameters and directories.
+- **Operations** — documents ([receipts](receipts.md), [shipments and transfers](shipments.md), [scrap](scrap.md), [adjustments](adjustments.md)), as well as the [Lots](lots-and-packages.md) and [Packages](lots-and-packages.md) directories.
+- **Processes** — control views and mobile / batch workflows (for example, mobile picking task, mobile transfer).
+- **Reporting** — stock and movement reports and ledger views ([reports and ledgers](reports-and-ledgers.md)).
+- **Configuration** — directories ([locations](locations.md), document types) and the **Settings** form with cross-cutting parameters.
 
 ## Terms
 
@@ -69,7 +69,7 @@ A document that records goods going out of the [location](locations.md).
 
 #### [Transfer](transfers.md)
 
-A document that moves goods between [locations](locations.md).
+A document that moves goods between [locations](locations.md). Technically a transfer is a [shipment](shipments.md) whose **type** has the **"Is transfer"** flag set; "From location" and "To location" then both apply, and the system creates the corresponding cost ledger entries on both sides.
 
 #### [Scrap](scrap.md)
 

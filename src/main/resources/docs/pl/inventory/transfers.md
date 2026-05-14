@@ -67,6 +67,10 @@ Aby utworzyć poprawne przemieszczenie, system sprawdza:
 
 Jeżeli którykolwiek warunek nie jest spełniony, system pokazuje komunikat i nie pozwala zapisać/zakończyć dokumentu.
 
+## Zapisy w rejestrze kosztów
+
+Gdy przemieszczenie zostaje przeniesione do **„Wykonano”**, system tworzy **dwa** zapisy w rejestrze kosztów — zapis rozchodowy na lokalizacji **źródłowej** i zapis przychodowy na lokalizacji **docelowej** — pod warunkiem, że obie lokalizacje mają różne konta kosztowe. Kwota zapisu przychodowego jest brana z odpowiadającego zapisu rozchodowego, więc towar trafia do lokalizacji docelowej po tym samym koszcie, po którym został wydany ze źródła. Jeżeli obie lokalizacje mają to samo konto kosztowe, zapisów w rejestrze nie tworzy się (przemieszczenie jest tylko logicznym przeniesieniem).
+
 ## Typowy scenariusz
 
 1. Otwórz listę **Wydania** i utwórz nowy dokument.

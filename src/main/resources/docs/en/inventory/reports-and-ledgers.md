@@ -8,10 +8,10 @@ The Inventory reporting section typically includes reports and ledgers.
 
 Most commonly used:
 
-- stock on hand report;
-- inventory valuation;
-- item movements;
-- [costing reports](costing.md).
+- **Inventory report** — stock on hand with optional filters and breakdowns;
+- **Inventory valuation** — quantity, unit cost and total cost per item/location, including the last receipt price;
+- **Product moves** — item movements between locations over a period;
+- **Cost ledger report** — entries of the cost ledger (see also [item costing](costing.md)).
 
 ## Ledgers
 
