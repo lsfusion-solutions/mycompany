@@ -90,11 +90,15 @@ Poniżej znajduje się zestaw statusów **dokładnie taki, jak wynika z kodu źr
    - system sprawdza, że docelowa [lokalizacja](locations.md) jest dzieckiem lokalizacji dokumentu oraz że łączna ilość rozmieszczona nie przekracza ilości przyjętej.
 5. **Anulowan** — dokument anulowany.
 
-### Przejście z Projekt do „Gotowy”
+### Akcje przejścia statusu
 
-W karcie przyjęcia dostępna jest akcja **„Oznacz jako Do zrobenia”** umożliwiająca przejście dokumentu z **Projekt** do **Gotowy** (w praktyce: przekazanie do realizacji).
+W karcie przyjęcia dostępne są następujące przyciski akcji, które przenoszą dokument między statusami:
 
-Lista przyjęć może również udostępniać akcję masową **„Oznacz jako Do zrobenia”**, aby przenieść kilka wybranych przyjęć do **Gotowy**.
+- **„Oznacz jako Do zrobienia”** — przenosi dokument z **Projekt** do **Gotowy** (dostępne także jako akcja masowa na liście przyjęć).
+- **„Oznacz jako Wykonano”** — potwierdza realizację i przenosi dokument do **Wykonano**; data wykonania ustawia się automatycznie. Dostępne z **Projekt** lub **Gotowy**. Na liście dostępna jest akcja masowa o tej samej nazwie. Polecenie pomocnicze **„Wypełnij wykonano”** jednym kliknięciem kopiuje ilość planowaną do ilości wykonanej dla wszystkich pozycji.
+- **„Odłożenie”** — dla typów przyjęć obsługujących odłożenie przenosi dokument z **Wykonano** do **Odłożone**, gdy pozycje odłożenia są wypełnione.
+- **„Anuluj”** — przenosi dokument do **Anulowano**.
+- **„Kopiuj”** — tworzy nowe przyjęcie w stanie Projekt z tym samym nagłówkiem i pozycjami.
 
 ## Odłożenie (ewidencja adresowa)
 

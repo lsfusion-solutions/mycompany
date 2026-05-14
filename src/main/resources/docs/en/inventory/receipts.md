@@ -90,11 +90,15 @@ Below is the status set **as it follows from the source code**.
    - the system checks that the target [location](locations.md) is a child of the document location and that the total put away does not exceed the received quantity.
 5. **Canceled** — the document is Canceled.
 
-### Moving from Draft to “Ready”
+### Status transition actions
 
-In the receipt card, an action **“Mark as Todo”** is available to move the document from **Draft** to **Ready** (in practice: move it to execution).
+The receipt card has the following action buttons that move the document between statuses:
 
-The receipt list can also provide a bulk action **“Mark as Todo”** to move several selected receipts to **Ready**.
+- **Mark as Todo** — moves the document from **Draft** to **Ready** (also available as a bulk action in the receipt list).
+- **Mark as Done** — confirms execution and moves the document to **Done**; the execution date is set automatically. Available from **Draft** or **Ready**. A bulk action of the same name is available in the list. A helper command **Fill done** copies the planned quantity into the done quantity for all lines at once.
+- **Put away** — for receipt types that support put-away, moves the document from **Done** to **Put away** after the put-away lines are filled in.
+- **Cancel** — moves the document to **Canceled**.
+- **Copy** — creates a new draft receipt with the same header and lines.
 
 ## Put away (bin-level storage)
 

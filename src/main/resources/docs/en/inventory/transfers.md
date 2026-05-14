@@ -67,6 +67,10 @@ To create a correct transfer, the system checks:
 
 If any condition is not met, the system shows a message and does not allow saving/completing the document.
 
+## Cost ledger postings
+
+When a transfer is moved to **Done**, the system creates **two** cost ledger entries — an outgoing one on the **source** location and an incoming one on the **destination** location — provided the two locations have different cost accounts. The cost of the incoming entry is taken from the corresponding outgoing entry, so the item arrives at the destination at the same cost it left the source. If both locations share the same cost account, no cost ledger postings are made (the transfer is just a logical move).
+
 ## Typical scenario
 
 1. Open the **Shipments** list and create a new document.

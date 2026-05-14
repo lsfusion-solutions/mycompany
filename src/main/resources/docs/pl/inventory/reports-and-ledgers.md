@@ -8,10 +8,10 @@ Sekcja raportowania Magazynowania zwykle zawiera raporty i rejestry.
 
 Najczęściej używane:
 
-- raport stanu zapasów;
-- koszt stanów towarów;
-- ruchy towarów;
-- [raporty kosztów](costing.md).
+- **Raport zapasów** — stany na datę z dowolnymi filtrami i rozbiciami;
+- **Koszt stanów towarów** — ilość, koszt jednostkowy i całkowity wg towaru/lokalizacji, w tym ostatnia cena przyjęcia;
+- **Ruchy towarów** — przemieszczenia towarów między lokalizacjami za okres;
+- **Raport rejestru kosztów** — zapisy rejestru kosztów (zobacz także [kalkulacja kosztu pozycji](costing.md)).
 
 ## Rejestry
 
