@@ -73,6 +73,8 @@ The project card contains the main fields:
 
 > In some organizations, the number is generated automatically. If the number is filled in by the system, do not change it manually.
 
+> When a project is created, the system may pre-fill some fields automatically (for example, the start date is set to the current date, the manager is set to the current user if they are an employee, and the company is set to the default company). Check these values before saving.
+
 #### Project description
 
 The description field is convenient to use as a “project passport”:
@@ -92,12 +94,13 @@ Recommended approach:
 - use the status to clearly understand whether the project is active or completed;
 - move the project to a closed status only after completing the main work and recording the results.
 
-### Completion and inactivity
+### Completion, archiving, and the active state
 
 A project may be considered:
 
 - **closed** — if a closing status is set;
-- **inactive** — if the end date is already in the past.
+- **archived** — if the end date is already in the past;
+- **active** — neither closed nor archived (this is the default selection in the project list).
 
 This affects selections in lists and makes it easier to work with current projects.
 
@@ -112,8 +115,9 @@ If the project is actually finished but its tasks are still being changed, check
 The project card typically provides related data (the set depends on configuration):
 
 - **[project tasks](tasks.md)**;
-- **[participants (team) and roles](team-and-roles.md)**;
+- **[participants (team) and roles](team-and-roles.md#assignments)** with the list of employees active on a chosen date;
 - **[time entries](time-entries.md)**;
+- comments and file attachments;
 - related documents and operations (if the project is used to track costs/income).
 
 Use the project as a single “accounting dimension”: this simplifies reporting and control.

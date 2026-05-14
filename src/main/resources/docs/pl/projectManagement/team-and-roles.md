@@ -8,7 +8,7 @@ Zaleca się prowadzić zespół i role od pierwszych dni projektu: ułatwia to p
 
 ## Zespół
 
-Zespół to osobna lista pracowników, którą można przypisać **do wielu projektów jednocześnie**.
+Zespół to osobna lista pracowników, którą można przypisać **do wielu projektów jednocześnie**. Zespoły prowadzone są w **„Projekty” → „Konfiguracja”**.
 
 Jest to wygodne, gdy ta sama grupa pracuje nad różnymi projektami lub nad kilkoma obszarami w organizacji.
 
@@ -41,10 +41,10 @@ Zaleca się uzgadniać zmiany składu zespołu z menedżerem projektu i zapisywa
 
 ## Role w projekcie
 
-Rola w projekcie odzwierciedla funkcję uczestnika (np. menedżer, wykonawca, obserwator — dokładna lista zależy od konfiguracji). Role są używane do:
+Rola w projekcie odzwierciedla funkcję uczestnika (np. menedżer, wykonawca, obserwator — dokładna lista zależy od konfiguracji). Role prowadzone są w **„Projekty” → „Konfiguracja”** i są używane do:
 
 - rozdzielenia odpowiedzialności;
-- konfiguracji dostępu (jeśli jest przewidziana);
+- konfiguracji dostępu i reguł **[przepływu pracy](settings.md#workflow)** (np. kto może przenieść zagadnienie z jednego statusu do innego);
 - analityki udziału pracowników.
 
 Zalecenia:
@@ -54,20 +54,27 @@ Zalecenia:
 
 ## Przypisania
 
-Przypisanie łączy pracownika z projektem (i w razie potrzeby z zagadnieniami) oraz zapisuje warunki udziału.
+Przypisanie łączy **uczestnika** (pracownika lub zespół) z **projektem** i zapisuje warunki udziału. Przypisania prowadzone są na karcie projektu.
 
-Przypisanie często zawiera:
+Przypisanie zawiera:
 
-- uczestnika;
-- rolę;
-- okres uczestnictwa (daty od/do);
-- dodatkowe warunki (jeśli używane w organizacji).
+- uczestnika (pracownik lub zespół);
+- rolę w projekcie;
+- okres uczestnictwa (data od / data do — „data do” jest opcjonalna i oznacza bezterminowy udział).
+
+Lista przypisań na karcie projektu ma filtr **„Aktywne”**, który pokazuje tylko przypisania, których okres uczestnictwa obejmuje bieżącą datę.
 
 Zaleca się utrzymywać przypisania na bieżąco:
 
 - dodawaj uczestników, gdy rozpoczynają pracę;
-- zamykaj przypisania, gdy pracownik przestaje uczestniczyć;
-- dopasowuj role zespołu do faktycznych obowiązków.
+- zamykaj przypisania (ustaw „datę do”), gdy pracownik przestaje uczestniczyć;
+- dopasowuj role w projekcie do faktycznych obowiązków.
+
+> Zagadnienia nie mają własnych rekordów przypisania. Zagadnienie jest powiązane z jednym **wykonawcą** (pracownikiem lub zespołem) przez pole „Wykonawca” w zagadnieniu. Widoczność zagadnienia dla tego użytkownika kontrolowana jest przez przypisanie na poziomie projektu.
+
+## Dostęp do projektów
+
+Domyślnie użytkownik widzi tylko te projekty, do których jest przypisany (bezpośrednio lub jako członek przypisanego zespołu). Dla użytkowników, którzy muszą widzieć wszystko (np. kierownik działu lub administrator), na karcie pracownika dostępna jest flaga **„Dostęp do wszystkich projektów”**. Włączenie tej flagi znosi filtr dostępu opartego o przypisania dla tego użytkownika.
 
 ## Typowe scenariusze
 
@@ -98,6 +105,6 @@ Zaleca się utrzymywać przypisania na bieżąco:
 
 Powód zwykle jest jednym z poniższych:
 
-- pracownik nie został dodany do zespołu projektu (jeśli kontrola jest włączona);
-- nie masz uprawnień do zmiany zespołu/przypisań;
-- wybrany typ zagadnienia ogranicza listę wykonawców.
+- pracownik nie ma dostępu do projektu (brak aktywnego przypisania i nie ma flagi „Dostęp do wszystkich projektów”);
+- nie masz uprawnień do zmiany zagadnienia;
+- wybrany typ zagadnienia ogranicza listę dozwolonych statusów, co może pośrednio blokować zmianę.

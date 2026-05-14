@@ -37,8 +37,8 @@ Typowy scenariusz „utwórz projekt → utwórz zagadnienia → przypisz wykona
    - firmę i menedżera.
 3. Przejdź do zagadnień projektu i utwórz zagadnienia dla zespołu.
 4. Przypisz wykonawców i terminy.
-5. W trakcie pracy rejestruj nakład pracy w **[przepracowanym czasie](time-entries.md)**.
-6. Monitoruj postęp po statusach zagadnień i w razie potrzeby używaj **[Kanbana](tasks.md#kanban)** oraz **[wykresu Gantta](tasks.md#gantt-chart)**.
+5. W trakcie pracy rejestruj nakład pracy w **[przepracowanym czasie](time-entries.md)** (bezpośrednio lub przez **[karty pracy](timesheets.md)**).
+6. Monitoruj postęp po statusach zagadnień i w razie potrzeby używaj widoków **[Kanban](tasks.md#kanban)** oraz **[wykresu Gantta](tasks.md#gantt-chart)** dostępnych w obrębie listy zagadnień.
 
 ## Typowe scenariusze
 
@@ -62,10 +62,10 @@ Szczegóły: zobacz [Projekty](projects.md), [Zagadnienia](tasks.md), [Zespół 
 
 Sekcja **Projekty** zwykle zawiera grupy:
 
-- **„Operacje”** — praca bieżąca (**[projekty](projects.md)**, **[zagadnienia](tasks.md)**, **[przypisania](team-and-roles.md#assignments)**, **[przepracowany czas](time-entries.md)**).
-- **„Procesy”** — widoki kontrolne (np. **[Kanban](tasks.md#kanban)**, **[wykres Gantta](tasks.md#gantt-chart)**).
-- **„Raportowanie”** — raporty dla projektów, zagadnień i nakładu pracy.
-- **„Konfiguracja”** — słowniki i reguły (typy, **[statusy](settings.md#project-statuses)**, priorytety, tagi, **[przepływ pracy](settings.md#workflow)**).
+- **„Operacje”** — praca bieżąca (**[projekty](projects.md)**, **[zagadnienia](tasks.md)**, **[przepracowany czas](time-entries.md)**, zmiany). **[Kanban](tasks.md#kanban)** i **[wykres Gantta](tasks.md#gantt-chart)** to widoki dostępne w obrębie listy zagadnień, a nie odrębne pozycje menu. **[Przypisania](team-and-roles.md#assignments)** prowadzi się na karcie projektu.
+- **„Procesy”** — **[karty pracy pracownika i przełożonego](timesheets.md)** do wprowadzania i kontroli nakładu pracy według dni.
+- **„Raportowanie”** — punkt rozszerzenia dla raportów dotyczących projektów. W konfiguracji podstawowej folder ten zwykle wypełniany jest przez integracje z sąsiednimi modułami (Sprzedaż, Produkcja), a nie samodzielnymi raportami modułu „Projekty”.
+- **„Konfiguracja”** — słowniki i reguły: **[typy](settings.md#project-types)** projektów i zagadnień, **[statusy](settings.md#project-statuses)**, **[priorytety](settings.md#priorities-and-tags)**, **[tagi](settings.md#priorities-and-tags)**, **[przepływ pracy](settings.md#workflow)**, role w projekcie i zespoły.
 
 Dokładny zestaw menu i dostępność akcji zależą od konfiguracji oraz uprawnień użytkownika.
 
@@ -91,7 +91,7 @@ Jeśli niektóre akcje nie są dostępne (np. zmiana statusu albo utworzenie wpi
 
 #### Przypisanie
 
-**[Przypisanie](team-and-roles.md#assignments)** łączy pracownika z projektem i/lub zagadnieniem, z rolą oraz warunkami udziału (np. odpowiedzialność i okres).
+**[Przypisanie](team-and-roles.md#assignments)** łączy uczestnika (pracownika lub zespół) z projektem, wskazując rolę w projekcie oraz okres udziału. Zagadnienie nie ma odrębnego rekordu przypisania — odwołuje się do pojedynczego wykonawcy przez pole „Wykonawca”.
 
 #### Przepracowany czas
 

@@ -8,7 +8,7 @@ It is recommended to maintain the team and roles from the first days of the proj
 
 ## Team
 
-A team is a separate list of employees that can be assigned **to multiple projects at the same time**.
+A team is a separate list of employees that can be assigned **to multiple projects at the same time**. Teams are maintained in **Projects → Configuration**.
 
 This is convenient when the same group works on different projects or on several areas within the organization.
 
@@ -41,10 +41,10 @@ It is recommended to coordinate team composition changes with the project manage
 
 ## Project roles
 
-A project role reflects a participant’s function (for example, manager, assignee, observer — the exact list depends on configuration). Roles are used for:
+A project role reflects a participant’s function (for example, manager, assignee, observer — the exact list depends on configuration). Roles are maintained in **Projects → Configuration** and are used for:
 
 - separating responsibilities;
-- configuring access (if provided);
+- configuring access and **[workflow](settings.md#workflow)** rules (for example, who is allowed to move a task from one status to another);
 - analytics on employee participation.
 
 Recommendations:
@@ -54,20 +54,27 @@ Recommendations:
 
 ## Assignments
 
-An assignment links an employee to a project (and, if needed, to tasks) and records participation terms.
+An assignment links a **participant** (an employee or a team) to a **project** and records the participation terms. Assignments are maintained on the project card.
 
-An assignment often includes:
+An assignment contains:
 
-- participant;
-- role;
-- participation period (start/end dates);
-- additional terms (if used in the organization).
+- participant (employee or team);
+- project role;
+- participation period (date from / date to — “date to” is optional, meaning open-ended).
+
+The list of assignments on the project card has an **Active** filter that shows only assignments whose participation period covers the current date.
 
 It is recommended to keep assignments up to date:
 
 - add participants when work starts;
-- close assignments when an employee no longer participates;
-- align team roles with actual responsibilities.
+- close assignments (set the “date to”) when an employee no longer participates;
+- align project roles with actual responsibilities.
+
+> Tasks do not have their own separate assignment records. A task is linked to a single **assignee** (employee or team) via the assignee field on the task. Visibility of the task for that user is controlled by the project-level assignment.
+
+## Access to projects
+
+By default, a user sees only the projects where they are assigned (directly, or as a member of an assigned team). For users who must see everything (for example, a department head or an administrator), the employee card has the **“Access to all projects”** flag. Enabling it lifts the project-based access filter for that user.
 
 ## Typical scenarios
 
@@ -98,6 +105,6 @@ It is recommended to keep assignments up to date:
 
 The reason is usually one of the following:
 
-- the employee is not added to the project team (if control is enabled);
-- you do not have permission to change the team/assignments;
-- the selected task type restricts the list of assignees.
+- the employee does not have access to the project (no active assignment and no “Access to all projects” flag);
+- you do not have permission to change the task;
+- the selected task type restricts the list of statuses (which can indirectly block changes to the task).

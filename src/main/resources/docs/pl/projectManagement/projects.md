@@ -73,6 +73,8 @@ Karta projektu zawiera główne pola:
 
 > W niektórych organizacjach numer jest generowany automatycznie. Jeśli numer jest wypełniany przez system, nie zmieniaj go ręcznie.
 
+> Podczas tworzenia projektu system może automatycznie uzupełnić niektóre pola (np. data rozpoczęcia ustawiana jest na bieżącą datę, menedżer — na bieżącego użytkownika, jeśli jest pracownikiem, firma — na firmę domyślną). Sprawdź te wartości przed zapisaniem.
+
 #### Opis projektu
 
 Pole opisu jest wygodne jako „paszport projektu”:
@@ -92,12 +94,13 @@ Zalecane podejście:
 - używaj statusu do jasnego rozróżnienia, czy projekt jest aktywny czy zakończony;
 - przenoś projekt do statusu zamknięcia dopiero po wykonaniu głównej pracy i zapisaniu wyników.
 
-### Zakończenie i nieaktywność
+### Zakończenie, archiwizacja i stan aktywny
 
 Projekt może być uznany za:
 
 - **zamknięty** — jeśli ustawiono status zamknięcia;
-- **nieaktywny** — jeśli data zakończenia jest już w przeszłości.
+- **zarchiwizowany** — jeśli data zakończenia jest już w przeszłości;
+- **aktywny** — nie jest ani zamknięty, ani zarchiwizowany (ten filtr jest domyślny na liście projektów).
 
 Wpływa to na wybory na listach i ułatwia pracę z bieżącymi projektami.
 
@@ -112,8 +115,9 @@ Jeśli projekt jest faktycznie zakończony, ale jego zagadnienia są nadal zmien
 Karta projektu zwykle udostępnia dane powiązane (zestaw zależy od konfiguracji):
 
 - **[zagadnienia projektu](tasks.md)**;
-- **[uczestnicy (zespół) i role](team-and-roles.md)**;
+- **[uczestnicy (zespół) i role](team-and-roles.md#assignments)** z listą pracowników aktywnych na wybraną datę;
 - **[przepracowany czas](time-entries.md)**;
+- komentarze i pliki dołączone;
 - dokumenty i operacje powiązane (jeśli projekt jest używany do ewidencji kosztów/przychodów).
 
 Używaj projektu jako jednej „wymiaru ewidencyjnego”: ułatwia to raportowanie i kontrolę.

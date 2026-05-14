@@ -4,6 +4,8 @@ title: Reporting
 
 This page describes typical reporting options for projects, tasks, and effort. The exact set of reports and metrics depends on configuration.
 
+> In the base configuration, the **Projects → Reporting** folder is intentionally an extension point: project dimensions (project, time entries, effort by employee) are added to existing reports of neighbouring modules — **Sales** and **Manufacturing** — rather than published as stand-alone PM reports. Open those reports in their respective sections (for example, **Sales → Reporting → Sales ledger** or **Manufacturing → Reporting → Manufacturing order**) and use the project-related columns/filters there.
+
 ## Why project reporting is needed
 
 Reporting helps to:

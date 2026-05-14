@@ -20,10 +20,12 @@ Zalecenie: utrzymuj listę typów projektów krótką i zrozumiałą dla użytko
 
 #### Statusy projektu
 
+Każdy status projektu ma flagę **„Zamknięty”**, która oznacza go jako status zamknięcia; projekt w takim statusie jest uznawany za zamknięty.
+
 Statusy projektu odzwierciedlają cykl życia projektu. Zwykle obejmują co najmniej:
 
 - statusy aktywne (np. „w toku”);
-- status zamknięcia.
+- status zamknięcia (z ustawioną flagą **„Zamknięty”**).
 
 Zalecenie: uzgodnij, kiedy projekt jest przenoszony do statusu zamknięcia, i sformalizuj tę regułę w rutynie wewnętrznej.
 
@@ -33,15 +35,28 @@ Typ zagadnienia pomaga rozdzielić zagadnienia wg celu (np. development, zatwier
 
 #### Statusy zagadnień
 
-Statusy zagadnień odzwierciedlają etapy wykonania (np. „nowe”, „w toku”, „wykonane”). Zestaw statusów dobiera się do przepływu pracy zespołu.
+Statusy zagadnień odzwierciedlają etapy wykonania (np. „nowe”, „w toku”, „wykonane”). Każdy status ma:
+
+- **kolejność sortowania** — określa porządek statusów w interfejsie (w szczególności kolejność kolumn w widoku **[Kanban](tasks.md#kanban)**);
+- flagę **„Zamknięty”** — zagadnienia w statusie z tą flagą są uznawane za zamknięte.
+
+Zestaw statusów dobiera się do przepływu pracy zespołu.
 
 #### Przepływ pracy
 
-Przepływ pracy definiuje:
+Przepływ pracy konfigurowany jest dla każdej pary **typ zagadnienia × status zagadnienia** i określa, kto może przenieść zagadnienie do tego statusu:
 
-- które przejścia między statusami są dozwolone;
+- **dozwól** — dowolnemu pracownikowi z wybraną rolą w projekcie;
+- **dozwól autorowi** — tylko autorowi zagadnienia;
+- **dozwól wykonawcy** — tylko pracownikowi przypisanemu do zagadnienia.
+
+Reguły przepływu pracy odpowiadają na pytania:
+
+- które przejścia między statusami są dozwolone dla danego typu zagadnienia;
 - w jakiej kolejności zagadnienie przechodzi przez etapy;
 - kto może wykonać konkretne przejście.
+
+System nie pozwoli zapisać zagadnienia w statusie, który nie jest dozwolony dla jego typu (pokazuje komunikat „Status nie jest dozwolony dla wybranego typu”); a po zmianie typu status może zostać zresetowany do pierwszego dozwolonego statusu nowego typu.
 
 Zalecenia:
 
@@ -60,9 +75,13 @@ Zalecenia:
 
 #### Numeracja
 
-Jeśli system używa automatycznej numeracji projektów i/lub automatycznego generowania kodu zagadnienia, konfiguracja numeracji zwykle jest wykonywana w tej sekcji.
+Numeracja projektów używa numeratora przypiętego do typu projektu — aby zmienić format lub licznik, zmień numerator na typie. ID zagadnień są generowane automatycznie podczas tworzenia zagadnienia.
 
 Zalecenie: nie zmieniaj reguł numeracji bez potrzeby, aby zachować ciągłość i utrzymać historię w zrozumiałej formie.
+
+#### Zachowanie kart pracy
+
+Formularz ustawień zawiera również parametry wpływające na **[karty pracy](timesheets.md)** — w szczególności **autozapis godzin**. Gdy ta opcja jest włączona, zmiany w komórce dnia w karcie pracy przełożonego są zapisywane od razu; akcje kopiowania i czyszczenia w takim przypadku wymagają potwierdzenia.
 
 ## Sprawdź po zmianie ustawień
 

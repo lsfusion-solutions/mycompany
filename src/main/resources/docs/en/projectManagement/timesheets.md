@@ -78,12 +78,12 @@ When you edit a cell (day/employee), the system:
 
 #### Copying and clearing hours (context menu)
 
-In the supervisor timesheet, day actions are usually available:
+In the supervisor timesheet, day actions are usually available via the context menu on a day cell:
 
 - **Copy** — copies time entries from the nearest previous day when there were records to the selected day.
 - **Clear** — deletes time entries for the selected day.
 
-If autosave is enabled, such actions may require confirmation because changes are saved immediately.
+If the **autosave hours** setting is enabled (configured in **Projects → Configuration → Settings**), these actions ask for confirmation because changes are saved immediately.
 
 ### Typical situations
 

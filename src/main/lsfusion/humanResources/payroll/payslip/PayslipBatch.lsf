@@ -41,6 +41,13 @@ WHEN LOCAL CHANGED(type(batch(Payslip p))) AND batch(p) AND NOT CHANGED(type(p))
 generate ABSTRACT LIST (Payslip);
 
 generate 'Generate' (PayslipBatch b) {
+    LOCAL wrongEmployees = STRING ();
+    wrongEmployees() <- (GROUP CONCAT name(employee(Payslip p)) IF batch(p) = b AND legalEntity(employee(p)) != company(b), ', ' ORDER p);
+    IF wrongEmployees() THEN {
+        MESSAGE 'Not all employees in the payslip batch belong to the batch company' + ': ' + wrongEmployees() ERROR;
+        RETURN;
+    }
+
     FOR legalEntity(Employee e AS Employee) = company(b) AND active(e) AND NOT payslip(period(b), e, company(b), type(b)) DO NEW p = Payslip {
         batch(p) <- b;
         employee(p) <- e;

@@ -20,10 +20,12 @@ Recommendation: keep the list of project types short and clear for users.
 
 #### Project statuses
 
-Project statuses reflect the project lifecycle. Typically, at minimum they include:
+Project statuses reflect the project lifecycle. Each status has a **Closed** flag that marks it as a closing status; a project in such a status is considered closed.
+
+Typically, the list at minimum includes:
 
 - active statuses (for example, “in progress”);
-- a closing status.
+- a closing status (with the **Closed** flag set).
 
 Recommendation: agree on when a project is moved to a closed status and formalize the rule in your internal routine.
 
@@ -33,15 +35,28 @@ A task type helps separate tasks by purpose (for example, development, approval,
 
 #### Task statuses
 
-Task statuses reflect execution stages (for example, “new”, “in progress”, “done”). The set of statuses is selected based on the team’s workflow.
+Task statuses reflect execution stages (for example, “new”, “in progress”, “done”). Each status has:
+
+- a **sorting order** that controls how statuses are ordered in the UI (in particular, this defines the order of columns in the **[Kanban](tasks.md#kanban)** view);
+- a **Closed** flag — tasks in a status with this flag are considered closed.
+
+The set of statuses is selected based on the team’s workflow.
 
 #### Workflow
 
-The workflow defines:
+The workflow is configured per **task type** and **task status** combination, and defines who is allowed to move a task into that status:
 
-- which transitions between statuses are allowed;
+- **allow** — any employee with the specified project role;
+- **allow author** — only the author of the task;
+- **allow assignee** — only the employee assigned to the task.
+
+Workflow rules answer:
+
+- which transitions between statuses are allowed for a given task type;
 - in what order a task goes through stages;
 - who can perform a specific transition.
+
+The system prevents saving a task in a status that is not allowed for its type (it shows the message “Status is not allowed for the selected type”), and when the type is changed, the status may be reset to the first allowed status of the new type.
 
 Recommendations:
 
@@ -60,9 +75,13 @@ Recommendations:
 
 #### Numbering
 
-If the system uses automatic project numbering and/or task code generation, numbering setup is usually done in this section.
+Project numbering uses a numerator tied to a project type — change the numerator on the type to switch the format or the counter. Task IDs are generated automatically when a task is created.
 
 Recommendation: do not change numbering rules without necessity to preserve continuity and keep the history understandable.
+
+#### Timesheet behaviour
+
+The settings form also contains parameters that affect **[timesheets](timesheets.md)** — in particular, **autosave hours**. When this option is enabled, changes in a day cell of the supervisor timesheet are saved immediately; copy/clear actions in this case ask for confirmation.
 
 ## Check after changing settings
 

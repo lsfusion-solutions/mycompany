@@ -10,23 +10,27 @@ A task is the main work unit within a project. It is recommended to keep tasks i
 
 A task typically contains:
 
-- code (generated automatically);
+- ID (generated automatically);
 - name;
+- type;
 - status;
 - priority;
 - tags;
-- assignee;
-- due date;
-- description and comments.
+- author (the user who created the task);
+- assignee (an employee or a team);
+- start date and deadline;
+- progress (% done);
+- description, files, and comments.
 
-The set of fields may depend on the task type and settings.
+The set of available statuses depends on the task type (see **[workflow](settings.md#workflow)**).
 
 #### Recommendations for creating tasks
 
 - Formulate the **name** as a verifiable result (for example, “Prepare an estimate”, “Approve the layout”, “Fix an error in the report”).
-- Set the **due date** right away so the task is included in due date control.
-- There should be a single **assignee** (if several are required, create subtasks or separate tasks).
+- Set the **deadline** right away so the task is included in due date control.
+- There should be a single **assignee**; if the work needs to be split, create separate tasks and, if needed, link them via **[dependencies](#task-dependencies)**.
 - Use the **description** for details: context, constraints, and definition of done.
+- The task list highlights rows by **priority colour**, which makes it easier to scan the queue.
 
 ## Statuses and workflow
 
@@ -46,18 +50,23 @@ If the system does not allow changing a status, the reason is usually one of the
 2. Try an intermediate transition (if it exists).
 3. Ask the project manager or administrator which transitions are allowed and for whom.
 
-## Comments and change history
+## Comments, files, and change history
 
 For collaboration, use:
 
 - comments — to record decisions, agreements, and clarifications;
+- file attachments — to keep specifications, screenshots, and other artefacts directly on the task;
 - change history — to see when and by whom key task data was changed.
 
 #### When change history is useful
 
-- when investigating “who moved the due date and why”;
+- when investigating “who moved the deadline and why”;
 - in disputed responsibility situations;
 - when preparing a progress report.
+
+## Time tracking on a task
+
+Effort can be recorded directly from the task card (and, in some configurations, from a card opened in the Kanban view) without switching to the general **[time entries](time-entries.md)** list. This is the recommended way to keep time entries linked to the right task and project.
 
 ## Views for monitoring progress
 
@@ -85,7 +94,7 @@ Use the Gantt chart when:
 
 ## Task dependencies
 
-If needed, set dependencies between tasks (for example, when one work item cannot start until another is completed). This helps build an execution sequence and reduces the risk of blocks.
+If needed, set dependencies between tasks (for example, when one work item cannot start until another is completed). Dependencies in the system are peer relationships between two tasks (predecessor → successor); there is no parent/child subtask hierarchy. This helps build an execution sequence and reduces the risk of blocks.
 
 #### Practical example
 
@@ -95,6 +104,10 @@ If the task “Approve the layout” depends on the task “Prepare the layout�
 - approval starts afterwards;
 - when moving the due date of the first task, also check the due date of the second.
 
+## Notifications
+
+Depending on configuration, the system may send notifications about task changes — for example, an in-app push notification when a task is assigned to an employee, or an email notification with a link to the task. Check with your administrator which notification channels are enabled.
+
 ## Typical situations and solutions
 
 #### The task is not visible to the assignee
@@ -103,12 +116,13 @@ Check:
 
 - whether an assignee is set;
 - whether the task is in the correct project;
-- whether filters are enabled (for example, “Assigned to me” or a status filter).
+- whether the assignee has access to that project (see **[access to projects](team-and-roles.md#access-to-projects)**);
+- whether filters are enabled (for example, “Assigned to me”, “Opened/Closed”, or a status filter).
 
 #### Cannot assign an assignee
 
 The reason is usually one of the following:
 
 - the user does not have permission to edit the task;
-- the assignee is not included in the project team (if your organization controls assignments by project team);
-- a restriction by task type or assignment settings.
+- the candidate assignee does not have access to the project (no active **[assignment](team-and-roles.md#assignments)** and no “Access to all projects” flag), so they will not see the task even if it is assigned to them;
+- a restriction by task type (the type controls the list of allowed statuses, which can indirectly block the change).
