@@ -35,7 +35,7 @@ Recommendations:
 1. If bin-level storage is not used, it is enough to create locations at the "warehouse" level.
 2. If bin-level storage is used, create zones and bins so that users can conveniently select them in documents.
 
-Optionally, the **Prohibit multiple root locations** setting can be enabled in **Inventory → Configuration → Settings** to require every new location to have a parent (preventing accidental creation of disconnected trees).
+Optionally, the **Prohibit multiple root locations** setting can be enabled in **Inventory → Configuration → Settings**. With this setting on, the system rejects attempts to leave more than one location without a parent — the first (root) location can still be created without a parent, but every subsequent location must be attached to the existing tree.
 
 ## Other fields on a location
 

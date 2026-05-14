@@ -35,7 +35,7 @@ Rekomendacje:
 1. Jeżeli ewidencja adresowa nie jest używana, wystarczy utworzyć lokalizacje na poziomie „magazynu”.
 2. Jeżeli ewidencja adresowa jest używana, utwórz strefy i miejsca składowania tak, aby użytkownicy mogli je wygodnie wybierać w dokumentach.
 
-Opcjonalnie w **„Magazynowanie” → „Konfiguracja” → „Ustawienia”** można włączyć flagę **„Zabroń wielu lokalizacji głównych”** — wtedy każda nowa lokalizacja musi mieć rodzica (zabezpiecza przed przypadkowymi „rozłącznymi” drzewami).
+Opcjonalnie w **„Magazynowanie” → „Konfiguracja” → „Ustawienia”** można włączyć flagę **„Zabroń wielu lokalizacji głównych”**. Z włączoną flagą system nie pozwala mieć więcej niż jednej lokalizacji bez rodzica — pierwszą (główną) lokalizację nadal można utworzyć bez rodzica, ale każda kolejna musi być dołączona do istniejącego drzewa.
 
 ## Pozostałe pola lokalizacji
 

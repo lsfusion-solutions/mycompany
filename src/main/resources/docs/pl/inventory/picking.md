@@ -6,10 +6,17 @@ Zadania kompletacyjne służą do organizacji kompletacji w [lokalizacji](locati
 
 ## Kiedy powstaje zadanie kompletacyjne
 
+Są tu dwie powiązane flagi, które robią różne rzeczy:
+
+- **„Kompletacja”** (na **typie wydania**) — włącza na karcie wydania zakładkę **„Kompletacja”**, na której widoczne są rezerwacje i skompletowane ilości w rozbiciu na źródłową [lokalizację](locations.md).
+- **„Zadanie kompletacyjne”** — tworzy odrębny rekord **zadania kompletacyjnego** dla pracownika magazynu. Ta flaga istnieje zarówno na **typie wydania**, jak i **na samym wydaniu**. Flaga na typie jedynie **ustawia wartość domyślną** dla odpowiedniej flagi na wydaniu w momencie wyboru typu; system sprawdza flagę **na wydaniu**, gdy decyduje, czy utworzyć zadanie. W efekcie zmiana flagi na typie nie wpływa wstecz na już istniejące wydania, a flagę można też wyłączyć na konkretnym wydaniu, aby zablokować tworzenie zadania.
+
 Zadanie kompletacyjne jest tworzone automatycznie dla wydania spełniającego jednocześnie oba warunki:
 
-- **typ wydania** ma włączoną kompletację;
+- na samym **wydaniu** włączona jest flaga **„Zadanie kompletacyjne”** (domyślnie podstawiana z typu przy wyborze typu);
 - wydanie zostało przeniesione do statusu **„Gotowe”**.
+
+Jeżeli na typie wydania włączona jest tylko **„Kompletacja”**, a **„Zadanie kompletacyjne”** jest wyłączone, zakładka „Kompletacja” jest widoczna, ale odrębny rekord zadania nie powstaje.
 
 Kompletacja nie jest więc osobną pozycją menu — to scenariusz uruchamiany na bazie istniejącego wydania.
 

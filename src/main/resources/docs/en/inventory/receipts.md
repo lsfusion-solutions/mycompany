@@ -95,7 +95,7 @@ Below is the status set **as it follows from the source code**.
 The receipt card has the following action buttons that move the document between statuses:
 
 - **Mark as Todo** — moves the document from **Draft** to **Ready** (also available as a bulk action in the receipt list).
-- **Mark as Done** — confirms execution and moves the document to **Done**; the execution date is set automatically. Available from **Draft** or **Ready**. A bulk action of the same name is available in the list. A helper command **Fill done** copies the planned quantity into the done quantity for all lines at once.
+- **Mark as Done** — confirms execution and moves the document to **Done**; the execution date is set automatically. The button is shown when the document is in **Ready** (the usual flow is Draft → Mark as Todo → Ready → Mark as Done). For **immediate** receipts — those whose **Unplanned** flag is set on the receipt itself (also produced by the **Immediate receipt** action in the receipt list) — the same button is also shown directly from **Draft**, since these receipts skip the Ready step. A bulk action of the same name is available in the list. A helper command **Fill done** copies the planned quantity into the done quantity for all lines at once.
 - **Put away** — for receipt types that support put-away, moves the document from **Done** to **Put away** after the put-away lines are filled in.
 - **Cancel** — moves the document to **Canceled**.
 - **Copy** — creates a new draft receipt with the same header and lines.
