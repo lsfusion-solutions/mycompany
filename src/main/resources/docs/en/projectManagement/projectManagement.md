@@ -33,8 +33,8 @@ A typical scenario “create a project → create tasks → assign assignees →
    - company and manager.
 3. Go to the project tasks and create tasks for the team.
 4. Assign assignees and due dates.
-5. While working, record effort using **[time entries](time-entries.md)**.
-6. Monitor progress by task statuses and, if needed, use **[Kanban](tasks.md#kanban)** and the **[Gantt chart](tasks.md#gantt-chart)**.
+5. While working, record effort using **[time entries](time-entries.md)** (either directly or via **[timesheets](timesheets.md)**).
+6. Monitor progress by task statuses and, if needed, use **[Kanban](tasks.md#kanban)** and the **[Gantt chart](tasks.md#gantt-chart)** views available within the task list.
 
 ## Typical scenarios
 
@@ -58,10 +58,10 @@ Details: see [Projects](projects.md), [Tasks](tasks.md), [Team and roles on a pr
 
 The **Projects** section typically includes groups:
 
-- **Operations** — day-to-day work (**[projects](projects.md)**, **[tasks](tasks.md)**, **[assignments](team-and-roles.md#assignments)**, **[time entries](time-entries.md)**).
-- **Processes** — control views (for example, **[Kanban](tasks.md#kanban)**, **[Gantt chart](tasks.md#gantt-chart)**).
-- **Reporting** — reports for projects, tasks, and effort.
-- **Configuration** — directories and rules (types, **[statuses](settings.md#project-statuses)**, priorities, tags, **[workflow](settings.md#workflow)**).
+- **Operations** — day-to-day work (**[projects](projects.md)**, **[tasks](tasks.md)**, **[time entries](time-entries.md)**, shifts). **[Kanban](tasks.md#kanban)** and the **[Gantt chart](tasks.md#gantt-chart)** are views available within the task list, not separate menu items. **[Assignments](team-and-roles.md#assignments)** are managed on the project card.
+- **Processes** — **[employee and supervisor timesheets](timesheets.md)** for entering and controlling effort by days.
+- **Reporting** — entry point for project-related reports. In the base configuration this folder is typically populated by integrations with neighbouring modules (Sales, Manufacturing) rather than by stand-alone PM reports.
+- **Configuration** — directories and rules: project and task **[types](settings.md#project-types)**, **[statuses](settings.md#project-statuses)**, **[priorities](settings.md#priorities-and-tags)**, **[tags](settings.md#priorities-and-tags)**, **[workflow](settings.md#workflow)**, project roles, and teams.
 
 The exact menu set and action availability depend on configuration and user permissions.
 
@@ -87,7 +87,7 @@ A **[task](tasks.md)** is a work unit within a project: what needs to be done, b
 
 #### Assignment
 
-An **[assignment](team-and-roles.md#assignments)** links an employee to a project and/or a task with a role and participation terms (for example, responsibility and period).
+An **[assignment](team-and-roles.md#assignments)** links a participant (employee or team) to a project with a project role and a participation period. A task does not have a separate assignment record — it references one assignee directly via its assignee field.
 
 #### Time entry
 

@@ -4,6 +4,8 @@ title: Raportowanie
 
 Ta strona opisuje typowe możliwości raportowania dla projektów, zagadnień i nakładu pracy. Dokładny zestaw raportów i metryk zależy od konfiguracji.
 
+> W konfiguracji podstawowej folder **„Projekty” → „Raportowanie”** jest punktem rozszerzenia: wymiary projektowe (projekt, przepracowany czas, nakład pracy według pracowników) dodawane są do istniejących raportów modułów sąsiednich — **„Sprzedaż”** i **„Produkcja”** — zamiast publikować je jako samodzielne raporty modułu „Projekty”. Otwieraj takie raporty w ich macierzystych sekcjach (np. **„Sprzedaż” → „Raportowanie” → „Księga sprzedaży”** lub **„Produkcja” → „Raportowanie” → „Raport zlecenia produkcyjnego”**) i korzystaj z dostępnych tam kolumn/filtrów związanych z projektem.
+
 ## Dlaczego raportowanie projektowe jest potrzebne
 
 Raportowanie pomaga:

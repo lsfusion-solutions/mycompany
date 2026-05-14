@@ -78,12 +78,12 @@ Gdy edytujesz komórkę (dzień/pracownik), system:
 
 #### Kopiowanie i czyszczenie godzin (menu kontekstowe)
 
-W karcie pracy menedżera zwykle dostępne są akcje dla dnia:
+W karcie pracy menedżera zwykle dostępne są akcje dla dnia (przez menu kontekstowe komórki dnia):
 
 - **Kopiuj** — kopiuje wpisy przepracowanego czasu z najbliższego poprzedniego dnia, w którym były wpisy, na wybrany dzień.
 - **Wyczyść** — usuwa wpisy przepracowanego czasu dla wybranego dnia.
 
-Jeśli włączony jest autosave, takie akcje mogą wymagać potwierdzenia, ponieważ zmiany są zapisywane od razu.
+Jeśli włączone jest ustawienie **autozapisu godzin** (konfigurowane w **„Projekty” → „Konfiguracja” → „Ustawienia”**), takie akcje wymagają potwierdzenia, ponieważ zmiany są zapisywane od razu.
 
 ### Typowe sytuacje
 
