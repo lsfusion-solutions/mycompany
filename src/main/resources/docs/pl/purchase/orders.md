@@ -60,10 +60,11 @@ Jeśli włączona jest produkcja, ten sam mechanizm uwzględnia również zapotr
 
 Zamówienia zakupu zwykle mają następujący cykl życia:
 
-1. **Projekt** — zamówienie można swobodnie edytować.
-2. **Wysłano** — zamówienie zostało wysłane do dostawcy (jeśli używane jest wysyłanie).
-3. **Potwierdzone** — zamówienie jest potwierdzone do realizacji.
-4. **Anulowan** — zamówienie jest wyłączone z dalszego przetwarzania.
+1. **Projekt** — zamówienie można swobodnie edytować; status domyślny dla nowego zamówienia.
+2. **Wysłane** — zamówienie zostało wysłane do dostawcy e-mailem akcją **„Wyślij”** (temat, treść, szablon załącznika i adres kopii konfigurowane w [typie zamówienia](settings.md)). Dostępne z „Projekt”; ze statusu „Wysłane” można od razu przejść do „Potwierdzone”.
+3. **Potwierdzone** — zamówienie jest potwierdzone do realizacji. Dostępne z „Projekt” lub „Wysłane”. W tym statusie pojawia się akcja **„Utwórz fakturę zakupu”** (jeśli jest pozostała ilość do zafakturowania), a przyjęcie jest automatycznie tworzone/aktualizowane.
+4. **Zablokowane** — zamówienie zamknięte dla dalszej pracy (np. po pełnej realizacji). Dostępne wyłącznie z „Potwierdzone” akcją **„Zablokuj”**. W [typie zamówienia](settings.md) można włączyć ograniczenia zabraniające blokady przy aktywnych przyjęciach, niepełnym przyjęciu lub niepełnej zapłacie.
+5. **Anulowane** — zamówienie wyłączone z dalszego przetwarzania. Dostępne ze wszystkich statusów oprócz „Projekt” i „Anulowane”.
 
 Zachowanie statusów może się różnić w zależności od ustawień. Zwykle po potwierdzeniu obowiązuje więcej ograniczeń w zmianach.
 

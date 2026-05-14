@@ -24,11 +24,27 @@ Practical meaning: one purchase order can be covered by **multiple bills** and *
 
 Typically, a bill based on a purchase order is used when the financial flow ([“Invoicing”](../invoicing/invoicing.md)) is enabled and you need to record the amount payable to the [vendor](../masterdata/partners.md).
 
-As a rule, creating a bill is available when:
+The **“Create bill”** action appears on the order card when:
 
-1. The purchase order is moved to the **“Confirmed”** status.
-2. A bill type is configured for the purchase order type (if required in your configuration).
-3. The purchase order has lines that are not yet covered by a bill.
+1. The purchase order is in the **“Confirmed”** status.
+2. A bill type (`Bill type`) and bill-control mode are configured for the purchase order type (see below).
+3. There is a remaining quantity to invoice (the **“To bill”** field on order lines).
+
+### Bill control mode
+
+The order type sets which quantity is transferred from order lines into the new bill:
+
+- **“Ordered quantity”** — the new bill is pre-filled with the ordered quantity minus what has already been billed by active bills. This is the default.
+- **“Received quantity”** — the new bill is pre-filled only with quantities that have been physically received (taken from active linked receipts). Available when the inventory contour is enabled; in this mode the “Create bill” action appears only after at least some quantity has been received.
+
+### Per-line tracking
+
+Order lines show two helper fields:
+
+- **“Billed”** — quantity covered by active bills (not canceled, status “to pay” or beyond);
+- **“Paid”** — quantity covered by fully paid bills.
+
+Lines are highlighted when “Billed”/“Paid” is less than the ordered quantity; clicking the field opens the list of related bills.
 
 ## How to create a bill based on a purchase order
 

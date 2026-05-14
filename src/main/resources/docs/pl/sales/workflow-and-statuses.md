@@ -11,14 +11,23 @@ W sekcji **„Sprzedaż”** zamówienie przechodzi przez statusy. Statusy defin
 ## Typowy przepływ
 
 1. **Projekt**
-   - zamówienie można edytować;
-   - można dodawać i usuwać linie.
-2. **Potwierdzone**
-   - zamówienie jest uznane za uzgodnione;
-   - można tworzyć dla niego wydania i faktury;
-   - zależnie od ustawień zlecenia produkcji lub zamówienia zakupu mogą być tworzone automatycznie.
-3. **Anulowane**
-   - zamówienie jest zamknięte i nie będzie realizowane.
+   - zamówienie można edytować; można dodawać i usuwać linie;
+   - status domyślny dla nowego zamówienia.
+2. **Wysłane**
+   - zamówienie zostało wysłane do klienta e-mailem (akcja **„Wyślij”**);
+   - temat, treść, szablon załącznika oraz adres kopii są konfigurowane w typie zamówienia;
+   - dostępne z „Projekt”; ze statusu „Wysłane” można od razu przejść do „Potwierdzone”.
+3. **Potwierdzone**
+   - zamówienie jest uznane za uzgodnione; dostępne z „Projekt” lub „Wysłane”;
+   - można tworzyć dla niego [wydania](shipments.md) i [faktury](invoices.md);
+   - zależnie od ustawień [zlecenia produkcji](../manufacturing/workflow.md) lub [zamówienia zakupu](../purchase/purchase.md) mogą być tworzone automatycznie (konfigurowane przez „Typ zlecenia produkcji” i podobne pola w typie zamówienia).
+4. **Zablokowane**
+   - zamówienie jest zamknięte dla dalszych zmian (np. po pełnej realizacji);
+   - dostępne wyłącznie z „Potwierdzone”;
+   - w typie zamówienia można włączyć dodatkowe ograniczenia: **„Zakaz blokowania przy aktywnych wydaniach”** oraz **„Zakaz blokowania przy niepełnym wydaniu”**.
+5. **Anulowane**
+   - zamówienie jest zamknięte i nie będzie realizowane;
+   - dostępne ze wszystkich statusów oprócz „Projekt” i „Anulowane”.
 
 Dokładne nazwy statusów i ograniczenia zależą od konfiguracji.
 
@@ -27,7 +36,8 @@ Dokładne nazwy statusów i ograniczenia zależą od konfiguracji.
 Typowe reguły obejmują:
 
 - nie można usunąć linii zamówienia, jeśli utworzono już dla niej dokumenty powiązane;
-- nie można anulować zamówienia, jeśli uruchomiono dla niego „rozpoczęte” procesy (np. aktywne zlecenia produkcji).
+- nie można anulować zamówienia, jeśli uruchomiono dla niego „rozpoczęte” procesy (np. aktywne zlecenia produkcji);
+- przy próbie zablokowania zamówienia system sprawdza ograniczenia ustawione w typie zamówienia (aktywne wydania i/lub niepełna wysyłka) i pokazuje komunikat, jeśli blokada jest zabroniona.
 
 ## Rekomendacje
 

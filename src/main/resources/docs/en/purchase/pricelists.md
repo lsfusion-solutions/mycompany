@@ -37,6 +37,25 @@ The pricelist card may contain a comment feed:
 - add comments to record agreements and the source of prices;
 - view the date/time and author of comments.
 
+## Pricelist statuses
+
+A pricelist usually goes through two statuses:
+
+1. **Draft** — price values can be edited; the list of new pricelists is filtered to this status by default.
+2. **Done** — the pricelist is in effect; prices become a source for substitutions into purchase orders.
+
+The transition to “Done” is performed via the **“Mark as done”** action on the pricelist card.
+
+## Importing prices from an external source
+
+If the [vendor](../masterdata/partners.md) is configured with a **pricelist import type** (`Pricelist import type`), the pricelist card for this vendor shows an **“Import”** action:
+
+1. In settings, create/select a pricelist import type and define its script (for example, an XLSX/CSV parser or an external-API call).
+2. In the [vendor](../masterdata/partners.md) card, set this import type.
+3. Create a pricelist for this vendor and click **“Import”** — the script populates the lines automatically.
+
+The action appears only when an import script exists for the vendor’s import type; for a pricelist moved to “Done” (read-only) the action is disabled.
+
 ## Importing a pricelist
 
 You can import pricelist lines from an external file using configurable **import types**.

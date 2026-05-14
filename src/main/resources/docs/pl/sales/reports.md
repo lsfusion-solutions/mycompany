@@ -172,10 +172,14 @@ W zależności od włączonych funkcji raport może zawierać:
 
 ### Co zobaczysz
 
-- **Sprzedaż według tygodnia**: trendy obrotu i marży według tygodnia.
-- **Sprzedaż według klienta**: ranking/struktura sprzedaży według klienta.
-- **Sprzedaż według lokalizacji**: tygodniowy obrót i marża w podziale na lokalizację.
-- **Sprzedaż według kategorii**: obrót i marża w podziale na kategorię.
+Pulpit zawiera cztery zakładki:
+
+- **Sprzedaż według tygodnia**: pojedynczy wykres liniowy z trendami obrotu i marży według tygodnia.
+- **Sprzedaż według klienta**: wykres słupkowy ranking sprzedaży według klienta (obrót i marża).
+- **Sprzedaż według lokalizacji**: dwa wykresy obok siebie — **Obrót** i **Dochód (marża)** — według tygodnia, w podziale na lokalizację.
+- **Sprzedaż według kategorii**: dwa wykresy kołowe — **Obrót** i **Dochód (marża)** — według kategorii (drugi poziom hierarchii).
+
+Wszystkie wykresy używają tego samego filtra **Interwał dat** i są wyliczane z rejestru sprzedaży ([SalesLedger](#raport-sprzedaży)).
 
 ### Typowe zastosowania
 

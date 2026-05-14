@@ -60,10 +60,11 @@ If manufacturing is enabled, the same calculation also considers material demand
 
 Purchase orders typically use the following lifecycle:
 
-1. **Draft** — the order can be edited freely.
-2. **Sent** — the order has been sent to the vendor (if sending is used).
-3. **Confirmed** — the order is confirmed for fulfillment.
-4. **Canceled** — the order is excluded from further processing.
+1. **Draft** — the order can be edited freely; default status for a new order.
+2. **Sent** — the order has been emailed to the vendor via the **“Send”** action (subject, body, attachment template, and copy-to address are configured in the [order type](settings.md)). Reachable from “Draft”; from “Sent” you can go directly to “Confirmed”.
+3. **Confirmed** — the order is confirmed for fulfillment. Reachable from “Draft” or “Sent”. In this status the **“Create bill”** action becomes available (when there is a remaining quantity to invoice), and a receipt is auto-created/updated.
+4. **Locked** — the order is closed for further work (e.g. after full fulfillment). Reachable only from “Confirmed” via the **“Lock”** action. The [order type](settings.md) can enable restrictions that forbid locking while there are active receipts, incomplete receiving, or unpaid amounts.
+5. **Canceled** — the order is excluded from further processing. Reachable from any status except “Draft” and “Canceled”.
 
 Status behavior may differ depending on settings. Usually, after confirmation there are more restrictions on changes.
 

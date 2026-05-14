@@ -33,6 +33,20 @@ Typically, a receipt becomes available after:
 
 If there is still something “to receive” for the purchase order, the system can create (or pick an already created) receipt that is ready to be processed.
 
+### Reserve receipt (auto-maintained)
+
+When a purchase order is confirmed (and on subsequent changes), the system automatically:
+
+1. Checks whether the order has any remaining quantity to receive (the **“Ready”** field on the lines).
+2. Either picks the linked receipt currently in the **“Ready”** status, or creates a new one with the receipt type configured on the order type.
+3. Synchronizes this receipt’s header (vendor, scheduled date, location) with the order.
+4. Adds/removes lines to match the current remaining quantity; the receipt line’s initial demand is set equal to the order line’s “Ready” value.
+5. If no order line has any remaining quantity, the reserve receipt is deleted.
+
+This receipt is re-created/updated when any of the following change: the line-level “Ready”, vendor, scheduled date, location, or order number; it is also rebuilt when the order returns from “Locked” to “Confirmed”.
+
+If a receipt would exceed the ordered quantity on a line (over-delivery), the system shows the message *“For the goods, the receipt exceeds the quantity in the order”* and rejects the save.
+
 Note: receipts are usually created **for goods [items](../masterdata/items.md)**. If the purchase order contains services, a receipt is usually not required for them.
 
 ## How to process a receipt based on a purchase order
@@ -70,11 +84,11 @@ In the purchase order card, line-level indicators are usually available:
 
 ## Restrictions when closing/locking a purchase order
 
-In some configurations, there are receipt-related restrictions, for example:
+The [order type](settings.md) has two independent flags that affect the **“Lock”** action:
 
-- a purchase order cannot be closed/locked if it has active receipts;
-- a purchase order cannot be closed/locked if it is not fully received.
+- **“Forbid to lock orders with active receipts”** — the system will not lock an order while it has a reserve receipt in the “Ready” status. If the flag is disabled, that receipt is simply deleted when the order is locked.
+- **“Forbid to lock orders that are not fully received”** — the system will not lock an order while the remaining `Ready > 0` (some lines are not fully received).
 
-If you encounter such a restriction, check the receipt list in the purchase order and actual fulfillment for the lines.
+When either rule is violated, the corresponding message is shown and the order stays in “Confirmed”.
 
 See also: [Settings](settings.md).

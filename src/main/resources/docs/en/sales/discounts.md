@@ -71,10 +71,15 @@ Important: the amount used for the check is the “full amount” (calculated fr
 
 A discount can be cumulative and enabled only if the [customer](../masterdata/partners.md) has:
 
-- total volume of previous purchases above a threshold;
-- or purchase volume for the previous month above a threshold.
+- total volume of previous purchases above a threshold (discount field **“Sold to a client from”**);
+- or purchase volume for the previous calendar month above a threshold (discount field **“Sold to a client in the past month from”**).
 
-These values are taken from the customer’s sales history.
+The values that are compared with the thresholds are accumulated by the system:
+
+- **“Sold”** on the customer card — sum across the entire sales ledger (including the manually entered initial amount, if any);
+- **“Sold in the previous month”** on the customer card — sum of sales for the previous calendar month.
+
+The comparison uses the value as of the start of the current session (i.e. purchases made within the same session do not move the threshold).
 
 ## How the price is calculated for a discount
 

@@ -172,10 +172,14 @@ The **Sales summary** is a dashboard-style report with charts and pivots that pr
 
 ### What you will see
 
-- **Sales by week**: turnover and income trends by week.
-- **Sales by customer**: ranking/structure of sales by customer.
-- **Sales by location**: weekly turnover and income split by location.
-- **Sales by category**: turnover and income distribution by product category.
+The dashboard has four tabs:
+
+- **Sales by week**: a single line chart with turnover and income trends by week.
+- **Sales by customer**: a bar chart ranking sales by customer (turnover and income).
+- **Sales by location**: two charts side by side — **Turnover** and **Income** — by week, broken down by location.
+- **Sales by category**: two pie charts — **Turnover** and **Income** — by category (second hierarchy level).
+
+All charts share the **Date interval** filter and are computed from the sales ledger ([SalesLedger](#sales-report)).
 
 ### Typical use cases
 
