@@ -51,9 +51,26 @@ Practical meaning: the shipment stays consistent with the invoice while you work
 ## Typical scenario
 
 1. Open an invoice.
-2. Click **“Create Shipment”**.
+2. Click **"Create Shipment"**.
 3. Verify the location and delivery address.
 4. Verify line quantities (that exactly what is needed is shipped).
 5. Post/confirm the shipment.
+
+## Planned vs. immediate shipment
+
+A shipment created from an invoice can be either **planned** or **immediate**. The mode is controlled by the **"Planned shipment"** flag on the [invoice type](settings.md):
+
+- if the flag is **on**, the created shipment is a regular planned [shipment](../inventory/shipments.md) — it goes through the usual Waiting / Ready / Done workflow;
+- if the flag is **off**, the created shipment is marked as immediate and is automatically moved to **Done** at the moment of creation. In this mode the shipment is essentially a passive record of what the invoice already declared as shipped.
+
+## Reverse direction: invoice from shipments
+
+The opposite flow is also supported — an [invoice](invoices.md) can be created from one or more already-existing shipments. The action lives on the shipments list and is typically called **"Create invoice"**:
+
+1. Open the shipments list.
+2. Select one or more shipments that belong to the same customer and are not yet linked to an invoice.
+3. Run **"Create invoice"** — the system creates a new draft invoice whose lines reference the selected shipment lines.
+
+This is convenient when the warehouse documents the shipment first and the invoice is issued afterwards.
 
 See also: [Invoicing → Invoices](invoices.md); [Inventory → Shipments](../inventory/shipments.md).

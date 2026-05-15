@@ -122,12 +122,14 @@ W zależności od dostawy mogą być dostępne typowe predefiniowane wydruki fak
 
 ## Raporty
 
-Najczęściej używane:
+W konfiguracji podstawowej w **„Fakturowanie” → „Raportowanie”** dostarczane są cztery formularze:
 
-- raporty [faktur zakupu](bills.md);
-- raporty [faktur](invoices.md);
-- raporty [płatności](payments.md);
-- raporty [długu](debt-and-calendar.md).
+- **Raport faktur zakupu** — kwoty i pozycje [faktur zakupu](bills.md) z rozbiciami wg dostawcy, typu, okresu, podatku;
+- **Raport faktur** — kwoty i pozycje [faktur](invoices.md) z rozbiciami wg klienta, typu, okresu, podatku;
+- **Płatności** — jednolity widok wszystkich płatności przychodzących i wychodzących z datą, partnerem, kontem i kwotą ze znakiem; na tym samym formularzu zakładka **„Konta”** pokazuje bieżące salda kont oraz (opcjonalnie) saldo na wybraną datę;
+- **[Kalendarz płatności](debt-and-calendar.md)** — wiekowanie długu i prognoza wpływów według partnera / kontraktu.
+
+Wartości [długu](debt-and-calendar.md) widoczne są również bezpośrednio na karcie **faktury zakupu** i **faktury** (dopasowane płatności i pozostały dług) oraz przez dedykowane widoki **„Dług wg partnerów”** / **„Dług wg kontraktów”**.
 
 Rekomendacje:
 

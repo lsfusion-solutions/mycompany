@@ -56,4 +56,21 @@ Znaczenie praktyczne: wydanie pozostaje spójne z fakturą podczas pracy z dokum
 4. Sprawdź ilości w liniach (czy wydawane jest dokładnie to, co potrzebne).
 5. Zaksięguj/potwierdź wydanie.
 
+## Wydanie planowane vs. natychmiastowe
+
+Wydanie utworzone z faktury może być **planowane** albo **natychmiastowe**. Tryb określany jest flagą **„Wydanie planowane”** na [typie faktury](settings.md):
+
+- jeśli flaga jest **włączona**, utworzone wydanie to zwykłe planowane [wydanie](../inventory/shipments.md) i przechodzi standardowy cykl Oczekiwanie / Gotowe / Wykonano;
+- jeśli flaga jest **wyłączona**, utworzone wydanie jest oznaczone jako natychmiastowe i automatycznie przenoszone do **„Wykonano”** w chwili utworzenia. W tym trybie wydanie jest w istocie biernym zapisem tego, co faktura już zadeklarowała jako wydane.
+
+## Odwrotny kierunek: faktura z wydań
+
+Obsługiwany jest również odwrotny scenariusz — [faktura](invoices.md) może być utworzona z jednego lub wielu już istniejących wydań. Akcja znajduje się na liście wydań i zwykle nazywa się **„Utwórz fakturę”**:
+
+1. Otwórz listę wydań.
+2. Zaznacz jedno lub kilka wydań tego samego klienta, jeszcze niepowiązanych z fakturą.
+3. Uruchom **„Utwórz fakturę”** — system utworzy nową fakturę w stanie „Projekt”, której linie odwołują się do linii wybranych wydań.
+
+Jest to wygodne, gdy magazyn najpierw dokumentuje wydanie, a faktura jest wystawiana później.
+
 Zobacz także: [Fakturowanie → Faktury](invoices.md); [Magazynowanie → Wydania](../inventory/shipments.md).

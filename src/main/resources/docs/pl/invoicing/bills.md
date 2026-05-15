@@ -116,19 +116,21 @@ Jeśli w typie rachunku jest ustawiony **domyślny towar**, jest on automatyczni
 
 Typowy zestaw statusów:
 
-- Projekt;
-- Do zapłaty;
-- Wykonano;
-- Anulowan.
+- „Projekt”;
+- „Do zapłaty”;
+- „Zapłacono”;
+- „Anulowano”.
 
 Statusy wpływają na możliwość edycji oraz dostępność wydruków.
 
 Typowa logika:
 
-- w statusie **Projekt** można zmieniać nagłówek i linie;
-- w statusie **Do zapłaty** dokument jest potwierdzony do dalszych działań (np. rejestracji płatności, drukowania — jeśli używane);
-- w statusie **Wykonano** faktura zakupu jest uznawana za zamkniętą;
-- w statusie **Anulowan** faktura zakupu jest wyłączona z rozliczeń.
+- w statusie **„Projekt”** można zmieniać nagłówek i linie;
+- w statusie **„Do zapłaty”** dokument jest potwierdzony do dalszych działań (rejestracja płatności, drukowanie — jeśli używane). Odpowiednia akcja na karcie to **„Oznacz jako Do zrobienia”**.
+- w statusie **„Zapłacono”** faktura zakupu jest uznawana za zamkniętą (akcja **„Oznacz jako Zapłacone”**);
+- w statusie **„Anulowano”** faktura zakupu jest wyłączona z rozliczeń (akcja **„Anuluj”**).
+
+Dostępna jest także akcja **„Kopiuj”**, która tworzy nową fakturę zakupu w stanie „Projekt” z tym samym nagłówkiem i pozycjami.
 
 ### Płatność i dług
 

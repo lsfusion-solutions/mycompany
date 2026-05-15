@@ -4,18 +4,18 @@ title: Settings and directories
 
 ## Where to find it
 
-Open **“Invoicing” → “Settings” → “Settings”**.
+Open **"Invoicing" → "Configuration" → "Settings"**.
 
 ## What is typically configured
 
-- document types ([bills](bills.md), [invoices](invoices.md), [payments](payments.md));
-- numbering rules;
-- bank accounts and cash registers;
-- payment terms (see [Debt and payment calendar](debt-and-calendar.md));
-- [taxes](taxes.md);
-- OpenAI-based bill file import settings (if used);
-- print templates (see [Reports and printing](reports-and-printing.md));
-- payments matching rules (if enabled).
+- document types — bill types, invoice types, incoming-payment types, outgoing-payment types — with their numbering rules, default currency, default tax inclusion mode and (for return-type bills/invoices) the **Return** / "linked return type" flags described in [Refunds and corrections](refunds-and-corrections.md);
+- numbering rules (numerator per document type);
+- bank accounts and cash registers (see "Banks and accounts" below);
+- payment terms for sales and purchase (see [Debt and payment calendar](debt-and-calendar.md));
+- [taxes](taxes.md) and tax groups;
+- [cost allocation bases](bill-cost.md) for distributing service costs across bill lines;
+- OpenAI-based bill file import settings (if used, see "Bill file import" below);
+- print templates (see [Reports and printing](reports-and-printing.md)).
 
 ## Banks and accounts
 
