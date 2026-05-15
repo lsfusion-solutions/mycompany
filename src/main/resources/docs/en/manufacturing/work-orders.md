@@ -10,7 +10,7 @@ This section describes how to use **Work centers** and **Work orders** to plan a
 
 ### Managing work centers
 
-To manage work centers, go to **Manufacturing** → **Settings** → **Work centers**.
+To manage work centers, go to **Manufacturing** → **Configuration** → **Work centers**.
 
 For each work center, you can specify:
 - **Name** — a descriptive name (e.g., "Assembly Line A", "CNC Machine 1").
@@ -86,7 +86,7 @@ The **Work orders** list includes enhanced filtering:
 The **Work center load** dashboard is a powerful tool for visual scheduling and capacity planning.
 
 ### Accessing the dashboard
-Go to **Manufacturing** → **Dashboards** → **Work center load**.
+Go to **Manufacturing** → **Processes** → **Work center load**.
 
 ### Interface overview
 

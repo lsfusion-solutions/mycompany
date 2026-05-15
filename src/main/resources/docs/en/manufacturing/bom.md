@@ -8,9 +8,9 @@ In the system, a Bill of Materials is used as a source of planned norms: based o
 
 ## Location
 
-Bills of Materials are usually available in the **“Manufacturing”** section (depending on your configuration — in **Operations** or **Settings**).
+The Bills of Materials list is available in **"Manufacturing" → "Operations" → "Bills of Materials"**.
 
-The list of BoM operations is available in **Manufacturing → Settings → Operations**.
+The directory of BoM operations is a separate item in **"Manufacturing" → "Configuration" → "Operations"**.
 
 ## What a Bill of Materials is used for
 

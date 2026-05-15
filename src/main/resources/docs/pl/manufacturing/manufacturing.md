@@ -51,11 +51,12 @@ Poniżej znajduje się typowy scenariusz „od [Zestawienia materiałów](bom.md
 
 ## Nawigacja
 
-Sekcja jest widoczna w drzewie nawigacji jako **„Produkcja”** i zwykle zawiera grupy:
+Sekcja jest widoczna w drzewie nawigacji jako **„Produkcja”** i zwykle zawiera cztery grupy:
 
-- **Operacje** — zamówienia produkcji i powiązane akcje.
-- **Raportowanie** — raporty produkcyjne.
-- **Ustawienia** — katalogi i parametry Produkcji.
+- **Operacje** — [zestawienia materiałów](bom.md), [zamówienia produkcji](orders.md) i [zlecenia robocze](work-orders.md).
+- **Procesy** — panele kontrolne, w szczególności tablica [obciążenia centrów roboczych](work-orders.md).
+- **Raportowanie** — [raporty produkcyjne](reports.md).
+- **Konfiguracja** — katalogi i parametry: formularz **„Ustawienia”**, [typy zamówień](settings.md), [operacje zestawień materiałów](bom.md), [centra robocze](work-orders.md).
 
 ## Terminy
 

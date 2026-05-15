@@ -8,9 +8,9 @@ W systemie Zestawienie materiałów jest używane jako źródło planowanych nor
 
 ## Lokalizacja
 
-Zestawienia materiałów są zwykle dostępne w sekcji **„Produkcja”** (w zależności od konfiguracji — w **Operacjach** lub **Ustawieniach**).
+Lista zestawień materiałów jest dostępna w **„Produkcja” → „Operacje” → „Zestawienia materiałów”**.
 
-Lista operacji Zestawień materiałów jest dostępna w **Produkcja → Ustawienia → Operacje**.
+Katalog operacji zestawień materiałów to osobna pozycja w **„Produkcja” → „Konfiguracja” → „Operacje”**.
 
 ## Do czego służy Zestawienie materiałów
 

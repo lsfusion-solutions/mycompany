@@ -10,7 +10,7 @@ Ta sekcja opisuje, jak korzystać ze **Stanowisk roboczych** i **Zleceń produkc
 
 ### Zarządzanie stanowiskami roboczymi
 
-Aby zarządzać stanowiskami roboczymi, przejdź do **Produkcja** → **Ustawienia** → **Stanowiska robocze**.
+Aby zarządzać stanowiskami roboczymi, przejdź do **Produkcja** → **Konfiguracja** → **Stanowiska robocze**.
 
 Dla każdego stanowiska roboczego możesz określić:
 - **Nazwa** — opisowa nazwa stanowiska roboczego (np. "Linia montażowa A", "Maszyna CNC 1").
@@ -86,7 +86,7 @@ Lista **Zlecenia produkcyjne** zawiera ulepszone filtrowanie:
 Pulpit **Obciążenie stanowisk roboczych** to potężne narzędzie do wizualnego harmonogramowania i planowania zdolności produkcyjnych.
 
 ### Dostęp do pulpitu
-Przejdź do **Produkcja** → **Pulpity** → **Obciążenie stanowisk roboczych**.
+Przejdź do **Produkcja** → **Procesy** → **Obciążenie stanowisk roboczych**.
 
 ### Przegląd interfejsu
 

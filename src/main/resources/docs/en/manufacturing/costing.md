@@ -40,14 +40,17 @@ Practical meaning:
 - if different locations have different costs, write-off is valued by the material location;
 - the **Execution** date fixes the “valuation moment”, i.e. which date is used to take the cost.
 
-### 3) Additional and labor costs
+### 3) Additional, labor and service costs
 
-The manufacturing order cost may include:
+Beyond the material write-off, the manufacturing order cost may include three more components. They are **computed totals** shown read-only on the order — not fields you type into directly. Each is fed by a separate source:
 
-- **Additional costs**;
-- **Labor costs**.
+- **Additional cost** — accumulates the cost of [scrap](scrap.md) documents linked to the order;
+- **Labor cost** — accumulates labor amounts from [project](../projectManagement/projectManagement.md) time entries linked to the order (when the Project Management contour is used);
+- **Service cost** — accumulates costs from supplier [bills](../invoicing/bills.md): a service line of a bill, distributed onto the order, contributes its share.
 
-These amounts are included only if they are configured and filled in for your setup.
+Each component appears only if the corresponding source data exists in your setup.
+
+> Service costs from bills use the standard cost-allocation mechanism (see [Cost distribution](../invoicing/bill-cost.md) in Invoicing): a service line of a bill can be distributed onto manufacturing orders, and the share that lands on a given order becomes its service cost.
 
 ## Formulas
 
@@ -66,7 +69,10 @@ In other words:
 
 1. material cost;
 2. additional costs;
-3. labor costs.
+3. labor costs;
+4. service costs (from attached [bills](../invoicing/bills.md)).
+
+The **material cost** and the per-output-line costs are formed **when the order is moved to Done** — the cost ledger entries that value the material write-off are created only for completed (Done, non-Canceled) orders, so the material cost stays empty while the order is in Draft / Waiting / Ready / In progress. The additional, labor and service costs behave differently: they are accumulated from their linked records (scrap documents, time entries, bill allocations) regardless of the order status, so they — and therefore the total cost — can already be non-zero before the order is Done. Marking the order Done also fixes the **Execution date**, which determines the valuation moment for the material write-off.
 
 ## How cost is distributed across output
 
