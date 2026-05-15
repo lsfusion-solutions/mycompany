@@ -48,15 +48,17 @@ Typical status set:
 
 - Draft;
 - To pay;
-- Done;
+- Paid;
 - Canceled.
 
 As a rule:
 
 - in **Draft**, you can change the header and lines;
-- in **To pay**, the document is confirmed for further actions (printing, creating a shipment, payments matching);
-- in **Done**, the document is considered closed;
-- **Canceled** excludes the document from the process/settlements.
+- in **To pay**, the document is confirmed for further actions (printing, creating a shipment, payments matching). The corresponding action in the card is **"Mark as Todo"**.
+- in **Paid**, the document is considered closed (action **"Mark as Paid"**);
+- **Canceled** excludes the document from the process/settlements (action **"Cancel"**).
+
+A **"Copy"** action is also available to create a new Draft invoice with the same header and lines.
 
 ### Relationship with shipment
 

@@ -77,7 +77,7 @@ Typical status set:
 
 - Draft;
 - To pay;
-- Done;
+- Paid;
 - Canceled.
 
 Statuses affect editing and printing availability.
@@ -85,9 +85,11 @@ Statuses affect editing and printing availability.
 Typical logic:
 
 - in **Draft** you can change the header and lines;
-- in **To pay** the document is confirmed for further actions (for example, payment registration, printing — if used);
-- in **Done** the bill is considered closed;
-- in **Canceled** the bill is excluded from accounting.
+- in **To pay** the document is confirmed for further actions (for example, payment registration, printing — if used). The corresponding action in the card is **"Mark as Todo"**.
+- in **Paid** the bill is considered closed (action **"Mark as Paid"**);
+- in **Canceled** the bill is excluded from accounting (action **"Cancel"**).
+
+A **"Copy"** action is also available to create a new Draft bill with the same header and lines.
 
 ### Payment and debt
 

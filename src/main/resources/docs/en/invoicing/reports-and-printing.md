@@ -122,12 +122,14 @@ Depending on the delivery, typical predefined print forms for an invoice may be 
 
 ## Reports
 
-Most commonly used:
+The base configuration ships four forms in **Invoicing → Reporting**:
 
-- [bills](bills.md) reports;
-- [invoices](invoices.md) reports;
-- [payments](payments.md) reports;
-- [debt](debt-and-calendar.md) reports.
+- **Bill report** — amounts and lines of [bills](bills.md) with breakdowns by vendor, type, period, tax;
+- **Invoice report** — amounts and lines of [invoices](invoices.md) with breakdowns by customer, type, period, tax;
+- **Payments** — a unified view of all incoming and outgoing payments with date, partner, account and signed amount; the same form also has an **Accounts** tab that shows current account balances and, optionally, the balance as of a chosen date;
+- **[Payment calendar](debt-and-calendar.md)** — debt aging and forecast cash by partner / contract.
+
+[Debt](debt-and-calendar.md) figures are also visible directly on the **Bill** and **Invoice** cards (matched payments and remaining debt) and through the dedicated **Debt by partner** / **Debt by contract** views.
 
 Recommendations:
 

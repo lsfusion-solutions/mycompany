@@ -48,17 +48,19 @@ Jeśli używany jest [kalendarz płatności](debt-and-calendar.md), faktura moż
 
 Typowy zestaw statusów:
 
-- Projekt;
-- Do zapłaty;
-- Wykonano;
-- Anulowan.
+- „Projekt”;
+- „Do zapłaty”;
+- „Zapłacono”;
+- „Anulowano”.
 
 Zazwyczaj:
 
-- w statusie **Projekt** można zmieniać nagłówek i linie;
-- w statusie **Do zapłaty** dokument jest potwierdzony do dalszych działań (drukowanie, tworzenie wydania, dopasowanie płatności);
-- w statusie **Wykonano** dokument jest uznawany za zamknięty;
-- status **Anulowan** wyklucza dokument z procesu/rozliczeń.
+- w statusie **„Projekt”** można zmieniać nagłówek i linie;
+- w statusie **„Do zapłaty”** dokument jest potwierdzony do dalszych działań (drukowanie, tworzenie wydania, dopasowanie płatności). Odpowiednia akcja na karcie to **„Oznacz jako Do zrobienia”**.
+- w statusie **„Zapłacono”** dokument jest uznawany za zamknięty (akcja **„Oznacz jako Zapłacone”**);
+- status **„Anulowano”** wyklucza dokument z procesu/rozliczeń (akcja **„Anuluj”**).
+
+Dostępna jest także akcja **„Kopiuj”**, która tworzy nową fakturę w stanie „Projekt” z tym samym nagłówkiem i pozycjami.
 
 ### Powiązanie z wydaniem
 
