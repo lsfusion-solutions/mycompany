@@ -6,7 +6,7 @@ A [shipment](../inventory/shipments.md) records the transfer of goods to a custo
 
 ## Where to find
 
-Usually available in **“Sales” → “Operations”** (or in the “Inventory” section — depending on configuration).
+Shipments belong to the **Inventory** module — the shipments list is in **“Inventory” → “Operations” → “Shipments”**. A shipment linked to a sales order is created automatically from the order (see below).
 
 ## Relation to an order
 
@@ -40,6 +40,15 @@ For an order line, the system calculates:
 - **Remaining to ship** = order line quantity (taking packaging/UoM conversion into account) − shipped.
 
 If more is shipped than ordered, the system will show an error.
+
+### Shipment statuses and effect on inventory
+
+A shipment goes through the statuses **Draft → Waiting → Ready → Done** (and can be **Canceled**). The auto-created reserve shipment starts in **Waiting**.
+
+- In **Waiting** and **Ready** the shipment only **reserves** stock for the order — the goods are not yet written off.
+- Stock is written off the location only when the shipment is marked **Done**.
+
+The actions that advance a shipment are **Check availability**, **Mark as Ready**, and **Mark as Done**.
 
 ### “Reserve” shipment for an order (status `Waiting`)
 
@@ -92,6 +101,10 @@ The order type may have additional restrictions enabled:
 
 If restrictions are enabled, the system will not allow locking.
 
+### Cost and markup
+
+When a shipment is linked to a sales order, the order lines also expose the **cost amount**, **markup amount**, and **markup** of the goods (the cost comes from the shipment write-off, or from the item’s standard cost). These values feed the sales [order report](reports.md).
+
 ## Creating a shipment based on an invoice
 
 The “shipment from invoice” scenario is described on a separate page: [Creating a shipment based on an invoice](../invoicing/shipments-from-invoice.md).
@@ -101,4 +114,4 @@ The “shipment from invoice” scenario is described on a separate page: [Creat
 1. Open a sales order.
 2. Create a shipment for the order.
 3. Check quantities in lines.
-4. Post/confirm the shipment according to your organization’s rules.
+4. Run **Check availability**, then **Mark as Ready** and **Mark as Done** to write the goods off stock.

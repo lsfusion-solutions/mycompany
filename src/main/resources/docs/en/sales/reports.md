@@ -28,7 +28,7 @@ The **Price report** allows you to analyze product prices at specific points in 
 - **Price Analysis**: View prices for all or selected price types as of a specific date and time.
 - **Price Comparison**: Compare prices between two dates. The report shows the price for both dates and the percentage difference.
 - **Visual Indicators**: Price increases are highlighted in **green**, and decreases are highlighted in **red**.
-- **Inventory Integration**: View on-hand stock levels (including sub-locations) for each item at the selected dates and locations.
+- **Inventory Integration** (available when the Inventory module is enabled): View on-hand stock levels (including sub-locations) for each item at the selected dates and locations.
 - **Filtering**:
     - By **Price Type**: Focus on a specific price type or view all.
     - By **Location**: Filter items by their availability at a specific location.
@@ -97,6 +97,7 @@ The report shows order header information and order line information (order head
 
 - **Order**: number, date/time, customer, status, type, customer reference, department, customer address, delivery address, scheduled date/time, location, payment terms, representative, and other header fields.
 - **Order lines**: item, description, quantity, unit of measure, price, discount, discount price, taxes, and amounts (**untaxed**, **tax**, **total**).
+- **Cost and margin** (when shipment costing is enabled): cost amount, markup amount, and markup per line.
 - **Categories and attributes**: category levels and configured item attributes (as separate columns).
 
 ### Typical use cases
@@ -176,7 +177,7 @@ The dashboard has four tabs:
 
 - **Sales by week**: a single line chart with turnover and income trends by week.
 - **Sales by customer**: a bar chart ranking sales by customer (turnover and income).
-- **Sales by location**: two charts side by side — **Turnover** and **Income** — by week, broken down by location.
+- **Sales by location**: two charts, one above the other — **Turnover** and **Income** — by week, broken down by location.
 - **Sales by category**: two pie charts — **Turnover** and **Income** — by category (second hierarchy level).
 
 All charts share the **Date interval** filter and are computed from the sales ledger ([SalesLedger](#sales-report)).

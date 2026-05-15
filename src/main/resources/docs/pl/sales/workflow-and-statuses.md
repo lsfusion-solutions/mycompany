@@ -35,7 +35,7 @@ Dokładne nazwy statusów i ograniczenia zależą od konfiguracji.
 
 Typowe reguły obejmują:
 
-- nie można usunąć linii zamówienia, jeśli utworzono już dla niej dokumenty powiązane;
+- nie można usunąć linii zamówienia, jeśli utworzono już z niej zlecenie produkcji;
 - nie można anulować zamówienia, jeśli uruchomiono dla niego „rozpoczęte” procesy (np. aktywne zlecenia produkcji);
 - przy próbie zablokowania zamówienia system sprawdza ograniczenia ustawione w typie zamówienia (aktywne wydania i/lub niepełna wysyłka) i pokazuje komunikat, jeśli blokada jest zabroniona.
 

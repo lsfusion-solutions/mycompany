@@ -37,10 +37,7 @@ If neither categories nor items are selected in a discount, the discount is cons
 
 ### 2) By validity period
 
-A discount is applied only if the line date is within the interval:
-
-- the line date is not earlier than the start date;
-- the line date is not later than the end date.
+A discount is applied only if the line date/time falls within the discount’s validity interval — not earlier than the start date/time and not later than the end date/time.
 
 ### 3) By price type
 
@@ -53,8 +50,8 @@ A discount can be restricted by price types:
 
 A discount can be restricted by locations:
 
-- if locations are specified in the discount, it applies only to lines with a matching location;
-- if locations are not specified, the restriction does not apply.
+- if the discount has locations configured (included), it applies only to lines whose location is one of them; sub-locations of an included location also count as included;
+- if no locations are configured, the restriction does not apply.
 
 ### 5) By minimum quantity and line amount
 
@@ -80,6 +77,22 @@ The values that are compared with the thresholds are accumulated by the system:
 - **“Sold in the previous month”** on the customer card — sum of sales for the previous calendar month.
 
 The comparison uses the value as of the start of the current session (i.e. purchases made within the same session do not move the threshold).
+
+### 7) By customer tags
+
+A discount can be restricted to customers carrying specific tags:
+
+- if tags are specified in the discount, it applies only to customers that carry one of those tags;
+- if no tags are specified, the restriction does not apply.
+
+### 8) By item attributes
+
+A discount can be restricted by item attribute values:
+
+- if attribute values are specified in the discount, it applies only to lines whose item matches those attribute values;
+- if no attribute values are specified, the restriction does not apply.
+
+> Discounts are never applied to refund (return) lines.
 
 ## How the price is calculated for a discount
 

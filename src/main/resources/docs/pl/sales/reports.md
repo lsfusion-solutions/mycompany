@@ -28,7 +28,7 @@ Moduł **Sprzedaż** zawiera następujące raporty:
 - **Analiza cen**: przegląd cen dla wszystkich lub wybranych typów cen na określoną **Datę** (data i godzina).
 - **Porównywanie cen**: porównanie cen między dwiema datami. Raport pokazuje ceny dla obu dat oraz różnicę procentową.
 - **Wskaźniki wizualne**: Wzrosty cen są podświetlone na **zielono**, a spadki na **czerwono**.
-- **Integracja z magazynem**: podgląd stanów (w tym lokalizacje podrzędne) dla każdej pozycji w wybranych datach i lokalizacjach.
+- **Integracja z magazynem** (dostępna, gdy włączony jest moduł Magazyn): podgląd stanów (w tym lokalizacje podrzędne) dla każdej pozycji w wybranych datach i lokalizacjach.
 - **Filtrowanie**:
     - Według **Typu ceny**: Skup się na konkretnym typie ceny lub wyświetl wszystkie.
     - Według **Lokalizacji**: Filtruj produkty według ich dostępności w konkretnej lokalizacji.
@@ -97,6 +97,7 @@ Raport pokazuje informacje nagłówka zamówienia i informacje o pozycjach (pola
 
 - **Zamówienie**: numer, data/godzina, klient, status, typ, referencja klienta, dział, adres klienta, adres dostawy, planowana data/godzina, lokalizacja, warunki płatności, przedstawiciel i inne pola nagłówka.
 - **Pozycje**: towar, opis, ilość, jednostka miary, cena, rabat, cena po rabacie, podatki oraz kwoty (**netto**, **podatek**, **brutto**).
+- **Koszt i marża** (gdy włączony jest rachunek kosztów wydań): kwota kosztu, kwota narzutu i narzut dla pozycji.
 - **Kategorie i atrybuty**: poziomy kategorii i skonfigurowane atrybuty towarów (jako osobne kolumny).
 
 ### Typowe zastosowania
@@ -176,7 +177,7 @@ Pulpit zawiera cztery zakładki:
 
 - **Sprzedaż według tygodnia**: pojedynczy wykres liniowy z trendami obrotu i marży według tygodnia.
 - **Sprzedaż według klienta**: wykres słupkowy ranking sprzedaży według klienta (obrót i marża).
-- **Sprzedaż według lokalizacji**: dwa wykresy obok siebie — **Obrót** i **Dochód (marża)** — według tygodnia, w podziale na lokalizację.
+- **Sprzedaż według lokalizacji**: dwa wykresy, jeden pod drugim — **Obrót** i **Dochód (marża)** — według tygodnia, w podziale na lokalizację.
 - **Sprzedaż według kategorii**: dwa wykresy kołowe — **Obrót** i **Dochód (marża)** — według kategorii (drugi poziom hierarchii).
 
 Wszystkie wykresy używają tego samego filtra **Interwał dat** i są wyliczane z rejestru sprzedaży ([SalesLedger](#raport-sprzedaży)).

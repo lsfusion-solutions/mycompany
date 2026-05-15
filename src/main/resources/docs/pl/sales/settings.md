@@ -14,10 +14,12 @@ Dla każdego typu zamówienia można ustawić:
 
 - **numerator** — format i licznik numerów;
 - **walutę domyślną** oraz flagę „cena zawiera podatki”;
-- **typ wydania** (jeśli włączony moduł Magazyn) — jaki dokument tworzy się przy potwierdzeniu zamówienia;
-- **typ zlecenia produkcji** i/lub **typ zamówienia zakupu** — do automatycznego tworzenia dokumentów powiązanych;
-- **szablon wiadomości** — temat, treść i adres kopii dla akcji „Wyślij” (zob. [status „Wysłane”](workflow-and-statuses.md));
-- **Zakaz blokowania przy aktywnych wydaniach** oraz **Zakaz blokowania przy niepełnym wydaniu** — ograniczenia przejścia do statusu „Zablokowane”.
+- **typ ceny** — typ ceny używany do podstawiania cen w liniach zamówienia;
+- **typ wydania** (jeśli włączony moduł Magazyn) — jaki dokument wydania tworzy się przy potwierdzeniu zamówienia;
+- **typ zlecenia produkcji** — do automatycznego tworzenia zleceń produkcji z zamówienia;
+- **typ faktury** i **politykę fakturowania** — typ faktury używany przez akcję „Utwórz fakturę” oraz to, czy linie faktury pochodzą z ilości zamówionych czy wydanych;
+- **szablon wiadomości** — szablon domyślny, temat, treść i adres kopii dla akcji „Wyślij” (zob. [status „Wysłane”](workflow-and-statuses.md));
+- **Zakaz blokowania przy aktywnych wydaniach**, **Zakaz blokowania przy niepełnym wydaniu** oraz **Zakaz blokowania przy niepełnej zapłacie** — ograniczenia przejścia do statusu „Zablokowane”.
 
 ### Ustawienia globalne modułu
 
