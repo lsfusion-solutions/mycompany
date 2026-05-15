@@ -6,7 +6,7 @@ title: Wydania do zamówień
 
 ## Gdzie znaleźć
 
-Zwykle jest dostępne w **„Sprzedaż” → „Operacje”** (lub w sekcji „Magazynowanie” — zależnie od konfiguracji).
+Wydania należą do modułu **„Magazyn”** — lista wydań znajduje się w **„Magazyn” → „Operacje” → „Wydania”**. Wydanie powiązane z zamówieniem jest tworzone z zamówienia automatycznie (zob. niżej).
 
 ## Powiązanie z zamówieniem
 
@@ -40,6 +40,15 @@ Dla linii zamówienia system oblicza:
 - **Pozostało do wydania** = ilość w linii zamówienia (z uwzględnieniem przeliczeń opakowań/jednostek) − wydano.
 
 Jeśli wydano więcej niż zamówiono, system pokaże błąd.
+
+### Statusy wydania i wpływ na zapasy
+
+Wydanie przechodzi przez statusy **„Projekt” → „Oczekiwanie” → „Gotowe” → „Wykonano”** (i może zostać **anulowane**). Automatycznie tworzone wydanie rezerwacyjne startuje w statusie „Oczekiwanie”.
+
+- W statusach „Oczekiwanie” i „Gotowe” wydanie tylko **rezerwuje** zapas dla zamówienia — towar nie jest jeszcze rozchodowany.
+- Rozchód towaru z lokalizacji następuje dopiero przy oznaczeniu wydania jako „Wykonano”.
+
+Wydanie przesuwają dalej akcje **„Sprawdź dostępność”**, **„Oznacz jako gotowe”** i **„Oznacz jako wykonane”**.
 
 ### „Rezerwacyjne” wydanie dla zamówienia (status `Waiting`)
 
@@ -92,6 +101,10 @@ Typ zamówienia może mieć włączone dodatkowe ograniczenia:
 
 Jeśli ograniczenia są włączone, system nie pozwoli zablokować zamówienia.
 
+### Koszt i narzut
+
+Gdy wydanie jest powiązane z zamówieniem, w liniach zamówienia dostępne są również **kwota kosztu**, **kwota narzutu** i **narzut** towaru (koszt pochodzi z rozchodu wydania lub z kosztu standardowego towaru). Wartości te trafiają do [raportu zamówień](reports.md).
+
 ## Tworzenie wydania na podstawie faktury
 
 Scenariusz „wydanie z faktury” jest opisany na osobnej stronie: [Tworzenie wydania na podstawie faktury](../invoicing/shipments-from-invoice.md).
@@ -101,4 +114,4 @@ Scenariusz „wydanie z faktury” jest opisany na osobnej stronie: [Tworzenie w
 1. Otwórz zamówienie.
 2. Utwórz wydanie dla zamówienia.
 3. Sprawdź ilości w liniach.
-4. Zaksięguj/potwierdź wydanie zgodnie z zasadami w Twojej organizacji.
+4. Wykonaj **„Sprawdź dostępność”**, następnie **„Oznacz jako gotowe”** i **„Oznacz jako wykonane”**, aby rozchodować towar z lokalizacji.

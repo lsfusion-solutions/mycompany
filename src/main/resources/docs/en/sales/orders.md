@@ -56,13 +56,9 @@ Recommendation: fill in the customer and location first, then add lines — this
 
 ## Confirmation and cancellation
 
-An order usually goes through this lifecycle:
+An order moves through the statuses **Draft → Sent → Confirmed → Locked**, and can be **Canceled** from any status except Draft.
 
-1. Draft.
-2. Confirmed.
-3. Canceled (if the order will not be fulfilled).
-
-For details on statuses and restrictions, see: [Sales order workflow and statuses](workflow-and-statuses.md).
+For details on statuses, transitions, and restrictions, see: [Sales order workflow and statuses](workflow-and-statuses.md).
 
 ## Related documents
 

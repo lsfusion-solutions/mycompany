@@ -6,22 +6,23 @@ An [invoice](../invoicing/invoices.md) records a sale in accounting terms: reven
 
 ## Where to find
 
-Usually available in **“Sales” → “Operations”** (or in the “Invoicing”/“Accounting” section — depending on configuration).
+An invoice is created from a sales order: the **“Create Invoice”** button appears on a confirmed order when there is still a quantity left to invoice. The created document is an [Invoicing-module invoice](../invoicing/invoices.md); the order card shows a related **“Invoices”** block.
 
 ## Relation to an order
 
-An invoice can be created based on a sales order and/or a shipment.
+An invoice is created from a sales order. Whether its lines reflect the ordered quantities or the actually shipped quantities is determined by the order type’s **invoicing policy** (see [Settings](settings.md)) — it is not chosen per document.
 
-When created, it typically transfers:
+When created, the invoice transfers:
 
-- [customer](../masterdata/partners.md);
-- [location](../inventory/locations.md) and/or address;
-- lines and quantities (from the order or from the actual shipment);
-- prices, discounts, and taxes.
+- [customer](../masterdata/partners.md) and department;
+- delivery address and customer reference;
+- lines and quantities (ordered or shipped, per the invoicing policy);
+- prices, discounts, and taxes;
+- payment terms and note.
 
 ## Typical scenario
 
-1. Make sure the order is confirmed.
-2. Create an invoice for the order (or for the shipment, if configured).
+1. Make sure the order is confirmed and has a quantity left to invoice.
+2. Press **“Create Invoice”** on the order.
 3. Check amounts and taxes.
-4. Post the document.
+4. Post the invoice.

@@ -37,10 +37,7 @@ Jeśli w rabacie nie wybrano ani kategorii, ani towarów, rabat jest uznawany za
 
 ### 2) Po okresie obowiązywania
 
-Rabat jest stosowany tylko wtedy, gdy data linii mieści się w przedziale:
-
-- data linii nie jest wcześniejsza niż data początkowa;
-- data linii nie jest późniejsza niż data końcowa.
+Rabat jest stosowany tylko wtedy, gdy data/godzina linii mieści się w przedziale obowiązywania rabatu — nie wcześniej niż data/godzina początkowa i nie później niż data/godzina końcowa.
 
 ### 3) Po typie ceny
 
@@ -51,10 +48,10 @@ Rabat może być ograniczony typami cen:
 
 ### 4) Po lokalizacji
 
-Rabat może być ograniczony lokalizacjami:
+Rabat można ograniczyć lokalizacjami:
 
-- jeśli w rabacie wskazano lokalizacje, rabat dotyczy tylko linii z pasującą lokalizacją;
-- jeśli nie wskazano lokalizacji, ograniczenie nie obowiązuje.
+- jeśli w rabacie wskazano (włączono) lokalizacje, rabat dotyczy tylko linii z jedną z nich; podlokalizacje włączonej lokalizacji również są traktowane jako włączone;
+- jeśli nie skonfigurowano lokalizacji, ograniczenie nie obowiązuje.
 
 ### 5) Po minimalnej ilości i kwocie linii
 
@@ -80,6 +77,22 @@ Wartości porównywane z progami są akumulowane przez system:
 - **„Sprzedaż w poprzednim miesiącu”** w karcie klienta — suma sprzedaży z poprzedniego miesiąca kalendarzowego.
 
 Porównanie używa wartości na początek bieżącej sesji (tj. zakupy w tej samej sesji nie przesuwają progu).
+
+### 7) Po etykietach klienta
+
+Rabat można ograniczyć do klientów z określonymi etykietami:
+
+- jeśli w rabacie wskazano etykiety, rabat dotyczy tylko klientów, którzy mają jedną z tych etykiet;
+- jeśli nie wskazano etykiet, ograniczenie nie obowiązuje.
+
+### 8) Po atrybutach towaru
+
+Rabat można ograniczyć wartościami atrybutów towaru:
+
+- jeśli w rabacie wskazano wartości atrybutów, rabat dotyczy tylko linii, których towar odpowiada tym wartościom;
+- jeśli nie wskazano wartości atrybutów, ograniczenie nie obowiązuje.
+
+> Rabaty nigdy nie są stosowane do linii zwrotu.
 
 ## Jak wyliczana jest cena dla rabatu
 

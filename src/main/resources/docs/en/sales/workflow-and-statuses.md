@@ -35,7 +35,7 @@ Exact status names and restrictions depend on your configuration.
 
 Common rules include:
 
-- you cannot delete an order line if related documents have already been created for it;
+- you cannot delete an order line if a manufacturing order has already been created from it;
 - you cannot cancel an order if there are “started” processes for it (for example, active manufacturing orders);
 - when locking an order, the system checks the order type’s restrictions (active shipments and/or incomplete shipping) and shows a message if locking is forbidden.
 
