@@ -15,11 +15,31 @@ onWebClientLoad() + {
 }
 
 markdown = DATA LOCAL TEXT();
+imageData = DATA LOCAL TEXT(STRING);
+
+markdownImageMime (STRING path) =
+    IF endsWith(path, '.svg') THEN 'image/svg+xml'
+    ELSE IF endsWith(path, '.gif') THEN 'image/gif'
+    ELSE IF endsWith(path, '.webp') THEN 'image/webp'
+    ELSE IF endsWith(path, '.jpg') OR endsWith(path, '.jpeg') THEN 'image/jpeg'
+    ELSE 'image/png';
 
 loadMarkdownResource (STRING fn) {
     readResource(fn);
     fileToString(resource());
     markdown() <- resultString();
+
+    // the web client can't resolve relative image paths, so referenced images
+    // from the document's images/ folder are embedded as base64 data URIs
+    imageData(STRING p) <- NULL;
+    resourcePaths(STRING p) <- NULL;
+    readResourcePaths('/' + regexpReplace(fn, '/[^/]*$', '/images/.*', ''));
+    FOR STRING path = resourcePaths(path) DO {
+        IF isSubstring(markdown(), 'images/' + regexpReplace(path, '^.*/', '', '')) THEN {
+            readResource(path);
+            imageData(substrFrom(path, 2)) <- 'data:' + markdownImageMime(path) + ';base64,' + encodeBase64Unchunked(resource());
+        }
+    }
 }
 
 historyPath = DATA LOCAL STRING(INTEGER);
@@ -83,7 +103,7 @@ showMarkdownResourceViewer(STRING caption, STRING file) {
 }
 
 EXTEND FORM markdownResourceViewer
-    PROPERTIES markdown '' = JSON FROM url = f, markdown = markdown() CUSTOM 'markdownViewer' ON CHANGE {
+    PROPERTIES markdown '' = JSON FROM url = f, markdown = markdown(), images = (JSON FROM path = STRING p, data = imageData(p) WHERE imageData(p)) CUSTOM 'markdownViewer' ON CHANGE {
         INPUT j = JSON DO {
             changePath(fieldText(j, r'path'));
         }
