@@ -1,5 +1,7 @@
 var initializedMarked;
 var initializedGfmHeadingId;
+var currentImageMap = {};
+var currentDocFile = "";
 
 function splitHref(href = "") {
     const i = href.indexOf("#");
@@ -94,6 +96,21 @@ function setupMarked() {
                 /^<a\s/i,
                 `<a ${extra}`
             );
+        };
+
+        // relative image paths can't be resolved by the browser — substitute
+        // the base64 data URIs that the server embedded for the current document
+        const defaultImage = renderer.image;
+        renderer.image = function (token) {
+            const href = (token && token.href) || "";
+            if (isInternalHref(href) && !href.startsWith("#")) {
+                const resolved = resolveMdPath(currentDocFile, href);
+                const mapped = currentImageMap[resolved];
+                if (mapped) {
+                    return defaultImage.call(this, Object.assign({}, token, { href: mapped }));
+                }
+            }
+            return defaultImage.call(this, token);
         };
 
         window.marked.use({renderer});
@@ -193,6 +210,14 @@ function markdownViewer() {
                     controller.changeValue({ path : resolveMdPath(element.valueUrl, parts.path || rawHref) });
                 })
 
+            }
+
+            currentDocFile = value.url || "";
+            currentImageMap = {};
+            if (Array.isArray(value.images)) {
+                for (const it of value.images) {
+                    if (it && it.path) currentImageMap[it.path] = it.data;
+                }
             }
 
             element.markdownViewer.innerHTML = window.marked.parse(value.markdown || '', { } );
