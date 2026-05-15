@@ -119,7 +119,7 @@ createFaktura 'Build Faktura' (Invoice i) {
                 value(si) <- note(i);
             }
         
-        FOR invoice(InvoiceLine l) = i OR invoice(l) = prevCorrection(i) DO NEW w = FaWiersz {
+        FOR invoice(InvoiceLine l) = i OR invoice(l) = prevInvoice(i) DO NEW w = FaWiersz {
             faktura(w) <- f;
             NrWierszaFa(w) <- index(l);
             description(w) <- OVERRIDE description(l), nameItem(l);
@@ -132,7 +132,7 @@ createFaktura 'Build Faktura' (Invoice i) {
             untaxedAmount(w) <- untaxedAmount(l);
             vatAmount(w) <- taxAmount(l);
             taxes(w) <- OVERRIDE (ltrim(toChar(taxPercent(l), '99')) IF taxPercent(l) > 0), taxes(l);
-            correction(w) <- 1 IF invoice(l) = original(i);
+            correction(w) <- 1 IF invoice(l) = prevInvoice(i);
         }
         
         fill(f, i);
