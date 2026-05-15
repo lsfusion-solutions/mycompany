@@ -18,6 +18,10 @@ Specifics:
 - the created document automatically contains the [manufacturing order](orders.md);
 - the storage location is taken from the order’s material location.
 
+## Effect on inventory and cost
+
+A **Scrap** is a full [Inventory scrap](../inventory/scrap.md) document: when it is completed, it writes the scrapped items off the storage location through the inventory ledger. When the scrap is linked to a manufacturing order, its cost is also added to that order's cost, so the scrapped value is reflected in the cost of the produced goods.
+
 ## Where to see linked Scraps
 
 The [manufacturing order](orders.md) card shows a block of linked **Scraps**. From it you can open the document for viewing and editing.

@@ -18,6 +18,10 @@ Specyfika:
 - utworzony dokument automatycznie zawiera powiązane [zamówienie produkcji](orders.md);
 - lokalizacja magazynowa jest pobierana z lokalizacji materiałów zamówienia.
 
+## Wpływ na zapasy i koszt
+
+Odpad to pełnoprawny dokument [odpadu magazynowego](../inventory/scrap.md): po jego zakończeniu odpisywane pozycje są zdejmowane z lokalizacji składowania przez rejestr stanów. Gdy odpad jest powiązany z zamówieniem produkcji, jego koszt jest również dodawany do kosztu tego zamówienia, więc wartość odpisanego odpadu jest odzwierciedlona w koszcie wyprodukowanych towarów.
+
 ## Gdzie zobaczyć powiązane odpady
 
 Karta [zamówienia produkcji](orders.md) pokazuje blok powiązanych **Odpadów**. Z niego możesz otworzyć dokument do podglądu i edycji.

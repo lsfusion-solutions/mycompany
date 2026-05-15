@@ -47,11 +47,12 @@ Below is a typical scenario “from [Bill of Materials](bom.md) to [production a
 
 ## Navigation
 
-The section is located in the navigation tree as **“Manufacturing”** and usually contains groups:
+The section is located in the navigation tree as **"Manufacturing"** and usually contains four groups:
 
-- **Operations** — manufacturing orders and related actions.
-- **Reporting** — manufacturing reports.
-- **Settings** — manufacturing directories and parameters.
+- **Operations** — [Bills of Materials](bom.md), [manufacturing orders](orders.md) and [work orders](work-orders.md).
+- **Processes** — control panels, in particular the [work center load](work-orders.md) board.
+- **Reporting** — [manufacturing reports](reports.md).
+- **Configuration** — directories and parameters: the **Settings** form, [order types](settings.md), [BoM operations](bom.md), [work centers](work-orders.md).
 
 ## Terms
 

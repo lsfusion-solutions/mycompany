@@ -38,14 +38,17 @@ Znaczenie praktyczne:
 - jeśli różne lokalizacje mają różne koszty, rozchód jest wyceniany wg lokalizacji materiałów;
 - data **wykonania** ustala „moment wyceny”, tj. jaką datę system używa do pobrania kosztu.
 
-### 3) Koszty dodatkowe i koszty robocizny
+### 3) Koszty dodatkowe, robocizny i usług
 
-Koszt zamówienia produkcji może obejmować:
+Poza rozchodem materiałów koszt zamówienia produkcji może obejmować jeszcze trzy składniki. Są to **wartości wyliczane** pokazywane na zamówieniu tylko do odczytu — a nie pola, które się bezpośrednio wprowadza. Każdy składnik jest zasilany z osobnego źródła:
 
-- **koszty dodatkowe**;
-- **koszty robocizny**.
+- **Koszty dodatkowe** — kumulują koszt dokumentów [odpadu](scrap.md) powiązanych z zamówieniem;
+- **Koszty robocizny** — kumulują kwoty wynagrodzeń z [projektowych](../projectManagement/projectManagement.md) wpisów czasu powiązanych z zamówieniem (gdy używany jest kontur „Projekty”);
+- **Koszty usług** — kumulują koszty z [faktur zakupu](../invoicing/bills.md) dostawców: linia usługowa faktury zakupu rozdzielona na zamówienie dodaje swój udział.
 
-Kwoty te są uwzględniane tylko wtedy, gdy są skonfigurowane i wypełnione w Twojej konfiguracji.
+Każdy składnik pojawia się tylko wtedy, gdy w Twojej konfiguracji istnieją odpowiednie dane źródłowe.
+
+> Koszty z faktur zakupu używają standardowego mechanizmu rozdziału kosztów (zobacz [Rozdział kosztów](../invoicing/bill-cost.md) w „Fakturowaniu”): linię usługową faktury zakupu można rozdzielić na zamówienia produkcji, a udział przypadający na dane zamówienie staje się jego kosztem usług.
 
 ## Wzory
 
@@ -64,7 +67,10 @@ Innymi słowy:
 
 1. kosztu materiałów;
 2. kosztów dodatkowych;
-3. kosztów robocizny.
+3. kosztów robocizny;
+4. kosztów usług (z powiązanych [faktur zakupu](../invoicing/bills.md)).
+
+**Koszt materiałów** i koszty poszczególnych linii wyjścia są formowane **przy przejściu zamówienia w status Wykonano** — wpisy rejestru kosztów wyceniające rozchód materiałów są tworzone tylko dla zakończonych (status Wykonano, nie Anulowano) zamówień, dlatego koszt materiałów pozostaje pusty, dopóki zamówienie jest w statusie Projekt / Oczekiwanie / Gotowe / W toku. Koszty dodatkowe, robocizny i usług zachowują się inaczej: są kumulowane z powiązanych dokumentów (odpadów, wpisów czasu, rozdziałów kosztów z faktur) niezależnie od statusu zamówienia, więc one — a zatem i koszt całkowity — mogą być niezerowe jeszcze przed oznaczeniem zamówienia jako Wykonano. Oznaczenie zamówienia jako Wykonano ustala także **datę wykonania**, która wyznacza moment wyceny rozchodu materiałów.
 
 ## Jak koszt jest rozdzielany na wyjście
 
