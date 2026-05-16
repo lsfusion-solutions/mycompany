@@ -95,12 +95,12 @@ If archiving is available, use the **“Active”** / **“Archived”** filter.
 
 Typical fields:
 
-- **Name**;
-- **Type** (if used);
-- **Full name** (if maintained);
+- **Name** — the editable item name;
+- **Name (full)** — composed automatically (category prefix + name + attribute prefixes/suffixes); read-only;
+- **Type** — **Product** or **Service**, defined by the kind of item; read-only;
 - **Category**;
 - **Unit of measure**;
-- **ID** (can be filled automatically);
+- **ID** — generated automatically;
 - **Reference** (if used);
 - **Description**;
 - **Archived**.
@@ -112,7 +112,11 @@ If the inventory contour is enabled in the system, additional parameters may be 
 - **Weight** and **Volume**;
 - **Inventory SKU** and **Coefficient** (used for automatic recalculation and accounting of the current item's stock through another base item). For more details, see the [Inventory SKUs](../inventory/product-sku.md) section.
 
-Also, conversion coefficients for packages can be configured for items (on the **Units of measure** tab), and default packages can be selected on the **Purchases** and **Sales** tabs. This allows for the use of the packaging accounting mechanism directly in documents.
+Also, conversion coefficients for packages can be configured for items (on the **Units of measure** tab), and default packages can be selected on the **Purchase** and **Sale** tabs. This allows for the use of the packaging accounting mechanism directly in documents.
+
+### Other tabs
+
+Depending on enabled modules and item settings, the item card can also have additional tabs — for example, **Barcodes**, **Attributes**, **Picture**, and **Documents** (related documents). The **Purchase** and **Sale** tabs appear only when the **“Can be purchased”** / **“Can be sold”** flags are set.
 
 ### Filling recommendations for products
 

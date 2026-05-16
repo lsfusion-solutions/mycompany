@@ -17,6 +17,8 @@ Typical fields:
 - **Company**;
 - **Partner**.
 
+If the contract type has the **“Cost”** option enabled, the card also shows a **“Cost”** block with **Activation cost**, **Recurring cost** and **Recurring period**.
+
 ## Consistency checks
 
 If a document allows selecting a contract, the system may check that:

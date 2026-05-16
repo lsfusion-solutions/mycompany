@@ -2,18 +2,21 @@
 title: Departments
 ---
 
-The **“Departments”** directory is used to maintain branches/locations/structural units linked to a partner. A department is convenient when one partner has multiple addresses or places of work.
+A **department** represents a branch/location/structural unit of a partner. Departments are convenient when one partner has several addresses or places of work.
+
+## Where to find it
+
+Departments are not a separate directory. They are maintained on the **partner card**: open a [partner](partners.md), go to the **“Departments”** tab, and use the **“Department”** button to add a new one.
 
 ## Department card
 
-Typical fields:
+A department card contains:
 
-- **ID** (can be generated automatically);
+- **ID** — generated automatically;
 - **Name**;
-- **Address** (street/house, etc.);
-- **City**;
-- **State**;
-- **Postcode**.
+- **Address**, **City**, **State**, **Postcode**.
+
+The partner is set automatically — a department always belongs to the partner whose card you created it from.
 
 ## Use in documents
 

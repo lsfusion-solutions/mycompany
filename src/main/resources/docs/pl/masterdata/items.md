@@ -95,12 +95,12 @@ Jeśli dostępna jest archiwizacja, użyj filtra **„Aktywnie”** / **„Zarch
 
 Typowe pola:
 
-- **Nazwa**;
-- **Typ** (jeśli używany);
-- **Pełne imię i nazwisko** (jeśli utrzymywane);
+- **Nazwa** — edytowalna nazwa pozycji;
+- **Nazwa (pełna)** — tworzona automatycznie (prefiks kategorii + nazwa + prefiksy/sufiksy atrybutów); tylko do odczytu;
+- **Typ** — **Produkt** lub **Usługa**, określany przez rodzaj pozycji; tylko do odczytu;
 - **Kategoria**;
 - **Jednostka miary**;
-- **ID** (może być uzupełniane automatycznie);
+- **ID** — generowane automatycznie;
 - **Referencja** (jeśli używana);
 - **Opis**;
 - **Zarchiwizowane**.
@@ -113,6 +113,10 @@ Jeśli w systemie włączony jest obszar magazynowy, w karcie towaru na zakładc
 - **Jednostka SKU** i **Współczynnik** (używane do automatycznego przeliczania i ewidencji stanów bieżącego towaru poprzez inną pozycję bazową). Więcej szczegółów w sekcji [Magazynowe jednostki SKU](../inventory/product-sku.md).
 
 Dla towarów można również skonfigurować współczynniki przeliczeniowe dla pakietów (na zakładce **Jednostki miary**), a na zakładkach **Zakup** i **Sprzedaż** — wybrać domyślne pakiety. Pozwala to na korzystanie z mechanizmu ewidencji opakowań bezpośrednio w dokumentach.
+
+### Inne zakładki
+
+W zależności od włączonych modułów i ustawień pozycji karta towaru może mieć też inne zakładki — na przykład **Kody kreskowe**, **Atrybuty**, **Zdjęcie** oraz **Dokumenty** (powiązane dokumenty). Zakładki **Zakup** i **Sprzedaż** pojawiają się tylko przy ustawionych flagach **„Można zakupić”** / **„Można sprzedać”**.
 
 ### Zalecenia dotyczące uzupełniania dla produktów
 

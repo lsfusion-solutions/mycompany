@@ -17,8 +17,10 @@ Typowe pola:
 
 - **Nazwa**;
 - **ID** (może być generowane automatycznie);
-- **Kategoria nadrzędna** (jeśli używana jest hierarchia);
+- **Rodzic** (jeśli używana jest hierarchia);
 - **Zarchiwizowane**.
+
+Karta zawiera pole **„Prefiks”** nazwy oraz zakładkę **„Wartości domyślne”** z domyślną **jednostką miary** — oba są dziedziczone przez pozycje tej kategorii.
 
 ## Tworzenie podkategorii
 

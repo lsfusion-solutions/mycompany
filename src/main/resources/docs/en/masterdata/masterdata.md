@@ -45,16 +45,17 @@ Below is a typical sequence for filling directories before you start working.
 
 Master data is usually available via the **“Master Data”** menu section. Most often, it contains:
 
-- **Partners**
-- **Items**
+- **Partners**, **Companies**, **Positions**, **Employees**
+- **Items** and **Attributes**
 - **Categories**
 - **Units of measure**
-- **Departments**
 - **Countries**
-- **Currencies**
-- **Exchange rates**
+- **Currencies** and **Exchange rates**
 - **Contracts**
 - **Activities**
+- **Settings**
+
+Departments are not a separate menu item — they are maintained on the partner card (see [Departments](departments.md)).
 
 ## General rules for working with directories
 

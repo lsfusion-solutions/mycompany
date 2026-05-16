@@ -17,6 +17,8 @@ Typowe pola:
 - **Firma**;
 - **Partner**.
 
+Jeśli typ umowy ma włączoną opcję **„Koszt”**, karta pokazuje również blok **„Koszt”** z polami **Koszt początkowy**, **Rata** i **Okres płatności**.
+
 ## Kontrole spójności
 
 Jeśli dokument pozwala wybrać umowę, system może sprawdzać, czy:

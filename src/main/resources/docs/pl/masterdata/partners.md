@@ -74,7 +74,7 @@ Typowe pola:
 
 - **ID** — może być uzupełniane automatycznie;
 - **Nazwa**;
-- **Typ** — pomaga rozdzielić role partnera (klient/dostawca itp.), jeśli skonfigurowano;
+- **Typ** — rodzaj partnera (np. przedsiębiorstwo, firma, osoba fizyczna, pracownik); jest ustalany przez rodzaj tworzonej pozycji i wyświetlany tylko do odczytu;
 - **Adres** (w tym kraj — jeśli jest używany);
 - **Telefon**, **Email**;
 - **Zarchiwizowane** — flaga wyłączająca partnera z aktywnego użycia.

@@ -8,6 +8,8 @@ The **“Activities”** section is used to plan and track tasks, meetings, call
 
 Every activity has a **Type** (e.g., Call, Meeting, Task). The type determines which fields are available and required. For example, some types may require start and end times, while others only need a date.
 
+Activity types are configured on the **Settings** form, on the **“Activity types”** tab.
+
 ## Creating an Activity
 
 To create a new activity:

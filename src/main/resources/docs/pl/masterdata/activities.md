@@ -8,6 +8,8 @@ Sekcja **„Aktywności”** służy do planowania i śledzenia zadań, spotkań
 
 Każda aktywność ma określony **Typ** (np. Połączenie, Spotkanie, Zadanie). Typ określa, jakie pola będą dostępne i wymagane do wypełnienia. Na przykład niektóre typy mogą wymagać podania czasu rozpoczęcia i zakończenia, podczas gdy inne wymagają jedynie daty.
 
+Typy aktywności konfiguruje się w formularzu **„Ustawienia”**, na zakładce **„Typy aktywności”**.
+
 ## Tworzenie aktywności
 
 Aby utworzyć nową aktywność:

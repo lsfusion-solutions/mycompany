@@ -45,16 +45,17 @@ Poniżej znajduje się typowa kolejność uzupełniania słowników przed rozpoc
 
 Dane podstawowe są zwykle dostępne w sekcji menu **„Dane podstawowe”**. Najczęściej zawiera ona:
 
-- **Partnerzy**
-- **Towary**
+- **Partnerzy**, **Firmy**, **Pozycje**, **Pracownicy**
+- **Towary** i **Atrybuty**
 - **Kategorie**
 - **Jednostki miary**
-- **Działy**
 - **Kraje**
-- **Waluty**
-- **Kursy walutowy**
+- **Waluty** i **Kursy walutowe**
 - **Umowy**
 - **Aktywności**
+- **Ustawienia**
+
+Działy nie są osobną pozycją menu — są utrzymywane na karcie partnera (zob. [Działy](departments.md)).
 
 ## Ogólne zasady pracy ze słownikami
 
