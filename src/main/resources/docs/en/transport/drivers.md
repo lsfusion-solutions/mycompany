@@ -23,6 +23,8 @@ The assignment is set up as a record with a validity period.
    - note (if needed).
 3. Save the record.
 
+When you select a vehicle, the **Employee** is pre-filled with the vehicle’s previous driver (if there is one) — replace it with the new driver. The **Date** defaults to the current date.
+
 ### How to fill the assignment period
 
 - **Date** — the start date of responsibility/vehicle usage.

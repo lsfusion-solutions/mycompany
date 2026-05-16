@@ -6,20 +6,18 @@ The **“Fleet”** section uses directories that define selection options in ve
 
 ## Where to find it
 
-Usually it is available under **“Fleet” → “Configuration”**.
+The directories are available under **“Fleet” → “Configuration”**. This group contains the **“Settings”** form together with separate items for **“Vehicle models”** and **“Vehicle manufacturers”**.
 
 Access to configuration is typically restricted by administrator permissions or by the person responsible for directories.
 
-## Section configuration
+## The “Settings” form
 
-The **“Configuration”** screen contains tabs with directories. The availability of tabs depends on the configuration.
+The **“Settings”** form is organized into tabs. Besides the **“Main”** tab, it contains directory tabs (the set depends on the configuration):
 
-Typical directories:
-
-- **Fuel types** — options for the “Fuel type” field in the vehicle card.
 - **Vehicle categories** — vehicle classification (for example, passenger cars, trucks, special equipment).
-- **Vehicle service types** — service classification (scheduled maintenance, repair, etc.).
+- **Fuel types** — options for the “Fuel type” field in the vehicle card.
 - **Vehicle tags** — additional labels for filtering and control.
+- **Vehicle service types** — service classification (scheduled maintenance, repair, etc.).
 
 For directories, the **New**, **Edit**, **Delete** actions are usually available.
 
@@ -31,10 +29,7 @@ Recommendations for maintaining directories:
 
 ## Vehicle manufacturers and models
 
-Directories may be available separately:
-
-- **Vehicle manufacturers**;
-- **Vehicle models**.
+**“Vehicle manufacturers”** and **“Vehicle models”** are separate items in the **“Configuration”** group (next to **“Settings”**), each opened as its own list.
 
 Recommended filling order:
 

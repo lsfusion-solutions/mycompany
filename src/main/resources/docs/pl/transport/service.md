@@ -26,6 +26,8 @@ Historia serwisów jest zwykle dostępna również na karcie pojazdu w odpowiedn
    - notatka i/lub opis (jeśli potrzeba).
 3. Zapisz rekord.
 
+Po wybraniu pojazdu **[Dostawca](../masterdata/partners.md)** i **Wskazanie drogomierza** są wstępnie wypełniane z ostatniego serwisu tego pojazdu (jeśli istnieje) — sprawdź je i w razie potrzeby popraw.
+
 ### Jak wypełniać koszt
 
 W zależności od konfiguracji koszt może być prowadzony:
@@ -45,7 +47,9 @@ Jeśli w organizacji prowadzone są dokumenty **[Faktura zakupu](../invoicing/bi
 
 Dostępne pola i zasady wypełniania zależą od konfiguracji i uprawnień.
 
-Rekomendacja praktyczna: jeśli serwis jest powiązany z **[Fakturą zakupu](../invoicing/bills.md)**, wypełnij datę oraz **[Dostawcę](../masterdata/partners.md)** tak, aby odpowiadały danym w **[Fakturze zakupu](../invoicing/bills.md)** — ułatwia to kontrolę i wyszukiwanie.
+Po powiązaniu serwisu z **[Fakturą zakupu](../invoicing/bills.md)** system przenosi do jeszcze niewypełnionych pól serwisu **[Dostawcę](../masterdata/partners.md)**, **Kwotę** i **Podatek** z faktury. W razie potrzeby wartości można skorygować ręcznie.
+
+Serwis pojazdu można też dodać bezpośrednio z karty **[Faktury zakupu](../invoicing/bills.md)**: dla typów dokumentów obsługujących pojazdy karta faktury pokazuje blok **„Serwisy pojazdów”**.
 
 ## Kontrola wskazania drogomierza
 

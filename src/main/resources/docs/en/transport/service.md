@@ -26,6 +26,8 @@ Service history is also usually available in the vehicle card in the correspondi
    - note and/or description (if needed).
 3. Save the record.
 
+When you select a vehicle, the **[Vendor](../masterdata/partners.md)** and **Odometer value** are pre-filled from the latest service of that vehicle (if there is one) — check and correct them if needed.
+
 ### How to fill the cost
 
 Depending on configuration, cost can be maintained:
@@ -45,7 +47,9 @@ If your organization maintains **[Bill](../invoicing/bills.md)** documents for s
 
 The available fields and filling rules depend on configuration and permissions.
 
-Practical recommendation: if a service is linked to a **[Bill](../invoicing/bills.md)**, fill in the date and **[Vendor](../masterdata/partners.md)** so that they match the **[Bill](../invoicing/bills.md)** — this makes control and search easier.
+When you link a service to a **[Bill](../invoicing/bills.md)**, the system copies the **[Vendor](../masterdata/partners.md)**, **Amount**, and **Tax** from the **[Bill](../invoicing/bills.md)** into the still-empty fields of the service. Adjust the values manually afterwards if needed.
+
+A vehicle service can also be added directly from a **[Bill](../invoicing/bills.md)** card: for bill types that support vehicles, the bill card shows a **“Vehicle services”** block.
 
 ## Controlling Odometer value
 

@@ -41,7 +41,6 @@ A typical scenario “record service expenses”:
 The **“Fleet”** section usually contains groups:
 
 - **Operations** — day-to-day work (vehicles, drivers, services, contracts).
-- **Reporting** — reports and views (the set depends on configuration).
 - **Configuration** — parameters and directories of the section.
 
 Menu items and available actions depend on configuration and user permissions.
