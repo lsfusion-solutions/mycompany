@@ -2,18 +2,21 @@
 title: Działy
 ---
 
-Słownik **„Działy”** służy do utrzymywania oddziałów/lokalizacji/jednostek organizacyjnych powiązanych z partnerem. Dział jest wygodny, gdy jeden partner ma wiele adresów lub miejsc pracy.
+**Dział** to oddział/lokalizacja/jednostka organizacyjna partnera. Działy są wygodne, gdy jeden partner ma wiele adresów lub miejsc pracy.
+
+## Gdzie to znaleźć
+
+Działy nie są osobnym słownikiem. Są utrzymywane na **karcie partnera**: otwórz [partnera](partners.md), przejdź na zakładkę **„Działy”** i użyj przycisku **„Dział”**, aby dodać nowy.
 
 ## Karta działu
 
-Typowe pola:
+Karta działu zawiera:
 
-- **ID** (może być generowane automatycznie);
+- **ID** — generowane automatycznie;
 - **Nazwa**;
-- **Adres** (ulica/numer domu itp.);
-- **Miasto**;
-- **Województwo**;
-- **Kod pocztowy**.
+- **Adres**, **Miasto**, **Województwo**, **Kod pocztowy**.
+
+Partner jest ustawiany automatycznie — dział zawsze należy do partnera, z którego karty został utworzony.
 
 ## Użycie w dokumentach
 

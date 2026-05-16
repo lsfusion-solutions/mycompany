@@ -74,7 +74,7 @@ Typical fields:
 
 - **ID** — can be filled automatically;
 - **Name**;
-- **Type** — helps separate partner roles (customer/supplier, etc.), if configured;
+- **Type** — the partner kind (e.g. legal entity, company, individual, employee); it is set by the type of entry you create and is shown read-only;
 - **Address** (including country — if used);
 - **Phone**, **Email**;
 - **Archived** — a flag to exclude the partner from active use.

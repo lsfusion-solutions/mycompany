@@ -17,8 +17,10 @@ Typical fields:
 
 - **Name**;
 - **ID** (can be generated automatically);
-- **Parent category** (if hierarchy is used);
+- **Parent** (if hierarchy is used);
 - **Archived**.
+
+The card has a name **Prefix** field and a **“Default values”** tab with a default **Unit of measure** — both are inherited by items of this category.
 
 ## Creating a subcategory
 
