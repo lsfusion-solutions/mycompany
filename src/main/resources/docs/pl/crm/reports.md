@@ -13,7 +13,7 @@ Otwórz **„Raportowanie”**, następnie **„Raport leadów”**.
 Raport służy do analizy leadów wg czasu i atrybutów. Pomaga odpowiedzieć na pytania, takie jak:
 
 - ile leadów utworzono w okresie;
-- które typy i statusy występują najczęściej;
+- które statusy występują najczęściej;
 - jaki jest spodziewany przychód i jak rozkłada się wg sprzedawcy;
 - które leady miały się zamknąć w określonym okresie.
 
@@ -23,10 +23,11 @@ Raport jest budowany jako tabela przestawna: możesz zmieniać wymiary i grupowa
 
 Raport zwykle zawiera:
 
-- główne atrybuty: **ID**, **Nazwa**, **Status leadu**, **Typ leadu**, **[Partner](../masterdata/partners.md)**, **Sprzedawca**, **Kampania**, **Kanał**, **Źródło**, **Priorytet leadu**, **Tagi leadu**;
+- główne atrybuty: **ID**, **Nazwa**, **Status leadu**, **[Klient](../masterdata/partners.md)**, **Sprzedawca**, **Priorytet leadu**, **Tagi leadu**;
+- marketing (jeśli moduł marketingu jest włączony): **Kampania**, **Kanał**, **Źródło**;
 - prognoza: **Prawdopodobieństwo**, **Spodziewane zamknięcie**, **Spodziewany przychód**;
 - kontakty: **Telefon**, **Email**;
-- opis i dodatkowe dane (adres, strona internetowa, osoba kontaktowa) — jeśli uzupełnione.
+- opis i dodatkowe dane (adres, strona internetowa, nazwa przedsiębiorstwa, osoba kontaktowa) — jeśli uzupełnione.
 
 ### Filtr „Interwał dat”
 

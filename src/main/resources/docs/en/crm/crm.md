@@ -12,7 +12,7 @@ This set of documents describes end-user work with leads: the lead card and list
    - **Name**
    - **Sales person**
    - **Lead type** and **Lead status** (if the pipeline is configured)
-   - if available — **[Partner](../masterdata/partners.md)**, **Phone**, **Email**
+   - if available — **[Customer](../masterdata/partners.md)**, **Phone**, **Email**
 4. For control, use:
    - filters **“Opened”**, **“Closed”**, **“My leads”**;
    - the **[“Kanban”](kanban.md)** tab (columns by status, quick drag-and-drop between stages).
@@ -31,7 +31,7 @@ Detailed instructions:
 
 #### Lead
 
-A potential sale or inquiry that goes through work stages (statuses). A lead can be linked to a [partner](../masterdata/partners.md), an owner employee, a priority and a set of tags.
+A potential sale or inquiry that goes through work stages (statuses). A lead can be linked to a [customer](../masterdata/partners.md), an owner employee, a priority and a set of tags.
 
 #### Lead type
 
@@ -100,9 +100,9 @@ Responsible for:
 
 Check in **“CRM → Configuration → Settings”** whether the **“Order type”** and **“Invoice type”** parameters are set. If the parameters are not set or you do not have permissions, the buttons are not shown.
 
-#### Why can’t I save the lead after changing the type?
+#### Why can’t I save the lead?
 
-The lead type can restrict the allowed statuses. After changing the type, select a status that is allowed for that type.
+The lead type can restrict the allowed statuses. If the selected status is not allowed for the lead type, the system will not save the lead — choose a status allowed for that type. When you change the type, the status is reset automatically to a status allowed for the new type.
 
 #### Why is the lead board not shown?
 

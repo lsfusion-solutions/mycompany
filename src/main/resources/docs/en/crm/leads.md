@@ -11,8 +11,9 @@ In this section you can typically access:
 - the lead list;
 - the lead card;
 - state filters (**“Opened”** and **“Closed”**) and **“My leads”**;
-- additional tabs with communications (calls, emails) — if enabled;
-- a block of related documents ([sales orders](../sales/orders.md), [invoices](../sales/invoices.md)) — if the corresponding modules are enabled.
+- the **[“Kanban”](kanban.md)** tab (the first tab, opens by default);
+- tabs with communications (**“Calls”** and **“Email”**);
+- a block of related documents ([sales orders](../sales/orders.md), [invoices](../sales/invoices.md)) in the lead card.
 
 ## Lead list
 
@@ -26,7 +27,7 @@ The set of columns depends on configuration, but usually includes:
 - **Item**;
 - **Lead status** (and the “open/closed” state);
 - **Lead type**;
-- **[Partner](../masterdata/partners.md)**;
+- **[Customer](../masterdata/partners.md)**;
 - **Sales person**;
 - **Campaign**, **Medium**, **Source**;
 - **Lead priority** and **Lead tags**;
@@ -44,12 +45,12 @@ On the right, in the **“Filters”** panel, quick toggles are usually availabl
 - **“Closed”** — shows closed leads;
 - **“My leads”** — shows leads where **Sales person** equals the current user.
 
-Additional filters may also be available (depending on configuration):
+Dedicated filters are also available:
 
 - by lead type;
 - by sales person;
-- by priority;
-- by [partner](../masterdata/partners.md).
+- by item;
+- by campaign, medium and source (if the marketing module is enabled).
 
 Recommendation: for daily work it is usually convenient to keep **“Opened”** enabled and then narrow down to **“My leads”**.
 
@@ -69,22 +70,22 @@ The lead card is used to maintain full information about the lead and perform ac
 Typically, the top of the card shows:
 
 - **ID** and **Name**;
-- **Item**;
-- forecast block: **Date and time**, **Expected revenue**, **Probability**, **Expected closing**;
-- marketing: **Campaign**, **Medium**, **Source**;
-- main attributes: **Lead type**, **[Partner](../masterdata/partners.md)**, **Email**, **Phone**, **Sales person**, **Lead priority**, **Lead tags**.
+- forecast block: **Date**, **Expected revenue**, **Probability**, **Expected closing**;
+- main attributes: **Lead type**, **[Customer](../masterdata/partners.md)**, **Item**, **Email**, **Phone**, **Sales person**, **Lead priority**, **Lead tags**.
+
+The **Lead status** is shown as a separate selector at the top of the card.
 
 Below are tabs such as:
 
 - **“Description”** — a text description of the inquiry, agreements, next step;
-- **“Other information”** — details, website, address fields, contact person (if used).
+- **“Other information”** — legal entity name, website, address fields, contact person, and the **Marketing** block (**Campaign**, **Medium**, **Source**).
 
 ### Recommended filling order
 
 1. Select **Item** (if specified) — the lead **Name** will be filled automatically from the item name if it was empty.
 2. Set **Name** — short and clear (what is requested and from whom), if not filled automatically.
-3. Set **[Partner](../masterdata/partners.md)**, if known.
-4. Assign **Sales person**.
+3. Set **[Customer](../masterdata/partners.md)**, if known.
+4. Check **Sales person** — for a new lead it is set to the current user by default; change it if needed.
 5. Select **Lead type**.
 6. Select **Lead status**.
 7. Add contacts and description.
@@ -94,9 +95,9 @@ Below are tabs such as:
 The list of available statuses depends on the selected lead type:
 
 - for each type, you can configure which statuses are allowed;
-- if a type has no status list configured, then (depending on settings) all statuses can be allowed.
+- if a type has no status list configured, all statuses are allowed.
 
-If the selected status is not allowed for the type, the system will not let you save the lead.
+If the selected status is not allowed for the type, the system will not let you save the lead. When you change the type, the status is reset automatically to a status allowed for the new type.
 
 ### Contacts and validation
 
@@ -114,6 +115,14 @@ How it works:
 3. The system saves the reason and sets the lead status that is configured in settings as “Lost”.
 
 After that, the **“Lost reason”** field is shown in the card.
+
+### Creating a customer from a lead
+
+If the lead has no **Customer** yet, the **“Create Legal entity”** action is available in the lead card. It creates a [legal entity](../masterdata/partners.md) from the lead data — name, phone, email, address and website — and, if the contact first/last name are filled, a contact person for it. The created legal entity is then set as the lead **Customer**.
+
+### Copying a lead
+
+The **“Copy”** action creates a new lead and copies the main fields of the current one: name, type, customer, sales person, description, priority, tags, expected revenue and probability, contacts and address. Use it for similar repeat inquiries.
 
 ### History
 

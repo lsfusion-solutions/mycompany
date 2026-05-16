@@ -12,7 +12,7 @@ Ten zestaw dokumentów opisuje pracę użytkownika końcowego z leadami: listę 
    - **Nazwa**
    - **Sprzedawca**
    - **Typ leadu** i **Status leadu** (jeśli lejek jest skonfigurowany)
-   - jeśli dostępne — **[Partner](../masterdata/partners.md)**, **Telefon**, **Email**
+   - jeśli dostępne — **[Klient](../masterdata/partners.md)**, **Telefon**, **Email**
 4. Do kontroli używaj:
    - filtrów **„Otwarta”**, **„Zamknięta”**, **„Moje leady”**;
    - zakładki **[„Kanban”](kanban.md)** (kolumny wg statusu, szybkie przeciąganie między etapami).
@@ -31,7 +31,7 @@ Szczegółowe instrukcje:
 
 #### Lead
 
-Potencjalna sprzedaż lub zapytanie, które przechodzi przez etapy pracy (statusy). Lead może być powiązany z [partnerem](../masterdata/partners.md), pracownikiem‑właścicielem, priorytetem i zestawem tagów.
+Potencjalna sprzedaż lub zapytanie, które przechodzi przez etapy pracy (statusy). Lead może być powiązany z [klientem](../masterdata/partners.md), pracownikiem‑właścicielem, priorytetem i zestawem tagów.
 
 #### Typ leadu
 
@@ -100,9 +100,9 @@ Odpowiada za:
 
 Sprawdź w **„CRM → Konfiguracja → Ustawienia”** czy parametry **„Typ zamówienia”** oraz **„Typ faktury”** są ustawione. Jeśli parametry nie są ustawione albo nie masz uprawnień, przyciski nie są pokazywane.
 
-#### Dlaczego nie mogę zapisać leadu po zmianie typu?
+#### Dlaczego nie mogę zapisać leadu?
 
-Typ leadu może ograniczać dozwolone statusy. Po zmianie typu wybierz status, który jest dozwolony dla tego typu.
+Typ leadu może ograniczać dozwolone statusy. Jeśli wybrany status nie jest dozwolony dla typu leadu, system nie zapisze leadu — wybierz status dozwolony dla tego typu. Po zmianie typu status jest automatycznie resetowany do statusu dozwolonego dla nowego typu.
 
 #### Dlaczego tablica leadów nie jest widoczna?
 

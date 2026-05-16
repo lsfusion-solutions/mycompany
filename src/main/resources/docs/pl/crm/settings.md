@@ -6,7 +6,9 @@ title: Ustawienia i dane referencyjne
 
 Otwórz **„CRM”**, następnie **„Konfiguracja”**, następnie **„Ustawienia”**.
 
-Ta sekcja zawiera parametry i katalogi, które definiują, jak użytkownicy prowadzą leady: statusy, typy, priorytety, tagi oraz sposób oznaczania leadu jako porażka.
+Formularz **„Ustawienia”** jest podzielony na zakładki i zawiera parametry oraz katalogi, które definiują, jak użytkownicy prowadzą leady: statusy, typy, priorytety, tagi oraz sposób oznaczania leadu jako porażka.
+
+Grupa **„Konfiguracja”** zawiera również osobne pozycje dla danych referencyjnych marketingu — **„Kampanie”**, **„Kanały”** i **„Źródła”** (zobacz [Ustawienia marketingu](#ustawienia-marketingu) poniżej).
 
 ## Parametry
 
@@ -91,7 +93,7 @@ Rekomendacja: utwórz powody tak, aby dało się z nich wyciągać wnioski (np. 
 
 ## Ustawienia marketingu
 
-Aby analizować skąd przychodzą leady, możesz skonfigurować dane referencyjne marketingu.
+Aby analizować skąd przychodzą leady, możesz uzupełnić dane referencyjne marketingu. **Kampanie**, **Kanały** i **Źródła** to osobne pozycje w grupie **„Konfiguracja”** (obok **„Ustawienia”**), każda otwierana jako osobna lista.
 
 ### Kampanie
 
