@@ -8,7 +8,7 @@ This page describes a typical process of returning goods by a customer in **[POS
 
 ## Where to find it
 
-- POS: **“Retail” → “Operations”**.
+- POS: **“Retail” → “Operations” → “POS”**.
 
 ## Before processing a return
 
@@ -24,10 +24,10 @@ This is the main scenario: the return is processed based on a previously issued 
 
 ### Step 1. Find the original receipt
 
-POS usually provides a list of receipts. Switch the list filter to see the required receipt:
+On the **Session** tab, the **“Cash receipts”** list shows sales receipts. Switch its filter to find the required receipt:
 
-- **by current session**;
-- **by cash register**.
+- **“By session”** — receipts of the current session;
+- **“By POS”** — receipts of the cash register.
 
 Select the original sales receipt in the list.
 
@@ -35,11 +35,11 @@ Select the original sales receipt in the list.
 
 Run the **“Return”** action.
 
-The system will create a return for the selected receipt and typically:
+The system creates a return (a credit note) for the selected receipt and:
 
-- fills the customer from the original receipt;
-- fills return lines with items from the original receipt;
-- copies prices/discounts so that the return amount matches the selected items and quantities.
+- fills the **return partner** (the “Vendor” field) from the original receipt’s customer;
+- fills the return lines with the items of the original receipt;
+- copies prices and discounts so that the return amount matches the selected items and quantities.
 
 ### Step 3. Adjust items and quantities being returned
 
@@ -60,7 +60,7 @@ The pay-out is processed in a separate return payment form:
 
 #### Important rule about payment methods
 
-In some configurations, there is a restriction: **you cannot return more by a specific payment method than was paid by that payment method in the original receipt**.
+The return payment is restricted: **you cannot refund more by a payment method than was paid by that method in the original receipt**, and the total refunded must equal the return amount.
 
 Example: if the purchase was paid partly in cash and partly by bank card, then the return usually has to be split by the same payment methods within the paid amounts.
 
@@ -77,11 +77,8 @@ Open a session for the required cash register and try again. Returns are process
 Check that:
 
 - the total amount across all selected payment methods is **equal** to the return amount;
-- for each payment method, the return amount does not exceed the amount paid by that payment method in the original receipt (if such restriction is enabled).
+- for each payment method, the refunded amount does not exceed the amount paid by that payment method in the original receipt.
 
 ### No original receipt
 
-In the basic scenario, a return is processed by the original receipt. If you do not have a receipt:
-
-1. Try to find the sale by date/time and cash register.
-2. If the sale is not in the list, contact an administrator (you may need additional permissions or a different return scenario in your configuration).
+A POS return is always processed against an original sales receipt. If the original receipt cannot be found in the **“Cash receipts”** list, switch the filter to **“By POS”** to widen the search. A return without an original receipt is not supported at the POS.

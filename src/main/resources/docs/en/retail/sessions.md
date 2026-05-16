@@ -10,30 +10,33 @@ A session is the period of **[cash register](settings.md)** operation between op
 
 ## How to open a session
 
-1. Open the session list.
-2. Select a **[cash register](settings.md)**.
-3. Run the **“Open session”** action.
+A session is opened from the **[POS](pos.md)** screen, not from the session list:
 
-The system automatically records the date and time of opening.
+1. Open **“Retail” → “Operations” → “POS”**.
+2. On the **Session** tab, select the **[cash register](settings.md)**.
+3. Press **“Open session”**.
+
+The system records the opening date and time and assigns the session number.
 
 ### Restrictions
 
-- You cannot open a session if there is already an open session for the selected cash register.
+- You cannot open a session if there is already an open session for the cash register — the system shows **“There is already an open session”**.
 
 ## How to close a session
 
-1. Open the session you want to close.
-2. Run the **“Close session”** action and confirm.
+On the **POS** screen, press **“Close session”** on the Session tab and confirm.
 
-The system records the date and time of closing.
+The system records the closing date and time.
 
-### Restrictions
+## What a session shows
 
-- A session cannot be closed earlier than it was opened.
+A session aggregates the operations performed at the cash register while it was open:
 
-## Monitoring operations by session
+- **Sold** — the number and total amount of sales;
+- **Returned** — the number and total amount of returns;
+- **Total** — sales minus returns;
+- the amount paid by each **[payment method](payments.md)**;
+- the **cash receipts** and **refunds** lists;
+- cash **deposits** and **withdrawals** and the resulting cash balance.
 
-In the session list, filtering by date is usually available. In **[POS](pos.md)**, you can usually view the receipt list:
-
-- by the current session;
-- by cash register.
+The standalone **“Retail” → “Operations” → “Sessions”** list is used to browse and review past sessions.

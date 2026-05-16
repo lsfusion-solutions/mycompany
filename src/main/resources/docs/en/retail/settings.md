@@ -24,20 +24,16 @@ Typically configured:
 
 ## Sessions
 
-**[Sessions](sessions.md)** usually use numbering. A session numeration parameter may be available in settings.
+**[Sessions](sessions.md)** are numbered automatically. The session numerator is selected on the **“Main”** tab of the Settings form.
 
 ## Payment methods
 
-Settings define the list of payment methods (see also: **[Retail payments](payments.md)**). For each method, you typically specify:
+The list of payment methods is maintained in the Settings form (see also: **[Retail payments](payments.md)**). For each method you specify:
 
-Where to find: usually **“Retail” → “Configuration” → “Settings”** (Payment methods tab).
-
-- name and code;
-- the **“cash”** flag (used to calculate change);
-- mapping to financial payment types (if the financial contour is used).
+- **name** and **code**;
+- the **“Cash”** flag — marks the method as cash (used to calculate change);
+- the **incoming payment type** and the **return payment type** — the payment types used when the method is received in a sale and refunded in a return.
 
 ## Discount cards
 
-**[Discount cards](discount-cards.md)** may use automatic numbering. A discount card numeration parameter may be available in settings.
-
-Where to find: usually **“Retail” → “Configuration” → “Discount cards”**.
+**[Discount cards](discount-cards.md)** are numbered automatically; the discount-card numerator is selected on the **“Main”** tab of the Settings form. The card list itself is in **“Retail” → “Configuration” → “Discount cards”**.

@@ -36,12 +36,11 @@ Sekcje:
 1. Otwórz **„Sprzedaż detaliczna” → „Konfiguracja” → „Ustawienia”** i upewnij się, że:
    - utworzono **kasy** i (jeśli trzeba) powiązano je z komputerami;
    - skonfigurowano **metody płatności**.
-2. Otwórz **„Sprzedaż detaliczna” → „Operacje” → „Sesje”**.
-3. Otwórz sesję dla wymaganej kasy używając **„Otwórz sesję”**.
-4. Otwórz **„Sprzedaż detaliczna” → „Operacje”** i uruchom **POS**.
-5. Dodaj towary do paragonu (wyszukiwanie / skanowanie kodu kreskowego); jeśli trzeba, zastosuj rabat / kartę rabatową.
-6. Przejdź do płatności, wprowadź kwoty według metod płatności i potwierdź.
-7. Po zakończeniu uruchom **„Zamknij sesję”**.
+2. Otwórz **„Sprzedaż detaliczna” → „Operacje” → „POS”**.
+3. Wybierz kasę i otwórz sesję akcją **„Otwórz sesję”**.
+4. Dodaj towary do paragonu (wyszukiwanie / skanowanie kodu kreskowego / witryna dotykowa); jeśli trzeba, zastosuj rabat lub kartę rabatową.
+5. Przejdź do płatności, wprowadź kwoty według metod płatności i potwierdź.
+6. Po zakończeniu uruchom **„Zamknij sesję”**.
 
 ### Scenariusz: zrealizuj zwrot od klienta
 
@@ -56,15 +55,15 @@ Szczegóły: [Zwroty](returns.md).
 
 ## Nawigacja
 
-Sekcja **„Sprzedaż detaliczna”** zwykle zawiera grupy:
+Sekcja **„Sprzedaż detaliczna”** zawiera dwie grupy:
 
-- **Operacje** — POS, sesje, listy paragonów/operacji w ramach sesji.
-- **Konfiguracja** — słowniki i parametry, które wpływają na działanie kasy i płatności.
+- **Operacje** — ekran kasjera **POS** i lista **sesji**.
+- **Konfiguracja** — formularz **„Ustawienia”** oraz słowniki **„Kasy”** i **„Karty rabatowe”**.
 
 Typowe pozycje menu:
 
-- **„Sprzedaż detaliczna” → „Operacje” → „Sesje”** — otwieranie/zamykanie i monitorowanie sesji.
-- **„Sprzedaż detaliczna” → „Operacje”** — POS.
+- **„Sprzedaż detaliczna” → „Operacje” → „POS”** — ekran kasjera do sprzedaży i zwrotów.
+- **„Sprzedaż detaliczna” → „Operacje” → „Sesje”** — lista sesji.
 - **„Sprzedaż detaliczna” → „Konfiguracja” → „Ustawienia”** — parametry sekcji.
 
 ## Pojęcia
@@ -91,4 +90,4 @@ Wynik realizacji sprzedaży lub zwrotu (w **[POS](pos.md)**): lista pozycji, cen
 
 #### Karta rabatowa
 
-**[Karta rabatowa](discount-cards.md)** to karta klienta, która może być użyta do udzielenia rabatu i/lub identyfikacji klienta na paragonie.
+**[Karta rabatowa](discount-cards.md)** to karta identyfikująca klienta na paragonie; klient paragonu jest ustawiany na podstawie właściciela karty.

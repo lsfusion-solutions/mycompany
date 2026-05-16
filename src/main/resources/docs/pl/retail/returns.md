@@ -8,7 +8,7 @@ Ta strona opisuje typowy proces zwrotu towarów przez klienta w **[POS](pos.md)*
 
 ## Gdzie to znaleźć
 
-- POS: **„Sprzedaż detaliczna” → „Operacje”**.
+- POS: **„Sprzedaż detaliczna” → „Operacje” → „POS”**.
 
 ## Zanim przetworzysz zwrot
 
@@ -24,10 +24,10 @@ To główny scenariusz: zwrot jest przetwarzany na podstawie wcześniej wystawio
 
 ### Krok 1. Znajdź oryginalny paragon
 
-POS zwykle udostępnia listę paragonów. Przełącz filtr listy, aby zobaczyć wymagany paragon:
+Na zakładce **„Sesja”** lista **„Paragony sprzedaży”** pokazuje paragony sprzedaży. Przełącz jej filtr, aby znaleźć wymagany paragon:
 
-- **według bieżącej sesji**;
-- **według kasy**.
+- **„Wg sesji”** — paragony bieżącej sesji;
+- **„Wg POS”** — paragony kasy.
 
 Wybierz na liście oryginalny paragon sprzedaży.
 
@@ -35,11 +35,11 @@ Wybierz na liście oryginalny paragon sprzedaży.
 
 Uruchom akcję **„Zwrot”**.
 
-System utworzy zwrot dla wybranego paragonu i zazwyczaj:
+System utworzy zwrot (notę kredytową) dla wybranego paragonu i:
 
-- uzupełni klienta z oryginalnego paragonu;
+- uzupełni **kontrahenta zwrotu** (pole „Dostawca”) na podstawie klienta z oryginalnego paragonu;
 - uzupełni pozycje zwrotu towarami z oryginalnego paragonu;
-- skopiuje ceny/rabaty tak, aby kwota zwrotu odpowiadała wybranym towarom i ilościom.
+- skopiuje ceny i rabaty tak, aby kwota zwrotu odpowiadała wybranym towarom i ilościom.
 
 ### Krok 3. Dostosuj towary i ilości zwracane
 
@@ -60,7 +60,7 @@ Wypłata jest realizowana w oddzielnym formularzu płatności zwrotu:
 
 #### Ważna zasada dotycząca metod płatności
 
-W niektórych konfiguracjach obowiązuje ograniczenie: **nie możesz zwrócić większej kwoty daną metodą płatności, niż została zapłacona tą metodą płatności w oryginalnym paragonie**.
+Płatność zwrotu jest ograniczona: **nie możesz zwrócić większej kwoty daną metodą płatności, niż zapłacono tą metodą w oryginalnym paragonie**, a łączna wypłacona kwota musi być równa kwocie zwrotu.
 
 Przykład: jeśli zakup został opłacony częściowo gotówką, a częściowo kartą bankową, zwrot zwykle również musi zostać rozdzielony na te same metody płatności w ramach zapłaconych kwot.
 
@@ -77,11 +77,8 @@ Otwórz sesję dla wymaganej kasy i spróbuj ponownie. Zwroty są realizowane w 
 Sprawdź, czy:
 
 - łączna kwota dla wszystkich wybranych metod płatności jest **równa** kwocie zwrotu;
-- dla każdej metody płatności kwota zwrotu nie przekracza kwoty zapłaconej tą metodą płatności w oryginalnym paragonie (jeśli takie ograniczenie jest włączone).
+- dla każdej metody płatności wypłacona kwota nie przekracza kwoty zapłaconej tą metodą płatności w oryginalnym paragonie.
 
 ### Brak oryginalnego paragonu
 
-W podstawowym scenariuszu zwrot jest realizowany na podstawie oryginalnego paragonu. Jeśli nie masz paragonu:
-
-1. Spróbuj znaleźć sprzedaż według daty/godziny i kasy.
-2. Jeśli sprzedaży nie ma na liście, skontaktuj się z administratorem (możesz potrzebować dodatkowych uprawnień lub innego scenariusza zwrotu w Twojej konfiguracji).
+Zwrot na kasie jest zawsze realizowany na podstawie oryginalnego paragonu sprzedaży. Jeśli oryginalnego paragonu nie da się znaleźć na liście **„Paragony sprzedaży”**, przełącz filtr na **„Wg POS”**, aby poszerzyć wyszukiwanie. Zwrot bez oryginalnego paragonu nie jest obsługiwany na kasie.
