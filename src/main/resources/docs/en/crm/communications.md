@@ -7,7 +7,7 @@ In the system, you can link communications to leads so you do not lose the work 
 - **calls**;
 - **emails**.
 
-The availability of sections and tabs depends on whether the corresponding telephony and email subsystems are connected.
+The **“Calls”** tab is always present in the **“Leads”** section. The **“Email”** tab appears once an email account is configured (an account for leads or the current user’s email account). Both tabs become useful once the corresponding telephony and email integrations are set up.
 
 ## Calls
 
@@ -21,13 +21,14 @@ If a call is already linked to a lead, in the call card you can:
 When creating a lead from a call, the system typically:
 
 - transfers the caller number to the lead **“Phone”** field;
+- sets the lead **“Sales person”** to the employee linked to the call;
 - opens the lead card so you can fill in the remaining data.
 
 If the lead already exists (for example, there was a prior contact with this number), link the call to the existing lead.
 
 ### “Calls” tab in the “Leads” section
 
-The **“Leads”** section can include a **“Calls”** tab with the current user’s calls.
+The **“Leads”** section includes a **“Calls”** tab with the current user’s calls.
 
 Typically available:
 
@@ -67,7 +68,7 @@ Recommendation: before sending, verify the address in the **“Email”** field.
 
 ### “Email” tab in the “Leads” section
 
-The **“Leads”** section can include an **“Email”** tab with a list of messages to process.
+If an email account is configured, the **“Leads”** section shows an **“Email”** tab with a list of messages to process.
 
 Typically available:
 

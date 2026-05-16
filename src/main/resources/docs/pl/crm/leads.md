@@ -11,8 +11,9 @@ W tej sekcji zwykle masz dostęp do:
 - listy leadów;
 - karty leadu;
 - filtrów stanu (**„Otwarta”** i **„Zamknięta”**) oraz **„Moje leady”**;
-- dodatkowych zakładek z komunikacją (połączenia, e‑maile) — jeśli włączone;
-- bloku dokumentów powiązanych ([zamówienia sprzedaży](../sales/orders.md), [faktury](../sales/invoices.md)) — jeśli odpowiednie moduły są włączone.
+- zakładki **[„Kanban”](kanban.md)** (pierwsza zakładka, otwiera się domyślnie);
+- zakładek z komunikacją (**„Połączenia”** i **„Email”**);
+- bloku dokumentów powiązanych ([zamówienia sprzedaży](../sales/orders.md), [faktury](../sales/invoices.md)) w karcie leadu.
 
 ## Lista leadów
 
@@ -26,7 +27,7 @@ Zestaw kolumn zależy od konfiguracji, ale zwykle zawiera:
 - **Produkt**;
 - **Status leadu** (oraz stan „otwarta/zamknięta”);
 - **Typ leadu**;
-- **[Partner](../masterdata/partners.md)**;
+- **[Klient](../masterdata/partners.md)**;
 - **Sprzedawca**;
 - **Kampania**, **Kanał**, **Źródło**;
 - **Priorytet leadu** i **Tagi leadu**;
@@ -44,12 +45,12 @@ Po prawej, w panelu **„Filtry”**, zwykle są dostępne szybkie przełącznik
 - **„Zamknięta”** — pokazuje zamknięte leady;
 - **„Moje leady”** — pokazuje leady, gdzie **Sprzedawca** jest równy bieżącemu użytkownikowi.
 
-Dodatkowe filtry również mogą być dostępne (w zależności od konfiguracji):
+Dostępne są również dedykowane filtry:
 
 - wg typu leadu;
 - wg sprzedawcy;
-- wg priorytetu;
-- wg [partnera](../masterdata/partners.md).
+- wg produktu;
+- wg kampanii, kanału i źródła (jeśli moduł marketingu jest włączony).
 
 Rekomendacja: do codziennej pracy zwykle wygodnie jest mieć włączone **„Otwarta”**, a następnie zawęzić do **„Moje leady”**.
 
@@ -69,22 +70,22 @@ Karta leadu służy do prowadzenia pełnej informacji o leadzie i wykonywania ak
 Zwykle u góry karty są widoczne:
 
 - **ID** i **Nazwa**;
-- **Produkt**;
-- blok prognozy: **Data i czas**, **Spodziewany przychód**, **Prawdopodobieństwo**, **Spodziewane zamknięcie**;
-- marketing: **Kampania**, **Kanał**, **Źródło**;
-- główne atrybuty: **Typ leadu**, **[Partner](../masterdata/partners.md)**, **Email**, **Telefon**, **Sprzedawca**, **Priorytet leadu**, **Tagi leadu**.
+- blok prognozy: **Data**, **Spodziewany przychód**, **Prawdopodobieństwo**, **Spodziewane zamknięcie**;
+- główne atrybuty: **Typ leadu**, **[Klient](../masterdata/partners.md)**, **Produkt**, **Email**, **Telefon**, **Sprzedawca**, **Priorytet leadu**, **Tagi leadu**.
+
+**Status leadu** jest pokazany jako osobny przełącznik u góry karty.
 
 Niżej znajdują się zakładki, takie jak:
 
 - **„Opis”** — opis zapytania, ustalenia, następny krok;
-- **„Inne informacje”** — szczegóły, strona internetowa, pola adresu, osoba kontaktowa (jeśli używana).
+- **„Inne informacje”** — nazwa przedsiębiorstwa, strona internetowa, pola adresu, osoba kontaktowa oraz blok **„Marketing”** (**Kampania**, **Kanał**, **Źródło**).
 
 ### Rekomendowana kolejność uzupełniania
 
 1. Wybierz **Produkt** (jeśli określono) — **Nazwa** leadu zostanie uzupełniona automatycznie z nazwy produktu, jeśli była pusta.
 2. Ustaw **Nazwa** — krótko i jasno (o co chodzi i od kogo), jeśli nie została uzupełniona automatycznie.
-3. Ustaw **[Partner](../masterdata/partners.md)**, jeśli znany.
-4. Przypisz **Sprzedawca**.
+3. Ustaw **[Klient](../masterdata/partners.md)**, jeśli znany.
+4. Sprawdź **Sprzedawca** — dla nowego leadu ustawiany jest bieżący użytkownik; zmień go w razie potrzeby.
 5. Wybierz **Typ leadu**.
 6. Wybierz **Status leadu**.
 7. Dodaj kontakty i opis.
@@ -94,9 +95,9 @@ Niżej znajdują się zakładki, takie jak:
 Lista dostępnych statusów zależy od wybranego typu leadu:
 
 - dla każdego typu możesz skonfigurować, które statusy są dozwolone;
-- jeśli dla typu nie skonfigurowano listy statusów, to (w zależności od ustawień) wszystkie statusy mogą być dozwolone.
+- jeśli dla typu nie skonfigurowano listy statusów, wszystkie statusy są dozwolone.
 
-Jeśli wybrany status nie jest dozwolony dla typu, system nie pozwoli zapisać leadu.
+Jeśli wybrany status nie jest dozwolony dla typu, system nie pozwoli zapisać leadu. Po zmianie typu status jest automatycznie resetowany do statusu dozwolonego dla nowego typu.
 
 ### Kontakty i walidacja
 
@@ -114,6 +115,14 @@ Jak to działa:
 3. System zapisuje powód i ustawia status leadu, który jest skonfigurowany w ustawieniach jako „Porażka”.
 
 Po tym w karcie jest widoczne pole **„Powód porażki”**.
+
+### Tworzenie klienta z leadu
+
+Jeśli lead nie ma jeszcze ustawionego **Klienta**, w karcie leadu dostępna jest akcja **„Utwórz Przedsiębiorstwo”**. Tworzy ona [przedsiębiorstwo](../masterdata/partners.md) na podstawie danych leadu — nazwa, telefon, email, adres i strona internetowa — oraz, jeśli wypełniono imię i nazwisko kontaktu, osobę kontaktową dla niego. Utworzone przedsiębiorstwo jest następnie ustawiane jako **Klient** leadu.
+
+### Kopiowanie leadu
+
+Akcja **„Kopiuj”** tworzy nowy lead i kopiuje główne pola bieżącego: nazwę, typ, klienta, sprzedawcę, opis, priorytet, tagi, spodziewany przychód i prawdopodobieństwo, kontakty oraz adres. Użyj jej dla podobnych powtarzających się zapytań.
 
 ### Historia
 

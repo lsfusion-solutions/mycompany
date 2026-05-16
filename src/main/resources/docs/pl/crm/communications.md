@@ -7,7 +7,7 @@ W systemie możesz powiązać komunikację z leadami, aby nie tracić kontekstu 
 - **połączenia**;
 - **e‑maile**.
 
-Dostępność sekcji i zakładek zależy od tego, czy podłączono odpowiednie podsystemy telefonii i poczty.
+Zakładka **„Połączenia”** jest zawsze obecna w sekcji **„Leady”**. Zakładka **„Email”** pojawia się po skonfigurowaniu konta poczty (konta dla leadów lub konta poczty bieżącego użytkownika). Obie zakładki stają się użyteczne po skonfigurowaniu odpowiednich integracji telefonii i poczty.
 
 ## Połączenia
 
@@ -21,13 +21,14 @@ Jeśli połączenie jest już powiązane z leadem, w karcie połączenia możesz
 Przy tworzeniu leadu z połączenia system zwykle:
 
 - przenosi numer dzwoniącego do pola leadu **„Telefon”**;
+- ustawia w leadzie **„Sprzedawca”** na pracownika powiązanego z połączeniem;
 - otwiera kartę leadu, aby uzupełnić pozostałe dane.
 
 Jeśli lead już istnieje (np. był wcześniejszy kontakt z tym numerem), dołącz połączenie do istniejącego leadu.
 
-### Zakładka „Połaczenia” w sekcji „Leady”
+### Zakładka „Połączenia” w sekcji „Leady”
 
-Sekcja **„Leady”** może zawierać zakładkę **„Połaczenia”** z połączeniami bieżącego użytkownika.
+Sekcja **„Leady”** zawiera zakładkę **„Połączenia”** z połączeniami bieżącego użytkownika.
 
 Zwykle dostępne:
 
@@ -41,7 +42,7 @@ Zwykle dostępne:
 
 #### Rekomendowany scenariusz przetwarzania połączeń
 
-1. Otwórz zakładkę **„Połaczenia”**.
+1. Otwórz zakładkę **„Połączenia”**.
 2. Pozostaw włączony filtr **„Gotowy”**.
 3. Dla każdego wiersza:
    - jeśli lead jest znaleziony i poprawny — otwórz go i kontynuuj;
@@ -67,7 +68,7 @@ Rekomendacja: przed wysłaniem zweryfikuj adres w polu **„Email”**.
 
 ### Zakładka „Email” w sekcji „Leady”
 
-Sekcja **„Leady”** może zawierać zakładkę **„Email”** z listą wiadomości do przetworzenia.
+Jeśli skonfigurowano konto poczty, sekcja **„Leady”** pokazuje zakładkę **„Email”** z listą wiadomości do przetworzenia.
 
 Zwykle dostępne:
 

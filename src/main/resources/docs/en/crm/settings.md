@@ -6,7 +6,9 @@ title: Settings and reference data
 
 Open **“CRM”**, then **“Configuration”**, then **“Settings”**.
 
-This section contains parameters and directories that define how users maintain leads: statuses, types, priorities, tags, and how a lead is marked as lost.
+The **“Settings”** form is organized into tabs and contains the parameters and directories that define how users maintain leads: statuses, types, priorities, tags, and how a lead is marked as lost.
+
+The **“Configuration”** group also contains separate items for marketing reference data — **“Campaigns”**, **“Mediums”** and **“Sources”** (see [Marketing settings](#marketing-settings) below).
 
 ## Parameters
 
@@ -91,7 +93,7 @@ Recommendation: create reasons so you can draw conclusions from them (e.g., “t
 
 ## Marketing settings
 
-To analyze where leads come from, you can configure marketing reference data.
+To analyze where leads come from, you can fill in marketing reference data. **Campaigns**, **Mediums** and **Sources** are separate items in the **“Configuration”** group (next to **“Settings”**), each opened as its own list.
 
 ### Campaigns
 

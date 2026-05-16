@@ -4,7 +4,7 @@ title: Tablica leadów (kanban)
 
 ## Gdzie to znaleźć
 
-Otwórz sekcję **„Leady”** (grupa **„Operacje”**), następnie przejdź na zakładkę **„Kanban”**.
+Otwórz sekcję **„Leady”** (grupa **„Operacje”**). Zakładka **„Kanban”** to pierwsza zakładka sekcji i otwiera się domyślnie.
 
 ## Do czego służy tablica
 
@@ -32,7 +32,7 @@ Jeśli na tablicy brakuje kolumn lub są niepotrzebne, sprawdź ustawienia statu
 Układ karty może się różnić, ale zwykle zawiera:
 
 - **Status leadu**, **Nazwa**, **Typ leadu**;
-- **[Partner](../masterdata/partners.md)**;
+- **[Klient](../masterdata/partners.md)**;
 - prognoza: **Spodziewany przychód**, **Spodziewane zamknięcie**;
 - **Priorytet leadu** (w tym kolor);
 - **Tagi leadu** (w tym kolor);

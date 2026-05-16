@@ -41,7 +41,7 @@ If the request is still “raw”, it is better to clarify details first and mov
 
 Before creating, it is recommended to check in the lead:
 
-- whether the [partner](../masterdata/partners.md) is filled;
+- whether the [Customer](../masterdata/partners.md) is filled;
 - whether phone and email are correct;
 - whether address fields are filled (if delivery matters).
 
@@ -50,12 +50,12 @@ Before creating, it is recommended to check in the lead:
 As a rule, the following is transferred automatically:
 
 - a link to the source lead;
-- **[partner](../masterdata/partners.md)** from the lead;
+- **[Customer](../masterdata/partners.md)** from the lead;
 - **type** = value of the **“Order type”** parameter;
 - **delivery address** — built from the lead address data (if filled);
 - **items** — if an **Item** is selected in the lead, an order line will be created for it with the **Expected revenue** as the amount.
 
-If some data is missing in the lead (for example, no [partner](../masterdata/partners.md)), you will need to fill it in the order manually.
+If some data is missing in the lead (for example, no [Customer](../masterdata/partners.md)), you will need to fill it in the order manually.
 
 ### Where to see related orders
 
@@ -84,7 +84,7 @@ Recommended article for the document: [Invoices for orders](../sales/invoices.md
 As a rule, the following is transferred automatically:
 
 - a link to the source lead;
-- **[partner](../masterdata/partners.md)** from the lead;
+- **[Customer](../masterdata/partners.md)** from the lead;
 - **type** = value of the **“Invoice type”** parameter;
 - **delivery address** — built from the lead address data (if filled).
 
@@ -100,10 +100,10 @@ The lead card shows an **“Invoices”** block:
 1. Open the created document.
 2. If the document is empty and was not used, you can delete it (if you have permissions).
 3. If the document already participated in the process, coordinate actions with responsible users (e.g., cancellation/closure according to accounting rules).
-4. Return to the lead and fix the source data ([partner](../masterdata/partners.md), address, type) so re-creation is correct.
+4. Return to the lead and fix the source data ([Customer](../masterdata/partners.md), address, type) so re-creation is correct.
 
 ## Typical situations
 
 - **There is no create button** — “Order type” or “Invoice type” is not set in settings, or you do not have permissions.
-- **Wrong [partner](../masterdata/partners.md)** — check the “Partner” field in the lead before creating the document.
+- **Wrong [Customer](../masterdata/partners.md)** — check the “Customer” field in the lead before creating the document.
 - **Address was not filled** — fill address fields in the lead and create again (or fill the address in the document manually).

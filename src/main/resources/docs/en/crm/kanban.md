@@ -4,7 +4,7 @@ title: Lead board (kanban)
 
 ## Where to find it
 
-Open the **“Leads”** section (the **“Operations”** group), then switch to the **“Kanban”** tab.
+Open the **“Leads”** section (the **“Operations”** group). The **“Kanban”** tab is the first tab of the section and opens by default.
 
 ## What the board is for
 
@@ -32,7 +32,7 @@ If the board lacks columns or shows extra ones, check status and type settings (
 The card layout may differ, but typically includes:
 
 - **Lead status**, **Name**, **Lead type**;
-- **[Partner](../masterdata/partners.md)**;
+- **[Customer](../masterdata/partners.md)**;
 - forecast: **Expected revenue**, **Expected closing**;
 - **Lead priority** (including color);
 - **Lead tags** (including color);
