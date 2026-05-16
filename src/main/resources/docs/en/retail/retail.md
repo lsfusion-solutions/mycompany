@@ -36,12 +36,11 @@ Sections:
 1. Open **“Retail” → “Configuration” → “Settings”** and make sure that:
    - **cash registers** are created and (if needed) linked to computers;
    - **payment methods** are configured.
-2. Open **“Retail” → “Operations” → “Sessions”**.
-3. Open a session for the required cash register using **“Open session”**.
-4. Open **“Retail” → “Operations”** and start **POS**.
-5. Add items to the receipt (search / barcode scanning); if needed, apply a discount / discount card.
-6. Proceed to payment, enter amounts by payment methods and confirm.
-7. When finished, run **“Close session”**.
+2. Open **“Retail” → “Operations” → “POS”**.
+3. Select the cash register and open a session with **“Open session”**.
+4. Add items to the receipt (search / barcode scanning / touch grid); if needed, apply a discount or discount card.
+5. Proceed to payment, enter amounts by payment methods, and confirm.
+6. When finished, run **“Close session”**.
 
 ### Scenario: process a customer return
 
@@ -56,15 +55,15 @@ Details: [Returns](returns.md).
 
 ## Navigation
 
-The **“Retail”** section typically contains groups:
+The **“Retail”** section contains two groups:
 
-- **Operations** — POS, sessions, receipt/operation lists within a session.
-- **Configuration** — directories and parameters that affect how the cash register and payments work.
+- **Operations** — the **POS** cashier screen and the **Sessions** list.
+- **Configuration** — the **Settings** form and the **Cash registers** and **Discount cards** directories.
 
 Typical menu items:
 
-- **“Retail” → “Operations” → “Sessions”** — open/close and monitor sessions.
-- **“Retail” → “Operations”** — POS.
+- **“Retail” → “Operations” → “POS”** — the cashier screen for sales and returns.
+- **“Retail” → “Operations” → “Sessions”** — the session list.
 - **“Retail” → “Configuration” → “Settings”** — section parameters.
 
 ## Terms
@@ -91,4 +90,4 @@ A **[payment method](payments.md)** is a rule by which money is received (for ex
 
 #### Discount card
 
-A **[discount card](discount-cards.md)** is a customer card that can be used to provide a discount and/or identify a customer on the receipt.
+A **[discount card](discount-cards.md)** is a card that identifies a customer on the receipt; the receipt’s customer is set from the card’s holder.

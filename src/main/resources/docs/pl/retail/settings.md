@@ -24,20 +24,16 @@ Zwykle konfiguruje się:
 
 ## Sesje
 
-**[Sesje](sessions.md)** zwykle mają numerację. Parametr numeracji sesji może być dostępny w ustawieniach.
+**[Sesje](sessions.md)** są numerowane automatycznie. Numerator sesji wybiera się na zakładce **„Główne”** formularza ustawień.
 
 ## Metody płatności
 
-Ustawienia definiują listę metod płatności (zobacz także: **[Płatności detaliczne](payments.md)**). Dla każdej metody zwykle uzupełnia się:
+Lista metod płatności jest prowadzona w formularzu ustawień (zobacz także: **[Płatności detaliczne](payments.md)**). Dla każdej metody określa się:
 
-Gdzie to znaleźć: zwykle **„Sprzedaż detaliczna” → „Konfiguracja” → „Ustawienia”** (zakładka Metody płatności).
-
-- nazwę i kod;
-- znacznik **„gotówka”** (używany do obliczania reszty);
-- mapowanie do finansowych typów płatności (jeśli używany jest kontur finansowy).
+- **nazwę** i **kod**;
+- znacznik **„Gotówka”** — oznacza metodę jako gotówkową (używany do obliczania reszty);
+- **typ płatności przychodzącej** i **typ płatności zwrotnej** — typy płatności używane przy przyjęciu metody w sprzedaży i przy wypłacie środków w zwrocie.
 
 ## Karty rabatowe
 
-**[Karty rabatowe](discount-cards.md)** mogą używać automatycznej numeracji. Parametr numeracji kart rabatowych może być dostępny w ustawieniach.
-
-Gdzie to znaleźć: zwykle **„Sprzedaż detaliczna” → „Konfiguracja” → „Karty rabatowe”**.
+**[Karty rabatowe](discount-cards.md)** są numerowane automatycznie; numerator kart rabatowych wybiera się na zakładce **„Główne”** formularza ustawień. Sama lista kart znajduje się w **„Sprzedaż detaliczna” → „Konfiguracja” → „Karty rabatowe”**.
