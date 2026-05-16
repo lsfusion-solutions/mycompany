@@ -10,12 +10,12 @@ Available settings depend on your organization configuration and user permission
 
 Typically configured:
 
-- **application statuses** (order, color, “prohibit editing” flag, closing flags);
-- **refuse reasons**;
+- **refuse reasons** — each with an optional email template sent when an application is refused for that reason;
+- **application tags** for classifying applications;
 - **email templates** for candidate communication;
-- connecting a mailbox for automatic processing of incoming application messages (if used).
+- a mailbox for automatic processing of incoming application messages (if used).
 
-Recommendation: agree in advance on a single status scheme and rules for who changes application status and when.
+The set of application statuses is fixed (New, Interview, Hired, Refused); on the **Application status** tab you can set a color and a read-only flag for each status.
 
 ## Attendance
 
@@ -29,7 +29,6 @@ Typically configured:
 
 Typically configured:
 
-- **payslip types** (for example, Regular) and their numbering settings;
-- **calculation types** (e.g., earnings and deductions);
-- payslip batch generation parameters;
-- payment type used when registering payments by payslips (if your organization registers payments in the system).
+- **payslip types** (for example, Regular) and their numbering;
+- **payslip categories** — the earning and deduction categories used in payslip lines;
+- the payment type used when registering payslip payments (if your organization registers payments in the system).

@@ -6,7 +6,7 @@ A payslip batch is used when you need to **generate payslips for multiple employ
 
 Typically the workflow is:
 
-1. create a payslip batch (legal entity + period + type);
+1. create a payslip batch (company + period + type);
 2. run **“Generate”**;
 3. open employee payslips and review calculation lines and the **“Net wage”** total;
 4. register payments if needed.
@@ -19,7 +19,7 @@ Open **“Human Resources” → “Operations” → “Payslip batches”**.
 
 In a batch you usually fill:
 
-- **Legal entity** — for which legal entity payroll is generated;
+- **Company** — the company payroll is generated for;
 - **Period** — dates the payroll calculation covers;
 - **Type** — payslip type that will be assigned to generated payslips;
 - **Name** (if used) — a free comment, e.g., “Payslips for December”.
@@ -31,11 +31,11 @@ If only one payslip type exists in the system, it is selected automatically by d
 The batch shows a list of payslips linked to the batch. For each employee you typically see:
 
 - payslip number;
-- name;
+- employee first name and surname;
 - position;
 - **“Net wage”** total.
 
-From the batch you can open a payslip and go into calculation details.
+From the batch you can open a payslip and review its **“Salary computation”** lines.
 
 ## What “Generate” does
 
@@ -44,9 +44,11 @@ The **“Generate”** action performs two key steps:
 1. **Creates payslips** for employees of the legal entity for the selected period and type.
    - As a rule, payslips are created for **active employees**.
    - If a payslip for the same **period + employee + legal entity + type** already exists, the system **does not create a duplicate**.
-2. **Fills (or updates) calculation lines** in the payslips of the batch.
+2. **Fills (or updates) the salary-computation lines** in the payslips of the batch.
    - Some lines may be calculated automatically (for example, based on time entries).
    - After generation, it is recommended to open several payslips and review the result.
+
+If a payslip already linked to the batch belongs to an employee who does not belong to the batch’s **company**, **“Generate”** stops with an error and changes nothing — fix or remove that payslip and run it again.
 
 #### How the employee list is formed
 
@@ -78,7 +80,7 @@ Check typical reasons:
 
 If the **“Copy”** action is available, it helps create a new batch based on an existing one:
 
-- copies main fields (typically legal entity, type, and name);
+- copies main fields (typically company, type, and name);
 - copies the linked payslips.
 
 After copying, verify the period and payslips in the new batch and run **“Generate”** if needed.

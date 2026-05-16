@@ -44,9 +44,11 @@ Akcja **„Wygeneruj”** wykonuje dwa kluczowe kroki:
 1. **Tworzy odcinki płacowe** dla pracowników przedsiębiorstwa dla wybranego okresu i typu.
    - Z reguły odcinki płacowe są tworzone dla **aktywnych pracowników**.
    - Jeśli dla pracownika istnieje już odcinek płacowy z takim samym **okresem + przedsiębiorstwem + typem**, system **nie tworzy duplikatu**.
-2. **Wypełnia (lub aktualizuje) linie naliczeń** w odcinkach płacowych partii.
-   - Niektóre linie mogą być liczone automatycznie (np. na podstawie przepracowanego czasu).
+2. **Wypełnia (lub aktualizuje) wiersze naliczenia** w odcinkach płacowych partii.
+   - Niektóre wiersze mogą być liczone automatycznie (np. na podstawie przepracowanego czasu).
    - Po wygenerowaniu zaleca się otworzyć kilka odcinków płacowych i sprawdzić wynik.
+
+Jeśli odcinek płacowy już powiązany z partią należy do pracownika spoza **przedsiębiorstwa** partii, akcja **„Wygeneruj”** zatrzymuje się z błędem i nic nie zmienia — popraw lub usuń taki odcinek płacowy i uruchom ponownie.
 
 #### Jak tworzona jest lista pracowników
 

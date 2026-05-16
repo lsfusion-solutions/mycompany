@@ -9,6 +9,11 @@ Funkcja **Rejestracja czasu** służy do zapisywania oznaczeń czasu pracy praco
 
 Każda rejestracja tworzy/aktualizuje rekord **Rejestracji czasu**. W zależności od użytej metody, system może również zapisywać **geolokację** (szerokość/długość geograficzną) oraz **zdjęcia**.
 
+## Gdzie to znaleźć
+
+- Lista **„Rejestracja czasu”** znajduje się w **„Kadry” → „Operacje” → „Rejestracja czasu”**.
+- **Mobilna rejestracja czasu** oraz **kiosk rejestracji czasu** znajdują się w **„Kadry” → „Procesy”**.
+
 ## Co jest zapisywane
 
 Dla każdego rekordu rejestracji czasu system przechowuje:
@@ -16,7 +21,7 @@ Dla każdego rekordu rejestracji czasu system przechowuje:
 - **Pracownik** — ustawiany automatycznie na aktualnie zalogowanego pracownika przy tworzeniu rekordu.
 - **Data i godzina Check In** — wymagane.
 - **Data i godzina Check Out** — opcjonalne do momentu, aż pracownik wykona Check Out.
-- **Przepracowane godziny** — obliczane jako różnica między Check In i Check Out.
+- **Przepracowane godziny** — czas między Check In a Check Out. W formularzach zaplecza pokazywane jako dziesiętna liczba godzin; na liście mobilnej — w formacie `GG:MM`.
 - **Geolokacja Check In / Check Out** — wartości szerokości i długości (jeśli dostępne).
 - **Zdjęcia Check In / Check Out** — zapisywane przy użyciu kiosku (jeśli urządzenie/kamera są skonfigurowane).
 
@@ -97,11 +102,11 @@ Kiosk używa okna potwierdzenia z informacją o pracowniku i dużym komunikatem:
 - **Check In** (zielone)
 - **Check Out** (czerwone)
 
-Jeśli pracownik nie zostanie rozpoznany, wyświetlany jest komunikat **„Pracownika nie znaleziono”**.
+Okno potwierdza się automatycznie po kilku sekundach lub pracownik może nacisnąć **Anuluj**. Jeśli pracownik nie zostanie rozpoznany, wyświetlany jest komunikat **„Pracownika nie znaleziono”**.
 
 ### Specyfika kiosku
 
-- Kiosk blokuje ponowne przetworzenie tej samej zeskanowanej wartości w krótkim oknie czasu (aby uniknąć podwójnych skanów).
+- Kiosk ignoruje ponowne zeskanowanie tej samej wartości w ciągu około 10 sekund (aby uniknąć podwójnych skanów).
 - Kiosk może wyświetlać listę pracowników, którzy są aktualnie **zalogowani (checked in) w pobliżu** (na podstawie porównania bieżących współrzędnych kiosku z zapisanymi współrzędnymi Check In).
 
 ## Ustawienia i uprawnienia

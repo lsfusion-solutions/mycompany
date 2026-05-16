@@ -17,31 +17,31 @@ If a time entry is created **without a project**, it **does not participate** in
 For each project, an earning is calculated:
 
 - **hours** — total hours by employee time entries for the period (for that project);
-- **amount** — `hours × “Hourly wage”`.
+- **amount** — `hours × “Salary per hour”`.
 
 The earning amount is rounded to 2 decimals.
 
-## Where “Hourly wage” comes from
+## Where the “Salary per hour” rate comes from
 
-The **“Hourly wage”** rate can be set depending on your organization model:
+The **“Salary per hour”** rate can be set depending on your organization model:
 
 - on the employee level (as a single value or as a history of rates);
 - on the employee assignment to a project;
 - on the team level (if used).
 
-For a specific time entry, the rate is determined according to the following priority (the first non-zero value found is used):
+For a specific time entry, a more specific rate overrides a more general one. From most specific to most general:
 
-1. **Project Assignment rate** — if a specific rate is set for the employee in the project assignment.
-2. **Team rate** — if the employee is assigned to the project as part of a team, and a rate is set for that team member.
-3. **Employee historical rate** — if there is a record in the employee's salary history table matching the time entry date.
-4. **Employee base rate** — the general "Salary per hour" value set in the employee's record.
+1. **Project assignment rate** — a rate set for the employee in the project assignment.
+2. **Team rate** — a rate set for the employee as a team member on the project.
+3. **Employee historical rate** — a rate from the employee's salary history matching the time entry date.
+4. **Employee base rate** — the general “Salary per hour” value on the employee's record.
 
 ## Where to verify source data
 
 If the time-based amount is wrong or not generated:
 
 1. Verify that time entries exist for the required period and have a project selected.
-2. Verify the **“Hourly wage”** rate for the employee/project.
+2. Verify the **“Salary per hour”** rate for the employee/project.
 3. Open the payslip and review the **“Time entries”** tab — it shows source records for the period.
 
 See time entry input details in Project Management docs: [Time entries](../projectManagement/time-entries.md).

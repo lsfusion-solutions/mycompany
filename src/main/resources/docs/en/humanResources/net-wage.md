@@ -6,7 +6,7 @@ The **“Net wage”** total is the result of summing calculation lines for a pe
 
 ## How the amount is formed
 
-Each calculation line typically has:
+Each salary-computation line typically has:
 
 - **quantity** (e.g., hours or units);
 - **amount** (e.g., hourly rate);
@@ -16,7 +16,7 @@ As a rule, the **line total** is calculated as:
 
 `total = quantity × amount`
 
-The line total is rounded to **2 decimals**.
+The line total is rounded to **2 decimals**. The total can also be entered directly — then the **amount** is back-computed as `total / quantity`.
 
 ## Calculation rule
 

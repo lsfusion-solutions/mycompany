@@ -10,12 +10,12 @@ Dostępne ustawienia zależą od konfiguracji w Twojej organizacji oraz uprawnie
 
 Zwykle konfigurowane są:
 
-- **statusy aplikacji** (kolejność, kolor, flaga „zabroń edycji”, flagi zamknięcia);
-- **powody odmowy**;
+- **powody odmowy** — każdy może mieć szablon e-maila wysyłanego przy odmowie z tego powodu;
+- **etykiety aplikacji** do klasyfikowania aplikacji;
 - **szablony e-maili** do komunikacji z kandydatem;
-- podłączenie skrzynki pocztowej do automatycznego przetwarzania wiadomości o aplikacjach przychodzących (jeśli używane).
+- skrzynka pocztowa do automatycznego przetwarzania przychodzących wiadomości o aplikacjach (jeśli używane).
 
-Rekomendacja: z góry uzgodnij jeden schemat statusów oraz zasady tego, kto i kiedy zmienia status aplikacji.
+Zestaw statusów aplikacji jest stały („Nowy”, „Rozmowa kwalifikacyjna”, „Zatrudniony”, „Odmówiono”); na zakładce **„Status aplikacji”** każdemu statusowi można nadać kolor i flagę „tylko do odczytu”.
 
 ## Rejestracja czasu
 
@@ -29,7 +29,6 @@ Zwykle konfigurowane są:
 
 Zwykle konfigurowane są:
 
-- **typy odcinków płacowych** (na przykład Standardowy) oraz ustawienia ich numeracji;
-- **typy naliczeń** (np. przychody i potrącenia);
-- parametry generowania partii odcinków płacowych;
+- **typy odcinków płacowych** (na przykład Standardowy) oraz ich numeracja;
+- **kategorie wynagrodzenia** — kategorie przychodów i potrąceń używane w wierszach odcinka płacowego;
 - typ płatności używany przy rejestracji płatności po odcinkach płacowych (jeśli Twoja organizacja rejestruje płatności w systemie).
