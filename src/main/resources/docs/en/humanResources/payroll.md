@@ -16,7 +16,7 @@ The “Payroll: calculation and payment” section is used to calculate employee
 
 #### Payslip batch
 
-A document used to **generate payslips in bulk** for employees for a selected **legal entity**, **period**, and **type**.
+A document used to **generate payslips in bulk** for employees for a selected **company**, **period**, and **type**.
 
 See details: [Payslip batch](payroll-batch.md).
 
@@ -29,7 +29,7 @@ See details: [Payslip](payslip.md).
 ## Typical scenario “generate payroll and prepare payment”
 
 1. Open **“Human Resources” → “Operations” → “Payslip batches”**.
-2. Create a batch and specify legal entity, period, and type.
+2. Create a batch and specify company, period, and type.
 3. Run **“Generate”**.
 4. Open employee payslips and review calculation lines and the **“Net wage”** total.
 5. If payment registration is used in the organization — register payment.

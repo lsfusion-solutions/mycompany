@@ -16,7 +16,7 @@ Z reguły **suma linii** jest obliczana jako:
 
 `total = quantity × amount`
 
-Suma linii jest zaokrąglana do **2 miejsc po przecinku**.
+Suma linii jest zaokrąglana do **2 miejsc po przecinku**. Sumę można też wpisać bezpośrednio — wtedy **kwota** jest przeliczana wstecz jako `suma / ilość`.
 
 ## Reguła obliczeń
 

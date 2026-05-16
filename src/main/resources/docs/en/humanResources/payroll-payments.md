@@ -12,23 +12,21 @@ Recommended flow:
 
 1. Open the employee payslip.
 2. Verify the **“Net wage”** total.
-3. Run **“Register Payment”**.
-4. Verify the payment amount.
-   - If the payment is partial, reduce the amount.
-   - The amount can be adjusted within the available balance.
-5. Save the payment.
+3. Run **“Register Payment”** — the system opens an outgoing payment document, prefilled with the outstanding amount.
+4. Check the payment amount; for a partial payment, reduce it.
+5. Save the outgoing payment.
 
-After registration, the payment is included in the “accrued / paid / remaining” control.
+A payslip can be linked to several payments — for example, an advance and the final settlement. After registration, the payment is included in the payment control below.
 
-## “Accrued / paid / remaining” control
+## Payment control
 
-When payment registration is enabled, the system can show summary indicators for a period:
+When payment registration is enabled, the **“Total”** tab of the **Payslips** list (**“Human Resources” → “Operations” → “Payslips”**) shows summary indicators for a date range:
 
-- **accrued “net wage”** — sum of “Net wage” totals by payslips for the period;
-- **paid** — sum of registered payments for the period;
-- **remaining to pay** — accrued minus paid.
+- **“Net wage”** — sum of the “Net wage” totals of the payslips in the range;
+- **“Paid”** — sum of the registered payments in the range;
+- **“Left”** — “Net wage” minus “Paid”.
 
 #### What to pay attention to
 
-- If payment for a payslip is registered partially, “remaining to pay” will not become zero.
-- If an employee has multiple payslips for a period, control is typically built as the sum of all documents for the selected date range.
+- If payment for a payslip is registered partially, **“Left”** will not become zero.
+- If an employee has multiple payslips in the range, the control sums all of them.

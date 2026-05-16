@@ -45,18 +45,18 @@ A typical scenario “record attendance”:
 A typical scenario “calculate payroll and prepare payment”:
 
 1. Open **“Human Resources” → “Operations” → “Payslip batches”**.
-2. Create a batch, specify legal entity, period, and type.
+2. Create a batch, specify company, period, and type.
 3. Run **“Generate”** — the system creates payslips for employees.
 4. Review payslips and the **“Net wage”** total.
 5. If payroll payments are registered in the system — register payment from the payslip.
 
 ## Navigation
 
-The **“Human Resources”** section typically contains groups:
+The **“Human Resources”** section contains three groups:
 
-- **Operations** — daily work (applications, interviews, attendance, payslips and payslip batches).
-- **Processes** — control and processing views (e.g., consolidated lists, processing incoming messages if connected).
-- **Settings** — reference data and parameters.
+- **Operations** — daily work: applications, attendances, payslips, and payslip batches.
+- **Processes** — the attendance kiosk and mobile attendance.
+- **Configuration** — the **Settings** form and the reference directories.
 
 The available menu items and actions depend on configuration and user permissions.
 

@@ -52,11 +52,11 @@ Typowy scenariusz „naliczenie płac i przygotowanie wypłaty”:
 
 ## Navigation
 
-Sekcja **„Kadry”** zwykle zawiera grupy:
+Sekcja **„Kadry”** zawiera trzy grupy:
 
-- **Operacje** — praca bieżąca (aplikacje, rozmowy kwalifikacyjne, rejestracja czasu, odcinki płacowe i partie odcinków płacowych).
-- **Procesy** — widoki kontrolne i przetwarzania (np. listy zbiorcze, przetwarzanie wiadomości przychodzących, jeśli jest podłączone).
-- **Ustawienia** — dane referencyjne i parametry.
+- **Operacje** — praca bieżąca: aplikacje, rejestracja czasu, odcinki płacowe i partie odcinków płacowych.
+- **Procesy** — kiosk rejestracji czasu i mobilna rejestracja czasu.
+- **Konfiguracja** — formularz **„Ustawienia”** i katalogi referencyjne.
 
 Dostępne pozycje menu i akcje zależą od konfiguracji i uprawnień użytkownika.
 

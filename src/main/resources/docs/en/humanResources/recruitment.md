@@ -11,8 +11,9 @@ The “Recruitment” section is used to work with candidates: registering appli
 An application typically includes:
 
 - creation date;
-- subject and description (brief summary/comments);
-- candidate contact details (e.g., email address);
+- candidate **first, middle and last name** and **contact details** (email, phone);
+- **subject** and **description**;
+- a **summary** of the application;
 - position;
 - department;
 - recruiter (responsible owner);
@@ -21,14 +22,16 @@ An application typically includes:
 - tags (for classification);
 - application files.
 
-An application moves through statuses. Status set, order and available actions depend on your organization settings.
+An application moves through four fixed statuses: **New**, **Interview**, **Hired**, and **Refused**. The status changes automatically as you work with the application — see the scenarios below.
 
 ### Interview
 
 An interview is used to record a recruitment stage:
 
-- participants are specified;
-- a summary/result is filled.
+- the **interviewers** are specified;
+- a **summary** of the interview is filled.
+
+Scheduling an interview moves the application to the **Interview** status.
 
 ## Typical scenarios
 
@@ -52,8 +55,17 @@ You can store files (e.g., resume) and comments in the application:
 
 1. Open the application.
 2. Run **“Schedule an interview”**.
-3. Select participants.
+3. Select the interviewers.
 4. After the interview, fill the **summary** (brief notes and next steps).
+
+The application automatically moves to the **Interview** status.
+
+### Log a call
+
+Calls with a candidate can be logged on the application:
+
+1. Open the application.
+2. Run the call action and record the call on the **“Calls”** tab.
 
 ### Write an email to a candidate
 
@@ -66,25 +78,28 @@ If email sending is configured, you can write an email from the application:
 
 ### Hire a candidate
 
-Use “Hire” when you decided to hire:
+Use “Hire” when the decision is to hire the candidate:
 
 1. Open the application.
 2. Run **“Hire”**.
-3. Review the created employee card and fill missing data (if required).
-4. Make sure the application status is moved to “Hired”.
+3. The system creates an **employee**, copying the candidate’s name, contacts, position and department, and links the employee to the application.
+4. Review the created employee card and fill in any missing data.
+
+The application automatically moves to the **Hired** status (and is closed); **Hire** is not available for an already closed application.
 
 ### Refuse a candidate
 
 1. Open the application.
 2. Run **“Refuse”**.
 3. Select a **refuse reason**.
-4. If needed, send an email to the candidate (manually or by template, if configured).
-5. Make sure the application status is moved to “Refused”.
+
+If the chosen reason has an email template, the system sends the refusal email to the candidate automatically. The application moves to the **Refused** status.
 
 ## Control and convenience
 
-To speed up work, usually used:
+To speed up work, the applications list provides:
 
-- filters and groupings by status and position;
+- a **“By position”** view — a matrix of positions by application status;
+- filters by status, tags, and other attributes;
 - tags for quick classification;
 - change history and comments.
