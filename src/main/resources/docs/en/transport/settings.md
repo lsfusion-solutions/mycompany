@@ -17,7 +17,7 @@ The **“Settings”** form is organized into tabs. Besides the **“Main”** t
 - **Vehicle categories** — vehicle classification (for example, passenger cars, trucks, special equipment).
 - **Fuel types** — options for the “Fuel type” field in the vehicle card.
 - **Vehicle tags** — additional labels for filtering and control.
-- **Vehicle service types** — service classification (scheduled maintenance, repair, etc.).
+- **Vehicle service type** — service classification (scheduled maintenance, repair, etc.).
 
 For directories, the **New**, **Edit**, **Delete** actions are usually available.
 
