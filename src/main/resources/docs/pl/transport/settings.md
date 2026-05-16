@@ -6,20 +6,18 @@ Sekcja **„Flota”** używa katalogów, które definiują opcje wyboru w karta
 
 ## Gdzie to znaleźć
 
-Zwykle jest dostępna w **„Flota” → „Konfiguracja”**.
+Katalogi są dostępne w **„Flota” → „Konfiguracja”**. Ta grupa zawiera formularz **„Ustawienia”** oraz osobne pozycje **„Modele pojazdów”** i **„Producenci pojazdów”**.
 
 Dostęp do konfiguracji jest zazwyczaj ograniczony uprawnieniami administratora lub osoby odpowiedzialnej za katalogi.
 
-## Konfiguracja sekcji
+## Formularz „Ustawienia”
 
-Ekran **„Konfiguracja”** zawiera zakładki z katalogami. Dostępność zakładek zależy od konfiguracji.
+Formularz **„Ustawienia”** jest podzielony na zakładki. Poza zakładką **„Podstawowe”** zawiera zakładki z katalogami (zestaw zależy od konfiguracji):
 
-Typowe katalogi:
-
-- **Typy paliwa** — opcje dla pola „Typ paliwa” na karcie pojazdu.
 - **Kategorie pojazda** — klasyfikacja pojazdów (np. samochody osobowe, ciężarowe, sprzęt specjalny).
-- **Typy serwisu pojazdów** — klasyfikacja serwisów (przegląd okresowy, naprawa itp.).
+- **Typy paliwa** — opcje dla pola „Typ paliwa” na karcie pojazdu.
 - **Tagi pojazdu** — dodatkowe etykiety do filtrowania i kontroli.
+- **Typ serwisu pojazdów** — klasyfikacja serwisów (przegląd okresowy, naprawa itp.).
 
 Dla katalogów zwykle dostępne są akcje **Nowy**, **Edytuj**, **Usuń**.
 
@@ -31,10 +29,7 @@ Rekomendacje prowadzenia katalogów:
 
 ## Producenci i modele pojazdów
 
-Katalogi mogą być dostępne osobno:
-
-- **Producenci pojazdów**;
-- **Modele pojazdów**.
+**„Producenci pojazdów”** i **„Modele pojazdów”** to osobne pozycje w grupie **„Konfiguracja”** (obok **„Ustawienia”**), każda otwierana jako osobna lista.
 
 Zalecana kolejność wypełniania:
 

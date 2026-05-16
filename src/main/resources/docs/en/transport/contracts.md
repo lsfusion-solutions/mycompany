@@ -10,6 +10,8 @@ A contract can be used as a card for storing conditions: validity dates, partner
 
 Open **“Fleet” → “Operations” → “Vehicle contracts”**.
 
+The list shows contracts whose type allows linking a vehicle.
+
 ## Creating a contract
 
 You can create a contract:

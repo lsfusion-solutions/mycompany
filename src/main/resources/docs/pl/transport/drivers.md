@@ -23,6 +23,8 @@ Przypisanie jest tworzone jako rekord z okresem obowiązywania.
    - notatkę (jeśli potrzeba).
 3. Zapisz rekord.
 
+Po wybraniu pojazdu pole **„Pracownik”** jest wstępnie wypełniane poprzednim kierowcą tego pojazdu (jeśli istniał) — zastąp go nowym kierowcą. **„Data”** domyślnie przyjmuje bieżącą datę.
+
 ### Jak wypełniać okres przypisania
 
 - **Data** — data rozpoczęcia odpowiedzialności/użytkowania pojazdu.

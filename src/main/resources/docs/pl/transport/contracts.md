@@ -10,6 +10,8 @@ Umowa może służyć jako karta do przechowywania warunków: dat obowiązywania
 
 Otwórz **„Flota” → „Operacje” → „Umowy na pojazdy”**.
 
+Lista pokazuje umowy, których typ pozwala na powiązanie pojazdu.
+
 ## Tworzenie umowy
 
 Możesz utworzyć umowę:

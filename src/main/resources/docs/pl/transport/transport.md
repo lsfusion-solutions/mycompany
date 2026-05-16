@@ -41,7 +41,6 @@ Typowy scenariusz „zarejestrować koszty serwisu”:
 Sekcja **„Flota”** zwykle zawiera grupy:
 
 - **Operacje** — praca bieżąca (pojazdy, kierowcy, serwisy, umowy).
-- **Raportowanie** — raporty i widoki (zestaw zależy od konfiguracji).
 - **Konfiguracja** — parametry i katalogi sekcji.
 
 Pozycje menu oraz dostępne akcje zależą od konfiguracji i uprawnień użytkownika.
