@@ -83,6 +83,10 @@ Zalecenie: nie zmieniaj reguł numeracji bez potrzeby, aby zachować ciągłoś�
 
 Formularz ustawień zawiera również parametry wpływające na **[karty pracy](timesheets.md)** — w szczególności **autozapis godzin**. Gdy ta opcja jest włączona, zmiany w komórce dnia w karcie pracy przełożonego są zapisywane od razu; akcje kopiowania i czyszczenia w takim przypadku wymagają potwierdzenia.
 
+#### Szablony zmian
+
+**Szablon zmiany** to wcześniej zdefiniowany przedział czasu używany do szybkiego tworzenia zmian w widoku **„Harmonogram”** (zobacz **[Zmiany](shifts.md)**). Na zakładce **„Szablony zmian”** dodaj przedziały używane w Twojej organizacji (na przykład zmianę poranną i wieczorną).
+
 ## Sprawdź po zmianie ustawień
 
 Po zmianie słowników i reguł zaleca się:

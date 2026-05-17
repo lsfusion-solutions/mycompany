@@ -15,6 +15,7 @@ Sekcje:
 - [Projekty](projects.md)
 - [Zagadnienia](tasks.md)
 - [Przepracowany czas](time-entries.md)
+- [Zmiany](shifts.md)
 - [Karty pracy (Timesheet)](timesheets.md)
 - [Zespół i role w projekcie](team-and-roles.md)
 - [Raportowanie](reports.md)
@@ -58,7 +59,7 @@ Szczegóły: zobacz [Projekty](projects.md), [Zagadnienia](tasks.md), [Zespół 
 
 Sekcja **Projekty** zwykle zawiera grupy:
 
-- **„Operacje”** — praca bieżąca (**[projekty](projects.md)**, **[zagadnienia](tasks.md)**, **[przepracowany czas](time-entries.md)**, zmiany). **[Kanban](tasks.md#kanban)** i **[wykres Gantta](tasks.md#gantt-chart)** to widoki dostępne w obrębie listy zagadnień, a nie odrębne pozycje menu. **[Przypisania](team-and-roles.md#assignments)** prowadzi się na karcie projektu.
+- **„Operacje”** — praca bieżąca (**[projekty](projects.md)**, **[zagadnienia](tasks.md)**, **[przepracowany czas](time-entries.md)**, **[zmiany](shifts.md)**). **[Kanban](tasks.md#kanban)** i **[wykres Gantta](tasks.md#gantt-chart)** to widoki dostępne w obrębie listy zagadnień, a nie odrębne pozycje menu. **[Przypisania](team-and-roles.md#assignments)** prowadzi się na karcie projektu.
 - **„Procesy”** — **[karty pracy pracownika i przełożonego](timesheets.md)** do wprowadzania i kontroli nakładu pracy według dni.
 - **„Raportowanie”** — punkt rozszerzenia dla raportów dotyczących projektów. W konfiguracji podstawowej folder ten zwykle wypełniany jest przez integracje z sąsiednimi modułami (Sprzedaż, Produkcja), a nie samodzielnymi raportami modułu „Projekty”.
 - **„Konfiguracja”** — słowniki i reguły: **[typy](settings.md#project-types)** projektów i zagadnień, **[statusy](settings.md#project-statuses)**, **[priorytety](settings.md#priorities-and-tags)**, **[tagi](settings.md#priorities-and-tags)**, **[przepływ pracy](settings.md#workflow)**, role w projekcie i zespoły.
@@ -92,6 +93,10 @@ Jeśli niektóre akcje nie są dostępne (np. zmiana statusu albo utworzenie wpi
 #### Przepracowany czas
 
 **[Przepracowany czas](time-entries.md)** to zapis rzeczywiście poświęconego czasu na pracę (zwykle wg zagadnienia/projektu) do kontroli nakładu i raportowania.
+
+#### Zmiana
+
+**[Zmiana](shifts.md)** to zaplanowana zmiana robocza pracownika: data, przedział czasu, przypisany pracownik i opcjonalnie projekt.
 
 #### Status
 

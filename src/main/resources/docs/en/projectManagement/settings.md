@@ -83,6 +83,10 @@ Recommendation: do not change numbering rules without necessity to preserve cont
 
 The settings form also contains parameters that affect **[timesheets](timesheets.md)** — in particular, **autosave hours**. When this option is enabled, changes in a day cell of the supervisor timesheet are saved immediately; copy/clear actions in this case ask for confirmation.
 
+#### Shift templates
+
+A **shift template** is a predefined time interval used to quickly create shifts on the **Schedule** view (see **[Shifts](shifts.md)**). On the **“Shift templates”** tab, add the intervals your organization uses (for example, a morning and an evening shift).
+
 ## Check after changing settings
 
 After changing directories and rules, it is recommended to:
