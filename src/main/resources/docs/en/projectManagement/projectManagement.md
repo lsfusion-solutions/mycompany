@@ -15,6 +15,7 @@ Sections:
 - [Projects](projects.md)
 - [Tasks](tasks.md)
 - [Time entries](time-entries.md)
+- [Shifts](shifts.md)
 - [Timesheets](timesheets.md)
 - [Team and roles on a project](team-and-roles.md)
 - [Reporting](reports.md)
@@ -62,7 +63,7 @@ Details: see [Projects](projects.md), [Tasks](tasks.md), [Team and roles on a pr
 
 The **Projects** section typically includes groups:
 
-- **Operations** — day-to-day work (**[projects](projects.md)**, **[tasks](tasks.md)**, **[time entries](time-entries.md)**, shifts). **[Kanban](tasks.md#kanban)** and the **[Gantt chart](tasks.md#gantt-chart)** are views available within the task list, not separate menu items. **[Assignments](team-and-roles.md#assignments)** are managed on the project card.
+- **Operations** — day-to-day work (**[projects](projects.md)**, **[tasks](tasks.md)**, **[time entries](time-entries.md)**, **[shifts](shifts.md)**). **[Kanban](tasks.md#kanban)** and the **[Gantt chart](tasks.md#gantt-chart)** are views available within the task list, not separate menu items. **[Assignments](team-and-roles.md#assignments)** are managed on the project card.
 - **Processes** — **[employee and supervisor timesheets](timesheets.md)** for entering and controlling effort by days.
 - **Reporting** — entry point for project-related reports. In the base configuration this folder is typically populated by integrations with neighbouring modules (Sales, Manufacturing) rather than by stand-alone PM reports.
 - **Configuration** — directories and rules: project and task **[types](settings.md#project-types)**, **[statuses](settings.md#project-statuses)**, **[priorities](settings.md#priorities-and-tags)**, **[tags](settings.md#priorities-and-tags)**, **[workflow](settings.md#workflow)**, project roles, and teams.
@@ -96,6 +97,10 @@ An **[assignment](team-and-roles.md#assignments)** links a participant (employee
 #### Time entry
 
 A **[time entry](time-entries.md)** is a record of actual time spent on work (usually by task/project) for effort control and reporting.
+
+#### Shift
+
+A **[shift](shifts.md)** is a planned work shift of an employee: a date, a time interval, the assigned employee, and optionally a project.
 
 #### Status
 
