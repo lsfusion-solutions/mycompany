@@ -23,7 +23,7 @@ Aby zwiększyć ilość pamięci przydzielonej aplikacji, należy zmienić param
 ### Instalacja na Windows
 
 1. Pobierz i uruchom instalator platformy lsFusion (tryb execution): https://docs.lsfusion.org/Execution_auto/.
-2. Pobierz zbudowany plik jar z logiką MyCompany z https://download.lsfusion.org/solutions/mycompany-6.1.jar.
+2. Pobierz zbudowany plik jar z logiką MyCompany z https://download.lsfusion.org/solutions/mycompany-6.2.jar.
 3. Skopiuj pobrany plik jar do katalogu `C:\Program Files\lsFusion 6\Server\lib`.
 4. Zrestartuj usługę **lsFusion 6 Server**.
 
