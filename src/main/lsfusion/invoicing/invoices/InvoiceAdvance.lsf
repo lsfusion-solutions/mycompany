@@ -41,6 +41,11 @@ countAdvanced (Invoice i) = GROUP SUM 1 IF advanced(i, Invoice ad) IF active(ad)
 advanced 'Advanced' (Invoice i) = GROUP SUM advanced(i, Invoice ad) IF active(ad) MATERIALIZED;
 toAdvance 'To advance' (Invoice i) = amount(i) (-) advanced(i);
 
+advancedUntaxedAmount 'Advanced amount' (Tax t, Invoice i) =
+    round2(GROUP SUM untaxedAmount(t, Invoice ad) * advanced(i, ad) / amount(ad) IF active(ad));
+advancedTaxAmount 'Advanced tax' (Tax t, Invoice i) =
+    round2(GROUP SUM taxAmount(t, Invoice ad) * advanced(i, ad) / amount(ad) IF active(ad));
+
 invoiced 'Invoiced' (Invoice ad) = GROUP SUM advanced(Invoice i, ad) IF active(i) MATERIALIZED;
 toInvoice 'To invoice' (Invoice ad) = (amount(ad) (-) invoiced(ad)) IF isAdvance(ad);
 

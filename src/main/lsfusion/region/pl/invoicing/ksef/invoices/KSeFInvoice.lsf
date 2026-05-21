@@ -64,15 +64,15 @@ createFaktura 'Build Faktura' (Invoice i) {
         invoiceNumber(f) <- number(i);
         deliveryDate(f) <- OVERRIDE DATE(deliveryDate(i)), DATE(dueDateTime(i));
         
-        untaxedAmount1(f) <- correctionUntaxedAmount(tax(r'23%'), i);
-        untaxedAmount2(f) <- correctionUntaxedAmount(tax(r'8%'), i);
-        untaxedAmount3(f) <- correctionUntaxedAmount(tax(r'5%'), i);
-        untaxedAmount6(f) <- correctionUntaxedAmount(tax(r'0%'), i);
-        untaxedAmount7(f) <- correctionUntaxedAmount(tax(r'zw'), i);
-        taxAmount1(f) <- correctionTaxAmount(tax(r'23%'), i);
-        taxAmount2(f) <- correctionTaxAmount(tax(r'8%'), i);
-        taxAmount3(f) <- correctionTaxAmount(tax(r'5%'), i);
-        amount(f) <- correctionAmount(i);
+        untaxedAmount1(f) <- correctionUntaxedAmount(tax(r'23%'), i) (-) advancedUntaxedAmount(tax(r'23%'), i);
+        untaxedAmount2(f) <- correctionUntaxedAmount(tax(r'8%'), i) (-) advancedUntaxedAmount(tax(r'8%'), i);
+        untaxedAmount3(f) <- correctionUntaxedAmount(tax(r'5%'), i) (-) advancedUntaxedAmount(tax(r'5%'), i);
+        untaxedAmount6(f) <- correctionUntaxedAmount(tax(r'0%'), i) (-) advancedUntaxedAmount(tax(r'0%'), i);
+        untaxedAmount7(f) <- correctionUntaxedAmount(tax(r'zw'), i) (-) advancedUntaxedAmount(tax(r'zw'), i);
+        taxAmount1(f) <- correctionTaxAmount(tax(r'23%'), i) (-) advancedTaxAmount(tax(r'23%'), i);
+        taxAmount2(f) <- correctionTaxAmount(tax(r'8%'), i) (-) advancedTaxAmount(tax(r'8%'), i);
+        taxAmount3(f) <- correctionTaxAmount(tax(r'5%'), i) (-) advancedTaxAmount(tax(r'5%'), i);
+        amount(f) <- correctionAmount(i) (-) advanced(i);
         
         IF dueDate(i) THEN
             NEW t = TerminPlatnosci {
