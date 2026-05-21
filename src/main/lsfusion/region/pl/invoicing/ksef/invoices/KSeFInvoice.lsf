@@ -80,7 +80,7 @@ createFaktura 'Build Faktura' (Invoice i) {
                 date(t) <- dueDate(i);
             }
 
-        IF NOT left(i) AND dateLastIncomingPayment(i) THEN {
+        IF NOT (left(i) (-) advanced(i) > 0) AND (dateLastIncomingPayment(i) OR correctionAmount(i) = advanced(i)) THEN {
             Zaplacono(f) <- 1;
             DataZaplaty(f) <- dateLastIncomingPayment(i);
         }
