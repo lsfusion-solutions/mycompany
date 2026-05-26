@@ -4,7 +4,7 @@ REQUIRE Company, LegalEntityPl;
 
 NAMESPACE KSeF;
 
-hostPostfix 'Host postfix' = DATA STRING ();
+hostPostfix 'Sufiks hosta' = DATA STRING ();
 
 EXTEND FORM integrationData
     OBJECTS ksefCompany = Company PANEL
@@ -26,7 +26,7 @@ DESIGN integrationData {
                 fill = 1;
                 tabbed = TRUE;
                 NEW KSeFGeneral {
-                    caption = 'General';
+                    caption = 'Ogólne';
                 }
             }
         }
@@ -50,7 +50,7 @@ authChallenge () {
     TRY {
         EXTERNAL HTTP POST hostApi() + '/auth/challenge' TO resultFile;
         IMPORT JSON FROM resultFile() TO() challenge, timestamp
-    } CATCH { catchException('Auth challenge'); }
+    } CATCH { catchException('Wyzwanie uwierzytelniające'); }
 }
 
 // xades-signature
@@ -84,9 +84,9 @@ CLASS Token 'Token';
 
 company = DATA Company (Token) NONULL;
 
-referenceNumber 'Reference number' = DATA STRING (Token);
-authentication 'Authentication token' = DATA STRING (Token);
-authenticationValidUntil 'Valid until (authentication)' = DATA DATETIME (Token);
+referenceNumber 'Numer referencyjny' = DATA STRING (Token);
+authentication 'Token uwierzytelniający' = DATA STRING (Token);
+authenticationValidUntil 'Ważny do (uwierzytelnianie)' = DATA DATETIME (Token);
 
 createToken (Company c) {
     NEW t = Token {
@@ -113,7 +113,7 @@ authXadesSignature 'Zaloguj podpisanym żądaniem autoryzacyjnym' (Company c) {
 
                 createToken(c);
                 APPLY;
-            } CATCH { catchException('Authorization XAdES signature'); }
+            } CATCH { catchException('Autoryzacja podpisem XAdES'); }
         }        
     }
     
@@ -141,11 +141,11 @@ DESIGN integrationData {
 
 // check status
 
-statusCode 'Status code' = DATA INTEGER (Token);
+statusCode 'Kod statusu' = DATA INTEGER (Token);
 statusDescription 'Status' = DATA STRING (Token);
-statusDetails 'Details' = DATA STRING (Token);
+statusDetails 'Szczegóły' = DATA STRING (Token);
 
-getStatus 'Get status' (Token t) {
+getStatus 'Pobierz status' (Token t) {
     NEWSESSION {
         TRY {
             LOCAL localHeaders = STRING(STRING);
@@ -161,19 +161,19 @@ getStatus 'Get status' (Token t) {
             statusDetails(t) <- fieldText(status(), r'details');
 
             APPLY;
-        } CATCH { catchException('Get status'); }
+        } CATCH { catchException('Pobierz status'); }
     }
 }
 
 // redeem tokens
 
-access 'Access token' = DATA STRING (Token);
-accessValidUntil 'Valid until (access)' = DATA DATETIME (Token);
+access 'Token dostępu' = DATA STRING (Token);
+accessValidUntil 'Ważny do (dostęp)' = DATA DATETIME (Token);
 
-refresh 'Refresh token' = DATA STRING (Token);
-refreshValidUntil 'Valid until (refresh)' = DATA DATETIME (Token);
+refresh 'Token odświeżania' = DATA STRING (Token);
+refreshValidUntil 'Ważny do (odświeżanie)' = DATA DATETIME (Token);
 
-redeemAccess 'Redeem access token' (Token t) {
+redeemAccess 'Wykorzystaj token dostępu' (Token t) {
     NEWSESSION {
         TRY {
             LOCAL localHeaders = STRING(STRING);
@@ -192,11 +192,11 @@ redeemAccess 'Redeem access token' (Token t) {
             refreshValidUntil(t) <- toDateTimeZone(fieldText(refreshToken(), r'validUntil'));
 
             APPLY;
-        } CATCH { catchException('Redeem token'); }
+        } CATCH { catchException('Wykorzystanie tokenu'); }
     }
 }
 
-refreshAccessToken 'Refresh access token' (Token t) {
+refreshAccessToken 'Odśwież token dostępu' (Token t) {
     NEWSESSION {
         TRY {
             LOCAL localHeaders = STRING(STRING);
@@ -211,7 +211,7 @@ refreshAccessToken 'Refresh access token' (Token t) {
             accessValidUntil(t) <- toDateTimeZone(fieldText(accessToken(), r'validUntil'));
 
             APPLY;
-        } CATCH { catchException('Refresh token'); }
+        } CATCH { catchException('Odświeżenie tokenu'); }
     }
 }
 

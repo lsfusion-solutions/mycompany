@@ -5,8 +5,8 @@ REQUIRE Bill, BillCurrency, BillCorrection, Partner, Company, KSeFFaktura, KSeFF
 NAMESPACE KSeF;
 
 // Link from Faktura to Bill (adapter level)
-bill 'Bill' = DATA Bill (Faktura) INDEXED; // Faktura -> Bill
-numberBill 'Bill' (Faktura f) = number(bill(f));
+bill 'Faktura zakupu' = DATA Bill (Faktura) INDEXED; // Faktura -> Bill
+numberBill 'Faktura zakupu' (Faktura f) = number(bill(f));
 
 toBill (Faktura f) = number(f) AND podmiot2(f) IS Company AND NOT bill(f);
 countToBillFaktura = GROUP SUM 1 IF toBill(Faktura f);
@@ -14,12 +14,59 @@ countToBillFaktura = GROUP SUM 1 IF toBill(Faktura f);
 // Selector to keep compatibility: find Faktura by Bill
 faktura (Bill b) = GROUP LAST Faktura f ORDER f WHERE bill(f) = b;
 
-editFaktura '{logics.edit}' (Bill b) { edit(faktura(b)); } 
-fakturaReference 'KSeF reference' (Bill b) = referenceNumber(faktura(b));
-fakturaStatusCode 'KSeF status code' (Bill b) = statusCode(faktura(b));
-fakturaStatusDescription 'KSeF status' (Bill b) = statusDescription(faktura(b));
-fakturaStatusDetails 'KSeF details' (Bill b) = statusDetails(faktura(b));
-fakturaNumber 'KSeF number' (Bill b) = number(faktura(b));
+// Global option: enable auto-binding by number
+autoBindFakturaToBill 'Powiąż automatycznie faktury KSeF z fakturami zakupu po numerze' = DATA BOOLEAN () PREREAD;
+
+EXTEND FORM integrationData
+    PROPERTIES() autoBindFakturaToBill
+;
+
+DESIGN integrationData {
+    KSeFHeader {
+        MOVE PROPERTY(autoBindFakturaToBill());
+    }
+}
+
+// Lookup matching counterparts by (vendor reference / invoice number, vendor / podmiot1, company / podmiot2)
+billByRef (STRING ref, Partner v, Partner c) = GROUP LAST Bill b ORDER b
+    WHERE (OVERRIDE vendorReference(b), number(b)) = ref AND vendor(b) = v AND company(b) = c;
+
+// Auto-bind when a Faktura is created/updated with matching key fields
+WHEN autoBindFakturaToBill()
+        AND (SETCHANGED(invoiceNumber(Faktura f)) OR SETCHANGED(podmiot1(f)) OR SETCHANGED(podmiot2(f)))
+        AND NOT bill(f) DO
+    bill(f) <- billByRef(invoiceNumber(f), podmiot1(f), podmiot2(f));
+
+// Auto-bind when a Bill is created/updated and a Faktura matches
+WHEN autoBindFakturaToBill()
+        AND (SETCHANGED(vendorReference(Bill b)) OR SETCHANGED(number(b)) OR SETCHANGED(vendor(b)) OR SETCHANGED(company(b))) DO
+    bill(Faktura f) <- b WHERE (OVERRIDE vendorReference(b), number(b)) = invoiceNumber(f) AND vendor(b) = podmiot1(f) AND company(b) = podmiot2(f);
+
+editFaktura '{logics.edit}' (Bill b) { edit(faktura(b)); }
+
+bindFaktura 'Powiąż fakturę' (Bill b) {
+    DIALOG faktury OBJECTS f = faktura(b) INPUT FILTERS
+        podmiot1(f) = vendor(b) AND podmiot2(f) = company(b) AND NOT bill(f) DO {
+        bill(Faktura cf) <- NULL WHERE bill(cf) = b;
+        bill(f) <- b;
+    }
+}
+
+unbindFaktura 'Odepnij fakturę' (Bill b) {
+    bill(Faktura f) <- NULL WHERE bill(f) = b;
+}
+
+bindBill 'Powiąż z fakturą zakupu' (Faktura f) {
+    DIALOG bills OBJECTS b = bill(f) INPUT FILTERS
+        vendor(b) = podmiot1(f) AND company(b) = podmiot2(f) DO {
+        bill(f) <- b;
+    }
+}
+fakturaReference 'Referencja KSeF' (Bill b) = referenceNumber(faktura(b));
+fakturaStatusCode 'Kod statusu KSeF' (Bill b) = statusCode(faktura(b));
+fakturaStatusDescription 'Status KSeF' (Bill b) = statusDescription(faktura(b));
+fakturaStatusDetails 'Szczegóły KSeF' (Bill b) = statusDetails(faktura(b));
+fakturaNumber 'Numer KSeF' (Bill b) = number(faktura(b));
 
 // Create Bill from Faktura (FA3) without attachments
 fill ABSTRACT LIST (BillLine, FaWiersz);
@@ -27,7 +74,7 @@ fill ABSTRACT LIST (Bill, Faktura);
 
 match (FaWiersz w, Tax t) = taxes(w) = (OVERRIDE (ltrim(toChar(value(t), '99')) IF value(t) > 0), name(t));
 
-createBill 'Create Bill' (Faktura f) {
+createBill 'Utwórz fakturę zakupu' (Faktura f) {
     NEWSESSION {
         NEW b = Bill {
             bill(f) <- b;
@@ -78,7 +125,8 @@ EXTEND FORM bills
 ;
 
 EXTEND FORM bill
-    PROPERTIES(b)          editFaktura
+    PROPERTIES(b)          editFaktura SHOWIF faktura(b),
+                           bindFaktura, unbindFaktura SHOWIF faktura(b)
     PROPERTIES(b) READONLY fakturaReference, fakturaStatusCode, fakturaStatusDescription, fakturaStatusDetails, fakturaNumber
 ;
 
@@ -88,7 +136,12 @@ DESIGN bill {
             alignment = STRETCH;
             caption = 'KSeF';
             lines = 3;
-            MOVE PROPERTY(editFaktura(b));
+            NEW KSeFActions {
+                horizontal = TRUE;
+                MOVE PROPERTY(editFaktura(b));
+                MOVE PROPERTY(bindFaktura(b));
+                MOVE PROPERTY(unbindFaktura(b));
+            }
             MOVE PROPERTY(fakturaReference(b));
             MOVE PROPERTY(fakturaStatusCode(b));
             MOVE PROPERTY(fakturaStatusDescription(b));
@@ -101,7 +154,7 @@ DESIGN bill {
 EXTEND FORM bills
     OBJECTS f = Faktura
     PROPERTIES(f) READONLY number, invoiceNumber, invoiceDate, KodWaluty, p1_Nazwa, p2_Nazwa, amount
-    PROPERTIES(f) GRID createBill DISABLEIF bill(f)
+    PROPERTIES(f) GRID createBill DISABLEIF bill(f), bindBill DISABLEIF bill(f)
     PROPERTIES() fetchSubject2 DRAW f TOOLBAR
     FILTERS toBill(f)
 ;

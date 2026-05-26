@@ -9,7 +9,7 @@ CLASS Faktura 'Faktura';
 
 xmlFile 'XML FA(3)' = DATA XMLFILE (Faktura);
 
-number 'KSeF number' = DATA STRING[36] (Faktura) INDEXED;
+number 'Numer KSeF' = DATA STRING[36] (Faktura) INDEXED;
 fakturaKSeFNumber = GROUP AGGR Faktura f BY number(f);
 
 // Link: row -> Faktura
@@ -20,8 +20,8 @@ namePodmiot1 'Podmiot 1' (Faktura f) = name(podmiot1(f));
 podmiot2 'Podmiot 2' (Faktura f) = DATA Partner (Faktura) INDEXED;
 namePodmiot2 'Podmiot 2' (Faktura f) = name(podmiot2(f));
 
-session 'Session' = DATA Session (Faktura) INDEXED;
-referenceNumberSession 'Session' (Faktura f) = referenceNumber(session(f));
+session 'Sesja' = DATA Session (Faktura) INDEXED;
+referenceNumberSession 'Sesja' (Faktura f) = referenceNumber(session(f));
 
 // Header (Naglowek)
 KodFormularza = DATA STRING[10] (Faktura);
@@ -54,7 +54,7 @@ p2_NrKlienta 'Nr Klienta (2)' = DATA STRING[50] (Faktura) CHARWIDTH 10;
 // Fa totals and fields
 KodWaluty = DATA STRING[3] (Faktura);
 invoiceDate = DATA DATE (Faktura) INDEXED;
-invoiceNumber = DATA STRING[50] (Faktura);
+invoiceNumber = DATA STRING[50] (Faktura) INDEXED;
 deliveryDate = DATA DATE (Faktura);
 
 // kwoty
@@ -90,7 +90,7 @@ NrKSeFFaKorygowanej = DATA STRING[36] (Faktura);
 CLASS FakturaZaliczkowa;
 faktura 'Faktura' = DATA Faktura (FakturaZaliczkowa) NONULL DELETE INDEXED;
 
-number 'KSeF number' = DATA STRING[36] (FakturaZaliczkowa);
+number 'Numer KSeF' = DATA STRING[36] (FakturaZaliczkowa);
 invoiceNumber = DATA STRING[50] (FakturaZaliczkowa);
 
 // Row fields
@@ -98,16 +98,16 @@ CLASS FaWiersz 'FaWiersz';
 faktura 'Faktura' = DATA Faktura (FaWiersz) NONULL DELETE INDEXED;
 
 NrWierszaFa '№' = DATA INTEGER (FaWiersz);
-description 'Description' = DATA ISTRING[200] (FaWiersz);
+description 'Opis' = DATA ISTRING[200] (FaWiersz);
 GTIN 'GTIN' = DATA STRING[20] (FaWiersz);
-nameUom 'UoM' = DATA ISTRING[30] (FaWiersz);
+nameUom 'JM' = DATA ISTRING[30] (FaWiersz);
 quantity = DATA NUMERIC[16,3] (FaWiersz);
 price = DATA NUMERIC[10,2] (FaWiersz);
 untaxedAmount = DATA NUMERIC[14,2] (FaWiersz);
 vatAmount = DATA NUMERIC[14,2] (FaWiersz);
 amount = DATA NUMERIC[14,2] (FaWiersz);
 taxes = DATA STRING (FaWiersz);
-correction 'Correction' = DATA INTEGER (FaWiersz);
+correction 'Korekta' = DATA INTEGER (FaWiersz);
 
 id 'ID' = DATA STRING (FaWiersz);
 index r'Indeks' = DATA STRING[50] (FaWiersz) CHARWIDTH 15;
@@ -116,18 +116,18 @@ CN r'CN' = DATA STRING (FaWiersz);
 PKOB r'PKOB' = DATA STRING (FaWiersz);
 
 // KSeF result and status stored on Faktura
-referenceNumber 'Reference' = DATA STRING[200] (Faktura) INDEXED CHARWIDTH 30; 
-statusCode 'Status code' = DATA INTEGER (Faktura);
+referenceNumber 'Referencja' = DATA STRING[200] (Faktura) INDEXED CHARWIDTH 30;
+statusCode 'Kod statusu' = DATA INTEGER (Faktura);
 statusDescription 'Status' = DATA STRING (Faktura);
-statusDetails 'Details' = DATA STRING (Faktura);
+statusDetails 'Szczegóły' = DATA STRING (Faktura);
 
-CLASS TerminPlatnosci 'TerminPlatnosci';
+CLASS TerminPlatnosci 'Termin płatności';
 faktura 'Faktura' = DATA Faktura (TerminPlatnosci) NONULL DELETE INDEXED;
 date 'Termin' = DATA DATE (TerminPlatnosci);
 
-Zaplacono 'Paid' = DATA INTEGER (Faktura);
-DataZaplaty 'Payment date' = DATA DATE (Faktura);
-FormaPlatnosci 'Forma platnosci' = DATA INTEGER (Faktura);
+Zaplacono 'Zapłacono' = DATA INTEGER (Faktura);
+DataZaplaty 'Data zapłaty' = DATA DATE (Faktura);
+FormaPlatnosci 'Forma płatności' = DATA INTEGER (Faktura);
 
 CLASS RachunekBankowy 'Rachunek bankowy';
 faktura 'Faktura' = DATA Faktura (RachunekBankowy) NONULL DELETE INDEXED;
@@ -142,12 +142,12 @@ CLASS StopkaInformacja 'Stopka informacja';
 faktura 'Faktura' = DATA Faktura (StopkaInformacja) NONULL DELETE INDEXED;
 value 'Stopka faktury' = DATA ISTRING[3500] (StopkaInformacja) CHARWIDTH 40;
 
-openXml 'Open XML' (Faktura f) {
+openXml 'Otwórz XML' (Faktura f) {
     IF xmlFile(f) THEN
         open(xmlFile(f), 'FA3-XML');
 }
 
-getStatus 'Get status' (Faktura f) {
+getStatus 'Pobierz status' (Faktura f) {
     NEWSESSION {
         TRY {
             // Auth and request
@@ -166,7 +166,7 @@ getStatus 'Get status' (Faktura f) {
             statusDetails(f) <- fieldText(status(), r'details');
 
             APPLY;
-        } CATCH { catchException('Get Faktura status'); }
+        } CATCH { catchException('Pobierz status faktury'); }
     }
 }
 
@@ -337,7 +337,7 @@ DESIGN faktura {
                 }
             }
         }
-        MOVE BOX(w) { caption = 'Lines'; fill = 1; }
+        MOVE BOX(w) { caption = 'Wiersze'; fill = 1; }
     }
 }
 
@@ -363,11 +363,11 @@ FORM faktury 'Faktury KSeF'
 @defineDocObjectsForm(faktury, f, 'Faktury');
 
 filterCompany = DATA LOCAL NESTED Company();
-nameFilterCompany 'Company' = name(filterCompany());
+nameFilterCompany 'Firma' = name(filterCompany());
 
 EXTEND FORM faktury
     OBJECTS dates = INTERVAL[DATE] BEFORE f PANEL NULL
-    PROPERTIES filterDates 'Date interval' = VALUE(dates)
+    PROPERTIES filterDates 'Interwał dat' = VALUE(dates)
 
     FILTERS NOT invoiceDate(f) < from(dates), NOT invoiceDate(f) > to(dates)
     

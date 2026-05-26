@@ -4,9 +4,9 @@ REQUIRE KSeF, KSeFCertificate, Crypto;
 
 NAMESPACE KSeF;
 
-CLASS Permission 'KSeF permission' {
-    invoiceRead 'InvoiceRead', 
-    invoiceWrite 'InvoiceWrite', 
+CLASS Permission 'Uprawnienie KSeF' {
+    invoiceRead 'InvoiceRead',
+    invoiceWrite 'InvoiceWrite',
     credentialsRead 'CredentialsRead',
     credentialsManage 'CredentialsManage',
     subunitManage 'SubunitManage',
@@ -16,7 +16,7 @@ TABLE permission (Permission);
 
 name '{master.data.name}' (Permission o) = ISTRING(caption(o)) IF o IS Permission CHARWIDTH 15;
 
-FORM dialogPermissions 'KSeF permission'
+FORM dialogPermissions 'Uprawnienie KSeF'
     OBJECTS o = Permission
     PROPERTIES(o) READONLY name
     
@@ -24,25 +24,25 @@ FORM dialogPermissions 'KSeF permission'
 ;
 
 select = DATA LOCAL BOOLEAN (Permission);
-selectPermissions 'Permissions' = GROUP CONCAT name(Permission p) IF select(p), ',' ORDER p;
+selectPermissions 'Uprawnienia' = GROUP CONCAT name(Permission p) IF select(p), ',' ORDER p;
 
-tokenDescription 'Description' = DATA LOCAL STRING ();
+tokenDescription 'Opis' = DATA LOCAL STRING ();
 
 CLASS TokenAuth 'Token KSeF';
 company = DATA Company (TokenAuth) NONULL;
 
-referenceNumber 'Reference number' = DATA STRING (TokenAuth);
+referenceNumber 'Numer referencyjny' = DATA STRING (TokenAuth);
 tokenAuthReferenceNumber = GROUP AGGR TokenAuth a BY referenceNumber(a);
 
 token 'Token' = DATA STRING (TokenAuth);
-description 'Description' = DATA STRING (TokenAuth);
+description 'Opis' = DATA STRING (TokenAuth);
 
 in = DATA BOOLEAN (TokenAuth, Permission);
-permissions 'Permissions' (TokenAuth t) = GROUP CONCAT name(Permission p) IF in(t, p), ',' ORDER p;
+permissions 'Uprawnienia' (TokenAuth t) = GROUP CONCAT name(Permission p) IF in(t, p), ',' ORDER p;
 
-allowedIp 'Allowed IP' = DATA STRING (TokenAuth);
+allowedIp 'Dozwolony IP' = DATA STRING (TokenAuth);
 
-generateTokenAuth 'Generate token KSeF' (Company c) {
+generateTokenAuth 'Wygeneruj token KSeF' (Company c) {
     NEWSESSION NESTED (select, tokenDescription) {
         TRY {
             getAccessToken(c);
@@ -62,14 +62,14 @@ generateTokenAuth 'Generate token KSeF' (Company c) {
 
                 APPLY;
             }
-        } CATCH { catchException('Generate token KSeF'); }
+        } CATCH { catchException('Wygeneruj token KSeF'); }
     }
 }
 
 status 'Status' = DATA STRING (TokenAuth);
-statusDetails 'Status details' = DATA STRING (TokenAuth);
+statusDetails 'Szczegóły statusu' = DATA STRING (TokenAuth);
 
-getStatus 'Get status' (TokenAuth ta) {
+getStatus 'Pobierz status' (TokenAuth ta) {
     NEWSESSION {
         TRY {
             getAccessToken(company(ta));
@@ -81,11 +81,11 @@ getStatus 'Get status' (TokenAuth ta) {
             }
 
             APPLY;
-        } CATCH { catchException('Get token KSeF status'); }
+        } CATCH { catchException('Pobierz status tokenu KSeF'); }
     }
 }
 
-getTokens 'Get tokens' (Company c) {
+getTokens 'Pobierz tokeny' (Company c) {
     NEWSESSION {
         TRY {
             getAccessToken(c);
@@ -105,15 +105,15 @@ getTokens 'Get tokens' (Company c) {
             }            
 
             APPLY;
-        } CATCH { catchException('Get tokens'); }
+        } CATCH { catchException('Pobierz tokeny'); }
     }
 }
 
-delete 'Disable' (Company c, TokenAuth ta) {
+delete 'Wyłącz' (Company c, TokenAuth ta) {
     TRY {
         getAccessToken(c);
         EXTERNAL HTTP DELETE hostApi() + '/tokens/' + referenceNumber(ta) HEADERS accessHeaders TO resultFile;
-    } CATCH { catchException('Delete token KSeF'); }
+    } CATCH { catchException('Usuń token KSeF'); }
 }
 
 EXTEND FORM integrationData
@@ -135,7 +135,7 @@ EXTEND FORM integrationData
 DESIGN integrationData {
     KSeFPane {
         NEW KSeFTokens {
-            caption = 'Tokens';
+            caption = 'Tokeny';
             fill = 1;
             NEW generate {
                 horizontal = TRUE;
@@ -160,7 +160,7 @@ changeDefault (TokenAuth a) {
 }
 
 defaultTokenAuth (Company c) = OVERRIDE dataDefaultTokenAuth(c), calcDefaultTokenAuth(c);
-default 'Default' (TokenAuth a) = defaultTokenAuth(company(a)) = a CHARWIDTH 10;
+default 'Domyślny' (TokenAuth a) = defaultTokenAuth(company(a)) = a CHARWIDTH 10;
 
 authRequest (TokenAuth ta) {
     IF NOT tokenEncryptionCertificate() THEN getPublicKeyCertificates();
@@ -183,7 +183,7 @@ authRequest (TokenAuth ta) {
             createToken(company(ta));
             APPLY;
             
-        } CATCH { catchException('Authorization token KSeF'); }
+        } CATCH { catchException('Autoryzacja tokenem KSeF'); }
     }
 }
 
@@ -203,7 +203,7 @@ DESIGN integrationData {
 }
 
 // to scheduler
-updateTokens 'Update tokens' () {
+updateTokens 'Aktualizuj tokeny' () {
     FOR (defaultCertificate(Company c) OR defaultTokenAuth(c)) AND NOT refreshValidUntil(accessToken(c)) > sumMinutes(currentDateTime(), 360) DO {
         IF defaultCertificate(c) THEN
             authCertificateKsefRequest(c);
