@@ -5,28 +5,28 @@ REQUIRE KSeF, KSeFCertificate, Company, Crypto;
 NAMESPACE KSeF;
 
 // Persistent KSeF interactive session
-CLASS Session 'KSeF session';
+CLASS Session 'Sesja KSeF';
 
-company 'Company' = DATA Company(Session) NONULL INDEXED;
-referenceNumber 'Reference number' = DATA STRING[200] (Session) INDEXED CHARWIDTH 30;
-openedAt 'Opened at' = DATA DATETIME (Session) NONULL;
-closedAt 'Closed at' = DATA DATETIME (Session);
+company 'Firma' = DATA Company(Session) NONULL INDEXED;
+referenceNumber 'Numer referencyjny' = DATA STRING[200] (Session) INDEXED CHARWIDTH 30;
+openedAt 'Otwarta o' = DATA DATETIME (Session) NONULL;
+closedAt 'Zamknięta o' = DATA DATETIME (Session);
 
-validUntil 'Valid until' = DATA DATETIME (Session);
+validUntil 'Ważna do' = DATA DATETIME (Session);
 
-statusCode 'Status code' = DATA INTEGER (Session);
+statusCode 'Kod statusu' = DATA INTEGER (Session);
 statusDescription 'Status' = DATA STRING (Session);
-statusDetails 'Details' = DATA STRING (Session);
-lastError 'Last error' = DATA STRING (Session);
+statusDetails 'Szczegóły' = DATA STRING (Session);
+lastError 'Ostatni błąd' = DATA STRING (Session);
 
-aesKey 'AES key' = DATA RAWFILE (Session);
+aesKey 'Klucz AES' = DATA RAWFILE (Session);
 ivB64 'IV (Base64)' = DATA STRING[64] (Session);
 
-opened 'Open' (Session s) = (NOT closedAt(s) AND NOT validUntil(s) < currentDateTime()) AND NOT statusCode(s) != 100;
+opened 'Otwarta' (Session s) = (NOT closedAt(s) AND NOT validUntil(s) < currentDateTime()) AND NOT statusCode(s) != 100;
 
 latestOpenSession (Company c) = GROUP LAST Session s ORDER openedAt(s), s WHERE company(s) = c AND opened(s);
 
-openSession 'Open KSeF interactive session' (Company c) {
+openSession 'Otwórz sesję interaktywną KSeF' (Company c) {
     NEWSESSION {
         TRY {
             IF NOT symmetricKeyEncryptionCertificate() THEN getPublicKeyCertificates();
@@ -52,12 +52,12 @@ openSession 'Open KSeF interactive session' (Company c) {
                 APPLY;
             }
         } CATCH {
-            catchException('Open KSeF session');
+            catchException('Otwórz sesję KSeF');
         }
     }
 }
 
-getStatus 'Get status' (Session s) {
+getStatus 'Pobierz status' (Session s) {
     NEWSESSION {
         TRY {
             getAccessToken(company(s));
@@ -74,18 +74,18 @@ getStatus 'Get status' (Session s) {
             statusDetails(s) <- fieldText(status(), r'details');
 
             APPLY;
-        } CATCH { catchException('Get KSeF session status'); }
+        } CATCH { catchException('Pobierz status sesji KSeF'); }
     }
 }
 
-close 'Close' (Session s) {
+close 'Zamknij' (Session s) {
     NEWSESSION {
         TRY {
             getAccessToken(company(s));
             EXTERNAL HTTP POST hostApi() + '/sessions/online/' + referenceNumber(s) + '/close' HEADERS accessHeaders TO resultFile;
             closedAt(s) <- currentDateTime();
             APPLY;
-        } CATCH { catchException('Close KSeF session'); }
+        } CATCH { catchException('Zamknij sesję KSeF'); }
     }
 }
 
@@ -99,7 +99,7 @@ EXTEND FORM integrationData
 DESIGN integrationData {
     KSeFPane {
         NEW KSeFSessions {
-            caption = 'Sessions';
+            caption = 'Sesje';
             MOVE BOX(ksefSession);
         }
     }

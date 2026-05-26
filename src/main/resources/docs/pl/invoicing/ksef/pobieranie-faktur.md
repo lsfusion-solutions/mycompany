@@ -42,3 +42,13 @@ Ponowne uruchomienie pobierania dla tego samego zakresu jest bezpieczne:
 
 - system zwykle rozpoznaje faktury po numerze KSeF i nie tworzy duplikatów w rejestrze,
 - jeśli pojawiły się nowe dokumenty w KSeF, zostaną dociągnięte podczas kolejnego pobrania.
+
+## Automatyczne powiązanie z fakturami zakupu
+
+Jeżeli administrator włączył opcję **„Powiąż automatycznie faktury KSeF z fakturami zakupu po numerze”** (Administracja → Integracja → KSeF), pobrana faktura KSeF, w której Twoja firma jest nabywcą (`Podmiot 2`), zostaje automatycznie powiązana z istniejącą fakturą zakupu, jeżeli zgadzają się trzy pola: numer faktury KSeF (`P_2`) z polem „Numer dokumentu dostawcy” (`vendorReference`) na fakturze zakupu — a gdy to pole jest puste, z własnym numerem faktury zakupu (`number`) — dostawca (`Podmiot 1`) i firma (`Podmiot 2`).
+
+Powiązanie działa też w drugą stronę: jeśli faktura KSeF była pobrana wcześniej, a fakturę zakupu wystawiasz lub edytujesz dopiero teraz — po zapisaniu zgodnych danych zostanie ona dopięta do faktury KSeF.
+
+Dzięki temu faktury wprowadzone wcześniej ręcznie po pobraniu od razu pokazują w sekcji „KSeF” status, numer referencyjny i numer KSeF — bez dodatkowych kroków.
+
+Gdy opcja jest wyłączona albo gdy powiązanie się nie powiedzie (np. numer dokumentu dostawcy zapisany w innej formie), możesz powiązać dokumenty ręcznie — zobacz: [Faktury zakupu na podstawie faktur z KSeF](faktury-zakupu.md#ręczne-powiązanie-i-zmiana-powiązania).

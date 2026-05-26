@@ -23,12 +23,12 @@ getFaktura (Company c, STRING ksefNumber) {
             }
             // Create lines for NEW object
             APPLY;
-        } CATCH { catchException('Get Faktura XML'); }
+        } CATCH { catchException('Pobierz XML faktury'); }
     }
 }
 
 // Core action: fetch metadata by date interval + subjectType and import into Faktura
-fetchKSeFMetadata 'Fetch KSeF metadata' (Company c, DATE from, DATE to, STRING subject, STRING dateType) {
+fetchKSeFMetadata 'Pobierz metadane KSeF' (Company c, DATE from, DATE to, STRING subject, STRING dateType) {
     TRY {
         // Auth headers
         getAccessToken(c);
@@ -47,15 +47,15 @@ fetchKSeFMetadata 'Fetch KSeF metadata' (Company c, DATE from, DATE to, STRING s
             IF ksefNumber AND NOT fakturaKSeFNumber(ksefNumber) THEN
                 getFaktura(c, ksefNumber);
         }
-    } CATCH { catchException('KSeF metadata fetch'); }
+    } CATCH { catchException('Pobierz metadane KSeF'); }
 }
 
-fetchSubject1 'Fetch (sprzedawca)' (INTERVAL[DATE] dates) {
+fetchSubject1 'Pobierz (sprzedawca)' (INTERVAL[DATE] dates) {
     FOR Company c = filterCompany() OR (NOT filterCompany() AND accessToken(c)) DO
         fetchKSeFMetadata(c, from(dates), to(dates), 'subject1', 'Issue');
 }
 
-fetchSubject2 'Fetch (klient)' (INTERVAL[DATE] dates) {
+fetchSubject2 'Pobierz (klient)' (INTERVAL[DATE] dates) {
     FOR Company c = filterCompany() OR (NOT filterCompany() AND accessToken(c)) DO
         fetchKSeFMetadata(c, from(dates), to(dates), 'subject2', 'Issue');
 }
@@ -65,7 +65,7 @@ fetchSubject2Last (INTEGER days) {
         fetchKSeFMetadata(c, subtract(currentDate(), days), currentDate(), 'subject2', 'PermanentStorage');
 }
 
-fetchInterval 'Fetch interval (days)' = DATA INTEGER ();
+fetchInterval 'Interwał pobierania (dni)' = DATA INTEGER ();
 EXTEND FORM integrationData
     PROPERTIES() fetchInterval
 ;
@@ -76,7 +76,7 @@ DESIGN integrationData {
     }
 }
 // to scheduler
-fetchSubject2 'Fetch' () {
+fetchSubject2 'Pobierz' () {
     fetchSubject2Last(OVERRIDE fetchInterval(), 7);
 }
 
