@@ -110,6 +110,7 @@ Typical fields:
 If the inventory contour is enabled in the system, additional parameters may be available in the item card on the **Inventory** tab:
 
 - **Weight** and **Volume**;
+- **Length**, **Width** and **Height** (unit dimensions, cm);
 - **Inventory SKU** and **Coefficient** (used for automatic recalculation and accounting of the current item's stock through another base item). For more details, see the [Inventory SKUs](../inventory/product-sku.md) section.
 
 Also, conversion coefficients for packages can be configured for items (on the **Units of measure** tab), and default packages can be selected on the **Purchase** and **Sale** tabs. This allows for the use of the packaging accounting mechanism directly in documents.
@@ -121,7 +122,7 @@ Depending on enabled modules and item settings, the item card can also have addi
 ### Filling recommendations for products
 
 - Make sure **Category** and **Unit of measure** are selected (e.g., “pcs”, “kg”, “m”).
-- If your configuration has **Weight**, **Volume**, **Country of origin** — fill them for products when those attributes are used in logistics, marking or reporting.
+- If your configuration has **Weight**, **Volume**, **Length/Width/Height**, **Country of origin** — fill them for products when those attributes are used in logistics, marking or reporting.
 
 ### Filling recommendations for services
 
