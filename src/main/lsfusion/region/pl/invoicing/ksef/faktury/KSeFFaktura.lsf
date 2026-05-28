@@ -133,6 +133,25 @@ CLASS RachunekBankowy 'Rachunek bankowy';
 faktura 'Faktura' = DATA Faktura (RachunekBankowy) NONULL DELETE INDEXED;
 number 'Rachunek bankowy' = DATA STRING[100] (RachunekBankowy);
 
+CLASS RachunekBankowyFaktora 'Rachunek bankowy faktora';
+faktura 'Faktura' = DATA Faktura (RachunekBankowyFaktora) NONULL DELETE INDEXED;
+number 'Rachunek bankowy faktora' = DATA STRING[100] (RachunekBankowyFaktora);
+
+CLASS Podmiot3 'Podmiot 3';
+faktura 'Faktura' = DATA Faktura (Podmiot3) NONULL DELETE INDEXED;
+partner 'Partner' = DATA Partner (Podmiot3) INDEXED;
+namePartner 'Partner' (Podmiot3 p) = name(partner(p));
+
+NIP 'NIP' = DATA STRING[20] (Podmiot3);
+Nazwa 'Nazwa' = DATA ISTRING[512] (Podmiot3) CHARWIDTH 20;
+KodKraju 'Kod Kraju' = DATA STRING[5] (Podmiot3);
+AdresL1 'Adres L1' = DATA ISTRING[512] (Podmiot3) CHARWIDTH 20;
+AdresL2 'Adres L2' = DATA ISTRING[512] (Podmiot3) CHARWIDTH 20;
+Email 'Email' = DATA ISTRING[400] (Podmiot3) CHARWIDTH 15;
+Telefon 'Telefon' = DATA ISTRING[100] (Podmiot3) CHARWIDTH 15;
+NrKlienta 'Nr Klienta' = DATA STRING[50] (Podmiot3) CHARWIDTH 10;
+Rola 'Rola' = DATA INTEGER (Podmiot3);
+
 CLASS DodatkowyOpis 'Dodatkowy opis';
 faktura 'Faktura' = DATA Faktura (DodatkowyOpis) NONULL DELETE INDEXED;
 Klucz 'Klucz' = DATA STRING[256] (DodatkowyOpis) CHARWIDTH 10;
@@ -202,6 +221,14 @@ FORM faktura 'Faktura KSeF'
     OBJECTS rb = RachunekBankowy
     PROPERTIES(rb) READONLY '' = number
     FILTERS faktura(rb) = f
+
+    OBJECTS rbf = RachunekBankowyFaktora
+    PROPERTIES(rbf) READONLY '' = number
+    FILTERS faktura(rbf) = f
+
+    OBJECTS p3 = Podmiot3
+    PROPERTIES(p3) READONLY namePartner, NIP, Nazwa, KodKraju, AdresL1, AdresL2, Email, Telefon, NrKlienta, Rola
+    FILTERS faktura(p3) = f
 
     OBJECTS dof = DodatkowyOpis
     PROPERTIES(dof) READONLY Klucz, Wartosc
@@ -313,27 +340,45 @@ DESIGN faktura {
             NEW headerRight {
                 fill = 0.5;
                 alignment = STRETCH;
-                MOVE BOX(z) {
-                    GRID(z) { width = 200; height = 75; }
-                    REMOVE TOOLBARBOX(z);
+                tabbed = TRUE;
+                NEW platnosc {
+                    caption = 'Płatność';
+                    alignment = STRETCH;
+                    MOVE BOX(z) {
+                        GRID(z) { width = 200; height = 75; }
+                        REMOVE TOOLBARBOX(z);
+                    }
+                    MOVE BOX(tp) {
+                        GRID(tp) { width = 200;  height = 55; }
+                        REMOVE TOOLBARBOX(tp);
+                    }
+                    MOVE BOX(rb) {
+                        GRID(rb) { width = 200;  height = 55; }
+                        REMOVE TOOLBARBOX(rb);
+                    }
+                    MOVE BOX(rbf) {
+                        GRID(rbf) { width = 200;  height = 55; }
+                        REMOVE TOOLBARBOX(rbf);
+                    }
                 }
-                MOVE BOX(tp) {
-                    GRID(tp) { width = 200;  height = 55; }
-                    REMOVE TOOLBARBOX(tp);
-                }
-                MOVE BOX(rb) { 
-                    GRID(rb) { width = 200;  height = 55; }
-                    REMOVE TOOLBARBOX(rb);
-                }
-                MOVE BOX(dof) {
-                    fill = 5;
-                    GRID(dof) { width = 200; height = 75; }
-                    REMOVE TOOLBARBOX(dof);
-                }
-                MOVE BOX(si) {
-                    fill = 2;
-                    GRID(si) { width = 320; height = 55; }
-                    REMOVE TOOLBARBOX(si);
+                NEW dodatkowe {
+                    caption = 'Dodatkowe dane';
+                    alignment = STRETCH;
+                    MOVE BOX(p3) {
+                        fill = 2;
+                        GRID(p3) { width = 320; height = 75; }
+                        REMOVE TOOLBARBOX(p3);
+                    }
+                    MOVE BOX(dof) {
+                        fill = 5;
+                        GRID(dof) { width = 200; height = 75; }
+                        REMOVE TOOLBARBOX(dof);
+                    }
+                    MOVE BOX(si) {
+                        fill = 2;
+                        GRID(si) { width = 320; height = 55; }
+                        REMOVE TOOLBARBOX(si);
+                    }
                 }
             }
         }
