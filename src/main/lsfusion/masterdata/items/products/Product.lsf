@@ -7,7 +7,7 @@ NAMESPACE MasterData;
 CLASS Product 'Product' : Item;
 weight 'Unit weight, kg' = DATA NUMERIC[11,3] (Product);
 volume 'Unit volume, m3' = DATA NUMERIC[11,3] (Product);
-unitLength 'Unit length, cm' = DATA NUMERIC[11,3] (Product);
+length 'Unit length, cm' = DATA NUMERIC[11,3] (Product);
 width 'Unit width, cm' = DATA NUMERIC[11,3] (Product);
 height 'Unit height, cm' = DATA NUMERIC[11,3] (Product);
 
@@ -19,7 +19,7 @@ copy 'Copy' (Product p) {
         NEW np = Product {
             weight(np) <- weight(p);
             volume(np) <- volume(p);
-            unitLength(np) <- unitLength(p);
+            length(np) <- length(p);
             width(np) <- width(p);
             height(np) <- height(p);
             countryOrigin(np) <- countryOrigin(p);
@@ -30,7 +30,7 @@ copy 'Copy' (Product p) {
 }
 
 EXTEND FORM item
-    PROPERTIES(i) weight, volume, unitLength, width, height, nameCountryOrigin
+    PROPERTIES(i) weight, volume, MasterData.length, width, height, nameCountryOrigin
 ;
 
 DESIGN item {
@@ -42,7 +42,7 @@ DESIGN item {
                 horizontal = TRUE;
                 MOVE PROPERTY(weight(i)) { charWidth = 5; };
                 MOVE PROPERTY(volume(i)) { charWidth = 5; };
-                MOVE PROPERTY(unitLength(i)) { charWidth = 5; };
+                MOVE PROPERTY(length(i)) { charWidth = 5; };
                 MOVE PROPERTY(width(i)) { charWidth = 5; };
                 MOVE PROPERTY(height(i)) { charWidth = 5; };
             }
@@ -54,13 +54,13 @@ DESIGN item {
 }
 
 EXTEND FORM items
-    PROPERTIES(i) GRID READONLYIF isReadonly() weight, volume, unitLength, width, height, nameCountryOrigin
+    PROPERTIES(i) GRID READONLYIF isReadonly() weight, volume, MasterData.length, width, height, nameCountryOrigin
 ;
 
 DESIGN items {
     PROPERTY(weight(i)) { hide = TRUE; }
     PROPERTY(volume(i)) { hide = TRUE; }
-    PROPERTY(unitLength(i)) { hide = TRUE; }
+    PROPERTY(length(i)) { hide = TRUE; }
     PROPERTY(width(i)) { hide = TRUE; }
     PROPERTY(height(i)) { hide = TRUE; }
     PROPERTY(nameCountryOrigin(i)) { hide = TRUE; }
