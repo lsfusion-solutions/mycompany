@@ -131,17 +131,17 @@ FormaPlatnosci 'Forma płatności' = DATA INTEGER (Faktura);
 
 CLASS RachunekBankowy 'Rachunek bankowy';
 faktura 'Faktura' = DATA Faktura (RachunekBankowy) NONULL DELETE INDEXED;
-number 'Rachunek bankowy' = DATA STRING[100] (RachunekBankowy);
+number 'Numer' = DATA STRING[100] (RachunekBankowy) CHARWIDTH 20;
 SWIFT 'SWIFT' = DATA STRING[20] (RachunekBankowy);
-RachunekWlasnyBanku 'Rachunek własny banku' = DATA INTEGER (RachunekBankowy);
+RachunekWlasnyBanku 'Własny' = DATA INTEGER (RachunekBankowy);
 NazwaBanku 'Nazwa banku' = DATA ISTRING[200] (RachunekBankowy) CHARWIDTH 20;
 OpisRachunku 'Opis rachunku' = DATA ISTRING[500] (RachunekBankowy) CHARWIDTH 20;
 
 CLASS RachunekBankowyFaktora 'Rachunek bankowy faktora';
 faktura 'Faktura' = DATA Faktura (RachunekBankowyFaktora) NONULL DELETE INDEXED;
-number 'Rachunek bankowy faktora' = DATA STRING[100] (RachunekBankowyFaktora);
+number 'Numer' = DATA STRING[100] (RachunekBankowyFaktora) CHARWIDTH 20;
 SWIFT 'SWIFT' = DATA STRING[20] (RachunekBankowyFaktora);
-RachunekWlasnyBanku 'Rachunek własny banku' = DATA INTEGER (RachunekBankowyFaktora);
+RachunekWlasnyBanku 'Własny' = DATA INTEGER (RachunekBankowyFaktora);
 NazwaBanku 'Nazwa banku' = DATA ISTRING[200] (RachunekBankowyFaktora) CHARWIDTH 20;
 OpisRachunku 'Opis rachunku' = DATA ISTRING[500] (RachunekBankowyFaktora) CHARWIDTH 20;
 
@@ -227,11 +227,11 @@ FORM faktura 'Faktura KSeF'
     PROPERTIES(f) READONLY Zaplacono, DataZaplaty, FormaPlatnosci
 
     OBJECTS rb = RachunekBankowy
-    PROPERTIES(rb) READONLY '' = number, SWIFT, RachunekWlasnyBanku, NazwaBanku, OpisRachunku
+    PROPERTIES(rb) READONLY number, SWIFT, RachunekWlasnyBanku, NazwaBanku, OpisRachunku
     FILTERS faktura(rb) = f
 
     OBJECTS rbf = RachunekBankowyFaktora
-    PROPERTIES(rbf) READONLY '' = number, SWIFT, RachunekWlasnyBanku, NazwaBanku, OpisRachunku
+    PROPERTIES(rbf) READONLY number, SWIFT, RachunekWlasnyBanku, NazwaBanku, OpisRachunku
     FILTERS faktura(rbf) = f
 
     OBJECTS p3 = Podmiot3
