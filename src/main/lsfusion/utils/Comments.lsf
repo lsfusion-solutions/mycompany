@@ -31,16 +31,29 @@ META defineObjectComments (obj, let, container)
     header = ABSTRACT VALUE HTMLTEXT (###obj##Comment);
     footer = ABSTRACT VALUE HTMLTEXT (###obj##Comment);
     html (###obj##Comment c) = CONCAT '', header(c), text(c), footer(c);
-    
+
+    // Quill + @mention editor data for the edit dialog: the comment text plus the list
+    // of users that can be @-mentioned (just the name; the JS uses it as both the
+    // displayed value and the chip id).
+    textData '' (###obj##Comment c) = JSON FROM text = text(c),
+        users = (JSON FROM value = name(CustomUser u) WHERE name(u));
+    changeText (###obj##Comment c) {
+        INPUT newText = TEXT DO
+            text(c) <- newText;
+    }
+
+    // TRUE for every user (e.g. employee) @-mentioned in the comment text.
+    mentioned 'Mentioned' (###obj##Comment c, User u) = TRUE IF isSubstring(STRING(text(c)), 'data-id="' + name(u) + '"');
+
     FORM edit###obj##Comment 'Comment'
         OBJECTS c = ###obj##Comment PANEL
-        PROPERTIES(c) '' = text
+        PROPERTIES(c) textData CUSTOM 'commentEditor' ON CHANGE changeText(c)
     ;
-    
+
     DESIGN edit###obj##Comment {
-        size = (640, 480);
+        size = (800, 600);
         OBJECTS {
-            MOVE PROPERTY(text(c)) { fill = 1; }
+            MOVE PROPERTY(textData(c)) { fill = 1; }
         }
     }
     
@@ -56,7 +69,8 @@ META defineObjectComments (obj, let, container)
         FILTERS obj(cmt) = let
     ;
     
-    newComment 'Add' (###obj t) {
+    // Auto-post the typed draft (used on the parent form's APPLY).
+    postComment (###obj t) {
         IF inputComment() THEN
             NEW nc = ###obj##Comment {
                 obj(nc) <- t;
@@ -64,11 +78,26 @@ META defineObjectComments (obj, let, container)
                 inputComment() <- NULL;
             }
     }
-    
+
+    // The "Add" button: post the typed draft, or — when the input is empty — open
+    // the @mention editor dialog (the same one used for editing) to compose a new
+    // comment. The comment object is created up front but DELETEd if the dialog is
+    // closed without OK, so nothing is kept — all in the current session, with no
+    // NEWSESSION and no APPLY.
+    newComment 'Add' (###obj t) {
+        IF inputComment() THEN
+            postComment(t);
+        ELSE
+            NEW nc = ###obj##Comment {
+                obj(nc) <- t;
+                DIALOG edit###obj##Comment OBJECTS c = nc DO { } ELSE { DELETE nc; }
+            }
+    }
+
     EXTEND FORM obj
         PROPERTIES inputComment(), newComment(let)
-        
-        EVENTS ON APPLY { newComment(let); }
+
+        EVENTS ON APPLY { postComment(let); }
     ;
     
     DESIGN obj {

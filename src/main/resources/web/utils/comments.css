@@ -1,21 +1,279 @@
-.comments-header {
+/* ---- comment list ---- */
+.comments {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+    gap: 10px;
+    padding: 4px 2px;
+    color: #1f2937;
+    font-size: 13px;
+    box-sizing: border-box;
+}
+.comments * { box-sizing: border-box; }
 
-    border-bottom: 1px solid #ccc;
+/* ---------- empty state ---------- */
+.cmt-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 32px 12px;
+    color: #94a0b0;
+    font-weight: 600;
+}
+.cmt-empty i { font-size: 26px; opacity: .65; }
+
+/* ---------- single comment ---------- */
+.cmt {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
 }
 
-.comments-author {
-    font-weight: bold;
-    margin-right: 1em;
+.cmt-avatar {
+    --ahue: 210;
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 34px;
+    text-align: center;
+    background: hsl(var(--ahue), 52%, 52%);
+    box-shadow: 0 1px 2px rgba(16,24,40,.18);
+    user-select: none;
 }
 
-.comments-time {
-    font-weight: lighter;
-    flex: 1;
+.cmt-main {
+    flex: 1 1 auto;
+    min-width: 0;
+    background: #fbfcfd;
+    border: 1px solid #edf0f4;
+    border-radius: 11px;
+    padding: 8px 11px 9px;
+    transition: background .12s, box-shadow .12s, border-color .12s;
+}
+.cmt:hover .cmt-main {
+    background: #fff;
+    border-color: #e0e5ec;
+    box-shadow: 0 3px 10px rgba(16,24,40,.08);
 }
 
-.comments-message {
-    margin-top: 1em;
-    margin-bottom: 1em;
+/* little tail pointing at the avatar */
+.cmt-main::before {
+    content: "";
+    position: absolute;
+    left: 38px;
+    top: 13px;
+    width: 9px;
+    height: 9px;
+    background: inherit;
+    background: #fbfcfd;
+    border-left: 1px solid #edf0f4;
+    border-bottom: 1px solid #edf0f4;
+    transform: rotate(45deg);
+    transition: background .12s, border-color .12s;
+}
+.cmt:hover .cmt-main::before {
+    background: #fff;
+    border-color: #e0e5ec;
+}
+
+.cmt-head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+.cmt-author {
+    font-weight: 700;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.cmt-time {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #94a0b0;
+    white-space: nowrap;
+    flex: 1 1 auto;
+}
+
+.cmt-actions {
+    display: flex;
+    gap: 3px;
+    flex: 0 0 auto;
+    opacity: 0;
+    transition: opacity .12s;
+}
+.cmt:hover .cmt-actions { opacity: 1; }
+
+.cmt-btn {
+    border: 1px solid transparent;
+    background: transparent;
+    border-radius: 7px;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    cursor: pointer;
+    color: #6b7280;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    line-height: 1;
+    transition: background .12s, color .12s, border-color .12s;
+}
+.cmt-btn:hover { background: #eef2f7; border-color: #e3e7ec; }
+.cmt-edit:hover { color: #2563eb; background: #eef4ff; border-color: #cdddff; }
+.cmt-delete:hover { color: #b91c1c; background: #fef2f2; border-color: #fecaca; }
+
+/* ---------- message body ---------- */
+.cmt-message {
+    color: #374151;
+    line-height: 1.5;
+    word-break: break-word;
+}
+.cmt-message.ql-editor { padding: 0; }
+.cmt-message p { margin: 0 0 5px; }
+.cmt-message p:last-child { margin-bottom: 0; }
+.cmt-message h5 { margin: 0 0 5px; font-size: 13.5px; font-weight: 700; color: #1f2937; }
+.cmt-message ul { margin: 4px 0; padding-left: 18px; }
+.cmt-message a { color: #2563eb; }
+.cmt-message img { max-width: 100%; border-radius: 7px; }
+
+/* ---- @mention editor (CUSTOM 'commentEditor') ----
+   All colors are taken from lsFusion's theme CSS variables (defined in
+   static/css/theme/{light,dark}.css and injected at runtime), so the editor
+   matches whatever color theme is active — light or dark — with no hardcoded
+   colors and no theme-specific selectors. These are the same variables
+   lsFusion uses for its own rich-text editor (see quillRichText.css). */
+
+.comment-editor {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background: var(--component-background-color);
+    color: var(--text-color);
+}
+
+/* Remove the Quill snow theme's box borders (no extra/double borders on the
+   field); keep only a thin theme-colored separator under the toolbar. */
+.comment-editor .ql-toolbar.ql-snow {
+    border: none;
+    border-bottom: 1px solid var(--panel-border-color);
+    background: var(--component-background-color);
+}
+.comment-editor .ql-container.ql-snow {
+    border: none;
+}
+
+.comment-editor .ql-container {
+    flex: 1 1 auto;
+    min-height: 80px;
+    font-size: 14px;
+    background: var(--component-background-color);
+}
+
+/* Scroll the editor itself (not .ql-container) so .ql-container stays the
+   positioning context for the link tooltip and doesn't clip it. */
+.comment-editor .ql-editor {
+    height: 100%;
+    overflow-y: auto;
+    color: var(--text-color);
+}
+
+/* The snow placeholder is a hardcoded dark gray (invisible on a dark theme) —
+   use the theme's null/placeholder color instead. */
+.comment-editor .ql-editor.ql-blank::before {
+    color: var(--null-value-string-color);
+    font-style: normal;
+}
+
+/* The snow toolbar icons are drawn as #444 SVG stroke/fill, which disappears on
+   a dark background — recolor them with the theme text color, and use the focus
+   (accent) color for hover/active, matching lsFusion's buttons. */
+.comment-editor .ql-snow .ql-stroke { stroke: var(--text-color); }
+.comment-editor .ql-snow .ql-fill,
+.comment-editor .ql-snow .ql-stroke.ql-fill { fill: var(--text-color); }
+.comment-editor .ql-snow .ql-picker { color: var(--text-color); }
+
+.comment-editor .ql-snow .ql-toolbar button:hover .ql-stroke,
+.comment-editor .ql-snow .ql-toolbar button:focus .ql-stroke,
+.comment-editor .ql-snow .ql-toolbar button.ql-active .ql-stroke,
+.comment-editor .ql-snow button:hover .ql-stroke,
+.comment-editor .ql-snow button:focus .ql-stroke,
+.comment-editor .ql-snow button.ql-active .ql-stroke { stroke: var(--focus-color); }
+.comment-editor .ql-snow .ql-toolbar button:hover .ql-fill,
+.comment-editor .ql-snow .ql-toolbar button.ql-active .ql-fill,
+.comment-editor .ql-snow button:hover .ql-fill,
+.comment-editor .ql-snow button.ql-active .ql-fill { fill: var(--focus-color); }
+
+/* The snow link tooltip is white with dark text by default — theme it.
+   Scoped to .comment-editor so lsFusion's own .ql-tooltip is untouched. */
+.comment-editor .ql-snow .ql-tooltip {
+    background: var(--component-background-color);
+    color: var(--text-color);
+    border: 1px solid var(--panel-border-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+.comment-editor .ql-snow .ql-tooltip input[type="text"] {
+    background: var(--component-background-color);
+    color: var(--text-color);
+    border: 1px solid var(--panel-border-color);
+}
+.comment-editor .ql-snow .ql-tooltip a { color: var(--focus-color); }
+
+.comment-editor-error {
+    color: var(--required-value-string-color);
+    padding: 6px;
+    font-size: 13px;
+}
+
+/* Inserted @mention chips — scoped to our editor and the rendered comment list
+   only (no global .ql-editor rule, to avoid touching lsFusion's own editors).
+   Uses the theme's selection + accent colors so it reads in light and dark. */
+.comment-editor .mention,
+.comments-message .mention {
+    background-color: var(--selection-color);
+    color: var(--focus-color);
+    border-radius: 4px;
+    padding: 0 3px;
+    white-space: nowrap;
+}
+
+/* quill-mention suggestion dropdown. This class is specific to quill-mention,
+   which lsFusion does not bundle, so these rules affect only our editor. The
+   `html` prefix raises specificity above quill-mention's own CDN stylesheet
+   (which loads after ours, so at equal specificity it would otherwise win and
+   keep the dropdown white in dark mode). */
+html .ql-mention-list-container {
+    z-index: 9999;
+    background-color: var(--component-background-color);
+    color: var(--text-color);
+    border: 1px solid var(--panel-border-color);
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    max-height: 240px;
+    overflow: auto;
+}
+html .ql-mention-list-item {
+    color: var(--text-color);
+}
+html .ql-mention-list-item.selected {
+    background-color: var(--component-hover-background-color);
+}
+
+/* While the comment editor is open, hide lsFusion's devmode property-info tooltip
+   (Tippy) so it can't pop up on hover/click, steal focus, or break Enter / multi-line
+   typing. Driven purely by the editor's presence in the DOM via :has() — so it
+   auto-restores the moment the dialog closes (lsFusion removes the editor's DOM but
+   does NOT reliably call the component's clear(), so a JS class toggle would stick).
+   Dev-only: .tippy-box does not exist in production, so this rule is a no-op there. */
+body:has(.comment-editor) .tippy-box {
+    display: none !important;
 }
