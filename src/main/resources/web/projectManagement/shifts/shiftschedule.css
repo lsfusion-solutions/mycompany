@@ -1,44 +1,243 @@
-.shift-schedule {
-}
-
-.shift-schedule-templates {
-    display: flex;
-}
-.shift-schedule-template {
-    margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding)
-}
-.shift-schedule-table {
-}
-
-.shift-schedule-header {
-}
-
-.shift-schedule-header-employee {
-}
-
-.shift-schedule-header-cell {
-}
-
-.shift-schedule-row {
-}
-
-.shift-schedule-row-employee {
-    height: 3em;
-}
-
-.shift-schedule-row-cell {
+.shsched {
+    --hue: 212;
     display: flex;
     flex-direction: column;
+    gap: 10px;
+    height: 100%;
+    width: 100%;
+    min-height: 360px;
+    padding: 4px 2px 2px;
+    color: #1f2937;
+    font-size: 13px;
+    box-sizing: border-box;
+}
+.shsched * { box-sizing: border-box; }
+
+/* ---------- template palette ---------- */
+.shsched-palette {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    flex: 0 0 auto;
+    padding: 2px 4px;
+}
+.shsched-palette-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: #94a0b0;
+}
+.shsched-palette-title i { font-size: 13px; }
+.shsched-palette-list { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.shsched-palette-hint { font-size: 12px; color: #94a0b0; font-style: italic; }
+
+.shsched-tpl {
+    --hue: 212;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid hsl(var(--hue), 60%, 84%);
+    background: linear-gradient(180deg, hsl(var(--hue), 88%, 97%), hsl(var(--hue), 82%, 93%));
+    color: hsl(var(--hue), 45%, 32%);
+    border-radius: 20px;
+    padding: 4px 12px 4px 7px;
+    font-size: 12.5px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    cursor: grab;
+    box-shadow: 0 1px 2px rgba(16,24,40,.05);
+    transition: box-shadow .12s, transform .08s, filter .12s;
+}
+.shsched-tpl:hover { filter: saturate(1.08); box-shadow: 0 3px 9px rgba(37,99,235,.22); transform: translateY(-1px); }
+.shsched-tpl:active { cursor: grabbing; }
+.shsched-tpl.dragging { opacity: .45; }
+.shsched-tpl i { font-size: 12px; color: hsl(var(--hue), 40%, 60%); cursor: grab; }
+
+/* ---------- scroll wrapper ---------- */
+.shsched-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    border: 1px solid #edf0f4;
+    border-radius: 11px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(16,24,40,.05);
+}
+.shsched-scroll::-webkit-scrollbar { width: 9px; height: 9px; }
+.shsched-scroll::-webkit-scrollbar-thumb { background: #d6dbe2; border-radius: 5px; }
+.shsched-scroll::-webkit-scrollbar-thumb:hover { background: #c2c9d2; }
+
+/* ---------- grid: fixed employee column + N equal day columns ----------
+   minmax(0, 1fr) makes every day column exactly equal and fill the width regardless of content,
+   and its zero minimum keeps the grid's intrinsic width small so the grid box does not balloon and
+   the filter panel stays beside it. The real column count is set inline from JS each render
+   (grid.style.gridTemplateColumns); the value below is just a sane fallback. */
+.shsched-grid {
+    display: grid;
+    grid-template-columns: 280px repeat(7, minmax(0, 1fr));
+    align-content: start;
+    min-width: 0;
 }
 
-td.shift-schedule-row-sunday {
-    background-color: #ffcccc;
+/* header cells (first grid row) */
+.shsched-corner, .shsched-daycol {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: #fbfcfd;
+    border-bottom: 1px solid #e7ebf0;
+    padding: 6px 4px 7px;
+    font-weight: 700;
+}
+.shsched-corner {
+    left: 0;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    padding-left: 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: #94a0b0;
+    border-right: 1px solid #e7ebf0;
 }
 
-.shift-schedule-cell-shift {
-    margin-bottom: 0.25rem;
+/* drag handle to resize the employee column (sits on the corner's right edge) */
+.shsched-resizer {
+    position: absolute;
+    top: 0;
+    right: -4px;
+    width: 9px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 6;
+    touch-action: none;
+}
+.shsched-resizer::after {
+    content: "";
+    position: absolute;
+    top: 5px;
+    bottom: 5px;
+    left: 50%;
+    width: 2px;
+    transform: translateX(-50%);
+    border-radius: 2px;
+    background: transparent;
+    transition: background .12s;
+}
+.shsched-resizer:hover::after, .shsched-resizer.active::after { background: #2563eb; }
+.shsched-daycol {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+.shsched-daynum { font-size: 15px; font-weight: 800; color: #374151; line-height: 1.1; }
+.shsched-dow {
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px;
+    color: #98a2b3; margin-top: 1px;
+}
+.shsched-daycol.weekend { background: #f4f6f8; }
+.shsched-daycol.weekend .shsched-daynum { color: #b91c1c; }
+.shsched-daycol.today { background: #f3f7ff; box-shadow: inset 0 -2px 0 #2563eb; }
+.shsched-daycol.today .shsched-daynum { color: #2563eb; }
+.shsched-daycol.today .shsched-dow { color: #2563eb; }
+
+/* employee column (sticky left) */
+.shsched-emp {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border-right: 1px solid #e7ebf0;
+    border-top: 1px solid #f0f2f5;
+    padding: 7px 10px;
+    min-height: 46px;
+}
+.shsched-emp.first-row { border-top: none; }
+.shsched-emp-avatar {
+    --ahue: 210;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    user-select: none;
+    background: hsl(var(--ahue), 52%, 52%);
+}
+.shsched-emp-avatar.none { background: #e5e7eb; color: #9ca3af; }
+.shsched-emp-avatar.none i { font-size: 13px; }
+.shsched-emp-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #475569;
+}
+.shsched-emp.unassigned .shsched-emp-name { color: #94a0b0; font-style: italic; }
+
+/* day cells */
+.shsched-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 46px;
+    padding: 4px;
+    border-top: 1px solid #f0f2f5;
+    transition: background .1s, box-shadow .1s;
+}
+.shsched-cell.first-row { border-top: none; }
+.shsched-cell.weekend { background: #fafbfc; }
+.shsched-cell.today { background: #f7faff; }
+.shsched-cell.drag-over {
+    background: #e4edff;
+    box-shadow: inset 0 0 0 2px #aecbff;
 }
 
-td.shift-schedule-drag-over {
-    background-color: lightgrey;
+/* shift card */
+.shsched-shift {
+    --hue: 212;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    padding: 4px 6px 4px 7px;
+    border-radius: 7px;
+    cursor: grab;
+    font-size: 11.5px;
+    line-height: 1.3;
+    text-align: left;
+    overflow: hidden;
+    color: hsl(var(--hue), 42%, 27%);
+    background: linear-gradient(180deg, hsl(var(--hue), 88%, 97%), hsl(var(--hue), 82%, 93.5%));
+    border: 1px solid hsl(var(--hue), 60%, 86%);
+    box-shadow: inset 3px 0 0 hsl(var(--hue), 62%, 52%);
+    transition: transform .08s, box-shadow .12s, filter .12s;
 }
+.shsched-shift:hover {
+    filter: saturate(1.06);
+    box-shadow: inset 3px 0 0 hsl(var(--hue), 62%, 52%), 0 4px 10px rgba(16,24,40,.16);
+    transform: translateY(-1px);
+}
+.shsched-shift:active { cursor: grabbing; }
+.shsched-shift.dragging { opacity: .45; transform: scale(.98); }
+.shsched-shift i { font-size: 10px; color: hsl(var(--hue), 50%, 50%); flex: 0 0 auto; }
+.shsched-shift-time { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
