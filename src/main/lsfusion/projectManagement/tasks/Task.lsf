@@ -1,7 +1,7 @@
 MODULE Task;
 
 REQUIRE ProjectManagementSettings, Employee,
-        Doc, FileUtils, Comments, Activity,
+        Doc, FileUtils, Comments, Activity, DateUtils,
         TaskType, TaskStatus, TaskPriority, TaskTag,
         Assignee;
 
@@ -43,9 +43,13 @@ assignedTo (Task t, Employee e) = in(assignedTo(t), e) MATERIALIZED;
 start 'Start date' = DATA DATE (Task);
 @definePropertyValue(task, start, 'Start date');
 start(Task t) <- currentDate() WHEN SET(t IS Task);
+// localized relative duration of the start date ("{In} 12d" / "{ago}"), e.g. for kanban cards
+textStartDuration (Task t) = textDateDuration(start(t));
 
 deadline 'Deadline' = DATA DATE (Task);
 @definePropertyValue(task, deadline, 'Deadline');
+// localized relative duration of the deadline ("{In} 12d" / "{ago}"), e.g. for kanban cards
+textDeadlineDuration (Task t) = textDateDuration(deadline(t));
 
 progress 'Done, %' = DATA INTEGER (Task);
 @definePropertyValue(task, progress, 'Done, %');

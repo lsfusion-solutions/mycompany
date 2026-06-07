@@ -1,6 +1,6 @@
 MODULE TaskKanban;
 
-REQUIRE Task, TaskFilter, ProjectTask;
+REQUIRE Task, TaskFilter, ProjectTask, Kanban;
 
 PRIORITY MasterData;
 
@@ -31,12 +31,13 @@ createTaskStatus() {
 
 EXTEND FORM tasks
     OBJECTS tt = Task CUSTOM 'taskKanban'
-            HEADER JSON FROM employees = taskEmployees(), statuses = taskStatuses()
+            OPTIONS JSON FROM employees = taskEmployees(), statuses = taskStatuses(), locale = language(currentUser())
     PROPERTIES(tt) nameProject,
                    name = idName,
                    tags = jsonTags,
                    nameAuthor,
-                   deadline,
+                   start, textStartDuration,
+                   deadline, textDeadlineDuration,
                    status ON CHANGE {
                        INPUT l = LONG DO
                            FOR LONG(TaskStatus ts AS TaskStatus) = l DO
@@ -98,9 +99,7 @@ DESIGN tasks {
 }
 
 // change interval
+// shared kanban runtime (dragula + kanban.js/css) is registered by the Kanban utils module
 onWebClientInit() + {
-    onWebClientInit('dragula.js') <- 1;
-    onWebClientInit('dragula.css') <- 1;
-    onWebClientInit('taskkanban.js') <- 2;
-    onWebClientInit('taskkanban.css') <- 2;
+    onWebClientInit('taskkanban.js') <- 3;
 }

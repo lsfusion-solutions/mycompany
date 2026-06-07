@@ -13,6 +13,9 @@ readonly = ABSTRACT CASE BOOLEAN (Lead);
 dateTime 'Date' = DATA DATETIME (Lead) NONULL IN id;
 WHEN LOCAL SET (Lead l IS Lead) AND NOT CHANGED(dateTime(l)) DO dateTime(l) <- currentDateTime();
 @defineDateTimeAggregation(Lead);
+// localized relative duration of the creation date (date(l) = DATE(dateTime), from the
+// aggregation above), e.g. for kanban cards — same shape as textDateDuration(Activity)
+textDateDuration (Lead l) = textDateDuration(date(l));
 
 @defineID(lead, 'Leads', '', 6);
 
@@ -44,6 +47,8 @@ WHEN LOCAL SET(Lead l IS Lead) AND NOT salesPerson(l) AND currentUser() IS Emplo
 expectedClosing 'Expected closing' = DATA DATE (Lead);
 @defineDateAggregation(Lead, expectedClosing, expectedClosing, 'Expected closing ');
 @definePropertyValue(lead, expectedClosing, 'Expected closing');
+// localized relative duration of the expected closing ("{In} 12d" / "{ago}")
+textExpectedClosingDuration (Lead l) = textDateDuration(expectedClosing(l));
 
 description 'Description' = DATA RICHTEXT (Lead) CHARWIDTH 20;
 

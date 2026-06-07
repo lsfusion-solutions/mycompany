@@ -1,6 +1,6 @@
 MODULE LeadKanban;
 
-REQUIRE Lead;
+REQUIRE Lead, Kanban;
 
 PRIORITY MasterData;
 
@@ -30,14 +30,15 @@ createLeadStatus() {
 
 EXTEND FORM leads
     OBJECTS ll = Lead CUSTOM 'leadKanban'
-    HEADER JSON FROM employees = leadEmployees(), statuses = leadStatuses()
+    OPTIONS JSON FROM employees = leadEmployees(), statuses = leadStatuses(), locale = language(currentUser())
     PROPERTIES(ll) name = idName,
                    tags = jsonTags,
                    nameType,
                    nameCustomer,
+                   date, textDateDuration,
                    expectedRevenue,
                    namePriority,
-                   expectedClosing,
+                   expectedClosing, textExpectedClosingDuration,
                    status ON CHANGE {
                        INPUT ln = LONG DO
                            FOR LONG(LeadStatus ts AS LeadStatus) = ln DO
@@ -100,9 +101,7 @@ DESIGN leads {
 }
 
 // change interval
+// shared kanban runtime (dragula + kanban.js/css) is registered by the Kanban utils module
 onWebClientInit() + {
-    onWebClientInit('dragula.js') <- 1;
-    onWebClientInit('dragula.css') <- 1;
-    onWebClientInit('leadkanban.js') <- 2;
-    onWebClientInit('leadkanban.css') <- 2;
+    onWebClientInit('leadkanban.js') <- 3;
 }
