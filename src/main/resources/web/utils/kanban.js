@@ -46,6 +46,18 @@ function kanbanFormatDate(dateVal, duration, locale) {
     return ds + (duration ? "  ·  " + duration : "");
 }
 
+// group-separated money figure for the given locale (e.g. 1380000 -> "1 380 000"),
+// trimming insignificant decimals; used for both the card amount and the column total
+function kanbanFormatAmount(value, locale) {
+    const n = Number(value);
+    if (!isFinite(n)) return "";
+    try {
+        return new Intl.NumberFormat(locale || undefined, { maximumFractionDigits: 2 }).format(n);
+    } catch (e) {
+        return String(n);
+    }
+}
+
 // "type : name" header text, omitting either side / the separator when absent
 function kanbanHeader(type, name) {
     return (type ? type : "") + (name && type ? " : " : "") + (name ? name : "");
@@ -77,7 +89,9 @@ function kanbanReorder(controller, elements, key) {
 //   createStatus,   // action alias to create a new item in a status column
 //   header(item)   -> string,             // card header (type : name); falsy = no header
 //   subtitle(item) -> string,             // muted title line (author / customer)
-//   text(item)     -> string,             // main line (name / revenue)
+//   text(item)     -> string,             // main line (name); falsy/absent = no line
+//   amount(item)   -> number|null,        // money figure: shown formatted on the card and summed
+//                                         //   into a per-column total in the header; absent = no money
 //   created(item)  -> {date,text}|null,   // creation date at the top, never highlighted
 //   assignee(item) -> string,             // assignee name (avatar + name); falsy = no block
 //   due(item)      -> {date,text}|null,   // due date footer, red once it has passed
@@ -140,6 +154,13 @@ function kanban(config) {
                 statusName.textContent = status.name;
                 statusHeader.appendChild(statusName);
 
+                // count badge (how many cards are in this column)
+                let statusCount = document.createElement("span");
+                statusCount.classList.add("kanban-status-count");
+                statusCount.classList.add("badge");
+                statusCount.classList.add("rounded-pill");
+                statusHeader.appendChild(statusCount);
+
                 let statusNew = document.createElement("button");
                 statusNew.classList.add("kanban-status-new");
                 statusNew.classList.add("btn");
@@ -153,9 +174,29 @@ function kanban(config) {
                 let statusBody = document.createElement("div");
                 statusBody.classList.add("kanban-status-body");
 
+                let count = 0, total = 0;
                 for (const item of list)
-                    if (item.status === status.id.toString())
+                    if (item.status === status.id.toString()) {
+                        count++;
+                        if (config.amount) total += Number(config.amount(item)) || 0;
                         statusBody.appendChild(buildCard(item));
+                    }
+
+                statusCount.textContent = count;
+
+                // aggregate money for the column, right under the header ("at the top")
+                if (config.amount) {
+                    let totalBar = document.createElement("div");
+                    totalBar.classList.add("kanban-status-total");
+                    let icon = document.createElement("i");
+                    icon.className = "bi bi-cash-stack";
+                    totalBar.appendChild(icon);
+                    let amount = document.createElement("span");
+                    amount.classList.add("kanban-status-total-amount");
+                    amount.textContent = kanbanFormatAmount(total, locale);
+                    totalBar.appendChild(amount);
+                    statusDiv.appendChild(totalBar);
+                }
 
                 statusDiv.appendChild(statusBody);
                 statusBody.status = status;
@@ -216,13 +257,22 @@ function kanban(config) {
                     body.appendChild(s);
                 }
 
-                let text = config.text(item);
+                let text = config.text ? config.text(item) : null;
                 if (text != null && text !== "") {
                     let t = document.createElement("div");
                     t.classList.add("kanban-card-text");
                     t.classList.add("card-text");
                     t.textContent = text;
                     body.appendChild(t);
+                }
+
+                // money figure (e.g. lead expected revenue) — formatted with group separators
+                let amount = config.amount ? config.amount(item) : null;
+                if (amount != null && amount !== "") {
+                    let a = document.createElement("div");
+                    a.classList.add("kanban-card-amount");
+                    a.textContent = kanbanFormatAmount(amount, locale);
+                    body.appendChild(a);
                 }
 
                 if (item.tags) {
