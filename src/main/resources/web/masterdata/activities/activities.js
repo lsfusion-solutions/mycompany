@@ -1,3 +1,40 @@
+// Allowlist sanitizer for the stored rich-text activity description (RICHTEXT/HTML). Renders the
+// Quill formatting while dropping scripts, event handlers, inline styles and unsafe URLs so stored
+// markup can't execute. Parsing happens in a detached <template> whose content is inert (no scripts
+// run, no images load); we rebuild from scratch keeping only allowed tags. Shared by the activities()
+// list and the activityCalendar() popup below.
+function sanitizeHtml(html) {
+    const ALLOWED = { A: 1, B: 1, STRONG: 1, I: 1, EM: 1, U: 1, S: 1, P: 1, BR: 1, OL: 1, UL: 1, LI: 1, SPAN: 1, BLOCKQUOTE: 1, PRE: 1, CODE: 1, H1: 1, H2: 1, H3: 1, H4: 1 };
+    const SAFE_HREF = /^(https?:|mailto:|tel:|#|\/)/i;
+    const tpl = document.createElement("template");
+    tpl.innerHTML = String(html == null ? "" : html);
+    const clean = (src, dst) => {
+        for (const node of Array.from(src.childNodes)) {
+            if (node.nodeType === 3) {
+                dst.appendChild(document.createTextNode(node.nodeValue));
+            } else if (node.nodeType === 1 && ALLOWED[node.tagName]) {
+                const el = document.createElement(node.tagName);
+                if (node.getAttribute("class")) el.setAttribute("class", node.getAttribute("class"));
+                if (node.tagName === "A") {
+                    const href = (node.getAttribute("href") || "").trim();
+                    if (SAFE_HREF.test(href)) {
+                        el.setAttribute("href", href);
+                        el.setAttribute("target", "_blank");
+                        el.setAttribute("rel", "noopener noreferrer");
+                    }
+                }
+                clean(node, el);
+                dst.appendChild(el);
+            } else if (node.nodeType === 1) {
+                clean(node, dst); // disallowed tag: keep its sanitized children, drop the wrapper
+            }
+        }
+    };
+    const out = document.createElement("div");
+    clean(tpl.content, out);
+    return out.innerHTML;
+}
+
 function activities() {
 
     // deterministic hue from a string, matching the calendar avatars
@@ -83,7 +120,7 @@ function activities() {
                 if (activity.nameType) {
                     let type = document.createElement("span");
                     type.className = "act-type";
-                    type.innerHTML = activity.nameType;
+                    type.textContent = activity.nameType;
                     head.appendChild(type);
                 }
 
@@ -94,7 +131,7 @@ function activities() {
                 dueIcon.className = activity.done ? "bi bi-check-circle" : "bi bi-clock";
                 due.appendChild(dueIcon);
                 let dueText = document.createElement("span");
-                dueText.innerHTML = activity.textDateDuration || "";
+                dueText.textContent = activity.textDateDuration || "";
                 due.appendChild(dueText);
                 head.appendChild(due);
 
@@ -118,7 +155,7 @@ function activities() {
                 if (activity.name) {
                     let name = document.createElement("div");
                     name.className = "act-title";
-                    name.innerHTML = activity.name;
+                    name.textContent = activity.name;
                     main.appendChild(name);
                 }
 
@@ -126,7 +163,7 @@ function activities() {
                 if (activity.description) {
                     let description = document.createElement("div");
                     description.className = "act-desc ql-editor ql-bubble";
-                    description.innerHTML = activity.description;
+                    description.innerHTML = sanitizeHtml(activity.description);
                     main.appendChild(description);
                 }
 
@@ -144,7 +181,7 @@ function activities() {
 
                     let who = document.createElement("span");
                     who.className = "act-assigned";
-                    who.innerHTML = activity.nameAssignedTo;
+                    who.textContent = activity.nameAssignedTo;
                     foot.appendChild(who);
                 }
             }
@@ -208,9 +245,18 @@ function activityCalendar() {
     // curated, evenly-pleasant hues; type name -> stable hue
     const PALETTE = [212, 150, 268, 28, 338, 190, 48, 300, 128, 8];
 
-    // dueDate arrives as an ISO instant (UTC) of the day's local midnight; parsing it and
-    // reading LOCAL components yields the right calendar day (replaces the server isoDueDate)
-    const dateOf = (a) => { if (!a.date) return null; const dt = new Date(a.date); return isNaN(dt.getTime()) ? null : dt; };
+    // lsFusion serializes a DATE as a plain "YYYY-MM-DD" string. Parse it as a LOCAL date (split the
+    // parts) so the bucket/title never drift a day for clients west of UTC — new Date("YYYY-MM-DD")
+    // parses as UTC midnight, which reads back as the previous local day there. Non date-only values
+    // fall back to the native parser. (Same approach as the shift schedule's parseKey/dateKey.)
+    const dateOf = (a) => {
+        if (!a.date) return null;
+        const s = String(a.date);
+        let dt;
+        if (/^\d{4}-\d{2}-\d{2}/.test(s)) { const p = s.slice(0, 10).split("-").map(Number); dt = new Date(p[0], p[1] - 1, p[2]); }
+        else dt = new Date(s);
+        return isNaN(dt.getTime()) ? null : dt;
+    };
     const keyOf = (dt) => dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate();
     const sameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
     const addDays = (dt, n) => new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() + n);
@@ -317,7 +363,7 @@ function activityCalendar() {
                 ab.className = 'acal-asg-av' + (emp.name === a.nameAssignedTo ? ' current' : '');
                 ab.textContent = initials(emp.name); ab.title = emp.name;
                 ab.style.setProperty('--ahue', typeHue(emp.name));
-                ab.onclick = () => { st.controller.changeProperty('nameAssignedTo', a, emp.id); hidePopup(st); };
+                ab.onclick = () => { st.controller.changeProperty('assignedTo', a, emp.id); hidePopup(st); };
                 avs.appendChild(ab);
             }
             asg.appendChild(avs);
@@ -325,7 +371,7 @@ function activityCalendar() {
         pop.appendChild(asg);
         if (a.description) {
             const desc = document.createElement('div'); desc.className = 'acal-pop-desc';
-            desc.innerHTML = a.description; pop.appendChild(desc);
+            desc.innerHTML = sanitizeHtml(a.description); pop.appendChild(desc);
         }
         const foot = document.createElement('div'); foot.className = 'acal-pop-actions';
         if (!a.done) {
@@ -537,7 +583,8 @@ function activityCalendar() {
             const chip = document.createElement('button'); chip.type = 'button';
             chip.className = 'acal-chip' + (st.hiddenTypes.has(t) ? ' off' : '');
             chip.style.setProperty('--hue', typeColor(st, t));
-            chip.innerHTML = '<span class="acal-chip-sw"></span>' + t;
+            const sw = document.createElement('span'); sw.className = 'acal-chip-sw';
+            chip.appendChild(sw); chip.appendChild(document.createTextNode(t));
             chip.onclick = () => { st.hiddenTypes.has(t) ? st.hiddenTypes.delete(t) : st.hiddenTypes.add(t); redraw(st); };
             tg.appendChild(chip);
         }
@@ -552,7 +599,8 @@ function activityCalendar() {
                 const chip = document.createElement('button'); chip.type = 'button';
                 chip.className = 'acal-chip person' + (sel.has(p) ? ' on' : (sel.size ? ' off' : ''));
                 chip.style.setProperty('--ahue', typeHue(p));
-                chip.innerHTML = '<span class="acal-chip-av">' + initials(p) + '</span>' + p;
+                const av = document.createElement('span'); av.className = 'acal-chip-av'; av.textContent = initials(p);
+                chip.appendChild(av); chip.appendChild(document.createTextNode(p));
                 chip.onclick = () => { sel.has(p) ? sel.delete(p) : sel.add(p); redraw(st); };
                 ag.appendChild(chip);
             }

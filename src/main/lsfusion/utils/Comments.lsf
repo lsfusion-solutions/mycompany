@@ -5,10 +5,24 @@ REQUIRE SystemEvents, DateUtils;
 NAMESPACE Utils;
 
 onWebClientInit() + {
-    onWebClientInit('comments.js') <- 1;
-    onWebClientInit('comments.css') <- 1;
+    // quill-mention (vendored under web/utils) powers the @mention editor; its UMD build
+    // self-registers onto lsFusion's bundled Quill at load. comments.js loads after it.
+    onWebClientInit('quill-mention.css') <- 1;
+    onWebClientInit('quill-mention.js') <- 1;
+    onWebClientInit('comments.js') <- 2;
+    onWebClientInit('comments.css') <- 2;
 }
 inputComment '' = DATA LOCAL RICHTEXT ();
+
+// UI text for the comment components. Plain English here is localized by lsFusion reverse-translation
+// (server-side); the strings reach the JS via OPTIONS (read-only list) and the editor's textData JSON,
+// so comments.js no longer hardcodes user-facing English.
+commentsI18n () = JSON FROM
+    noComments = 'No comments yet',
+    editLabel = 'Edit',
+    deleteLabel = 'Delete',
+    placeholder = 'Add a comment…  (type @ to mention)',
+    loadError = 'Comment editor failed to load';
 
 META defineObjectComments (obj, let, container)
     CLASS ###obj##Comment 'Comment';
@@ -36,7 +50,8 @@ META defineObjectComments (obj, let, container)
     // of users that can be @-mentioned (just the name; the JS uses it as both the
     // displayed value and the chip id).
     textData '' (###obj##Comment c) = JSON FROM text = text(c),
-        users = (JSON FROM value = name(CustomUser u) WHERE name(u));
+        users = (JSON FROM value = name(CustomUser u) WHERE name(u)),
+        i18n = commentsI18n();
     changeText (###obj##Comment c) {
         INPUT newText = TEXT DO
             text(c) <- newText;
@@ -58,7 +73,7 @@ META defineObjectComments (obj, let, container)
     }
     
     EXTEND FORM obj
-        OBJECTS cmt = ###obj##Comment CUSTOM 'comments'
+        OBJECTS cmt = ###obj##Comment CUSTOM 'comments' OPTIONS JSON FROM i18n = commentsI18n()
         PROPERTIES id = VALUE(cmt)
         PROPERTIES(cmt) nameUser, textTimeDuration, dateTime, text = html
         PROPERTIES(cmt) edit ON CHANGE {

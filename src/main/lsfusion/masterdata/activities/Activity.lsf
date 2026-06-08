@@ -125,7 +125,7 @@ setDone 'Done' (Activity act) {
     }
 }
 
-delete 'Delete' (Activity a) { DELETE a; }
+//delete 'Delete' (Activity a) { DELETE a; }
 
 // employees fed to the calendar popup picker (OPTIONS) - anyone who has an OPEN
 // assignment on some activity, so you can reassign to any of them (not interval-limited)
@@ -176,15 +176,12 @@ FORM activities 'Activities'
     PROPERTIES(a) READONLY BACKGROUND RGB(224,255,224) IF done(a)
                            date = dueDate CHANGEABLE APPLY, time, till,
                            nameType, gname = name, nameObject, done, description,
-                           tperiod = period, daysLeft, textDateDuration
+                           tperiod = period, daysLeft, textDateDuration,
+                           nameAssignedTo
     // reassign from the popup: a direct changeProperty on the object property assignedTo is
     // silently ignored by the web client, so route the employee id through ON CHANGE
-    PROPERTIES(a) nameAssignedTo ON CHANGE {
-                       INPUT l = LONG DO
-                           FOR LONG(Employee e AS Employee) = l DO assignedTo(a) <- e;
-                           ELSE assignedTo(a) <- NULL;
-                   } APPLY
-    PROPERTIES(a) PANEL setDone NEWSESSION APPLY, edit = EDIT NEWSESSION, delete = delete, editObject
+    PROPERTIES(a) assignedTo APPLY
+    PROPERTIES(a) PANEL setDone NEWSESSION APPLY, edit = EDIT NEWSESSION, delete = DELETE, editObject
     PROPERTIES() addActivityOnDate
 
     LIST Activity OBJECT a

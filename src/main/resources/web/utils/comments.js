@@ -20,6 +20,42 @@ function comments() {
         return s.toUpperCase();
     }
 
+    // Allowlist sanitizer for the stored rich-text body (header + text + footer HTML). Renders the
+    // Quill formatting while dropping scripts, event handlers, inline styles and unsafe URLs so
+    // stored markup can't execute. Parsing happens in a detached <template> whose content is inert
+    // (no scripts run, no images load) and we rebuild from scratch keeping only allowed tags.
+    function sanitizeHtml(html) {
+        const ALLOWED = { A: 1, B: 1, STRONG: 1, I: 1, EM: 1, U: 1, S: 1, P: 1, BR: 1, OL: 1, UL: 1, LI: 1, SPAN: 1, BLOCKQUOTE: 1, PRE: 1, CODE: 1, H1: 1, H2: 1, H3: 1, H4: 1 };
+        const SAFE_HREF = /^(https?:|mailto:|tel:|#|\/)/i;
+        const tpl = document.createElement("template");
+        tpl.innerHTML = String(html == null ? "" : html);
+        const clean = (src, dst) => {
+            for (const node of Array.from(src.childNodes)) {
+                if (node.nodeType === 3) {
+                    dst.appendChild(document.createTextNode(node.nodeValue));
+                } else if (node.nodeType === 1 && ALLOWED[node.tagName]) {
+                    const el = document.createElement(node.tagName);
+                    if (node.getAttribute("class")) el.setAttribute("class", node.getAttribute("class"));
+                    if (node.tagName === "A") {
+                        const href = (node.getAttribute("href") || "").trim();
+                        if (SAFE_HREF.test(href)) {
+                            el.setAttribute("href", href);
+                            el.setAttribute("target", "_blank");
+                            el.setAttribute("rel", "noopener noreferrer");
+                        }
+                    }
+                    clean(node, el);
+                    dst.appendChild(el);
+                } else if (node.nodeType === 1) {
+                    clean(node, dst); // disallowed tag: keep its sanitized children, drop the wrapper
+                }
+            }
+        };
+        const out = document.createElement("div");
+        clean(tpl.content, out);
+        return out.innerHTML;
+    }
+
     function iconButton(cls, icon, title, onClick) {
         let btn = document.createElement("button");
         btn.type = "button";
@@ -41,12 +77,21 @@ function comments() {
         },
         update: function (element, controller, list, options) {
             let root = element.comments;
+            // localized labels via OPTIONS i18n (English fallback); plain English relies on
+            // lsFusion reverse-translation, which only covers server-side literals, not JS ones
+            const i18n = (options && options.i18n) || {};
+            const txt = (key, fallback) => (i18n[key] != null ? i18n[key] : fallback);
             while (root.lastElementChild) root.removeChild(root.lastElementChild);
 
             if (!list || !list.length) {
                 let empty = document.createElement("div");
                 empty.className = "cmt-empty";
-                empty.innerHTML = '<i class="bi bi-chat-left-text"></i><span>No comments yet</span>';
+                let emptyIcon = document.createElement("i");
+                emptyIcon.className = "bi bi-chat-left-text";
+                let emptyText = document.createElement("span");
+                emptyText.textContent = txt("noComments", "No comments yet");
+                empty.appendChild(emptyIcon);
+                empty.appendChild(emptyText);
                 root.appendChild(empty);
                 return;
             }
@@ -71,12 +116,12 @@ function comments() {
 
                 let author = document.createElement("span");
                 author.className = "cmt-author";
-                author.innerHTML = comment.nameUser || "";
+                author.textContent = comment.nameUser || "";
                 head.appendChild(author);
 
                 let time = document.createElement("span");
                 time.className = "cmt-time";
-                time.innerHTML = comment.textTimeDuration || "";
+                time.textContent = comment.textTimeDuration || "";
                 time.setAttribute("title", comment.dateTime || "");
                 head.appendChild(time);
 
@@ -84,16 +129,18 @@ function comments() {
                 actions.className = "cmt-actions";
                 head.appendChild(actions);
 
-                actions.appendChild(iconButton("cmt-edit", "bi bi-pencil", "Edit", function () {
+                actions.appendChild(iconButton("cmt-edit", "bi bi-pencil", txt("editLabel", "Edit"), function () {
                     controller.changeProperty("edit", comment);
                 }));
-                actions.appendChild(iconButton("cmt-delete", "bi bi-trash", "Delete", function () {
-                    controller.changeProperty("DELETE", comment);
+                actions.appendChild(iconButton("cmt-delete", "bi bi-trash", txt("deleteLabel", "Delete"), function () {
+                    // the form exposes the action aliased as `delete = DELETE`, so the client-facing
+                    // property name is lowercase "delete" (calling "DELETE" was a silent no-op)
+                    controller.changeProperty("delete", comment);
                 }));
 
                 let message = document.createElement("div");
                 message.className = "cmt-message ql-editor ql-bubble";
-                message.innerHTML = comment.text;
+                message.innerHTML = sanitizeHtml(comment.text);
                 main.appendChild(message);
 
                 root.appendChild(item);
@@ -112,49 +159,16 @@ function comments() {
 // suggests users. The HTML is written back via controller.changeValue(html)
 // (the server reads it with `INPUT newText = TEXT`).
 //
-// lsFusion already bundles and exposes Quill as window.Quill (2.0.3). We REUSE
-// that instance (so we don't override lsFusion's own rich-text fields) and only
-// load quill-mention (v6, Quill-2 compatible) from a CDN.
+// lsFusion already bundles and exposes Quill as window.Quill (2.0.3). We REUSE that
+// instance (so we don't override lsFusion's own rich-text fields) and add only
+// quill-mention (v6, Quill-2 compatible), vendored under web/utils and registered
+// globally via onWebClientInit in Comments.lsf — no runtime CDN dependency.
 // ----------------------------------------------------------------------------
 function commentEditor() {
-    // lsFusion already bundles quill.snow.css globally, so we do NOT load Quill CSS
-    // from a CDN — doing so appends a <link> at the end of <head> that would override
-    // lsFusion's quillRichText.css for EVERY .ql-editor on the page. Only quill-mention
-    // (which lsFusion does not bundle) is loaded.
-    var CDN = {
-        mentionCss: 'https://cdn.jsdelivr.net/npm/quill-mention@6.1.1/dist/quill.mention.min.css',
-        mentionJs:  'https://cdn.jsdelivr.net/npm/quill-mention@6.1.1/dist/quill.mention.min.js'
-    };
-
-    function addCss(href) {
-        if (document.querySelector('link[data-cmt="' + href + '"]')) return;
-        var l = document.createElement('link');
-        l.rel = 'stylesheet';
-        l.href = href;
-        l.setAttribute('data-cmt', href);
-        document.head.appendChild(l);
-    }
-
-    function addScript(src) {
-        return new Promise(function (resolve, reject) {
-            var ex = document.querySelector('script[data-cmt="' + src + '"]');
-            if (ex) {
-                if (ex.getAttribute('data-loaded')) resolve();
-                else {
-                    ex.addEventListener('load', function () { resolve(); });
-                    ex.addEventListener('error', function () { reject(new Error('load failed: ' + src)); });
-                }
-                return;
-            }
-            var s = document.createElement('script');
-            s.src = src;
-            s.setAttribute('data-cmt', src);
-            s.onload = function () { s.setAttribute('data-loaded', '1'); resolve(); };
-            s.onerror = function () { reject(new Error('load failed: ' + src)); };
-            document.head.appendChild(s);
-        });
-    }
-
+    // We deliberately do NOT register Quill's own CSS — lsFusion already bundles quill.snow.css
+    // globally, and re-adding it would override lsFusion's quillRichText.css for EVERY .ql-editor
+    // on the page. Only quill.mention.min.css is added (via onWebClientInit); it styles just the
+    // .ql-mention-* dropdown, so it can't clobber lsFusion's editor styling.
     function waitForQuill() {
         return new Promise(function (resolve, reject) {
             var tries = 0;
@@ -166,25 +180,25 @@ function commentEditor() {
         });
     }
 
-    var libsPromise = null;
-    function ensureLibs() {
-        if (!libsPromise) {
-            addCss(CDN.mentionCss);
-            // reuse lsFusion's bundled Quill (snow theme is already global), then add mention
-            libsPromise = waitForQuill().then(function () { return addScript(CDN.mentionJs); });
-        }
-        return libsPromise;
+    // quill-mention is vendored under web/utils and registered globally via onWebClientInit in
+    // Comments.lsf — no runtime CDN dependency. Its UMD build self-registers 'modules/mention' onto
+    // lsFusion's bundled Quill when it loads; wait for that registration before building the editor.
+    function waitForMention() {
+        return new Promise(function (resolve, reject) {
+            var tries = 0;
+            (function poll() {
+                var Quill = window.Quill;
+                if (Quill && Quill.imports && Quill.imports['modules/mention']) { resolve(); return; }
+                if (++tries > 120) { reject(new Error('quill-mention not registered (check onWebClientInit in Comments.lsf)')); return; }
+                setTimeout(poll, 50);
+            })();
+        });
     }
 
-    function registerMention() {
-        var Quill = window.Quill;
-        try {
-            if (Quill.imports && Quill.imports['modules/mention']) return true; // already (auto-)registered
-            var cand = window.QuillMention || window.quillMention || window.Mention;
-            var mod = cand && (cand.default || cand.Mention || cand);
-            if (mod) { Quill.register('modules/mention', mod); return true; }
-        } catch (e) { /* ignore */ }
-        return !!(Quill.imports && Quill.imports['modules/mention']);
+    var libsPromise = null;
+    function ensureLibs() {
+        if (!libsPromise) libsPromise = waitForQuill().then(function () { return waitForMention(); });
+        return libsPromise;
     }
 
     function currentHtml(quill) {
@@ -226,14 +240,15 @@ function commentEditor() {
     function initEditor(element, controller) {
         var Quill = window.Quill;
         if (!Quill) throw new Error('Quill not available');
-        registerMention();
+        // localized labels arrive with the editor's value (textData JSON); English is the fallback
+        var i18n = (element.pending && element.pending.i18n) || {};
 
         var editorDiv = document.createElement('div');
         element.host.appendChild(editorDiv);
 
         var quill = new Quill(editorDiv, {
             theme: 'snow',
-            placeholder: 'Add a comment…  (type @ to mention)',
+            placeholder: i18n.placeholder || 'Add a comment…  (type @ to mention)',
             // Confine the link tooltip to the editor. Without this, Quill's bounds
             // default to document.body, so a tooltip centered on a selection near the
             // left edge gets a negative left and drifts outside the editor (it's only
@@ -310,7 +325,12 @@ function commentEditor() {
             ensureLibs()
                 .then(function () { initEditor(element, controller); })
                 .catch(function (err) {
-                    host.innerHTML = '<div class="comment-editor-error">Comment editor failed to load: ' + err.message + '</div>';
+                    var i18n = (element.pending && element.pending.i18n) || {};
+                    host.textContent = '';
+                    var box = document.createElement('div');
+                    box.className = 'comment-editor-error';
+                    box.textContent = (i18n.loadError || 'Comment editor failed to load') + ': ' + err.message;
+                    host.appendChild(box);
                 });
         },
         update: function (element, controller, value) {

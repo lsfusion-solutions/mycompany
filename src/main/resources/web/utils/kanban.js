@@ -137,7 +137,7 @@ function kanban(config) {
                 let statusName = document.createElement("div");
                 statusName.classList.add("kanban-status-name");
                 statusName.classList.add("h5");
-                statusName.innerHTML = status.name;
+                statusName.textContent = status.name;
                 statusHeader.appendChild(statusName);
 
                 let statusNew = document.createElement("button");
@@ -235,7 +235,7 @@ function kanban(config) {
                         badge.classList.add("badge");
                         badge.classList.add("rounded-pill");
                         badge.classList.add("text-bg-" + (tag.idColor ? tag.idColor : "secondary"));
-                        badge.innerHTML = tag.name;
+                        badge.textContent = tag.name;
                         tags.appendChild(badge);
                     }
                     content.appendChild(tags);
