@@ -241,3 +241,94 @@
 .shsched-shift.dragging { opacity: .45; transform: scale(.98); }
 .shsched-shift i { font-size: 10px; color: hsl(var(--hue), 50%, 50%); flex: 0 0 auto; }
 .shsched-shift-time { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- click popup (shift quick actions: reassign / edit / delete) ----------
+   Opened by clicking a shift card. Appended to <body> and fixed-positioned, so it floats above the
+   sticky header/employee cells; mirrors the activity-calendar popup look. */
+.shsched-pop {
+    --hue: 212;
+    position: fixed;
+    z-index: 9000; /* above the grid's sticky cells; it's only a click preview */
+    width: 250px;
+    max-width: 92vw;
+    box-sizing: border-box;
+    background: #fff;
+    color: #1f2937;
+    border: 1px solid #e5e7eb;
+    border-top: 3px solid hsl(var(--hue), 62%, 52%);
+    border-radius: 11px;
+    box-shadow: 0 14px 36px rgba(16, 24, 40, .24);
+    padding: 11px 13px 12px;
+    font-size: 13px;
+}
+.shsched-pop * { box-sizing: border-box; }
+.shsched-pop-time {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 16px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 7px;
+}
+.shsched-pop-time i { color: hsl(var(--hue), 50%, 50%); font-size: 14px; }
+.shsched-pop-meta { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.shsched-pop-row { display: flex; align-items: center; gap: 7px; color: #4b5563; font-size: 12.5px; }
+.shsched-pop-row i { color: #9ca3af; width: 14px; text-align: center; flex: 0 0 auto; }
+.shsched-pop-row span { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.shsched-pop-note {
+    font-size: 12px;
+    color: #374151;
+    background: #f7f8fa;
+    border-radius: 7px;
+    padding: 7px 9px;
+    margin-bottom: 9px;
+    word-break: break-word;
+}
+.shsched-pop-assign { border-top: 1px solid #f0f2f5; padding-top: 8px; margin-bottom: 9px; }
+.shsched-pop-assign-label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #4b5563; margin-bottom: 6px; }
+.shsched-pop-assign-label i { color: #9ca3af; }
+.shsched-pop-assign-avs { display: flex; flex-wrap: wrap; gap: 6px; max-height: 104px; overflow-y: auto; }
+.shsched-pop-asg-av {
+    --ahue: 210;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    background: hsl(var(--ahue), 52%, 52%);
+    opacity: .55;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    white-space: nowrap;
+    transition: opacity .12s, transform .1s, border-color .12s;
+}
+.shsched-pop-asg-av:hover { opacity: 1; transform: scale(1.08); }
+.shsched-pop-asg-av.current { opacity: 1; border-color: #1f2937; }
+.shsched-pop-actions { display: flex; align-items: center; gap: 6px; }
+.shsched-pop-btn {
+    border: 1px solid #d8dce3;
+    background: #fff;
+    border-radius: 8px;
+    padding: 5px 10px;
+    cursor: pointer;
+    line-height: 1;
+    color: #374151;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    transition: background .12s, border-color .12s, color .12s;
+}
+.shsched-pop-edit { flex: 1 1 auto; }
+.shsched-pop-edit:hover { color: #2563eb; border-color: #cdddff; background: #eef4ff; }
+.shsched-pop-delete { flex: 0 0 auto; margin-left: auto; color: #b91c1c; border-color: #fecaca; background: #fef2f2; }
+.shsched-pop-delete:hover { background: #fee2e2; }

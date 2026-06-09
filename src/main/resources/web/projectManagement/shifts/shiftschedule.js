@@ -57,6 +57,138 @@ function shiftSchedule() {
         element.grid.style.gridTemplateColumns = w + "px repeat(" + n + ", minmax(0, 1fr))";
     }
 
+    // ---- click popup (shift quick actions, mirroring the kanban / activity-calendar popup) ----
+    // One popup, reused for every shift card and appended to <body> so it isn't clipped by the
+    // scroll container or its sticky cells. Clicking a shift opens it; it previews the shift and
+    // exposes the working actions — reassign (avatar picker), Edit and Delete. It stays open until
+    // the user clicks outside it, scrolls the grid, drags a card, or runs an action.
+    function shHidePopup(st) { st.pop.style.display = "none"; st.popShift = null; }
+
+    function shPopFormatDate(v, locale) {
+        try { return parseKey(dateKey(v)).toLocaleDateString(locale || undefined, { weekday: "short", day: "numeric", month: "long", year: "numeric" }); }
+        catch (e) { return dateKey(v); }
+    }
+
+    function shPopButton(cls, icon, label, title, onClick) {
+        let b = document.createElement("button");
+        b.type = "button";
+        b.className = "shsched-pop-btn " + cls;
+        if (title) b.title = title;
+        let i = document.createElement("i");
+        i.className = icon;
+        b.appendChild(i);
+        if (label) { let s = document.createElement("span"); s.textContent = label; b.appendChild(s); }
+        b.addEventListener("click", onClick);
+        return b;
+    }
+
+    function shShowPopup(st, shift, anchor, employees, i18n, locale) {
+        const pop = st.pop;
+        pop.innerHTML = "";
+
+        // time interval — the headline
+        let head = document.createElement("div");
+        head.className = "shsched-pop-time";
+        let hicon = document.createElement("i");
+        hicon.className = "bi bi-clock";
+        head.appendChild(hicon);
+        let htext = document.createElement("span");
+        htext.textContent = shift.intervalS || "";
+        head.appendChild(htext);
+        pop.appendChild(head);
+
+        // meta: date + project
+        let meta = document.createElement("div");
+        meta.className = "shsched-pop-meta";
+        const metaRow = (icon, text) => {
+            if (!text) return;
+            let row = document.createElement("div");
+            row.className = "shsched-pop-row";
+            let ic = document.createElement("i");
+            ic.className = icon;
+            row.appendChild(ic);
+            let sp = document.createElement("span");
+            sp.textContent = text;
+            row.appendChild(sp);
+            meta.appendChild(row);
+        };
+        if (shift.date) metaRow("bi bi-calendar-event", shPopFormatDate(shift.date, locale));
+        metaRow("bi bi-briefcase", shift.nameProject);
+        if (meta.childElementCount) pop.appendChild(meta);
+
+        // note
+        if (shift.note) {
+            let note = document.createElement("div");
+            note.className = "shsched-pop-note";
+            note.textContent = shift.note;
+            pop.appendChild(note);
+        }
+
+        // assignee picker — reassign the shift straight from the card
+        const currentName = shift.nameAssignedTo || null;        // for the label
+        const currentId = shift.assignedTo;                      // employee id — for the highlight
+        if (employees && employees.length) {
+            let asg = document.createElement("div");
+            asg.className = "shsched-pop-assign";
+            let lab = document.createElement("div");
+            lab.className = "shsched-pop-assign-label";
+            let li = document.createElement("i");
+            li.className = "bi bi-person";
+            lab.appendChild(li);
+            let who = document.createElement("span");
+            who.textContent = currentName || (i18n && i18n.unassigned) || "Unassigned";
+            lab.appendChild(who);
+            asg.appendChild(lab);
+            let avs = document.createElement("div");
+            avs.className = "shsched-pop-assign-avs";
+            for (const emp of employees) {
+                let ab = document.createElement("button");
+                ab.type = "button";
+                ab.className = "shsched-pop-asg-av" + (currentId != null && String(emp.id) === String(currentId) ? " current" : "");
+                ab.textContent = initialsOf(emp.name);
+                ab.title = emp.name;
+                ab.style.setProperty("--ahue", hueOf(emp.name));
+                ab.addEventListener("click", function () {
+                    st.controller.changeProperty("assignedTo", shift, emp.id);
+                    shHidePopup(st);
+                });
+                avs.appendChild(ab);
+            }
+            asg.appendChild(avs);
+            pop.appendChild(asg);
+        }
+
+        // actions: Edit + Delete
+        let actions = document.createElement("div");
+        actions.className = "shsched-pop-actions";
+        let editLabel = (i18n && i18n.edit) || "Edit";
+        let deleteLabel = (i18n && i18n.delete) || "Delete";
+        actions.appendChild(shPopButton("shsched-pop-edit", "bi bi-pencil", editLabel, editLabel, function () {
+            shHidePopup(st);
+            st.controller.changeProperty("edit", shift);
+        }));
+        actions.appendChild(shPopButton("shsched-pop-delete", "bi bi-trash", "", deleteLabel, function () {
+            shHidePopup(st);
+            st.controller.changeProperty("delete", shift);
+        }));
+        pop.appendChild(actions);
+
+        // position next to the card (fixed → not clipped), flip to the left / clamp to stay on-screen
+        pop.style.display = "block";
+        const ar = anchor.getBoundingClientRect();
+        const pw = pop.offsetWidth, ph = pop.offsetHeight;
+        const vw = window.innerWidth, vh = window.innerHeight;
+        let left = ar.right + 8;
+        if (left + pw > vw - 6) left = ar.left - pw - 8;
+        if (left < 6) left = Math.max(6, (vw - pw) / 2);
+        let top = ar.top - 2;
+        if (top + ph > vh - 6) top = Math.max(6, vh - ph - 6);
+        if (top < 6) top = 6;
+        pop.style.left = Math.round(left) + "px";
+        pop.style.top = Math.round(top) + "px";
+        st.popShift = shift;
+    }
+
     return {
         render: function (element, controller) {
             let root = document.createElement("div");
@@ -85,6 +217,28 @@ function shiftSchedule() {
             element.shEmpWidth = loadEmpWidth();
 
             element.appendChild(root);
+
+            // click popup, reused for every shift card. On <body> so it escapes the scroll
+            // container / sticky-cell stacking. Opened by clicking a shift; closed by an outside
+            // click, a grid scroll, a drag, or an action.
+            if (element.shPop && element.shPop.pop && element.shPop.pop.parentNode)
+                element.shPop.pop.parentNode.removeChild(element.shPop.pop); // guard a re-render
+            if (element.shDocClick) document.removeEventListener("click", element.shDocClick); // drop the old listener too
+            let pop = document.createElement("div");
+            pop.className = "shsched-pop";
+            pop.style.display = "none";
+            document.body.appendChild(pop);
+            const st = { pop: pop, popShift: null, controller: controller };
+            const onDocClick = function (e) {
+                if (st.pop.style.display === "none") return;
+                if (st.pop.contains(e.target)) return;
+                if (e.target.closest && e.target.closest(".shsched-shift")) return; // its handler reopens
+                shHidePopup(st);
+            };
+            document.addEventListener("click", onDocClick);
+            element.shDocClick = onDocClick;
+            scroll.addEventListener("scroll", function () { shHidePopup(st); }, true);
+            element.shPop = st;
         },
 
         update: function (element, controller, list, options) {
@@ -93,6 +247,13 @@ function shiftSchedule() {
             const txt = (key, fallback) => (t[key] != null ? t[key] : fallback);
 
             const grid = element.grid;
+
+            // popup state: keep the controller current and dismiss any open popup before the rebuild;
+            // the picker lists the real employees (the grid's "Unassigned" pseudo-row is excluded)
+            const st = element.shPop;
+            st.controller = controller;
+            shHidePopup(st);
+            const popEmployees = (options && options.employees) || [];
 
             // if a column resize is somehow still in progress, end it before we rebuild the grid
             if (element.endResize) element.endResize();
@@ -298,12 +459,18 @@ function shiftSchedule() {
 
                         card.addEventListener("click", function () {
                             controller.changeObject(shift, true, card);
+                            shShowPopup(st, shift, card, popEmployees, t, locale);
+                        });
+                        card.addEventListener("dblclick", function () {
+                            shHidePopup(st);
+                            controller.changeProperty("edit", shift);
                         });
                         card.setAttribute("draggable", "true");
                         card.addEventListener("dragstart", function (e) {
                             e.dataTransfer.effectAllowed = "move";
                             shiftDrag = { type: "shift", shift: shift };
                             card.classList.add("dragging");
+                            shHidePopup(st);
                         });
                         card.addEventListener("dragend", function () {
                             card.classList.remove("dragging");
@@ -351,6 +518,12 @@ function shiftSchedule() {
             if (element.endResize) element.endResize();
             if (element.grid) while (element.grid.firstChild) element.grid.removeChild(element.grid.firstChild);
             if (element.palette) while (element.palette.firstChild) element.palette.removeChild(element.palette.firstChild);
+            if (element.shDocClick) document.removeEventListener("click", element.shDocClick);
+            if (element.shPop) {
+                shHidePopup(element.shPop);
+                let p = element.shPop.pop;
+                if (p && p.parentNode) p.parentNode.removeChild(p); // the popup lives on <body>
+            }
         }
     };
 }
