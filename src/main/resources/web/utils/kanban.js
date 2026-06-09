@@ -139,6 +139,8 @@ function kanbanSanitizeHtml(html) {
 //   assignProp,     // popup only: form-property alias for in-card reassignment —
 //                   //   changeProperty(alias, item, employeeId); needs OPTIONS.employees [{id,name}]
 //                   //   plus an ON CHANGE (INPUT LONG) handler on that property
+//   hours(item)    -> number|null,        // popup only: total logged hours, shown in the time row
+//   logTimeProp,    // popup only: action alias invoked (changeProperty) by the time row's + button
 // }
 function kanban(config) {
     const key = config.key;
@@ -292,6 +294,37 @@ function kanban(config) {
             name.textContent = assignee;
             row.appendChild(name);
             pop.appendChild(row);
+        }
+
+        // logged hours + a quick "log time" button (tasks): shows the running total and opens the
+        // time-entry form (newTimeEntry) without leaving the board
+        let hours = config.hours ? config.hours(item) : null;
+        if (config.logTimeProp || (hours != null && hours !== "")) {
+            let timeRow = document.createElement("div");
+            timeRow.className = "kanban-pop-time";
+            let ticon = document.createElement("i");
+            ticon.className = "bi bi-clock-history";
+            timeRow.appendChild(ticon);
+            let tlabel = document.createElement("span");
+            tlabel.className = "kanban-pop-time-label";
+            tlabel.textContent = ((i18n && i18n.hours) || "Hours") + ": "
+                + (hours != null && hours !== "" ? kanbanFormatAmount(hours, locale) : "0");
+            timeRow.appendChild(tlabel);
+            if (config.logTimeProp) {
+                let logBtn = document.createElement("button");
+                logBtn.type = "button";
+                logBtn.className = "kanban-pop-time-add";
+                logBtn.title = (i18n && i18n.logTime) || "Time entry";
+                let pi = document.createElement("i");
+                pi.className = "bi bi-plus-lg";
+                logBtn.appendChild(pi);
+                logBtn.addEventListener("click", function () {
+                    hidePopup(st);
+                    st.controller.changeProperty(config.logTimeProp, item);
+                });
+                timeRow.appendChild(logBtn);
+            }
+            pop.appendChild(timeRow);
         }
 
         // tags
