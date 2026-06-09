@@ -1,0 +1,22 @@
+MODULE TaskKanbanTimeEntry;
+
+REQUIRE TaskKanban, TaskTimeEntry;
+
+PRIORITY MasterData;
+
+NAMESPACE ProjectManagement;
+
+// Log time straight from a task card on the kanban. The total logged hours feed the card popup
+// (hoursTimeEntry, a plain data value in the board's JSON), and the "time entry" action is invoked
+// from a button in that popup via changeProperty. Both are kept OFF the board layout — the popup is
+// the only UI — exactly like the popup's edit/delete actions, so nothing renders on the board itself.
+// (`newTimeEntry` is aliased to `logTime` because the tasks form already carries `newTimeEntry` for
+// its standard list object `t`; the alias keeps REMOVE PROPERTY / changeProperty unambiguous.)
+EXTEND FORM tasks
+    PROPERTIES(tt) hoursTimeEntry,
+                   logTime = newTimeEntry
+;
+
+DESIGN tasks {
+    REMOVE PROPERTY(logTime);
+}
