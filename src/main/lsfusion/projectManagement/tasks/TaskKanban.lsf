@@ -8,7 +8,10 @@ NAMESPACE ProjectManagement;
 
 taskStatuses () = JSON FROM id = TaskStatus s, name(s) WHERE s IS TaskStatus AND NOT closed(s) AND (allow(taskType(), s) OR NOT taskType())
                                ORDER sortingOrder(s), s;
-taskEmployees () = JSON FROM id = Employee e, name(e) WHERE name(e);
+// the popup's assignee picker only offers employees with an open assignment (assigned to an open
+// task; Employee IS-A Assignee), mirroring the activity calendar's countOpenAssignedActivity filter
+countOpenAssignedTask (Employee e) = GROUP SUM 1 IF assignedTo(Task t, e) AND opened(t);
+taskEmployees () = JSON FROM id = Employee e, name(e) WHERE name(e) AND countOpenAssignedTask(e);
 
 jsonTags (Task t) = JSON FROM name(TaskTag tg), idColor(tg) WHERE in(t, tg);
 
@@ -31,23 +34,17 @@ createTaskStatus() {
 
 EXTEND FORM tasks
     OBJECTS tt = Task CUSTOM 'taskKanban'
-            OPTIONS JSON FROM employees = taskEmployees(), statuses = taskStatuses(), locale = language(currentUser())
+            OPTIONS JSON FROM employees = taskEmployees(), statuses = taskStatuses(), locale = language(currentUser()), i18n = Utils.kanbanI18n()
     PROPERTIES(tt) nameProject,
                    name = idName,
                    tags = jsonTags,
                    nameAuthor,
                    start, textStartDuration,
                    deadline, textDeadlineDuration,
-                   status ON CHANGE {
-                       INPUT l = LONG DO
-                           FOR LONG(TaskStatus ts AS TaskStatus) = l DO
-                               status(tt) <- ts;
-                           ELSE
-                               status(tt) <- NULL;
-                   },
+                   nameStatus, status APPLY,
                    nameType,
-                   idColorPriority,
-                   nameAssignedTo,
+                   idColorPriority, namePriority, description,
+                   nameAssignedTo, assignedTo APPLY,
                    currentOrder ON CHANGE {
                        INPUT ord = INTEGER DO order(currentUser(), tt) <- ord;
                    }
@@ -59,9 +56,9 @@ EXTEND FORM tasks
     
     PROPERTIES() createTaskStatus
 
-    PROPERTIES(tt) PANEL pnameProject = nameProject, pnameStatus = nameStatus, pname = name, pnameType = nameType, pnamePriority = namePriority, ptags = tags, 
-                         pnameAssignedTo = nameAssignedTo, pdeadline = deadline, pdescription = description,
-                         edit = EDIT NEWSESSION, delete = DELETE
+    // edit/delete stay on the form so the kanban hover popup can invoke them (changeProperty),
+    // but are hidden from the panel — the popup is the only edit/delete affordance now
+    PROPERTIES(tt) PANEL edit = EDIT NEWSESSION, delete = DELETE
 ;
 
 DESIGN tasks {
@@ -72,27 +69,10 @@ DESIGN tasks {
             MOVE GRID(tt) {
                 size = (300, 200);
                 fill = 1;
-                MOVE PROPERTY(pnameProject) { alignment = STRETCH; }
-                MOVE PROPERTY(pnameStatus) { alignment = STRETCH; }
-                MOVE PROPERTY(pname) { alignment = STRETCH; }
-                MOVE PROPERTY(pnameType) { alignment = STRETCH; }
-                MOVE PROPERTY(pnamePriority) { alignment = STRETCH; }
-                MOVE PROPERTY(ptags) { alignment = STRETCH; }
-                MOVE PROPERTY(pnameAssignedTo) { alignment = STRETCH; }
-                MOVE PROPERTY(pdeadline) { alignment = STRETCH; }
-                MOVE PROPERTY(pdescription) {
-                    size = (300, 120);
-                    captionVertical = TRUE; 
-                    alignment = STRETCH; 
-                }
-                NEW panelActions {
-                    horizontal = TRUE;
-                    MOVE PROPERTY(edit) { fill = 1; }
-                    MOVE PROPERTY(delete) { fill = 1; }
-                    alignment = STRETCH;
-                }
             }
             REMOVE PROPERTY(createTaskStatus());
+            REMOVE PROPERTY(edit);
+            REMOVE PROPERTY(delete);
             REMOVE BOX(tt);
         }
     }

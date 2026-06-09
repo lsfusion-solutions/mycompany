@@ -6,8 +6,12 @@ function taskKanban() {
         header: function (t) { return kanbanHeader(t.nameType, t.nameProject); },
         subtitle: function (t) { return t.nameAuthor; },
         text: function (t) { return t.name; },
+        status: function (t) { return t.nameStatus; },
+        priority: function (t) { return t.namePriority; },
+        assignProp: "assignedTo",
         created: function (t) { return { date: t.start, text: t.textStartDuration }; },
         assignee: function (t) { return t.nameAssignedTo; },
-        due: function (t) { return { date: t.deadline, text: t.textDeadlineDuration }; }
+        due: function (t) { return { date: t.deadline, text: t.textDeadlineDuration }; },
+        description: function (t) { return t.description; }
     });
 }

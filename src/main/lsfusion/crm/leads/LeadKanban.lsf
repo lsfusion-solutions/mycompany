@@ -8,7 +8,10 @@ NAMESPACE CRM;
 
 leadStatuses () = JSON FROM id = LeadStatus s, name(s) WHERE s IS LeadStatus AND NOT closed(s) AND (allow(leadType(), s) OR NOT leadType())
                                ORDER sortingOrder(s), s;
-leadEmployees () = JSON FROM id = Employee e, name(e) WHERE name(e);
+// the popup's assignee picker only offers employees with an open assignment (sales person on an
+// open lead), mirroring the activity calendar's countOpenAssignedActivity filter
+countOpenAssignedLead (Employee e) = GROUP SUM 1 IF salesPerson(Lead l) = e AND opened(l);
+leadEmployees () = JSON FROM id = Employee e, name(e) WHERE name(e) AND countOpenAssignedLead(e);
 
 jsonTags (Lead l) = JSON FROM name(LeadTag tg), idColor(tg) WHERE in(l, tg);
 
@@ -30,24 +33,18 @@ createLeadStatus() {
 
 EXTEND FORM leads
     OBJECTS ll = Lead CUSTOM 'leadKanban'
-    OPTIONS JSON FROM employees = leadEmployees(), statuses = leadStatuses(), locale = language(currentUser())
+    OPTIONS JSON FROM employees = leadEmployees(), statuses = leadStatuses(), locale = language(currentUser()), i18n = Utils.kanbanI18n()
     PROPERTIES(ll) name = idName,
                    tags = jsonTags,
                    nameType,
                    nameCustomer,
                    date, textDateDuration,
                    expectedRevenue,
-                   namePriority,
+                   namePriority, description,
                    expectedClosing, textExpectedClosingDuration,
-                   status ON CHANGE {
-                       INPUT ln = LONG DO
-                           FOR LONG(LeadStatus ts AS LeadStatus) = ln DO
-                               status(ll) <- ts;
-                           ELSE
-                               status(ll) <- NULL;
-                   },
+                   nameStatus, status APPLY,
                    idColorPriority,
-                   nameSalesPerson,
+                   nameSalesPerson, salesPerson APPLY,
                    currentOrder ON CHANGE {
                        INPUT ord = INTEGER DO order(currentUser(), ll) <- ord;
                    }
@@ -59,11 +56,9 @@ EXTEND FORM leads
 
     PROPERTIES() createLeadStatus
 
-    PROPERTIES(ll) PANEL pname = name, pnameStatus = nameStatus, pnameType = nameType, 
-                         pnameCustomer = nameCustomer, pexpectedRevenue = expectedRevenue, 
-                         pnamePriority = namePriority, ptags = tags,
-                         pnameSalesPerson = nameSalesPerson, pexpectedClosing = expectedClosing, pdescription = description,
-                         edit = EDIT NEWSESSION, delete = DELETE
+    // edit/delete stay on the form so the kanban hover popup can invoke them (changeProperty),
+    // but are hidden from the panel — the popup is the only edit/delete affordance now
+    PROPERTIES(ll) PANEL edit = EDIT NEWSESSION, delete = DELETE
 ;
 
 DESIGN leads {
@@ -73,28 +68,10 @@ DESIGN leads {
             MOVE GRID(ll) {
                 size = (400, 200);
                 fill = 1;
-                MOVE PROPERTY(pnameStatus) { alignment = STRETCH; }
-                MOVE PROPERTY(pname) { alignment = STRETCH; }
-                MOVE PROPERTY(pnameType) { alignment = STRETCH; }
-                MOVE PROPERTY(pnameCustomer) { alignment = STRETCH; }
-                MOVE PROPERTY(pexpectedRevenue) { alignment = STRETCH; }
-                MOVE PROPERTY(pnamePriority) { alignment = STRETCH; }
-                MOVE PROPERTY(ptags) { alignment = STRETCH; }
-                MOVE PROPERTY(pnameSalesPerson) { alignment = STRETCH; }
-                MOVE PROPERTY(pexpectedClosing) { alignment = STRETCH; }
-                MOVE PROPERTY(pdescription) {
-                    size = (300, 120);
-                    captionVertical = TRUE;
-                    alignment = STRETCH;
-                }
-                NEW panelActions {
-                    horizontal = TRUE;
-                    MOVE PROPERTY(edit) { fill = 1; }
-                    MOVE PROPERTY(delete) { fill = 1; }
-                    alignment = STRETCH;
-                }
             }
             REMOVE PROPERTY(createLeadStatus());
+            REMOVE PROPERTY(edit);
+            REMOVE PROPERTY(delete);
             REMOVE BOX(ll);
         }
     }

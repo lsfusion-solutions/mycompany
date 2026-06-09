@@ -273,6 +273,220 @@
 }
 .kanban-card.gu-transit { opacity: 0.3; }
 
+/* ---- hover popup (the "красивая форма-подсказка": a card preview with the only two actions,
+   Edit and Delete; double-clicking a card or the Edit button opens the edit form). Theme-aware via
+   --bs-* so it adapts to the light and dark themes, like the rest of the board. ---- */
+.kanban-pop {
+    position: fixed;
+    /* appended to <body>, so this z-index isn't trapped in a lower stacking context and sits above
+       the form's own panels/filters. Kept below lsFusion's blocking mask (10000); it's only a hover
+       preview and is always dismissed (hidePopup) before any edit/delete dialog opens anyway. */
+    z-index: 9000;
+    width: 19rem;
+    max-width: 92vw;
+    box-sizing: border-box;
+    padding: 0.7rem 0.8rem 0.75rem;
+    background-color: var(--bs-body-bg, #fff);
+    color: var(--bs-body-color, #1f2937);
+    border: 1px solid var(--bs-border-color, rgba(0, 0, 0, 0.15));
+    border-top: 3px solid var(--bs-primary, #2563eb);
+    border-radius: 0.6rem;
+    box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(0, 0, 0, 0.04);
+    font-size: 0.82rem;
+    line-height: 1.4;
+}
+.kanban-pop * { box-sizing: border-box; }
+/* In dark mode a drop shadow has almost no contrast and --bs-body-bg equals the page background,
+   so lift the popup onto the elevated surface and deepen the shadow (cf. .lsf-dropdown below). */
+[data-bs-theme="dark"] .kanban-pop {
+    background-color: var(--bs-secondary-bg);
+    box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.6);
+}
+.kanban-pop-type {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color, #64748b);
+    margin-bottom: 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.kanban-pop-subtitle {
+    font-size: 0.74rem;
+    color: var(--bs-secondary-color, #64748b);
+    margin-bottom: 0.15rem;
+}
+/* status + priority pills under the header */
+.kanban-pop-badges {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem;
+    margin-bottom: 0.35rem;
+}
+.kanban-pop-status {
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color, #64748b);
+    background-color: var(--bs-tertiary-bg, rgba(128, 128, 128, 0.18));
+    border-radius: 20px;
+    padding: 0.18rem 0.55rem;
+}
+.kanban-pop-prio.badge { font-weight: 600; }
+/* description (rich text) — quiet panel, scrolls if long */
+.kanban-pop-desc {
+    margin-top: 0.45rem;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: var(--bs-body-color);
+    background-color: var(--bs-tertiary-bg, rgba(128, 128, 128, 0.10));
+    border-radius: 0.4rem;
+    padding: 0.4rem 0.55rem;
+    max-height: 8rem;
+    overflow: auto;
+    word-break: break-word;
+}
+/* the .ql-editor class lsFusion ships sets its own padding; keep ours */
+.kanban-pop-desc.ql-editor { padding: 0.4rem 0.55rem; }
+.kanban-pop-desc p { margin: 0 0 0.25rem; }
+.kanban-pop-desc p:last-child { margin-bottom: 0; }
+.kanban-pop-desc ul, .kanban-pop-desc ol { margin: 0.25rem 0; padding-left: 1.1rem; }
+.kanban-pop-desc a { color: var(--bs-link-color, #0d6efd); }
+.kanban-pop-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.25;
+    margin-bottom: 0.25rem;
+    word-break: break-word;
+}
+.kanban-pop-amount {
+    font-size: 1rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 0.25rem;
+}
+.kanban-pop-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    margin: 0.3rem 0;
+}
+.kanban-pop-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--bs-secondary-color, #64748b);
+    font-size: 0.76rem;
+}
+.kanban-pop-row i { font-size: 0.8rem; opacity: 0.85; }
+.kanban-pop-row.overdue { color: var(--bs-danger); font-weight: 600; }
+.kanban-pop-row.overdue i { opacity: 1; }
+.kanban-pop-assignee {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.35rem;
+    font-size: 0.78rem;
+}
+.kanban-pop-assignee-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+/* assignee picker — reassign straight from the card (mirrors the activity calendar's picker) */
+.kanban-pop-assign {
+    margin-top: 0.45rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--bs-border-color);
+}
+.kanban-pop-assign-label {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color, #64748b);
+    margin-bottom: 0.4rem;
+}
+.kanban-pop-assign-label i { opacity: 0.85; }
+.kanban-pop-assign-avs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    max-height: 6.5rem;
+    overflow-y: auto;
+}
+.kanban-pop-asg-av {
+    --ahue: 210;
+    flex: 0 0 auto;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    background: hsl(var(--ahue), 52%, 52%);
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 700;
+    line-height: 1;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    cursor: pointer;
+    opacity: 0.55;
+    transition: opacity 0.12s, transform 0.1s, border-color 0.12s;
+}
+.kanban-pop-asg-av:hover { opacity: 1; transform: scale(1.08); }
+.kanban-pop-asg-av.current { opacity: 1; border-color: var(--bs-body-color); }
+.kanban-pop-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-top: 0.4rem;
+}
+.kanban-pop-tags .kanban-card-tag.badge { font-weight: 600; }
+.kanban-pop-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.6rem;
+    padding-top: 0.55rem;
+    border-top: 1px solid var(--bs-border-color);
+}
+.kanban-pop-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    border: 1px solid var(--bs-border-color);
+    background-color: transparent;
+    color: var(--bs-body-color);
+    border-radius: 0.4rem;
+    padding: 0.32rem 0.7rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: background-color 0.12s, border-color 0.12s, color 0.12s;
+}
+.kanban-pop-edit { flex: 1 1 auto; }
+.kanban-pop-edit:hover {
+    color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    background-color: rgba(var(--bs-primary-rgb, 13, 110, 253), 0.10);
+}
+.kanban-pop-delete { flex: 0 0 auto; margin-left: auto; }
+.kanban-pop-delete:hover {
+    color: var(--bs-danger);
+    border-color: var(--bs-danger);
+    background-color: rgba(var(--bs-danger-rgb, 220, 53, 69), 0.10);
+}
+
 /* ---- object-selector dropdown popup ----
    The Author / Assigned-to filter selectors render their floating option list detached on
    <body>, matched here by lsFusion's own .lsf-dropdown class and given a solid, theme-aware,
