@@ -26,14 +26,17 @@ shiftTemplates () = JSON FROM id = ShiftTemplate e, intervalS(e) WHERE e IS Shif
 
 createShift() {
     INPUT f = JSON DO {
-        IMPORT JSON FROM f FIELDS() LONG templateId, STRING date, LONG employeeId DO {
-            NEW ss = Shift {
-                FOR LONG(Employee e AS Employee) = employeeId DO assignedTo(ss) <- e;
-                FOR LONG(ShiftTemplate t AS ShiftTemplate) = templateId DO {
-                    interval(ss) <- interval(t);
+        NEWSESSION {
+            IMPORT JSON FROM f FIELDS() LONG templateId, STRING date, LONG employeeId DO {
+                NEW ss = Shift {
+                    FOR LONG(Employee e AS Employee) = employeeId DO assignedTo(ss) <- e;
+                    FOR LONG(ShiftTemplate t AS ShiftTemplate) = templateId DO {
+                        interval(ss) <- interval(t);
+                    }
+                    date(ss) <- toDateFormat(date, 'YYYY-MM-DD');
                 }
-                date(ss) <- toDateFormat(date, 'YYYY-MM-DD');
             }
+            APPLY;
         }
     }
 }
@@ -59,16 +62,10 @@ EXTEND FORM shifts
     OBJECTS ss = Shift CUSTOM 'shiftSchedule'
                             HEADER JSON FROM from(dates), to(dates), employees = shiftEmployees(), templates = shiftTemplates(),
                                             i18n = shiftI18n(), locale = language(currentUser())
-    PROPERTIES(ss) date,
-                  intervalS,
-                  nameAssignedTo, nameProject, note,
-                  assignedTo ON CHANGE {
-                      INPUT l = LONG DO
-                        FOR LONG(Employee e AS Employee) = l DO
-                            assignedTo(ss) <- e;
-                        ELSE
-                            assignedTo(ss) <- NULL;
-                  }
+    PROPERTIES(ss) date APPLY,
+                   intervalS,
+                   nameAssignedTo, assignedTo APPLY,    
+                   nameProject, note
 
     ORDERS date(ss), assignedTo(ss)
     FILTERS date(ss) >= from(dates),
