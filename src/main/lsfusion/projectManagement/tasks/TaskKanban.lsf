@@ -18,16 +18,13 @@ jsonTags (Task t) = JSON FROM name(TaskTag tg), idColor(tg) WHERE in(t, tg);
 order = DATA LONG (CustomUser, Task);
 currentOrder (Task t) =  order(currentUser(), t);
 
-createTaskStatus() {
-    INPUT id = LONG DO {
-        NEWSESSION {
-            NEW tt = Task {
-                FOR LONG(TaskStatus s AS TaskStatus) = id DO
-                    status(tt) <- s;
-                order(currentUser(), tt) <- -LONG(tt);
-                onCreate(tt);
-                SHOW task OBJECTS t = tt DOCKED;
-            }
+createTaskStatus (TaskStatus s) {
+    NEWSESSION {
+        NEW tt = Task {
+            status(tt) <- s;
+            order(currentUser(), tt) <- -LONG(tt);
+            onCreate(tt);
+            SHOW task OBJECTS t = tt DOCKED;
         }
     }
 }
@@ -54,11 +51,12 @@ EXTEND FORM tasks
 
     FILTERS [FILTER tasks.t](tt)
     
-    PROPERTIES() createTaskStatus
-
     // edit/delete stay on the form so the kanban hover popup can invoke them (changeProperty),
     // but are hidden from the panel — the popup is the only edit/delete affordance now
     PROPERTIES(tt) PANEL edit = EDIT NEWSESSION, delete = DELETE
+
+    // createTaskStatus is invoked from kanban.js via controller.form.exec; exposed through the form API
+    API createTaskStatus[TaskStatus]
 ;
 
 DESIGN tasks {
@@ -70,7 +68,6 @@ DESIGN tasks {
                 size = (300, 200);
                 fill = 1;
             }
-            REMOVE PROPERTY(createTaskStatus());
             REMOVE PROPERTY(edit);
             REMOVE PROPERTY(delete);
             REMOVE BOX(tt);

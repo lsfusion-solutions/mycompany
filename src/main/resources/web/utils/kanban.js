@@ -486,7 +486,7 @@ function kanban(config) {
                 statusNew.innerHTML = "<i class=\"bi bi-plus\"></i>";
                 statusHeader.appendChild(statusNew);
                 statusNew.addEventListener("click", function () {
-                    controller.changeProperty(config.createStatus, null, status.id);
+                    controller.form.exec(config.createStatus, status.id);
                 });
 
                 let statusBody = document.createElement("div");

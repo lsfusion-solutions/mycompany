@@ -18,15 +18,12 @@ jsonTags (Lead l) = JSON FROM name(LeadTag tg), idColor(tg) WHERE in(l, tg);
 order = DATA LONG (CustomUser, Lead);
 currentOrder (Lead l) =  order(currentUser(), l);
 
-createLeadStatus() {
-    INPUT id = LONG DO {
-        NEWSESSION {
-            NEW ll = Lead {
-                FOR LONG(LeadStatus s AS LeadStatus) = id DO
-                    status(ll) <- s;
-                order(currentUser(), ll) <- -LONG(ll);
-                SHOW lead OBJECTS l = ll DOCKED;
-            }
+createLeadStatus (LeadStatus s) {
+    NEWSESSION {
+        NEW ll = Lead {
+            status(ll) <- s;
+            order(currentUser(), ll) <- -LONG(ll);
+            SHOW lead OBJECTS l = ll DOCKED;
         }
     }
 }
@@ -54,11 +51,12 @@ EXTEND FORM leads
 
     FILTERS [FILTER leads.l](ll)
 
-    PROPERTIES() createLeadStatus
-
     // edit/delete stay on the form so the kanban hover popup can invoke them (changeProperty),
     // but are hidden from the panel — the popup is the only edit/delete affordance now
     PROPERTIES(ll) PANEL edit = EDIT NEWSESSION, delete = DELETE
+
+    // createLeadStatus is invoked from kanban.js via controller.form.exec; exposed through the form API
+    API createLeadStatus[LeadStatus]
 ;
 
 DESIGN leads {
@@ -69,7 +67,6 @@ DESIGN leads {
                 size = (400, 200);
                 fill = 1;
             }
-            REMOVE PROPERTY(createLeadStatus());
             REMOVE PROPERTY(edit);
             REMOVE PROPERTY(delete);
             REMOVE BOX(ll);

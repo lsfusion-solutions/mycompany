@@ -497,11 +497,7 @@ function shiftSchedule() {
                             controller.changeProperty("assignedTo", shiftDrag.shift, empId);
                             controller.changeProperty("date", shiftDrag.shift, parseKey(dk));
                         } else if (shiftDrag && shiftDrag.type === "template") {
-                            controller.changeProperty("createShift", null, {
-                                templateId: shiftDrag.template.id,
-                                date: dk,
-                                employeeId: empId
-                            });
+                            controller.form.exec("createShift", shiftDrag.template.id, dk, empId);
                         }
                         shiftDrag = null;
                         return false;

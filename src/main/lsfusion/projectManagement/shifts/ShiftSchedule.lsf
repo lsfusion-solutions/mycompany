@@ -24,20 +24,14 @@ DESIGN options {
 
 shiftTemplates () = JSON FROM id = ShiftTemplate e, intervalS(e) WHERE e IS ShiftTemplate;
 
-createShift() {
-    INPUT f = JSON DO {
-        NEWSESSION {
-            IMPORT JSON FROM f FIELDS() LONG templateId, STRING date, LONG employeeId DO {
-                NEW ss = Shift {
-                    FOR LONG(Employee e AS Employee) = employeeId DO assignedTo(ss) <- e;
-                    FOR LONG(ShiftTemplate t AS ShiftTemplate) = templateId DO {
-                        interval(ss) <- interval(t);
-                    }
-                    date(ss) <- toDateFormat(date, 'YYYY-MM-DD');
-                }
-            }
-            APPLY;
+createShift (ShiftTemplate t, STRING date, Employee e) {
+    NEWSESSION {
+        NEW ss = Shift {
+            assignedTo(ss) <- e;
+            interval(ss) <- interval(t);
+            date(ss) <- toDateFormat(date, 'YYYY-MM-DD');
         }
+        APPLY;
     }
 }
 
@@ -73,11 +67,12 @@ EXTEND FORM shifts
 
     FILTERS [FILTER shifts.s](ss)
 
-    PROPERTIES() createShift
-    
     // edit/delete stay on the form so the click popup can invoke them (changeProperty), but are
     // hidden from the panel — the popup is the only edit/delete affordance now (like the kanban)
     PROPERTIES(ss) PANEL edit = EDIT, delete = DELETE
+
+    // createShift is invoked from shiftschedule.js via controller.form.exec; exposed through the form API
+    API createShift[ShiftTemplate, STRING, Employee]
 ;
 
 DESIGN shifts {
@@ -87,7 +82,6 @@ DESIGN shifts {
             MOVE GRID(ss) {
                 height = 480;
             }
-            REMOVE PROPERTY(createShift());
             REMOVE PROPERTY(edit);
             REMOVE PROPERTY(delete);
             REMOVE BOX(ss);
