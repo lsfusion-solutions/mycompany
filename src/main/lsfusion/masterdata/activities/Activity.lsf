@@ -156,15 +156,11 @@ activityI18n () = JSON FROM
     activitiesWord = 'activities',
     overdueWord = 'overdue';
 
-// create a new activity already dated to the clicked day - used by the
-// calendar's per-day "+" button (JS passes { dt: 'YYYY-MM-DD' })
-addActivityOnDate () {
-    INPUT d = DATE DO {
-        NEWSESSION {
-            NEW na = Activity {
-                dueDate(na) <- d;
-                DIALOG activity OBJECTS a = na FLOAT;
-            }
+addActivity (DATE d) {
+    NEWSESSION {
+        NEW na = Activity {
+            dueDate(na) <- d;
+            DIALOG activity OBJECTS a = na FLOAT;
         }
     }
 }
@@ -180,7 +176,9 @@ FORM activities 'Activities'
                            nameAssignedTo
     PROPERTIES(a) assignedTo APPLY
     PROPERTIES(a) PANEL setDone NEWSESSION APPLY, edit = EDIT NEWSESSION, delete = DELETE, editObject
-    PROPERTIES() addActivityOnDate
+
+    API
+        addActivity[DATE]
 
     LIST Activity OBJECT a
 ;
@@ -202,7 +200,6 @@ DESIGN activities {
     REMOVE PROPERTY(edit);
     REMOVE PROPERTY(delete);
     REMOVE PROPERTY(editObject(a));
-    REMOVE PROPERTY(addActivityOnDate());
 }
 
 NAVIGATOR {

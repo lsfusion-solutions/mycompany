@@ -452,7 +452,7 @@ function activityCalendar() {
         const a = btn('<i class="bi bi-plus-lg"></i>', 'acal-add', I18N.newActivity);
         a.classList.remove('acal-btn');
         // pass a JS Date to the DATE input of addActivityOnDate
-        a.addEventListener('click', (e) => { e.stopPropagation(); st.controller.changeProperty('addActivityOnDate', null, new Date(dt.getFullYear(), dt.getMonth(), dt.getDate())); });
+        a.addEventListener('click', (e) => { e.stopPropagation(); st.controller.form.exec('addActivity', new Date(dt.getFullYear(), dt.getMonth(), dt.getDate())); });
         return a;
     }
 
