@@ -25,6 +25,7 @@ name '{Name}' = DATA ISTRING (Activity);
 
 assignedTo 'Assigned to' = DATA Employee (Activity) INDEXED;
 nameAssignedTo 'Assigned to' (Activity a) = name(assignedTo(a));
+avatarBase64AssignedTo (Activity a) = avatarBase64(assignedTo(a));
 assignedTo (Activity a) <- currentUser() WHEN SET(a IS Activity);
 
 attends = DATA BOOLEAN (Activity, Partner);
@@ -130,7 +131,7 @@ setDone 'Done' (Activity act) {
 // employees fed to the calendar popup picker (OPTIONS) - anyone who has an OPEN
 // assignment on some activity, so you can reassign to any of them (not interval-limited)
 countOpenAssignedActivity (Employee e) = GROUP SUM 1 IF assignedTo(Activity a) = e AND opened(a);
-activityEmployees () = JSON FROM id = Employee e, name = MasterData.name(e) WHERE MasterData.name(e) AND countOpenAssignedActivity(e);
+activityEmployees () = JSON FROM id = Employee e, name = MasterData.name(e), avatar = avatarBase64(e) WHERE MasterData.name(e) AND countOpenAssignedActivity(e);
 
 // all UI text literals for the custom views are passed through OPTIONS (instead of being
 // frozen in the .js); plain English text relies on reverse translation to localize them
@@ -173,7 +174,7 @@ FORM activities 'Activities'
                            date = dueDate CHANGEABLE APPLY, time, till,
                            nameType, gname = name, nameObject, done, description,
                            tperiod = period, daysLeft, textDateDuration,
-                           nameAssignedTo
+                           nameAssignedTo, avatarAssignedTo = avatarBase64AssignedTo
     PROPERTIES(a) assignedTo APPLY
     PROPERTIES(a) PANEL setDone NEWSESSION APPLY, edit = EDIT NEWSESSION, delete = DELETE, editObject
 
@@ -220,7 +221,7 @@ META defineObjectActivity (obj, let, container, nameProp)
 
     EXTEND FORM obj
         OBJECTS act = Activity CUSTOM 'activities' OPTIONS JSON FROM i18n = activityI18n()
-        PROPERTIES(act) nameType, dueDate, textDateDuration, daysLeft, name, nameAssignedTo, description, done
+        PROPERTIES(act) nameType, dueDate, textDateDuration, daysLeft, name, nameAssignedTo, avatarBase64AssignedTo, description, done
         PROPERTIES setDone(act),
                    editAct = edit(act) ON CHANGE {
                         SHOW activity OBJECTS a = act FLOAT;

@@ -20,6 +20,29 @@ function comments() {
         return s.toUpperCase();
     }
 
+    // paint the author's base64 photo (server-provided) as the avatar background, sniffing the image
+    // format from the base64 magic prefix; returns false when there's no photo so we fall back to initials
+    function applyPhoto(el, b64, fallback) {
+        let url = b64 || null; // photoBase64 already provides a complete data: URL
+        el.classList.remove("has-photo");
+        el.style.backgroundImage = "";
+        el.style.backgroundColor = "";
+        el.__avUrl = url; // token: a stale onload from an earlier render must not paint over the current avatar
+        fallback();
+        if (!url) return;
+        let img = new Image();
+        img.onload = function () {
+            if (el.__avUrl !== url) return; // superseded by a newer render
+            el.textContent = "";
+            el.classList.add("has-photo");
+            el.style.backgroundImage = "url('" + url + "')";
+            el.style.backgroundSize = "cover";
+            el.style.backgroundPosition = "center";
+            el.style.backgroundColor = "transparent";
+        };
+        img.src = url; // on error the placeholder initials are kept
+    }
+
     // Allowlist sanitizer for the stored rich-text body (header + text + footer HTML). Renders the
     // Quill formatting while dropping scripts, event handlers, inline styles and unsafe URLs so
     // stored markup can't execute. Parsing happens in a detached <template> whose content is inert
@@ -102,8 +125,10 @@ function comments() {
 
                 let avatar = document.createElement("div");
                 avatar.className = "cmt-avatar";
-                avatar.style.setProperty("--ahue", hueOf(comment.nameUser));
-                avatar.textContent = initialsOf(comment.nameUser);
+                applyPhoto(avatar, comment.avatar, function () {
+                    avatar.style.setProperty("--ahue", hueOf(comment.nameUser));
+                    avatar.textContent = initialsOf(comment.nameUser);
+                });
                 item.appendChild(avatar);
 
                 let main = document.createElement("div");

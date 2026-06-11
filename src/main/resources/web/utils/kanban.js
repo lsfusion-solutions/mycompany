@@ -20,6 +20,39 @@ function kanbanInitialsOf(str) {
     return s.toUpperCase();
 }
 
+// the server (Employee.avatarBase64) sends a complete data: URL for the avatar, so just pass it through
+// (null when the person has no avatar). No client-side MIME guessing.
+function kanbanPhotoUrl(b64) {
+    return b64 || null;
+}
+
+// Render an avatar into `el`: draw the initials placeholder via fallback() immediately, then (if a
+// photo is given) preload it and paint it as the background only once it actually decodes. If the
+// image fails to load/decode, the initials drawn by fallback() simply remain — so a bad/corrupt data
+// URL never leaves a blank avatar. fallback() must set the initials text + --ahue hue.
+function kanbanRenderAvatar(el, b64, fallback) {
+    let url = kanbanPhotoUrl(b64);
+    // reset any prior photo state and stamp this call's token, so a stale onload from an earlier
+    // render (or a reused node) can never paint the wrong/old photo over the current avatar
+    el.classList.remove("has-photo");
+    el.style.backgroundImage = "";
+    el.style.backgroundColor = "";
+    el.__avUrl = url;
+    fallback();
+    if (!url) return;
+    let img = new Image();
+    img.onload = function () {
+        if (el.__avUrl !== url) return; // superseded by a newer render
+        el.textContent = "";
+        el.classList.add("has-photo");
+        el.style.backgroundImage = "url('" + url + "')";
+        el.style.backgroundSize = "cover";
+        el.style.backgroundPosition = "center";
+        el.style.backgroundColor = "transparent";
+    };
+    img.src = url; // on error the placeholder initials are kept
+}
+
 // localized short weekday (Mon-first) and full month names for the given locale, mirroring the
 // activity calendar so kanban dates read the same as in Activities
 function kanbanDateNames(locale) {
@@ -252,6 +285,10 @@ function kanban(config) {
         // you can reassign straight from the card (like activities); the label shows who's assigned
         // now and clicking an avatar reassigns. Otherwise just show the current assignee.
         let assignee = config.assignee ? config.assignee(item) : null;
+        // avatars are keyed by employee id (not display name) so duplicate names never show the wrong face
+        let asgId = config.assigneeId ? config.assigneeId(item) : null;
+        let popPhotoById = {};
+        (employees || []).forEach(function (e) { if (e && e.avatar && e.id != null) popPhotoById[String(e.id)] = e.avatar; });
         if (config.assignProp && employees && employees.length) {
             let asg = document.createElement("div");
             asg.className = "kanban-pop-assign";
@@ -269,10 +306,12 @@ function kanban(config) {
             for (const emp of employees) {
                 let ab = document.createElement("button");
                 ab.type = "button";
-                ab.className = "kanban-pop-asg-av" + (emp.name === assignee ? " current" : "");
-                ab.textContent = kanbanInitialsOf(emp.name);
+                ab.className = "kanban-pop-asg-av" + (String(emp.id) === String(asgId) ? " current" : "");
                 ab.title = emp.name;
-                ab.style.setProperty("--ahue", kanbanHueOf(emp.name));
+                kanbanRenderAvatar(ab, emp.avatar, function () {
+                    ab.textContent = kanbanInitialsOf(emp.name);
+                    ab.style.setProperty("--ahue", kanbanHueOf(emp.name));
+                });
                 ab.addEventListener("click", function () {
                     st.controller.changeProperty(config.assignProp, item, emp.id);
                     hidePopup(st);
@@ -286,8 +325,10 @@ function kanban(config) {
             row.className = "kanban-pop-assignee";
             let avatar = document.createElement("span");
             avatar.className = "kanban-card-avatar";
-            avatar.style.setProperty("--ahue", kanbanHueOf(assignee));
-            avatar.textContent = kanbanInitialsOf(assignee);
+            kanbanRenderAvatar(avatar, popPhotoById[String(asgId)], function () {
+                avatar.style.setProperty("--ahue", kanbanHueOf(assignee));
+                avatar.textContent = kanbanInitialsOf(assignee);
+            });
             row.appendChild(avatar);
             let name = document.createElement("span");
             name.className = "kanban-pop-assignee-name";
@@ -425,6 +466,13 @@ function kanban(config) {
             const locale = options && options.locale;
             const i18n = (options && options.i18n) || {};
             const employees = (options && options.employees) || [];
+            // photo lookup by employee id (not name — duplicate names must not show the wrong face),
+            // built once from the OPTIONS employee list so photos aren't duplicated onto every card.
+            // A board card is always an OPEN item assigned to its assignee, and taskEmployees()/
+            // leadEmployees() include exactly the employees with an open assignment, so every visible
+            // card's assignee is guaranteed to be present here (no missing-photo gap).
+            const avatarById = {};
+            employees.forEach(function (e) { if (e && e.avatar && e.id != null) avatarById[String(e.id)] = e.avatar; });
             const st = element.kanbanPop;
             st.controller = controller;
             // the cards this popup was anchored to are about to be torn down and rebuilt
@@ -628,8 +676,11 @@ function kanban(config) {
                     li.classList.add("list-group-item");
                     let avatar = document.createElement("span");
                     avatar.classList.add("kanban-card-avatar");
-                    avatar.style.setProperty("--ahue", kanbanHueOf(assignee));
-                    avatar.textContent = kanbanInitialsOf(assignee);
+                    let cardAsgId = config.assigneeId ? config.assigneeId(item) : null;
+                    kanbanRenderAvatar(avatar, avatarById[String(cardAsgId)], function () {
+                        avatar.style.setProperty("--ahue", kanbanHueOf(assignee));
+                        avatar.textContent = kanbanInitialsOf(assignee);
+                    });
                     li.appendChild(avatar);
                     let name = document.createElement("span");
                     name.classList.add("kanban-card-assigned-name");

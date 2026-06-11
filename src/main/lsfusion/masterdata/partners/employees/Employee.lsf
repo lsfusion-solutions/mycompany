@@ -1,6 +1,6 @@
 MODULE Employee;
 
-REQUIRE Individual, Company, Authentication, Security, ObjectUtils, FileUtils;
+REQUIRE Individual, Company, Authentication, Security, ObjectUtils, FileUtils, Image;
 
 NAMESPACE MasterData;
 
@@ -34,6 +34,17 @@ WHEN LOCAL SET(Employee e IS Employee) AND NOT CHANGED(legalEntity(e)) DO legalE
 
 photo = DATA IMAGEFILE (Employee);
 
+avatar = DATA IMAGEFILE (Employee);
+avatar (Employee e) += avatar(e);
+
+WHEN SETCHANGED(photo(Employee e)) AND NOT CHANGED(avatar(e)) DO {
+    TRY {
+        resizeImageMaxSize(photo(e), 64);
+        IF resizedImage() THEN
+            avatar(e) <- resizedImage();
+    }
+}
+
 // change password
 FORM changePassword '{authentication.change.password}'
     OBJECTS s '' = BPSTRING[30] PANEL
@@ -60,7 +71,7 @@ changePassword '{authentication.change.password}' (Employee e) {
 FORM employee 'Employee'
     OBJECTS e = Employee PANEL
     PROPERTIES(e) READONLYIF readonly(e)
-                 id, login, changePassword, photo, isLocked, archived, 
+                 id, login, changePassword, photo, avatar, isLocked, archived,
                  nameLegalEntity, nameDepartment, lastName, firstName, middleName, namePosition, email, phone, address, city, state,
                  zip, birthday
     
@@ -104,10 +115,21 @@ DESIGN employee {
                         caption = '{authentication.custom.user.login}';
                         MOVE PROPERTY(id(e));
                         MOVE PROPERTY(login(e));
-                        MOVE PROPERTY(isLocked(e));
-                        MOVE PROPERTY(archived(e));
+                        NEW loginRow {
+                            horizontal = TRUE;
+                            alignment = STRETCH;
+                            NEW loginFields {
+                                fill = 1;
+                                MOVE PROPERTY(isLocked(e));
+                                MOVE PROPERTY(archived(e));
+                            }
+                            MOVE PROPERTY(avatar(e)) {
+                                caption = 'Avatar';
+                                valueSize = (64, 64);   // size the image value cell; without this the inline caption collapses it to one line
+                            }
+                        }
                     }
-                    MOVE PROPERTY(photo(e)) { 
+                    MOVE PROPERTY(photo(e)) {
                         fill = 1;
                         width = 100;
                         caption = '';

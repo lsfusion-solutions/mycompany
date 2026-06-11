@@ -39,7 +39,7 @@ createShift (ShiftTemplate t, STRING date, Employee e) {
 // carry no open/closed status, so "open shifts" means the shifts they're on; mirrors the
 // kanban / activity-calendar employee filters (countOpenAssigned*)
 countAssignedShift (Employee e) = GROUP SUM 1 IF assignedTo(Shift sh) = e;
-shiftEmployees () = JSON FROM id = Employee e, name(e) WHERE e IS Employee AND name(e) AND countAssignedShift(e);
+shiftEmployees () = JSON FROM id = Employee e, name(e), avatar = avatarBase64(e) WHERE e IS Employee AND name(e) AND countAssignedShift(e);
 
 // all UI text literals for the custom view go through the header JSON (instead of being frozen
 // in the .js); plain English text relies on reverse translation to localize them, and the day /

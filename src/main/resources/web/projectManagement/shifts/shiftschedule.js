@@ -22,6 +22,29 @@ function shiftSchedule() {
         return s.toUpperCase();
     }
 
+    // paint the employee's base64 photo (server-provided) as the avatar background, sniffing the image
+    // format from the base64 magic prefix; returns false when there's no photo so we fall back to initials
+    function applyPhoto(el, b64, fallback) {
+        let url = b64 || null; // avatarBase64 already provides a complete data: URL
+        el.classList.remove("has-photo");
+        el.style.backgroundImage = "";
+        el.style.backgroundColor = "";
+        el.__avUrl = url; // token: a stale onload from an earlier render must not paint over the current avatar
+        fallback();
+        if (!url) return;
+        let img = new Image();
+        img.onload = function () {
+            if (el.__avUrl !== url) return; // superseded by a newer render
+            el.textContent = "";
+            el.classList.add("has-photo");
+            el.style.backgroundImage = "url('" + url + "')";
+            el.style.backgroundSize = "cover";
+            el.style.backgroundPosition = "center";
+            el.style.backgroundColor = "transparent";
+        };
+        img.src = url; // on error the placeholder initials are kept
+    }
+
     // "YYYY-MM-DD" -> Date at LOCAL midnight, so getDay()/toLocaleDateString never drift by a
     // timezone when the key was produced as a plain calendar date
     function parseKey(k) {
@@ -426,8 +449,10 @@ function shiftSchedule() {
                     avatar.classList.add("none");
                     avatar.innerHTML = '<i class="bi bi-person-dash"></i>';
                 } else {
-                    avatar.style.setProperty("--ahue", hueOf(employee.name));
-                    avatar.textContent = initialsOf(employee.name);
+                    applyPhoto(avatar, employee.avatar, function () {
+                        avatar.style.setProperty("--ahue", hueOf(employee.name));
+                        avatar.textContent = initialsOf(employee.name);
+                    });
                 }
                 let empName = document.createElement("span");
                 empName.className = "shsched-emp-name";

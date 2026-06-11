@@ -14,6 +14,9 @@ onWebClientInit() + {
 }
 inputComment '' = DATA LOCAL RICHTEXT ();
 
+avatar = ABSTRACT IMAGEFILE (User);
+avatarBase64 (User u) = ('data:image/png;base64,' + encodeBase64Unchunked(avatar(u)));
+
 // UI text for the comment components. Plain English here is localized by lsFusion reverse-translation
 // (server-side); the strings reach the JS via OPTIONS (read-only list) and the editor's textData JSON,
 // so comments.js no longer hardcodes user-facing English.
@@ -38,6 +41,7 @@ META defineObjectComments (obj, let, container)
     
     user = DATA User (###obj##Comment);
     nameUser 'User' (###obj##Comment f) = name(user(f));
+    avatarBase64User (###obj##Comment f) = avatarBase64(user(f));
     user(###obj##Comment f) <- currentUser() WHEN SET(f IS ###obj##Comment);
     
     text 'Text' = DATA RICHTEXT (###obj##Comment);
@@ -75,7 +79,7 @@ META defineObjectComments (obj, let, container)
     EXTEND FORM obj
         OBJECTS cmt = ###obj##Comment CUSTOM 'comments' OPTIONS JSON FROM i18n = commentsI18n()
         PROPERTIES id = VALUE(cmt)
-        PROPERTIES(cmt) nameUser, textTimeDuration, dateTime, text = html
+        PROPERTIES(cmt) nameUser, avatarBase64User, textTimeDuration, dateTime, text = html
         PROPERTIES(cmt) edit ON CHANGE {
             SHOW edit###obj##Comment OBJECTS c = cmt;
         },

@@ -35,6 +35,38 @@ function sanitizeHtml(html) {
     return out.innerHTML;
 }
 
+// turn the server's base64 employee photo into an <img>-ready data URL, sniffing the format from the
+// base64 magic prefix (so JPEG/PNG/GIF/WebP all render); null when the person has no photo. Shared by
+// the activities() list and the activityCalendar() below.
+// the server (Employee.avatarBase64) sends a complete data: URL for the avatar, so just pass it through
+// (null when the person has no avatar). No client-side MIME guessing.
+function acalPhotoUrl(b64) {
+    return b64 || null;
+}
+// Render an avatar into `el`: draw initials via fallback() immediately, then (if a photo is given)
+// preload it and paint it as the background only once it actually decodes. If the image fails to
+// load, the initials from fallback() remain — a bad/corrupt data URL never leaves a blank avatar.
+function acalApplyPhoto(el, b64, fallback) {
+    let url = acalPhotoUrl(b64);
+    el.classList.remove("has-photo");
+    el.style.backgroundImage = "";
+    el.style.backgroundColor = "";
+    el.__avUrl = url; // token: a stale onload from an earlier render must not paint over the current avatar
+    fallback();
+    if (!url) return;
+    let img = new Image();
+    img.onload = function () {
+        if (el.__avUrl !== url) return; // superseded by a newer render
+        el.textContent = "";
+        el.classList.add("has-photo");
+        el.style.backgroundImage = "url('" + url + "')";
+        el.style.backgroundSize = "cover";
+        el.style.backgroundPosition = "center";
+        el.style.backgroundColor = "transparent";
+    };
+    img.src = url; // on error the placeholder initials are kept
+}
+
 function activities() {
 
     // deterministic hue from a string, matching the calendar avatars
@@ -175,8 +207,10 @@ function activities() {
 
                     let avatar = document.createElement("span");
                     avatar.className = "act-avatar";
-                    avatar.style.setProperty("--ahue", hueOf(activity.nameAssignedTo));
-                    avatar.textContent = initialsOf(activity.nameAssignedTo);
+                    acalApplyPhoto(avatar, activity.avatarAssignedTo, function () {
+                        avatar.style.setProperty("--ahue", hueOf(activity.nameAssignedTo));
+                        avatar.textContent = initialsOf(activity.nameAssignedTo);
+                    });
                     foot.appendChild(avatar);
 
                     let who = document.createElement("span");
@@ -360,9 +394,12 @@ function activityCalendar() {
             const avs = document.createElement('div'); avs.className = 'acal-pop-assign-avs';
             for (const emp of st.employees) {
                 const ab = document.createElement('button'); ab.type = 'button';
-                ab.className = 'acal-asg-av' + (emp.name === a.nameAssignedTo ? ' current' : '');
-                ab.textContent = initials(emp.name); ab.title = emp.name;
-                ab.style.setProperty('--ahue', typeHue(emp.name));
+                ab.className = 'acal-asg-av' + (String(emp.id) === String(a.assignedTo) ? ' current' : '');
+                ab.title = emp.name;
+                acalApplyPhoto(ab, emp.avatar, function () {
+                    ab.textContent = initials(emp.name);
+                    ab.style.setProperty('--ahue', typeHue(emp.name));
+                });
                 ab.onclick = () => { st.controller.changeProperty('assignedTo', a, emp.id); hidePopup(st); };
                 avs.appendChild(ab);
             }
@@ -429,8 +466,11 @@ function activityCalendar() {
         title.textContent = a.gname || a.nameType || I18N.noName; card.appendChild(title);
         if (a.nameAssignedTo) {
             const av = document.createElement('span'); av.className = 'acal-card-avatar';
-            av.textContent = initials(a.nameAssignedTo); av.style.setProperty('--ahue', typeHue(a.nameAssignedTo));
-            av.title = a.nameAssignedTo; card.appendChild(av);
+            av.title = a.nameAssignedTo;
+            acalApplyPhoto(av, a.avatarAssignedTo, function () {
+                av.textContent = initials(a.nameAssignedTo); av.style.setProperty('--ahue', typeHue(a.nameAssignedTo));
+            });
+            card.appendChild(av);
         }
         wireCommon(st, card, a);
         return card;
@@ -555,7 +595,9 @@ function activityCalendar() {
             row.append(time, tp, nm, meta);
             if (a.nameAssignedTo) {
                 const av = document.createElement('span'); av.className = 'acal-card-avatar';
-                av.textContent = initials(a.nameAssignedTo); av.style.setProperty('--ahue', typeHue(a.nameAssignedTo));
+                acalApplyPhoto(av, a.avatarAssignedTo, function () {
+                    av.textContent = initials(a.nameAssignedTo); av.style.setProperty('--ahue', typeHue(a.nameAssignedTo));
+                });
                 row.appendChild(av);
             }
             wireCommon(st, row, a);
@@ -599,6 +641,8 @@ function activityCalendar() {
                 const chip = document.createElement('button'); chip.type = 'button';
                 chip.className = 'acal-chip person' + (sel.has(p) ? ' on' : (sel.size ? ' off' : ''));
                 chip.style.setProperty('--ahue', typeHue(p));
+                // legend chips are keyed by display name (the assignee filter is name-based), so they
+                // intentionally show initials only — a name->photo lookup could collide on duplicate names
                 const av = document.createElement('span'); av.className = 'acal-chip-av'; av.textContent = initials(p);
                 chip.appendChild(av); chip.appendChild(document.createTextNode(p));
                 chip.onclick = () => { sel.has(p) ? sel.delete(p) : sel.add(p); redraw(st); };

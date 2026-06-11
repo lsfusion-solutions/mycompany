@@ -11,6 +11,7 @@ function leadKanban() {
         amount: function (l) { return l.expectedRevenue; },
         created: function (l) { return { date: l.date, text: l.textDateDuration }; },
         assignee: function (l) { return l.nameSalesPerson; },
+        assigneeId: function (l) { return l.salesPerson; },
         due: function (l) { return { date: l.expectedClosing, text: l.textExpectedClosingDuration }; },
         description: function (l) { return l.description; }
     });
