@@ -26,31 +26,40 @@ function kanbanPhotoUrl(b64) {
     return b64 || null;
 }
 
-// Render an avatar into `el`: draw the initials placeholder via fallback() immediately, then (if a
-// photo is given) preload it and paint it as the background only once it actually decodes. If the
-// image fails to load/decode, the initials drawn by fallback() simply remain — so a bad/corrupt data
-// URL never leaves a blank avatar. fallback() must set the initials text + --ahue hue.
+// Render an avatar into `el`. The photo is a data: URL from the OPTIONS employee list (already in
+// memory, nothing to fetch), so paint it as the background SYNCHRONOUSLY. Drawing the initials
+// placeholder first and swapping to the photo on a later img.onload would make every avatar flash to
+// initials and back on each board rebuild (e.g. after a reassign, when update() tears down and
+// recreates all cards) — that's the "flicker". We still preload an Image purely to detect a
+// bad/corrupt data URL and, only then, fall back to initials. fallback() must set the initials text
+// + --ahue hue. __avUrl stamps this call's token so a stale onerror can't clobber a newer render.
 function kanbanRenderAvatar(el, b64, fallback) {
     let url = kanbanPhotoUrl(b64);
-    // reset any prior photo state and stamp this call's token, so a stale onload from an earlier
-    // render (or a reused node) can never paint the wrong/old photo over the current avatar
-    el.classList.remove("has-photo");
-    el.style.backgroundImage = "";
-    el.style.backgroundColor = "";
     el.__avUrl = url;
-    fallback();
-    if (!url) return;
+    if (!url) {
+        el.classList.remove("has-photo");
+        el.style.backgroundImage = "";
+        el.style.backgroundColor = "";
+        fallback();
+        return;
+    }
+    // show the photo straight away — no placeholder frame
+    el.textContent = "";
+    el.classList.add("has-photo");
+    el.style.backgroundImage = "url('" + url + "')";
+    el.style.backgroundSize = "cover";
+    el.style.backgroundPosition = "center";
+    el.style.backgroundColor = "transparent";
+    // ...and only revert to initials if the data URL turns out to be undecodable
     let img = new Image();
-    img.onload = function () {
+    img.onerror = function () {
         if (el.__avUrl !== url) return; // superseded by a newer render
-        el.textContent = "";
-        el.classList.add("has-photo");
-        el.style.backgroundImage = "url('" + url + "')";
-        el.style.backgroundSize = "cover";
-        el.style.backgroundPosition = "center";
-        el.style.backgroundColor = "transparent";
+        el.classList.remove("has-photo");
+        el.style.backgroundImage = "";
+        el.style.backgroundColor = "";
+        fallback();
     };
-    img.src = url; // on error the placeholder initials are kept
+    img.src = url;
 }
 
 // localized short weekday (Mon-first) and full month names for the given locale, mirroring the
