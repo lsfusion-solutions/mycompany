@@ -43,28 +43,39 @@ function sanitizeHtml(html) {
 function acalPhotoUrl(b64) {
     return b64 || null;
 }
-// Render an avatar into `el`: draw initials via fallback() immediately, then (if a photo is given)
-// preload it and paint it as the background only once it actually decodes. If the image fails to
-// load, the initials from fallback() remain — a bad/corrupt data URL never leaves a blank avatar.
+// Render an avatar into `el`. The photo is a data: URL already in memory (nothing to fetch), so paint
+// it SYNCHRONOUSLY. Drawing the initials placeholder first and swapping to the photo on a later
+// img.onload would make every avatar flash to initials and back whenever the calendar rebuilds (e.g.
+// after a reassign) — that's the "flicker". We still preload an Image purely to detect a bad/corrupt
+// data URL and only then fall back to initials. __avUrl stamps this call's token so a stale onerror
+// can't clobber a newer render.
 function acalApplyPhoto(el, b64, fallback) {
     let url = acalPhotoUrl(b64);
-    el.classList.remove("has-photo");
-    el.style.backgroundImage = "";
-    el.style.backgroundColor = "";
-    el.__avUrl = url; // token: a stale onload from an earlier render must not paint over the current avatar
-    fallback();
-    if (!url) return;
+    el.__avUrl = url;
+    if (!url) {
+        el.classList.remove("has-photo");
+        el.style.backgroundImage = "";
+        el.style.backgroundColor = "";
+        fallback();
+        return;
+    }
+    // show the photo straight away — no placeholder frame
+    el.textContent = "";
+    el.classList.add("has-photo");
+    el.style.backgroundImage = "url('" + url + "')";
+    el.style.backgroundSize = "cover";
+    el.style.backgroundPosition = "center";
+    el.style.backgroundColor = "transparent";
+    // ...and only revert to initials if the data URL turns out to be undecodable
     let img = new Image();
-    img.onload = function () {
+    img.onerror = function () {
         if (el.__avUrl !== url) return; // superseded by a newer render
-        el.textContent = "";
-        el.classList.add("has-photo");
-        el.style.backgroundImage = "url('" + url + "')";
-        el.style.backgroundSize = "cover";
-        el.style.backgroundPosition = "center";
-        el.style.backgroundColor = "transparent";
+        el.classList.remove("has-photo");
+        el.style.backgroundImage = "";
+        el.style.backgroundColor = "";
+        fallback();
     };
-    img.src = url; // on error the placeholder initials are kept
+    img.src = url;
 }
 
 function activities() {

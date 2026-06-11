@@ -20,27 +20,39 @@ function comments() {
         return s.toUpperCase();
     }
 
-    // paint the author's base64 photo (server-provided) as the avatar background, sniffing the image
-    // format from the base64 magic prefix; returns false when there's no photo so we fall back to initials
+    // Paint the author's base64 photo (server-provided) as the avatar background. The photo is a data:
+    // URL already in memory (nothing to fetch), so paint it SYNCHRONOUSLY. Drawing the initials
+    // placeholder first and swapping to the photo on a later img.onload would make every avatar flash
+    // to initials and back whenever the comment list rebuilds — that's the "flicker". We still preload
+    // an Image purely to detect a bad/corrupt data URL and only then fall back to initials. __avUrl
+    // stamps this call's token so a stale onerror can't clobber a newer render.
     function applyPhoto(el, b64, fallback) {
         let url = b64 || null; // photoBase64 already provides a complete data: URL
-        el.classList.remove("has-photo");
-        el.style.backgroundImage = "";
-        el.style.backgroundColor = "";
-        el.__avUrl = url; // token: a stale onload from an earlier render must not paint over the current avatar
-        fallback();
-        if (!url) return;
+        el.__avUrl = url;
+        if (!url) {
+            el.classList.remove("has-photo");
+            el.style.backgroundImage = "";
+            el.style.backgroundColor = "";
+            fallback();
+            return;
+        }
+        // show the photo straight away — no placeholder frame
+        el.textContent = "";
+        el.classList.add("has-photo");
+        el.style.backgroundImage = "url('" + url + "')";
+        el.style.backgroundSize = "cover";
+        el.style.backgroundPosition = "center";
+        el.style.backgroundColor = "transparent";
+        // ...and only revert to initials if the data URL turns out to be undecodable
         let img = new Image();
-        img.onload = function () {
+        img.onerror = function () {
             if (el.__avUrl !== url) return; // superseded by a newer render
-            el.textContent = "";
-            el.classList.add("has-photo");
-            el.style.backgroundImage = "url('" + url + "')";
-            el.style.backgroundSize = "cover";
-            el.style.backgroundPosition = "center";
-            el.style.backgroundColor = "transparent";
+            el.classList.remove("has-photo");
+            el.style.backgroundImage = "";
+            el.style.backgroundColor = "";
+            fallback();
         };
-        img.src = url; // on error the placeholder initials are kept
+        img.src = url;
     }
 
     // Allowlist sanitizer for the stored rich-text body (header + text + footer HTML). Renders the
