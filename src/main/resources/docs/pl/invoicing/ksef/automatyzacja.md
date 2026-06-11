@@ -18,7 +18,7 @@ Automatyzacja jest szczególnie przydatna, gdy:
 Przy wdrożeniu automatyzacji zwykle ustala się:
 
 1. **Częstotliwość uruchamiania** (np. co 10–30 minut, co 1–2 godziny).
-2. **Zakres pobierania** — ile dni wstecz pobierać faktury jako nabywca.
+2. **Zakres pobierania** — ile dni wstecz pobierać faktury jako nabywca (ustawienie **„Interwał pobierania (dni)”** w **Administracja → Integracja → KSeF**).
 3. **Sposób logowania** — czy automatyzacja ma bazować na certyfikacie, czy na tokenie.
 
 Wskazówka: w większości organizacji sensownym startem jest pobieranie z ostatnich kilku dni, a następnie dopasowanie zakresu do realnego opóźnienia w dostarczaniu dokumentów przez kontrahentów.

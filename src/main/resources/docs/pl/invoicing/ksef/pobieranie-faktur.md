@@ -23,12 +23,12 @@ Wskazówka praktyczna: lista „Faktury KSeF” to „rejestr faktur ustrukturyz
 
 ## Typowy przebieg pobierania
 
-1. Wybierz przedział dat.
-2. (Opcjonalnie) ogranicz pobieranie do wybranej firmy.
-3. Uruchom pobieranie w odpowiedniej perspektywie (sprzedawca lub nabywca).
+1. Wybierz przedział dat w polu **„Interwał dat”**.
+2. (Opcjonalnie) ogranicz pobieranie do wybranej firmy w polu **„Firma”**.
+3. Uruchom pobieranie przyciskiem **„Pobierz (sprzedawca)”** lub **„Pobierz (klient)”** (perspektywa nabywcy).
 4. System pobierze metadane faktur, a następnie pobierze treść faktur i zapisze je na liście **„Faktury KSeF”**.
 
-Wskazówka: jeśli pobierasz faktury zakupu, używaj perspektywy **nabywcy**.
+Wskazówka: jeśli pobierasz faktury zakupu, używaj perspektywy **nabywcy** (przycisk **„Pobierz (klient)”**).
 
 ## Jak dobrać przedział dat (praktyczne wskazówki)
 

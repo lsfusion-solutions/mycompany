@@ -15,7 +15,7 @@ Jeśli logujesz się tokenem:
 
 Zobacz też: [Dostęp i logowanie](dostep-i-logowanie.md).
 
-#### Nie widzę akcji KSeF (np. „Wyślij do KSeF”, „Pobierz status”)
+#### Nie widzę akcji KSeF (np. „Wyślij do KSeF”, „Pobierz status KSeF”)
 
 Sprawdź:
 
@@ -27,7 +27,7 @@ Ważne: lista „Faktury KSeF” nie służy do ręcznego wysyłania faktur — 
 
 #### Wysłałem fakturę, ale nie mam numeru KSeF
 
-Po wysyłce najpierw pojawia się numer referencyjny. Numer KSeF jest nadawany po pozytywnym przetworzeniu dokumentu — używaj akcji **„Pobierz status”** aż do momentu nadania numeru.
+Po wysyłce najpierw pojawia się numer referencyjny. Numer KSeF jest nadawany po pozytywnym przetworzeniu dokumentu — użyj akcji **„Pobierz status KSeF”** na karcie faktury, a dalej akcji **„Pobierz status”** na liście „Faktury KSeF”, aż do momentu nadania numeru.
 
 Jeśli numer KSeF nie pojawia się długo:
 

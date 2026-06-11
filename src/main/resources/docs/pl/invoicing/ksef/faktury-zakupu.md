@@ -47,7 +47,7 @@ Po powiązaniu na karcie faktury zakupu w sekcji **„KSeF”** zobaczysz refere
 ## Typowy przebieg
 
 1. Pobierz faktury z KSeF (zobacz: [Pobieranie faktur z KSeF](pobieranie-faktur.md)).
-2. Na liście **„Faktury KSeF”** wybierz fakturę dotyczącą zakupu.
+2. Otwórz listę faktur zakupu i przejdź do zakładki **„KSeF”** (pokazuje faktury KSeF bez przypisanej faktury zakupu), a następnie wybierz fakturę dotyczącą zakupu.
 3. W zależności od sytuacji:
    - jeśli faktury zakupu jeszcze nie ma w systemie — uruchom akcję **„Utwórz fakturę zakupu”**;
    - jeśli faktura zakupu już istnieje (i nie została powiązana automatycznie) — uruchom akcję **„Powiąż z fakturą zakupu”** i wskaż istniejący dokument.
