@@ -25,7 +25,7 @@ Wskazówka praktyczna: jeśli konfiguracja Twojej organizacji zakłada określon
 3. Utwórz lub otwórz fakturę i uzupełnij dane (partner, daty, numery, waluta, pozycje).
 4. Uruchom akcję **„Wyślij do KSeF”** (jeśli jest dostępna w Twojej konfiguracji).
 5. Po wysyłce system zapisze **numer referencyjny** zgłoszenia faktury.
-6. Używaj akcji **„Pobierz status”**, aby odświeżać stan przetwarzania w KSeF.
+6. Użyj akcji **„Pobierz status KSeF”**, aby pobrać stan przetwarzania (przycisk jest widoczny, dopóki KSeF nie zwróci pierwszego statusu). Dalsze odświeżanie statusów wykonasz na liście **„Faktury KSeF”** akcją **„Pobierz status”**.
 
 Jeśli nie widzisz akcji związanych z KSeF, sprawdź uprawnienia użytkownika lub ustawienia wdrożeniowe (administrator).
 
@@ -43,9 +43,9 @@ Ważne: numer KSeF nie zawsze jest dostępny od razu. To normalne — KSeF przet
 
 Typowo spotkasz:
 
-- **Numer referencyjny** — identyfikator zgłoszenia wysyłki.
-- **Kod statusu / opis statusu / szczegóły** — wynik przetwarzania faktury w KSeF.
-- **Numer KSeF** — numer nadany fakturze po poprawnym przyjęciu przez KSeF.
+- **„Referencja KSeF”** — identyfikator (numer referencyjny) zgłoszenia wysyłki.
+- **„Kod statusu KSeF” / „Status KSeF” / „Szczegóły KSeF”** — wynik przetwarzania faktury w KSeF (na liście „Faktury KSeF” odpowiednio: „Kod statusu” / „Status” / „Szczegóły”).
+- **„Numer KSeF”** — numer nadany fakturze po poprawnym przyjęciu przez KSeF.
 
 #### Jak czytać „szczegóły”
 
