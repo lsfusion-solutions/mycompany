@@ -31,6 +31,11 @@ readonly(Invoice i) += WHEN faktura(i) AND NOT statusCode(faktura(i)) != 200 AND
 // Build Faktura from Invoice (adapter)
 fill ABSTRACT LIST (Faktura, Invoice);
 
+// Data zapłaty dla faktury rozliczeniowej (ROZ) w całości pokrytej zaliczkami:
+// data ostatniej otrzymanej zaliczki (płatność na fakturze zaliczkowej, fallback na datę zaliczki)
+dateLastAdvancePayment 'Data ostatniej zaliczki' (Invoice i) =
+    GROUP MAX (OVERRIDE dateLastIncomingPayment(Invoice ad), DATE(dateTime(ad))) IF advanced(i, ad) AND active(ad);
+
 createFaktura 'Zbuduj fakturę' (Invoice i) {
     NEW f = Faktura {
         invoice(f) <- i;
@@ -74,7 +79,9 @@ createFaktura 'Zbuduj fakturę' (Invoice i) {
         taxAmount3(f) <- correctionTaxAmount(tax(r'5%'), i) (-) advancedTaxAmount(tax(r'5%'), i);
         amount(f) <- OVERRIDE correctionAmount(i) (-) advanced(i), 0;
         
-        IF dueDate(i) THEN
+        // Termin płatności podajemy tylko gdy pozostaje kwota do zapłaty;
+        // dla faktury w całości zapłaconej/rozliczonej zaliczkami go pomijamy (kwota do zapłaty = 0)
+        IF dueDate(i) AND left(i) (-) advanced(i) > 0 THEN
             NEW t = TerminPlatnosci {
                 faktura(t) <- f;
                 date(t) <- dueDate(i);
@@ -82,7 +89,8 @@ createFaktura 'Zbuduj fakturę' (Invoice i) {
 
         IF NOT (left(i) (-) advanced(i) > 0) AND (dateLastIncomingPayment(i) OR correctionAmount(i) = advanced(i)) THEN {
             Zaplacono(f) <- 1;
-            DataZaplaty(f) <- dateLastIncomingPayment(i);
+            // dla ROZ bez płatności bezpośredniej bierzemy datę ostatniej zaliczki
+            DataZaplaty(f) <- OVERRIDE dateLastIncomingPayment(i), dateLastAdvancePayment(i);
         }
         FormaPlatnosci(f) <- IF companyAccount(i) IS CashAccount THEN 1 ELSE 6;
         
