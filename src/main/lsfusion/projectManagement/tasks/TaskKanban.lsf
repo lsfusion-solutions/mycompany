@@ -44,9 +44,14 @@ EXTEND FORM tasks
                    nameType,
                    idColorPriority, namePriority, description,
                    nameAssignedTo, assignedTo APPLY,
+                   // the APPLY has to be INSIDE the handler: the APPLY property option only wraps the
+                   // DEFAULT change event and is ignored when an explicit ON CHANGE is given
                    currentOrder ON CHANGE {
-                       INPUT ord = INTEGER DO order(currentUser(), tt) <- ord;
-                   } APPLY
+                       INPUT ord = INTEGER DO {
+                           order(currentUser(), tt) <- ord;
+                           APPLY;
+                       }
+                   }
 
     ORDERS status(tt), currentOrder(tt)
     FILTERS opened(tt)

@@ -44,9 +44,14 @@ EXTEND FORM leads
                    nameStatus, status APPLY,
                    idColorPriority,
                    nameSalesPerson, salesPerson APPLY,
+                   // the APPLY has to be INSIDE the handler: the APPLY property option only wraps the
+                   // DEFAULT change event and is ignored when an explicit ON CHANGE is given
                    currentOrder ON CHANGE {
-                       INPUT ord = INTEGER DO order(currentUser(), ll) <- ord;
-                   } APPLY
+                       INPUT ord = INTEGER DO {
+                           order(currentUser(), ll) <- ord;
+                           APPLY;
+                       }
+                   }
 
     ORDERS status(ll), currentOrder(ll)
     FILTERS opened(ll)

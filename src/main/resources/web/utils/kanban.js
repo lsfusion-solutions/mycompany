@@ -120,11 +120,16 @@ function kanbanDateRow(cls, dateVal, duration, locale, overdue) {
     return row;
 }
 
-// after a drag, persist the new order of the cards in a column
-function kanbanReorder(controller, elements, key) {
+// after a drag, collect the new order of the cards in a column into a changeProperties batch.
+// Orders are 1-based: the web client turns a JS 0 into NULL on its way to the server, so a card
+// dropped at the top of a column would lose its order entirely if we sent 0.
+function kanbanCollectReorder(batch, elements, key) {
     for (let i = 0; i < elements.length; i++)
-        if (elements[i][key] && elements[i][key].currentOrder !== i)
-            controller.changeProperty("currentOrder", elements[i][key], i);
+        if (elements[i][key] && elements[i][key].currentOrder !== i + 1) {
+            batch.properties.push("currentOrder");
+            batch.objects.push(elements[i][key]);
+            batch.values.push(i + 1);
+        }
 }
 
 // Allowlist sanitizer for the stored rich-text description (RICHTEXT/HTML), shown in the hover popup.
@@ -585,9 +590,19 @@ function kanban(config) {
             board.scrollLeft = prevScrollLeft;
 
             element.drake.on("drop", function (el, target, source, sibling) {
-                if (el[key].status !== target.status.id.toString())
-                    controller.changeProperty("status", el[key], target.status.id);
-                kanbanReorder(controller, target.children, key);
+                // one changeProperties batch (orders first, status last) = one server request.
+                // Separate changeProperty calls each go out as their own request; the form refresh
+                // after the first one rebuilds the board and the later ones are applied against a
+                // session the user may already be dragging in again — and each costs a round-trip.
+                let batch = { properties: [], objects: [], values: [] };
+                kanbanCollectReorder(batch, target.children, key);
+                if (el[key].status !== target.status.id.toString()) {
+                    batch.properties.push("status");
+                    batch.objects.push(el[key]);
+                    batch.values.push(target.status.id);
+                }
+                if (batch.properties.length)
+                    controller.changeProperties(batch.properties, batch.objects, batch.values);
             });
 
             // suppress the hover popup while dragging (and hide any that's open), so it can't pop up
