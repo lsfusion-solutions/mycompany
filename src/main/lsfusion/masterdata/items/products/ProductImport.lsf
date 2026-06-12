@@ -15,7 +15,10 @@ productExport 'Export products' () {
                 
                 weight(p) <- 0.415;
                 volume(p) <- 1.5;
-                
+                MasterData.length(p) <- 30;
+                width(p) <- 20;
+                height(p) <- 10;
+
                 salesPrice(p) <- 6.14;
                 reference(p) <- 'ABC4251';
                 description(p) <- 'The best product';
@@ -26,7 +29,8 @@ productExport 'Export products' () {
         LOCAL f = EXCELFILE ();
         EXPORT XLSX HEADER FROM '{ID}' = id(Product p), '{Name}' = dataName(p), 'CategoryID' = idCategory(p), 
                                 'UoMID' = idUom(p), 'Weight' = weight(p), 'Volume' = volume(p),
-                                'SalesPrice' = salesPrice(p), 'CountryID' = id(countryOrigin(p)), 
+                                'Length' = MasterData.length(p), 'Width' = width(p), 'Height' = height(p),
+                                'SalesPrice' = salesPrice(p), 'CountryID' = id(countryOrigin(p)),
                                 'Reference' = reference(p), 'Description' = description(p), 'Archived' = archived(p)  
                                 WHERE p IS Product TO f;   
         open(f());
@@ -40,6 +44,9 @@ productImport 'Import products' () {
     LOCAL idUom = ISTRING[50] (INTEGER);
     LOCAL weight = NUMERIC[11,3] (INTEGER);
     LOCAL volume = NUMERIC[11,3] (INTEGER);
+    LOCAL length = NUMERIC[11,3] (INTEGER);
+    LOCAL width = NUMERIC[11,3] (INTEGER);
+    LOCAL height = NUMERIC[11,3] (INTEGER);
     LOCAL salesPrice = NUMERIC[10,2] (INTEGER);
     LOCAL idCountryOrigin = STRING[3] (INTEGER);
     LOCAL reference = STRING[50] (INTEGER);
@@ -49,7 +56,8 @@ productImport 'Import products' () {
     INPUT f = EXCELFILE DO {
         NEWSESSION {
             IMPORT XLS HEADER FROM f TO id = A, name = B, idCategory = C, idUom = D, weight = E,
-                                        volume = F, salesPrice = G, idCountryOrigin = H, reference = I, description = J, archived = K; 
+                                        volume = F, length = G, width = H, height = I, salesPrice = J,
+                                        idCountryOrigin = K, reference = L, description = M, archived = N;
             
             FOR [GROUP SUM 1 BY idCategory(INTEGER i)](STRING num) AND NOT category(num) DO {
                 MESSAGE 'Missing category in database with code' + ' ' + num + '... Import canceled';
@@ -76,6 +84,9 @@ productImport 'Import products' () {
                 uom(p) <- uom(idUom(i));
                 weight(p) <- weight(i);
                 volume(p) <- volume(i);
+                MasterData.length(p) <- length(i);
+                width(p) <- width(i);
+                height(p) <- height(i);
                 salesPrice(p) <- salesPrice(i);
                 countryOrigin(p) <- country(idCountryOrigin(i));
                 reference(p) <- reference(i);
