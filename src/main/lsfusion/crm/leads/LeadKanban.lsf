@@ -13,7 +13,7 @@ leadStatuses () = JSON FROM id = LeadStatus s, name(s) WHERE s IS LeadStatus AND
 countOpenAssignedLead (Employee e) = GROUP SUM 1 IF salesPerson(Lead l) = e AND opened(l);
 // the employee list carries each person's photo (base64) once; the card/popup avatars look it up
 // by sales-person name in the JS, so the photo isn't duplicated onto every card
-leadEmployees () = JSON FROM id = Employee e, name(e), avatar = avatarBase64(e) WHERE name(e) AND countOpenAssignedLead(e);
+leadEmployees () = JSON FROM id = Employee e, name(e), avatar = avatarBase64(e) WHERE name(e) AND active(e) AND countOpenAssignedLead(e);
 
 jsonTags (Lead l) = JSON FROM name(LeadTag tg), idColor(tg) WHERE in(l, tg);
 

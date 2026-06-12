@@ -13,7 +13,7 @@ taskStatuses () = JSON FROM id = TaskStatus s, name(s) WHERE s IS TaskStatus AND
 countOpenAssignedTask (Employee e) = GROUP SUM 1 IF assignedTo(Task t, e) AND opened(t);
 // the employee list carries each person's photo (base64) once; the card/popup avatars look it up
 // by assignee name in the JS, so the photo isn't duplicated onto every card
-taskEmployees () = JSON FROM id = Employee e, name(e), avatar = avatarBase64(e) WHERE name(e) AND countOpenAssignedTask(e);
+taskEmployees () = JSON FROM id = Employee e, name(e), avatar = avatarBase64(e) WHERE name(e) AND active(e) AND countOpenAssignedTask(e);
 
 jsonTags (Task t) = JSON FROM name(TaskTag tg), idColor(tg) WHERE in(t, tg);
 

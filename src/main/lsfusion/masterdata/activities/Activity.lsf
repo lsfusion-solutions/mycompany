@@ -131,7 +131,7 @@ setDone 'Done' (Activity act) {
 // employees fed to the calendar popup picker (OPTIONS) - anyone who has an OPEN
 // assignment on some activity, so you can reassign to any of them (not interval-limited)
 countOpenAssignedActivity (Employee e) = GROUP SUM 1 IF assignedTo(Activity a) = e AND opened(a);
-activityEmployees () = JSON FROM id = Employee e, name = MasterData.name(e), avatar = avatarBase64(e) WHERE MasterData.name(e) AND countOpenAssignedActivity(e);
+activityEmployees () = JSON FROM id = Employee e, name = MasterData.name(e), avatar = avatarBase64(e) WHERE MasterData.name(e) AND active(e) AND countOpenAssignedActivity(e);
 
 // all UI text literals for the custom views are passed through OPTIONS (instead of being
 // frozen in the .js); plain English text relies on reverse translation to localize them
