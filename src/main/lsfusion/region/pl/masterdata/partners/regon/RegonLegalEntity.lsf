@@ -1,0 +1,25 @@
+MODULE RegonLegalEntity;
+
+REQUIRE RegonDaneSzukajPodmity, LegalEntityPl;
+
+NAMESPACE Regon;
+
+// Pobranie danych podmiotu z bazy REGON na podstawie NIP-u
+fillFromRegon 'Pobierz dane z REGON' (LegalEntity l) {
+    krs() <- NULL; krsy() <- NULL; nipy() <- NULL; regon() <- NULL; regony14zn() <- NULL; regony9zn() <- NULL;
+    nip() <- MasterData.nip(l);
+
+    daneSzukajPodmioty();
+
+    IF nazwa() THEN {
+        name(l) <- nazwa();
+        address(l) <- CONCAT ' ', ulica(), CONCAT '/', nrNieruchomosci(), nrLokalu();
+        city(l) <- miejscowosc();
+        state(l) <- wojewodztwo();
+        zip(l) <- kodPocztowy();
+    }
+}
+
+// Automatyczne pobranie danych z REGON przy zmianie NIP-u
+WHEN LOCAL CHANGED(nip(LegalEntity l)) AND length(nip(l)) = 10 DO
+    fillFromRegon(l);
