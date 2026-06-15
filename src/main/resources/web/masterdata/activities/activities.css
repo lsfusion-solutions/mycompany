@@ -749,3 +749,105 @@
     background: rgba(var(--bs-danger-rgb), 0.12);
 }
 [data-bs-theme="dark"] .acal-pop-actions .acal-del:hover { background: rgba(var(--bs-danger-rgb), 0.2); }
+
+
+/* ======================================================================
+   Mobile portrait (≤ 600px) — make the calendar usable on a phone held
+   vertically. Desktop is "fill the box, scroll inside each region"; on a
+   phone we let the form grow to content height and reflow:
+     · toolbar  → nav+title on row 1, a full-width segmented switch on row 2
+     · legend   → one horizontally-swipeable filter row (was a tall wrap)
+     · month    → keep 7 columns but compact; cards collapse to slim pills
+     · week     → the 7-column grid stacks into full-width day sections
+     · agenda   → drop the fixed time/meta column widths, rows wrap
+     · popup    → a bottom sheet (overrides the JS inline left/top anchor)
+   The default view is also switched to Agenda on small screens (see the
+   activityCalendar JS) since a vertical list is the natural phone layout.
+   ====================================================================== */
+@media (max-width: 600px) {
+    .acal {
+        height: auto;          /* grow with content; the form container scrolls */
+        min-height: 60vh;
+        padding: 2px;
+    }
+
+    /* ---------- toolbar ---------- */
+    .acal-toolbar { flex-wrap: wrap; gap: 8px; padding: 2px 2px 8px; }
+    .acal-tb-left { order: 1; flex: 1 1 auto; gap: 8px; }
+    .acal-stats   { order: 2; flex: 0 0 auto; }
+    .acal-switch  { display: flex; order: 3; flex: 1 1 100%; margin-left: 0; }
+    .acal-switch-btn { flex: 1 1 0; padding: 7px 0; text-align: center; }
+    .acal-title { font-size: 16px; }
+    .acal-btn { padding: 6px 10px; }   /* roomier tap targets */
+
+    /* ---------- legend → swipeable filter row ---------- */
+    .acal-legend {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 6px;
+        padding: 0 2px 8px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    .acal-legend::-webkit-scrollbar { display: none; }
+    .acal-legend-group { flex-wrap: nowrap; flex: 0 0 auto; }
+    .acal-legend-status { flex: 0 0 auto; margin-right: 0; }
+    .acal-chip, .acal-seg { flex: 0 0 auto; }
+
+    /* ---------- month: 7 compact columns, slim pill cards ---------- */
+    .acal-weekdays, .acal-grid { gap: 3px; }
+    .acal-weekday { font-size: 9px; letter-spacing: .3px; padding: 2px 0 4px; }
+    .acal-grid { grid-auto-rows: minmax(54px, auto); }
+    .acal-day { min-height: 54px; border-radius: 8px; padding: 2px; }
+    .acal-daynum { padding: 0 2px 1px; }
+    .acal-daynum-v { font-size: 11px; min-width: 17px; height: 17px; line-height: 17px; }
+    /* no hover on touch — keep the quick-add "+" visible, but small & quiet so it
+       doesn't dominate the 42-cell grid */
+    .acal-add { width: 15px; height: 15px; top: 2px; left: 2px; opacity: .4; transform: scale(1); }
+    .acal-day:active .acal-add { opacity: .95; }
+    .acal-events { gap: 2px; }
+    .acal-card { padding: 2px 4px; font-size: 10px; line-height: 1.3; gap: 3px; border-radius: 5px; }
+    .acal-card-time, .acal-card-avatar, .acal-card-dot { display: none; }   /* title + colour bar only */
+    .acal-more { font-size: 10px; padding: 1px 4px; }
+
+    /* ---------- week: stack the 7 day-columns vertically ---------- */
+    .acal-week { display: flex; flex-direction: column; gap: 8px; }
+    .acal-wcol { overflow: visible; border-radius: 9px; }
+    .acal-wcol-head { justify-content: flex-start; gap: 8px; padding: 7px 10px; }
+    .acal-wcol-body { overflow: visible; padding: 7px 8px; }
+    /* full multi-line cards inside the stacked day (restore time + avatar) */
+    .acal-week .acal-card { font-size: 12px; padding: 5px 8px; }
+    .acal-week .acal-card-time, .acal-week .acal-card-avatar { display: inline-flex; }
+    .acal-wcol-head .acal-add { position: static; margin-left: auto; opacity: 1; transform: none; }
+
+    /* ---------- agenda: relax fixed widths, let rows wrap ---------- */
+    .acal-arow { flex-wrap: wrap; gap: 6px 8px; padding: 8px 10px; }
+    .acal-arow-time { width: auto; flex: 0 0 auto; }
+    .acal-arow-name { flex: 1 1 100%; white-space: normal; order: 5; }
+    .acal-arow-meta { flex: 1 1 100%; max-width: none; white-space: normal; order: 6; }
+    .acal-agenda { padding: 0 2px 6px; }
+    .acal-agenda-day { padding: 10px 4px 4px; }
+
+    /* ---------- popup → centered modal (override the JS inline left/top) ----------
+       A bottom sheet would collide with the lsFusion form's own bottom toolbar
+       (Save/OK/Close), which renders above it, so we float the detail card in the
+       middle of the screen instead. Click-away (JS) dismisses it. */
+    .acal-pop {
+        position: fixed !important;
+        left: 50% !important;
+        top: 50% !important;
+        right: auto !important;
+        bottom: auto !important;
+        transform: translate(-50%, -50%);
+        width: calc(100vw - 24px) !important;
+        max-width: 440px !important;
+        max-height: 82vh;
+        overflow-y: auto;
+        border-radius: 14px;
+        z-index: 2000;
+        box-shadow: 0 18px 48px rgba(16, 24, 40, .34);
+    }
+    .acal-pop-assign-avs { gap: 8px; }
+    .acal-asg-av { width: 34px; height: 34px; }      /* bigger tap targets */
+    .acal-pop-actions .acal-btn { padding: 8px 12px; }
+}

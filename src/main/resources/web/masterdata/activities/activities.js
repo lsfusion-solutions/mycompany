@@ -282,6 +282,14 @@ function acalDateNames(locale) {
     }
 }
 
+// On a phone-width screen the month/week grids are cramped; a vertical list is the
+// natural portrait layout, so the calendar opens in Agenda there. Kept in sync with
+// the activities.css `@media (max-width: 600px)` breakpoint.
+function acalIsNarrow() {
+    try { return !!(window.matchMedia && window.matchMedia('(max-width: 600px)').matches); }
+    catch (e) { return false; }
+}
+
 function activityCalendar() {
     // populated from OPTIONS on every update(); start with the English / default-locale fallbacks
     let WEEKDAYS = ACAL_DEFAULT_WEEKDAYS.slice();
@@ -757,12 +765,21 @@ function activityCalendar() {
             const root = document.createElement('div'); root.className = 'acal';
             const pop = document.createElement('div'); pop.className = 'acal-pop'; pop.style.display = 'none';
             const st = {
-                root, pop, controller, lastList: [], mode: 'month', cursor: null,
+                root, pop, controller, lastList: [], mode: acalIsNarrow() ? 'agenda' : 'month', cursor: null,
                 statusFilter: 'open', employees: [],
                 hiddenTypes: new Set(), selectedAssignees: new Set(), hideTimer: null, popFor: null
             };
             pop.addEventListener('mouseenter', () => cancelHide(st));
             pop.addEventListener('mouseleave', () => scheduleHide(st));
+            // No hover on touch: the popup opens on tap and has no mouseleave to dismiss it,
+            // so a tap outside the sheet (and not on another card, which opens its own) closes
+            // it. Harmless on desktop — click-away closing the hover popup is fine there too.
+            document.addEventListener('pointerdown', (e) => {
+                if (st.pop.style.display === 'none') return;
+                if (st.pop.contains(e.target)) return;
+                if (e.target.closest && e.target.closest('.acal-card, .acal-arow')) return;
+                hidePopup(st);
+            }, true);
             root.appendChild(pop); element.appendChild(root);
             element.acalState = st;
         },
