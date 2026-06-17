@@ -44,7 +44,7 @@ fetchKSeFMetadata 'Pobierz metadane KSeF' (Company c, DATE from, DATE to, STRING
         IMPORT JSON FROM resultFile() TO() invoices;
 
         IMPORT JSON FROM invoices() FIELDS STRING ksefNumber DO {
-            IF ksefNumber AND NOT fakturaKSeFNumber(ksefNumber) THEN
+            IF trim(ksefNumber) != '' AND NOT fakturaKSeFNumber(ksefNumber) THEN
                 getFaktura(c, ksefNumber);
         }
     } CATCH { catchException('Pobierz metadane KSeF'); }
