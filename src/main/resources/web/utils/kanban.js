@@ -106,6 +106,27 @@ function kanbanHeader(type, name) {
     return (type ? type : "") + (name && type ? " : " : "") + (name ? name : "");
 }
 
+// Map an lsFusion Color id (see utils/Color.lsf) to a badge's colour classes. Base ids (warning,
+// danger, secondary, …) use Bootstrap's solid .text-bg-*, which the web client bundles. The "*Subtle"
+// ids (warningSubtle, dangerSubtle, …) have NO Bootstrap equivalent in the bundle — there is no
+// .text-bg-*-subtle utility, and lsFusion ships neither .text-*-emphasis nor .border-*-subtle — so
+// "text-bg-warningSubtle" matched nothing and the badge rendered with no colour. Subtle ids instead
+// get the board's own .kanban-tag-subtle-* classes (defined in kanban.css), which paint from the
+// --bs-*-bg-subtle vars (themed in dark mode where lsFusion defines them) with a fixed RGB fallback.
+function kanbanBadgeClasses(id, fallback) {
+    id = id || fallback;
+    const subtle = /^(.+)Subtle$/.exec(id);
+    if (subtle) return "kanban-tag-subtle kanban-tag-subtle-" + subtle[1];
+    return "text-bg-" + id;
+}
+
+// The base Bootstrap colour name behind a Color id, dropping the "Subtle" suffix (warningSubtle ->
+// warning). Used for the thin card left-accent and the popup top border, where a full-strength hue
+// reads better than the near-invisible subtle tone (the soft fill is reserved for the badges).
+function kanbanBaseColor(id) {
+    return id ? id.replace(/Subtle$/, "") : id;
+}
+
 // a calendar-icon + localized-date row; `overdue` paints it red (used for a passed due date)
 function kanbanDateRow(cls, dateVal, duration, locale, overdue) {
     let row = document.createElement("div");
@@ -221,8 +242,9 @@ function kanban(config) {
         cancelHide(st);
         const pop = st.pop;
         pop.className = "kanban-pop";
-        pop.style.borderTopColor = (item.idColorPriority && PRIO_VAR[item.idColorPriority])
-            ? "var(" + PRIO_VAR[item.idColorPriority] + ")" : "var(--bs-primary, #2563eb)";
+        const prioColor = kanbanBaseColor(item.idColorPriority);
+        pop.style.borderTopColor = (prioColor && PRIO_VAR[prioColor])
+            ? "var(" + PRIO_VAR[prioColor] + ")" : "var(--bs-primary, #2563eb)";
         pop.innerHTML = "";
 
         // header (type : project / type : name) as a quiet uppercase label
@@ -248,7 +270,7 @@ function kanban(config) {
             }
             if (priorityName) {
                 let b = document.createElement("span");
-                b.className = "kanban-pop-prio badge rounded-pill text-bg-" + (item.idColorPriority ? item.idColorPriority : "secondary");
+                b.className = "kanban-pop-prio badge rounded-pill " + kanbanBadgeClasses(item.idColorPriority, "secondary");
                 b.textContent = priorityName;
                 badges.appendChild(b);
             }
@@ -388,7 +410,7 @@ function kanban(config) {
             tags.className = "kanban-pop-tags";
             for (const tag of item.tags) {
                 let badge = document.createElement("span");
-                badge.className = "kanban-card-tag badge rounded-pill text-bg-" + (tag.idColor ? tag.idColor : "secondary");
+                badge.className = "kanban-card-tag badge rounded-pill " + kanbanBadgeClasses(tag.idColor, "secondary");
                 badge.textContent = tag.name;
                 tags.appendChild(badge);
             }
@@ -614,7 +636,7 @@ function kanban(config) {
                 let card = document.createElement("div");
                 card.classList.add("kanban-card");
                 card.classList.add("card");
-                if (item.idColorPriority) card.classList.add("text-bg-" + item.idColorPriority);
+                if (item.idColorPriority) card.classList.add("text-bg-" + kanbanBaseColor(item.idColorPriority));
                 // a click selects the card and opens its popup (no standard edit dialog); the popup
                 // and double-click are the edit/delete affordances
                 card.addEventListener("click", function () {
@@ -682,10 +704,7 @@ function kanban(config) {
                     tags.classList.add("list-group-item");
                     for (const tag of item.tags) {
                         let badge = document.createElement("span");
-                        badge.classList.add("kanban-card-tag");
-                        badge.classList.add("badge");
-                        badge.classList.add("rounded-pill");
-                        badge.classList.add("text-bg-" + (tag.idColor ? tag.idColor : "secondary"));
+                        badge.className = "kanban-card-tag badge rounded-pill " + kanbanBadgeClasses(tag.idColor, "secondary");
                         badge.textContent = tag.name;
                         tags.appendChild(badge);
                     }
