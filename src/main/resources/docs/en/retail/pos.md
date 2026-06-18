@@ -149,6 +149,8 @@ From the POS header you can:
 
 Both open a numeric-keypad dialog for the amount and are recorded against the open session. They are listed on the **Session** tab as **“Deposit cash”** and **“Withdraw cash”**.
 
+> The **“Deposit cash”** and **“Withdraw”** buttons are available only if the cash register has a **cash account** — the account for the **“Cash”** payment method. If it is not configured, the buttons are disabled (and the “Cash at the checkout” field is empty). This account is set on the cash-register card — see [Retail settings](settings.md).
+
 ## Fiscal registration
 
 If a fiscal device is connected to the cash register, opening and closing a session, sales, returns, and cash operations are registered on it, and the POS screen provides the corresponding fiscal commands (such as printing an X-report). Fiscal registration depends on your configuration and region.

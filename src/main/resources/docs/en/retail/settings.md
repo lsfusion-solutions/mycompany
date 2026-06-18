@@ -20,7 +20,10 @@ Typically configured:
 
 - cash register **name** and **code**;
 - **company**;
-- linking the cash register to a **computer** (so that a specific computer suggests “its” cash register).
+- linking the cash register to a **computer** (so that a specific computer suggests “its” cash register);
+- **accounts per payment method** — on a separate cash-register tab you can specify, for each **[payment method](payments.md)**, the **account** that payments received with that method are posted to.
+
+> **Cash account.** For the **“Deposit cash”** and **“Withdraw”** operations to work on the POS screen (and for the **“Cash at the checkout”** balance to show in the header), the cash register must have an **account** specified for the **“Cash”** payment method. Until the cash account is set, the cash deposit and withdrawal buttons on the POS screen stay **disabled**. In addition, the corresponding **payment types** (a deposit type and a withdrawal type) must be configured in the settings for the deposit/withdrawal operations themselves.
 
 ## Sessions
 
