@@ -25,6 +25,8 @@ Typically configured:
 
 > **Cash account.** For the **“Deposit cash”** and **“Withdraw”** operations to work on the POS screen (and for the **“Cash at the checkout”** balance to show in the header), the cash register must have an **account** specified for the **“Cash”** payment method. Until the cash account is set, the cash deposit and withdrawal buttons on the POS screen stay **disabled**. In addition, the corresponding **payment types** (a deposit type and a withdrawal type) must be configured in the settings for the deposit/withdrawal operations themselves.
 
+> **Central checkout account vs. the till.** The **“Cash account”** field in the cash-register header is the **central checkout account** — the counterparty for the **“Deposit cash”** and **“Withdraw”** operations: a deposit moves money from this central account into the **till** (the account assigned to the **“Cash”** payment method), and a withdrawal moves it back. For this reason the header **“Cash account”** must be a **different account** from the one assigned to the **“Cash”** payment method. If they are the same, a deposit/withdrawal posts both legs to one account, nets to zero, and the **“Cash at the checkout”** balance never changes. The system enforces this and will not save a cash register that uses the same account in both places.
+
 ## Sessions
 
 **[Sessions](sessions.md)** are numbered automatically. The session numerator is selected on the **“Main”** tab of the Settings form.

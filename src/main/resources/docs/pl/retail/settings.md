@@ -25,6 +25,8 @@ Zwykle konfiguruje się:
 
 > **Konto gotówkowe.** Aby na ekranie POS działały operacje **„Wpłać gotówkę”** i **„Wypłać”** (oraz aby w nagłówku wyświetlało się saldo w polu **„Gotówka w kasie”**), dla metody płatności **„Gotówka”** kasa musi mieć wskazane **konto**. Dopóki konto gotówkowe nie zostanie ustawione, przyciski wpłaty i wypłaty gotówki na ekranie POS pozostają **niedostępne** (nieaktywne). Dodatkowo dla samych operacji wpłaty/wypłaty w ustawieniach muszą być określone odpowiednie **typy płatności** (typ wpłaty i typ wypłaty).
 
+> **Konto centralnej kasy.** Pole **„Konto gotówkowe”** w nagłówku karty kasy to **konto centralnej kasy** — konto kontrahenta dla operacji **„Wpłać gotówkę”** i **„Wypłać”**: wpłata przenosi pieniądze z konta centralnego do **szuflady kasy** (konta metody płatności **„Gotówka”**), a wypłata z powrotem. Dlatego konto w nagłówkowym polu **„Konto gotówkowe”** musi być **innym kontem** niż konto wskazane dla metody płatności **„Gotówka”**. Jeśli to to samo konto, wpłata/wypłata księguje obie strony przelewu na jednym koncie, kwota zeruje się, a saldo w polu **„Gotówka w kasie”** się nie zmienia. System tego pilnuje — nie pozwoli zapisać kasy z tym samym kontem w obu miejscach.
+
 ## Sesje
 
 **[Sesje](sessions.md)** są numerowane automatycznie. Numerator sesji wybiera się na zakładce **„Główne”** formularza ustawień.
