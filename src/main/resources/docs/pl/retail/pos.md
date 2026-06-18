@@ -149,6 +149,8 @@ Z nagłówka POS można:
 
 Obie akcje otwierają okno z klawiaturą numeryczną do wprowadzenia kwoty i są rejestrowane w otwartej sesji. Są widoczne na zakładce **„Sesja”** na listach **„Wpłata gotówki”** i **„Wypłata gotówki”**.
 
+> Przyciski **„Wpłać gotówkę”** i **„Wypłać”** są dostępne tylko wtedy, gdy kasa ma wskazane **konto gotówkowe** — konto dla metody płatności **„Gotówka”**. Jeśli nie jest ono skonfigurowane, przyciski są nieaktywne (a pole „Gotówka w kasie” jest puste). Konto to ustawia się w karcie kasy — zobacz [Ustawienia sprzedaży detalicznej](settings.md).
+
 ## Rejestracja fiskalna
 
 Jeśli do kasy podłączone jest urządzenie fiskalne, otwarcie i zamknięcie sesji, sprzedaż, zwroty i operacje gotówkowe są na nim rejestrowane, a ekran POS udostępnia odpowiednie polecenia fiskalne (na przykład wydruk raportu X). Rejestracja fiskalna zależy od konfiguracji i regionu.

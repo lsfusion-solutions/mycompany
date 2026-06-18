@@ -20,7 +20,10 @@ Zwykle konfiguruje się:
 
 - **nazwę** i **kod** kasy;
 - **firmę**;
-- powiązanie kasy z **komputerem** (tak, aby dany komputer sugerował „swoją” kasę).
+- powiązanie kasy z **komputerem** (tak, aby dany komputer sugerował „swoją” kasę);
+- **konta według metod płatności** — na osobnej zakładce kasy dla każdej **[metody płatności](payments.md)** można wskazać **konto**, na które trafiają płatności przyjęte tą metodą.
+
+> **Konto gotówkowe.** Aby na ekranie POS działały operacje **„Wpłać gotówkę”** i **„Wypłać”** (oraz aby w nagłówku wyświetlało się saldo w polu **„Gotówka w kasie”**), dla metody płatności **„Gotówka”** kasa musi mieć wskazane **konto**. Dopóki konto gotówkowe nie zostanie ustawione, przyciski wpłaty i wypłaty gotówki na ekranie POS pozostają **niedostępne** (nieaktywne). Dodatkowo dla samych operacji wpłaty/wypłaty w ustawieniach muszą być określone odpowiednie **typy płatności** (typ wpłaty i typ wypłaty).
 
 ## Sesje
 
