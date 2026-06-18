@@ -25,6 +25,11 @@ CONSTRAINT company(Pos p) AND account(p) AND NOT holder(account(p)) = company(p)
 cashAccount (Pos p) = account(p, cashPaymentMethod());
 cashBalance 'Cash at the checkout' (Pos p) = balance(cashAccount(p));
 
+// the central checkout account is the counterparty for deposit/withdraw transfers, so it cannot be the same
+// account as the till drawer (the account of the cash payment method) - otherwise the transfer nets to zero
+CONSTRAINT account(Pos p) = cashAccount(p)
+                MESSAGE 'The central checkout account must not be the same as the cash account';
+
 EXTEND FORM pos
     PROPERTIES(p) nameAccount
 
