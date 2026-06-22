@@ -224,6 +224,26 @@ function shiftSchedule() {
         st.popShift = shift;
     }
 
+    // ----- scroll preservation across a full grid rebuild -----
+    // The element that actually scrolls may be our own .shsched-scroll OR an lsFusion layout ancestor
+    // (it depends on how the form sizes the custom view), so rather than assume one element we snapshot
+    // every scrolled ancestor of the grid before the wipe and restore them after. Emptying the grid
+    // collapses the scrollable content to zero height, which clamps the scroller's scrollTop to 0;
+    // without this a drop (which re-enters update() via changeProperty) snaps the view back to the top.
+    function snapshotScrolls(fromEl) {
+        const snaps = [];
+        for (let el = fromEl; el && el.nodeType === 1; el = el.parentElement) {
+            if (el.scrollTop || el.scrollLeft) snaps.push([el, el.scrollTop, el.scrollLeft]);
+        }
+        const se = document.scrollingElement;
+        if (se && (se.scrollTop || se.scrollLeft) && !snaps.some((s) => s[0] === se))
+            snaps.push([se, se.scrollTop, se.scrollLeft]);
+        return snaps;
+    }
+    function restoreScrolls(snaps) {
+        for (const s of snaps) { s[0].scrollTop = s[1]; s[0].scrollLeft = s[2]; }
+    }
+
     return {
         render: function (element, controller) {
             let root = document.createElement("div");
@@ -377,6 +397,9 @@ function shiftSchedule() {
             if (options && options.employees) employees = employees.concat(options.employees);
 
             // ---- rebuild the grid -----------------------------------------------
+            // snapshot the scroll offsets of every scrolled ancestor before wiping the grid (see helper)
+            const scrollSnaps = snapshotScrolls(grid);
+
             while (grid.firstChild) grid.removeChild(grid.firstChild);
 
             // header row: corner + day headers
@@ -545,6 +568,13 @@ function shiftSchedule() {
 
                 firstRow = false;
             }
+
+            // grid is fully repopulated (cells have a fixed min-height, so its height is deterministic
+            // now), so restore the saved offsets. Do it synchronously AND on the next frame: some
+            // layouts re-clamp or scroll-into-view after update() returns, which the rAF pass undoes.
+            restoreScrolls(scrollSnaps);
+            if (typeof requestAnimationFrame === "function")
+                requestAnimationFrame(function () { restoreScrolls(scrollSnaps); });
         },
 
         clear: function (element) {
