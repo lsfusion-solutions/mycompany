@@ -21,12 +21,26 @@ A shift contains:
 
 - **Date** — the day of the shift;
 - **Time** — the start–end time interval;
+- **Night shift** — marks a shift that crosses midnight (see [Night shifts](#night-shifts));
 - **Assigned to** — the employee who works the shift;
 - **Project** — the project the shift relates to (optional);
 - **Note** and **Description**;
 - attached **files**.
 
 To open a shift, double‑click it in the list (or use **Edit**).
+
+## Night shifts
+
+A **night shift** runs across midnight — for example, from `22:00` to `06:00` the next day.
+
+Because the time field does not allow the end time to be earlier than the start time, a night shift is entered like this:
+
+1. Enter the **Time** interval normally, with the smaller value first — e.g. `06:00–22:00`.
+2. Tick the **Night shift** checkbox on the shift card.
+
+The shift is then shown **reversed**, with a next‑day marker — `22:00-06:00 (+1)` — everywhere it appears: the shift card, the shift list, and the **Schedule** board.
+
+A **shift template** can also be marked as a night shift (on the **“Shift templates”** tab of **Settings**). A shift created from such a template inherits the night‑shift mark, so you can plan night shifts by drag‑and‑drop on the **Schedule** as usual.
 
 ## The Schedule view
 

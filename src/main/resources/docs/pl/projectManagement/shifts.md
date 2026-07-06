@@ -21,12 +21,26 @@ Zmiana zawiera:
 
 - **Data** — dzień zmiany;
 - **Czas** — przedział czasu początek–koniec;
+- **Zmiana nocna** — oznacza zmianę przechodzącą przez północ (zobacz [Zmiany nocne](#zmiany-nocne));
 - **Przypisane do** — pracownik, który pracuje na zmianie;
 - **Projekt** — projekt, którego dotyczy zmiana (opcjonalnie);
 - **Notatka** i **Opis**;
 - załączone **pliki**.
 
 Aby otworzyć zmianę, kliknij ją dwukrotnie na liście (lub użyj **„Edytuj”**).
+
+## Zmiany nocne
+
+**Zmiana nocna** trwa przez północ — na przykład od `22:00` do `06:00` następnego dnia.
+
+Ponieważ pole czasu nie pozwala, aby czas zakończenia był wcześniejszy niż czas rozpoczęcia, zmianę nocną wprowadza się tak:
+
+1. Wprowadź przedział **Czas** normalnie, z mniejszą wartością na początku — np. `06:00–22:00`.
+2. Zaznacz pole **„Zmiana nocna”** na karcie zmiany.
+
+Zmiana jest wtedy wyświetlana **odwrotnie**, ze znacznikiem następnego dnia — `22:00-06:00 (+1)` — wszędzie tam, gdzie się pojawia: na karcie zmiany, na liście zmian i na tablicy **„Harmonogram”**.
+
+**Szablon zmiany** również można oznaczyć jako nocny (na zakładce **„Szablony zmian”** w **„Ustawieniach”**). Zmiana utworzona z takiego szablonu dziedziczy oznaczenie zmiany nocnej, więc zmiany nocne można planować przeciąganiem na **„Harmonogramie”** jak zwykle.
 
 ## Widok „Harmonogram”
 
