@@ -9,11 +9,14 @@ NAMESPACE ProjectManagement;
 CLASS ShiftTemplate 'Shift template';
 
 interval 'Time' = DATA INTERVAL[TIME] (ShiftTemplate); 
-intervalS (ShiftTemplate s) = toChar(from(interval(s)), 'HH24:MI') + '-' + toChar(to(interval(s)), 'HH24:MI');
+nightShift 'Night shift' = DATA BOOLEAN (ShiftTemplate);
+intervalS (ShiftTemplate s) = IF nightShift(s)
+    THEN toChar(to(interval(s)), 'HH24:MI') + '-' + toChar(from(interval(s)), 'HH24:MI') + ' (+1)'
+    ELSE toChar(from(interval(s)), 'HH24:MI') + '-' + toChar(to(interval(s)), 'HH24:MI');
 
 EXTEND FORM options
     OBJECTS s = ShiftTemplate
-    PROPERTIES(s) interval, NEW, DELETE
+    PROPERTIES(s) interval, nightShift, NEW, DELETE
 ;
 
 DESIGN options {
@@ -29,6 +32,7 @@ createShift (ShiftTemplate t, STRING date, Employee e) {
         NEW ss = Shift {
             assignedTo(ss) <- e;
             interval(ss) <- interval(t);
+            nightShift(ss) <- nightShift(t);
             date(ss) <- toDateFormat(date, 'YYYY-MM-DD');
         }
         APPLY;

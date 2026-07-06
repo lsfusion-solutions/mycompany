@@ -16,7 +16,12 @@ date 'Date' = DATA DATE (Shift) IN id;
 dayDOW (Shift s) = extractDay(date(s)) + ' ' + extractDOWName(date(s)); 
 
 interval 'Time' = DATA INTERVAL[TIME] (Shift);
-intervalS (Shift s) = toChar(from(interval(s)), 'HH24:MI') + '-' + toChar(to(interval(s)), 'HH24:MI'); 
+// the interval editor doesn't allow from > to, so a night shift (crossing midnight) is marked explicitly:
+// the time is entered normally (e.g. 06:00-22:00) and displayed reversed (22:00-06:00 (+1))
+nightShift 'Night shift' = DATA BOOLEAN (Shift);
+intervalS (Shift s) = IF nightShift(s)
+    THEN toChar(to(interval(s)), 'HH24:MI') + '-' + toChar(from(interval(s)), 'HH24:MI') + ' (+1)'
+    ELSE toChar(from(interval(s)), 'HH24:MI') + '-' + toChar(to(interval(s)), 'HH24:MI'); 
 
 assignedTo = DATA Employee (Shift);
 nameAssignedTo 'Assigned to' (Shift s) = name(assignedTo(s)) IN id;
@@ -27,7 +32,7 @@ description 'Description' = DATA RICHTEXT (Shift);
 
 FORM shift 'Shift'
     OBJECTS s = Shift PANEL
-    PROPERTIES(s) date, interval, nameAssignedTo, note, 
+    PROPERTIES(s) date, interval, nightShift, nameAssignedTo, note, 
                   description
     
     EDIT Shift OBJECT s
@@ -40,6 +45,7 @@ DESIGN shift {
                 horizontal = TRUE;
                 MOVE PROPERTY(date(s));
                 MOVE PROPERTY(interval(s));
+                MOVE PROPERTY(nightShift(s));
             }
             MOVE PROPERTY(nameAssignedTo(s)) { alignment = STRETCH; }
             MOVE PROPERTY(note(s)) { alignment = STRETCH; }
@@ -63,7 +69,7 @@ FORM shifts 'Shifts'
     }
 
     OBJECTS s = Shift
-    PROPERTIES(s) READONLY date, interval, nameAssignedTo, note
+    PROPERTIES(s) READONLY date, interval, nightShift, nameAssignedTo, note
     PROPERTIES(s) NEWSESSION NEW, EDIT, DELETE
 
     FILTERS date(s) >= from(dates),
