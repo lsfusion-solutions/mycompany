@@ -578,7 +578,7 @@ function kanban(config) {
 
                 let count = 0, total = 0;
                 for (const item of list)
-                    if (item.status === status.id.toString()) {
+                    if (item.status === status.id) {
                         count++;
                         if (config.amount) total += Number(config.amount(item)) || 0;
                         statusBody.appendChild(buildCard(item));
@@ -618,7 +618,7 @@ function kanban(config) {
                 // session the user may already be dragging in again — and each costs a round-trip.
                 let batch = { properties: [], objects: [], values: [] };
                 kanbanCollectReorder(batch, target.children, key);
-                if (el[key].status !== target.status.id.toString()) {
+                if (el[key].status !== target.status.id) {
                     batch.properties.push("status");
                     batch.objects.push(el[key]);
                     batch.values.push(target.status.id);
