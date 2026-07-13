@@ -39,16 +39,21 @@ product(ConsumedInCostLedger l) += item(line(l)) AS Product;
 quantity(ConsumedInCostLedger l) += produced(line(l));
 
 cost 'Cost' (ManufacturingOrder o) = GROUP SUM amount(ConsumedOutCostLedger l) IF manufacturingOrder(line(l)) = o MATERIALIZED;
-extraCost 'Extra cost' = ABSTRACT VALUE NUMERIC[14,2] (ManufacturingOrder) MATERIALIZED;
-laborCost 'Labor cost' = ABSTRACT VALUE NUMERIC[14,2] (ManufacturingOrder) MATERIALIZED;
-serviceCost 'Service cost' = ABSTRACT VALUE NUMERIC[14,2] (ManufacturingOrder) MATERIALIZED;
+CLASS ManufacturingCostType 'Cost type' {
+    extra 'Extra cost'
+}
 
-totalCost 'Total cost' (ManufacturingOrder o) = cost(o) (+) extraCost(o) (+) laborCost(o) (+) serviceCost(o);
+cost 'Cost' = ABSTRACT CASE NUMERIC[14,2] (ManufacturingOrder, ManufacturingCostType) MATERIALIZED;
+
+// backward compatibility
+extraCost 'Extra cost' (ManufacturingOrder o) = cost(o, ManufacturingCostType.extra);
+
+totalCost 'Total cost' (ManufacturingOrder o) = cost(o) (+) (GROUP SUM cost(o, ManufacturingCostType t));
 
 calcAmount (ConsumedInCostLedger l) += NUMERIC[14,2](totalCost(manufacturingOrder(line(l))) * normalizedCostRatio(line(l)));
 
 edit(ConsumedInCostLedger l) + { edit(line(l)); }
 
 EXTEND FORM manufacturingOrders
-    PROPERTIES(o) READONLY cost, extraCost, laborCost, serviceCost, totalCost
+    PROPERTIES(o) READONLY cost, extraCost, totalCost
 ;

@@ -1,6 +1,6 @@
 MODULE ManufacturingOrderBillCost;
 
-REQUIRE BillCost, ManufacturingOrderCost;
+REQUIRE BillCost, ManufacturingOrderCost, ManufacturingOrderReport;
 
 NAMESPACE Manufacturing;
 
@@ -27,7 +27,22 @@ countServiceLineManufacturingOrder (BillLine l) = GROUP SUM 1 IF serviceLine(Man
 costAllocated 'Distributed' = DATA NUMERIC[14,2] (ManufacturingOrder, BillLine);
 costAllocated(ManufacturingOrder t, BillLine b) += costAllocated(t, b);
 
-serviceCost(ManufacturingOrder mo) += GROUP SUM costAllocated(mo, BillLine bsl);
+EXTEND CLASS ManufacturingCostType {
+    service 'Service cost'
+}
+
+cost (ManufacturingOrder mo, ManufacturingCostType t) += WHEN t = ManufacturingCostType.service THEN GROUP SUM costAllocated(mo, BillLine bsl);
+
+// backward compatibility
+serviceCost 'Service cost' (ManufacturingOrder o) = cost(o, ManufacturingCostType.service);
+
+EXTEND FORM manufacturingOrders
+    PROPERTIES(o) READONLY AFTER extraCost(o) serviceCost
+;
+
+EXTEND FORM manufacturingOrderReport
+    PROPERTIES(o) READONLY MEASURE AFTER extraCost(o) serviceCost
+;
 
 EXTEND FORM bill
     OBJECTS mo = ManufacturingOrder

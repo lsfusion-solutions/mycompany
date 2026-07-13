@@ -1,7 +1,22 @@
 MODULE ProjectManufacturingOrderCost;
 
-REQUIRE ProjectManufacturingOrderTimeEntry, ProjectTimeEntryPayslip, ManufacturingOrderCost;
+REQUIRE ProjectManufacturingOrderTimeEntry, ProjectTimeEntryPayslip, ManufacturingOrderCost, ManufacturingOrderReport;
 
 NAMESPACE ProjectManufacturing;
 
-laborCost (ManufacturingOrder o) += NUMERIC[14,2](GROUP SUM salary(TimeEntry e) IF manufacturingOrder(e) = o);
+EXTEND CLASS ManufacturingCostType {
+    labor 'Labor cost'
+}
+
+cost (ManufacturingOrder o, ManufacturingCostType t) += WHEN t = ManufacturingCostType.labor THEN NUMERIC[14,2](GROUP SUM salary(TimeEntry e) IF manufacturingOrder(e) = o);
+
+// backward compatibility
+laborCost 'Labor cost' (ManufacturingOrder o) = cost(o, ManufacturingCostType.labor);
+
+EXTEND FORM manufacturingOrders
+    PROPERTIES(o) READONLY AFTER extraCost(o) laborCost
+;
+
+EXTEND FORM manufacturingOrderReport
+    PROPERTIES(o) READONLY MEASURE AFTER extraCost(o) laborCost
+;

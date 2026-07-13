@@ -4,4 +4,4 @@ REQUIRE ManufacturingOrderScrap, ManufacturingOrderCost, ScrapCost;
 
 NAMESPACE Manufacturing;
 
-extraCost (ManufacturingOrder o) += GROUP SUM amount(ScrapCostLedger l) IF manufacturingOrder(scrap(line(l))) = o;
+cost (ManufacturingOrder o, ManufacturingCostType t) += WHEN t = ManufacturingCostType.extra THEN GROUP SUM amount(ScrapCostLedger l) IF manufacturingOrder(scrap(line(l))) = o;
