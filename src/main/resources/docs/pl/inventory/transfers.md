@@ -23,7 +23,7 @@ Co to zmienia dla użytkownika:
 - Lista dokumentów: **„Magazynowanie” → „Operacje” → „Wydania”**.
 - Utworzenie nowego dokumentu: przycisk **Utwórz** na liście.
 - Tworzenie zbiorcze: akcja **„Utwórz przemieszczanie”** w akcjach listy.
-- Interfejs mobilny: **„Przemieszczanie mobilny”**.
+- Interfejs mobilny: **„Magazynowanie” → „Procesy” → „Przemieszczanie mobilny”**.
 
 ## Pola dokumentu
 
@@ -67,6 +67,10 @@ Aby utworzyć poprawne przemieszczenie, system sprawdza:
 
 Jeżeli którykolwiek warunek nie jest spełniony, system pokazuje komunikat i nie pozwala zapisać/zakończyć dokumentu.
 
+## Akceptacja w miejscu docelowym
+
+Jeżeli użytkownik wykonujący przemieszczenie nie ma dostępu do docelowej [lokalizacji](locations.md), wydanie otrzymuje flagę **„Potwierdzenie akceptacji”**: po **„Wykonano”** musi zostać dodatkowo **zaakceptowane** przez personel docelowej lokalizacji i dopiero wtedy towar jest tam liczony jako stan. Zobacz [Wydania — Akceptacja w miejscu docelowym](shipments.md#akceptacja-w-miejscu-docelowym).
+
 ## Zapisy w rejestrze kosztów
 
 Gdy przemieszczenie zostaje przeniesione do **„Wykonano”**, system tworzy **dwa** zapisy w rejestrze kosztów — zapis rozchodowy na lokalizacji **źródłowej** i zapis przychodowy na lokalizacji **docelowej** — pod warunkiem, że obie lokalizacje mają różne konta kosztowe. Kwota zapisu przychodowego jest brana z odpowiadającego zapisu rozchodowego, więc towar trafia do lokalizacji docelowej po tym samym koszcie, po którym został wydany ze źródła. Jeżeli obie lokalizacje mają to samo konto kosztowe, zapisów w rejestrze nie tworzy się (przemieszczenie jest tylko logicznym przeniesieniem).
@@ -85,7 +89,7 @@ Szczegółowa instrukcja dla akcji **„Utwórz przemieszczanie”** jest dostę
 
 ## Przemieszczanie mobilne
 
-Formularz **Przemieszczanie mobilny** służy do szybkiego utworzenia przemieszczenia na podstawie faktycznych stanów.
+Formularz **„Przemieszczanie mobilny”** (**„Magazynowanie” → „Procesy” → „Przemieszczanie mobilny”**) służy do szybkiego utworzenia przemieszczenia na podstawie faktycznych stanów.
 
 Typowy przebieg:
 
@@ -99,4 +103,4 @@ Typowy przebieg:
    - może być dostępna komenda ustawiająca ilość równą stanowi.
 6. Kliknij akcję przemieszczenia i potwierdź operację.
 
-Po potwierdzeniu system tworzy dokument przemieszczenia i od razu oznacza go jako wykonany (tryb „immediate document”).
+Po potwierdzeniu system tworzy dokument przemieszczenia i od razu oznacza go jako wykonany (tryb „dokumentu natychmiastowego”: utworzone wydanie ma flagę **„Nieplanowane”** i pomija etapy Oczekiwanie/Gotowy oraz sprawdzanie dostępności).

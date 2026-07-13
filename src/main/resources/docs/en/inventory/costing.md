@@ -27,6 +27,8 @@ Cost is maintained **by**:
 - **location** (the cost accounting location),
 - **item**.
 
+A **cost accounting location** is defined by the **Cost calculation** flag on the [location](locations.md) card: for any location, cost is accounted at the nearest ancestor (including itself) with this flag — or at the root of the location tree if no ancestor has it. Movements between sub-locations of one cost accounting location therefore do not create cost postings.
+
 For each “location–item” pair the system stores and calculates:
 
 - **stock quantity**;
@@ -107,6 +109,8 @@ A production order affects costing as follows:
 
 Open **“Inventory” → “Reporting” → “Inventory valuation”**.
 
+![Inventory valuation](images/inventory-valuation.png)
+
 What you can see:
 
 - stock quantity;
@@ -124,6 +128,8 @@ Also, at the bottom (or in a separate details area) you can see:
 
 Open **“Inventory” → “Reporting” → “Cost report”**.
 
+![Cost report](images/cost-ledger-report.png)
+
 The report shows movements that form cost (inbound/outbound) with quantities and amounts.
 
 ## Cost recalculation
@@ -140,9 +146,13 @@ Recalculation may be needed if:
 
 1. Open **“Inventory valuation”**.
 2. Click **“Recalculate cost”**.
-3. In parameters, specify the date **from which** you need to recalculate (and optionally limit recalculation by location/item).
+3. In the **“Costing parameters”** dialog, specify the date **from which** you need to recalculate (and optionally limit recalculation by location/item).
 
 Tip: if changes affected a specific item or location, specify them in parameters to make recalculation faster.
+
+## Accounting integration
+
+If the Accounting module is used, completing an inventory document ([receipt](receipts.md), [shipment](shipments.md), [scrap](scrap.md), [adjustment](adjustments.md)) also creates the corresponding **journal entries** in the general ledger using the cost amounts described above (provided the accounts are configured). Users do not work with these entries directly from the Inventory section.
 
 ## Typical questions
 

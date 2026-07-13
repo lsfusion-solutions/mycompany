@@ -6,55 +6,82 @@ title: Inventory settings
 
 Open **“Inventory” → “Configuration” → “Settings”**.
 
+![Inventory Settings form](images/settings.png)
+
 ## What is typically configured
 
-- [receipt](receipts.md) and [shipment](shipments.md) types (their numbering, default locations, maximum quantity);
+- [receipt](receipts.md) and [shipment](shipments.md) types (their numbering, default locations, maximum quantity and other flags);
 - [transfer](transfers.md) usage (a [shipment](shipments.md) type with the **"Transfer"** flag);
-- [adjustment](adjustments.md) and [scrap](scrap.md) types;
-- whether **[lots](lots-and-packages.md)** are enabled (global toggle), and per-product lot/serial-number options;
-- cross-cutting flags such as **Prohibit multiple root locations**, and the per-location toggles **Positive on hand only** and **Positive available only** (see ledgers below).
+- [scrap](scrap.md) types;
+- whether **[lots](lots-and-packages.md)** are enabled (the global **Use lots** toggle), and per-category / per-product lot and serial-number options;
+- cross-cutting flags such as **Prohibit multiple root locations**;
+- the per-location toggles **Disallow negative inventory** and **Disallow reserving more than available** are set on the [location](locations.md) card itself (see ledger constraints below).
 
 ## Receipt types
 
 Settings include a directory of **receipt types**. A receipt type defines how users work with the document.
 
-Typically, a receipt type defines:
+A receipt type defines:
 
-- **Numbering** — how the number is generated;
-- **Default location** — which [location](locations.md) is set in new documents;
-- **Maximum quantity** — the upper limit for the “Planned quantity” field in lines.
+- **Numerator** — how the document number is generated;
+- **Location** (default) — which [location](locations.md) is set in new documents;
+- **Maximum quantity** — the upper limit for the “Initial demand” field in lines;
+- **Only one line for one item** — forbids adding the same item in two lines;
+- **Do not check received quantity** — allows completing a receipt whose received quantity differs from the planned one without a warning;
+- **Put away** — enables the put-away step (see [receipts](receipts.md));
+- **Show cost price** — adds a **Cost** column to receipt lines for manual entry of the inbound cost (see [item costing](costing.md));
+- **Show packages** — adds packaging-unit columns to lines (see [Number of packages](product-sku.md#alternative-accounting-in-packages-units-in-documents));
+- **Increase available stock** — receipts of this type in **Ready** status increase the *expected* quantity in the reservation ledger, so the goods count towards availability before they physically arrive;
+- **Return** section — the [shipment](shipments.md) type used for returning goods to the supplier, and the **Check returned quantity** flag that forbids returning more than was received.
 
-If the system has exactly one receipt type, it may be substituted automatically.
+If the system has exactly one receipt type, it is substituted into new documents automatically.
 
 ## Shipment types
 
 Settings include a directory of **shipment types**.
 
-Typically, a shipment type defines:
+A shipment type defines:
 
-- **Numbering**;
-- **Default source location**;
-- **Default destination location** (relevant for transfers);
+- **Numerator**;
+- **Source location** (default);
+- **Destination location** (default; relevant for transfers);
 - **“Transfer” flag** — enables the “source location → destination location” mode;
-- **Maximum quantity** — the upper limit for the “Planned quantity” field in lines.
+- **Maximum quantity** — the upper limit for the “Initial demand” field in lines;
+- **Only one line for one item** — forbids adding the same item in two lines;
+- **Do not check shipped quantity** — allows completing a shipment whose shipped quantity differs from the planned one without a warning;
+- **Picking** — shows the **Picking** tab on the shipment card (availability/reservation by locations, see [picking](picking.md));
+- **Picking task** — defaults the per-shipment “Picking task” flag that triggers creation of [picking tasks](picking.md);
+- **Show packages** — adds packaging-unit columns to lines;
+- **Return** section — the [receipt](receipts.md) type used for customer returns, and the **Check returned quantity** flag.
 
 Validation:
 
-- for transfers, the source and destination locations cannot be the same.
+- for transfers, the default source and destination locations cannot be the same.
+
+## Scrap types
+
+The directory of **[scrap](scrap.md) types** classifies write-off reasons (for example, "Damage", "Loss", "Expiry"). A scrap type defines its own **numerator** and a default **location**.
+
+## Adjustment types
+
+[Adjustments](adjustments.md) use a fixed list of types that control how lines are filled:
+
+- **All** — count all products with stock at the location;
+- **By category** — count only products of the selected category;
+- **Manually** — lines are entered manually (or via the search/barcode tab).
 
 ## Ledger constraints (per location)
 
 On each [location](locations.md) two optional constraints can be turned on:
 
-- **Positive on hand only** — the system will not allow operations that drive the physical balance of an item at that location below zero.
-- **Positive available only** — the system will not allow the available (on hand minus reserved) balance of an item at that location to go below zero.
+- **Disallow negative inventory** — the system will not allow operations that drive the physical balance of an item at that location below zero.
+- **Disallow reserving more than available** — the system will not allow the available balance (*on hand − reserved + expected*) of an item at that location to go below zero.
 
-When enabled, the corresponding postings to the inventory or reservation ledger are blocked with an explanatory message.
+Both flags are inherited by child locations. When enabled, the corresponding postings to the inventory or reservation ledger are blocked with an explanatory message.
 
 ## Recommended setup order
 
-1. Configure [locations](locations.md).
-2. Configure document types ([receipts](receipts.md)/[shipments](shipments.md)/[transfers](transfers.md)/[scraps](scrap.md)/[adjustments](adjustments.md)).
-3. If needed, enable [lots](lots-and-packages.md) globally and configure per-product lot/serial-number options.
-4. Decide on the per-location ledger constraints (see above).
-5. Review [reports and ledgers](reports-and-ledgers.md) and access rights.
+1. Configure [locations](locations.md) (including the **Cost calculation** flag and ledger constraints).
+2. Configure document types ([receipts](receipts.md)/[shipments](shipments.md)/[transfers](transfers.md)/[scraps](scrap.md)).
+3. If needed, enable [lots](lots-and-packages.md) globally and configure per-category/per-product lot and serial-number options.
+4. Review [reports and ledgers](reports-and-ledgers.md) and access rights (including per-employee [location access](locations.md#access-by-employees)).

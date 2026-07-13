@@ -41,17 +41,17 @@ Poniżej przedstawiono typowy cykl magazynowy.
    - uruchom sprawdzenie dostępności i rezerwację (jeśli włączone);
    - wykonaj kompletację (jeśli używane są [zadania kompletacyjne](picking.md)) i zakończ wydanie.
 4. W razie potrzeby wykonaj **[przemieszczanie](transfers.md)** między lokalizacjami (magazynami/strefami).
-5. Użyj dokumentu **[odpad](scrap.md)**, aby zarejestrować rozbieżności (uszkodzenia, straty, wady, przeterminowanie itd.).
-6. Okresowo uruchamiaj **[korekty zapasów](adjustments.md)** i zamykaj je.
+5. Użyj dokumentu **[odpad](scrap.md)**, aby spisać towar ze stanu (uszkodzenia, straty, wady, przeterminowanie itd.).
+6. Okresowo uruchamiaj **[korekty zapasów](adjustments.md)** (inwentaryzacja — rejestruje zarówno nadwyżki, jak i braki) i zamykaj je.
 
 ## Nawigacja
 
-Sekcja „Magazynowanie” zazwyczaj zawiera grupy:
+Sekcja „Magazynowanie” zawiera następujące grupy i formularze:
 
-- **Operacje** — dokumenty ([przyjęcia](receipts.md), [wydania i przemieszczania](shipments.md), [odpad](scrap.md), [korekty zapasów](adjustments.md)), a także katalogi [partii](lots-and-packages.md) i [pakietów](lots-and-packages.md).
-- **Procesy** — widoki kontrolne oraz scenariusze mobilne / wsadowe (na przykład mobilne zadanie kompletacyjne, mobilne przemieszczanie).
-- **Raportowanie** — raporty stanów i ruchów oraz podgląd rejestrów ([raporty i rejestry](reports-and-ledgers.md)).
-- **Konfiguracja** — katalogi ([lokalizacje](locations.md), typy dokumentów) oraz formularz **„Ustawienia”** z parametrami przekrojowymi.
+- **Operacje** — dokumenty i katalogi: **„Przyjęcia”** ([przyjęcia](receipts.md)), **„Wydania”** ([wydania i przemieszczania](shipments.md)), **„Korekty zapasów”** ([korekty zapasów](adjustments.md)), **„Odpady”** ([odpad](scrap.md)), **„Pakiety”** i **„Partie”** ([partie i pakiety](lots-and-packages.md)).
+- **Procesy** — scenariusze mobilne: **„Mobilna kompletacja”** ([zadania kompletacyjne](picking.md)) i **„Przemieszczanie mobilny”** ([przemieszczania](transfers.md#przemieszczanie-mobilne)).
+- **Raportowanie** — **„Bieżące stany towarów”**, **„Koszt stanów towarów”**, **„Historia ruchów produktu”** i **„Raport kosztów”** ([raporty i rejestry](reports-and-ledgers.md), [kalkulacja kosztu pozycji](costing.md)).
+- **Konfiguracja** — **„Ustawienia”** ([ustawienia](settings.md)) z typami dokumentów i parametrami przekrojowymi, **„Lokalizacje”** ([lokalizacje](locations.md)) oraz **„Lokalizacja produktów”**.
 
 ## Terminy
 

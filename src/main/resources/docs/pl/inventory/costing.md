@@ -27,6 +27,8 @@ Koszt jest utrzymywany **dla**:
 - **lokalizacji** (kosztowej lokalizacji ewidencyjnej),
 - **towaru**.
 
+**Kosztową lokalizację ewidencyjną** definiuje flaga **„Kalkulacja kosztów”** na karcie [lokalizacji](locations.md): dla dowolnej lokalizacji koszt jest ewidencjonowany na najbliższym przodku (włącznie z nią samą) z tą flagą — lub na korzeniu drzewa lokalizacji, jeśli żaden przodek jej nie ma. Przemieszczenia pomiędzy podlokalizacjami jednej kosztowej lokalizacji ewidencyjnej nie tworzą więc zapisów kosztowych.
+
 Dla każdej pary „lokalizacja–towar” system przechowuje i oblicza:
 
 - **ilość zapasu**;
@@ -140,9 +142,13 @@ Ponowne przeliczenie może być potrzebne, jeśli:
 
 1. Otwórz **„Koszt stanów towarów”**.
 2. Kliknij **„Ponowne oblicz koszty”**.
-3. W parametrach wskaż datę, **od której** należy wykonać przeliczenie (i opcjonalnie ogranicz przeliczenie do lokalizacji/towaru).
+3. W oknie dialogowym **„Parametry kalkulacji kosztów”** wskaż datę, **od której** należy wykonać przeliczenie (i opcjonalnie ogranicz przeliczenie do lokalizacji/towaru).
 
 Wskazówka: jeśli zmiany dotyczą konkretnego towaru lub lokalizacji, wskaż je w parametrach, aby przyspieszyć przeliczenie.
+
+## Integracja z księgowością
+
+Jeżeli używany jest moduł Księgowość, zakończenie dokumentu magazynowego ([przyjęcia](receipts.md), [wydania](shipments.md), [odpadu](scrap.md), [korekty zapasów](adjustments.md)) tworzy także odpowiednie **zapisy księgowe** w księdze głównej, używając opisanych powyżej kwot kosztowych (pod warunkiem skonfigurowania kont). Użytkownicy nie pracują z tymi zapisami bezpośrednio z sekcji Magazynowanie.
 
 ## Typowe pytania
 

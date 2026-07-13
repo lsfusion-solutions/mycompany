@@ -31,13 +31,15 @@ Each picking task contains one or more **picking lines**. A picking line carries
 
 ## Typical flow
 
-1. A warehouse operator opens the **Mobile picking task** form from the **Processes** group.
+1. A warehouse operator opens the **Mobile picking** form from the **Processes** group (**Inventory → Processes → Mobile picking**).
 2. They pick the task that matches the shipment they are working on.
 3. For each line:
    - scan the bin/item barcode (if enabled);
    - enter the actual picked quantity.
-4. When everything has been picked, the operator confirms the task. The picked quantities are reflected on the source shipment.
+4. When everything has been picked, the operator confirms the task with **Mark as Done**. The picked quantities are reflected on the source shipment.
+
+Picked quantities can also be entered without the mobile form — directly on the shipment card.
 
 ## Where it interacts with the shipment
 
-On the shipment card, the **Picking** tab shows reservation and picked quantities broken down by source [location](locations.md). The tab is visible while the shipment is in **Waiting** or **Done** and picking is enabled on the shipment type.
+On the shipment card, the **Picking** tab shows reservation and picked quantities broken down by source [location](locations.md). The tab is visible from the moment the shipment is marked for processing (**Waiting** and all later statuses, including **Ready** and **Done**) when picking is enabled on the shipment type. When [lots](lots-and-packages.md) are used, the picked quantity within a location can additionally be detailed by lot.

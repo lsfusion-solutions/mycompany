@@ -23,14 +23,14 @@ What it changes for a user:
 - Document list: **“Inventory” → “Operations” → “Shipments”**.
 - Create a new document: **Create** button in the list.
 - Bulk creation: **“Create transfers”** action in the list actions.
-- Mobile UI: **“Mobile transfer”**.
+- Mobile UI: **“Inventory” → “Processes” → “Mobile transfer”**.
 
 ## Document fields
 
 ### Header
 
 - **Type** — the shipment document type. For transfers, select a type marked as `Transfer`.
-- **Planned date** — document date/time.
+- **Scheduled date** — document date/time.
 - **Number** — document number (may be filled automatically if numbering is configured for the selected type).
 - **Location (from)** — source.
 - **Location (to)** — destination.
@@ -45,7 +45,7 @@ Columns and fields depend on configuration, but the basic set is:
 - **Item**
 - **UoM**
 - **Barcode** (to simplify selection)
-- **Planned quantity** (quantity to transfer)
+- **Initial demand** (quantity to transfer)
 
 ## Statuses and completion
 
@@ -67,6 +67,10 @@ To create a correct transfer, the system checks:
 
 If any condition is not met, the system shows a message and does not allow saving/completing the document.
 
+## Acceptance at the destination
+
+If the user who performs the transfer has no access to the destination [location](locations.md), the shipment gets the **Acceptance confirmation** flag: after **Done** it must additionally be **accepted** by the staff of the destination location, and only then the goods are counted as on hand there. See [Shipments — Acceptance at the destination](shipments.md#acceptance-at-the-destination).
+
 ## Cost ledger postings
 
 When a transfer is moved to **Done**, the system creates **two** cost ledger entries — an outgoing one on the **source** location and an incoming one on the **destination** location — provided the two locations have different cost accounts. The cost of the incoming entry is taken from the corresponding outgoing entry, so the item arrives at the destination at the same cost it left the source. If both locations share the same cost account, no cost ledger postings are made (the transfer is just a logical move).
@@ -85,7 +89,7 @@ A detailed instruction for the **“Create transfers”** action is available on
 
 ## Mobile transfer
 
-The **Mobile transfer** form is designed for quickly creating a transfer based on actual stock.
+The **Mobile transfer** form (**Inventory → Processes → Mobile transfer**) is designed for quickly creating a transfer based on actual stock.
 
 Typical flow:
 
@@ -99,4 +103,4 @@ Typical flow:
    - a command may be available to set quantity equal to stock.
 6. Click the transfer action and confirm the operation.
 
-After confirmation, the system creates a transfer document and immediately marks it as done (in the “immediate document” mode).
+After confirmation, the system creates a transfer document and immediately marks it as done (in the “immediate document” mode: the created shipment has the **Unplanned** flag and skips the Waiting/Ready steps and availability checks).
