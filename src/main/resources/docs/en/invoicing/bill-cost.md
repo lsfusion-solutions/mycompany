@@ -20,15 +20,15 @@ For each service that needs to be distributed, you can specify a default **Distr
 
 When you add a service line to a **[Bill](bills.md)**, you can distribute its cost to other documents.
 
-1. Open the **Bill** and select the service line in the **Items** list.
-2. In the **Cost distribution** tab (at the bottom of the form), you will see the distribution settings for this line.
+1. Open the **Bill** and go to the **Cost distribution** tab (at the bottom of the form).
+2. Select the service line in that tab's service-line grid to see its distribution settings.
 3. The **Distribution base** is automatically filled from the service card, but you can change it for this specific bill line.
 4. Use the sub-tabs to select the distribution targets:
 
 ### Distributing to other Bills
 In the **Bills** tab:
 - You can see a list of bills.
-- Mark the **Distribute** checkbox for the bills you want to include in the distribution.
+- Mark the **Distribute** checkbox for the bills you want to include in the distribution. Marking it at the bill level cascades to all of that bill's product lines.
 - In the **Bill lines** list below, you can further refine which specific product lines should receive the cost.
 - The **Distributed** column shows the amount allocated to each line based on the selected **Distribution base**.
 

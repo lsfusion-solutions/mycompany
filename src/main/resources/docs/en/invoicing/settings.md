@@ -6,33 +6,41 @@ title: Settings and directories
 
 Open **"Invoicing" → "Configuration" → "Settings"**.
 
-## What is typically configured
+![The "Settings" form of the Invoicing module](images/settings.png)
 
-- document types — bill types, invoice types, incoming-payment types, outgoing-payment types — with their numbering rules, default currency, default tax inclusion mode and (for return-type bills/invoices) the **Return** / "linked return type" flags described in [Refunds and corrections](refunds-and-corrections.md);
-- numbering rules (numerator per document type);
-- bank accounts and cash registers (see "Banks and accounts" below);
-- payment terms for sales and purchase (see [Debt and payment calendar](debt-and-calendar.md));
-- [taxes](taxes.md) and tax groups;
-- [cost allocation bases](bill-cost.md) for distributing service costs across bill lines;
-- OpenAI-based bill file import settings (if used, see "Bill file import" below);
-- print templates (see [Reports and printing](reports-and-printing.md)).
+## The Settings form
 
-## Banks and accounts
+The **Settings** form itself (**Configuration → Settings**) holds:
 
-Directories typically include:
+- the **document-type** directories — **Bill types**, **Invoice types**, **Incoming payment types**, **Outgoing payment types** — each with its numerator, default partner, whether the **price includes taxes**, the payment/shipment behaviour, and (for returns) the **Return** flag and its linked **Return type** described in [Refunds and corrections](refunds-and-corrections.md);
+- the **Tax groups** directory;
+- the **Skip converting debt to default currency** switch — when turned on, debt figures are kept in each document's own currency instead of being converted to the default currency.
 
-- banks;
-- bank accounts;
-- cash registers;
-- analytical accounts (if used for payments matching).
+Each document type can also define a **default currency** that is substituted into its documents. This is separate from the system-wide **default currency**, which is the one debt figures are converted to (unless the switch above is on).
+
+## Configuration directories (separate navigator items)
+
+Alongside the Settings form, the **Configuration** group contains these directories as their own menu items:
+
+- **[Taxes](taxes.md)** — taxes and tax rates;
+- **Payment terms** — see below;
+- **Banks** — the bank reference;
+- **Accounts** — a single directory holding both **bank accounts** and **cash accounts** (added via the respective buttons);
+- **Analytic accounts** (cash-flow items) — used to classify payments; allowed per payment type.
+
+Payment types additionally carry an **Internal payment** flag and an **allowed account types** setting (cash / bank, at least one required).
+
+[Cost allocation bases](bill-cost.md) for distributing service costs are set on the service items, and print templates are configured per document type (see [Reports and printing](reports-and-printing.md)).
 
 ## Payment terms
 
-Payment terms are used for:
+Payment terms carry a number of **Days**; assigned to a partner (separately for sales and purchase) and copied onto documents, they drive:
 
-- planned payment date calculation;
+- the **Pay before** date calculation;
 - [payment calendar](debt-and-calendar.md) generation;
 - overdue control.
+
+![Payment terms directory](images/payment-terms-list.png)
 
 ## Bill file import
 

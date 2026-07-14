@@ -65,16 +65,16 @@ Recognition uses existing master data. New vendors, items, currencies, or taxes 
 
 The mobile card supports both quick amount entry and line entry:
 
-- use **Untaxed amount** in the header for a simple bill with one amount;
+- use the header **Amount** field for a simple bill with one amount;
 - when the bill has several lines, enter amounts on the lines;
-- each line can contain description, item/service, quantity, price, untaxed amount, and tax amount;
+- each line can contain description, item/service, quantity, price, amount, and taxes;
 - add or delete lines as needed while the bill is editable.
 
-If you enter a header untaxed amount on an empty bill, the system creates or updates the current bill line for that amount.
+If you enter a header amount on an empty bill, the system creates or updates the current bill line for that amount.
 
 ## Completing and payment
 
-If the **Done** control is shown, it can complete the mobile bill and create a linked outgoing payment from the current user's cash account.
+The completion toggle on the mobile card is labelled **"Paid"**. When shown, it marks the mobile bill as paid and creates a linked outgoing payment from the current user's cash account.
 
 Use it only after checking:
 
@@ -84,7 +84,7 @@ Use it only after checking:
 - attached file;
 - payment source.
 
-When **Done** is selected, the system creates a completed [outgoing payment](outgoing-payments.md) for the remaining bill amount and matches it with the bill. If **Done** is cleared, the linked mobile outgoing payment is removed.
+When **"Paid"** is set, the system creates a posted [outgoing payment](outgoing-payments.md) for the remaining bill amount and matches it with the bill. If **"Paid"** is cleared, the linked mobile outgoing payment is removed.
 
 ## Troubleshooting
 
@@ -100,7 +100,7 @@ This is normal when the system has a default mobile bill type. The type is selec
 
 Check that the bill type has an OpenAI prompt configured, the OpenAI API key is set, and the file is readable. You can still enter the bill manually.
 
-#### The Done control is missing
+#### The "Paid" control is missing
 
 The current user may not have a cash account configured, or the bill may be read-only.
 

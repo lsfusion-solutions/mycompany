@@ -48,8 +48,10 @@ Co dzieje się z dopasowaniem:
 
 Ważne o statusach:
 
-- akcja **„Rejestruj płatność”** jest zwykle dostępna tylko wtedy, gdy faktura zakupu ma status **„Do zapłaty”**;
-- utworzona płatność wychodząca jest zwykle tworzona w statusie **„Do zapłaty”** (tzn. przygotowana do potwierdzenia wypłaty).
+- akcja **„Rejestruj płatność”** jest dostępna tylko wtedy, gdy faktura zakupu ma status **„Do zapłaty”**;
+- utworzona płatność wychodząca jest tworzona w statusie **„Do zapłaty”** (tzn. przygotowana do potwierdzenia wypłaty). Faktyczną wypłatę potwierdzasz akcją **„Oznacz jako Wykonano”**.
+
+Płatność wychodząca utworzona ręcznie zaczyna w statusie **„Projekt”**. Pełny przepływ to **Projekt → Do zapłaty → Wykonano → Anulowano**: akcja **„Oznacz jako Do zrobienia”** przenosi z „Projekt” do **„Do zapłaty”**, a **„Oznacz jako Wykonano”** potwierdza wypłatę.
 
 ## Pola główne
 
@@ -63,18 +65,22 @@ Typowa płatność wychodząca zawiera:
 - **Konto/kasa partnera** (jeśli używane).
 - **Firma**.
 - **Konto/kasa firmy** — skąd wypłacane są środki.
+- **Waluta** — wynika z konta firmy/typu.
+- **Konto analityczne** (pozycja przepływów pieniężnych) — dopuszczone dla wybranego typu płatności.
 - **Notatka**.
-- **Podstawa**.
+- **Podstawa** — krótki tekst odniesienia; jeśli zawiera numer faktury zakupu, płatność zostaje **automatycznie dopasowana** do tej faktury zakupu.
 
 ## Dopasowanie płatności i zamykanie długu
 
 Jeśli rozliczenia prowadzisz na podstawie dokumentów, dopasuj płatność wychodzącą do dokumentów, aby zamykała [dług](debt-and-calendar.md) dla wybranych dokumentów.
 
-W karcie płatności wychodzącej zwykle jest sekcja **„Dopasowanie płatności”**:
+W karcie płatności wychodzącej jest sekcja **„Dopasowanie płatności”**:
 
 - **Rozliczone** — już powiązane kwoty;
-- **Dostępne** — dokumenty, które można opłacić;
-- akcja **Rozlicz**.
+- **Dostępne** — dokumenty, które można opłacić (dla płatności wychodzącej są to [faktury zakupu](bills.md) dostawców);
+- akcja **Rozlicz** (albo dwukrotne kliknięcie wiersza).
+
+Dopasowanie jest dozwolone tylko pomiędzy dokumentami **tego samego partnera i tej samej firmy**.
 
 ### Płatność częściowa
 
@@ -84,20 +90,21 @@ Jeśli kwota płatności jest mniejsza niż kwota dokumentu, [dług](debt-and-ca
 
 Płatność wychodząca może zostać rozliczona z kilkoma dokumentami (np. opłacenie kilku [faktur zakupu](bills.md) jedną kwotą).
 
-### Nadpłata i zaliczka
+### Nadpłata
 
-Jeśli zapłacono więcej niż rozliczono z dokumentami:
+Jeśli zapłacono więcej, niż rozliczono z dokumentami, pozostałość pozostaje **nierozliczona**, dopóki nie zostanie zastosowana do innego dokumentu tego samego [partnera](../masterdata/partners.md).
 
-- pozostałość może pozostać **nierozliczona** do wyjaśnienia,
-- albo zostać potraktowana jako **zaliczka** (jeśli używany jest odpowiedni mechanizm).
+## Powiązanie z płatnością przychodzącą
+
+Jeśli typ płatności ma powiązany typ przychodzący, płatność wychodząca w statusie **„Do zapłaty”** pokazuje akcję **„Utwórz płatność przychodzącą”** (albo tworzy ją automatycznie, gdy typ ma ustawione **„Automatycznie twórz płatność przychodzącą”**). W ten sposób rejestruje się przelewy wewnętrzne — „przelew wychodzący” w parze z „przelewem przychodzącym”.
 
 ## Wyszukiwanie płatności „nierozliczonych”
 
-Lista płatności wychodzących może mieć filtr **„Nierozliczone”** — pomaga znaleźć płatności, które nie są jeszcze powiązane z dokumentami.
+Lista płatności wychodzących ma filtr **„Nierozliczone”** — pomaga znaleźć płatności, które nie są jeszcze powiązane z dokumentami (wpływają one na ogólne saldo partnera, ale nie zamykają kwoty pozostałej żadnego konkretnego dokumentu).
 
 ## Drukowanie
 
-Jeśli w Twojej konfiguracji są włączone wydruki, płatność wychodzącą można drukować.
+Predefiniowany formularz wydruku nosi tytuł **„Płatność wychodząca”**; drukowanie korzysta z **szablonów płatności wychodzącej** skonfigurowanych dla typu płatności.
 
 Zobacz: [Raporty i drukowanie](reports-and-printing.md).
 

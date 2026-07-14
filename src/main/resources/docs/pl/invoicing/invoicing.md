@@ -80,12 +80,12 @@ Wskazówka praktyczna:
 
 ## Nawigacja
 
-Sekcja „Fakturowanie” zwykle zawiera grupy:
+Sekcja „Fakturowanie” zawiera grupy:
 
-- **Operacje** — [faktury zakupu](bills.md), [faktury](invoices.md), płatności [przychodzące](incoming-payments.md) i [wychodzące](outgoing-payments.md) oraz powiązane dokumenty korekty.
-- **Procesy** — pomocnicze panele przetwarzania (zależą od konfiguracji).
-- **Raportowanie** — raporty długu i [kalendarz płatności](debt-and-calendar.md).
-- **Konfiguracja** — parametry i katalogi (formularz **„Ustawienia”**, typy dokumentów, [podatki](taxes.md), [warunki płatności](debt-and-calendar.md), rachunki bankowe/kasowe).
+- **Operacje** — [faktury zakupu](bills.md), [faktury](invoices.md), [płatności przychodzące](incoming-payments.md), [płatności wychodzące](outgoing-payments.md) oraz deklaracje celne.
+- **Procesy** — [mobilna faktura zakupu](mobile-bills.md).
+- **Raportowanie** — [kalendarz płatności](debt-and-calendar.md), Płatności, Raport faktur zakupu, Raport faktur.
+- **Konfiguracja** — formularz **„Ustawienia”**, [podatki](taxes.md), Warunki płatności, Banki, Konta (bankowe + kasowe), Konta analityczne.
 
 ## Terminy
 
@@ -107,7 +107,7 @@ Wypłata środków (płatność do dostawcy, zwrot, inne wypłaty).
 
 #### [Dług](debt-and-calendar.md)
 
-Różnica pomiędzy kwotami dokumentów a kwotami płatności dopasowanych do tych dokumentów.
+Saldo rozrachunków z partnerem lub kontraktem — suma ze znakiem jego aktywnych dokumentów i płatności. Dla pojedynczego dokumentu powiązanym wskaźnikiem jest jego kwota pozostała (**„Pozostało”**) = kwota minus dopasowane płatności.
 
 #### [Korekta](refunds-and-corrections.md)
 

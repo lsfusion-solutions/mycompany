@@ -79,12 +79,14 @@ Practical guideline:
 
 ## Navigation
 
-The "Invoicing" section typically contains groups:
+The "Invoicing" section contains the groups:
 
-- **Operations** — [bills](bills.md), [invoices](invoices.md), [incoming](incoming-payments.md) and [outgoing](outgoing-payments.md) payments, and the related correction documents.
-- **Processes** — auxiliary processing panels (depend on configuration).
-- **Reporting** — debt reports and the [payment calendar](debt-and-calendar.md).
-- **Configuration** — parameters and directories (the **Settings** form, document types, [taxes](taxes.md), [payment terms](debt-and-calendar.md), bank/cash accounts).
+- **Operations** — [Bills](bills.md), [Invoices](invoices.md), [Incoming payments](incoming-payments.md), [Outgoing payments](outgoing-payments.md), and Customs declarations.
+- **Processes** — [Mobile bill](mobile-bills.md).
+- **Reporting** — [Payment calendar](debt-and-calendar.md), Payments, Bills report, Invoices report.
+- **Configuration** — the **Settings** form, [Taxes](taxes.md), Payment terms, Banks, Accounts (bank + cash), Analytic accounts.
+
+![The "Invoicing" section in the navigator with expanded groups](images/invoicing-nav.png)
 
 ## Terms
 
@@ -106,7 +108,7 @@ Withdrawal of funds (payment to a supplier, refund, other payouts).
 
 #### [Debt](debt-and-calendar.md)
 
-The difference between document amounts and the amounts of payments matched with them.
+The outstanding balance with a partner or contract — the signed sum of its active documents and payments. For a single document, the related figure is its remaining amount (**Left**) = amount minus matched payments.
 
 #### [Correction](refunds-and-corrections.md)
 

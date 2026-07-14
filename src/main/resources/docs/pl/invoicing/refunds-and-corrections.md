@@ -112,17 +112,21 @@ Reguły walidacji odpowiadają regułom dla korekt faktur zakupu (zgodność kli
 
 ### Jak utworzyć notę uznaniową
 
-Na karcie faktury źródłowej akcja **„Zwrot”** pojawia się, gdy faktura zostanie przeniesiona do **„Do zapłaty”**, i pozostaje widoczna później — także po przeniesieniu faktury do **„Zapłacono”**. Pokrywa to typowy przypadek rejestrowania zwrotu już po zakończonej sprzedaży. Akcja znika tylko w statusie **„Anulowano”** i nie jest dostępna dla faktur w **„Projekt”**. Nie jest też dostępna z poziomu listy faktur — trzeba otworzyć samą fakturę. Kliknij akcję, aby utworzyć nową fakturę zakupu:
+Na karcie faktury źródłowej akcja **„Zwrot”** (**„Return”**) pojawia się, gdy faktura zostanie przeniesiona do **„Do zapłaty”**, i pozostaje widoczna w każdym późniejszym statusie — łącznie z **„Zapłacono”** oraz **„Anulowano”** (bazowa flaga „do zapłaty” nigdy nie jest kasowana, więc anulowanie sprzedaży nie ukrywa akcji zwrotu). Akcja jest ukryta tylko wtedy, gdy faktura jest jeszcze w statusie **„Projekt”**, i nie jest dostępna z zaznaczenia na liście — trzeba otworzyć samą fakturę. Kliknij akcję, aby utworzyć nową fakturę zakupu:
 
-- typu faktury zakupu powiązanego z typem faktury (przez ustawienie **„Typ zwrotu”** na typie faktury);
+- typu faktury zakupu powiązanego z typem faktury (przez ustawienie **„Typ zwrotu”** (**„Return type”**) na typie faktury);
 - z klientem w roli dostawcy;
-- z liniami skopiowanymi z faktury (cena i zastosowane podatki są dziedziczone).
+- z liniami skopiowanymi z faktury — przenoszona jest **cena wynikowa (po rabacie)** oraz zastosowane podatki.
 
 Każda linia noty uznaniowej zachowuje odwołanie do linii faktury źródłowej, dzięki czemu system może wyliczyć **zwróconą ilość** w każdej linii faktury i (opcjonalnie) zablokować zwroty większe niż sprzedaż za pomocą flagi **„Kontrola zwróconej ilości”**.
 
 ### Cykl życia
 
-Nota uznaniowa dalej podąża zwykłym cyklem życia faktury zakupu (Projekt → Do zapłaty → Zapłacono → Anulowano). Jej kwota zmniejsza dług klienta utworzony pierwotnie przez fakturę źródłową.
+Nota uznaniowa dalej podąża zwykłym cyklem życia faktury zakupu (Projekt → Do zapłaty → Zapłacono, i może zostać anulowana). Jej kwota kompensuje na saldzie klienta sprzedaż pierwotnie ujętą przez fakturę źródłową. (Ponieważ akcja zwrotu pozostaje dostępna nawet dla anulowanego źródła, notę uznaniową można wystawić także do anulowanej faktury — wówczas rejestruje ona po prostu odrębny dokument o przeciwnym kierunku.) Gdy używane jest [Magazynowanie](../inventory/inventory.md), nota uznaniowa jest powiązana z **zwrotnym** typem przyjęcia, dzięki czemu może przyjąć zwrócone towary z powrotem na stan.
+
+Poza standardową notą uznaniową moduł dostarcza typ **detalicznej noty uznaniowej** (dla zwrotów przy kasie), który może automatycznie utworzyć odpowiednie przyjęcie.
+
+Kliknięcie komórki **„Returned”** (zwrócone) w linii faktury otwiera okno **„Refunds”** z listą dokumentów zwrotu wystawionych do tej linii.
 
 ## Zwroty (faktury zwrotu)
 
@@ -130,17 +134,17 @@ Nota uznaniowa dalej podąża zwykłym cyklem życia faktury zakupu (Projekt →
 
 ### Jak utworzyć zwrot
 
-Na karcie faktury zakupu źródłowej akcja **„Zwrot”** pojawia się, gdy faktura zakupu zostanie przeniesiona do **„Do zapłaty”**, i pozostaje widoczna później — także po przeniesieniu faktury zakupu do **„Zapłacono”**. Pokrywa to typowy przypadek rejestrowania zwrotu już po zakończonym zakupie. Akcja znika tylko w statusie **„Anulowano”** i nie jest dostępna dla faktur zakupu w **„Projekt”**. Nie jest też dostępna z poziomu listy faktur zakupu — trzeba otworzyć samą fakturę zakupu. Kliknij akcję, aby utworzyć nową fakturę:
+Na karcie faktury zakupu źródłowej akcja **„Zwrot”** (**„Return”**) pojawia się, gdy faktura zakupu zostanie przeniesiona do **„Do zapłaty”**, i pozostaje widoczna w każdym późniejszym statusie — łącznie z **„Zapłacono”** oraz **„Anulowano”** (bazowa flaga „do zapłaty” nigdy nie jest kasowana, więc anulowanie zakupu nie ukrywa akcji zwrotu). Akcja jest ukryta tylko wtedy, gdy faktura zakupu jest jeszcze w statusie **„Projekt”**, i nie jest dostępna z zaznaczenia na liście — trzeba otworzyć samą fakturę zakupu. Kliknij akcję, aby utworzyć nową fakturę:
 
-- typu faktury powiązanego z typem faktury zakupu (przez ustawienie **„Typ zwrotu”** na typie faktury zakupu);
+- typu faktury powiązanego z typem faktury zakupu (przez ustawienie **„Typ zwrotu”** (**„Return type”**) na typie faktury zakupu);
 - z dostawcą w roli klienta;
-- z liniami skopiowanymi z faktury zakupu (cena i zastosowane podatki są dziedziczone).
+- z liniami skopiowanymi z faktury zakupu — przenoszona jest **cena bazowa** oraz zastosowane podatki.
 
 Każda linia zwrotu zachowuje odwołanie do linii faktury zakupu źródłowej. Dostępny jest ten sam mechanizm **„Kontrola zwróconej ilości”**.
 
 ### Cykl życia
 
-Zwrot dalej podąża zwykłym cyklem życia faktury (Projekt → Do zapłaty → Zapłacono → Anulowano). Jego kwota zmniejsza dług wobec dostawcy utworzony pierwotnie przez fakturę zakupu źródłową.
+Zwrot dalej podąża zwykłym cyklem życia faktury (Projekt → Do zapłaty → Zapłacono, i może zostać anulowany). Jego kwota kompensuje na saldzie dostawcy zakup pierwotnie ujęty przez fakturę zakupu źródłową. Gdy używane jest [Magazynowanie](../inventory/inventory.md), zwrot jest powiązany z **zwrotnym** typem wydania, dzięki czemu może wydać zwrócone towary ze stanu.
 
 ## Który mechanizm wybrać
 

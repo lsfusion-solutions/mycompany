@@ -8,13 +8,15 @@ This is convenient when the invoice is the “main” document and the inventory
 
 ## When creation is available
 
-The shipment creation button in the invoice card is typically available if:
+The **"Create Shipment"** button in the invoice card is available if:
 
-- the invoice is active (not Canceled);
+- the invoice is **active** — i.e. in **To pay** or later and not Canceled (a **Draft** invoice does not show the button);
 - a shipment type is set for the [invoice type](settings.md) (see [Inventory settings](../inventory/settings.md));
 - the invoice has lines that need to be shipped (the “to ship” quantity is greater than zero).
 
 If a shipment has already been created for all positions, the button is not shown.
+
+Note on quantities: the “to ship” quantity is expressed in stock units. When an item's sales unit differs from its stock unit, the shipment quantity is the invoice quantity multiplied by the item's SKU coefficient, so invoice and shipment quantities can legitimately differ.
 
 ## What the system does when creating
 
@@ -36,17 +38,20 @@ When creating a shipment from an invoice, the system:
 
 An [invoice type](settings.md) can have an **“Automatically create shipment”** setting.
 
-If enabled, when the invoice moves to a ready state (or when item lines appear), the system automatically creates a shipment.
+If enabled, the shipment is created automatically **when the invoice reaches “To pay”**. Adding item lines to an invoice that is already in “To pay” also triggers creation; adding lines to a Draft invoice does not (the invoice must already be in “To pay”).
 
 ## Change synchronization
 
-If the shipment was created automatically, the system may keep the invoice and shipment synchronized in some cases:
+When the shipment was created automatically (i.e. the type has **Automatically create shipment**) and the invoice is linked to a single shipment, the system keeps the two in sync:
 
-- if the invoice is Canceled and there was only one shipment — the shipment is Canceled automatically;
-- if the partner was changed and there was only one shipment — the partner is updated in the shipment;
-- if the item or quantity in an invoice line was changed — the item and quantity are updated in the shipment line.
+- if the invoice is Canceled — the shipment is Canceled automatically;
+- if the customer was changed — it is updated in the shipment;
+- if an invoice line's quantity changes — the linked shipment line's shipped quantity is updated;
+- if an invoice line's item changes — the linked shipment line's product is updated.
 
-Practical meaning: the shipment stays consistent with the invoice while you work with the documents.
+These rules apply to auto-created shipments only; a shipment created manually with **"Create Shipment"** is not re-synchronized.
+
+Practical meaning: an auto-created shipment stays consistent with the invoice while you work with the documents.
 
 ## Typical scenario
 
@@ -58,18 +63,18 @@ Practical meaning: the shipment stays consistent with the invoice while you work
 
 ## Planned vs. immediate shipment
 
-A shipment created from an invoice can be either **planned** or **immediate**. The mode is controlled by the **"Planned shipment"** flag on the [invoice type](settings.md):
+A shipment created from an invoice can be either **planned** or **immediate**. The mode is controlled by the **"Create planned shipment"** flag on the [invoice type](settings.md):
 
-- if the flag is **on**, the created shipment is a regular planned [shipment](../inventory/shipments.md) — it goes through the usual Waiting / Ready / Done workflow;
-- if the flag is **off**, the created shipment is marked as immediate and is automatically moved to **Done** at the moment of creation. In this mode the shipment is essentially a passive record of what the invoice already declared as shipped.
+- if the flag is **on**, the created shipment is a regular planned [shipment](../inventory/shipments.md) — the to-ship quantities become the shipment lines' **initial demand**, and it goes through the usual Waiting / Ready / Done workflow;
+- if the flag is **off**, the created shipment is marked as immediate: the to-ship quantities are written straight to the lines as **done**, and the shipment is moved to **Done** at the moment of creation. In this mode the shipment is essentially a passive record of what the invoice already declared as shipped.
 
 ## Reverse direction: invoice from shipments
 
 The opposite flow is also supported — an [invoice](invoices.md) can be created from one or more already-existing shipments. The action lives on the shipments list and is typically called **"Create invoice"**:
 
 1. Open the shipments list.
-2. Select one or more shipments that belong to the same customer and are not yet linked to an invoice.
-3. Run **"Create invoice"** — the system creates a new draft invoice whose lines reference the selected shipment lines.
+2. Select one or more shipments that belong to the same customer.
+3. Run **"Create Invoice"** — the system creates a new draft invoice. It aggregates the done quantities of the selected shipments **by product** and includes only shipment lines that are not already linked to an invoice line; the invoice header (customer, department, location) is taken from one of the selected shipments, so it is best to select shipments that share these values.
 
 This is convenient when the warehouse documents the shipment first and the invoice is issued afterwards.
 

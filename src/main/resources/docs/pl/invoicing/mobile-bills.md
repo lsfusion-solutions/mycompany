@@ -74,7 +74,7 @@ Jeśli wpiszesz kwotę w nagłówku pustego dokumentu, system utworzy albo zaktu
 
 ## Zakończenie i płatność
 
-Jeśli widoczny jest przełącznik **Wykonano**, może on zakończyć mobilną fakturę zakupu i utworzyć powiązaną płatność wychodzącą z pola **Konto gotówkowe** bieżącego użytkownika.
+Przełącznik zakończenia w mobilnej karcie nosi etykietę **„Zapłacone”**. Gdy jest widoczny, oznacza mobilną fakturę zakupu jako opłaconą i tworzy powiązaną płatność wychodzącą z pola **Konto gotówkowe** bieżącego użytkownika.
 
 Używaj go dopiero po sprawdzeniu:
 
@@ -84,7 +84,7 @@ Używaj go dopiero po sprawdzeniu:
 - dołączonego pliku;
 - źródła płatności.
 
-Po włączeniu **Wykonano** system tworzy wykonaną [płatność wychodzącą](outgoing-payments.md) na pozostałą kwotę do zapłaty i dopasowuje ją do faktury zakupu. Jeśli **Wykonano** zostanie wyłączone, powiązana mobilna płatność wychodząca zostanie usunięta.
+Po włączeniu **„Zapłacone”** system tworzy wykonaną [płatność wychodzącą](outgoing-payments.md) na pozostałą kwotę do zapłaty i dopasowuje ją do faktury zakupu. Jeśli **„Zapłacone”** zostanie wyłączone, powiązana mobilna płatność wychodząca zostanie usunięta.
 
 ## Rozwiązywanie problemów
 
@@ -100,10 +100,10 @@ To normalne, jeśli system ma domyślny mobilny typ faktury zakupu. Typ jest wyb
 
 Sprawdź, czy typ faktury zakupu ma skonfigurowany opis OpenAI, klucz API OpenAI jest uzupełniony, a plik jest czytelny. Dokument nadal można uzupełnić ręcznie.
 
-#### Przełącznik „Wykonano” nie jest widoczny
+#### Przełącznik „Zapłacone” nie jest widoczny
 
 Bieżący użytkownik może nie mieć skonfigurowanego pola **Konto gotówkowe** albo faktura zakupu może być tylko do odczytu.
 
 #### Nie mogę edytować albo usunąć faktury zakupu
 
-Faktur zakupu ze statusem **Wykonano**, anulowanych lub tylko do odczytu nie można edytować z formularza mobilnego. Jeśli dokument wymaga korekty, użyj standardowego procesu [Faktury zakupu](bills.md).
+Zakończonych, anulowanych lub w inny sposób tylko do odczytu faktur zakupu nie można edytować z formularza mobilnego. Jeśli dokument wymaga korekty, użyj standardowego procesu [Faktury zakupu](bills.md).

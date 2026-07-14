@@ -23,39 +23,50 @@ A bill can be used as:
 
 ## Bill list
 
-The list typically shows:
+The list shows, among others:
 
-- number and date;
-- [partner](../masterdata/partners.md);
-- status;
-- amount;
-- currency (if used);
-- [contract](../masterdata/contracts.md) (if used);
-- payment/debt indicators.
+- **Number** and **Date**;
+- **Delivery date** and **Pay before** (the due date);
+- **Vendor** and the bill **Type**;
+- **Company** and the **Payment terms**;
+- **Vendor account** / **Company account** (the accounts used for settlement);
+- **Vendor reference** (the vendor's internal code for the document);
+- **Currency**;
+- **Paid** — the amount already covered by matched payments;
+- **Note**.
 
-Tip: if the list has **Paid**/**Debt** columns, they are convenient for quickly controlling partial payments.
+The list also has ready-made filter groups **Not paid** / **Paid** / **Partially paid** for quickly finding documents by settlement state.
+
+![Bill list](images/bills-list.png)
 
 ## Bill card
+
+![Bill card](images/bills-card.png)
 
 ### Main fields
 
 In the bill header you typically fill:
 
-- type;
-- date;
-- number;
-- [partner](../masterdata/partners.md);
-- [contract](../masterdata/contracts.md) (if used);
-- payment terms (if used);
-- note.
+- **Type** — the [bill type](settings.md); it presets defaults (numerator, default vendor, currency, payment type, whether the price includes taxes);
+- **Date**, **Number**;
+- **Delivery date** and **Execution date** (if used);
+- **Vendor** — the supplier [partner](../masterdata/partners.md);
+- **Contract** (if used);
+- **Vendor account** / **Company account** — the settlement accounts. The vendor account must belong to the selected vendor, the company account to the company;
+- **Payment terms** (if used);
+- **Currency** — defaults from the bill type; the exchange rate feeds the currency base amount;
+- **Vendor reference** — the supplier's own document code, useful for search;
+- **Our representative** — defaults to the current user;
+- **Note** and a rich-text **Details** field.
+
+The card also has **Comments** and **Files** tabs (`Bill file`) for attaching the source document and discussing it.
 
 #### Payment terms
 
-If **payment terms** are used, they usually affect:
+**Payment terms** carry a number of **Days**; when selected, the system computes the **Pay before** date (`date + days`) and stores it on the document. That stored date then:
 
-- calculation of the **planned payment date**;
-- building the **payment calendar**;
-- determining **overdue** documents.
+- drives the **payment calendar**;
+- determines whether the document is **overdue**.
 
 See: [Settings and directories](settings.md), [Debt and payment calendar](debt-and-calendar.md).
 
@@ -64,18 +75,22 @@ See: [Settings and directories](settings.md), [Debt and payment calendar](debt-a
 Lines typically contain:
 
 - [item](../masterdata/items.md)/service;
-- quantity;
-- price;
-- [tax](taxes.md) (if used);
-- line amount.
+- quantity and price;
+- **Amount** — the line base (`quantity × price`); when the bill type has **Price includes taxes** set, this amount is gross;
+- **Taxes** — the [tax](taxes.md) applied to the line;
+- optional **Reference**, **Barcode** and **Category** columns.
 
-If taxes are configured, the tax can be substituted automatically (for example, from the item/service card or from the document type).
+If taxes are configured, the tax is substituted automatically from the item/service (its **purchase** taxes) or from the document type. See [Taxes](taxes.md).
+
+When the vendor is measured in a different [unit of measure](../masterdata/items.md) than the item's base unit, extra **partner UoM / partner quantity / partner price** columns appear so you can enter the document in the vendor's units.
+
+If **lot/batch** tracking is used, each line can carry lot quantities, and a **barcode** field allows adding lines by scanning.
 
 If a **default item** is set on the bill type, it is automatically substituted into a new line when the item is not yet specified (similar to how the **default vendor** is substituted into the bill header). This speeds up entry for bill types where the same item/service is typically used.
 
-### File import with OpenAI
+### Import from a file (GPT)
 
-If the selected bill type has a configured prompt, the bill card shows an action for importing data from a file with OpenAI.
+If the selected bill type has a configured prompt, the bill card shows an **"Import (GPT)"** action for importing data from a supplier document file with OpenAI.
 
 #### What to prepare
 
@@ -110,23 +125,25 @@ The system tries to determine from the file:
 
 ### Statuses
 
-Typical status set:
+A bill moves through the statuses:
 
-- Draft;
-- To pay;
-- Paid;
-- Canceled.
+- **Draft**;
+- **To pay**;
+- **Paid**;
+- **Canceled**.
 
-Statuses affect editing and printing availability.
+Statuses affect editing and printing availability. Under the hood these are cumulative flags rather than a single field, so the status shown is the "highest" one reached.
 
-Typical logic:
+- in **Draft** you can freely change the header and lines. The **"Mark as Todo"** action (shown only in Draft) moves the bill to **To pay**;
+- in **To pay** the document is confirmed for further actions (payment registration, printing, corrections). The **"Mark as Paid"** action closes it;
+- in **Paid** the bill is considered settled. This status is also **set automatically** once matched payments fully cover the bill;
+- **Cancel** excludes the bill from accounting and debt. Cancel is available in any status except Draft/Canceled.
 
-- in **Draft** you can change the header and lines;
-- in **To pay** the document is confirmed for further actions (for example, payment registration, printing — if used). The corresponding action in the card is **"Mark as Todo"**.
-- in **Paid** the bill is considered closed (action **"Mark as Paid"**);
-- in **Canceled** the bill is excluded from accounting (action **"Cancel"**).
+You can also flip these flags directly with the toggle buttons in the status group, and lock a document against editing with the manual lock toggle on the card.
 
-A **"Copy"** action is also available to create a new Draft bill with the same header and lines.
+A **"Copy"** action creates a new Draft bill with the same vendor, company, type, note and lines (dates and accounts are not copied).
+
+Bills can also be created programmatically through an HTTP JSON import endpoint (`importBill`), separate from the file/GPT import described above.
 
 ### Payment and debt
 
@@ -134,6 +151,8 @@ A bill can be linked to [outgoing payments](outgoing-payments.md). Based on matc
 
 - paid;
 - debt.
+
+The card carries a **Payments matching** block with two sub-lists — **Matched** payments and **Available** ones. Double-click an available payment (or use the **"Match"** action) to net it against the bill; the matched amount reduces the remaining debt and, once the bill is fully covered, its status flips to **Paid** automatically. Matching is only possible between documents of the same partner and company.
 
 #### Quick payment from the document
 
@@ -173,11 +192,11 @@ See also: [Debt and payment calendar](debt-and-calendar.md).
 
 ## Printing
 
-If print forms are enabled in your configuration, the bill can usually be printed from the document card.
+If print forms are enabled in your configuration, the bill can be printed from the document card. The predefined layout is titled **"Invoice"**, and each bill type carries its own list of **Bill templates**.
 
 Printing availability most often depends on:
 
 - status (for example, printing is available from “To pay”);
-- the presence of a configured print template.
+- the presence of at least one enabled print template for the bill type.
 
 See: [Reports and printing](reports-and-printing.md), [Settings and directories](settings.md).

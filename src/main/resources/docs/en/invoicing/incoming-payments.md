@@ -14,6 +14,8 @@ Incoming payments are typically used to:
 
 Open: **“Invoicing” → “Operations” → “Incoming payments”**.
 
+![Incoming payments list](images/incoming-payments-list.png)
+
 ## Creating an incoming payment
 
 1. Open the **“Incoming payments”** list.
@@ -48,8 +50,10 @@ What happens with matching:
 
 Important about statuses:
 
-- the **“Register Payment”** action is usually available only when the invoice is in status **“To pay”**;
-- the created incoming payment is usually created in status **“Done”** (i.e., it records the fact of money receipt).
+- the **“Register Payment”** action is available only when the invoice is in status **“To pay”**;
+- the created incoming payment is created in status **“Done”** (i.e., it records the fact of money receipt).
+
+An incoming payment created manually starts in **Draft**; use **"Mark as Done"** to post it. Incoming payments have no separate "To pay" stage — the flow is **Draft → Done → Canceled**.
 
 ## Main fields
 
@@ -63,8 +67,12 @@ The exact set of fields depends on configuration, but a typical incoming payment
 - **Partner account/cash register** (if used) — [partner](../masterdata/partners.md) details.
 - **Company** — the organization receiving the money.
 - **Company account/cash register** — where the money was received (bank account or cash register).
+- **Currency** — derived from the company account/type.
+- **Analytic account** (cash-flow item) — the analytic account allowed for the chosen payment type.
 - **Note** — free text comment.
-- **Base** — a text field for payment purpose/reference.
+- **Reference** — a short reference string (for example, the payer's document number). If it contains a document number, the system **auto-matches** the payment against that debt (see below).
+
+The built-in payment types cover the common cases — customer payment (bank/cash), supplier refund (bank/cash), internal transfer, and opening balance. A type flagged as **Internal payment** requires the partner to be one of your own companies.
 
 ### Accounts/cash registers selection notes
 
@@ -79,19 +87,23 @@ If you select an account/cash register that does not match the payment type, the
 
 To make an incoming payment decrease [debt](debt-and-calendar.md) for specific documents, you need to **match** it with these documents.
 
-In the payment card there is typically a **“Payments matching”** section with:
+In the payment card there is a **“Payments matching”** section with:
 
 - **Matched** — amounts already linked to documents;
-- **Available** — documents that can be paid by this payment;
+- **Available** — documents that can be paid by this payment (for an incoming payment these are customer [invoices](invoices.md));
 - **Match** action — link an amount to the selected document.
+
+Matching is only allowed between documents of the **same partner and company**.
 
 ### How to match a payment
 
 1. Open the incoming payment.
 2. Go to **“Payments matching”**.
 3. In the **“Available”** list select the document you want to pay.
-4. Click **“Match”**.
+4. Click **“Match”** (or simply double-click the row).
 5. Verify that a line appears in **“Matched”** with the matched amount.
+
+Tip: if you fill the **Reference** field with the invoice number, the payment matches that invoice automatically — no manual step needed.
 
 ### Partial payment
 
@@ -105,22 +117,21 @@ If the payment amount is less than the document amount:
 
 If a [partner](../masterdata/partners.md) paid several documents at once, match the payment to several lines — one per document.
 
-### Overpayment and advance
+### Overpayment
 
-If the payment amount is greater than the matched amount:
+If the payment amount is greater than the matched amount, the remainder stays **not matched** and can be applied to later documents from the same [partner](../masterdata/partners.md). (Prepayments that must be offset against a specific future sale are handled by **advance invoices** rather than by the payment itself — see [Invoices](invoices.md).)
 
-- part of the amount remains **not matched** (until further matching),
-- or it is treated as an **advance** (if the corresponding mechanism/settings are used).
+## Linking to an outgoing payment
 
-Practical tip: if you expect future documents from this [partner](../masterdata/partners.md), it is convenient to keep the overpayment as an advance and then match the advance later.
+If the payment type has a linked outgoing type, a posted incoming payment shows a **"Create outgoing payment"** action (or creates one automatically when the type has **Automatically create outgoing payment** set). This drives internal transfers between your own accounts — an incoming "transfer in" paired with an outgoing "transfer out".
 
 ## Finding “not matched” payments
 
-The incoming payments list may have a **“Not matched”** filter — it helps quickly find payments that are not linked to documents yet and therefore do not reduce debt.
+The incoming payments list has a **“Not matched”** filter — it helps quickly find payments that are not linked to documents yet and therefore do not close any specific document's remaining amount. (Such a payment still affects the partner's overall balance.)
 
 ## Printing
 
-If print forms are connected in your configuration, the incoming payment can be printed.
+The predefined print form is titled **"Incoming payment"**; printing uses the **Incoming payment templates** configured for the payment type.
 
 See: [Reports and printing](reports-and-printing.md).
 

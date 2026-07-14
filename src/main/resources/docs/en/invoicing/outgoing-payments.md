@@ -14,6 +14,8 @@ Typical scenarios:
 
 Open: **“Invoicing” → “Operations” → “Outgoing payments”**.
 
+![Outgoing payments list](images/outgoing-payments-list.png)
+
 ## Creating an outgoing payment
 
 1. Open the **“Outgoing payments”** list.
@@ -48,8 +50,10 @@ What happens with matching:
 
 Important about statuses:
 
-- the **“Register Payment”** action is usually available only when the bill is in status **“To pay”**;
-- the created outgoing payment is usually created in status **“To pay”** (i.e., prepared for withdrawal confirmation).
+- the **“Register Payment”** action is available only when the bill is in status **“To pay”**;
+- the created outgoing payment is created in status **“To pay”** (i.e., prepared for withdrawal confirmation). Confirm the actual withdrawal with **"Mark as Done"**.
+
+An outgoing payment created manually starts in **Draft**. The full flow is **Draft → To pay → Done → Canceled**: **"Mark as Todo"** moves Draft to **To pay**, **"Mark as Done"** confirms the withdrawal.
 
 ## Main fields
 
@@ -63,18 +67,22 @@ Typically, an outgoing payment includes:
 - **Partner account/cash register** (if used).
 - **Company**.
 - **Company account/cash register** — where the money is withdrawn from.
+- **Currency** — derived from the company account/type.
+- **Analytic account** (cash-flow item) — allowed for the chosen payment type.
 - **Note**.
-- **Base**.
+- **Reference** — a short reference string; if it contains a bill number, the payment **auto-matches** that bill.
 
 ## Payments matching and debt closure
 
 If you maintain settlements by documents, match the outgoing payment with documents so it closes [debt](debt-and-calendar.md) for the selected documents.
 
-In the outgoing payment card there is typically a **“Payments matching”** section:
+In the outgoing payment card there is a **“Payments matching”** section:
 
 - **Matched** — already linked amounts;
-- **Available** — documents that can be paid;
-- **Match** action.
+- **Available** — documents that can be paid (for an outgoing payment these are supplier [bills](bills.md));
+- **Match** action (or double-click a row).
+
+Matching is only allowed between documents of the **same partner and company**.
 
 ### Partial payment
 
@@ -84,20 +92,21 @@ If the payment amount is less than the document amount, the document [debt](debt
 
 An outgoing payment can be matched with several documents (for example, paying several [bills](bills.md) in one amount).
 
-### Overpayment and advance
+### Overpayment
 
-If you paid more than matched with documents:
+If you paid more than matched with documents, the remainder stays **not matched** until it is applied to another document of the same [partner](../masterdata/partners.md).
 
-- the remainder can stay **not matched** until clarified,
-- or be treated as an **advance** (if the corresponding mechanism is used).
+## Linking to an incoming payment
+
+If the payment type has a linked incoming type, an outgoing payment in **To pay** shows a **"Create an incoming payment"** action (or creates one automatically when the type has **Automatically create incoming payment** set). This is how internal transfers are recorded — a "transfer out" paired with a "transfer in".
 
 ## Finding “not matched” payments
 
-The outgoing payments list may have a **“Not matched”** filter — it helps find payments that are not linked to documents yet.
+The outgoing payments list has a **“Not matched”** filter — it helps find payments that are not linked to documents yet (they still affect the partner's overall balance, but do not close any specific document's remaining amount).
 
 ## Printing
 
-If print forms are enabled in your configuration, the outgoing payment can be printed.
+The predefined print form is titled **"Outgoing payment"**; printing uses the **Outgoing payment templates** configured for the payment type.
 
 See: [Reports and printing](reports-and-printing.md).
 

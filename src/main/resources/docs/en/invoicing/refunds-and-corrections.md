@@ -112,17 +112,21 @@ A **credit note** is implemented as a [bill](bills.md) whose type has the **"Ret
 
 ### How to create a credit note
 
-In the source invoice card a **"Return"** action appears once the invoice has been moved to **To pay** and remains visible afterwards — including after the invoice is marked **Paid** — so the typical case of recording a return after the original sale was already completed is supported. The action disappears only when the invoice is **Canceled**, and is not available for **Draft** invoices. It is also not available from a list selection — open the invoice itself. Click the action to create a new bill:
+In the source invoice card a **"Return"** action appears once the invoice has been moved to **To pay**, and remains visible in every later status — including **Paid** and **Canceled** (the underlying "to pay" flag is never cleared, so cancelling the sale does not hide the return action). It is only hidden while the invoice is still a **Draft**, and is not available from a list selection — open the invoice itself. Click the action to create a new bill:
 
 - of the bill type linked to the invoice type (via the **"Return type"** setting on the invoice type);
 - with the customer as vendor;
-- with lines copied from the invoice (price and applied taxes are inherited).
+- with lines copied from the invoice — the **result (post-discount) price** and the applied taxes are carried over.
 
 Each credit-note line keeps a reference back to the invoice line it was created from, so the system can compute **returned quantity** per invoice line and (optionally) prevent returning more than what was originally sold via the **"Check returned quantity"** flag.
 
 ### Workflow
 
-The credit note then follows the normal bill lifecycle (Draft → To pay → Paid → Canceled). Its amount reduces the customer's debt that was originally created by the source invoice.
+The credit note then follows the normal bill lifecycle (Draft → To pay → Paid, and can be Canceled). Its amount offsets, on the customer's balance, the sale originally recorded by the source invoice. (Because the return action stays available even for a Canceled source, a credit note can also be raised against a cancelled invoice — in that case it simply records an independent opposite-direction document.) When [Inventory](../inventory/inventory.md) is used, the credit note is tied to a **return** receipt type, so it can bring the returned goods back into stock.
+
+Besides the standard credit note, the module ships a **Retail credit note** type (used for over-the-counter returns), which can auto-create the corresponding receipt.
+
+Clicking the **Returned** cell on an invoice line opens a **Refunds** popup listing the return documents raised against that line.
 
 ## Refunds (return invoices)
 
@@ -130,17 +134,17 @@ A **refund** is implemented as an [invoice](invoices.md) whose type has the **"R
 
 ### How to create a refund
 
-In the source bill card a **"Return"** action appears once the bill has been moved to **To pay** and remains visible afterwards — including after the bill is marked **Paid** — so the typical case of recording a return after the original purchase was already completed is supported. The action disappears only when the bill is **Canceled**, and is not available for **Draft** bills. It is also not available from a list selection — open the bill itself. Click the action to create a new invoice:
+In the source bill card a **"Return"** action appears once the bill has been moved to **To pay**, and remains visible in every later status — including **Paid** and **Canceled** (the underlying "to pay" flag is never cleared, so cancelling the purchase does not hide the return action). It is only hidden while the bill is still a **Draft**, and is not available from a list selection — open the bill itself. Click the action to create a new invoice:
 
 - of the invoice type linked to the bill type (via the **"Return type"** setting on the bill type);
 - with the supplier as customer;
-- with lines copied from the bill (price and applied taxes are inherited).
+- with lines copied from the bill — the base price and the applied taxes are carried over.
 
 Each refund line keeps a reference back to the bill line it was created from. The same **"Check returned quantity"** mechanism is available.
 
 ### Workflow
 
-The refund then follows the normal invoice lifecycle (Draft → To pay → Paid → Canceled). Its amount reduces the supplier debt that was originally created by the source bill.
+The refund then follows the normal invoice lifecycle (Draft → To pay → Paid, and can be Canceled). Its amount offsets, on the supplier's balance, the purchase originally recorded by the source bill. When [Inventory](../inventory/inventory.md) is used, the refund is tied to a **return** shipment type, so it can ship the returned goods back out of stock.
 
 ## Choosing the right mechanism
 

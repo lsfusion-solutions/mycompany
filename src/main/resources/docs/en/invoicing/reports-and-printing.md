@@ -12,7 +12,9 @@ In “Invoicing”, print forms are typically available for:
 
 Printing availability depends on configuration and templates.
 
-### Configuring print templates for “Invoices”
+### Configuring print templates
+
+The same print-template mechanism works identically for [bills](bills.md), [invoices](invoices.md), and both incoming and outgoing [payments](payments.md) — each document type carries its own list of templates (**Bill templates**, **Invoice templates**, **Incoming/Outgoing payment templates**). The steps below use invoices as the example; bills and payments are configured the same way.
 
 #### What is a print template
 
@@ -57,8 +59,8 @@ Fields and actions in the template card:
 - **Open** — opens the current template for viewing (predefined or uploaded).
 - **Upload** — upload your layout file (after upload, it will be used).
 - **Reset** — delete the uploaded file and return to the predefined layout (if it is specified).
-- **Format** — determines how the printing result is generated.
-- **Export file name** — file name when saving the result (if the selected format generates a file).
+- **Format** — determines how the printing result is generated: **PDF**, **DOCX**, **XLSX**, **RTF**, **HTML**, or **Printer** (sends the result straight to a printer without producing a file).
+- **Export file name** — file name when saving the result (used by the file formats; hidden for the **Printer** format).
 
 Recommendations:
 
@@ -74,7 +76,7 @@ Open the **Invoice types** list, select the required type and open the tab with 
 Then:
 
 1. Find the required template in the list.
-2. Enable it for the current type (usually a checkbox like “On”).
+2. Enable it for the current type with the **"Incl."** checkbox.
 
 You can enable multiple templates — then when printing, the system will ask to select one.
 
@@ -124,14 +126,20 @@ Depending on the delivery, typical predefined print forms for an invoice may be 
 
 The base configuration ships four forms in **Invoicing → Reporting**:
 
-- **Bill report** — amounts and lines of [bills](bills.md) with breakdowns by vendor, type, period, tax;
-- **Invoice report** — amounts and lines of [invoices](invoices.md) with breakdowns by customer, type, period, tax;
-- **Payments** — a unified view of all incoming and outgoing payments with date, partner, account and signed amount; the same form also has an **Accounts** tab that shows current account balances and, optionally, the balance as of a chosen date;
-- **[Payment calendar](debt-and-calendar.md)** — debt aging and forecast cash by partner / contract.
+- **Bills report** — a **pivot** over [bill](bills.md) lines. Document columns include number, date, vendor, status, type, accounts, currency, payment terms and Pay before; line columns include item, its categories, dynamic item-attribute columns, quantity, price and taxes; the pivot **measures** are untaxed amount, tax amount, amount and currency amount. A **Filters** panel and a **Date interval** filter let you scope the data, and you arrange the grouping yourself in the pivot.
+- **Invoices report** — the same pivot over [invoice](invoices.md) lines, with **Customer** and **Department** in place of the vendor fields.
+- **Payments** — a unified view of all incoming and outgoing payments with type, date, number, partner, accounts, company and signed amount; the same form also has an **Accounts** tab that shows current account balances and, with a **Select date** picker, the balance as of a chosen date.
+- **[Payment calendar](debt-and-calendar.md)** — outstanding balance and forecast cash across a date range, with **Type** and **Partner** breakdown tabs.
 
-[Debt](debt-and-calendar.md) figures are also visible directly on the **Bill** and **Invoice** cards (matched payments and remaining debt) and through the dedicated **Debt by partner** / **Debt by contract** views.
+![Bills report](images/bill-report.png)
+
+![Invoices report](images/invoice-report.png)
+
+![Payments report](images/payments-report.png)
+
+[Debt](debt-and-calendar.md) figures are also visible directly on the **Bill** and **Invoice** cards (matched payments and remaining debt) and through the dedicated **Partner debts** / **Contract debts** views.
 
 Recommendations:
 
-1. Use a date interval.
-2. For debt analysis, group by [partner](../masterdata/partners.md) and [contract](../masterdata/contracts.md).
+1. Use the **Date interval** filter.
+2. For debt analysis, use the **Partner debts** / **Contract debts** views and their **Overdue** filter.

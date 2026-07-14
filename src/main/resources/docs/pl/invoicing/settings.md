@@ -6,33 +6,37 @@ title: Ustawienia i katalogi
 
 Otwórz **„Fakturowanie” → „Konfiguracja” → „Ustawienia”**.
 
-## Co zwykle jest konfigurowane
+## Formularz „Ustawienia”
 
-- typy dokumentów — typy faktur zakupu, faktur, płatności przychodzących i wychodzących — z numeratorami, walutą domyślną, trybem podatku (wliczony w cenę czy nie) oraz (dla typów zwrotnych) flagą **„Zwrot”** / „powiązany typ zwrotu” opisanymi w sekcji [Zwroty i korekty](refunds-and-corrections.md);
-- reguły numeracji (numerator przypięty do typu dokumentu);
-- konta bankowe i kasy (zobacz „Banki i konta” poniżej);
-- warunki płatności dla sprzedaży i zakupów (zobacz [Dług i kalendarz płatności](debt-and-calendar.md));
-- [podatki](taxes.md) i grupy podatków;
-- [bazy rozdziału kosztów](bill-cost.md) dla usług na fakturach zakupu;
-- parametry rozpoznawania faktur zakupu z pliku z użyciem OpenAI (jeśli używane, zobacz „Import faktur zakupu z pliku” poniżej);
-- szablony wydruku (zobacz [Raporty i drukowanie](reports-and-printing.md)).
+Sam formularz **„Ustawienia”** (**„Konfiguracja” → „Ustawienia”**) zawiera:
 
-## Banki i konta
+- katalogi **typów dokumentów** — **typy faktur zakupu**, **typy faktur**, **typy płatności przychodzących**, **typy płatności wychodzących** — każdy z numeratorem, partnerem domyślnym, ustawieniem, czy **cena zawiera podatki**, zachowaniem płatności/wydań oraz (dla zwrotów) flagą **„Zwrot” (Return)** i powiązanym **„Typem zwrotu” (Return type)** opisanymi w sekcji [Zwroty i korekty](refunds-and-corrections.md);
+- katalog **grup podatków**;
+- przełącznik **„Nie przeliczaj długu na walutę domyślną” (Skip converting debt to default currency)** — po włączeniu wartości długu są utrzymywane w walucie własnej każdego dokumentu, zamiast być przeliczane na walutę domyślną.
 
-Katalogi zwykle obejmują:
+Każdy typ dokumentu może również określać **walutę domyślną** podstawianą do jego dokumentów. Jest to niezależne od ogólnosystemowej **waluty domyślnej**, na którą przeliczane są wartości długu (o ile nie włączono przełącznika powyżej).
 
-- banki;
-- konta bankowe;
-- kasy;
-- konta analityczne (jeśli używane do dopasowania płatności).
+## Katalogi konfiguracji (osobne pozycje nawigatora)
+
+Obok formularza „Ustawienia” grupa **„Konfiguracja”** zawiera te katalogi jako własne pozycje menu:
+
+- **[Podatki](taxes.md)** — podatki i stawki podatków;
+- **Warunki płatności** — zobacz poniżej;
+- **Banki** — katalog banków;
+- **Konta** — jeden katalog przechowujący zarówno **konta bankowe**, jak i **kasy** (dodawane odpowiednimi przyciskami);
+- **Konta analityczne** (pozycje przepływów pieniężnych) — służą do klasyfikacji płatności; dopuszczone per typ płatności.
+
+Typy płatności dodatkowo mają flagę **„Płatność wewnętrzna” (Internal payment)** oraz ustawienie **dopuszczonych typów kont** (kasa / bank, wymagany co najmniej jeden).
+
+[Bazy alokacji kosztów](bill-cost.md) do rozdziału kosztów usług ustawia się na towarach usługowych, a szablony wydruku konfiguruje się per typ dokumentu (zobacz [Raporty i drukowanie](reports-and-printing.md)).
 
 ## Warunki płatności
 
-Warunki płatności są używane do:
+Warunki płatności przechowują liczbę **dni**; przypisane do partnera (osobno dla sprzedaży i zakupów) i kopiowane na dokumenty, sterują:
 
-- obliczania planowanej daty płatności;
-- generowania [kalendarza płatności](debt-and-calendar.md);
-- kontroli przeterminowań.
+- obliczaniem daty **„Zapłać do” (Pay before)**;
+- generowaniem [kalendarza płatności](debt-and-calendar.md);
+- kontrolą przeterminowań.
 
 ## Import faktur zakupu z pliku
 

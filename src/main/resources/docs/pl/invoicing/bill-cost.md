@@ -20,15 +20,15 @@ Dla każdej usługi, która musi być alokowana, można określić domyślną **
 
 Po dodaniu linii usługi do **[Faktury zakupu](bills.md)**, możesz alokować jej koszt do innych dokumentów.
 
-1. Otwórz **Fakturę zakupu** i wybierz linię usługi na liście produktów.
-2. Na karcie **Alokacja kosztów** (na dole formularza) zobaczysz ustawienia alokacji dla tej linii.
+1. Otwórz **Fakturę zakupu** i przejdź na zakładkę **Alokacja kosztów** (na dole formularza).
+2. Wybierz linię usługi w tabeli linii usług tej zakładki, aby zobaczyć jej ustawienia alokacji.
 3. **Baza alokacji** jest automatycznie wypełniana z karty usługi, ale możesz ją zmienić dla tej konkretnej linii faktury.
 4. Użyj podzakładek, aby wybrać cele alokacji:
 
 ### Alokacja do innych Faktur zakupu
 Na zakładce **Faktury zakupu**:
 - Zobaczysz listę faktur zakupu.
-- Zaznacz pole wyboru **Alokuj** dla faktur, które chcesz uwzględnić w alokacji.
+- Zaznacz pole wyboru **Alokuj** dla faktur, które chcesz uwzględnić w alokacji. Zaznaczenie na poziomie faktury kaskadowo obejmuje wszystkie jej linie towarowe.
 - Na liście **Linie faktury** poniżej możesz doprecyzować, które konkretne linie produktów powinny otrzymać koszt.
 - Kolumna **Alokowano** pokazuje kwotę przypisaną do każdej linii na podstawie wybranej **Bazy alokacji**.
 
