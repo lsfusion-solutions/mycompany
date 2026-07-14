@@ -11,19 +11,18 @@ From a user perspective this means:
 
 ## Where by-products are defined
 
-By-products are defined in a **[Bill of Materials](bom.md)** on the **“By-products”** tab.
+By-products are defined in a **[Bill of Materials](bom.md)** on the **“Byproducts”** tab.
 
 Each line includes:
 
-- **Item** (what is produced as a by-product);
-- **Unit of measure**;
-- **Quantity** — the norm for the Bill of Materials quantity.
+- **Product** (what is produced as a by-product), with the **UoM**, **Barcode** and **ID** reference columns;
+- **Qty** — the norm for the Bill of Materials base quantity.
 
 Example: if the Bill of Materials is defined for 1 unit of the item, then by-product quantity is the by-product norm per 1 unit.
 
 ## How by-products are transferred to a manufacturing order
 
-In the [manufacturing order](orders.md) card, when you run the line generation action (for example, “Create Lines”), the system:
+In the [manufacturing order](orders.md) card, when you run the line generation action (**“Create Lines”**), the system:
 
 1. Takes the planned quantity (how much needs to be produced).
 2. Calculates component lines.
@@ -37,6 +36,8 @@ By-product quantity is calculated proportionally:
 
 For example, if the Bill of Materials is defined for 10 units and the order is for 20 units, by-product norms are doubled.
 
+Note: by-products are taken only from the order’s own Bill of Materials; by-products of nested intermediate Bills of Materials are not added.
+
 ## By-products in [unbuild](unbuild.md) (disassembly)
 
 For unbuild, the logic is mirrored:
@@ -49,16 +50,16 @@ Practical meaning: by-products in unbuild are treated as additional losses/consu
 
 ## How by-products affect costing
 
-Cost is calculated from actual material consumption and then distributed across output.
+The order cost (the material write-off plus any additional cost components — see [Costing](costing.md)) is distributed across output.
 
 Important:
 
-- by-product lines created from the Bill of Materials **do not have a cost distribution coefficient filled in automatically**;
-- if distribution coefficients are not filled in, the total cost is usually assigned to the main item, and by-products get a zero share.
+- by-product lines created from the Bill of Materials **do not have a cost ratio filled in automatically**;
+- if cost ratios are not filled in, the total cost is assigned to the main item, and by-products get a zero share.
 
 If you need part of the cost to be assigned to by-products:
 
-1. Fill in cost distribution coefficients on output lines in the [manufacturing order](orders.md).
+1. Fill in the **Cost ratio** on output lines in the [manufacturing order](orders.md).
 2. Recalculate/verify distribution.
 
 For details about distribution see [Costing: how it is calculated](costing.md).
@@ -69,11 +70,11 @@ For details about distribution see [Costing: how it is calculated](costing.md).
    - by-products are an expected result of the process (for example, offcuts, recyclable material) that can be received into stock;
    - scrap is an unplanned loss that is usually recorded by a separate **[Scrap](scrap.md)** document.
 2. Configure by-product items as separate items so they can be stored, written off, and analyzed.
-3. If by-products must affect the main item cost — keep the default distribution.
-   If the cost should be split between the main output and by-products — use distribution coefficients.
+3. If the whole cost should stay on the main output item (by-products received "for free") — keep the default distribution.
+   If the cost should be split between the main output and by-products — use cost ratios.
 
 ## Typical mistakes
 
 - **By-products do not appear in the order** — by-products are not filled in the Bill of Materials or line generation was not run.
 - **By-products appear but the quantity is wrong** — check the Bill of Materials base quantity and the planned order quantity.
-- **By-products do not affect costing** — this is expected with default distribution; fill in cost distribution coefficients on output lines.
+- **By-products do not affect costing** — this is expected with default distribution; fill in cost ratios on output lines.

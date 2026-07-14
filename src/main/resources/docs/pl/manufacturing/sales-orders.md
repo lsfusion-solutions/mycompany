@@ -10,32 +10,33 @@ Jest to użyteczne, gdy sprzedajesz towary, które muszą zostać wyprodukowane 
 
 [Zamówienia produkcji](orders.md) są tworzone z zamówienia sprzedaży, gdy spełnione są wszystkie warunki:
 
-1. **Typ zamówienia sprzedaży** ma wskazany **[typ zamówienia produkcji](settings.md)**.
-2. Zamówienie sprzedaży ma status **„Potwierdzone”**.
+1. **Typ zamówienia sprzedaży** ma wskazany **[typ zamówienia produkcji](settings.md)** (blok **„Produkcja”** na karcie typu zamówienia sprzedaży).
+2. Zamówienie sprzedaży ma status **potwierdzony**.
 3. Zamówienie sprzedaży zawiera linie, w których:
-   - wskazano **[Zestawienie materiałów](bom.md)**;
+   - wskazano **[zestawienie materiałowe](bom.md)**;
    - nie utworzono jeszcze [zamówienia produkcji](orders.md).
 
 Jeśli któryś warunek nie jest spełniony, przycisk tworzenia może nie być widoczny lub akcja nie utworzy niczego.
 
-## Jak wybrać [Zestawienie materiałów](bom.md) w linii zamówienia sprzedaży
+## Jak wybrać [zestawienie materiałowe](bom.md) w linii zamówienia sprzedaży
 
-Linia zamówienia sprzedaży ma pole [Zestawienie materiałów](bom.md).
+Linia zamówienia sprzedaży ma pole **„Zestawienie materiałowe”** (jest ono widoczne, gdy typ zamówienia sprzedaży ma wskazany typ zamówienia produkcji).
 
 Zasady:
 
-- Zestawienie materiałów musi pasować do towaru w linii (w przeciwnym razie system nie pozwoli zapisać linii);
-- jeśli towar ma domyślne [Zestawienie materiałów](bom.md), może zostać wybrane automatycznie.
+- zestawienie materiałowe musi pasować do towaru w linii (w przeciwnym razie system nie pozwoli zapisać linii);
+- po wybraniu towaru automatycznie podstawiane jest jego domyślne [zestawienie materiałowe](bom.md);
+- gdy dla linii utworzono już zamówienie produkcji, pole staje się tylko do odczytu, a jego tło odzwierciedla status zamówienia produkcji.
 
 ## Ręczne tworzenie
 
-W karcie zamówienia sprzedaży może być dostępna akcja **„Zamówienia produkcji”**.
+W karcie zamówienia sprzedaży dostępna jest akcja **„Zamówienia produkcji”**.
 
 Jak to działa:
 
 1. Użytkownik uruchamia akcję tworzenia.
 2. System przechodzi po liniach zamówienia.
-3. Dla każdej linii, w której wskazano [Zestawienie materiałów](bom.md) i nie istnieje jeszcze [zamówienie produkcji](orders.md), tworzone jest nowe zamówienie produkcji.
+3. Dla każdej linii, w której wskazano [zestawienie materiałowe](bom.md) i nie istnieje jeszcze [zamówienie produkcji](orders.md), tworzone jest nowe zamówienie produkcji.
 
 ## Co jest wypełniane w utworzonym zamówieniu produkcji
 
@@ -44,20 +45,20 @@ Jak to działa:
 Automatycznie wypełniane są pola:
 
 - link do źródłowej linii zamówienia sprzedaży;
-- status oczekujący (zamówienie jest tworzone jako oczekujące);
+- status — zamówienie jest tworzone od razu w statusie **„Oczekiwanie”**;
 - **[typ zamówienia produkcji](settings.md)** — pobierany z typu zamówienia sprzedaży;
 - **data rozpoczęcia** — pobierana z zamówienia sprzedaży;
 - **lokalizacja magazynowa wyrobów gotowych** — pobierana z lokalizacji / lokalizacji magazynowej zamówienia sprzedaży;
 - **towar** — pobierany z linii zamówienia sprzedaży;
-- **[Zestawienie materiałów](bom.md)** — pobierane z linii zamówienia sprzedaży;
-- linie materiałów i wyjścia są generowane na podstawie ilości z linii zamówienia sprzedaży;
-- zlecenia produkcyjne są generowane na podstawie operacji Zestawienia materiałów, w tym operacji z zagnieżdżonych pośrednich Zestawień materiałów.
+- **[zestawienie materiałowe](bom.md)** — pobierane z linii zamówienia sprzedaży;
+- linie materiałów i produktów są generowane na podstawie ilości z linii zamówienia sprzedaży;
+- zlecenia produkcyjne są generowane na podstawie operacji zestawienia materiałowego, w tym operacji z zagnieżdżonych przejściowych zestawień materiałowych.
 
 Dodatkowo może być wykonane dodatkowe, konfigurowalne wypełnianie (w zależności od ustawień).
 
 ## Automatyczne tworzenie przy potwierdzaniu
 
-Typ zamówienia sprzedaży może mieć ustawienie **automatycznego tworzenia zamówień produkcji**.
+Typ zamówienia sprzedaży może mieć ustawienie **„Automatycznie utwórz zamówienie produkcyjne”**.
 
 Jeśli jest włączone, podczas potwierdzenia zamówienia sprzedaży:
 
@@ -67,20 +68,20 @@ Jeśli jest włączone, podczas potwierdzenia zamówienia sprzedaży:
 
 Jeśli automatyczne tworzenie jest włączone, zmiany w liniach zamówienia sprzedaży są synchronizowane z [zamówieniem produkcji](orders.md) do momentu jego uruchomienia:
 
-- gdy zmienia się ilość w linii — przeliczane są linie materiałów i wyjścia zamówienia produkcji;
+- gdy zmienia się ilość w linii — przeliczane są linie materiałów i produktów zamówienia produkcji;
 - gdy zmienia się towar w linii — aktualizowany jest towar zamówienia produkcji i linie są przeliczane;
-- gdy zmienia się Zestawienie materiałów — aktualizowane jest Zestawienie w zamówieniu produkcji i linie są przeliczane.
-- przy każdym przeliczeniu linii zlecenia produkcyjne są regenerowane na podstawie aktualnych operacji Zestawienia materiałów, w tym operacji z zagnieżdżonych pośrednich Zestawień materiałów.
+- gdy zmienia się zestawienie materiałowe — aktualizowane jest zestawienie w zamówieniu produkcji i linie są przeliczane;
+- przy każdym przeliczeniu linii zlecenia produkcyjne są generowane na nowo na podstawie aktualnych operacji zestawienia materiałowego, w tym operacji z zagnieżdżonych przejściowych zestawień materiałowych.
 
 Ograniczenia:
 
-- jeśli zamówienie produkcji zostało już rozpoczęte, zmiana ilości/towaru/Zestawienia w linii źródłowej jest zabroniona.
+- jeśli zamówienie produkcji zostało już rozpoczęte, zmiana ilości/towaru/zestawienia materiałowego w linii źródłowej jest zabroniona.
 
 ## Anulowanie zamówienia sprzedaży
 
 Jeśli zamówienie sprzedaży jest anulowane i automatyczne tworzenie jest włączone:
 
-- powiązane zamówienia produkcji są automatycznie ustawiane w status **„Anulowan”**.
+- powiązane zamówienia produkcji są automatycznie przenoszone do statusu **„Anulowano”**.
 
 Istnieje też ograniczenie:
 
@@ -88,16 +89,16 @@ Istnieje też ograniczenie:
 
 ## Gdzie zobaczyć powiązane zamówienia produkcji
 
-Karta zamówienia sprzedaży pokazuje blok powiązanych zamówień produkcji:
+Karta zamówienia sprzedaży pokazuje blok **„Zamówienia produkcji”** (z licznikiem dokumentów) z listą powiązanych zamówień produkcji:
 
 - numer, data rozpoczęcia, status, typ;
 - można otworzyć zamówienie produkcji.
 
-Samo zamówienie produkcji zawiera link do źródłowego zamówienia sprzedaży.
+Samo zamówienie produkcji zawiera link do **zamówienia sprzedaży** (w stopce karty oraz jako kolumna listy).
 
 ## Typowe błędy
 
 - **Przycisk tworzenia nie jest widoczny** — zamówienie sprzedaży nie jest potwierdzone lub typ zamówienia sprzedaży nie ma ustawionego typu zamówienia produkcji.
-- **Nic się nie tworzy** — nie wskazano Zestawień materiałów w liniach lub zamówienia produkcji już istnieją dla linii.
+- **Nic się nie tworzy** — nie wskazano zestawień materiałowych w liniach lub zamówienia produkcji już istnieją dla linii.
 - **Nie można usunąć linii** — zamówienie produkcji zostało już utworzone z tej linii.
-- **Nie można zmienić ilości/towaru/Zestawienia** — zamówienie produkcji zostało już rozpoczęte dla tej linii.
+- **Nie można zmienić ilości/towaru/zestawienia materiałowego** — zamówienie produkcji zostało już rozpoczęte dla tej linii.

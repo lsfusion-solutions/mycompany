@@ -39,9 +39,9 @@ For unbuild:
 
 ### Planned quantity
 
-The **“To produce”** field is also used for unbuild, but the meaning changes:
+The **“Manufacture”** field is also used for unbuild, but the meaning changes:
 
-- for unbuild it is the quantity of the source item that will be disassembled.
+- for unbuild it is the quantity of the source item that will be disassembled (technically, the planned consumption of the source item).
 
 ## Automatic line generation from the Bill of Materials
 
@@ -52,12 +52,12 @@ For unbuild, the system performs:
 1. Clears existing material and output lines.
 2. Creates **output** lines from [Bill of Materials](bom.md) components:
    - item = component;
-   - the “to produce” quantity is calculated proportionally:
+   - the planned **Manufacture** quantity is calculated proportionally:
      - component quantity in Bill of Materials × unbuild quantity / Bill of Materials quantity;
-   - if the component has a cost distribution coefficient, it is copied to the output line.
+   - if the component has a **Cost ratio**, it is copied to the output line.
 3. Creates one **material** line for the source item:
    - item = order item;
-   - “to consume” quantity = unbuild quantity.
+   - the **To consume** quantity = unbuild quantity.
 4. If the [Bill of Materials](bom.md) contains [by-products](by-products.md), they are added as additional **material** lines (also to be consumed).
 
 ## Reserving and starting unbuild
@@ -71,18 +71,18 @@ Unbuild goes through the same statuses as regular production:
 3. Move the order “in progress”.
    - run **Manufacture**.
 4. Record actual execution:
-   - for unbuild, “produced” is typically derived from consuming the source item;
-   - the system can automatically fill output components and consumption proportionally.
-5. Run **Mark as Done** and specify the finished goods location where components will be received.
+   - for unbuild, the actual **Produced** quantity shown in the header is the actually consumed quantity of the source item;
+   - entering it distributes the actual output components and consumption proportionally to the plan.
+5. Run **Mark as Done** and specify the **Products location** where components will be received.
 
 ## Costing for unbuild
 
 Valuation follows the same logic as for production:
 
 - the basis of cost is actual consumption (for unbuild it is consumption of the source item and any additional material lines);
-- the total amount is distributed across output lines (components) by cost distribution coefficients.
+- the total amount is distributed across output lines (components) by their **Cost ratio** values.
 
-If distribution coefficients are not filled in, the whole cost may be assigned to one output line.
+If cost ratios are not filled in, the unbuild cost is not distributed to the components at all — fill in the **Cost ratio** on the Bill of Materials components (from where it is copied to the output lines) or directly on the output lines.
 
 See details in [Costing: how it is calculated](costing.md).
 
@@ -90,4 +90,4 @@ See details in [Costing: how it is calculated](costing.md).
 
 - **Unbuild lines are not generated** — a Bill of Materials is not selected.
 - **Reservation fails** — the source item is not available in the material location in the required quantity.
-- **Components are received to the wrong location** — make sure the finished goods location is specified on completion.
+- **Components are received to the wrong location** — make sure the **Products location** is specified on completion.

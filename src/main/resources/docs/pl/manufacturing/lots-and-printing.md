@@ -8,18 +8,37 @@ W produkcji mogą być używane partie oraz formularze wydruku.
 
 Partia pozwala powiązać wynik produkcji oraz późniejsze ruchy magazynowe z konkretną serią produkcyjną.
 
-Jeśli w Twojej konfiguracji włączono śledzenie partii:
+Śledzenie partii włącza się dla poszczególnych towarów (zobacz ustawienia danych podstawowych); panele partii pojawiają się w [zamówieniu produkcji](orders.md) tylko dla towarów objętych śledzeniem partii.
 
-- możesz wskazać partię na wyjściu z produkcji;
-- możesz drukować etykiety dla partii;
-- partie są wykorzystywane do identyfikowalności.
+### Partie w liniach produktów
 
-## Drukowanie
+Na zakładce **„Produkty wyprodukowane”** wybrana linia ma panel partii z dwiema kolumnami ilości dla każdej partii:
 
-Formularze wydruku mogą być dostępne w [zamówieniu produkcji](orders.md) (np. karta zlecenia / formularz zlecenia produkcyjnego).
+- **„Produkcja”** — planowana ilość partii;
+- **„Wyprodukowano”** — faktycznie wyprodukowana ilość partii.
 
-Jeśli drukowanie jest dostępne:
+Sposoby wypełnienia partii:
 
-1. Otwórz [zamówienie produkcji](orders.md).
-2. Wybierz wymagany formularz wydruku.
-3. Upewnij się, że kluczowe pola są wypełnione (towar, ilość, daty).
+- akcja generowania partii tworzy zapisy partii dla planowanej ilości i nadaje im identyfikatory/kody kreskowe;
+- zeskanowanie lub wpisanie kodu kreskowego partii dodaje partię; jeśli partia o tym kodzie kreskowym jeszcze nie istnieje, jest tworzona automatycznie;
+- gdy zamówienie zostaje oznaczone jako **„Wykonano”**, a faktycznie wyprodukowana ilość linii jest równa planowi, ilości wyprodukowane w podziale na partie są wypełniane automatycznie z ilości planowanych.
+
+Wyprodukowane partie są przyjmowane na stan razem z produktami, dzięki czemu późniejsze wysyłki można prześledzić wstecz do serii produkcyjnej.
+
+### Partie w liniach materiałów
+
+Na zakładce **„Materiały”** wybrana linia ma panel partii, w którym rejestrowana jest ilość **„Zużyte”** w podziale na partie — w ten sposób ewidencjonujesz, które dokładnie przyjęte partie zostały zużyte w produkcji.
+
+### Drukowanie etykiety partii
+
+Jeśli dla towaru skonfigurowano typ wydruku etykiety, linie produktów z wyprodukowaną partią pokazują akcję **„Etykieta”**, która drukuje etykietę partii.
+
+## Drukowanie zamówienia
+
+Akcja **„Drukuj”** [zamówienia produkcji](orders.md) drukuje prosty formularz zadania produkcyjnego:
+
+- numer zamówienia, data rozpoczęcia;
+- towar i ilość do wyprodukowania;
+- lista materiałów z ilością do zużycia i lokalizacją źródłową.
+
+Używaj go jako karty zadania dla hali produkcyjnej. Formularz wydruku jest dostępny także dla struktury i kosztu zestawienia materiałowego (zobacz [Zestawienia materiałowe](bom.md)).

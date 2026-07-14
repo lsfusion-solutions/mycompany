@@ -40,10 +40,8 @@ Below is a typical scenario “from [Bill of Materials](bom.md) to [production a
    - specify the item to produce;
    - set the planned start date;
    - if needed, select a [Bill of Materials](bom.md).
-3. Fill in planned quantities:
-   - how many units to produce;
-   - which materials will be consumed and in what quantities.
-4. Check material availability and reserve:
+3. Fill in planned quantities — run **Create Lines** and enter the quantity to produce; material and output lines are generated from the Bill of Materials.
+4. Run **Mark as Todo**, then check material availability and reserve:
    - run the **Check availability** action;
    - if the check is successful, the order moves to the ready state.
 5. Run **Manufacture** (move the order to **In progress**) and record output.
@@ -53,10 +51,12 @@ Below is a typical scenario “from [Bill of Materials](bom.md) to [production a
 
 The section is located in the navigation tree as **"Manufacturing"** and usually contains four groups:
 
-- **Operations** — [Bills of Materials](bom.md), [manufacturing orders](orders.md) and [work orders](work-orders.md).
-- **Processes** — control panels, in particular the [work center load](work-orders.md) board.
-- **Reporting** — [manufacturing reports](reports.md).
-- **Configuration** — directories and parameters: the **Settings** form, [order types](settings.md), [BoM operations](bom.md), [work centers](work-orders.md).
+- **Operations** — **"Bills of Materials"** ([BOM list](bom.md)), **"Manufacturing orders"** ([orders](orders.md)) and **"Work orders"** ([work orders](work-orders.md)).
+- **Processes** — dashboards, in particular the **"Work center load"** [board](work-orders.md).
+- **Reporting** — the **"Order report"** ([manufacturing reports](reports.md)).
+- **Configuration** — directories and parameters: the **"Settings"** form (with [order types](settings.md) and status flags), **"Operations"** ([BoM operations](bom.md)) and **"Work centers"** ([work centers](work-orders.md)).
+
+![Manufacturing section in the navigator](images/manufacturing-nav.png)
 
 ## Terms
 

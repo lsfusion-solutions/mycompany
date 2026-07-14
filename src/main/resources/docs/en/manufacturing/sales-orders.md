@@ -10,7 +10,7 @@ This is useful when you sell items that must be produced for a specific order.
 
 [Manufacturing orders](orders.md) are created from a sales order when all conditions are met:
 
-1. The **sales order type** has a **[manufacturing order type](settings.md)** specified.
+1. The **sales order type** has a **[manufacturing order type](settings.md)** specified (the **Manufacturing** block on the sales order type card).
 2. The sales order has the **confirmed** status.
 3. The sales order contains lines where:
    - a **[Bill of Materials](bom.md)** is specified;
@@ -20,12 +20,13 @@ If any condition is not met, the creation button may not be shown, or the action
 
 ## How to select a [Bill of Materials](bom.md) in a sales order line
 
-A sales order line has a [Bill of Materials](bom.md) field.
+A sales order line has a **Bill of Materials** field (it is shown when the sales order type has a manufacturing order type).
 
 Rules:
 
 - the Bill of Materials must match the line item (otherwise the system will not allow saving the line);
-- if the item has a default [Bill of Materials](bom.md), it may be selected automatically.
+- when the item is selected, its default [Bill of Materials](bom.md) is substituted automatically;
+- once a manufacturing order has been created for the line, the field becomes read-only and its background reflects the manufacturing order status.
 
 ## Manual creation
 
@@ -88,12 +89,12 @@ There is also a restriction:
 
 ## Where to see linked manufacturing orders
 
-The sales order card shows a block of linked manufacturing orders:
+The sales order card shows a **Manufacturing orders** block (with the count of documents) listing the linked manufacturing orders:
 
 - number, start date, status, type;
 - you can open the manufacturing order.
 
-The manufacturing order itself contains a link to the source sales order.
+The manufacturing order itself shows the **Sales order** link (in the card footer and as a list column).
 
 ## Typical mistakes
 
