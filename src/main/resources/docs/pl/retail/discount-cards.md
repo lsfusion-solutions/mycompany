@@ -12,7 +12,7 @@ Karta rabatowa identyfikuje klienta na [kasie](pos.md): gdy karta zostanie wprow
 
 Karta rabatowa ma:
 
-- **numer** — identyfikator karty; jest on również kodem skanowanym na kasie;
+- **ID** — identyfikator karty; to on jest skanowany na kasie;
 - **właściciela** — klienta, do którego należy karta;
 - **datę wydania**;
 - **datę blokady** — ustawianą przy blokowaniu karty.
@@ -24,7 +24,7 @@ Kartę można utworzyć:
 - na liście **„Karty rabatowe”** — utwórz kartę i wskaż jej właściciela;
 - z karty klienta — na zakładce **„Karty rabatowe”** kontrahenta, gdzie nowa karta jest tworzona już powiązana z tym klientem.
 
-Numer karty jest nadawany automatycznie przez numerator.
+ID karty jest nadawany automatycznie przez numerator.
 
 ## Blokowanie karty
 
@@ -34,5 +34,5 @@ Zablokowanej karty nie można użyć: na kasie system pokazuje komunikat **„Ka
 
 ## Użycie karty
 
-- **Na kasie** — wprowadź lub zeskanuj numer karty w polu kodu kreskowego. Właściciel karty staje się klientem paragonu (zobacz [Kasa i POS](pos.md)).
+- **Na kasie** — wprowadź lub zeskanuj ID karty w polu kodu kreskowego. Właściciel karty staje się klientem paragonu (zobacz [Kasa i POS](pos.md)).
 - **Na fakturze** — kartę rabatową można wybrać na [fakturze sprzedaży](../invoicing/invoices.md); jej wybór uzupełnia klienta, a system sprawdza, że karta odpowiada klientowi i nie jest zablokowana.

@@ -15,9 +15,11 @@ The **POS** screen (the cashier dashboard) is where a cashier processes sales an
 The POS screen has two panes:
 
 - the **left pane** — the current receipt: its header (the barcode field and customer), the list of receipt lines, item details and totals, the numeric keypad, and the action buttons;
-- the **right pane** — a set of tabs: **Touch**, **Search**, **By order**, and **Session**.
+- the **right pane** — a set of tabs: **Touch**, **Search**, **Session**, and **By order**.
 
-A row of **hotkey buttons** for frequently sold items is shown above the panes (see *Hotkey buttons* below).
+A row of **hotkey buttons** for frequently sold items is shown at the bottom of the screen (see *Adding items* below).
+
+![POS screen](images/pos.png)
 
 ## Selecting the cash register and session
 
@@ -32,7 +34,7 @@ To start working, open a **[session](sessions.md)**:
 
 To finish, press **“Close session”** and confirm.
 
-The **“Cash at the checkout”** field in the header shows the current cash balance of the open session.
+The **“Cash at the checkout”** field on the Session tab shows the current cash balance of the cash register.
 
 ## Building a receipt
 
@@ -43,9 +45,11 @@ A receipt is a sale document created inside the session. A new empty receipt is 
 Items can be added in several ways:
 
 - **Barcode** — type or scan a code into the barcode field at the top of the receipt. The system recognises an item barcode, a marked-goods code, or a [discount card](discount-cards.md). An unrecognised code produces a **“Barcode not found”** message.
-- **Search tab** — find an item by **name** (`F6`) or by **price** (`F7`), then double-click it or set its quantity to add it to the receipt. The **“In document”** filter (`Shift+F10`) shows only items already on the receipt; the **“Active”** filter limits the list to active items.
+- **Search tab** — find an item by **name** (`F6`) or by **price** (`F7`), then double-click it or set its quantity to add it to the receipt. The **“In document”** filter (`Shift+F10`) shows only items already on the receipt; the **“Available”** filter (`F10`) shows only items with available stock. The list is automatically limited to active items that can be sold.
 - **Touch tab** — a tiled grid of categories and items with pictures. Tap a category to drill down, tap an item to add it; use **“Back”** and **“Reset”** to navigate. Categories and items can be hidden from this grid in the **“Touch”** tab of the Settings form.
-- **Hotkey buttons** — items that have a *hot key (name)* assigned on the item card appear as quick-add buttons on the POS screen.
+- **Hotkey buttons** — items that have the **“Hot key (name)”** field filled in on the item card appear as quick-add buttons at the bottom of the POS screen.
+
+![Search tab on the POS screen](images/pos-search.png)
 
 ### Changing a line
 
@@ -76,7 +80,9 @@ Each receipt line has a **discount** selector and **discount** / **discount pric
 
 ## Selling against an order
 
-The **“By order”** tab lists confirmed [sales orders](../sales/orders.md) for the receipt’s customer. The **“Delivery today”** filter narrows them to orders scheduled for the current date. **“Add to receipt”** copies the order lines into the current receipt.
+The **“By order”** tab lists confirmed [sales orders](../sales/orders.md) for the receipt’s customer (or orders without a customer if none is set on the receipt). The **“Delivery today”** filter narrows them to orders scheduled for the current date. **“Add to receipt”** copies the order lines into the current receipt.
+
+![By order tab on the POS screen](images/pos-order.png)
 
 ## Marked goods and lots
 
@@ -110,6 +116,8 @@ Add items in any convenient way:
 
 Each added item appears as a receipt line with quantity, price, and (if applicable) discount. To add the same item again, scan it once more or change the line quantity.
 
+![Receipt with added items](images/pos-receipt.png)
+
 ### Step 3. Check quantities and discounts
 
 - Adjust the **quantity** in the lines — directly in the line or with the on-screen numeric keypad; entering `0` removes the line.
@@ -118,7 +126,9 @@ Each added item appears as a receipt line with quantity, price, and (if applicab
 
 ### Step 4. Go to payment
 
-Press **“Payment”** (`Ctrl+Enter`) — the button is active once the receipt has an amount. The payment dialog opens, showing the **To pay** amount.
+Press **“Payment”** (`Ctrl+Enter`) — the button is active once the receipt has an amount. The payment dialog opens, showing the receipt amount.
+
+![Payment dialog](images/pos-payment.png)
 
 ### Step 5. Settle with the customer
 
@@ -128,11 +138,11 @@ In the payment dialog:
 - if needed, split the payment across several methods (for example, part cash, part card);
 - for cash, the system calculates and shows the **change** to give back to the customer.
 
-The payment cannot be confirmed if the entered amount is insufficient or a non-cash method exceeds the amount to pay.
+The payment cannot be confirmed if the entered amount is insufficient or a non-cash method exceeds the amount to pay. The **“Close”** button closes the dialog without taking payment.
 
 ### Step 6. Complete the receipt
 
-Press **“OK”**. The system:
+Press **“Ok”**. The system:
 
 - records the payments and completes the receipt — the sale is now recorded;
 - prints the receipt if a fiscal device is connected;
@@ -142,12 +152,12 @@ The completed receipt appears in the **“Cash receipts”** list on the **Sessi
 
 ## Cash operations
 
-From the POS header you can:
+On the **Session** tab, the **“Deposit cash”** and **“Withdraw cash”** lists provide the actions:
 
 - **“Deposit cash”** — register a cash deposit into the checkout;
 - **“Withdraw”** — register a cash withdrawal.
 
-Both open a numeric-keypad dialog for the amount and are recorded against the open session. They are listed on the **Session** tab as **“Deposit cash”** and **“Withdraw cash”**.
+Both open a numeric-keypad dialog for the amount and are recorded against the open session; the completed operations are shown in the same lists.
 
 > The **“Deposit cash”** and **“Withdraw”** buttons are available only if the cash register has a **cash account** — the account for the **“Cash”** payment method. If it is not configured, the buttons are disabled (and the “Cash at the checkout” field is empty). This account is set on the cash-register card — see [Retail settings](settings.md).
 
@@ -157,10 +167,12 @@ If a fiscal device is connected to the cash register, opening and closing a sess
 
 ## Returns
 
-A return is processed from the **Session** tab: select the original sales receipt in the **“Cash receipts”** list and press **“Return”**. That list can be filtered **“By session”** or **“By POS”**.
+A return is processed from the **Session** tab: select the original sales receipt in the **“Cash receipts”** list and press **“Return”**. That list can be filtered **“By session”**, **“By POS”**, or **“Same location”**.
 
 The full procedure — adjusting return lines, the return payment, and the rules for refunding by payment method — is described in [Returns](returns.md).
 
 ## Session results
 
 The **Session** tab shows the session number, opening time, and totals, including the amount paid by each payment method. The **“Cash receipts”** and **“Refunds”** lists show the sales and returns made in the session.
+
+![Session tab on the POS screen](images/pos-session.png)

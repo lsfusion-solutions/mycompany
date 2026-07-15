@@ -24,10 +24,11 @@ To główny scenariusz: zwrot jest przetwarzany na podstawie wcześniej wystawio
 
 ### Krok 1. Znajdź oryginalny paragon
 
-Na zakładce **„Sesja”** lista **„Paragony sprzedaży”** pokazuje paragony sprzedaży. Przełącz jej filtr, aby znaleźć wymagany paragon:
+Na zakładce **„Sesja”** lista **„Paragony”** pokazuje paragony sprzedaży. Przełącz jej filtr, aby znaleźć wymagany paragon:
 
-- **„Wg sesji”** — paragony bieżącej sesji;
-- **„Wg POS”** — paragony kasy.
+- **„Według sesji”** — paragony bieżącej sesji;
+- **„Według pos”** — paragony kasy;
+- **„Według lokalizacji”** — paragony lokalizacji kasy.
 
 Wybierz na liście oryginalny paragon sprzedaży.
 
@@ -81,4 +82,4 @@ Sprawdź, czy:
 
 ### Brak oryginalnego paragonu
 
-Zwrot na kasie jest zawsze realizowany na podstawie oryginalnego paragonu sprzedaży. Jeśli oryginalnego paragonu nie da się znaleźć na liście **„Paragony sprzedaży”**, przełącz filtr na **„Wg POS”**, aby poszerzyć wyszukiwanie. Zwrot bez oryginalnego paragonu nie jest obsługiwany na kasie.
+Zwrot na kasie jest zawsze realizowany na podstawie oryginalnego paragonu sprzedaży. Jeśli oryginalnego paragonu nie da się znaleźć na liście **„Paragony”**, przełącz filtr na **„Według pos”** lub **„Według lokalizacji”**, aby poszerzyć wyszukiwanie. Zwrot bez oryginalnego paragonu nie jest obsługiwany na kasie.

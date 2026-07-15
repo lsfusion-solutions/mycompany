@@ -19,11 +19,11 @@ Payment method configuration: see [Settings](settings.md).
 
 ### Change
 
-If more than **To pay** was entered (usually for cash payments), the system will calculate **change**.
+If more cash than **To pay** was entered, the system calculates the **change**. Only cash can exceed the amount to pay.
 
 ### Input validation
 
-Depending on settings, validations may apply:
+The following checks always apply when entering amounts:
 
 - you cannot confirm payment if the entered amount is insufficient;
 - you cannot “overpay” by cashless methods (for example, bank card) above **To pay**;
@@ -31,6 +31,6 @@ Depending on settings, validations may apply:
 
 ## Return payment
 
-When processing a return, a pay-out to the customer is made. Available payment methods and rules for splitting amounts are defined by settings.
+When processing a return, a pay-out to the customer is made. The splitting rules are fixed: for each payment method you cannot refund more than was paid by that method in the original receipt, and the refund total must equal the return amount. Settings only affect which payment methods are available.
 
 Step-by-step details and typical restrictions: [Returns](returns.md).

@@ -27,7 +27,8 @@ This is the main scenario: the return is processed based on a previously issued 
 On the **Session** tab, the **“Cash receipts”** list shows sales receipts. Switch its filter to find the required receipt:
 
 - **“By session”** — receipts of the current session;
-- **“By POS”** — receipts of the cash register.
+- **“By POS”** — receipts of the cash register;
+- **“Same location”** — receipts of the cash register’s location.
 
 Select the original sales receipt in the list.
 
@@ -81,4 +82,4 @@ Check that:
 
 ### No original receipt
 
-A POS return is always processed against an original sales receipt. If the original receipt cannot be found in the **“Cash receipts”** list, switch the filter to **“By POS”** to widen the search. A return without an original receipt is not supported at the POS.
+A POS return is always processed against an original sales receipt. If the original receipt cannot be found in the **“Cash receipts”** list, switch the filter to **“By POS”** or **“Same location”** to widen the search. A return without an original receipt is not supported at the POS.

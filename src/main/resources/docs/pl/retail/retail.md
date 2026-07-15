@@ -16,9 +16,9 @@ Sekcja **„Sprzedaż detaliczna”** jest zwykle używana przez:
 
 ## Spis treści
 
-- [Szybki start](#quick-start)
-- [Nawigacja](#navigation)
-- [Pojęcia](#terms)
+- [Szybki start](#szybki-start)
+- [Nawigacja](#nawigacja)
+- [Pojęcia](#pojęcia)
 
 Sekcje:
 
@@ -44,12 +44,12 @@ Sekcje:
 
 ### Scenariusz: zrealizuj zwrot od klienta
 
-Sposób realizacji zwrotu zależy od Twojej konfiguracji (na przykład zwrot na podstawie oryginalnego paragonu lub „zwrot wolny”). Typowe kroki:
+Zwrot na kasie realizuje się na podstawie oryginalnego paragonu sprzedaży:
 
 1. Otwórz POS.
-2. Przełącz do trybu zwrotu (jeśli jest używany).
-3. Wskaż towary i ilości do zwrotu.
-4. Zrealizuj płatność zwrotu (wypłatę) używając wybranej metody płatności.
+2. Na zakładce **„Sesja”** na liście **„Paragony”** znajdź oryginalny paragon i naciśnij **„Zwrot”**.
+3. Dostosuj zwracane towary i ilości.
+4. Zrealizuj płatność zwrotu (wypłatę): daną metodą płatności można zwrócić najwyżej tyle, ile nią zapłacono w oryginalnym paragonie, a łączna kwota wypłaty musi być równa kwocie zwrotu.
 
 Szczegóły: [Zwroty](returns.md).
 
@@ -68,26 +68,26 @@ Typowe pozycje menu:
 
 ## Pojęcia
 
-#### Kasa
+### Kasa
 
 **[Kasa](settings.md)** to stanowisko pracy służące do realizacji sprzedaży i zwrotów. Z reguły kasa jest powiązana z konkretnym komputerem/urządzeniem.
 
-#### Sesja
+### Sesja
 
 **[Sesja](sessions.md)** to okres pracy kasy pomiędzy **otwarciem sesji** a **zamknięciem sesji**. Operacje w POS są wykonywane w ramach otwartej sesji.
 
-#### POS
+### POS
 
 **[POS](pos.md)** to ekran kasjera służący do realizacji sprzedaży i zwrotów: tworzenia paragonu, dodawania towarów, stosowania rabatów oraz przejścia do płatności.
 
-#### Paragon
+### Paragon
 
 Wynik realizacji sprzedaży lub zwrotu (w **[POS](pos.md)**): lista pozycji, ceny, rabaty, Do zapłaty oraz metoda(y) płatności.
 
-#### Metoda płatności
+### Metoda płatności
 
 **[Metoda płatności](payments.md)** to skonfigurowany sposób przyjmowania pieniędzy (na przykład gotówka lub karta bankowa) oraz powiązane operacje finansowe.
 
-#### Karta rabatowa
+### Karta rabatowa
 
 **[Karta rabatowa](discount-cards.md)** to karta identyfikująca klienta na paragonie; klient paragonu jest ustawiany na podstawie właściciela karty.

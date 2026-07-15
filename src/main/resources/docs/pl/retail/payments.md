@@ -19,11 +19,11 @@ Konfiguracja metod płatności: zobacz [Ustawienia](settings.md).
 
 ### Reszta
 
-Jeśli wprowadzono więcej niż **Do zapłaty** (zwykle dla płatności gotówkowych), system wyliczy **resztę**.
+Jeśli gotówką wprowadzono więcej niż **Do zapłaty**, system wyliczy **resztę**. Tylko gotówką można wprowadzić więcej niż kwotę do zapłaty.
 
 ### Walidacja danych wejściowych
 
-W zależności od ustawień mogą obowiązywać walidacje:
+Przy wprowadzaniu kwot zawsze obowiązują walidacje:
 
 - nie możesz potwierdzić płatności, jeśli wprowadzona kwota jest niewystarczająca;
 - nie możesz „nadpłacić” metodami bezgotówkowymi (na przykład kartą bankową) ponad **Do zapłaty**;
@@ -31,6 +31,6 @@ W zależności od ustawień mogą obowiązywać walidacje:
 
 ## Płatność zwrotu
 
-Podczas realizacji zwrotu wykonywana jest wypłata dla klienta. Dostępne metody płatności i reguły dzielenia kwot są określane przez ustawienia.
+Podczas realizacji zwrotu wykonywana jest wypłata dla klienta. Reguły dzielenia kwot są stałe: daną metodą płatności nie można zwrócić więcej, niż zapłacono nią w oryginalnym paragonie, a łączna kwota wypłaty musi być równa kwocie zwrotu. Ustawienia wpływają tylko na dostępność metod płatności.
 
 Szczegóły krok po kroku oraz typowe ograniczenia: [Zwroty](returns.md).

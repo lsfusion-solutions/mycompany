@@ -8,11 +8,13 @@ A discount card identifies a customer at the [cash register](pos.md): when a car
 
 **“Retail” → “Configuration” → “Discount cards”**.
 
+![Discount cards list](images/discount-cards.png)
+
 ## Main card data
 
 A discount card has:
 
-- **number** — the card identifier; it is also the code scanned at the POS;
+- **ID** — the card identifier; it is the code scanned at the POS;
 - **owner** — the customer the card belongs to;
 - **issue date**;
 - **block date** — set when the card is blocked.
@@ -24,7 +26,7 @@ A card can be created:
 - in the **“Discount cards”** list — create a card and specify its owner;
 - from a customer’s card — on the partner’s **“Discount cards”** tab, where a new card is created already linked to that customer.
 
-The card number is assigned automatically by the numerator.
+The card ID is assigned automatically by the numerator.
 
 ## Blocking a card
 
@@ -34,5 +36,5 @@ A blocked card cannot be used: at the POS the system shows **“Discount card bl
 
 ## Using a card
 
-- **At the POS** — enter or scan the card number in the barcode field. The card’s holder becomes the receipt customer (see [Cash register and POS](pos.md)).
+- **At the POS** — enter or scan the card ID in the barcode field. The card’s holder becomes the receipt customer (see [Cash register and POS](pos.md)).
 - **On an invoice** — a discount card can be selected on a [sales invoice](../invoicing/invoices.md); selecting it fills in the customer, and the system checks that the card matches the customer and is not blocked.

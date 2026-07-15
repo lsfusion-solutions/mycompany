@@ -32,11 +32,15 @@ The system records the closing date and time.
 
 A session aggregates the operations performed at the cash register while it was open:
 
-- **Sold** — the number and total amount of sales;
-- **Returned** — the number and total amount of returns;
-- **Total** — sales minus returns;
+- **“Sales”** — the number of sales;
+- **“Sold”** — the total amount of sales;
+- **“Returns”** — the number of returns;
+- **“Returned”** — the total amount of returns;
+- **“Total”** — sales minus returns;
 - the amount paid by each **[payment method](payments.md)**;
-- the **cash receipts** and **refunds** lists;
+- the **“Cash receipts”** and **“Refunds”** lists;
 - cash **deposits** and **withdrawals** and the resulting cash balance.
 
-The standalone **“Retail” → “Operations” → “Sessions”** list is used to browse and review past sessions.
+The standalone **“Retail” → “Operations” → “Sessions”** list is used to browse and review sessions — the sales and returns count and amount columns are shown there.
+
+![Session list](images/sessions-list.png)

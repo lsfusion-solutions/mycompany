@@ -20,7 +20,7 @@ System zapisuje datę i czas otwarcia oraz nadaje numer sesji.
 
 ### Ograniczenia
 
-- Nie możesz otworzyć sesji, jeśli dla kasy jest już otwarta sesja — system pokazuje komunikat **„Istnieje już otwarta sesja”**.
+- Nie możesz otworzyć sesji, jeśli dla kasy jest już otwarta sesja — system pokazuje komunikat **„Jest już sesja otwarta”**.
 
 ## Jak zamknąć sesję
 
@@ -32,11 +32,13 @@ System zapisuje datę i czas zamknięcia.
 
 Sesja zbiera operacje wykonane na kasie w czasie jej pracy:
 
-- **Sprzedano** — liczbę i łączną kwotę sprzedaży;
-- **Zwrócono** — liczbę i łączną kwotę zwrotów;
-- **Razem** — sprzedaż pomniejszoną o zwroty;
+- **„Sprzedaż”** — liczbę sprzedaży;
+- **„Sprzedane”** — łączną kwotę sprzedaży;
+- **„Zwroty”** — liczbę zwrotów;
+- **„Zwrócone”** — łączną kwotę zwrotów;
+- **„Suma”** — sprzedaż pomniejszoną o zwroty;
 - kwotę przyjętą każdą **[metodą płatności](payments.md)**;
-- listy **paragonów sprzedaży** i **zwrotów**;
+- listy **„Paragony”** i **„Korekty zakupu”**;
 - wpłaty i wypłaty gotówki oraz wynikowe saldo gotówki.
 
-Osobna lista **„Sprzedaż detaliczna” → „Operacje” → „Sesje”** służy do przeglądania i analizy zakończonych sesji.
+Osobna lista **„Sprzedaż detaliczna” → „Operacje” → „Sesje”** służy do przeglądania i analizy sesji — to w niej wyświetlane są kolumny z liczbą i kwotami sprzedaży oraz zwrotów.
