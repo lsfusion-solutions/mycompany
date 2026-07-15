@@ -13,6 +13,10 @@ A discount can be defined:
 
 Usually, the discount list is located in **“Sales” → “Operations” → “Discounts”**.
 
+![Discounts list](images/discounts-list.png)
+
+By default, the list shows only currently valid discounts — the **“Active”** filter is enabled; turn it off to see all discounts.
+
 In the discount card, you specify:
 
 - validity period;
@@ -21,6 +25,8 @@ In the discount card, you specify:
 - which [price types](pricelists.md) are allowed;
 - if needed — which [locations](../inventory/locations.md) it applies to;
 - discount amount (percent) or a price type (if the discount is defined by price).
+
+![Discount card](images/discount-card.png)
 
 ## How the system decides whether a discount matches a line
 
@@ -50,26 +56,29 @@ A discount can be restricted by price types:
 
 A discount can be restricted by locations:
 
-- if the discount has locations configured (included), it applies only to lines whose location is one of them; sub-locations of an included location also count as included;
+- locations are marked in the discount with a tri-state **“Incl.”** checkbox: a location can be included or explicitly excluded; sub-locations inherit the mark of the nearest marked parent, and an explicit exclude mark overrides inclusion via a parent;
+- if the discount has locations configured, it applies only to lines whose location is included;
 - if no locations are configured, the restriction does not apply.
 
-### 5) By minimum quantity and line amount
+### 5) By minimum quantity and purchase amount
 
-A discount can require that the line has at least:
+A discount can require:
 
-- a minimum quantity;
-- a minimum amount.
+- a minimum quantity in the line — the **“Quantity per line from”** field is compared with the line quantity;
+- a minimum purchase amount — the **“Purchase amount from”** field is compared with the tax-inclusive total amount of the whole document (not with the line amount).
 
-If the line does not reach the threshold, the discount is not applied.
+If the threshold is not reached, the discount is not applied.
 
-Important: the amount used for the check is the “full amount” (calculated from quantity and price; tax may be included if applicable).
+The amount used for the check is the document’s “full” amount: it is calculated from quantities and prices with taxes included (if a price does not include tax, the tax is added).
 
 ### 6) By cumulative conditions per customer
 
 A discount can be cumulative and enabled only if the [customer](../masterdata/partners.md) has:
 
-- total volume of previous purchases above a threshold (discount field **“Sold to a client from”**);
-- or purchase volume for the previous calendar month above a threshold (discount field **“Sold to a client in the past month from”**).
+- total volume of previous purchases at least the threshold (discount field **“Sold to a client from”**);
+- or purchase volume for the previous calendar month at least the threshold (discount field **“Sold to a client in the past month from”**).
+
+The thresholds are met when the accumulated value is equal to or greater than the field value.
 
 The values that are compared with the thresholds are accumulated by the system:
 
@@ -78,9 +87,9 @@ The values that are compared with the thresholds are accumulated by the system:
 
 The comparison uses the value as of the start of the current session (i.e. purchases made within the same session do not move the threshold).
 
-### 7) By customer tags
+### 7) By partner tags
 
-A discount can be restricted to customers carrying specific tags:
+A discount can be restricted to customers carrying specific tags (the **“Partner tags”** field):
 
 - if tags are specified in the discount, it applies only to customers that carry one of those tags;
 - if no tags are specified, the restriction does not apply.
@@ -137,6 +146,8 @@ How it works:
 2. The system shows only discounts that match the line by conditions.
 3. The user selects a discount.
 
+The discount card has a **“Manually”** flag: discounts marked this way are excluded from automatic selection and are available only for manual picking in a line.
+
 If the selected discount is percent-based, the system fills in the percent in the line (if the user has not entered a percent manually).
 
 If the selected discount is defined by a price type, the system fills in the price by that price type and recalculates the discount/line amount.
@@ -158,6 +169,8 @@ Automatic recalculation is performed only for discounts that are not marked as �
 
 The order also has the **“Calculate discounts”** action, which forces recalculation of discounts for all lines (except manual ones).
 
+Discounts are calculated not only in orders but also in standalone invoices.
+
 ### How to disable auto recalculation
 
 In settings, there is a parameter **“Do not automatically calculate discounts in order”**.
@@ -167,14 +180,18 @@ If it is enabled:
 - automatic recalculation on changes is not performed;
 - the user applies discounts manually and/or via the “Calculate discounts” button.
 
+For invoices, there is a separate setting **“Do not automatically calculate discounts in invoice”**.
+
 ## Where discounts are shown
 
 Discounts are usually visible:
 
 - in order lines (selected discount, percent/price);
-- in order totals (discount amount for the document);
 - in invoices (if discounts are transferred to the invoice);
-- in sales reports.
+- in the sales report — the **“Discount amount”** column;
+- on the POS dashboard (discount amount for the receipt).
+
+The document discount amount is not shown on the order form itself.
 
 ## Typical issues
 

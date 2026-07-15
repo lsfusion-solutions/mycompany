@@ -39,7 +39,7 @@ Typical scenario “create an order → ship → create an invoice”:
 
 The **“Sales”** section usually includes groups:
 
-- **Operations** — daily work (orders, shipments, invoices).
+- **Operations** — sales orders, pricelists, and discounts. Shipments are in the **Inventory** section and invoices in the **Invoicing** section; both are also available from the order card.
 - **Processes** — control and processing dashboards (if enabled).
 - **Reporting** — sales reports.
 - **Configuration** — parameters and master data.

@@ -17,7 +17,8 @@ A receipt can be created based on a confirmed purchase order. In this case:
 
 - receipt fields ([vendor](../masterdata/partners.md), [location](../inventory/locations.md), Scheduled date) are usually filled in from the purchase order;
 - receipt lines are created from purchase order lines;
-- based on this link, the system calculates how much has been received and how much remains.
+- based on this link, the system calculates how much has been received and how much remains;
+- receipt lines linked to an order take their inventory cost from the order line price (this is how the received goods are valuated).
 
 Practical meaning: one purchase order can be received **in multiple receipts** and **in parts**.
 
@@ -37,19 +38,21 @@ If there is still something “to receive” for the purchase order, the system 
 
 When a purchase order is confirmed (and on subsequent changes), the system automatically:
 
-1. Checks whether the order has any remaining quantity to receive (the **“Ready”** field on the lines).
+1. Checks whether the order lines have any remaining quantity to receive (ordered minus received).
 2. Either picks the linked receipt currently in the **“Ready”** status, or creates a new one with the receipt type configured on the order type.
 3. Synchronizes this receipt’s header (vendor, scheduled date, location) with the order.
-4. Adds/removes lines to match the current remaining quantity; the receipt line’s initial demand is set equal to the order line’s “Ready” value.
+4. Adds/removes lines to match the current remaining quantity; the receipt line’s **“Initial demand”** is set equal to the order line’s remaining quantity to receive.
 5. If no order line has any remaining quantity, the reserve receipt is deleted.
 
-This receipt is re-created/updated when any of the following change: the line-level “Ready”, vendor, scheduled date, location, or order number; it is also rebuilt when the order returns from “Locked” to “Confirmed”.
+This receipt is re-created/updated when any of the following change: the line-level remaining quantity to receive, vendor, scheduled date, location, or order number; it is also rebuilt when the order returns from “Locked” to “Confirmed”.
 
 If a receipt would exceed the ordered quantity on a line (over-delivery), the system shows the message *“For the goods, the receipt exceeds the quantity in the order”* and rejects the save.
 
 Note: receipts are usually created **for goods [items](../masterdata/items.md)**. If the purchase order contains services, a receipt is usually not required for them.
 
 ## How to process a receipt based on a purchase order
+
+![Receipt card](images/receipt-card.png)
 
 1. Open the [purchase order](orders.md).
 2. In the related documents block, open the required **receipt** (or create a new one, if supported in your configuration).
@@ -72,23 +75,25 @@ If delivery comes in parts, create receipts as goods arrive:
 
 Usually, the system does not allow receiving more than ordered (taking into account already created receipts). If you need to receive more (over-delivery), this behavior depends on your configuration rules.
 
-If you change the purchase order after confirmation (quantity, location, Scheduled date, etc.), the system may update the “ready-to-work” receipt and its lines. Therefore, before actual receiving, verify that the receipt matches the current purchase order.
+If you change the purchase order after confirmation (quantity, location, Scheduled date, etc.), the system may update the reserve receipt and its lines. Therefore, before actual receiving, verify that the receipt matches the current purchase order.
 
 ## Line-level fulfillment control
 
 In the purchase order card, line-level indicators are usually available:
 
-- **“received”** — how much has already been received for the line;
+- **“Received”** — how much has already been received for the line;
 - visual highlighting if it is not fully received;
 - a list of receipts linked to the line (on click/open).
+
+In the orders list, aggregated **“Receipt status”** and **“Bill status”** columns show the statuses of the documents linked to each order, and the **“Create Bill”** quick filter selects orders awaiting billing.
 
 ## Restrictions when closing/locking a purchase order
 
 The [order type](settings.md) has two independent flags that affect the **“Lock”** action:
 
 - **“Forbid to lock orders with active receipts”** — the system will not lock an order while it has a reserve receipt in the “Ready” status. If the flag is disabled, that receipt is simply deleted when the order is locked.
-- **“Forbid to lock orders that are not fully received”** — the system will not lock an order while the remaining `Ready > 0` (some lines are not fully received).
+- **“Forbid to lock orders that are not fully received”** — the system will not lock an order while there is a remaining quantity to receive (some lines are not fully received).
 
 When either rule is violated, the corresponding message is shown and the order stays in “Confirmed”.
 
-See also: [Settings](settings.md).
+See also: [Receipts](../inventory/receipts.md), [Settings](settings.md).

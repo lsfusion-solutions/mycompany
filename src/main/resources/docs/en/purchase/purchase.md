@@ -42,7 +42,7 @@ Sections:
    - order lines ([items](../masterdata/items.md), quantity, price, [taxes](../invoicing/taxes.md)).
 3. If needed, send the purchase order to the vendor using **“Send”**.
 4. Confirm the purchase order using **“Confirm”**.
-5. If [Inventory](../inventory/inventory.md) is used — process a [receipt](receipts.md) and link it to the purchase order.
+5. If [Inventory](../inventory/inventory.md) is used — process the [receipt](receipts.md) created for the order (it is created automatically when a “Receipt type” is set in the order type).
 6. Create a [bill](bills.md) (a financial document) for the purchase order / based on the actual delivery.
 7. Register an [outgoing payment](../invoicing/outgoing-payments.md) to the [vendor](../masterdata/partners.md) and allocate it to the bill (if [payment allocation](../invoicing/payments.md) is used in your configuration).
 

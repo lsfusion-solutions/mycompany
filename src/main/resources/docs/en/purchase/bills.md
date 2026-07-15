@@ -24,18 +24,19 @@ Practical meaning: one purchase order can be covered by **multiple bills** and *
 
 Typically, a bill based on a purchase order is used when the financial flow ([“Invoicing”](../invoicing/invoicing.md)) is enabled and you need to record the amount payable to the [vendor](../masterdata/partners.md).
 
-The **“Create bill”** action appears on the order card when:
+The **“Create Bill”** action appears on the order card when:
 
 1. The purchase order is in the **“Confirmed”** status.
-2. A bill type (`Bill type`) and bill-control mode are configured for the purchase order type (see below).
-3. There is a remaining quantity to invoice (the **“To bill”** field on order lines).
+2. There is a remaining quantity to invoice on the order lines.
+
+The bill type and the bill-control mode configured for the [order type](settings.md) do not affect the availability of the action — they only determine what is pre-filled in the new bill (see below).
 
 ### Bill control mode
 
-The order type sets which quantity is transferred from order lines into the new bill:
+The **“Bill control”** field of the order type sets which quantity is transferred from order lines into the new bill:
 
-- **“Ordered quantity”** — the new bill is pre-filled with the ordered quantity minus what has already been billed by active bills. This is the default.
-- **“Received quantity”** — the new bill is pre-filled only with quantities that have been physically received (taken from active linked receipts). Available when the inventory contour is enabled; in this mode the “Create bill” action appears only after at least some quantity has been received.
+- **“Ordered quantity”** — the new bill is pre-filled with the ordered quantity minus what has already been billed by active bills. This mode is also used when the bill-control field is left empty.
+- **“Received quantity”** — the new bill is pre-filled only with quantities that have been physically received (taken from active linked receipts). When the inventory contour is enabled, order types are initialized to this mode. For goods lines the “Create Bill” action appears only after at least some quantity has been received; service lines can be billed without a receipt. The created bill inherits the location from the order, and the receipt lines are linked to the bill lines, which prevents billing the same receipt twice.
 
 ### Per-line tracking
 
@@ -46,7 +47,11 @@ Order lines show two helper fields:
 
 Lines are highlighted when “Billed”/“Paid” is less than the ordered quantity; clicking the field opens the list of related bills.
 
+In the orders list, aggregated **“Receipt status”** and **“Bill status”** columns show the statuses of the documents linked to each order, and the **“Create Bill”** quick filter selects orders awaiting billing.
+
 ## How to create a bill based on a purchase order
+
+![Create Bill from the order](images/order-create-bill.png)
 
 1. Open the [purchase order](orders.md).
 2. Run the **“Create Bill”** action (if it is available in your configuration).
@@ -62,6 +67,8 @@ Lines are highlighted when “Billed”/“Paid” is less than the ordered quan
    - price.
 5. If needed, adjust quantities/prices to match the vendor documents.
 6. Move the bill to the required status according to your configuration rules (for example, “to pay”).
+
+![Bill created from the order](images/bill-from-order.png)
 
 ## Multiple bills for one purchase order (partial coverage)
 

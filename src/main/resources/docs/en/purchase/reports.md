@@ -4,24 +4,29 @@ title: Purchase reports
 
 ## Where to find
 
-The main reports are located at **“Purchase” → “Reporting”**.
+Purchase reporting consists of a single report — the **“Order report”**, located at **“Purchase” → “Reporting” → “Order report”**.
 
-## Purchase orders report
+## Order report
 
-The purchase orders report allows you to analyze purchase orders by:
+![Order report](images/report.png)
+
+The report allows you to analyze purchase orders by:
 
 - [vendors](../masterdata/partners.md);
 - statuses;
 - dates;
 - [items](../masterdata/items.md) and categories (if classification is used);
-- purchase order fields (type, [payment terms](../invoicing/settings.md#payment-terms), Scheduled date, etc.).
+- item attribute columns (see [items](../masterdata/items.md));
+- purchase order fields (type, [payment terms](../invoicing/settings.md#payment-terms), “Scheduled date”, “Vendor reference”, “Our representative”, etc.).
 
-### Date filters
+The report shows only orders whose location the user has access to (as well as orders without a location).
 
-As a rule, the report provides:
+### Date filters and grouping
 
-- a date interval;
-- grouping by day/week/month/year (if the corresponding report variants are enabled).
+The report provides:
+
+- a date interval filter;
+- ready-made date columns in the pivot table — day of week, week, month, year, etc. — which can be used for grouping.
 
 ### What to use it for
 
