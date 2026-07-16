@@ -31,7 +31,7 @@ The payment calendar (**Invoicing → Reporting → Payment calendar**) shows th
 
 Layout:
 
-- pick the **Company** and a **date interval** at the top; **<** / **>** jump the interval one month back/forward. The interval starts as *today … today + 14 days*.
+- pick the **Company** and a **date interval** at the top; **\<** / **\>** jump the interval one month back/forward. The interval starts as *today … today + 14 days*.
 - **Cash balance** shows the current balance of the company's accounts.
 - **Debt before** is the outstanding balance whose **Pay before** date falls before the interval starts.
 - there is then **one column per date** in the interval; each cell holds the net debt change due that day. The column footer shows the **forecast cash** — the running balance (cash balance plus cumulative debt) through that date.

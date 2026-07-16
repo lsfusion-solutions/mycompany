@@ -31,7 +31,7 @@ Kalendarz płatności (**„Fakturowanie” → „Raportowanie” → „Kalend
 
 Układ:
 
-- na górze wybierasz **„Firmę”** i **przedział dat**; przyciski **<** / **>** przesuwają przedział o miesiąc wstecz/naprzód. Przedział początkowo obejmuje *dziś … dziś + 14 dni*.
+- na górze wybierasz **„Firmę”** i **przedział dat**; przyciski **\<** / **\>** przesuwają przedział o miesiąc wstecz/naprzód. Przedział początkowo obejmuje *dziś … dziś + 14 dni*.
 - **„Saldo gotówki”** pokazuje bieżące saldo kont firmy.
 - **„Dług przed” (Debt before)** to niespłacone saldo, którego data **„Zapłać do” (Pay before)** przypada przed początkiem przedziału.
 - następnie jest **jedna kolumna na każdą datę** przedziału; każda komórka zawiera zmianę długu netto przypadającą na dany dzień. Stopka kolumny pokazuje **prognozę gotówki** — saldo narastające (saldo gotówki powiększone o skumulowany dług) do danej daty.
