@@ -8,7 +8,7 @@ Funkcja **„Zmiany”** służy do planowania zmian roboczych pracowników: kto
 
 Otwórz **„Projekty” → „Operacje” → „Zmiany”**.
 
-Ekran otwiera się na bieżącym tygodniu i ma dwie zakładki:
+Ekran otwiera się na najbliższym tygodniu (przedział 7 dni, począwszy od bieżącej daty) i ma dwie zakładki:
 
 - **„Harmonogram”** — wizualna tablica tygodniowa do planowania zmian;
 - **lista** zmian — zwykła tabela rekordów.
@@ -38,13 +38,13 @@ Ponieważ pole czasu nie pozwala, aby czas zakończenia był wcześniejszy niż 
 1. Wprowadź przedział **Czas** normalnie, z mniejszą wartością na początku — np. `06:00–22:00`.
 2. Zaznacz pole **„Zmiana nocna”** na karcie zmiany.
 
-Zmiana jest wtedy wyświetlana **odwrotnie**, ze znacznikiem następnego dnia — `22:00-06:00 (+1)` — wszędzie tam, gdzie się pojawia: na karcie zmiany, na liście zmian i na tablicy **„Harmonogram”**.
+Na tablicy **„Harmonogram”** zmiana jest wtedy wyświetlana **odwrotnie**, ze znacznikiem następnego dnia — `22:00-06:00 (+1)`. Lista zmian i karta zmiany pokazują przedział tak, jak został wprowadzony, a zmianę nocną oznacza pole **„Zmiana nocna”**.
 
 **Szablon zmiany** również można oznaczyć jako nocny (na zakładce **„Szablony zmian”** w **„Ustawieniach”**). Zmiana utworzona z takiego szablonu dziedziczy oznaczenie zmiany nocnej, więc zmiany nocne można planować przeciąganiem na **„Harmonogramie”** jak zwykle.
 
 ## Widok „Harmonogram”
 
-Zakładka **„Harmonogram”** pokazuje wybrany tydzień jako tablicę: wiersze to pracownicy, kolumny to dni. Nad tablicą wyświetlany jest rząd **szablonów zmian**.
+Zakładka **„Harmonogram”** pokazuje wybrany tydzień jako tablicę: wiersze to pracownicy, kolumny to dni. W wierszach wyświetlani są pracownicy, którzy mają zmiany; zmiany bez pracownika trafiają do wiersza **„Nieprzypisane”**. Nad tablicą wyświetlany jest rząd **szablonów zmian**.
 
 Na tablicy można:
 

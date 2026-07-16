@@ -24,7 +24,7 @@ Przypisanie zespołu wykonuje się przez listę **przypisań** w karcie projektu
 1. Otwórz wymagany projekt.
 2. Przejdź do sekcji przypisań (lista uczestników projektu).
 3. Dodaj nowe przypisanie.
-4. W polu uczestnika wybierz **zespół** (a nie pojedynczego pracownika).
+4. W polu **„Pracownik”** wybierz **zespół** (pole przyjmuje zarówno pracownika, jak i zespół; typ uczestnika widoczny jest w kolumnie „Typ”).
 5. W razie potrzeby wskaż rolę oraz okres uczestnictwa (daty od/do).
 6. Zapisz zmiany.
 
@@ -32,10 +32,10 @@ Po zapisie wszyscy pracownicy należący do wybranego zespołu będą uznani za 
 
 #### Co się dzieje, gdy zmienia się skład zespołu
 
-Jeśli zespół jest już przypisany do projektu, a Ty zmienisz jego skład:
+Jeśli zespół jest już przypisany do projektu, a Ty zmienisz jego skład (na liście przypisań zespół pozostaje jednym wierszem):
 
-- nowi pracownicy pojawią się na liście przypisań projektu;
-- usunięci pracownicy nie będą już uznani za przypisanych (jeśli nie mają innych przypisań do tego projektu).
+- nowi pracownicy pojawią się na liście uczestników projektu (zakładka **„Pracownicy”** karty projektu);
+- usunięci pracownicy nie będą już uznani za uczestników (jeśli nie mają innych przypisań do tego projektu).
 
 Zaleca się uzgadniać zmiany składu zespołu z menedżerem projektu i zapisywać powody w komentarzach projektu lub zagadnień.
 
@@ -44,8 +44,10 @@ Zaleca się uzgadniać zmiany składu zespołu z menedżerem projektu i zapisywa
 Rola w projekcie odzwierciedla funkcję uczestnika (np. menedżer, wykonawca, obserwator — dokładna lista zależy od konfiguracji). Role prowadzone są w **„Projekty” → „Konfiguracja”** i są używane do:
 
 - rozdzielenia odpowiedzialności;
-- konfiguracji dostępu i reguł **[przepływu pracy](settings.md#workflow)** (np. kto może przenieść zagadnienie z jednego statusu do innego);
+- reguł **[przepływu pracy](settings.md#przepływ-pracy)** (kto może przenieść zagadnienie z jednego statusu do innego);
 - analityki udziału pracowników.
+
+Widoczność projektu nie zależy od roli: dostęp daje samo aktywne przypisanie (zobacz **[dostęp do projektów](#dostęp-do-projektów)**).
 
 Zalecenia:
 
@@ -62,7 +64,7 @@ Przypisanie zawiera:
 - rolę w projekcie;
 - okres uczestnictwa (data od / data do — „data do” jest opcjonalna i oznacza bezterminowy udział).
 
-Lista przypisań na karcie projektu ma filtr **„Aktywne”**, który pokazuje tylko przypisania, których okres uczestnictwa obejmuje bieżącą datę.
+Lista przypisań na karcie projektu ma filtr **„Aktywnie”**, który pokazuje tylko przypisania, których okres uczestnictwa obejmuje bieżącą datę.
 
 Zaleca się utrzymywać przypisania na bieżąco:
 
@@ -70,11 +72,13 @@ Zaleca się utrzymywać przypisania na bieżąco:
 - zamykaj przypisania (ustaw „datę do”), gdy pracownik przestaje uczestniczyć;
 - dopasowuj role w projekcie do faktycznych obowiązków.
 
-> Zagadnienia nie mają własnych rekordów przypisania. Zagadnienie jest powiązane z jednym **wykonawcą** (pracownikiem lub zespołem) przez pole „Wykonawca” w zagadnieniu. Widoczność zagadnienia dla tego użytkownika kontrolowana jest przez przypisanie na poziomie projektu.
+> Zagadnienia nie mają własnych rekordów przypisania. Zagadnienie jest powiązane z jednym **wykonawcą** (pracownikiem lub zespołem) przez pole „Przypisane do” w zagadnieniu. Widoczność zagadnienia dla tego użytkownika kontrolowana jest przez przypisanie na poziomie projektu.
 
 ## Dostęp do projektów
 
 Domyślnie użytkownik widzi tylko te projekty, do których jest przypisany (bezpośrednio lub jako członek przypisanego zespołu). Dla użytkowników, którzy muszą widzieć wszystko (np. kierownik działu lub administrator), na karcie pracownika dostępna jest flaga **„Dostęp do wszystkich projektów”**. Włączenie tej flagi znosi filtr dostępu opartego o przypisania dla tego użytkownika.
+
+> Użytkownik, który nie ma **żadnego bezpośredniego** przypisania (do żadnego projektu), również widzi wszystkie projekty: filtr oparty o przypisania zaczyna działać po pierwszym przypisaniu, w którym uczestnikiem jest sam pracownik. Udział wyłącznie w składzie przypisanego zespołu nie włącza tego filtru.
 
 ## Typowe scenariusze
 
@@ -101,10 +105,9 @@ Domyślnie użytkownik widzi tylko te projekty, do których jest przypisany (bez
 
 ## Najczęściej zadawane pytania
 
-#### Dlaczego nie można przypisać zagadnienia do pracownika
+#### Dlaczego pracownik nie widzi przypisanego zagadnienia
 
-Powód zwykle jest jednym z poniższych:
+System nie zabrania przypisania zagadnienia do pracownika bez dostępu do projektu — ale takie zagadnienie nie będzie dla niego widoczne. Powód zwykle jest jednym z poniższych:
 
-- pracownik nie ma dostępu do projektu (brak aktywnego przypisania i nie ma flagi „Dostęp do wszystkich projektów”);
-- nie masz uprawnień do zmiany zagadnienia;
-- wybrany typ zagadnienia ogranicza listę dozwolonych statusów, co może pośrednio blokować zmianę.
+- pracownik nie ma dostępu do projektu (brak aktywnego przypisania — bezpośrednio lub jako członek przypisanego zespołu — i nie ma flagi „Dostęp do wszystkich projektów”);
+- zagadnienie ukrywają filtry na liście zagadnień.

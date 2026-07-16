@@ -8,21 +8,26 @@ A task is the main work unit within a project. It is recommended to keep tasks i
 
 ## Main task data
 
+![Task list with priority colour coding](images/tasks-list.png)
+
 A task typically contains:
 
 - ID (generated automatically);
 - name;
+- project;
 - type;
 - status;
 - priority;
 - tags;
-- author (the user who created the task);
+- author (pre-filled with the current user, can be changed if needed);
 - assignee (an employee or a team);
 - start date and deadline;
 - progress (% done);
 - description, files, and comments.
 
-The set of available statuses depends on the task type (see **[workflow](settings.md#workflow)**).
+A task without a project can be saved only if its author has access to all projects (the **“Access to all projects”** flag, or no direct assignments — see **[access to projects](team-and-roles.md#access-to-projects)**); otherwise the system shows the message “No project selected for the task”. If the current user is assigned to exactly one project, that project is filled into a new task automatically; a task created from a project card gets that project.
+
+The set of allowed statuses depends on the task type and is configured on the type card (see **[task types](settings.md#task-types)**); transitions between statuses are controlled by the **[workflow](settings.md#workflow)**.
 
 #### Recommendations for creating tasks
 
@@ -33,6 +38,8 @@ The set of available statuses depends on the task type (see **[workflow](setting
 - The task list highlights rows by **priority colour**, which makes it easier to scan the queue.
 
 ## Statuses and workflow
+
+![Task card: status panel, fields, comments](images/task-card.png)
 
 A task goes through states defined by **[task statuses](settings.md#task-statuses)**. Transitions between statuses are controlled by the **[workflow](settings.md#workflow)**.
 
@@ -66,7 +73,7 @@ For collaboration, use:
 
 ## Time tracking on a task
 
-Effort can be recorded directly from the task card (and, in some configurations, from a card opened in the Kanban view) without switching to the general **[time entries](time-entries.md)** list. This is the recommended way to keep time entries linked to the right task and project.
+Effort can be recorded directly from the task card (and from the task card popup on the **[Kanban](#kanban)** board) without switching to the general **[time entries](time-entries.md)** list. This is the recommended way to keep time entries linked to the right task and project.
 
 ## Views for monitoring progress
 
@@ -74,7 +81,13 @@ In addition to the task list, special views can be used to monitor progress. The
 
 ### Kanban
 
+![Task board (Kanban): columns are statuses](images/task-kanban.png)
+
 Kanban helps control the workflow by statuses. Use it for the team’s daily work: it quickly shows what is in the queue, what is in progress, and what is completed.
+
+The board shows only **opened** tasks; the columns are the non-closed statuses in their sorting order (see **[task statuses](settings.md#task-statuses)**). If a task type filter is applied, only the statuses allowed for that type become columns.
+
+In the card popup on the board, the assignee picker is limited to active employees who already have open assigned tasks; any other assignee or a team can be selected on the task card.
 
 Recommendations:
 
@@ -84,7 +97,11 @@ Recommendations:
 
 ### Gantt chart
 
+![Gantt chart of tasks](images/task-gantt.png)
+
 The Gantt chart is used for date-based planning and visual due date control. It is useful when it is important to agree on the project calendar plan and evaluate overlaps between tasks.
+
+The chart shows only tasks that have both the **start date** and the **deadline** filled in.
 
 Use the Gantt chart when:
 
@@ -119,10 +136,11 @@ Check:
 - whether the assignee has access to that project (see **[access to projects](team-and-roles.md#access-to-projects)**);
 - whether filters are enabled (for example, “Assigned to me”, “Opened/Closed”, or a status filter).
 
-#### Cannot assign an assignee
+#### The assignee is set but does not see the task
 
-The reason is usually one of the following:
+The system does not prevent selecting an assignee without access to the project — but the task will not be visible to them. Check:
 
-- the user does not have permission to edit the task;
-- the candidate assignee does not have access to the project (no active **[assignment](team-and-roles.md#assignments)** and no “Access to all projects” flag), so they will not see the task even if it is assigned to them;
-- a restriction by task type (the type controls the list of allowed statuses, which can indirectly block the change).
+- whether the assignee has access to the task’s project (an active **[assignment](team-and-roles.md#assignments)** — directly or as a member of an assigned team — or the “Access to all projects” flag);
+- whether filters hide the task (see above).
+
+If the task itself cannot be saved, the reason is usually edit permissions or status/type restrictions (see **[workflow](settings.md#workflow)**).

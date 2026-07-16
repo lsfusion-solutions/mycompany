@@ -10,6 +10,8 @@ A project combines related **[tasks](tasks.md)**, the **[team and roles](team-an
 
 Open **Projects → Operations → Projects**.
 
+![Project list with filters](images/projects-list.png)
+
 The list typically shows:
 
 - number;
@@ -48,6 +50,8 @@ If there are many projects in the list, also use field search in the list (for e
 
 ## Project card
 
+![Project card](images/project-card.png)
+
 The project card contains the main fields:
 
 - type;
@@ -58,7 +62,8 @@ The project card contains the main fields:
 - start and end dates;
 - status;
 - manager;
-- description.
+- description;
+- address fields (address, city, state, postcode) — if project geolocation is used.
 
 #### Recommended filling order
 
@@ -98,11 +103,10 @@ Recommended approach:
 
 A project may be considered:
 
-- **closed** — if a closing status is set;
-- **archived** — if the end date is already in the past;
-- **active** — neither closed nor archived (this is the default selection in the project list).
+- **closed** — if a status with the **Closed** flag is set;
+- **archived** — if the end date is already in the past.
 
-This affects selections in lists and makes it easier to work with current projects.
+By default, the project list uses the **Opened** filter, which hides closed projects (the end date does not affect this filter).
 
 If the project is actually finished but its tasks are still being changed, check:
 
@@ -118,6 +122,7 @@ The project card typically provides related data (the set depends on configurati
 - **[participants (team) and roles](team-and-roles.md#assignments)** with the list of employees active on a chosen date;
 - **[time entries](time-entries.md)**;
 - comments and file attachments;
+- the **Coordinates** tab — the project address on a map (if geolocation is used);
 - related documents and operations (if the project is used to track costs/income).
 
 Use the project as a single “accounting dimension”: this simplifies reporting and control.
@@ -140,13 +145,13 @@ It is recommended to use comments as a log of decisions and agreements.
 
 ## Typical situations and solutions
 
-#### The project is not visible in the active list
+#### The project is not visible in the list
 
 Check:
 
-- whether the project is closed by status;
-- whether the end date became earlier than the current date;
-- whether a filter is enabled that restricts the list (for example, “Assigned to me”).
+- whether the project is closed by status (the “Opened” filter hides closed projects);
+- whether a filter is enabled that restricts the list (for example, “Assigned to me”);
+- whether you have access to the project — an active assignment to the project or the “Access to all projects” flag (see **[access to projects](team-and-roles.md#access-to-projects)**).
 
 #### Cannot change the project
 

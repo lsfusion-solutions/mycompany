@@ -6,9 +6,9 @@ Ta dokumentacja opisuje sposób pracy w sekcji **Projekty** (Zarządzanie projek
 
 ## Spis treści
 
-- [Szybki start](#quick-start)
-- [Nawigacja](#navigation)
-- [Terminy](#terms)
+- [Szybki start](#szybki-start)
+- [Nawigacja](#nawigacja)
+- [Terminy](#terminy)
 
 Sekcje:
 
@@ -39,7 +39,7 @@ Typowy scenariusz „utwórz projekt → utwórz zagadnienia → przypisz wykona
 3. Przejdź do zagadnień projektu i utwórz zagadnienia dla zespołu.
 4. Przypisz wykonawców i terminy.
 5. W trakcie pracy rejestruj nakład pracy w **[przepracowanym czasie](time-entries.md)** (bezpośrednio lub przez **[karty pracy](timesheets.md)**).
-6. Monitoruj postęp po statusach zagadnień i w razie potrzeby używaj widoków **[Kanban](tasks.md#kanban)** oraz **[wykresu Gantta](tasks.md#gantt-chart)** dostępnych w obrębie listy zagadnień.
+6. Monitoruj postęp po statusach zagadnień i w razie potrzeby używaj widoków **[Kanban](tasks.md#kanban)** oraz **[diagramu Gantta](tasks.md#diagram-gantta)** dostępnych w obrębie listy zagadnień.
 
 ## Typowe scenariusze
 
@@ -63,10 +63,10 @@ Szczegóły: zobacz [Projekty](projects.md), [Zagadnienia](tasks.md), [Zespół 
 
 Sekcja **Projekty** zwykle zawiera grupy:
 
-- **„Operacje”** — praca bieżąca (**[projekty](projects.md)**, **[zagadnienia](tasks.md)**, **[przepracowany czas](time-entries.md)**, **[zmiany](shifts.md)**). **[Kanban](tasks.md#kanban)** i **[wykres Gantta](tasks.md#gantt-chart)** to widoki dostępne w obrębie listy zagadnień, a nie odrębne pozycje menu. **[Przypisania](team-and-roles.md#assignments)** prowadzi się na karcie projektu.
+- **„Operacje”** — praca bieżąca (**[projekty](projects.md)**, **[zagadnienia](tasks.md)**, **[przepracowany czas](time-entries.md)**, **[zmiany](shifts.md)**). **[Kanban](tasks.md#kanban)** i **[Diagram Gantta](tasks.md#diagram-gantta)** to widoki dostępne w obrębie listy zagadnień, a nie odrębne pozycje menu. **[Przypisania](team-and-roles.md#przypisania)** prowadzi się na karcie projektu.
 - **„Procesy”** — **[karty pracy pracownika i przełożonego](timesheets.md)** do wprowadzania i kontroli nakładu pracy według dni.
-- **„Raportowanie”** — punkt rozszerzenia dla raportów dotyczących projektów. W konfiguracji podstawowej folder ten zwykle wypełniany jest przez integracje z sąsiednimi modułami (Sprzedaż, Produkcja), a nie samodzielnymi raportami modułu „Projekty”.
-- **„Konfiguracja”** — słowniki i reguły: **[typy](settings.md#project-types)** projektów i zagadnień, **[statusy](settings.md#project-statuses)**, **[priorytety](settings.md#priorities-and-tags)**, **[tagi](settings.md#priorities-and-tags)**, **[przepływ pracy](settings.md#workflow)**, role w projekcie i zespoły.
+- **„Raportowanie”** — punkt rozszerzenia dla raportów dotyczących projektów. W konfiguracji podstawowej folder jest pusty (i dlatego ukryty w menu): wymiary projektowe dodawane są do istniejących raportów sąsiednich modułów (Sprzedaż, Produkcja) — zobacz [Raportowanie](reports.md).
+- **„Konfiguracja”** — słowniki i reguły: **[typy](settings.md#typy-projektów)** projektów i zagadnień, **[statusy](settings.md#statusy-projektu)**, **[priorytety](settings.md#priorytety-i-tagi)**, **[tagi](settings.md#priorytety-i-tagi)**, **[przepływ pracy](settings.md#przepływ-pracy)**, role w projekcie i zespoły.
 
 Dokładny zestaw menu i dostępność akcji zależą od konfiguracji oraz uprawnień użytkownika.
 
@@ -92,7 +92,7 @@ Jeśli niektóre akcje nie są dostępne (np. zmiana statusu albo utworzenie wpi
 
 #### Przypisanie
 
-**[Przypisanie](team-and-roles.md#assignments)** łączy uczestnika (pracownika lub zespół) z projektem, wskazując rolę w projekcie oraz okres udziału. Zagadnienie nie ma odrębnego rekordu przypisania — odwołuje się do pojedynczego wykonawcy przez pole „Wykonawca”.
+**[Przypisanie](team-and-roles.md#przypisania)** łączy uczestnika (pracownika lub zespół) z projektem, wskazując rolę w projekcie oraz okres udziału. Zagadnienie nie ma odrębnego rekordu przypisania — odwołuje się do pojedynczego wykonawcy przez pole „Przypisane do”.
 
 #### Przepracowany czas
 
@@ -104,8 +104,8 @@ Jeśli niektóre akcje nie są dostępne (np. zmiana statusu albo utworzenie wpi
 
 #### Status
 
-Status to stan projektu lub zagadnienia. Zobacz **[statusy projektu](settings.md#project-statuses)** oraz **[statusy zagadnień](settings.md#task-statuses)**.
+Status to stan projektu lub zagadnienia. Zobacz **[statusy projektu](settings.md#statusy-projektu)** oraz **[statusy zagadnień](settings.md#statusy-zagadnień)**.
 
 #### Przepływ pracy
 
-**[Przepływ pracy](settings.md#workflow)** definiuje reguły przejść statusów zagadnień: jakie zmiany są dozwolone, w jakiej kolejności oraz przez kogo.
+**[Przepływ pracy](settings.md#przepływ-pracy)** definiuje reguły przejść statusów zagadnień: jakie zmiany są dozwolone, w jakiej kolejności oraz przez kogo.

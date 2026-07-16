@@ -8,12 +8,14 @@ The **Shifts** feature is used to plan employee work shifts: who works, on which
 
 Open **Projects → Operations → Shifts**.
 
-The screen opens on the current week and has two tabs:
+The screen opens on the upcoming week (a 7-day interval starting from the current date) and has two tabs:
 
 - **Schedule** — a visual weekly board for planning shifts;
 - the shift **list** — a plain table of shift records.
 
 Use the **Previous week** / **Next week** buttons, or the date interval field, to move between weeks. Both tabs show the shifts of the selected period.
+
+![Shift list](images/shifts-list.png)
 
 ## Shift card
 
@@ -29,6 +31,8 @@ A shift contains:
 
 To open a shift, double‑click it in the list (or use **Edit**).
 
+![Shift card](images/shift-card.png)
+
 ## Night shifts
 
 A **night shift** runs across midnight — for example, from `22:00` to `06:00` the next day.
@@ -38,13 +42,15 @@ Because the time field does not allow the end time to be earlier than the start 
 1. Enter the **Time** interval normally, with the smaller value first — e.g. `06:00–22:00`.
 2. Tick the **Night shift** checkbox on the shift card.
 
-The shift is then shown **reversed**, with a next‑day marker — `22:00-06:00 (+1)` — everywhere it appears: the shift card, the shift list, and the **Schedule** board.
+On the **Schedule** board the shift is then shown **reversed**, with a next‑day marker — `22:00-06:00 (+1)`. The shift list and the shift card show the interval as entered, with the night shift marked by the **Night shift** checkbox.
 
 A **shift template** can also be marked as a night shift (on the **“Shift templates”** tab of **Settings**). A shift created from such a template inherits the night‑shift mark, so you can plan night shifts by drag‑and‑drop on the **Schedule** as usual.
 
 ## The Schedule view
 
-The **Schedule** tab shows the selected week as a board — rows are employees, columns are days. A row of **shift templates** is shown above the board.
+The **Schedule** tab shows the selected week as a board — rows are employees, columns are days. The rows show employees who have shifts; shifts without an employee fall into the **Unassigned** row. A row of **shift templates** is shown above the board.
+
+![The Schedule view](images/shift-schedule.png)
 
 On the board you can:
 
@@ -59,6 +65,8 @@ The **Schedule** tab is convenient for visual weekly planning; the **list** tab 
 A **shift template** is a predefined time interval (for example, a morning shift `09:00–18:00`). Templates speed up planning on the **Schedule**: you drag a template onto a cell, and the new shift takes its time interval from the template.
 
 Shift templates are configured on the **Settings** form, on the **“Shift templates”** tab — see [Settings](settings.md#shift-templates).
+
+![The Shift templates tab in Settings](images/shift-templates.png)
 
 ## Shifts and projects
 

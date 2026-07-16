@@ -39,8 +39,8 @@ Dostępne akcje zależą od uprawnień użytkownika:
 
 Najczęściej dostępne filtry:
 
-- **Otwarte** / **Zamknięte** — według statusu;
-- **Przypisane do mnie** — projekty, w których bieżący użytkownik jest wskazany jako menedżer.
+- **„Otwarta”** / **„Zamknięta”** — według statusu;
+- **„Przypisane do mnie”** — projekty, w których bieżący użytkownik jest wskazany jako menedżer.
 
 Używaj filtrów, aby szybko przełączać się między bieżącą pracą a projektami zakończonymi.
 
@@ -58,7 +58,8 @@ Karta projektu zawiera główne pola:
 - daty rozpoczęcia i zakończenia;
 - status;
 - menedżera;
-- opis.
+- opis;
+- pola adresowe (adres, miasto, region, kod pocztowy) — jeśli używana jest geolokalizacja projektów.
 
 #### Zalecana kolejność uzupełniania
 
@@ -98,11 +99,10 @@ Zalecane podejście:
 
 Projekt może być uznany za:
 
-- **zamknięty** — jeśli ustawiono status zamknięcia;
-- **zarchiwizowany** — jeśli data zakończenia jest już w przeszłości;
-- **aktywny** — nie jest ani zamknięty, ani zarchiwizowany (ten filtr jest domyślny na liście projektów).
+- **zamknięty** — jeśli ustawiono status z flagą „Zamknięta”;
+- **zarchiwizowany** — jeśli data zakończenia jest już w przeszłości.
 
-Wpływa to na wybory na listach i ułatwia pracę z bieżącymi projektami.
+Domyślnie lista projektów używa filtru **„Otwarta”**, który ukrywa projekty zamknięte (data zakończenia nie wpływa na ten filtr).
 
 Jeśli projekt jest faktycznie zakończony, ale jego zagadnienia są nadal zmieniane, sprawdź:
 
@@ -115,9 +115,10 @@ Jeśli projekt jest faktycznie zakończony, ale jego zagadnienia są nadal zmien
 Karta projektu zwykle udostępnia dane powiązane (zestaw zależy od konfiguracji):
 
 - **[zagadnienia projektu](tasks.md)**;
-- **[uczestnicy (zespół) i role](team-and-roles.md#assignments)** z listą pracowników aktywnych na wybraną datę;
+- **[uczestnicy (zespół) i role](team-and-roles.md#przypisania)** z listą pracowników aktywnych na wybraną datę;
 - **[przepracowany czas](time-entries.md)**;
 - komentarze i pliki dołączone;
+- zakładka **„Koordynaty”** — adres projektu na mapie (jeśli używana jest geolokalizacja);
 - dokumenty i operacje powiązane (jeśli projekt jest używany do ewidencji kosztów/przychodów).
 
 Używaj projektu jako jednej „wymiaru ewidencyjnego”: ułatwia to raportowanie i kontrolę.
@@ -140,13 +141,13 @@ Zaleca się używać komentarzy jako dziennika decyzji i ustaleń.
 
 ## Typowe sytuacje i rozwiązania
 
-#### Projekt nie jest widoczny na liście aktywnych
+#### Projekt nie jest widoczny na liście
 
 Sprawdź:
 
-- czy projekt nie jest zamknięty statusem;
-- czy data zakończenia nie jest wcześniejsza niż bieżąca data;
-- czy nie jest włączony filtr ograniczający listę (np. „Przypisane do mnie”).
+- czy projekt nie jest zamknięty statusem (filtr „Otwarta” ukrywa projekty zamknięte);
+- czy nie jest włączony filtr ograniczający listę (np. „Przypisane do mnie”);
+- czy masz dostęp do projektu — aktywne przypisanie do projektu lub flagę „Dostęp do wszystkich projektów” (zobacz **[dostęp do projektów](team-and-roles.md#dostęp-do-projektów)**).
 
 #### Nie można zmienić projektu
 

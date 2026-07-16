@@ -12,29 +12,32 @@ Zagadnienie zwykle zawiera:
 
 - ID (generowane automatycznie);
 - nazwę;
+- projekt;
 - typ;
 - status;
 - priorytet;
 - tagi;
-- autora (użytkownika, który utworzył zagadnienie);
+- autora (uzupełniany bieżącym użytkownikiem, w razie potrzeby można zmienić);
 - wykonawcę (pracownika lub zespół);
 - datę rozpoczęcia i termin;
 - postęp (% wykonania);
 - opis, pliki i komentarze.
 
-Zestaw dostępnych statusów zależy od typu zagadnienia (zobacz **[przepływ pracy](settings.md#workflow)**).
+Zagadnienie bez projektu można zapisać tylko wtedy, gdy jego autor ma dostęp do wszystkich projektów (flaga **„Dostęp do wszystkich projektów”** albo brak bezpośrednich przypisań — zobacz **[dostęp do projektów](team-and-roles.md#dostęp-do-projektów)**); w pozostałych przypadkach system pokaże komunikat „Nie wybrano projektu dla zagadnienia”. Jeśli bieżący użytkownik jest przypisany dokładnie do jednego projektu, ten projekt jest uzupełniany w nowym zagadnieniu automatycznie; zagadnienie utworzone z karty projektu otrzymuje ten projekt.
+
+Zestaw dozwolonych statusów zależy od typu zagadnienia i jest konfigurowany na karcie typu (zobacz **[typy zagadnień](settings.md#typy-zagadnień)**); przejścia między statusami kontroluje **[przepływ pracy](settings.md#przepływ-pracy)**.
 
 #### Zalecenia dotyczące tworzenia zagadnień
 
 - Formułuj **nazwę** jako weryfikowalny rezultat (np. „Przygotuj estymację”, „Zatwierdź makietę”, „Popraw błąd w raporcie”).
 - Ustaw od razu **termin**, aby zagadnienie było objęte kontrolą terminów.
-- Powinien być jeden **wykonawca**; jeśli pracę trzeba podzielić, utwórz osobne zagadnienia i — w razie potrzeby — połącz je przez **[zależności](#task-dependencies)**.
+- Powinien być jeden **wykonawca**; jeśli pracę trzeba podzielić, utwórz osobne zagadnienia i — w razie potrzeby — połącz je przez **[zależności](#zależności-zagadnień)**.
 - Używaj **opisu** do szczegółów: kontekst, ograniczenia i definicja ukończenia.
 - Lista zagadnień wyróżnia wiersze **kolorem priorytetu**, co ułatwia szybki przegląd kolejki.
 
 ## Statusy i przepływ pracy
 
-Zagadnienie przechodzi przez stany zdefiniowane w **[statusach zagadnień](settings.md#task-statuses)**. Przejścia między statusami kontroluje **[przepływ pracy](settings.md#workflow)**.
+Zagadnienie przechodzi przez stany zdefiniowane w **[statusach zagadnień](settings.md#statusy-zagadnień)**. Przejścia między statusami kontroluje **[przepływ pracy](settings.md#przepływ-pracy)**.
 
 Przepływ pracy pomaga uniknąć chaotycznych zmian: np. nie będzie można przenieść zagadnienia bezpośrednio do „wykonane”, dopóki nie zostało podjęte do pracy (dokładne reguły zależą od konfiguracji).
 
@@ -66,7 +69,7 @@ Do współpracy używaj:
 
 ## Rejestracja czasu pracy na zagadnieniu
 
-Nakład pracy można rejestrować bezpośrednio z karty zagadnienia (a w niektórych konfiguracjach również z karty otwartej w widoku Kanban), bez przechodzenia do ogólnej listy **[przepracowanego czasu](time-entries.md)**. To zalecany sposób, ponieważ wpis pozostaje powiązany z właściwym zagadnieniem i projektem.
+Nakład pracy można rejestrować bezpośrednio z karty zagadnienia (a także z okna podręcznego karty na tablicy **[Kanban](#kanban)**), bez przechodzenia do ogólnej listy **[przepracowanego czasu](time-entries.md)**. To zalecany sposób, ponieważ wpis pozostaje powiązany z właściwym zagadnieniem i projektem.
 
 ## Widoki do monitorowania postępów
 
@@ -76,17 +79,23 @@ Oprócz listy zagadnień można używać specjalnych widoków do monitorowania p
 
 Kanban pomaga kontrolować przepływ pracy po statusach. Używaj go w codziennej pracy zespołu: szybko pokazuje, co jest w kolejce, co w toku i co jest ukończone.
 
+Tablica pokazuje tylko **otwarte** zagadnienia; kolumny to niezamknięte statusy w kolejności sortowania (zobacz **[statusy zagadnień](settings.md#statusy-zagadnień)**). Jeśli włączony jest filtr typu zagadnienia, kolumnami stają się tylko statusy dozwolone dla tego typu.
+
+W oknie podręcznym karty na tablicy lista wykonawców jest ograniczona do aktywnych pracowników, którzy mają już otwarte przypisane zagadnienia; dowolnego innego wykonawcę lub zespół można wybrać na karcie zagadnienia.
+
 Zalecenia:
 
 - aktualizuj statusy natychmiast po zmianie stanu pracy;
 - nie przenoś zagadnienia „w przyszłość”, jeśli praca faktycznie się nie rozpoczęła;
 - używaj komentarzy, gdy zagadnienie jest zablokowane (co blokuje postęp i kto powinien pomóc).
 
-### Wykres Gantta
+### Diagram Gantta
 
-Wykres Gantta służy do planowania w oparciu o daty i wizualnej kontroli terminów. Jest przydatny, gdy ważne jest uzgodnienie kalendarza projektu i ocena nakładania się zagadnień.
+Diagram Gantta (wykres Gantta) służy do planowania w oparciu o daty i wizualnej kontroli terminów. Jest przydatny, gdy ważne jest uzgodnienie kalendarza projektu i ocena nakładania się zagadnień.
 
-Używaj wykresu Gantta, gdy:
+Wykres pokazuje tylko zagadnienia, które mają wypełnione zarówno **datę rozpoczęcia**, jak i **termin**.
+
+Używaj diagramu Gantta, gdy:
 
 - projekt zależy od planu kalendarzowego (terminy są stałe);
 - jest wiele równoległych zagadnień i trzeba widzieć nakładanie;
@@ -116,13 +125,14 @@ Sprawdź:
 
 - czy ustawiono wykonawcę;
 - czy zagadnienie jest we właściwym projekcie;
-- czy wykonawca ma dostęp do tego projektu (zobacz **[dostęp do projektów](team-and-roles.md#access-to-projects)**);
-- czy nie są włączone filtry (np. „Przypisane do mnie”, „Otwarte/Zamknięte” albo filtr statusu).
+- czy wykonawca ma dostęp do tego projektu (zobacz **[dostęp do projektów](team-and-roles.md#dostęp-do-projektów)**);
+- czy nie są włączone filtry (np. „Przypisane do mnie”, „Otwarta”/„Zamknięta” albo filtr statusu).
 
-#### Nie można przypisać wykonawcy
+#### Wykonawca jest przypisany, ale nie widzi zagadnienia
 
-Powód zwykle jest jednym z poniższych:
+System nie zabrania wybrania wykonawcy bez dostępu do projektu — ale zagadnienie nie będzie dla niego widoczne. Sprawdź:
 
-- użytkownik nie ma uprawnień do edycji zagadnienia;
-- kandydat na wykonawcę nie ma dostępu do projektu (brak aktywnego **[przypisania](team-and-roles.md#assignments)** i nie ma flagi „Dostęp do wszystkich projektów”) — nie zobaczy zagadnienia, nawet jeśli będzie do niego przypisany;
-- ograniczenie wynikające z typu zagadnienia (typ ogranicza listę dozwolonych statusów, co może pośrednio blokować zmianę).
+- czy wykonawca ma dostęp do projektu zagadnienia (aktywne **[przypisanie](team-and-roles.md#przypisania)** — bezpośrednio lub jako członek przypisanego zespołu — albo flagę „Dostęp do wszystkich projektów”);
+- czy zagadnienia nie ukrywają filtry (zobacz wyżej).
+
+Jeśli nie można zapisać samego zagadnienia, przyczyną są zwykle uprawnienia do edycji albo ograniczenia statusu/typu (zobacz **[przepływ pracy](settings.md#przepływ-pracy)**).

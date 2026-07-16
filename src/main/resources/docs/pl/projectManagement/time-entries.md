@@ -28,6 +28,8 @@ Kroki:
 2. Powiąż wpis z projektem i, jeśli dotyczy, z zagadnieniem.
 3. Zapisz wpis.
 
+> Jeśli pracownik jest przypisany dokładnie do jednego projektu, ten projekt jest uzupełniany automatycznie przy tworzeniu wpisu przepracowanego czasu.
+
 #### Zalecenia dotyczące uzupełniania
 
 - zapisuj czas na bieżąco — jak najbliżej daty wykonania pracy;
@@ -40,8 +42,8 @@ Kroki:
 
 W zależności od konfiguracji mogą obowiązywać ograniczenia:
 
-- niektóre typy przepracowanego czasu są skonfigurowane tak, że **projekt** jest wymagany — bez projektu wpis nie zostanie zapisany;
-- nie można zapisać wpisu, którego **zagadnienie** należy do projektu innego niż wskazany we wpisie (system pokaże komunikat „Zagadnienie wpisu przepracowanego czasu nie odpowiada projektowi”).
+- niektóre typy przepracowanego czasu mają ustawioną flagę **„Projekt wymagany”** — bez projektu wpis nie zostanie zapisany (system pokaże komunikat „Nie wybrano projektu dla przepracowanego czasu”);
+- nie można zapisać wpisu, którego **zagadnienie** należy do projektu innego niż wskazany we wpisie (system pokaże komunikat „Czas przepracowany zagadnienia nie odpowiada projektowi”).
 
 ## Częste sytuacje
 
@@ -49,12 +51,12 @@ W zależności od konfiguracji mogą obowiązywać ograniczenia:
 
 Sprawdź:
 
-- czy wybrano projekt/zagadnienie do ewidencji (wymagane dla typów przepracowanego czasu z flagą „projekt wymagany”);
+- czy wybrano projekt/zagadnienie do ewidencji (wymagane dla typów przepracowanego czasu z flagą „Projekt wymagany”);
 - czy użytkownik ma uprawnienia do tworzenia wpisów przepracowanego czasu.
 
-#### Komunikat „Projekt nie jest wybrany”
+#### Komunikat „Nie wybrano projektu dla przepracowanego czasu”
 
-Zwykle oznacza to, że wpis przepracowanego czasu jest tworzony bez powiązania z projektem lub zagadnieniem.
+Komunikat pojawia się przy zapisie wpisu przepracowanego czasu bez projektu, gdy wybrany typ przepracowanego czasu ma ustawioną flagę „Projekt wymagany”.
 
 Co zrobić:
 
@@ -62,9 +64,9 @@ Co zrobić:
 2. Utwórz wpis przepracowanego czasu z karty projektu/zagadnienia.
 3. Jeśli wprowadzasz wpis z listy ogólnej, jawnie wybierz projekt i/lub zagadnienie.
 
-#### Komunikat o niezgodności projektu zagadnienia
+#### Komunikat „Czas przepracowany zagadnienia nie odpowiada projektowi”
 
-Jeśli wpis przepracowanego czasu jest powiązany z zagadnieniem należącym do innego projektu, system może zabronić zapisu.
+Jeśli wpis przepracowanego czasu jest powiązany z zagadnieniem należącym do innego projektu, system zabroni zapisu.
 
 Co zrobić:
 

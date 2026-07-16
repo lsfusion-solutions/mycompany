@@ -16,6 +16,8 @@ In addition to managerial control, time entries are often used for internal repo
 
 ## How to add a time entry
 
+![Time entry list](images/time-entries-list.png)
+
 Typical scenarios:
 
 - From the **project or task card** — open the card, find the time entries section, and create a new record. The project (and task, where applicable) is filled in automatically.
@@ -27,6 +29,8 @@ Steps:
 1. Specify the date, the number of hours, and the time entry type.
 2. Link the record to a project and, if applicable, to a task.
 3. Save the record.
+
+> If the employee is assigned to exactly one project, that project is filled in automatically when a time entry is created.
 
 #### Filling recommendations
 
@@ -40,7 +44,7 @@ Steps:
 
 Depending on configuration, restrictions may apply:
 
-- some time entry types are configured so that a **project** is required — without a project the record will not be saved;
+- some time entry types have the **Project required** flag set — without a project the record will not be saved (the system shows the message “No project selected for the time entry”);
 - you cannot save a time entry whose **task** belongs to a project different from the one specified on the entry (the system shows the message “The time entry task does not match the project”).
 
 ## Common situations
@@ -49,12 +53,12 @@ Depending on configuration, restrictions may apply:
 
 Check:
 
-- that the project/task for tracking is selected (required for time entry types with the “project required” flag);
+- that the project/task for tracking is selected (required for time entry types with the “Project required” flag);
 - that the user has permission to create time entries.
 
-#### Message “Project is not selected”
+#### Message “No project selected for the time entry”
 
-This usually means the time entry is created without linking it to a project or a task.
+The message appears when a time entry is saved without a project while the selected time entry type has the “Project required” flag set.
 
 What to do:
 
@@ -62,9 +66,9 @@ What to do:
 2. Create the time entry from the project/task card.
 3. If you enter the time entry from the general list, explicitly select the project and/or task.
 
-#### Message about a task project mismatch
+#### Message “The time entry task does not match the project”
 
-If the time entry is linked to a task that belongs to another project, the system may forbid saving.
+If the time entry is linked to a task that belongs to another project, the system forbids saving.
 
 What to do:
 

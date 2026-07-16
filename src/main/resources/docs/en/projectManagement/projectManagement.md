@@ -61,11 +61,13 @@ Details: see [Projects](projects.md), [Tasks](tasks.md), [Team and roles on a pr
 
 ## Navigation
 
+![The Projects section in the navigator with expanded groups](images/projects-nav.png)
+
 The **Projects** section typically includes groups:
 
 - **Operations** — day-to-day work (**[projects](projects.md)**, **[tasks](tasks.md)**, **[time entries](time-entries.md)**, **[shifts](shifts.md)**). **[Kanban](tasks.md#kanban)** and the **[Gantt chart](tasks.md#gantt-chart)** are views available within the task list, not separate menu items. **[Assignments](team-and-roles.md#assignments)** are managed on the project card.
 - **Processes** — **[employee and supervisor timesheets](timesheets.md)** for entering and controlling effort by days.
-- **Reporting** — entry point for project-related reports. In the base configuration this folder is typically populated by integrations with neighbouring modules (Sales, Manufacturing) rather than by stand-alone PM reports.
+- **Reporting** — an extension point for project-related reports. In the base configuration this folder is empty (and therefore hidden in the menu): project dimensions are added to existing reports of the neighbouring modules (Sales, Manufacturing) instead — see [Reporting](reports.md).
 - **Configuration** — directories and rules: project and task **[types](settings.md#project-types)**, **[statuses](settings.md#project-statuses)**, **[priorities](settings.md#priorities-and-tags)**, **[tags](settings.md#priorities-and-tags)**, **[workflow](settings.md#workflow)**, project roles, and teams.
 
 The exact menu set and action availability depend on configuration and user permissions.
@@ -92,7 +94,7 @@ A **[task](tasks.md)** is a work unit within a project: what needs to be done, b
 
 #### Assignment
 
-An **[assignment](team-and-roles.md#assignments)** links a participant (employee or team) to a project with a project role and a participation period. A task does not have a separate assignment record — it references one assignee directly via its assignee field.
+An **[assignment](team-and-roles.md#assignments)** links a participant (employee or team) to a project with a project role and a participation period. A task does not have a separate assignment record — it references one assignee directly via its **Assigned to** field.
 
 #### Time entry
 
