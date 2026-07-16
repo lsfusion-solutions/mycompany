@@ -13,7 +13,7 @@ Słownik **„Partnerzy”** służy do utrzymywania klientów, dostawców, inny
 
 ## Lista partnerów
 
-Lista zwykle pokazuje podstawowe dane: **Nazwa**, **ID**, **Typ**, **Adres**, **Telefon**, **Email**.
+Lista zwykle pokazuje podstawowe dane: **Nazwa**, **ID**, **Typ partnera**, **Adres**, **Telefon**, **Email**.
 
 Jeśli używana jest archiwizacja, na liście zwykle znajduje się przełącznik:
 
@@ -58,15 +58,16 @@ Uwaga praktyczna: jeśli w systemie jest **dokładnie jedna firma**, często jes
 Użyj typu **„Osoba fizyczna”**, gdy potrzebujesz przechowywać dane o konkretnej osobie:
 
 - osoba kontaktowa organizacji zewnętrznej (np. opiekun u dostawcy, księgowy klienta);
-- pracownik Twojej firmy (jeśli włączony jest obszar HR/płac lub używane są role/przydzieleni).
+- klient będący osobą prywatną.
 
 Typowe dane:
 
 - **Imię**, **Nazwisko**, **Drugie imię**;
 - **Przedsiębiorstwo/firma**, którą reprezentuje osoba;
 - **Pozycja** (jeśli używana);
-- telefon i email;
-- jeśli trzeba — **Dział**.
+- telefon i email.
+
+Pracownicy Twojej własnej firmy to szczególny rodzaj osoby fizycznej — zobacz sekcję [Pracownicy](#pracownicy) poniżej.
 
 ## Karta partnera
 
@@ -74,7 +75,7 @@ Typowe pola:
 
 - **ID** — może być uzupełniane automatycznie;
 - **Nazwa**;
-- **Typ** — rodzaj partnera (np. przedsiębiorstwo, firma, osoba fizyczna, pracownik); jest ustalany przez rodzaj tworzonej pozycji i wyświetlany tylko do odczytu;
+- **Typ partnera** — rodzaj partnera (np. przedsiębiorstwo, firma, osoba fizyczna, pracownik); jest ustalany przez rodzaj tworzonej pozycji i wyświetlany tylko do odczytu;
 - **Adres** (w tym kraj — jeśli jest używany);
 - **Telefon**, **Email**;
 - **Zarchiwizowane** — flaga wyłączająca partnera z aktywnego użycia.
@@ -83,7 +84,20 @@ Typowe pola:
 
 Jeśli włączona jest automatyzacja zakupów, a partner jest oznaczony jako **Dostawca**, karta partnera zawiera zakładkę **Zakup** z polem **Okres zamówienia**.
 
-**Okres zamówienia** to liczba dni używana przez automatyczne wypełnianie zamówienia zakupu do wyznaczenia domyślnego okresu analizy popytu dla tego dostawcy. Jeśli pole jest puste, zamówienia zakupu używają 7 dni. Wartość tylko domyślnie wypełnia **Datę od** i **Datę do**; użytkownik nadal może zmienić okres w zamówieniu zakupu.
+**Okres zamówienia** to liczba dni używana przez automatyczne wypełnianie zamówienia zakupu do wyznaczenia domyślnego okresu analizy popytu dla tego dostawcy. Jeśli pole jest puste, zamówienia zakupu używają 7 dni. Wartość tylko domyślnie wypełnia pola **Data od** i **Data do**; użytkownik nadal może zmienić okres w zamówieniu zakupu.
+
+## Pracownicy
+
+**Pracownik** to osoba fizyczna Twojej własnej firmy, będąca jednocześnie użytkownikiem systemu. W odróżnieniu od zwykłych osób fizycznych pracownicy są utrzymywani w osobnym słowniku — **Dane podstawowe → Pracownicy** — i można ich przypisywać do aktywności oraz innych prac.
+
+Karta pracownika zawiera:
+
+- **Login**, akcję zmiany hasła oraz flagę **Zablokowane** — konto użytkownika;
+- **Role** — role uprawnień użytkownika;
+- **Przedsiębiorstwo** — musi być jedną z Twoich firm (uzupełniane automatycznie, gdy jest dokładnie jedna);
+- **Dział**, **Pozycję**;
+- imię i nazwisko, kontakty, adres, datę urodzenia;
+- zdjęcie i awatar (awatar jest generowany automatycznie ze zdjęcia).
 
 ### Jak wybrać właściwy typ
 
@@ -91,7 +105,8 @@ Stosuj prostą zasadę:
 
 - jeśli opisujesz **stronę transakcji jako organizację zewnętrzną** (klient/dostawca/wykonawca) — utwórz **przedsiębiorstwo**;
 - jeśli opisujesz **własną organizację** (w imieniu której tworzone są dokumenty) — utwórz **firmę**;
-- jeśli potrzebujesz **konkretnej osoby** (kontakt, pracownik) — utwórz **osobę fizyczną** i wskaż przedsiębiorstwo/firmę, do której należy.
+- jeśli potrzebujesz **konkretnej osoby** — utwórz **osobę fizyczną**; dla osoby kontaktowej wskaż przedsiębiorstwo, które reprezentuje, a dla niezrzeszonego klienta prywatnego pole przedsiębiorstwa może pozostać puste;
+- jeśli potrzebujesz **pracownika własnej firmy** (użytkownika systemu, osoby przypisywanej do aktywności) — utwórz wpis w **Dane podstawowe → Pracownicy** (zobacz [Pracownicy](#pracownicy)).
 
 ### Typowe sytuacje i przykłady
 

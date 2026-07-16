@@ -11,6 +11,8 @@ The list typically shows:
 - **Name**;
 - **ID** (can be generated automatically).
 
+![Unit of measure list](images/uom-list.png)
+
 ## Unit of measure card
 
 Typical fields:

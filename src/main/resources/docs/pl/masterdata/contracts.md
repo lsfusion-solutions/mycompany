@@ -11,9 +11,9 @@ Typowe pola:
 - **ID** (może być generowane automatycznie);
 - **Numer**;
 - **Data**;
-- **Data zakończenia** (jeśli dotyczy);
+- **Data końcowa** (jeśli dotyczy);
 - **Nazwa** (jeśli używana);
-- **Typ umowy** (jeśli używany);
+- **Typ** — typ umowy (jeśli używany);
 - **Firma**;
 - **Partner**.
 

@@ -12,7 +12,7 @@ Typowe pola:
 
 - **ID** (np. kod trzyznakowy);
 - **Nazwa**;
-- **Domyślne** — waluta, która jest automatycznie uzupełniana podczas tworzenia nowych danych, jeśli proces tego wymaga.
+- **Domyślnie** — waluta, która jest automatycznie uzupełniana podczas tworzenia nowych danych, jeśli proces tego wymaga.
 
 Zaleca się:
 
@@ -29,7 +29,7 @@ Karta kursu walutowego zwykle zawiera:
 
 - **Nazwa**;
 - **Waluta**, dla której utrzymywany jest kurs;
-- flagę **Domyślne** (dla wybranej waluty).
+- flagę **Domyślnie** (dla wybranej waluty).
 
 Poniżej znajduje się tabela linii kursów walutowych:
 

@@ -17,14 +17,14 @@ Typowe pola:
 
 - **Nazwa**;
 - **ID** (może być generowane automatycznie);
-- **Rodzic** (jeśli używana jest hierarchia);
+- **Rodzic** — pole wymagane: każda kategoria oprócz korzenia ma kategorię nadrzędną;
 - **Zarchiwizowane**.
 
-Karta zawiera pole **„Prefiks”** nazwy oraz zakładkę **„Wartości domyślne”** z domyślną **jednostką miary** — oba są dziedziczone przez pozycje tej kategorii.
+Karta zawiera pole **„Prefiks”** nazwy — jest ono dodawane na początku **pełnej nazwy** wszystkich pozycji tej kategorii. Zakładka **„Wartości domyślne”** przechowuje domyślną **jednostkę miary**: jest ona podstawiana (z uwzględnieniem najbliższej kategorii nadrzędnej, w której ją określono) przy ustawianiu kategorii pozycji z pustą jednostką; nie zmienia pozycji, które już mają jednostkę, a późniejsza zmiana wartości domyślnej nie aktualizuje istniejących pozycji.
 
 ## Tworzenie podkategorii
 
-Aby utworzyć podkategorię, wybierz kategorię nadrzędną i utwórz nową pozycję, wskazując nadrzędną.
+W widoku **„Drzewo”** wybierz kategorię nadrzędną i kliknij przycisk **„Kategoria”** na pasku narzędzi — nowa kategoria zostanie utworzona jako podrzędna wybranej. W widoku **„Lista”** utwórz nową pozycję i wskaż nadrzędną ręcznie.
 
 ## Ograniczenia
 

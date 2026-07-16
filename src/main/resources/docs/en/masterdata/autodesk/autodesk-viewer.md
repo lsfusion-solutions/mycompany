@@ -10,10 +10,11 @@ Before the viewer becomes visible on any form:
 
 1. The administrator has connected MyCompany to APS — see [Setup](autodesk-setup.md).
 2. A model has been uploaded, translated to SVF2, and reached **Transform status** = `success` — see [Buckets and models](autodesk-buckets-and-models.md).
-3. The model has been linked to the [project](../../projectManagement/projects.md) / [BoM](../../manufacturing/bom.md) you intend to open.
-4. **Your user profile has the Autodesk flag enabled.** Open **Edit profile**, tick **Autodesk**, save, and reload the page.
+3. The model's **Viewables** and **Elements** have been fetched on the standalone **Master data → Autodesk** page (the embedded forms only display what was fetched there; they have no fetch buttons of their own). For tree ↔ scene selection to work, also fetch **Properties** — the matching uses element external IDs that come with the properties.
+4. The model has been linked to the [item](../items.md) / [project](../../projectManagement/projects.md) / [BoM](../../manufacturing/bom.md) you intend to open.
+5. **Your user profile has the Autodesk flag enabled.** Open **Edit profile**, tick **Autodesk**, save, and reload the page.
 
-If the **Autodesk** tab still does not appear after the page reload, no model is linked to the object you opened — link one on the standalone **Master Data → Autodesk** page.
+If the **Autodesk** tab still does not appear after the page reload, re-check the **Autodesk** flag on your profile. If the tab is visible but empty, no *ready* model is linked to the object you opened — link one on the standalone **Master data → Autodesk** page.
 
 ## On a project
 
@@ -24,7 +25,7 @@ The tab is laid out in two rows:
 
 - **Top row** — two PANEL selectors:
   - **Model** — picks among all *ready* models linked to this project. If only one model is linked, it is selected automatically.
-  - **Viewable** — picks among the viewables of the selected model.
+  - **Viewable** — picks among the viewables fetched for the selected model; it determines which element tree is shown (the 3D scene itself always renders the model's default view).
 - **Bottom row** — split horizontally:
   - **Element tree** on the left — hierarchical list of objects in the selected viewable;
   - **3D viewer** on the right — Autodesk's APS Viewer rendering the SVF2.
@@ -40,7 +41,7 @@ The **Model** selector lets you switch between them. Linking is many-to-one (man
 
 ## On an item
 
-1. Open **Master Data → Items** — see [Items](../items.md) for the underlying article.
+1. Open **Master data → Items** — see [Items](../items.md) for the underlying article.
 2. Pick an item and open it.
 3. Switch to the **Autodesk** tab.
 
@@ -97,16 +98,14 @@ These are Autodesk's tools, not MyCompany's — their availability depends on th
 ## Performance tips
 
 - **Use SVF2, not SVF.** The integration translates with `output.formats.type = svf2`; do not change this. SVF2 is dramatically faster on large models.
-- **Keep one viewable open at a time.** Switching the viewable selector reloads the scene from APS, which can take a few seconds on a slow link.
 - **Large IFC?** Use `Conversion method = v4` for new IFC content (see [Buckets and models](autodesk-buckets-and-models.md#conversion-method)).
 - **Caching.** APS caches the SVF2 derivatives at the URN level — once a model is translated, the viewer load is fast for everyone, regardless of who looks at it first.
 
 ## Permissions and what users see
 
-Whether a user sees the **Autodesk** tab on a form depends on:
+Whether a user sees the **Autodesk** tab on a form depends on their own profile flag (**Autodesk** ticked on **Edit profile**). Whether a model can actually be picked inside the tab depends on:
 
-1. Their own profile flag (**Autodesk** ticked on **Edit profile**).
-2. Whether a relevant model is linked.
-3. Whether the model finished translating successfully.
+1. Whether a relevant model is linked.
+2. Whether the model finished translating successfully.
 
 The tab does **not** depend on whether the user can edit the project / BoM / order — read-only users see the same viewer. They cannot change which model is linked unless they have edit rights on the standalone Autodesk page.

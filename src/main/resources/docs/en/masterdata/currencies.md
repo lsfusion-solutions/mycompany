@@ -6,6 +6,8 @@ The **“Currencies”** and **“Exchange rates”** directories are used for s
 
 ## Currencies
 
+![Currency list](images/currencies.png)
+
 ### Currency card
 
 Typical fields:
@@ -22,6 +24,8 @@ It is recommended to:
 ## Exchange rates
 
 An exchange rate is stored as a set of lines with dates and values.
+
+![Exchange rate list](images/exchange-rates.png)
 
 ### Exchange rate card
 

@@ -4,6 +4,8 @@ title: Contracts
 
 The **“Contracts”** directory is used to register contracts with partners and then select a contract in documents (if the process implies it).
 
+![Contract list](images/contracts-list.png)
+
 ## Contract card
 
 Typical fields:
@@ -13,7 +15,7 @@ Typical fields:
 - **Date**;
 - **End date** (if applicable);
 - **Name** (if used);
-- **Contract type** (if used);
+- **Type** — the contract type (if used);
 - **Company**;
 - **Partner**.
 

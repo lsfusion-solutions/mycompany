@@ -4,6 +4,8 @@ title: Countries
 
 The **“Countries”** directory is used for partner addresses and other objects where a country must be specified.
 
+![Country list](images/countries.png)
+
 ## Country card
 
 Typical fields:

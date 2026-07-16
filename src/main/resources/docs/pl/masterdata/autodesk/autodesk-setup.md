@@ -27,8 +27,8 @@ Integracja domyślnie korzysta z regionu **US** Autodesk. Jeśli wymagana jest r
 1. W MyCompany otwórz formularz konfiguracji **integracji** (lokalizacja zależy od wersji — zwykle w **Administracja → Integracje** lub podobnie).
 2. Znajdź panel **Autodesk**.
 3. Wklej:
-   - **Key** = Client ID z APS;
-   - **Secret** = Client Secret z APS.
+   - **Klucz** = Client ID z APS;
+   - **Sekret** = Client Secret z APS.
 4. Zapisz.
 
 Dane uwierzytelniające są przechowywane w MyCompany; użytkownicy nie muszą ich znać.
@@ -39,7 +39,7 @@ Nic więcej nie musisz robić — każda akcja Autodesk w MyCompany automatyczni
 
 Jeśli pierwsza akcja zwróci *„Token is not provided”* lub **AUTH-010**, sprawdź dokładnie:
 
-- czy wartości Key / Secret dokładnie odpowiadają tym z konsoli APS;
+- czy wartości Klucz / Sekret dokładnie odpowiadają tym z konsoli APS;
 - czy aplikacja APS ma zaznaczone **Data Management API** i **Model Derivative API**;
 - czy żaden firewall nie blokuje wychodzącego ruchu HTTPS do `developer.api.autodesk.com`.
 
@@ -51,15 +51,15 @@ Integracja jest opt-in dla każdego użytkownika.
 2. Zaznacza znacznik **Autodesk**.
 3. Zapisuje i przeładowuje stronę (JavaScript przeglądarki ładuje się dopiero przy pierwszym renderowaniu strony po włączeniu znacznika).
 
-Dopóki znacznik nie jest ustawiony, zakładka **Autodesk** jest ukryta w formularzach Projektu / Zestawienia materiałów / Zamówienia produkcji.
+Dopóki znacznik nie jest ustawiony, zakładka **Autodesk** jest ukryta w formularzach Towaru / Projektu / Zestawienia materiałów / Zamówienia produkcji.
 
 ## 4. Weryfikacja
 
 Szybki test poprawności połączenia:
 
-1. Otwórz **Dane podstawowe → Autodesk**.
-2. Kliknij **Get buckets** — jeśli dane uwierzytelniające są poprawne, odpowiedź otworzy się jako plik JSON (na tym etapie może to być pusta lista — to normalne).
+1. Otwórz formularz **integracji** i przejdź na zakładkę **Obiekty** z listą bucketów Autodesk.
+2. Kliknij **Pobierz buckety** — jeśli dane uwierzytelniające są poprawne, odpowiedź otworzy się jako plik JSON (na tym etapie może to być pusta lista — to normalne).
 3. Jeśli pojawi się błąd **401 Unauthorized**: dane uwierzytelniające są nieprawidłowe. Wklej je ponownie.
-4. Jeśli pojawi się jakikolwiek inny błąd: zobacz: [Buckety i modele — rozwiązywanie problemów](autodesk-buckets-and-models.md#troubleshooting).
+4. Jeśli pojawi się jakikolwiek inny błąd: zobacz: [Buckety i modele — rozwiązywanie problemów](autodesk-buckets-and-models.md#rozwiązywanie-problemów).
 
-Możesz teraz [utworzyć bucket i przesłać model](autodesk-buckets-and-models.md). Gdy model zostanie skonwertowany i powiązany, użytkownicy końcowi zobaczą go w formularzach [Projektu / Zestawienia materiałów / Zamówienia produkcji](autodesk-viewer.md).
+Możesz teraz [utworzyć bucket i przesłać model](autodesk-buckets-and-models.md). Gdy model zostanie skonwertowany i powiązany, użytkownicy końcowi zobaczą go w formularzach [towaru / projektu / zestawienia materiałów / zamówienia produkcji](autodesk-viewer.md).

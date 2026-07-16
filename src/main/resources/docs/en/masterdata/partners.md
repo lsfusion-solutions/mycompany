@@ -13,7 +13,7 @@ The **“Partners”** directory is used to maintain customers, suppliers, other
 
 ## Partner list
 
-The list typically shows basic data: **Name**, **ID**, **Type**, **Address**, **Phone**, **Email**.
+The list typically shows basic data: **Name**, **ID**, **Partner type**, **Address**, **Phone**, **Email**.
 
 If archiving is used, the list usually has a switch:
 
@@ -58,15 +58,16 @@ Practical note: if there is **exactly one company** in the system, it is often *
 Use **“Individual”** when you need to store data about a specific person:
 
 - a contact person of an external organization (e.g., supplier manager, customer accountant);
-- an employee of your company (if the HR/payroll contour is enabled or roles/assignees are used).
+- a private customer.
 
 Typical data:
 
 - **First name**, **Surname**, **Middle name**;
 - **Legal entity/company** the person represents;
 - **Position** (if used);
-- phone and email;
-- if needed — **Department**.
+- phone and email.
+
+Employees of your own company are a special kind of individual — see [Employees](#employees) below.
 
 ## Partner card
 
@@ -74,10 +75,12 @@ Typical fields:
 
 - **ID** — can be filled automatically;
 - **Name**;
-- **Type** — the partner kind (e.g. legal entity, company, individual, employee); it is set by the type of entry you create and is shown read-only;
+- **Partner type** — the partner kind (e.g. legal entity, company, individual, employee); it is set by the type of entry you create and is shown read-only;
 - **Address** (including country — if used);
 - **Phone**, **Email**;
 - **Archived** — a flag to exclude the partner from active use.
+
+![Partner card](images/partner-card.png)
 
 ### Vendor purchase settings
 
@@ -85,13 +88,27 @@ If purchase automation is enabled and the partner is marked as **Vendor**, the p
 
 **Order period** is the number of days used by purchase order auto filling to build the default demand analysis period for this vendor. If it is empty, purchase orders use 7 days. The value only fills **Date from** and **Date to** by default; the user can still change the period in the purchase order.
 
+## Employees
+
+An **employee** is an individual of your own company that is also a system user. Unlike regular individuals, employees are maintained in a separate directory — **Master data → Employees** — and can be assigned to activities and other work.
+
+The employee card contains:
+
+- **Login**, the **Change password** action, and the **Locked** flag — the user account;
+- **Roles** — the user's permission roles;
+- **Legal entity** — must be one of your companies (prefilled when there is exactly one);
+- **Department**, **Position**;
+- name, contacts, address, birthday;
+- **Photo** and **Avatar** (the avatar is generated automatically from the photo).
+
 ### How to choose the right type
 
 Use a simple rule:
 
 - if you describe **the deal party as an external organization** (customer/supplier/contractor) — create a **legal entity**;
 - if you describe **your own organization** (on behalf of which documents are created) — create a **company**;
-- if you need **a specific person** (contact, employee) — create an **individual** and specify the legal entity/company the person belongs to.
+- if you need **a specific person** — create an **individual**; for a contact, specify the legal entity the person represents; for an unaffiliated private customer, the legal entity can stay empty;
+- if you need **an employee of your own company** (a system user, an activity assignee) — create the entry in **Master data → Employees** (see [Employees](#employees)).
 
 ### Typical situations and examples
 

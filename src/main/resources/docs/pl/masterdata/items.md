@@ -42,7 +42,7 @@ Przykłady: dostawa, montaż, naprawa, konsulting, najem.
 Zaleca się uzupełnienie z wyprzedzeniem:
 
 - **Jednostki miary** (co najmniej podstawowe);
-- **Kategorie**, jeśli planujesz grupowanie towarów.
+- **Kategorie** — kategoria jest obowiązkowa dla każdej pozycji, więc upewnij się, że istnieje co najmniej kategoria główna; kategorie służą też do grupowania towarów.
 
 ## Import produktów z pliku z użyciem OpenAI
 
@@ -51,7 +51,7 @@ Jeśli skonfigurowano opis importu produktów, na pasku narzędzi listy towarów
 #### Co trzeba przygotować
 
 - uzupełnić klucz API OpenAI i w razie potrzeby utworzyć konfiguracje GPT dla modelu, rozumowania i dodatkowego promptu w ogólnych ustawieniach integracji;
-- otworzyć **Dane podstawowe → Ustawienia** i na karcie **Towary** uzupełnić **Import (GPT) → Prompt**. Użyj **Default**, aby wczytać standardowy opis, a następnie dostosuj go do swoich plików katalogowych, jeśli trzeba;
+- otworzyć **Dane podstawowe → Ustawienia** i na karcie **Towary** uzupełnić **Import (GPT) → Prompt**. Użyj **Domyślnie**, aby wczytać standardowy opis, a następnie dostosuj go do swoich plików katalogowych, jeśli trzeba;
 - sprawdzić, czy jednostki miary mają stabilne ID, ponieważ import nie tworzy nowych jednostek miary;
 - sprawdzić istniejące kategorie i produkty w wybranej gałęzi: są one wysyłane do OpenAI jako dane referencyjne, aby można było wykluczyć duplikaty.
 
@@ -73,7 +73,7 @@ ID nowych kategorii i produktów są generowane przez system.
 #### Ograniczenia i cechy działania
 
 - Działanie jest ukryte, dopóki opis importu jest pusty.
-- Istniejące kategorie i produkty nie są aktualizowane; scenariusz tworzy tylko nowe pozycje zwrócone przez OpenAI.
+- Istniejące kategorie i produkty nie są aktualizowane; scenariusz tworzy tylko nowe pozycje zwrócone przez OpenAI. System sam nie porównuje ponownie zwróconych wierszy z istniejącymi danymi — unikanie duplikatów opiera się na prompcie i danych referencyjnych wysyłanych do OpenAI, dlatego zawsze sprawdzaj podgląd i usuwaj zbędne wiersze.
 - Nowe jednostki miary nie są tworzone automatycznie. Jeśli OpenAI nie zwróci ID istniejącej jednostki, jednostka produktu może pozostać pusta.
 - Dopasowanie kategorii wykorzystuje ID istniejących kategorii albo nazwy kategorii tworzonych w tym samym podglądzie. Jeśli kategorii nie uda się dopasować, system umieści wiersz w kategorii głównej.
 - Zawsze sprawdzaj podgląd przed zapisem: rozpoznawanie przez OpenAI zależy od jakości pliku i skonfigurowanego opisu.
@@ -83,11 +83,12 @@ ID nowych kategorii i produktów są generowane przez system.
 
 Lista zwykle pokazuje:
 
-- **Nazwa**;
+- **Nazwa (pełna)**;
 - **ID**;
-- **Typ** (jeśli używany);
+- **Typ**;
 - **Kategoria**;
-- **Jednostka miary**.
+- **JM** (jednostka miary);
+- **Odnośnik wewnętrzny**.
 
 Jeśli dostępna jest archiwizacja, użyj filtra **„Aktywnie”** / **„Zarchiwizowane”**.
 
@@ -98,26 +99,35 @@ Typowe pola:
 - **Nazwa** — edytowalna nazwa pozycji;
 - **Nazwa (pełna)** — tworzona automatycznie (prefiks kategorii + nazwa + prefiksy/sufiksy atrybutów); tylko do odczytu;
 - **Typ** — **Produkt** lub **Usługa**, określany przez rodzaj pozycji; tylko do odczytu;
-- **Kategoria**;
-- **Jednostka miary**;
+- **Kategoria (pełna)** — kategoria z pełną ścieżką hierarchiczną;
+- **JM** — jednostka miary;
 - **ID** — generowane automatycznie;
-- **Referencja** (jeśli używana);
+- **Odnośnik wewnętrzny** — referencja/artykuł (jeśli używany);
+- **Planowany koszt** — koszt obowiązujący na dzień dzisiejszy; link **Historia** otwiera listę wartości kosztu z datami, gdzie można dodawać nowe wartości obowiązujące od wskazanej daty;
 - **Opis**;
 - **Zarchiwizowane**.
 
 ### Ustawienia magazynowe
 
-Jeśli w systemie włączony jest obszar magazynowy, w karcie towaru na zakładce **Magazynowanie** mogą być dostępne dodatkowe parametry:
+Karta produktu (usługi nie mają tych pól) zawiera zakładkę **Magazynowanie** z dodatkowymi parametrami:
 
-- **Waga** i **Objętość**;
-- **Długość**, **Szerokość** i **Wysokość** (wymiary jednostki, cm);
-- **Jednostka SKU** i **Współczynnik** (używane do automatycznego przeliczania i ewidencji stanów bieżącego towaru poprzez inną pozycję bazową). Więcej szczegółów w sekcji [Magazynowe jednostki SKU](../inventory/product-sku.md).
+- **Waga jednostkowa, kg** i **Objętość jednostki, m3**;
+- **Długość jednostki, cm**, **Szerokość jednostki, cm** i **Wysokość jednostki, cm**;
+- przy włączonym obszarze magazynowym — **SKU** i **Współczynnik** (używane do automatycznego przeliczania i ewidencji stanów bieżącego towaru poprzez inną pozycję bazową). Więcej szczegółów w sekcji [Magazynowe jednostki SKU](../inventory/product-sku.md).
 
 Dla towarów można również skonfigurować współczynniki przeliczeniowe dla pakietów (na zakładce **Jednostki miary**), a na zakładkach **Zakup** i **Sprzedaż** — wybrać domyślne pakiety. Pozwala to na korzystanie z mechanizmu ewidencji opakowań bezpośrednio w dokumentach.
 
 ### Inne zakładki
 
-W zależności od włączonych modułów i ustawień pozycji karta towaru może mieć też inne zakładki — na przykład **Kody kreskowe**, **Atrybuty**, **Zdjęcie** oraz **Dokumenty** (powiązane dokumenty). Zakładki **Zakup** i **Sprzedaż** pojawiają się tylko przy ustawionych flagach **„Można zakupić”** / **„Można sprzedać”**.
+W zależności od włączonych modułów i ustawień pozycji karta towaru może mieć też inne zakładki — na przykład **Kody kreskowe**, **Atrybuty**, **Zdjęcie** oraz **Dokumenty** (powiązane dokumenty). Zakładki **Zakup** i **Sprzedaż** pojawiają się tylko przy ustawionych flagach **„Można zakupić”** / **„Można sprzedać”**; zakładka **Sprzedaż** zawiera również **Cenę sprzedaży**.
+
+### Atrybuty
+
+Słownik **Atrybuty** (**Dane podstawowe → Atrybuty**) definiuje dodatkowe właściwości towarów (np. marka, kolor, rozmiar). Dla każdego atrybutu można określić kategorie, których dotyczy, listę dozwolonych wartości oraz flagę **Wymagany**. Wartości uzupełnia się na zakładce **Atrybuty** karty towaru; wymagane atrybuty bez wartości są podświetlane. Atrybut może też uczestniczyć w tworzeniu pełnej nazwy towaru: jego wartość (z opcjonalnym prefiksem/sufiksem) jest dodawana przed nazwą lub po niej zgodnie z ustawieniami **Kolejność** i **Przed nazwą** atrybutu.
+
+### Warianty
+
+Towar może mieć **warianty** — osobne towary reprezentujące ten sam produkt w różnych wersjach (np. kolorach lub rozmiarach). Warianty tworzy się na zakładce **Warianty** karty towaru nadrzędnego przyciskiem **Wariant**. Wariant zachowuje własne ID i kody kreskowe, natomiast jego nazwa, kategoria, jednostka miary, flaga archiwizacji oraz wartości atrybutów uzupełnione już w towarze nadrzędnym są synchronizowane z towaru nadrzędnego i na wariancie są tylko do odczytu. Lista towarów ma filtry **Podstawowe** (F10) / **Warianty** (F9), a na karcie wariantu towar nadrzędny jest widoczny w polu **Podstawowy produkt**.
 
 ### Zalecenia dotyczące uzupełniania dla produktów
 

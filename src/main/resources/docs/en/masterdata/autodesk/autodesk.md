@@ -28,26 +28,28 @@ A typical scenario *“connect APS → upload a model → see it on a project”
 4. Create a **bucket** (a container for source files in APS) — see [Buckets and models](autodesk-buckets-and-models.md#buckets).
 5. **Load** a Revit / IFC / DWG / NWD file into the bucket and **Put** it (upload binary to APS).
 6. **Transform** the model to SVF2 and **Get status** until it shows *success*.
-7. Link the model to a **[Project](../../projectManagement/projects.md)**, **[BoM](../../manufacturing/bom.md)**, or **[Manufacturing order](../../manufacturing/orders.md)** via the **Autodesk** tab on the corresponding form.
-8. Open that form — the 3D viewer renders the model directly in the page.
+7. On the same **Master data → Autodesk** page, fetch the model's **Viewables** and **Elements** (the **Get** buttons) and link the model by filling its **Item**, **[Project](../../projectManagement/projects.md)**, or **Bill of Materials** field. [Manufacturing orders](../../manufacturing/orders.md) pick up the model of their BoM or item automatically.
+8. Open the corresponding form — the 3D viewer renders the model directly in the page.
 
 ## Navigation
 
 The Autodesk feature appears in three places:
 
-- **Master Data → Autodesk** — the standalone page where buckets, models, viewables, elements and properties live.
+- **Master data → Autodesk** — the standalone page where buckets, models, viewables, elements and properties live.
 - **integrations** form (administration) — where the Client ID / Client Secret and bucket list are configured.
-- An **Autodesk** tab on the **[Project](../../projectManagement/projects.md)**, **[BoM](../../manufacturing/bom.md)**, and **[Manufacturing order](../../manufacturing/orders.md)** forms — where end users actually look at the model.
+- An **Autodesk** tab on the **[Item](../items.md)**, **[Project](../../projectManagement/projects.md)**, **[BoM](../../manufacturing/bom.md)**, and **[Manufacturing order](../../manufacturing/orders.md)** forms — where end users actually look at the model.
 
 The exact menu placement and visibility depend on user permissions and on whether the user has **Autodesk** enabled on their profile.
 
 ## User roles and permissions
 
+A typical split of responsibilities (these are recommendations — the integration itself only defines the per-user **Autodesk** flag; access to the individual actions is governed by the regular lsFusion permission setup):
+
 - **Administrator** — sets up the APS application, enters credentials, creates buckets, uploads source files, kicks off translation. See [Setup](autodesk-setup.md) and [Buckets and models](autodesk-buckets-and-models.md).
-- **Engineer / project participant** — links an existing model to a project / BoM / manufacturing order and views it through the embedded viewer. See [Viewer in forms](autodesk-viewer.md).
+- **Engineer / project participant** — links an existing model to a project / BoM / item on the standalone **Master data → Autodesk** page and views it through the embedded viewer. See [Viewer in forms](autodesk-viewer.md).
 - **Read-only viewer** — sees the model on the form but does not change links or trigger translations.
 
-If the **Autodesk** tab does not appear on a form, check: *(a)* the **Autodesk** flag on your user profile, *(b)* whether a model has been linked to the underlying object, *(c)* whether translation finished successfully (the model must have status *success*).
+The **Autodesk** tab is shown only while the **Autodesk** flag is enabled on your user profile. If the tab is visible but empty (no model to pick), check *(a)* whether a model has been linked to the underlying object and *(b)* whether translation finished successfully (the model must have status *success*).
 
 ## Terms
 

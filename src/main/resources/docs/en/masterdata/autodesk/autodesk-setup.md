@@ -51,13 +51,13 @@ The integration is opt-in per user.
 2. Tick the **Autodesk** flag.
 3. Save and reload the page (the viewer JavaScript is loaded only on first page render after the flag is enabled).
 
-Until the flag is set, the **Autodesk** tab is hidden on the Project / BoM / Manufacturing order forms.
+Until the flag is set, the **Autodesk** tab is hidden on the Item / Project / BoM / Manufacturing order forms.
 
 ## 4. Verify
 
 A quick sanity check that the connection works:
 
-1. Open **Master Data → Autodesk**.
+1. Open the **integrations** form and switch to the **Objects** tab with the Autodesk bucket list.
 2. Click **Get buckets** — if the credentials are valid, the response opens as a JSON file (it may be an empty list at this point — that is fine).
 3. If it errors with **401 Unauthorized**: the credentials are wrong. Re-paste them.
 4. If it errors with anything else: see [Buckets and models — troubleshooting](autodesk-buckets-and-models.md#troubleshooting).
