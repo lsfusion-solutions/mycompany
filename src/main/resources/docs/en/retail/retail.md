@@ -33,9 +33,9 @@ Sections:
 
 ### Scenario: open a session → process a sale → take payment → close the session
 
-1. Open **“Retail” → “Configuration” → “Settings”** and make sure that:
-   - **cash registers** are created and (if needed) linked to computers;
-   - **payment methods** are configured.
+1. In **“Retail” → “Configuration”** make sure that:
+   - **cash registers** are created and (if needed) linked to computers — in the **“Cash registers”** directory;
+   - **payment methods** are configured — on the **“Settings”** form.
 2. Open **“Retail” → “Operations” → “POS”**.
 3. Select the cash register and open a session with **“Open session”**.
 4. Add items to the receipt (search / barcode scanning / touch grid); if needed, apply a discount or discount card.

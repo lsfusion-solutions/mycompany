@@ -28,6 +28,8 @@ On the **POS** screen, press **“Close session”** on the Session tab and conf
 
 The system records the closing date and time.
 
+> Closing first discards the current unfinished receipt — finish or deliberately abandon it before closing.
+
 ## What a session shows
 
 A session aggregates the operations performed at the cash register while it was open:
@@ -37,10 +39,10 @@ A session aggregates the operations performed at the cash register while it was 
 - **“Returns”** — the number of returns;
 - **“Returned”** — the total amount of returns;
 - **“Total”** — sales minus returns;
-- the amount paid by each **[payment method](payments.md)**;
+- the **net** amount for each **[payment method](payments.md)** (sales payments minus return payouts);
 - the **“Cash receipts”** and **“Refunds”** lists;
-- cash **deposits** and **withdrawals** and the resulting cash balance.
+- cash **deposits** and **withdrawals** are also registered against the open session; their lists and the **“Cash at the checkout”** balance (kept per cash register, not per session) are shown on the **Session** tab of the [POS](pos.md) screen.
 
-The standalone **“Retail” → “Operations” → “Sessions”** list is used to browse and review sessions — the sales and returns count and amount columns are shown there.
+The standalone **“Retail” → “Operations” → “Sessions”** list is used to browse and review sessions — the sales and returns count and amount columns are shown there. It also allows manual **New**, **Edit**, and **Delete**; note that creating a session here does not run the POS **“Open session”** checks (duplicate open session, fiscal opening), so opening from POS remains the normal workflow.
 
 ![Session list](images/sessions-list.png)

@@ -21,7 +21,7 @@ Na dole ekranu znajduje się rząd **przycisków szybkiego dostępu** dla częst
 
 ## Wybór kasy i sesji
 
-Na zakładce **„Sesja”** wybierz **kasę**. Jeśli bieżący komputer jest powiązany z kasą, jest ona podstawiana automatycznie; w przeciwnym razie dostępne są wszystkie kasy.
+Na zakładce **„Sesja”** wybierz **kasę**. Jeśli bieżący komputer jest powiązany z kasami, do wyboru proponowane są tylko one; w przeciwnym razie dostępne są wszystkie kasy. W obu przypadkach z wyboru ukrywane są kasy, których **lokalizacja** jest dla Ciebie niedostępna (kasy bez lokalizacji pozostają widoczne).
 
 Aby rozpocząć pracę, otwórz **[sesję](sessions.md)**:
 
@@ -31,6 +31,8 @@ Aby rozpocząć pracę, otwórz **[sesję](sessions.md)**:
 > Jeśli dla kasy jest już otwarta sesja, system pokazuje komunikat **„Jest już sesja otwarta”** i nie otwiera drugiej.
 
 Aby zakończyć pracę, naciśnij **„Zamknij sesję”** i potwierdź.
+
+> Zamknięcie najpierw odrzuca bieżący niezakończony paragon. Zakończ lub celowo porzuć trwający paragon przed zamknięciem sesji.
 
 Pole **„Gotówka w kasie”** na zakładce „Sesja” pokazuje bieżące saldo gotówki kasy.
 
@@ -42,14 +44,14 @@ Paragon to dokument sprzedaży tworzony w ramach sesji. Nowy pusty paragon jest 
 
 Towary można dodać na kilka sposobów:
 
-- **Kod kreskowy** — wpisz lub zeskanuj kod w polu kodu kreskowego w górnej części paragonu. System rozpoznaje kod kreskowy towaru, kod towaru znakowanego lub [kartę rabatową](discount-cards.md). Nierozpoznany kod powoduje komunikat **„Kod kreskowy nie znaleziono”**.
-- **Zakładka „Wyszukaj”** — znajdź towar po **nazwie** (`F6`) lub po **cenie** (`F7`), a następnie kliknij go dwukrotnie lub ustaw jego ilość, aby dodać go do paragonu. Filtr **„W dokumencie”** (`Shift+F10`) pokazuje tylko towary już dodane do paragonu; filtr **„Dostępne”** (`F10`) — tylko towary z dostępnym stanem. Lista jest automatycznie ograniczona do towarów aktywnych, dopuszczonych do sprzedaży.
+- **Kod kreskowy** — wpisz lub zeskanuj kod w polu kodu kreskowego w górnej części paragonu. System rozpoznaje kod kreskowy towaru, kod partii lub [kartę rabatową](discount-cards.md). Nierozpoznany kod powoduje komunikat **„Kod kreskowy nie znaleziono”**.
+- **Zakładka „Wyszukaj”** — znajdź towar po **nazwie** (`F6`) lub po **cenie** (`F7`), a następnie kliknij go dwukrotnie lub ustaw jego ilość, aby dodać go do paragonu. Filtr **„W dokumencie”** (`Shift+F10`) pokazuje tylko towary już dodane do paragonu; filtr **„Dostępne”** (`F10`) — tylko towary (produkty) z dostępnym stanem (pozycje bez ewidencji stanu, na przykład usługi, są zawsze pokazywane). Lista jest automatycznie ograniczona do towarów aktywnych, dopuszczonych do sprzedaży i mających cenę sprzedaży.
 - **Zakładka „Przycisk skrótu”** — kafelkowa witryna kategorii i towarów ze zdjęciami. Dotknij kategorii, aby wejść głębiej, dotknij towaru, aby go dodać; do nawigacji służą **„Z powrotem”** i **„Zresetuj”**. Kategorie i towary można ukryć z tej witryny na zakładce **„Przycisk skrótu”** formularza ustawień.
 - **Przyciski szybkiego dostępu** — towary, które mają na karcie wypełnione pole **„Klawisz skrótu (nazwa)”**, są wyświetlane na dole ekranu POS jako przyciski szybkiego dodawania.
 
 ### Zmiana pozycji
 
-- **Ilość** — zmień ją bezpośrednio w pozycji lub za pomocą ekranowej **klawiatury numerycznej**. Wprowadzenie `0` usuwa pozycję.
+- **Ilość** — zmień ją bezpośrednio w pozycji lub za pomocą ekranowej **klawiatury numerycznej**. Wprowadzenie `0` na klawiaturze usuwa pozycję.
 - Pozycję można też usunąć akcją usuwania w tabeli pozycji.
 - Dla wybranej pozycji poniżej listy wyświetlane są szczegóły towaru (nazwa, jednostka miary, kod kreskowy, kod, referencja).
 
@@ -87,6 +89,7 @@ Jeśli towar jest ewidencjonowany wg partii, kody jego partii skanuje się do pa
 Naciśnij **„Płatność”** (`Ctrl+Enter`) — przycisk staje się aktywny, gdy paragon ma kwotę. W oknie płatności:
 
 - wprowadź przyjętą kwotę dla jednej lub kilku **[metod płatności](payments.md)** (dozwolony jest podział płatności);
+- jeśli nie wprowadzono żadnej kwoty, naciśnięcie **„Ok”** przypisuje całą kwotę **„Do zapłaty”** do aktualnie wybranej metody płatności;
 - dla gotówki **reszta** jest obliczana automatycznie;
 - płatności nie można potwierdzić, jeśli metoda bezgotówkowa (na przykład karta bankowa) przekracza kwotę **„Do zapłaty”**.
 
@@ -112,7 +115,7 @@ Każdy dodany towar pojawia się jako pozycja paragonu z ilością, ceną i (je�
 
 ### Krok 3. Sprawdź ilości i rabaty
 
-- Skoryguj **ilość** w pozycjach — bezpośrednio w pozycji lub ekranową klawiaturą numeryczną; wprowadzenie `0` usuwa pozycję.
+- Skoryguj **ilość** w pozycjach — bezpośrednio w pozycji lub ekranową klawiaturą numeryczną; wprowadzenie `0` na klawiaturze usuwa pozycję.
 - W razie potrzeby ustaw **klienta** lub zeskanuj **kartę rabatową** — może to zmienić stosowane rabaty.
 - Kontroluj sumy na dole paragonu: **„Suma”**, **„Rabat”** i **„Do zapłaty”**.
 
@@ -135,7 +138,7 @@ Płatności nie można potwierdzić, jeśli wprowadzona kwota jest niewystarczaj
 Naciśnij **„Ok”**. System:
 
 - rejestruje płatności i kończy paragon — sprzedaż zostaje zapisana;
-- drukuje paragon, jeśli podłączone jest urządzenie fiskalne;
+- próbuje wydrukować/zarejestrować paragon na urządzeniu fiskalnym, jeśli jest podłączone;
 - automatycznie otwiera kolejny pusty paragon do nowej sprzedaży.
 
 Zakończony paragon trafia na listę **„Paragony”** na zakładce **„Sesja”** i do wyników sesji.
@@ -147,13 +150,13 @@ Na zakładce **„Sesja”** na listach **„Wpłata gotówki”** i **„Wypła
 - **„Wpłata gotówki”** — zarejestrować wpłatę gotówki do kasy;
 - **„Wypłać”** — zarejestrować wypłatę gotówki.
 
-Obie akcje otwierają okno z klawiaturą numeryczną do wprowadzenia kwoty i są rejestrowane w otwartej sesji; wykonane operacje są widoczne na tych samych listach.
+Obie akcje otwierają okno z klawiaturą numeryczną do wprowadzenia kwoty. Otwórz sesję przed ich użyciem: operacja jest oznaczana otwartą sesją, jeśli taka istnieje. Obie listy pokazują wpłaty i wypłaty kasy według jej konta gotówkowego (a nie tylko bieżącej sesji), więc mogą też zawierać wcześniejsze operacje.
 
 > Przyciski **„Wpłata gotówki”** i **„Wypłać”** są dostępne tylko wtedy, gdy kasa ma wskazane **konto gotówkowe** — konto dla metody płatności **„Gotówka”**. Jeśli nie jest ono skonfigurowane, przyciski są nieaktywne (a pole „Gotówka w kasie” jest puste). Konto to ustawia się w karcie kasy — zobacz [Ustawienia sprzedaży detalicznej](settings.md).
 
 ## Rejestracja fiskalna
 
-Jeśli do kasy podłączone jest urządzenie fiskalne, otwarcie i zamknięcie sesji, sprzedaż, zwroty i operacje gotówkowe są na nim rejestrowane, a ekran POS udostępnia odpowiednie polecenia fiskalne (na przykład wydruk raportu X). Rejestracja fiskalna zależy od konfiguracji i regionu.
+Jeśli do kasy podłączone jest urządzenie fiskalne, otwarcie i zamknięcie sesji, sprzedaż, zwroty i operacje gotówkowe są na nim rejestrowane, a ekran POS udostępnia odpowiednie polecenia fiskalne (na przykład wydruk raportu X). **Otwarcie i zamknięcie sesji** są fiskalizowane najpierw i warunkują zmianę: przy awarii urządzenia sesja się nie otwiera (ani nie zamyka). **Sprzedaż, zwroty oraz wpłaty/wypłaty gotówki** są fiskalizowane **po** ich zapisaniu, więc błąd urządzenia może pozostawić taki dokument zakończony, ale niezafiskalizowany; pokazuje on wtedy status fiskalny i udostępnia akcję ponownej **„Fiskalizacji”** (dostępną, dopóki sesja fiskalna jest otwarta). Rejestracja fiskalna zależy od konfiguracji i regionu.
 
 ## Zwroty
 
@@ -163,4 +166,4 @@ Pełna procedura — korekta pozycji zwrotu, płatność zwrotu oraz zasady wyp�
 
 ## Wyniki sesji
 
-Zakładka **„Sesja”** pokazuje numer sesji, czas otwarcia i sumy, w tym kwotę przyjętą każdą metodą płatności. Listy **„Paragony”** i **„Korekty zakupu”** pokazują sprzedaż i zwroty wykonane w sesji.
+Zakładka **„Sesja”** pokazuje numer sesji, czas otwarcia i sumy, w tym **kwotę netto** dla każdej metody płatności (przyjęte w sprzedaży pomniejszone o wypłacone w zwrotach). Listy **„Paragony”** i **„Korekty zakupu”** pokazują sprzedaż i zwroty wykonane w sesji.

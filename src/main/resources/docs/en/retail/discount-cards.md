@@ -32,9 +32,11 @@ The card ID is assigned automatically by the numerator.
 
 A card is blocked by setting a **block date**. The block date cannot be earlier than the issue date.
 
-A blocked card cannot be used: at the POS the system shows **“Discount card blocked”** and does not attach it to the receipt; on an invoice the card fails validation.
+Blocking is effective from the block date: the card is rejected only on a receipt or invoice dated **on or after** that date. A future block date leaves the card usable until it arrives.
+
+A blocked card cannot be used: at the POS the system shows **“Discount card blocked”** and does not attach it to the receipt; on a sales invoice the card fails validation.
 
 ## Using a card
 
 - **At the POS** — enter or scan the card ID in the barcode field. The card’s holder becomes the receipt customer (see [Cash register and POS](pos.md)).
-- **On an invoice** — a discount card can be selected on a [sales invoice](../invoicing/invoices.md); selecting it fills in the customer, and the system checks that the card matches the customer and is not blocked.
+- **On a sales invoice** — the card is not selected directly on the standard [sales invoice](../invoicing/invoices.md) form; the card field is exposed at the POS. When a receipt (invoice) does carry a card, the system fills in the customer from the card and validates that the card matches the customer and is not blocked.

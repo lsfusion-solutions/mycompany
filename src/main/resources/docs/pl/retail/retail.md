@@ -33,9 +33,9 @@ Sekcje:
 
 ### Scenariusz: otwórz sesję → zrealizuj sprzedaż → przyjmij płatność → zamknij sesję
 
-1. Otwórz **„Sprzedaż detaliczna” → „Konfiguracja” → „Ustawienia”** i upewnij się, że:
-   - utworzono **kasy** i (jeśli trzeba) powiązano je z komputerami;
-   - skonfigurowano **metody płatności**.
+1. W **„Sprzedaż detaliczna” → „Konfiguracja”** upewnij się, że:
+   - utworzono **kasy** i (jeśli trzeba) powiązano je z komputerami — w słowniku **„Kasy”**;
+   - skonfigurowano **metody płatności** — na formularzu **„Ustawienia”**.
 2. Otwórz **„Sprzedaż detaliczna” → „Operacje” → „POS”**.
 3. Wybierz kasę i otwórz sesję akcją **„Otwórz sesję”**.
 4. Dodaj towary do paragonu (wyszukiwanie / skanowanie kodu kreskowego / witryna dotykowa); jeśli trzeba, zastosuj rabat lub kartę rabatową.

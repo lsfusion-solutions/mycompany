@@ -28,6 +28,8 @@ Na ekranie **POS** naciśnij **„Zamknij sesję”** na zakładce „Sesja” i
 
 System zapisuje datę i czas zamknięcia.
 
+> Zamknięcie najpierw odrzuca bieżący niezakończony paragon — zakończ go lub celowo porzuć przed zamknięciem.
+
 ## Co pokazuje sesja
 
 Sesja zbiera operacje wykonane na kasie w czasie jej pracy:
@@ -37,8 +39,8 @@ Sesja zbiera operacje wykonane na kasie w czasie jej pracy:
 - **„Zwroty”** — liczbę zwrotów;
 - **„Zwrócone”** — łączną kwotę zwrotów;
 - **„Suma”** — sprzedaż pomniejszoną o zwroty;
-- kwotę przyjętą każdą **[metodą płatności](payments.md)**;
+- **kwotę netto** dla każdej **[metody płatności](payments.md)** (płatności sprzedaży pomniejszone o wypłaty zwrotów);
 - listy **„Paragony”** i **„Korekty zakupu”**;
-- wpłaty i wypłaty gotówki oraz wynikowe saldo gotówki.
+- wpłaty i wypłaty gotówki są także rejestrowane w otwartej sesji; ich listy oraz saldo **„Gotówka w kasie”** (prowadzone dla kasy, a nie dla sesji) są widoczne na zakładce **„Sesja”** ekranu [POS](pos.md).
 
-Osobna lista **„Sprzedaż detaliczna” → „Operacje” → „Sesje”** służy do przeglądania i analizy sesji — to w niej wyświetlane są kolumny z liczbą i kwotami sprzedaży oraz zwrotów.
+Osobna lista **„Sprzedaż detaliczna” → „Operacje” → „Sesje”** służy do przeglądania i analizy sesji — to w niej wyświetlane są kolumny z liczbą i kwotami sprzedaży oraz zwrotów. Umożliwia też ręczne **„Nowy”**, **„Edytuj”** i **„Usuń”**; uwaga: utworzenie sesji w tym miejscu nie wykonuje kontroli akcji **„Otwórz sesję”** z POS (istniejąca otwarta sesja, otwarcie fiskalne), dlatego standardowym trybem pozostaje otwieranie z POS.
