@@ -24,13 +24,13 @@ Lista jest przeznaczona do codziennej pracy: szybko zobaczyć, co jest w toku, k
 Zestaw kolumn zależy od konfiguracji, ale zwykle zawiera:
 
 - **ID**, **Nazwa**;
-- **Produkt**;
-- **Status leadu** (oraz stan „otwarta/zamknięta”);
-- **Typ leadu**;
+- **Towar**;
+- **Status** (oraz stan „otwarta/zamknięta”);
+- **Typ**;
 - **[Klient](../masterdata/partners.md)**;
 - **Sprzedawca**;
 - **Kampania**, **Kanał**, **Źródło**;
-- **Priorytet leadu** i **Tagi leadu**;
+- **Priorytet** i **Tagi**;
 - prognoza: **Spodziewany przychód**, **Prawdopodobieństwo**, **Spodziewane zamknięcie**;
 - kontakty: **Telefon**, **Email**;
 - w razie potrzeby — pola adresu i kontaktu.
@@ -71,23 +71,29 @@ Zwykle u góry karty są widoczne:
 
 - **ID** i **Nazwa**;
 - blok prognozy: **Data**, **Spodziewany przychód**, **Prawdopodobieństwo**, **Spodziewane zamknięcie**;
-- główne atrybuty: **Typ leadu**, **[Klient](../masterdata/partners.md)**, **Produkt**, **Email**, **Telefon**, **Sprzedawca**, **Priorytet leadu**, **Tagi leadu**.
+- główne atrybuty: **Typ**, **[Klient](../masterdata/partners.md)**, **Towar**, **Email**, **Telefon**, **Sprzedawca**, **Priorytet**, **Tagi**.
 
-**Status leadu** jest pokazany jako osobny przełącznik u góry karty.
+**Status** leadu jest pokazany jako osobny przełącznik u góry karty.
 
 Niżej znajdują się zakładki, takie jak:
 
 - **„Opis”** — opis zapytania, ustalenia, następny krok;
-- **„Inne informacje”** — nazwa przedsiębiorstwa, strona internetowa, pola adresu, osoba kontaktowa oraz blok **„Marketing”** (**Kampania**, **Kanał**, **Źródło**).
+- **„Inne informacje”** — nazwa przedsiębiorstwa, strona internetowa, pola adresu, osoba kontaktowa oraz blok **„Marketing”** (**Kampania**, **Kanał**, **Źródło**);
+- **„Historia”** — historia zmian leadu;
+- **„Pliki”** — pliki załączone do leadu;
+- **„Zmiana statusu”** — dziennik zmian statusów: kiedy i przez kogo każdy status został ustawiony oraz ile godzin lead w nim spędził;
+- **„Połączenia”** i **„Email”** — komunikacja powiązana z leadem (zobacz [Komunikacja: połączenia i e‑maile](communications.md)).
+
+Prawa część karty zawiera bloki dokumentów powiązanych (**„Zamówienia”**, **„Faktury”**), panel **„Aktywności”** oraz **„Komentarze”** (zobacz niżej).
 
 ### Rekomendowana kolejność uzupełniania
 
-1. Wybierz **Produkt** (jeśli określono) — **Nazwa** leadu zostanie uzupełniona automatycznie z nazwy produktu, jeśli była pusta.
+1. Wybierz **Towar** (jeśli określono) — **Nazwa** leadu zostanie uzupełniona automatycznie z nazwy towaru, jeśli była pusta.
 2. Ustaw **Nazwa** — krótko i jasno (o co chodzi i od kogo), jeśli nie została uzupełniona automatycznie.
 3. Ustaw **[Klient](../masterdata/partners.md)**, jeśli znany.
 4. Sprawdź **Sprzedawca** — dla nowego leadu ustawiany jest bieżący użytkownik; zmień go w razie potrzeby.
-5. Wybierz **Typ leadu**.
-6. Wybierz **Status leadu**.
+5. Wybierz **Typ**.
+6. Wybierz **Status**.
 7. Dodaj kontakty i opis.
 
 ### Typ leadu i dozwolone statusy
@@ -97,7 +103,7 @@ Lista dostępnych statusów zależy od wybranego typu leadu:
 - dla każdego typu możesz skonfigurować, które statusy są dozwolone;
 - jeśli dla typu nie skonfigurowano listy statusów, wszystkie statusy są dozwolone.
 
-Jeśli wybrany status nie jest dozwolony dla typu, system nie pozwoli zapisać leadu. Po zmianie typu status jest automatycznie resetowany do statusu dozwolonego dla nowego typu.
+Jeśli wybrany status nie jest dozwolony dla typu, system nie pozwoli zapisać leadu. Po zmianie typu status jest automatycznie resetowany tylko wtedy, gdy bieżący status nie jest dozwolony dla nowego typu.
 
 ### Kontakty i walidacja
 
@@ -118,20 +124,20 @@ Po tym w karcie jest widoczne pole **„Powód porażki”**.
 
 ### Tworzenie klienta z leadu
 
-Jeśli lead nie ma jeszcze ustawionego **Klienta**, w karcie leadu dostępna jest akcja **„Utwórz Przedsiębiorstwo”**. Tworzy ona [przedsiębiorstwo](../masterdata/partners.md) na podstawie danych leadu — nazwa, telefon, email, adres i strona internetowa — oraz, jeśli wypełniono imię i nazwisko kontaktu, osobę kontaktową dla niego. Utworzone przedsiębiorstwo jest następnie ustawiane jako **Klient** leadu.
+Jeśli lead nie ma jeszcze ustawionego **Klienta**, w karcie leadu dostępna jest akcja **„Utwórz Przedsiębiorstwo”**. Tworzy ona [przedsiębiorstwo](../masterdata/partners.md) na podstawie danych leadu — nazwa jest pobierana z pola **„Nazwa przedsiębiorstwa”**, przenoszone są też telefon, email, adres i strona internetowa — oraz, jeśli uzupełniono co najmniej imię lub nazwisko kontaktu, osobę kontaktową dla niego. Utworzone przedsiębiorstwo jest następnie ustawiane jako **Klient** leadu.
 
 ### Kopiowanie leadu
 
-Akcja **„Kopiuj”** tworzy nowy lead i kopiuje główne pola bieżącego: nazwę, typ, klienta, sprzedawcę, opis, priorytet, tagi, spodziewany przychód i prawdopodobieństwo, kontakty oraz adres. Użyj jej dla podobnych powtarzających się zapytań.
+Akcja **„Kopiuj”** tworzy nowy lead i kopiuje główne pola bieżącego: nazwę, typ, klienta, sprzedawcę, opis, priorytet, tagi, spodziewany przychód i prawdopodobieństwo, kontakty, adres, stronę internetową, nazwę przedsiębiorstwa i osobę kontaktową. Użyj jej dla podobnych powtarzających się zapytań.
 
 ### Historia
 
 Karta leadu może zawierać zakładkę **„Historia”**:
 
-- pokazuje, kto i kiedy zmienił lead;
+- pokazuje, kto i kiedy zmieniał główne pola leadu;
 - zapisuje kluczowe zdarzenia (w tym zmiany statusu).
 
-Praktyczna wartość historii to szybkie zrozumienie, dlaczego lead jest w obecnym stanie i kiedy był ostatni kontakt.
+Historia śledzi wybrane pola i nie jest pełnym dziennikiem zmian; historia kontaktów znajduje się na zakładkach „Połączenia”/„Email” oraz w komentarzach. Praktyczna wartość historii to szybkie zrozumienie, dlaczego lead jest w obecnym stanie.
 
 ### Powiązana komunikacja
 
@@ -151,6 +157,13 @@ Jeśli tworzenie dokumentów z leadu jest włączone, karta może zawierać blok
 
 Zobacz szczegóły w [Zamówienia i faktury z leadu](sales-and-documents.md).
 
+### Aktywności i komentarze
+
+Prawa część karty zawiera też:
+
+- **„Aktywności”** — zaplanowane aktywności dla leadu (zestaw typów aktywności zależy od konfiguracji): dodaj aktywność wymaganego typu, przypisz osobę odpowiedzialną, ustaw termin i oznacz jako wykonaną po zakończeniu (możesz wtedy wpisać informację zwrotną; wpis o wykonanej aktywności zostanie dodany do komentarzy leadu). Panel jest widoczny, gdy typy aktywności są skonfigurowane.
+- **„Komentarze”** — wątek komentarzy leadu. W komentarzach można wspominać użytkowników przez **@**; załączone pliki i kluczowe zmiany są pokazywane razem z komentarzami. Sprzedawca leadu i wspomniani użytkownicy mogą otrzymywać powiadomienia e‑mail o nowych komentarzach (włączane w profilu użytkownika).
+
 ## Tworzenie i usuwanie leadu
 
 ### Tworzenie
@@ -158,8 +171,8 @@ Zobacz szczegóły w [Zamówienia i faktury z leadu](sales-and-documents.md).
 Zwykle nowy lead tworzy się z listy leadów:
 
 1. Otwórz sekcję „Leady”.
-2. Kliknij „Nowy”.
-3. Uzupełnij wymagane pola (co najmniej „Nazwa”).
+2. Kliknij „Add”.
+3. Uzupełnij pola — co najmniej „Nazwa”, aby lead był łatwy do odnalezienia.
 4. Zapisz.
 
 Rekomendacja: od razu przypisz „Sprzedawca” i ustaw „Spodziewane zamknięcie”, aby lead nie zginął.

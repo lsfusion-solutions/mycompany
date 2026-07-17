@@ -6,11 +6,15 @@ title: Lead board (kanban)
 
 Open the **“Leads”** section (the **“Operations”** group). The **“Kanban”** tab is the first tab of the section and opens by default.
 
+![Lead board (kanban)](images/lead-kanban.png)
+
 ## What the board is for
 
 The lead board helps you manage the pipeline visually:
 
-- each column corresponds to one status;
+- each column corresponds to one status; the column header shows the status name and the number of leads in it;
+- under the column header, the total **Expected revenue** of the leads in the column is shown;
+- the **“+”** button in the column header creates a new lead directly in that status;
 - leads are shown as cards;
 - you can drag a lead to another status in one action.
 
@@ -29,20 +33,25 @@ If the board lacks columns or shows extra ones, check status and type settings (
 
 ## What is shown on a lead card
 
-The card layout may differ, but typically includes:
+The card typically includes:
 
-- **Lead status**, **Name**, **Lead type**;
+- a header of the form “type : name”;
+- the creation date (with a relative duration, e.g. “5d ago”);
 - **[Customer](../masterdata/partners.md)**;
-- forecast: **Expected revenue**, **Expected closing**;
-- **Lead priority** (including color);
-- **Lead tags** (including color);
-- **Sales person**;
-- **Description**.
+- **Expected revenue**;
+- **Lead tags** (colored);
+- **Sales person** (with avatar);
+- **Expected closing** at the bottom of the card — highlighted in red once the date has passed.
 
-The card may also have quick actions:
+The card background is tinted with the **Lead priority** color.
 
-- open the lead for editing;
-- delete the lead (if allowed by permissions).
+### Card popup and quick actions
+
+Clicking a card opens a quick-view popup with the lead details: status, priority, dates, expected revenue, tags and description. In the popup you can:
+
+- open the lead for editing (the **“Edit”** button; double-clicking the card also opens it);
+- delete the lead (if allowed by permissions);
+- reassign the **Sales person** — click the avatar of another employee in the popup (the list offers employees who currently have open leads assigned).
 
 ## Drag-and-drop and card ordering
 

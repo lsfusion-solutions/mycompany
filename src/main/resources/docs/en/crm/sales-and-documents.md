@@ -59,7 +59,7 @@ If some data is missing in the lead (for example, no [Customer](../masterdata/pa
 
 ### Where to see related orders
 
-The lead card shows an **“Orders”** block:
+The lead card shows an **“Orders”** block (it appears once at least one linked order exists):
 
 - it shows only orders linked to the current lead;
 - the list usually includes number, date/time, status, type, amount and other key fields;
@@ -90,7 +90,7 @@ As a rule, the following is transferred automatically:
 
 ### Where to see related invoices
 
-The lead card shows an **“Invoices”** block:
+The lead card shows an **“Invoices”** block (it appears once at least one linked invoice exists):
 
 - it shows invoice documents created from the current lead;
 - you can open an invoice for editing from the list.

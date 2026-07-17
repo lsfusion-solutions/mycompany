@@ -53,13 +53,13 @@ Zwykle automatycznie przenoszone są:
 - **[klient](../masterdata/partners.md)** z leadu;
 - **typ** = wartość parametru **„Typ zamówienia”**;
 - **adres dostawy** — zbudowany z danych adresowych leadu (jeśli uzupełnione);
-- **produkty** — jeśli w leadzie wybrano **Produkt**, zostanie dla niego utworzony wiersz zamówienia z kwotą równą **Spodziewanemu przychodowi**.
+- **towary** — jeśli w leadzie wybrano **Towar**, zostanie dla niego utworzony wiersz zamówienia z kwotą równą **Spodziewanemu przychodowi**.
 
 Jeśli w leadzie brakuje części danych (np. nie ma [klienta](../masterdata/partners.md)), trzeba je uzupełnić w zamówieniu ręcznie.
 
 ### Gdzie zobaczyć powiązane zamówienia
 
-W karcie leadu jest widoczny blok **„Zamówienia”**:
+W karcie leadu jest widoczny blok **„Zamówienia”** (pojawia się, gdy istnieje co najmniej jedno powiązane zamówienie):
 
 - pokazuje tylko zamówienia powiązane z bieżącym leadem;
 - lista zwykle zawiera numer, datę/czas, status, typ, kwotę i inne kluczowe pola;
@@ -90,7 +90,7 @@ Zwykle automatycznie przenoszone są:
 
 ### Gdzie zobaczyć powiązane faktury
 
-W karcie leadu jest widoczny blok **„Faktury”**:
+W karcie leadu jest widoczny blok **„Faktury”** (pojawia się, gdy istnieje co najmniej jedna powiązana faktura):
 
 - pokazuje faktury utworzone z bieżącego leadu;
 - z listy możesz otworzyć fakturę do edycji.

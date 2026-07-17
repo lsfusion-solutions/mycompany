@@ -10,7 +10,13 @@ The **“Settings”** form is organized into tabs and contains the parameters a
 
 The **“Configuration”** group also contains separate items for marketing reference data — **“Campaigns”**, **“Mediums”** and **“Sources”** (see [Marketing settings](#marketing-settings) below).
 
+![Settings form](images/crm-settings.png)
+
 ## Parameters
+
+### Numerator - Leads
+
+The **“Numerator - Leads”** parameter sets the numerator used to assign lead **IDs** automatically.
 
 ### Order type
 
@@ -23,6 +29,10 @@ If it is not set, the **“Create Order”** button is not shown in the lead car
 The **“Invoice type”** parameter defines which type is prefilled when creating an [invoice](../sales/invoices.md) from a lead.
 
 If it is not set, the **“Create Invoice”** button is not shown in the lead card.
+
+### Account for leads
+
+The **“Account for leads”** parameter specifies the shared email account whose messages are processed on the **“Email”** tab of the **“Leads”** section. The tab is shown when this parameter is set or when the current user has their own email account configured (see [Communications: calls and emails](communications.md)).
 
 ## Reference data
 
@@ -42,7 +52,7 @@ Recommendations:
 
 1. Create at least 3–5 statuses so the pipeline is clear.
 2. For closing statuses, mark **“Closed”**.
-3. Choose one status and mark it as **“Lost”** — it will be set when closing a lead via the “Lost” action.
+3. Choose one status and mark it as **“Lost”** — it will be set when closing a lead via the “Lost” action. Mark this status as **“Closed”** as well, otherwise the lead will stay open after the “Lost” action.
 4. Set **sorting order** so the columns on the board go left to right according to the process.
 
 ### Lead types
@@ -65,7 +75,7 @@ Priority usually has:
 - **name**;
 - **color**.
 
-Color can be shown in the list and in the lead card.
+Color highlights rows in the lead list and cards on the kanban board.
 
 ### Lead tags
 

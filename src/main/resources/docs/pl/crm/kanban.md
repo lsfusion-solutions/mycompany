@@ -10,7 +10,9 @@ Otwórz sekcję **„Leady”** (grupa **„Operacje”**). Zakładka **„Kanba
 
 Tablica leadów pomaga wizualnie zarządzać lejkiem:
 
-- każda kolumna odpowiada jednemu statusowi;
+- każda kolumna odpowiada jednemu statusowi; nagłówek kolumny pokazuje nazwę statusu i liczbę leadów w niej;
+- pod nagłówkiem kolumny widoczna jest łączna wartość **Spodziewany przychód** leadów w kolumnie;
+- przycisk **„+”** w nagłówku kolumny tworzy nowy lead od razu w tym statusie;
 - leady są pokazane jako karty;
 - możesz przeciągnąć lead do innego statusu jedną akcją.
 
@@ -29,20 +31,25 @@ Jeśli na tablicy brakuje kolumn lub są niepotrzebne, sprawdź ustawienia statu
 
 ## Co jest pokazane na karcie leadu
 
-Układ karty może się różnić, ale zwykle zawiera:
+Karta zwykle zawiera:
 
-- **Status leadu**, **Nazwa**, **Typ leadu**;
+- nagłówek w formie „typ : nazwa”;
+- datę utworzenia (z względnym czasem, np. „5d temu”);
 - **[Klient](../masterdata/partners.md)**;
-- prognoza: **Spodziewany przychód**, **Spodziewane zamknięcie**;
-- **Priorytet leadu** (w tym kolor);
-- **Tagi leadu** (w tym kolor);
-- **Sprzedawca**;
-- **Opis**.
+- **Spodziewany przychód**;
+- **Tagi leadu** (z kolorem);
+- **Sprzedawca** (z awatarem);
+- **Spodziewane zamknięcie** na dole karty — podświetlane na czerwono, gdy data już minęła.
 
-Karta może też mieć szybkie akcje:
+Tło karty jest zabarwione kolorem **priorytetu leadu**.
 
-- otwarcie leadu do edycji;
-- usunięcie leadu (jeśli dozwolone uprawnieniami).
+### Okno podręczne i szybkie akcje
+
+Kliknięcie karty otwiera okno podręczne ze szczegółami leadu: status, priorytet, daty, spodziewany przychód, tagi i opis. W oknie możesz:
+
+- otworzyć lead do edycji (przycisk **„Edytuj”**; podwójne kliknięcie karty też otwiera lead);
+- usunąć lead (jeśli dozwolone uprawnieniami);
+- zmienić **Sprzedawcę** — kliknij awatar innego pracownika (lista zawiera pracowników, którzy mają już przypisane otwarte leady).
 
 ## Przeciąganie i kolejność kart
 

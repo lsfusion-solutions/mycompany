@@ -7,11 +7,11 @@ Ten zestaw dokumentów opisuje pracę użytkownika końcowego z leadami: listę 
 ## Pierwsze kroki
 
 1. Otwórz sekcję **„Leady”** (w drzewie nawigacji znajduje się w grupie **„Operacje”**).
-2. Utwórz lead (przycisk **„Nowy”** na liście).
+2. Utwórz lead (przycisk **„Add”** na liście).
 3. Uzupełnij minimum, aby lead był łatwy do prowadzenia:
    - **Nazwa**
    - **Sprzedawca**
-   - **Typ leadu** i **Status leadu** (jeśli lejek jest skonfigurowany)
+   - **Typ** i **Status** (jeśli lejek jest skonfigurowany)
    - jeśli dostępne — **[Klient](../masterdata/partners.md)**, **Telefon**, **Email**
 4. Do kontroli używaj:
    - filtrów **„Otwarta”**, **„Zamknięta”**, **„Moje leady”**;
@@ -43,7 +43,7 @@ Etap pracy z leadem. Status może być „zamknięty” (takie statusy nie są p
 
 #### Porażka i powód porażki
 
-Specjalny sposób zamknięcia leadu: użytkownik oznacza lead jako **Porażka** i wybiera **Powód porażki**. Następnie lead otrzymuje status skonfigurowany w ustawieniach jako „Porażka”.
+Specjalny sposób zamknięcia leadu: użytkownik oznacza lead jako **Porażka** i wybiera **Powód porażki**. Następnie lead otrzymuje status skonfigurowany w ustawieniach jako „Porażka” (taki status jest zwykle oznaczony również jako zamknięty — zobacz [Ustawienia i dane referencyjne](settings.md)).
 
 #### Priorytet leadu
 
@@ -88,7 +88,7 @@ Odpowiada za:
 1. Otwórz sekcję „Leady” i włącz filtry „Otwarta” oraz „Moje leady”.
 2. Przejrzyj leady bez spodziewanego zamknięcia i bez uzupełnionego opisu — to pierwsi kandydaci do doprecyzowania.
 3. Przełącz się na tablicę leadów i sprawdź, czy jakieś leady nie są „utknięte” w jednym statusie.
-4. Przetwarzaj zakładki „Połaczenia” i „Email” (jeśli dostępne):
+4. Przetwarzaj zakładki „Połączenia” i „Email” (jeśli dostępne):
    - twórz leady z nowych zapytań;
    - dołączaj komunikację do istniejących leadów;
    - oznaczaj „Ignorowany”, jeśli zapytanie nie dotyczy sprzedaży.
@@ -102,8 +102,8 @@ Sprawdź w **„CRM → Konfiguracja → Ustawienia”** czy parametry **„Typ 
 
 #### Dlaczego nie mogę zapisać leadu?
 
-Typ leadu może ograniczać dozwolone statusy. Jeśli wybrany status nie jest dozwolony dla typu leadu, system nie zapisze leadu — wybierz status dozwolony dla tego typu. Po zmianie typu status jest automatycznie resetowany do statusu dozwolonego dla nowego typu.
+Typ leadu może ograniczać dozwolone statusy. Jeśli wybrany status nie jest dozwolony dla typu leadu, system nie zapisze leadu — wybierz status dozwolony dla tego typu. Po zmianie typu status jest automatycznie resetowany tylko wtedy, gdy bieżący status nie jest dozwolony dla nowego typu.
 
-#### Dlaczego tablica leadów nie jest widoczna?
+#### Dlaczego na tablicy leadów nie ma kolumn?
 
 Najczęściej powodem jest to, że statusy są oznaczone jako „Zamknięta” albo statusy nie są dozwolone dla wybranego typu leadu.

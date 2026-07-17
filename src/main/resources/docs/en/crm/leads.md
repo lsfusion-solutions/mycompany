@@ -19,18 +19,20 @@ In this section you can typically access:
 
 The list is intended for daily work: quickly see what is in progress, who is responsible, what needs to be closed, and where things are “stuck”.
 
+![Lead list](images/leads-list.png)
+
 ### What data is shown in the list
 
 The set of columns depends on configuration, but usually includes:
 
 - **ID**, **Name**;
 - **Item**;
-- **Lead status** (and the “open/closed” state);
-- **Lead type**;
+- **Status** (and the “open/closed” state);
+- **Type**;
 - **[Customer](../masterdata/partners.md)**;
 - **Sales person**;
 - **Campaign**, **Medium**, **Source**;
-- **Lead priority** and **Lead tags**;
+- **Priority** and **Tags**;
 - forecast: **Expected revenue**, **Probability**, **Expected closing**;
 - contacts: **Phone**, **Email**;
 - if needed — address and contact fields.
@@ -65,20 +67,28 @@ To open a lead card:
 
 The lead card is used to maintain full information about the lead and perform actions: change status, mark as lost, and work with related communications and documents.
 
+![Lead card](images/lead-card.png)
+
 ### Card structure
 
 Typically, the top of the card shows:
 
 - **ID** and **Name**;
 - forecast block: **Date**, **Expected revenue**, **Probability**, **Expected closing**;
-- main attributes: **Lead type**, **[Customer](../masterdata/partners.md)**, **Item**, **Email**, **Phone**, **Sales person**, **Lead priority**, **Lead tags**.
+- main attributes: **Type**, **[Customer](../masterdata/partners.md)**, **Item**, **Email**, **Phone**, **Sales person**, **Priority**, **Tags**.
 
-The **Lead status** is shown as a separate selector at the top of the card.
+The lead **Status** is shown as a separate selector at the top of the card.
 
 Below are tabs such as:
 
 - **“Description”** — a text description of the inquiry, agreements, next step;
-- **“Other information”** — legal entity name, website, address fields, contact person, and the **Marketing** block (**Campaign**, **Medium**, **Source**).
+- **“Other information”** — legal entity name, website, address fields, contact person, and the **Marketing** block (**Campaign**, **Medium**, **Source**);
+- **“History”** — the change history of the lead;
+- **“Files”** — files attached to the lead;
+- **“Status change”** — the log of status transitions: when and by whom each status was set and how many hours the lead spent in it;
+- **“Calls”** and **“Email”** — communications linked to the lead (see [Communications: calls and emails](communications.md)).
+
+The right side of the card contains the related documents blocks (**“Orders”**, **“Invoices”**), the **“Activities”** panel and the **“Comments”** feed (see below).
 
 ### Recommended filling order
 
@@ -86,8 +96,8 @@ Below are tabs such as:
 2. Set **Name** — short and clear (what is requested and from whom), if not filled automatically.
 3. Set **[Customer](../masterdata/partners.md)**, if known.
 4. Check **Sales person** — for a new lead it is set to the current user by default; change it if needed.
-5. Select **Lead type**.
-6. Select **Lead status**.
+5. Select **Type**.
+6. Select **Status**.
 7. Add contacts and description.
 
 ### Lead type and allowed statuses
@@ -97,7 +107,7 @@ The list of available statuses depends on the selected lead type:
 - for each type, you can configure which statuses are allowed;
 - if a type has no status list configured, all statuses are allowed.
 
-If the selected status is not allowed for the type, the system will not let you save the lead. When you change the type, the status is reset automatically to a status allowed for the new type.
+If the selected status is not allowed for the type, the system will not let you save the lead. When you change the type, the status is reset automatically only if the current status is not allowed for the new type.
 
 ### Contacts and validation
 
@@ -118,20 +128,20 @@ After that, the **“Lost reason”** field is shown in the card.
 
 ### Creating a customer from a lead
 
-If the lead has no **Customer** yet, the **“Create Legal entity”** action is available in the lead card. It creates a [legal entity](../masterdata/partners.md) from the lead data — name, phone, email, address and website — and, if the contact first/last name are filled, a contact person for it. The created legal entity is then set as the lead **Customer**.
+If the lead has no **Customer** yet, the **“Create Legal entity”** action is available in the lead card. It creates a [legal entity](../masterdata/partners.md) from the lead data — the name is taken from the **“Legal entity name”** field, plus phone, email, address and website — and, if at least the contact’s first name or surname is filled, a contact person for it. The created legal entity is then set as the lead **Customer**.
 
 ### Copying a lead
 
-The **“Copy”** action creates a new lead and copies the main fields of the current one: name, type, customer, sales person, description, priority, tags, expected revenue and probability, contacts and address. Use it for similar repeat inquiries.
+The **“Copy”** action creates a new lead and copies the main fields of the current one: name, type, customer, sales person, description, priority, tags, expected revenue and probability, contacts, address, website, legal entity name and contact person. Use it for similar repeat inquiries.
 
 ### History
 
 The lead card can include a **“History”** tab:
 
-- shows who changed the lead and when;
+- shows who changed the main lead fields and when;
 - records key events (including status changes).
 
-The practical value of history is to quickly understand why the lead is in its current state and when the last contact happened.
+History tracks selected fields rather than being a complete audit log; the contact history is in the “Calls”/“Email” tabs and in the comments. The practical value of history is to quickly understand why the lead is in its current state.
 
 ### Related communications
 
@@ -151,6 +161,13 @@ If creating documents from a lead is enabled, the card can include a related doc
 
 See details in [Orders and invoices from a lead](sales-and-documents.md).
 
+### Activities and comments
+
+The right side of the card also contains:
+
+- **“Activities”** — planned activities for the lead (the set of activity types depends on configuration): add an activity of the required type, assign a person responsible, set a due date and mark it as done when completed (you can enter feedback at that moment; a record about the completed activity is added to the lead comments). The panel is shown when activity types are configured.
+- **“Comments”** — a comment feed for the lead. Comments support mentioning users with **@**; attached files and key changes are shown together with the comments. The sales person and mentioned users can receive email notifications about new comments (enabled in the user profile).
+
 ## Creating and deleting a lead
 
 ### Creating
@@ -158,8 +175,8 @@ See details in [Orders and invoices from a lead](sales-and-documents.md).
 Typically, a new lead is created from the lead list:
 
 1. Open the “Leads” section.
-2. Click “New”.
-3. Fill required fields (at least “Name”).
+2. Click “Add”.
+3. Fill in the fields — at least “Name”, so the lead is easy to find later.
 4. Save.
 
 Recommendation: assign “Sales person” and set “Expected closing” right away so the lead is not lost.

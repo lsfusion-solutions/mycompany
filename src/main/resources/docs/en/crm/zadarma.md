@@ -43,7 +43,7 @@ When a call is received, the system performs several automatic actions:
 
 ### Outgoing Calls
 You can make calls directly from the system:
-1.  Click the call button next to a phone number.
+1.  In the lead card, click the **“Call to”** button.
 2.  The system initiates a **Callback**.
 3.  Your phone (or softphone) will ring first.
 4.  Once you answer, the system will dial the customer's number.

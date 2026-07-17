@@ -23,7 +23,7 @@ Raport jest budowany jako tabela przestawna: możesz zmieniać wymiary i grupowa
 
 Raport zwykle zawiera:
 
-- główne atrybuty: **ID**, **Nazwa**, **Status leadu**, **[Klient](../masterdata/partners.md)**, **Sprzedawca**, **Priorytet leadu**, **Tagi leadu**;
+- główne atrybuty: **ID**, **Nazwa**, **Status**, **[Klient](../masterdata/partners.md)**, **Sprzedawca**, **Priorytet**, **Tagi**;
 - marketing (jeśli moduł marketingu jest włączony): **Kampania**, **Kanał**, **Źródło**;
 - prognoza: **Prawdopodobieństwo**, **Spodziewane zamknięcie**, **Spodziewany przychód**;
 - kontakty: **Telefon**, **Email**;
@@ -44,8 +44,8 @@ Rekomendacja: przy analizie miesięcznego lejka zawsze ustaw interwał dat, aby 
 
 Raport zawiera obliczane wymiary czasu:
 
-- wg daty leadu: minuta, godzina, data, dzień tygodnia, tydzień, miesiąc, rok;
-- wg spodziewanego zamknięcia: dzień tygodnia, tydzień, miesiąc, rok.
+- wg daty leadu: minuta, godzina, data, dzień tygodnia (nazwa i numer), tydzień, miesiąc (nazwa i numer), rok;
+- wg spodziewanego zamknięcia: dzień tygodnia (nazwa i numer), tydzień, miesiąc (nazwa i numer), rok.
 
 Pozwala to np. porównać spodziewane zamknięcia wg tygodni albo ocenić obciążenie pracy menedżerów wg miesięcy.
 

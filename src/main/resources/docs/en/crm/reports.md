@@ -8,6 +8,8 @@ title: Reporting
 
 Open **“Reporting”**, then **“Lead report”**.
 
+![Lead report](images/lead-report.png)
+
 ### Purpose
 
 The report is intended for lead analysis by time and attributes. It helps answer questions such as:
@@ -23,7 +25,7 @@ The report is built as a pivot table: you can change dimensions and groupings de
 
 The report typically includes:
 
-- main attributes: **ID**, **Name**, **Lead status**, **[Customer](../masterdata/partners.md)**, **Sales person**, **Lead priority**, **Lead tags**;
+- main attributes: **ID**, **Name**, **Status**, **[Customer](../masterdata/partners.md)**, **Sales person**, **Priority**, **Tags**;
 - marketing (if the marketing module is enabled): **Campaign**, **Medium**, **Source**;
 - forecast: **Probability**, **Expected closing**, **Expected revenue**;
 - contacts: **Phone**, **Email**;
@@ -44,8 +46,8 @@ Recommendation: when analyzing a monthly pipeline, always set a date interval so
 
 The report includes calculated time dimensions:
 
-- by lead date: minute, hour, date, day of week, week, month, year;
-- by expected closing: day of week, week, month, year.
+- by lead date: minute, hour, date, day of week (name and number), week, month (name and number), year;
+- by expected closing: day of week (name and number), week, month (name and number), year.
 
 This allows, for example, comparing expected closings by weeks or assessing manager workload by months.
 

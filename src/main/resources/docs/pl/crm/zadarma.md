@@ -23,13 +23,13 @@ Parametry połączenia określa się w sekcji ustawień integracji na karcie **Z
 Wypełnij następujące pola:
 *   **Url** — adres serwera telefonii (domyślnie `https://api.zadarma.com`).
 *   **Klucz** — klucz API uzyskany z panelu Zadarma.
-*   **Secret** — sekret API uzyskany z panelu Zadarma.
+*   **Sekret** — sekret API uzyskany z panelu Zadarma.
 
 ## 3. Konfiguracja PBX i pracowników
 
 Dla poprawnego działania systemu konieczne jest pobranie informacji o numerach wewnętrznych i powiązanie ich z pracownikami.
 
-1.  Na karcie **PBX** kliknij przycisk **Pobierz PBX**.
+1.  Na karcie **PBX** kliknij przycisk **Get PBX**.
 2.  System pobierze identyfikator PBX oraz listę numerów wewnętrznych z chmury Zadarma.
 3.  Dla każdego pobranego numeru wybierz odpowiednią osobę w kolumnie **Pracownik**. Pozwoli to na przypisywanie historii połączeń do konkretnych osób.
 
@@ -43,7 +43,7 @@ Po otrzymaniu połączenia system wykonuje szereg automatycznych akcji:
 
 ### Połączenia wychodzące
 Możesz wykonywać połączenia bezpośrednio z systemu:
-1.  Kliknij przycisk połączenia obok numeru telefonu.
+1.  W karcie leadu kliknij przycisk **„Zadzwoń”**.
 2.  System zainicjuje **Callback** (oddzwanianie).
 3.  Najpierw zadzwoni Twój telefon (lub aplikacja telefoniczna).
 4.  Po odebraniu system połączy Cię z numerem klienta.
@@ -57,4 +57,4 @@ Jeśli Twoja centrala PBX jest skonfigurowana do nagrywania rozmów, możesz ich
 
 1.  Na liście połączeń skorzystaj z funkcji pobierania nagrania.
 2.  W zależności od ustawień, system odtworzy nagranie zdalnie lub pobierze plik do lokalnego odtworzenia.
-3.  Ustawienie **Odtwórz nagranie zdalnie** w konfiguracji Zadarma określa metodę odtwarzania.
+3.  Ustawienie **Play record remotely** w konfiguracji Zadarma określa metodę odtwarzania.

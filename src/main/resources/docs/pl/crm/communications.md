@@ -11,12 +11,19 @@ Zakładka **„Połączenia”** jest zawsze obecna w sekcji **„Leady”**. Za
 
 ## Połączenia
 
+### Dzwonienie z karty leadu
+
+Jeśli skonfigurowano integrację telefonii IP i Twojemu użytkownikowi przypisano numer wewnętrzny centrali, karta leadu pokazuje przycisk **„Zadzwoń”** (gdy pole **„Telefon”** jest uzupełnione). Kliknięcie inicjuje połączenie wychodzące na numer leadu.
+
 ### Co możesz zrobić w karcie połączenia
 
-Jeśli połączenie jest już powiązane z leadem, w karcie połączenia możesz:
+W karcie połączenia możesz:
 
 - otworzyć powiązany **lead**;
-- utworzyć **lead** z połączenia.
+- utworzyć **lead** z połączenia (jeśli żaden nie jest jeszcze powiązany);
+- dołączyć połączenie do jednego z leadów [partnera](../masterdata/partners.md) połączenia — karta pokazuje listę leadów tego partnera.
+
+Gdy połączenie zostaje powiązane z leadem, który nie ma jeszcze **Klienta**, klient jest uzupełniany automatycznie na podstawie partnera zidentyfikowanego dla połączenia.
 
 Przy tworzeniu leadu z połączenia system zwykle:
 
@@ -45,9 +52,9 @@ Zwykle dostępne:
 1. Otwórz zakładkę **„Połączenia”**.
 2. Pozostaw włączony filtr **„Gotowy”**.
 3. Dla każdego wiersza:
-   - jeśli lead jest znaleziony i poprawny — otwórz go i kontynuuj;
+   - jeśli automatycznie znaleziony lead jest poprawny — kliknij **„Dołącz”**, aby powiązać z nim połączenie (w razie potrzeby najpierw otwórz lead i sprawdź);
    - jeśli lead nie jest znaleziony — kliknij **„Utwórz”** i uzupełnij lead;
-   - jeśli potrzebny jest inny lead — użyj **„Dołącz”**;
+   - jeśli potrzebny jest inny lead — otwórz kartę połączenia i powiąż połączenie z jednym z leadów partnera;
    - jeśli połączenie nie dotyczy pracy z leadami — oznacz jako **„Ignorowany”**.
 
 Więcej informacji o konfiguracji konkretnych dostawców telefonii znajdziesz tutaj:
@@ -61,8 +68,8 @@ W karcie leadu akcja **„Napisz e-mail”** jest dostępna, jeśli pole **„Em
 
 Możliwe zachowanie:
 
-- jeśli skonfigurowano szablony e‑mail, system proponuje szablon i generuje temat oraz treść;
-- jeśli nie ma szablonów, domyślny klient poczty otwiera przygotowaną wiadomość.
+- jeśli skonfigurowano szablony e‑mail pasujące do leadu (dobierane wg jego typu i statusu), system proponuje wybór szablonu i generuje temat oraz treść;
+- w przeciwnym razie domyślny klient poczty otwiera nową wiadomość z uzupełnionym odbiorcą i nazwą leadu jako tematem.
 
 Rekomendacja: przed wysłaniem zweryfikuj adres w polu **„Email”**.
 
@@ -80,12 +87,14 @@ Zwykle dostępne:
 - **„Ignorowany”** — oznacz e‑mail jako niewymagający przetworzenia;
 - podgląd oryginalnej wiadomości i załączników (jeśli obecne).
 
+Przy tworzeniu leadu z e‑maila system uzupełnia lead automatycznie: **nazwę** z tematu wiadomości, **opis** z jej treści, **email** z adresu nadawcy; załączniki wiadomości są zapisywane jako pliki leadu. Jeśli adres nadawcy pasuje do [partnera](../masterdata/partners.md), zostaje on ustawiony jako **Klient** leadu. Akcja **„Dołącz”** również kopiuje załączniki wiadomości do plików istniejącego leadu.
+
 #### Rekomendowany scenariusz przetwarzania e‑maili
 
 1. Otwórz zakładkę **„Email”**.
 2. Pozostaw włączony filtr **„Gotowy”**.
 3. Dla każdego e‑maila:
-   - jeśli dotyczy istniejącego leadu — otwórz lead i kontynuuj;
+   - jeśli automatycznie znaleziony lead jest poprawny — kliknij **„Dołącz”**, aby powiązać z nim wiadomość (w razie potrzeby najpierw otwórz lead i sprawdź);
    - jeśli nie ma leadu — utwórz go z e‑maila;
    - jeśli nie wymaga przetworzenia — oznacz jako **„Ignorowany”**.
 
@@ -104,13 +113,13 @@ Rekomendacja: nie zostawiaj komunikacji w filtrze **„Gotowy”** bez decyzji. 
 
 ## Praktyczne wskazówki
 
-#### Jeśli do jednego numeru telefonu pasuje wiele leadów
+#### Jeśli po numerze telefonu znaleziono niewłaściwy lead
 
-Przy kolejnych połączeniach ten sam numer telefonu może pasować do różnych leadów. W takim przypadku:
+Przy kolejnym połączeniu system automatycznie znajduje po numerze telefonu jeden lead (ostatni otwarty). Jeśli to nie ten lead:
 
-1. Otwórz komunikację.
+1. Otwórz kartę połączenia.
 2. Przejrzyj [partnera](../masterdata/partners.md) i kontekst.
-3. Dołącz ją do najbardziej właściwego leadu.
+3. Powiąż połączenie z właściwym leadem z listy leadów partnera.
 
 #### Jeśli e‑mail przyszedł od nowego kontaktu
 

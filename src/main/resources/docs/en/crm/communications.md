@@ -11,12 +11,19 @@ The **“Calls”** tab is always present in the **“Leads”** section. The **
 
 ## Calls
 
+### Calling from the lead card
+
+If IP telephony integration is configured and an internal PBX number is assigned to your user, the lead card shows the **“Call to”** button (when the **“Phone”** field is filled). Clicking it initiates an outgoing call to the lead’s phone number.
+
 ### What you can do in a call card
 
-If a call is already linked to a lead, in the call card you can:
+In the call card you can:
 
 - open the linked **lead**;
-- create a **lead** from the call.
+- create a **lead** from the call (if none is linked yet);
+- attach the call to one of the leads of the call’s [partner](../masterdata/partners.md) — the card shows the list of that partner’s leads.
+
+When a call is linked to a lead that has no **Customer** yet, the customer is filled automatically from the partner identified for the call.
 
 When creating a lead from a call, the system typically:
 
@@ -45,9 +52,9 @@ Typically available:
 1. Open the **“Calls”** tab.
 2. Keep the **“Ready”** filter enabled.
 3. For each row:
-   - if the lead is found and correct — open it and continue;
+   - if the automatically found lead is correct — click **“Attach”** to link the call to it (open the lead first to check, if needed);
    - if the lead is not found — click **“Create”** and fill the lead;
-   - if a different lead is needed — use **“Attach”**;
+   - if a different lead is needed — open the call card and link the call to one of the partner’s leads there;
    - if the call is not related to lead work — mark **“Ignored”**.
 
 For more information on setting up specific telephony providers, see:
@@ -61,8 +68,8 @@ In the lead card, the **“Write an email”** action is available if the **“E
 
 Possible behavior:
 
-- if email templates are configured, the system suggests a template and generates subject and body;
-- if there are no templates, your default email client opens with a prepared message.
+- if email templates applicable to the lead (matched by its type and status) are configured, the system suggests choosing a template and generates the subject and body;
+- otherwise, your default email client opens a new message with the recipient filled in and the lead name as the subject.
 
 Recommendation: before sending, verify the address in the **“Email”** field.
 
@@ -80,12 +87,14 @@ Typically available:
 - **“Ignored”** — mark the email as not requiring processing;
 - viewing the original message and attachments (if present).
 
+When creating a lead from an email, the system fills the lead automatically: the **name** from the email subject, the **description** from the message text, the **email** from the sender’s address; email attachments are saved as lead files. If the sender’s address matches a [partner](../masterdata/partners.md), it is set as the lead **Customer**. The **“Attach”** action also copies the email attachments to the files of the existing lead.
+
 #### Recommended email processing scenario
 
 1. Open the **“Email”** tab.
 2. Keep the **“Ready”** filter enabled.
 3. For each email:
-   - if it relates to an existing lead — open the lead and continue;
+   - if the automatically found lead is correct — click **“Attach”** to link the email to it (open the lead first to check, if needed);
    - if there is no lead — create one from the email;
    - if it does not require processing — mark **“Ignored”**.
 
@@ -104,13 +113,13 @@ Recommendation: do not leave communications in the **“Ready”** filter withou
 
 ## Practical tips
 
-#### If multiple leads match one phone number
+#### If the phone number matched the wrong lead
 
-For repeat calls, the same phone number may match different leads. In that case:
+For a repeat call, the system automatically finds one lead by the phone number (the most recent open one). If it is not the right lead:
 
-1. Open the communication.
+1. Open the call card.
 2. Review the [partner](../masterdata/partners.md) and context.
-3. Attach it to the most relevant lead.
+3. Link the call to the correct lead from the list of the partner’s leads.
 
 #### If an email came from a new contact
 

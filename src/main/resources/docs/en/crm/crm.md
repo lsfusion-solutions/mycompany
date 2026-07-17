@@ -7,11 +7,11 @@ This set of documents describes end-user work with leads: the lead card and list
 ## Getting started
 
 1. Open the **“Leads”** section (in the navigation tree it is located in the **“Operations”** group).
-2. Create a lead (the **“New”** button in the list).
+2. Create a lead (the **“Add”** button in the list).
 3. Fill in the minimum so the lead is easy to maintain:
    - **Name**
    - **Sales person**
-   - **Lead type** and **Lead status** (if the pipeline is configured)
+   - **Type** and **Status** (if the pipeline is configured)
    - if available — **[Customer](../masterdata/partners.md)**, **Phone**, **Email**
 4. For control, use:
    - filters **“Opened”**, **“Closed”**, **“My leads”**;
@@ -43,7 +43,7 @@ A stage of working with the lead. A status can be “closed” (such statuses ar
 
 #### Lost and lost reason
 
-A special way to close a lead: the user marks the lead as **Lost** and selects a **Lost reason**. After that, the lead receives the status configured in settings as “Lost”.
+A special way to close a lead: the user marks the lead as **Lost** and selects a **Lost reason**. After that, the lead receives the status configured in settings as “Lost” (this status is normally also marked as closed — see [Settings and reference data](settings.md)).
 
 #### Lead priority
 
@@ -102,8 +102,8 @@ Check in **“CRM → Configuration → Settings”** whether the **“Order typ
 
 #### Why can’t I save the lead?
 
-The lead type can restrict the allowed statuses. If the selected status is not allowed for the lead type, the system will not save the lead — choose a status allowed for that type. When you change the type, the status is reset automatically to a status allowed for the new type.
+The lead type can restrict the allowed statuses. If the selected status is not allowed for the lead type, the system will not save the lead — choose a status allowed for that type. When you change the type, the status is reset automatically only if the current status is not allowed for the new type.
 
-#### Why is the lead board not shown?
+#### Why are there no columns on the lead board?
 
 Most often, the reason is that statuses are marked as “Closed”, or statuses are not allowed for the selected lead type.
