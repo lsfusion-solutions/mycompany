@@ -8,6 +8,8 @@ A payslip is an employee payroll calculation document for a period. It includes:
 - the **“Net wage”** total;
 - (if used) source data details, e.g., a list of time entries.
 
+![Payslip card](images/payslip-card.png)
+
 ## Payslip fields
 
 Before reviewing the calculation, make sure the payslip correctly specifies:
@@ -31,6 +33,8 @@ The **“Salary computation”** lines show **how the amount was formed**. A lin
 
 Whether a line is an **earning** or a **deduction** is determined by its **category**: a category marked as a deduction decreases “Net wage”.
 
+Manual lines are added with the **“Add”** button (the `Insert` key) and removed with the line **“Delete”** action.
+
 ### “Skip” and “Hide” flags
 
 These flags belong to the **category**, not to an individual line:
@@ -42,7 +46,7 @@ See the detailed rule in [How the “Net wage” total is calculated](net-wage.m
 
 ## Copying a payslip
 
-The **“Copy”** action creates a new payslip from the current one, copying the main fields and the manually entered payslip lines. Earnings generated from project time entries are not copied — regenerate them on the new payslip. After copying, verify the period.
+The **“Copy”** action creates a new payslip from the current one, copying the **period**, **employee**, **company**, **type**, and the manually entered payslip lines. The number is assigned anew; the due date, the payslip batch link, and the currency (reset to the default one) are not carried over. Earnings generated from project time entries are not copied; **“Generate”** is available only on a payslip batch, so to recalculate them link the new payslip to a batch (the **“Payslip batch”** field) and run **“Generate”** there — or enter the lines manually. After copying, verify the period.
 
 ## Where to check time entry data
 

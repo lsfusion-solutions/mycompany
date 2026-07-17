@@ -108,12 +108,12 @@ secondsLastAttendance (Employee e) = subtractSeconds(checkIn(lastAttendance(e)),
 workedHoursLastAttendance 'Hours' (Employee e) = workedHours(secondsLastAttendance(e)); 
 workedHoursLastAttendance 'Hours' () = workedHoursLastAttendance(currentUser());
 
-attendance (Employee e, Month m) = 
-    NUMERIC[8,2](round1((GROUP SUM seconds(Attendance a) IF employee(a) = e AND extractMonth(checkInDate(a)) = m) / 3600.0));
+attendance (Employee e, INTEGER y, Month m) = 
+    NUMERIC[8,2](round1((GROUP SUM seconds(Attendance a) IF employee(a) = e AND extractYear(checkInDate(a)) = y AND extractMonth(checkInDate(a)) = m) / 3600.0));
 attendance (Employee e, INTEGER y, INTEGER w) = 
     NUMERIC[8,2](round1((GROUP SUM seconds(Attendance a) IF employee(a) = e AND extractYear(checkInDate(a)) = y AND extractWeek(checkInDate(a)) = w) / 3600.0));
 
-attendanceThisMonth 'Month' (Employee e) = attendance(e, extractMonth(currentDate()));
+attendanceThisMonth 'Month' (Employee e) = attendance(e, extractYear(currentDate()), extractMonth(currentDate()));
 attendanceThisWeek 'Week' (Employee e) = attendance(e, extractYear(currentDate()), extractWeek(currentDate()));
 
 attendanceThisMonth 'Month' () = attendanceThisMonth(currentUser());

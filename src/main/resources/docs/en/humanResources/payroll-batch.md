@@ -15,6 +15,8 @@ Typically the workflow is:
 
 Open **“Human Resources” → “Operations” → “Payslip batches”**.
 
+![Payslip batches list](images/payslip-batches.png)
+
 ## Batch fields
 
 In a batch you usually fill:
@@ -33,9 +35,14 @@ The batch shows a list of payslips linked to the batch. For each employee you ty
 - payslip number;
 - employee first name and surname;
 - position;
-- **“Net wage”** total.
+- **“Net wage”** total;
+- totals by **payslip category** (one column per category, ordered by the category **“Index”**).
+
+A category total can be entered directly in the table if the category is marked **“Editable”** in the settings — the system creates or updates a separate **manual** payslip line with the entered value. If the same category also has automatically generated lines (e.g., time-entry earnings), the column shows the **sum** of all its lines — the entered value is added to the generated ones, not replacing them; keep such categories non-editable unless an additive adjustment is intended. Totals of non-editable categories are read-only.
 
 From the batch you can open a payslip and review its **“Salary computation”** lines.
+
+![Payslip batch card](images/payslip-batch-card.png)
 
 ## What “Generate” does
 
@@ -74,13 +81,14 @@ Check typical reasons:
 
 1. The employee is **inactive** or does not belong to the selected legal entity.
 2. A payslip with the same period, legal entity, and type was already created for this employee.
-3. No source data for automatic earnings (e.g., no time entries with a selected project — see [Payment by time entries](payroll-time-entries.md)).
+
+Missing source data (e.g., no time entries with a selected project) does **not** prevent the payslip itself from being created — it only leaves the automatic calculation lines absent. See [Payment by time entries](payroll-time-entries.md).
 
 ## Copying a batch
 
 If the **“Copy”** action is available, it helps create a new batch based on an existing one:
 
-- copies main fields (typically company, type, and name);
-- copies the linked payslips.
+- copies the company, type, and name — the new batch has **no period**, so enter it first;
+- copies the linked payslips (with new numbers) together with their manually entered lines; lines calculated from time entries are not copied.
 
-After copying, verify the period and payslips in the new batch and run **“Generate”** if needed.
+After copying, set the period, verify the payslips, and run **“Generate”** to refresh the automatic lines.

@@ -14,7 +14,7 @@ Każda linia naliczeń zwykle ma:
 
 Z reguły **suma linii** jest obliczana jako:
 
-`total = quantity × amount`
+`suma = ilość × kwota`
 
 Suma linii jest zaokrąglana do **2 miejsc po przecinku**. Sumę można też wpisać bezpośrednio — wtedy **kwota** jest przeliczana wstecz jako `suma / ilość`.
 
@@ -29,7 +29,7 @@ Suma linii jest zaokrąglana do **2 miejsc po przecinku**. Sumę można też wpi
 3. Linie oznaczone jako **„Pomiń”** **nie biorą udziału** w obliczeniu.
 
 W postaci wzoru:
-`Net wage = (sum of earning totals) − (sum of deduction totals)`
+`Wynagrodzenie netto = (suma sum przychodów) − (suma sum potrąceń)`
 
 gdzie obie sumy uwzględniają tylko linie, które **nie są oznaczone** jako **„Pomiń”**.
 
@@ -47,6 +47,6 @@ Linie naliczeń:
 3. **Podatek** — suma `15,000.00` (**potrącenie**)
 
 Wtedy:
-`Net wage = 100,000.00 + 10,000.00 − 15,000.00 = 95,000.00`
+`Wynagrodzenie netto = 100,000.00 + 10,000.00 − 15,000.00 = 95,000.00`
 
 Jeśli jakakolwiek linia jest oznaczona jako **„Pomiń”**, jej suma nie jest uwzględniana.

@@ -11,14 +11,14 @@ Każda rejestracja tworzy/aktualizuje rekord **Rejestracji czasu**. W zależnoś
 
 ## Gdzie to znaleźć
 
-- Lista **„Rejestracja czasu”** znajduje się w **„Kadry” → „Operacje” → „Rejestracja czasu”**.
+- Lista **„Rejestracji czasu”** znajduje się w **„Kadry” → „Operacje” → „Rejestracji czasu”**.
 - **Mobilna rejestracja czasu** oraz **kiosk rejestracji czasu** znajdują się w **„Kadry” → „Procesy”**.
 
 ## Co jest zapisywane
 
 Dla każdego rekordu rejestracji czasu system przechowuje:
 
-- **Pracownik** — ustawiany automatycznie na aktualnie zalogowanego pracownika przy tworzeniu rekordu.
+- **Pracownik** — przy rejestracji mobilnej lub ręcznej ustawiany automatycznie na aktualnie zalogowanego pracownika; rekord kiosku jest przypisywany do pracownika rozpoznanego po zeskanowanym identyfikatorze.
 - **Data i godzina Check In** — wymagane.
 - **Data i godzina Check Out** — opcjonalne do momentu, aż pracownik wykona Check Out.
 - **Przepracowane godziny** — czas między Check In a Check Out. W formularzach zaplecza pokazywane jako dziesiętna liczba godzin; na liście mobilnej — w formacie `GG:MM`.
@@ -43,7 +43,7 @@ Formularz pokazuje:
 - duże przyciski **Start** (Check In) / **Stop** (Check Out);
 - bieżący stan (otwarty/zamknięty) na podstawie ostatniego rekordu;
 - listę ostatnich rekordów rejestracji dla aktualnego użytkownika (od najnowszego Check In);
-- sumy dla **Tego tygodnia** i **Tego miesiąca**.
+- sumy **„Tydzień”** i **„Miesiąc”** w bloku **„Suma”**. Sumy obejmują tylko **zamknięte** rekordy (otwarty rekord jest liczony po Check Out); rekord zaliczany jest do tygodnia/miesiąca wg daty **Check In**.
 
 ### Wymóg geolokacji (mobile)
 
@@ -125,9 +125,9 @@ Opcja jest dostępna na karcie pracownika w sekcji **Rejestracja czasu**.
 Formularze do pracy z rekordami rejestracji czasu:
 
 - **Rejestracja czasu** — podgląd pojedynczego rekordu (w tym pól geolokacji i zdjęć, jeżeli są).
-- **Rejestracje czasu** — lista rekordów z filtrami:
-  - **Otwarte** (brak Check Out)
-  - **Zamknięte** (wykonany Check Out)
+- **Rejestracji czasu** — lista rekordów z filtrami:
+  - **„Otwarta”** (brak Check Out) — włączony domyślnie
+  - **„Zamknięta”** (wykonany Check Out) — wybierz go, aby zobaczyć zakończone rekordy
 
 W zależności od uprawnień, użytkownicy mogą ręcznie tworzyć/edytować/usuwać rekordy w back office (np. do korekt).
 
@@ -154,7 +154,7 @@ Przepracowane godziny są obliczane na podstawie czasu **Check In** i **Check Ou
 Sprawdź:
 
 - czy pracownik wykonał Check Out (w przeciwnym razie rekord jest „otwarty”);
-- czy czas na urządzeniu jest poprawny;
+- zapisane znaczniki czasu Check In/Check Out (są ustawiane przez serwer w momencie rejestracji, a nie pobierane z zegara urządzenia);
 - jeśli wprowadzono korekty ręcznie, zweryfikuj daty i godziny Check In/Check Out.
 
 ### Pracownika nie ma na liście kiosku

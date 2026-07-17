@@ -28,7 +28,7 @@ Sections:
 A typical scenario “receive a candidate application → schedule an interview → make a decision”:
 
 1. Open **“Human Resources” → “Operations” → “Applications”**.
-2. Create an application and fill the main details (subject/description, position, department, candidate contact details).
+2. Create an application and fill the main details (subject, position, department, candidate contact details).
 3. Attach files if needed (e.g., a resume).
 4. Schedule an interview and select participants.
 5. After the interview:
@@ -37,10 +37,11 @@ A typical scenario “receive a candidate application → schedule an interview 
 
 A typical scenario “record attendance”:
 
-1. Open **“Human Resources” → “Operations” → “Attendance”**.
-2. Register **“Check In”** and **“Check Out”** using one of the methods:
-   - via mobile attendance (with geolocation, if used);
-   - via the **attendance kiosk** by badge.
+1. Open **“Human Resources” → “Processes”** and choose the registration method:
+   - **mobile attendance** (with geolocation, if used);
+   - the **attendance kiosk** by badge.
+2. Register **“Check In”** and **“Check Out”**.
+3. The created records can be viewed in **“Human Resources” → “Operations” → “Attendances”**.
 
 A typical scenario “calculate payroll and prepare payment”:
 
@@ -56,9 +57,11 @@ The **“Human Resources”** section contains three groups:
 
 - **Operations** — daily work: applications, attendances, payslips, and payslip batches.
 - **Processes** — the attendance kiosk and mobile attendance.
-- **Configuration** — the **Settings** form and the reference directories.
+- **Configuration** — the **Settings** form; the section directories (payslip types and categories, refuse reasons, application tags, application statuses) are located on its tabs.
 
 The available menu items and actions depend on configuration and user permissions.
+
+![The “Human Resources” section in the navigator](images/hr-nav.png)
 
 ## User roles and permissions
 

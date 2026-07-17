@@ -4,14 +4,14 @@ title: Kadry — dokumentacja użytkownika
 
 Ta dokumentacja opisuje sekcję **„Kadry”**: rekrutację (aplikacje kandydatów, rozmowy kwalifikacyjne, decyzje o zatrudnieniu), rejestrację czasu (Check In / Check Out) oraz naliczanie i wypłatę wynagrodzeń (partie odcinków płacowych i odcinki płacowe).
 
-## Contents
+## Spis treści
 
-- [Quick start](#quick-start)
-- [Navigation](#navigation)
-- [User roles and permissions](#user-roles-and-permissions)
-- [Terms](#terms)
+- [Szybki start](#szybki-start)
+- [Nawigacja](#nawigacja)
+- [Role użytkowników i uprawnienia](#role-użytkowników-i-uprawnienia)
+- [Pojęcia](#pojęcia)
 
-Sections:
+Sekcje:
 
 - [Rekrutacja](recruitment.md)
 - [Rejestracja czasu](attendance.md)
@@ -23,12 +23,12 @@ Sections:
   - [Wypłata wynagrodzenia i kontrola płatności](payroll-payments.md)
 - [Ustawienia](settings.md)
 
-## Quick start
+## Szybki start
 
 Typowy scenariusz „otrzymanie aplikacji kandydata → umówienie rozmowy kwalifikacyjnej → decyzja”:
 
 1. Otwórz **„Kadry” → „Operacje” → „Aplikacje”**.
-2. Utwórz aplikację i wypełnij podstawowe dane (temat/opis, stanowisko, dział, dane kontaktowe kandydata).
+2. Utwórz aplikację i wypełnij podstawowe dane (temat, stanowisko, dział, dane kontaktowe kandydata).
 3. Dołącz pliki, jeśli potrzeba (np. CV).
 4. Umów rozmowę kwalifikacyjną i wybierz uczestników.
 5. Po rozmowie kwalifikacyjnej:
@@ -37,30 +37,31 @@ Typowy scenariusz „otrzymanie aplikacji kandydata → umówienie rozmowy kwali
 
 Typowy scenariusz „rejestrowanie czasu”:
 
-1. Otwórz **„Kadry” → „Operacje” → „Rejestracja czasu”**.
-2. Zarejestruj **„Check In”** i **„Check Out”** jedną z metod:
-   - przez rejestrację czasu na urządzeniu mobilnym (z geolokacją, jeśli jest używana);
-   - przez **kiosk rejestracji czasu** z użyciem identyfikatora.
+1. Otwórz **„Kadry” → „Procesy”** i wybierz metodę rejestracji:
+   - **mobilna rejestracja czasu** (z geolokacją, jeśli jest używana);
+   - **kiosk rejestracji czasu** z użyciem identyfikatora.
+2. Zarejestruj **„Check In”** i **„Check Out”**.
+3. Utworzone wpisy można przeglądać w **„Kadry” → „Operacje” → „Rejestracji czasu”**.
 
 Typowy scenariusz „naliczenie płac i przygotowanie wypłaty”:
 
 1. Otwórz **„Kadry” → „Operacje” → „Partii odcinków płacowych”**.
-2. Utwórz partię, wskaż przedsiębiorstwo, okres oraz typ.
+2. Utwórz partię, wskaż firmę, okres oraz typ.
 3. Uruchom **„Wygeneruj”** — system utworzy odcinki płacowe dla pracowników.
 4. Sprawdź odcinki płacowe i sumę **„Wynagrodzenie netto”**.
 5. Jeśli w organizacji rejestrowane są płatności w systemie — zarejestruj płatność z odcinka płacowego.
 
-## Navigation
+## Nawigacja
 
 Sekcja **„Kadry”** zawiera trzy grupy:
 
 - **Operacje** — praca bieżąca: aplikacje, rejestracja czasu, odcinki płacowe i partie odcinków płacowych.
 - **Procesy** — kiosk rejestracji czasu i mobilna rejestracja czasu.
-- **Konfiguracja** — formularz **„Ustawienia”** i katalogi referencyjne.
+- **Konfiguracja** — formularz **„Ustawienia”**; katalogi sekcji (typy odcinków płacowych, kategorie wynagrodzenia, powody odmowy, tagi i statusy aplikacji) znajdują się na jego zakładkach.
 
 Dostępne pozycje menu i akcje zależą od konfiguracji i uprawnień użytkownika.
 
-## User roles and permissions
+## Role użytkowników i uprawnienia
 
 Dokładny zestaw uprawnień zależy od ustawień w Twojej organizacji. Typowy podział odpowiedzialności:
 
@@ -72,7 +73,7 @@ Dokładny zestaw uprawnień zależy od ustawień w Twojej organizacji. Typowy po
 
 Jeśli niektóre akcje nie są dostępne (np. „Zatrudnij”, „Odmów”, „Wygeneruj” lub rejestracja płatności), zwykle wynika to z ograniczeń uprawnień lub konfiguracji sekcji.
 
-## Terms
+## Pojęcia
 
 #### Aplikacja
 

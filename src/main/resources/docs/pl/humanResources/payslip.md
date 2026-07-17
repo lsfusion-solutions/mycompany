@@ -13,10 +13,10 @@ Odcinek płacowy jest dokumentem naliczenia wynagrodzenia pracownika za okres. Z
 Przed analizą naliczeń upewnij się, że w odcinku płacowym poprawnie wskazano:
 
 - **Pracownik**;
-- **Przedsiębiorstwo**;
+- **Firma**;
 - **Okres**;
 - **Typ** (na przykład Standardowy);
-- **Waluta** i **Termin płatności**.
+- **Waluta** i **Termin**.
 
 Jeśli w systemie istnieje tylko jeden typ odcinka płacowego, zostanie domyślnie ustawiony automatycznie.
 
@@ -31,6 +31,8 @@ Wiersze **„Obliczanie wynagrodzenia”** pokazują, **jak została utworzona k
 
 To, czy wiersz jest **przychodem** czy **potrąceniem**, zależy od jego **kategorii**: kategoria oznaczona jako potrącenie zmniejsza „Wynagrodzenie netto”.
 
+Ręczne wiersze dodaje się przyciskiem **„Add”** (klawisz `Insert`), a usuwa akcją **„Usuń”** wiersza.
+
 ### Flagi „Pomiń” i „Ukryj”
 
 Flagi te należą do **kategorii**, a nie do pojedynczego wiersza:
@@ -42,7 +44,7 @@ Szczegółowa reguła: [Jak obliczana jest suma „Wynagrodzenie netto”](net-w
 
 ## Kopiowanie odcinka płacowego
 
-Akcja **„Kopiuj”** tworzy nowy odcinek płacowy na podstawie bieżącego, kopiując główne pola i ręcznie wprowadzone wiersze. Przychody wygenerowane z wpisów przepracowanego czasu z projektów nie są kopiowane — wygeneruj je ponownie na nowym odcinku płacowym. Po skopiowaniu sprawdź okres.
+Akcja **„Kopiuj”** tworzy nowy odcinek płacowy na podstawie bieżącego, kopiując **okres**, **pracownika**, **firmę**, **typ** oraz ręcznie wprowadzone wiersze. Numer jest nadawany na nowo; termin, powiązanie z partią odcinków płacowych i waluta (ustawiana na domyślną) nie są przenoszone. Przychody wygenerowane z wpisów przepracowanego czasu z projektów nie są kopiowane; akcja **„Wygeneruj”** jest dostępna tylko w partii odcinków płacowych, więc aby je przeliczyć, powiąż nowy odcinek z partią (pole **„Partia odcinków płacowych”**) i uruchom tam **„Wygeneruj”** — albo wprowadź wiersze ręcznie. Po skopiowaniu sprawdź okres.
 
 ## Gdzie sprawdzać dane przepracowanego czasu
 

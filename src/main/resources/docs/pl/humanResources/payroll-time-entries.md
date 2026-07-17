@@ -14,12 +14,14 @@ Jeśli wpis przepracowanego czasu został utworzony **bez projektu**, **nie ucze
 
 ## Jak obliczana jest kwota
 
-Dla każdego projektu wyliczany jest przychód:
+Kwota jest liczona **dla każdego wpisu przepracowanego czasu**: `godziny wpisu × „Wynagrodzenie za godzinę”` (stawka obowiązująca dla tego wpisu), z zaokrągleniem do 2 miejsc po przecinku.
 
-- **godziny** — łączna liczba godzin wg wpisów przepracowanego czasu pracownika za okres (dla danego projektu);
-- **kwota** — `hours × „Wynagrodzenie za godzinę”`.
+Następnie dla każdego projektu tworzona jest linia przychodu:
 
-Kwota przychodu jest zaokrąglana do 2 miejsc po przecinku.
+- **ilość** — łączna liczba godzin wg wpisów przepracowanego czasu pracownika za okres (dla danego projektu);
+- **suma** — suma kwot wyliczonych dla wpisów.
+
+Ponieważ stawka jest ustalana per wpis, wpisy tego samego projektu mogą mieć różne stawki (np. gdy stawka pracownika zmieniła się w trakcie okresu).
 
 ## Skąd pochodzi „Wynagrodzenie za godzinę”
 

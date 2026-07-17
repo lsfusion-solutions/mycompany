@@ -14,12 +14,14 @@ If a time entry is created **without a project**, it **does not participate** in
 
 ## How the amount is calculated
 
-For each project, an earning is calculated:
+The amount is calculated **per time entry**: `entry hours × “Salary per hour”` (the rate effective for that entry), rounded to 2 decimals.
 
-- **hours** — total hours by employee time entries for the period (for that project);
-- **amount** — `hours × “Salary per hour”`.
+Then, for each project, an earning line is formed:
 
-The earning amount is rounded to 2 decimals.
+- **quantity** — total hours by employee time entries for the period (for that project);
+- **total** — the sum of the per-entry amounts.
+
+Since the rate is resolved per entry, entries of the same project may use different rates (e.g., when the employee rate changed during the period).
 
 ## Where the “Salary per hour” rate comes from
 
