@@ -6,6 +6,8 @@ The section is intended for maintaining the list of vehicles and viewing all rel
 
 A vehicle card is an “aggregation point” for a specific car: it is convenient to control who is currently assigned to the vehicle, what services were done, which contracts are active, and to store documents.
 
+![Vehicle card](images/vehicle-card.png)
+
 ## Where to find it
 
 Open **“Fleet” → “Operations” → “Vehicles”**.
@@ -14,11 +16,15 @@ To open a vehicle card, select a row in the list and use **Edit** (or open the r
 
 ## Vehicles list
 
-The list usually shows the main vehicle data (vehicle model, license plate, company, vehicle category, fuel type, etc.).
+The list usually shows the main vehicle data (vehicle model, license plate, company, vehicle category, fuel type, etc.), as well as the current [driver](drivers.md) and [tags](settings.md).
+
+In addition, the list can show columns for each [vehicle service type](settings.md) (the date and odometer value of the latest service of that type) and for each vehicle contract type (the number and dates of the latest contract of that type) — the set of columns depends on the configured types and the system version.
+
+![Vehicles list](images/vehicles-list.png)
 
 Typical actions in the list:
 
-- **New** — add a new vehicle.
+- **Add** — add a new vehicle.
 - **Edit** — open the selected vehicle card.
 - **Delete** — delete the record (if permitted by rights and there are no restrictions due to related data).
 
@@ -31,7 +37,7 @@ For quick search and control, use filters and sorting. In practice, they most of
 
 ## Creating a vehicle
 
-1. Click **New**.
+1. Click **Add**.
 2. Fill in required and main fields (depending on configuration):
    - vehicle model;
    - license plate;
@@ -54,7 +60,7 @@ To change data:
 2. Click **Edit**.
 3. Make changes and save the card.
 
-Deletion is usually restricted by permissions and may be unavailable if the vehicle already has history (driver assignments, services, contracts, files). If deletion is prohibited, use your organizational rules (for example, a note or a “Not used” tag), if this is the practice in your company.
+Deletion is usually restricted by permissions. Note that deleting a vehicle also deletes its driver assignments, services, files, and comments, and clears the vehicle reference in contracts. So for a vehicle with history, instead of deleting, prefer your organizational rules (for example, a note or a “Not used” tag), if this is the practice in your company.
 
 ## Tags
 
@@ -78,8 +84,8 @@ You can attach files to a vehicle (for example, photos, scans of documents).
 Typical workflow:
 
 1. Open the vehicle card.
-2. Go to the **Files** block.
-3. Click **File** to add a file and, if needed, fill in the description.
+2. Go to the **Files** tab.
+3. Click **File**, choose a file and, if needed, fill in the description.
 
 The ability to add/delete files depends on permissions.
 
@@ -96,13 +102,13 @@ The vehicle card usually contains blocks:
 - **[Vehicle services](service.md)** — service and expense history.
 - **[Contracts](contracts.md)** — linked contracts.
 
-To add a record in a related block, use **New** in the corresponding table.
+To add a record in a related block, use **Add** in the corresponding table.
 
-For the **Contracts** block on the vehicle card, use **Add**.
+The right side of the card also shows the **Comments** panel — use it to discuss the specific vehicle.
 
 ### How to understand who the “current driver” is
 
-The current driver is determined from driver assignments for the selected date (usually the current date). If an assignment is closed with an end date, after that date the driver is considered not assigned.
+The current driver is determined from driver assignments as of the current date. If an assignment is closed with an end date, after that date the driver is considered not assigned.
 
 If the current driver is displayed incorrectly:
 

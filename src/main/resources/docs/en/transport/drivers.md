@@ -10,11 +10,13 @@ A driver assignment is stored as a separate record with a validity period. This 
 
 Open **“Fleet” → “Operations” → “Drivers”**.
 
+![Drivers list](images/drivers-list.png)
+
 ## Assigning a driver to a vehicle
 
 The assignment is set up as a record with a validity period.
 
-1. Click **New**.
+1. Click **Add**.
 2. Specify:
    - vehicle;
    - **Date** and, if needed, **Date to**;
@@ -28,7 +30,7 @@ When you select a vehicle, the **Employee** is pre-filled with the vehicle’s p
 ### How to fill the assignment period
 
 - **Date** — the start date of responsibility/vehicle usage.
-- **Date to** — the end date of the assignment.
+- **Date to** — the end date of the assignment. The end date is inclusive: on that day the driver is still considered assigned, so it is better to start the next assignment from the following day.
 
 If the driver is assigned for an indefinite period, the end date is usually left empty. When the driver changes, the previous assignment is closed with an end date.
 

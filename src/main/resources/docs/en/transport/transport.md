@@ -25,14 +25,14 @@ A typical scenario “add a vehicle and start tracking”:
 
 1. Open **“Fleet” → “Operations” → “Vehicles”**.
 2. If required values are missing in selection lists (for example, a model, category, or fuel type), first fill in the directories under **“Fleet” → “Configuration”** (see [Configuration](settings.md)).
-3. Click **New** and fill in the main fields (usually: vehicle model, license plate, company).
+3. Click **Add** and fill in the main fields (usually: vehicle model, license plate, company).
 4. If needed, add **[tags](vehicles.md)** and attach **[files](vehicles.md)** (photos/scans of documents).
 5. Assign a driver (see **“Fleet” → “Operations” → “Drivers”**) and specify the assignment period.
 6. When work/service is performed, create a vehicle service record (see **“Fleet” → “Operations” → “Vehicle services”**) and record the date, **[Type](settings.md)**, and **[Odometer value](service.md)**.
 
 A typical scenario “record service expenses”:
 
-1. Click **New** to create a vehicle service record and enter the cost (price/amount).
+1. Click **Add** to create a vehicle service record and enter the cost (price/amount).
 2. If your system uses **[Bill](../invoicing/bills.md)** documents, specify the **[Vendor](../masterdata/partners.md)** and the **[Bill](../invoicing/bills.md)** (if it is used in your organization).
 3. To review history, use the vehicle card: it collects driver assignments, services, and related contracts.
 
@@ -57,7 +57,7 @@ If some actions are not available (new/edit/delete, attaching files), this is us
 
 Most often the restrictions look like this:
 
-- there are no **New/Edit/Delete** buttons in lists;
+- there are no **Add/Edit/Delete** buttons in lists;
 - you cannot add or delete a file in a card;
 - you cannot create related records (for example, a driver assignment or a vehicle service) from the vehicle card.
 

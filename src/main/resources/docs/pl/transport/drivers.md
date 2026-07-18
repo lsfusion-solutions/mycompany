@@ -14,7 +14,7 @@ Otwórz **„Flota” → „Operacje” → „Kierowcy”**.
 
 Przypisanie jest tworzone jako rekord z okresem obowiązywania.
 
-1. Kliknij **Nowy**.
+1. Kliknij **„Add”**.
 2. Wskaż:
    - pojazd;
    - **Data** oraz, jeśli trzeba, **Data do**;
@@ -28,7 +28,7 @@ Po wybraniu pojazdu pole **„Pracownik”** jest wstępnie wypełniane poprzedn
 ### Jak wypełniać okres przypisania
 
 - **Data** — data rozpoczęcia odpowiedzialności/użytkowania pojazdu.
-- **Data do** — data zakończenia przypisania.
+- **Data do** — data zakończenia przypisania. Data końcowa jest liczona włącznie: w tym dniu kierowca jest jeszcze uznawany za przypisanego, dlatego kolejne przypisanie lepiej zaczynać od następnego dnia.
 
 Jeśli kierowca jest przypisany na czas nieokreślony, data końcowa zwykle pozostaje pusta. Przy zmianie kierowcy poprzednie przypisanie zamyka się datą końcową.
 

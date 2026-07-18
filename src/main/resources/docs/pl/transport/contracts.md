@@ -16,25 +16,27 @@ Lista pokazuje umowy, których typ pozwala na powiązanie pojazdu.
 
 Możesz utworzyć umowę:
 
-- z listy **„Umowy na pojazdy”** (użyj **Nowy**);
-- z karty pojazdu (w bloku **Umowy** — użyj **Dodaj**).
+- z listy **„Umowy na pojazdy”** (użyj **„Add”**);
+- z karty pojazdu (w bloku **Umowy** — użyj **„Add”**).
 
 Zalecana opcja dla „powiązania z konkretnym pojazdem” to utworzenie umowy z karty pojazdu: wtedy pole pojazdu zostanie wypełnione automatycznie.
 
-Podczas wypełniania zwykle podaje się:
+Podczas wypełniania wskaż:
 
-- typ umowy;
-- daty obowiązywania;
-- numer (jeśli używany);
-- firmę i partnera;
-- kwoty (np. koszt początkowy i płatność okresową — jeśli są przewidziane przez typ umowy).
+- typ umowy (jeśli w systemie istnieje dokładnie jeden typ umowy, jest on podstawiany automatycznie; w przeciwnym razie wybierz właściwy typ);
+- **Datę** (pole obowiązkowe) i datę zakończenia;
+- **Numer** (pole obowiązkowe);
+- **Firmę** i **Partnera** (pola obowiązkowe; firma jest podstawiana domyślnie);
+- kwoty (np. **Koszt początkowy** i **Rata** wraz z **Okresem płatności** — jeśli są przewidziane przez typ umowy).
+
+Karta umowy zawiera też zakładkę **Tekst** (treść umowy), blok **Pliki** (załączniki — skany, aneksy) oraz panel **Komentarze**.
 
 ### Typ umowy i dostępność pola „Pojazd”
 
 W niektórych organizacjach nie wszystkie typy umów zakładają powiązanie z pojazdem. Wtedy:
 
 - pole wyboru pojazdu może być ukryte lub niedostępne;
-- przy próbie wskazania pojazdu dla niewłaściwego typu umowy system może pokazać komunikat: **„Wybrany typ umowy nie pozwala wybrać pojazdu”**.
+- przy próbie wskazania pojazdu dla niewłaściwego typu umowy system pokaże komunikat **„Wybrany typ umowy nie pozwala na korzystanie z pojazdu”**.
 
 Jeśli napotkasz takie ograniczenie, sprawdź, czy wybrano właściwy typ umowy, lub skontaktuj się z administratorem w celu konfiguracji typów.
 
@@ -42,7 +44,7 @@ Jeśli napotkasz takie ograniczenie, sprawdź, czy wybrano właściwy typ umowy,
 
 Aby kontrolować aktywne umowy, ważne jest wypełnianie dat rozpoczęcia i zakończenia. Jeśli umowa się zakończyła, ale data końcowa nie jest wypełniona, może pojawiać się w wyborach jako „aktywna”.
 
-Jeśli umowa przewiduje płatności okresowe (np. miesięczną ratę), koniecznie uzupełnij okresowość — pomaga to poprawnie interpretować warunki.
+Jeśli umowa przewiduje płatności okresowe (np. miesięczną ratę), uzupełnij także **Okres płatności** — pomaga to poprawnie interpretować warunki.
 
 ## Przegląd umów na karcie pojazdu
 
@@ -51,4 +53,4 @@ Karta pojazdu pokazuje listę powiązanych umów. Jest to wygodne do kontroli da
 Stamtąd wygodnie jest również:
 
 - szybko otworzyć kartę umowy;
-- dodać nową umowę powiązaną z wybranym pojazdem (użyj **Dodaj**).
+- dodać nową umowę powiązaną z wybranym pojazdem (użyj **„Add”**).

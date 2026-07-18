@@ -10,17 +10,19 @@ Karta pojazdu to „punkt agregacji” dla konkretnego samochodu: wygodnie jest 
 
 Otwórz **„Flota” → „Operacje” → „Pojazdy”**.
 
-Aby otworzyć kartę pojazdu, wybierz wiersz na liście i użyj **Edytuj** (albo otwórz rekord dwuklikiem, jeśli jest to praktykowane w Twojej organizacji).
+Aby otworzyć kartę pojazdu, wybierz wiersz na liście i użyj **„Edit”** (albo otwórz rekord dwuklikiem, jeśli jest to praktykowane w Twojej organizacji). Przyciski list (**„Add”**, **„Edit”**, **„Delete”**) pochodzą z platformy i są wyświetlane po angielsku.
 
 ## Lista pojazdów
 
-Lista zwykle pokazuje główne dane pojazdu (model pojazdu, numer rejestracyjny, firma, kategoria pojazdu, typ paliwa itp.).
+Lista zwykle pokazuje główne dane pojazdu (model pojazdu, numer rejestracyjny, firma, kategoria pojazdu, typ paliwa itp.), a także aktualnego [kierowcę](drivers.md) i [tagi](settings.md).
+
+Dodatkowo lista może pokazywać kolumny dla każdego [typu serwisu pojazdu](settings.md) (data i wskazanie drogomierza ostatniego serwisu danego typu) oraz dla każdego typu umów na pojazdy (numer i daty ostatniej umowy danego typu) — zestaw kolumn zależy od skonfigurowanych typów i wersji systemu.
 
 Typowe akcje na liście:
 
-- **Nowy** — dodać nowy pojazd.
-- **Edytuj** — otworzyć kartę wybranego pojazdu.
-- **Usuń** — usunąć rekord (jeśli jest to dozwolone prawami i nie ma ograniczeń wynikających z danych powiązanych).
+- **„Add”** — dodać nowy pojazd.
+- **„Edit”** — otworzyć kartę wybranego pojazdu.
+- **„Delete”** — usunąć rekord (jeśli jest to dozwolone prawami i nie ma ograniczeń wynikających z danych powiązanych).
 
 Do szybkiego wyszukiwania i kontroli używaj filtrów oraz sortowania. W praktyce najczęściej filtruje się:
 
@@ -31,18 +33,18 @@ Do szybkiego wyszukiwania i kontroli używaj filtrów oraz sortowania. W praktyc
 
 ## Tworzenie pojazdu
 
-1. Kliknij **Nowy**.
+1. Kliknij **„Add”**.
 2. Wypełnij wymagane i główne pola (w zależności od konfiguracji):
-   - model pojazdu;
-   - numer rejestracyjny;
-   - firma;
+   - **Model pojazda**;
+   - **Tablica rejestracyjna**;
+   - **Firma**;
    - kategoria pojazdu, typ paliwa, rok produkcji i inne cechy.
 3. Zapisz rekord.
 
 ### Rekomendacje wypełniania
 
-- **Model pojazdu**. Jeśli brakuje wymaganego modelu, zwykle dodaje się go w **„Flota” → „Konfiguracja”** (jeśli masz uprawnienia).
-- **Numer rejestracyjny**. Wprowadzaj go w jednym formacie przyjętym w organizacji, aby ułatwić wyszukiwanie.
+- **Model pojazda**. Jeśli brakuje wymaganego modelu, zwykle dodaje się go w **„Flota” → „Konfiguracja”** (jeśli masz uprawnienia).
+- **Tablica rejestracyjna**. Wprowadzaj numer w jednym formacie przyjętym w organizacji, aby ułatwić wyszukiwanie.
 - **VIN**. Jeśli jest używany, wpisuj go zgodnie z dokumentami, bez spacji i dodatkowych znaków.
 - **Kategoria, typ paliwa, rok produkcji i inne cechy** pomagają budować raporty i planować obsługę.
 
@@ -51,10 +53,10 @@ Do szybkiego wyszukiwania i kontroli używaj filtrów oraz sortowania. W praktyc
 Aby zmienić dane:
 
 1. Wybierz pojazd na liście.
-2. Kliknij **Edytuj**.
+2. Kliknij **„Edit”**.
 3. Wprowadź zmiany i zapisz kartę.
 
-Usuwanie jest zwykle ograniczone uprawnieniami i może być niedostępne, jeśli pojazd ma już historię (przypisania kierowców, serwisy, umowy, pliki). Jeśli usuwanie jest zabronione, stosuj zasady organizacyjne (np. notatkę lub tag „Nie używany”), jeśli jest to praktyka w Twojej firmie.
+Usuwanie jest zwykle ograniczone uprawnieniami. Pamiętaj: usunięcie pojazdu usuwa także jego przypisania kierowców, serwisy, pliki i komentarze, a w umowach czyści powiązanie z pojazdem. Dlatego dla pojazdu z historią zamiast usuwania lepiej stosować zasady organizacyjne (np. notatkę lub tag „Nie używany”), jeśli jest to praktyka w Twojej firmie.
 
 ## Tagi
 
@@ -78,8 +80,8 @@ Do pojazdu możesz dołączać pliki (np. zdjęcia, skany dokumentów).
 Typowy przebieg pracy:
 
 1. Otwórz kartę pojazdu.
-2. Przejdź do bloku **Pliki**.
-3. Kliknij **Plik**, aby dodać plik i, jeśli trzeba, wypełnij opis.
+2. Przejdź na zakładkę **Pliki**.
+3. Kliknij **Plik**, wybierz plik i, jeśli trzeba, wypełnij opis.
 
 Możliwość dodawania/usuwania plików zależy od uprawnień.
 
@@ -96,13 +98,13 @@ Karta pojazdu zwykle zawiera bloki:
 - **[Serwisy pojazdów](service.md)** — historia serwisów i kosztów.
 - **[Umowy](contracts.md)** — powiązane umowy.
 
-Aby dodać rekord w bloku powiązanym, użyj **Nowy** w odpowiedniej tabeli.
+Aby dodać rekord w bloku powiązanym, użyj **„Add”** w odpowiedniej tabeli.
 
-Dla bloku **Umowy** na karcie pojazdu użyj **Dodaj**.
+Po prawej stronie karty dostępny jest też panel **Komentarze** — służy do dyskusji o konkretnym pojeździe.
 
 ### Jak zrozumieć, kto jest „aktualnym kierowcą”
 
-Aktualny kierowca jest określany na podstawie przypisań kierowców dla wybranej daty (zwykle bieżącej). Jeżeli przypisanie jest zamknięte datą końcową, po tej dacie kierowca jest uznawany za nieprzypisanego.
+Aktualny kierowca jest określany na podstawie przypisań kierowców na bieżącą datę. Jeżeli przypisanie jest zamknięte datą końcową, po tej dacie kierowca jest uznawany za nieprzypisanego.
 
 Jeśli aktualny kierowca jest wyświetlany niepoprawnie:
 

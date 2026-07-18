@@ -6,10 +6,10 @@ Ta dokumentacja opisuje, jak pracować z sekcją **„Flota”**: utrzymywanie l
 
 ## Spis treści
 
-- [Szybki start](#quick-start)
-- [Nawigacja](#navigation)
-- [Role użytkowników i uprawnienia](#user-roles-and-permissions)
-- [Terminy](#terms)
+- [Szybki start](#szybki-start)
+- [Nawigacja](#nawigacja)
+- [Role użytkowników i uprawnienia](#role-użytkowników-i-uprawnienia)
+- [Terminy](#terminy)
 
 Sekcje:
 
@@ -25,14 +25,14 @@ Typowy scenariusz „dodać pojazd i zacząć śledzić”:
 
 1. Otwórz **„Flota” → „Operacje” → „Pojazdy”**.
 2. Jeśli na listach wyboru brakuje wymaganych wartości (np. modelu, kategorii lub typu paliwa), najpierw uzupełnij katalogi w **„Flota” → „Konfiguracja”** (zobacz [Konfiguracja](settings.md)).
-3. Kliknij **Nowy** i wypełnij główne pola (zwykle: model pojazdu, numer rejestracyjny, firma).
+3. Kliknij **„Add”** i wypełnij główne pola (zwykle: **Model pojazda**, **Tablica rejestracyjna**, **Firma**).
 4. W razie potrzeby dodaj **[tagi](vehicles.md)** i dołącz **[pliki](vehicles.md)** (zdjęcia/skany dokumentów).
 5. Przypisz kierowcę (zobacz **„Flota” → „Operacje” → „Kierowcy”**) i określ okres przypisania.
 6. Gdy wykonywane są prace/usługa, utwórz rekord serwisu pojazdu (zobacz **„Flota” → „Operacje” → „Serwisy pojazdów”**) i wpisz datę, **[Typ](settings.md)** oraz **[Wskazanie drogomierza](service.md)**.
 
 Typowy scenariusz „zarejestrować koszty serwisu”:
 
-1. Kliknij **Nowy**, aby utworzyć rekord serwisu pojazdu i wprowadź koszt (cena/kwota).
+1. Kliknij **„Add”**, aby utworzyć rekord serwisu pojazdu i wprowadź koszt (cena/kwota).
 2. Jeśli w systemie używane są dokumenty **[Faktura zakupu](../invoicing/bills.md)** dla wydatków serwisowych, wskaż **[Dostawcę](../masterdata/partners.md)** oraz **[Fakturę zakupu](../invoicing/bills.md)** (jeśli jest używana w Twojej organizacji).
 3. Aby przeglądać historię, używaj karty pojazdu: zbiera ona przypisania kierowców, serwisy i powiązane umowy.
 
@@ -57,7 +57,7 @@ Jeśli niektóre akcje nie są dostępne (nowy/edycja/usuwanie, dołączanie pli
 
 Najczęściej ograniczenia wyglądają tak:
 
-- w listach nie ma przycisków **Nowy/Edytuj/Usuń**;
+- w listach nie ma przycisków **„Add”/„Edit”/„Delete”** (przyciski platformy są wyświetlane po angielsku);
 - nie można dodać ani usunąć pliku w karcie;
 - nie można tworzyć rekordów powiązanych (np. przypisania kierowcy lub serwisu pojazdu) z karty pojazdu.
 

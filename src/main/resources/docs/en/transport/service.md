@@ -12,9 +12,11 @@ Open **“Fleet” → “Operations” → “Vehicle services”**.
 
 Service history is also usually available in the vehicle card in the corresponding block.
 
+![Vehicle services list](images/services-list.png)
+
 ## Creating a service record
 
-1. Click **New**.
+1. Click **Add**.
 2. Fill in the main fields:
    - date;
    - vehicle;
@@ -27,6 +29,8 @@ Service history is also usually available in the vehicle card in the correspondi
 3. Save the record.
 
 When you select a vehicle, the **[Vendor](../masterdata/partners.md)** and **Odometer value** are pre-filled from the latest service of that vehicle (if there is one) — check and correct them if needed.
+
+![Vehicle service card](images/service-card.png)
 
 ### How to fill the cost
 
@@ -47,7 +51,7 @@ If your organization maintains **[Bill](../invoicing/bills.md)** documents for s
 
 The available fields and filling rules depend on configuration and permissions.
 
-When you link a service to a **[Bill](../invoicing/bills.md)**, the system copies the **[Vendor](../masterdata/partners.md)**, **Amount**, and **Tax** from the **[Bill](../invoicing/bills.md)** into the still-empty fields of the service. Adjust the values manually afterwards if needed.
+When you link a service to a **[Bill](../invoicing/bills.md)**, the system copies the **Date**, **[Vendor](../masterdata/partners.md)**, **Amount**, and **Tax** from the **[Bill](../invoicing/bills.md)** into the still-empty fields of the service. Adjust the values manually afterwards if needed.
 
 A vehicle service can also be added directly from a **[Bill](../invoicing/bills.md)** card: for bill types that support vehicles, the bill card shows a **“Vehicle services”** block.
 
@@ -68,5 +72,7 @@ To quickly create a similar record (for example, a recurring service):
 1. Open the vehicle service card.
 2. Use the **Copy** action.
 3. Change the date, **Odometer value**, and **Amount/Tax** as needed.
+
+The new record receives the vehicle, date, vendor, type, odometer value, amount, note, and description. The quantity, price, and tax are not copied — fill them in again if needed.
 
 Copying is convenient for recurring services (for example, seasonal tire replacement) so that you do not fill in the same fields manually.

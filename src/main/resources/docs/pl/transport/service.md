@@ -14,7 +14,7 @@ Historia serwisów jest zwykle dostępna również na karcie pojazdu w odpowiedn
 
 ## Tworzenie rekordu serwisu
 
-1. Kliknij **Nowy**.
+1. Kliknij **„Add”**.
 2. Wypełnij główne pola:
    - data;
    - pojazd;
@@ -47,7 +47,7 @@ Jeśli w organizacji prowadzone są dokumenty **[Faktura zakupu](../invoicing/bi
 
 Dostępne pola i zasady wypełniania zależą od konfiguracji i uprawnień.
 
-Po powiązaniu serwisu z **[Fakturą zakupu](../invoicing/bills.md)** system przenosi do jeszcze niewypełnionych pól serwisu **[Dostawcę](../masterdata/partners.md)**, **Kwotę** i **Podatek** z faktury. W razie potrzeby wartości można skorygować ręcznie.
+Po powiązaniu serwisu z **[Fakturą zakupu](../invoicing/bills.md)** system przenosi do jeszcze niewypełnionych pól serwisu **Datę**, **[Dostawcę](../masterdata/partners.md)**, **Kwotę** i **Podatek** z faktury. W razie potrzeby wartości można skorygować ręcznie.
 
 Serwis pojazdu można też dodać bezpośrednio z karty **[Faktury zakupu](../invoicing/bills.md)**: dla typów dokumentów obsługujących pojazdy karta faktury pokazuje blok **„Serwisy pojazdów”**.
 
@@ -68,5 +68,7 @@ Aby szybko utworzyć podobny rekord (np. powtarzający się serwis):
 1. Otwórz kartę serwisu pojazdu.
 2. Użyj akcji **Kopiuj**.
 3. Zmień datę, **Wskazanie drogomierza** oraz **Kwotę/Podatek** według potrzeb.
+
+Do nowego rekordu przenoszone są pojazd, data, dostawca, typ, wskazanie drogomierza, kwota, notatka i opis. Ilość, cena i podatek nie są kopiowane — w razie potrzeby wypełnij je ponownie.
 
 Kopiowanie jest wygodne dla cyklicznych serwisów (np. sezonowej wymiany opon), aby nie wypełniać tych samych pól ręcznie.

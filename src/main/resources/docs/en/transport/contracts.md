@@ -12,22 +12,26 @@ Open **“Fleet” → “Operations” → “Vehicle contracts”**.
 
 The list shows contracts whose type allows linking a vehicle.
 
+![Vehicle contracts list](images/contracts-list.png)
+
 ## Creating a contract
 
 You can create a contract:
 
-- from the **“Vehicle contracts”** list (use **New**);
+- from the **“Vehicle contracts”** list (use **Add**);
 - from the vehicle card (in the **Contracts** block — use **Add**).
 
 The recommended option for “linking to a specific vehicle” is to create a contract from the vehicle card: then the vehicle field will be filled automatically.
 
-When filling in, they usually specify:
+When filling in, specify:
 
-- contract type;
-- validity dates;
-- number (if used);
-- company and partner;
-- amounts (for example, initial cost and periodic payment — if provided by the contract type).
+- contract type (if exactly one contract type exists in the system, it is pre-filled automatically; otherwise select the required type);
+- **Date** (required) and the end date;
+- **Number** (required);
+- **Company** and **Partner** (required; the company is pre-filled with the default one);
+- amounts (for example, **Activation cost** and **Recurring cost** with the **Recurring period** — if provided by the contract type).
+
+The contract card also has the **Text** tab (for the contract text), the **Files** block (attachments — scans, annexes), and the **Comments** panel.
 
 ### Contract type and availability of the “Vehicle” field
 
@@ -42,7 +46,7 @@ If you encounter such a restriction, check whether the contract type is selected
 
 To control active contracts, it is important to fill in the start and end dates. If a contract has ended but the end date is not filled in, it may appear in selections as “active”.
 
-If the contract uses periodic payments (for example, a monthly payment), be sure to fill in the periodicity — this helps interpret the conditions correctly.
+If the contract uses periodic payments (for example, a monthly payment), also fill in the **Recurring period** — this helps interpret the conditions correctly.
 
 ## Viewing contracts on the vehicle card
 
