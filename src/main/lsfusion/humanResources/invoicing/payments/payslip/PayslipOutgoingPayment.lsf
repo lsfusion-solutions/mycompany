@@ -11,6 +11,10 @@ namePayslipOutgoingPaymentType 'Outgoing payment type for payslip' () = name(pay
 EXTEND FORM options PROPERTIES() namePayslipOutgoingPaymentType;
 DESIGN options { commons { MOVE PROPERTY(namePayslipOutgoingPaymentType()); } }
 
+payslipDebt 'Include in payslip debt' = DATA BOOLEAN (OutgoingPaymentType);
+
+EXTEND FORM outgoingPaymentType PROPERTIES(o) payslipDebt;
+
 registerPayment 'Register Payment' (Payslip ps) {
     APPLY;
     IF canceled() THEN RETURN;

@@ -28,10 +28,12 @@ The **“Total”** tab of the list shows summary indicators for a date range:
 - **“Paid”** — sum of the registered payments in the range;
 - **“Left”** — “Net wage” minus “Paid”.
 
+The **“Paid”** amount counts payments by their **payment type**: payments of the payroll payment type (see [Settings](settings.md)) and payments of any type with the **“Include in payslip debt”** flag enabled on the outgoing payment type card. If a payment of another type (for example, a loan) is allocated to a payslip without this flag on its type, the payslip card shows it as paid, but the “Paid”/“Left” totals on this tab do not change.
+
 The **“Payment”** button (the `Insert` key) of the payments list on this tab creates an outgoing payment for the selected employee: the amount is prefilled with the employee’s **“Left”** for the selected range, but the payment is initially allocated across **all** the employee’s payslips regardless of the range — review the allocations before saving.
 
 #### What to pay attention to
 
 - If payment for a payslip is registered partially, **“Left”** will not become zero.
 - If an employee has multiple payslips in the range, the control sums all of them.
-- The dates are compared differently: **“Net wage”** takes payslips whose **period start** falls in the range, while **“Paid”** takes payments by the **payment date** and includes all payments of the payroll payment type for the employee, even those not linked to the listed payslips.
+- The dates are compared differently: **“Net wage”** takes payslips whose **period start** falls in the range, while **“Paid”** takes payments by the **payment date** and includes all the employee’s payments of the counted types (the payroll payment type and types with the “Include in payslip debt” flag), even those not linked to the listed payslips.

@@ -11,7 +11,7 @@ netWage 'Net wage' (Employee e) = GROUP SUM netWage(Payslip p) IF employee(p) = 
     AND NOT startDate(p) < fromDate() AND NOT startDate(p) > toDate();
 
 paid 'Paid' (Partner pr) = GROUP SUM amount(OutgoingPayment p) IF partner(p) = pr
-    AND type(p) = payslipOutgoingPaymentType() AND NOT date(p) < fromDate() AND NOT date(p) > toDate() AND active(p);
+    AND (type(p) = payslipOutgoingPaymentType() OR payslipDebt(type(p))) AND NOT date(p) < fromDate() AND NOT date(p) > toDate() AND active(p);
 left 'Left' (Employee e) = netWage(e) (-) (paid(e) IF e IS Employee);
 
 newOutgoingPayment 'Payment' (Employee e) {

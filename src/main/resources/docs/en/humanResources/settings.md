@@ -34,4 +34,4 @@ Typically configured:
 
 - **payslip types** (for example, Regular) and their numbering;
 - **payslip categories** — the earning and deduction categories used in payslip lines. The **“Editable”** flag allows entering the category total directly in the payslip batch table, and the **“Index”** defines the column order there. The category card also carries the **“Skip”** and **“Hide”** flags — see [How the “Net wage” total is calculated](net-wage.md);
-- the **outgoing payment type** used when registering payslip payments (if your organization registers payments in the system).
+- the **outgoing payment type** used when registering payslip payments (if your organization registers payments in the system). Payments of this type are always counted in the “Paid” total of the payslips list. To also count payments of other types (for example, loans paid out to employees and allocated to payslips), enable the **“Include in payslip debt”** flag on the card of that outgoing payment type — see [Payroll payment and payment control](payroll-payments.md).
