@@ -1,0 +1,34 @@
+MODULE ManufacturingOrderEmail;
+
+REQUIRE ManufacturingOrder, EmailUtils;
+
+NAMESPACE Manufacturing;
+
+// html
+subject = ABSTRACT VALUE ISTRING (ManufacturingOrder);
+subject (ManufacturingOrder o) += CONCAT ' ', '(' + nameStatus(o) + ')', numberDate(o), nameItem(o);
+
+info = ABSTRACT VALUE HTMLTEXT (ManufacturingOrder);
+info (ManufacturingOrder o) +=
+    '<ul style="color:#959595">' + (CONCAT '',
+        '<li>' + 'Type' + ' : ' + nameType(o) + '</li>',
+        '<li>' + 'Company' + ' : ' + nameCompany(o) + '</li>',
+        '<li>' + 'Responsible' + ' : ' + nameResponsible(o) + '</li>',
+        '<li>' + 'Materials location' + ' : ' + nameMaterialsLocation(o) + '</li>',
+        '<li>' + 'Bill of Materials' + ' : ' + descriptionBom(o) + '</li>'
+    ) + '</ul>';
+
+body = ABSTRACT VALUE HTMLTEXT (ManufacturingOrder);
+body(ManufacturingOrder o) += HTMLTEXT (CONCAT '',
+    '<h1><a href="' + contextUrl('/exec/Manufacturing.showManufacturingOrder?id=' + o) + '">' + subject(o) + '</a></h1>',
+    info(o),
+    '<table>' + (GROUP CONCAT ('<tr style="border: 1px solid #C4C4C4">' + (CONCAT '',
+        '<td>' + nameItem(FinishedLine fl) + '</td>',
+        '<td>' + toProduce(fl) + '</td>',
+        '<td>' + nameUom(fl) + '</td>'
+        ) + '</tr>') IF manufacturingOrder(fl) = o, '' ORDER fl) + '</table>'
+    );
+
+@defineObjectNotifyComments(manufacturingOrder, 'Manufacturing orders', );
+
+notify (ManufacturingOrder t, Contact c) += responsible(t) = c;
