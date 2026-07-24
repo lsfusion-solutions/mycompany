@@ -30,7 +30,29 @@ CONSTRAINT Employee e IS Employee AND NOT legalEntity(e) IS Company
     CHECKED BY legalEntity
     MESSAGE 'An employee\'s legal entity can only be a company';
 
-WHEN LOCAL SET(Employee e IS Employee) AND NOT CHANGED(legalEntity(e)) DO legalEntity(e) <- defaultCompany();
+WHEN LOCAL SET(Employee e IS Employee) AND NOT legalEntity(e) AND NOT CHANGED(legalEntity(e)) DO legalEntity(e) <- defaultCompany();
+
+makeEmployee 'Make employee' (Individual i) {
+    ASK 'Make the individual an employee? All changes will be saved. This action cannot be undone.' DO {
+        APPLY;
+        IF canceled() THEN RETURN;
+
+        NEWSESSION {
+            CHANGECLASS i TO Employee;
+            APPLY;
+        }
+    }
+}
+
+EXTEND FORM partner
+    PROPERTIES(p) makeEmployee SHOWIF (legalEntity(p) IS Company AND NOT p IS Employee)
+;
+
+DESIGN partner {
+    primaryActions {
+        MOVE PROPERTY(makeEmployee(p)) { valueClass = 'btn-primary'; }
+    }
+}
 
 photo = DATA IMAGEFILE (Employee);
 
