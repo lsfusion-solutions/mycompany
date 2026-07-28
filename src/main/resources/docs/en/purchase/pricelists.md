@@ -43,7 +43,8 @@ If the vendor is flagged **“Other units of measure”**, the lines also show a
 The pricelist card may contain a comment feed:
 
 - add comments to record agreements and the source of prices;
-- view the date/time and author of comments.
+- view the date/time and author of comments;
+- edit and delete your own comments (others' — only with the **Manage all comments** flag on the employee card); edits are marked as **“Edited”**.
 
 The **“Files”** tab stores files attached to the pricelist (for example, the source file of an import).
 

@@ -160,20 +160,33 @@ function comments() {
                 time.className = "cmt-time";
                 time.textContent = comment.textTimeDuration || "";
                 time.setAttribute("title", comment.dateTime || "");
+                if (comment.edited) {
+                    // "Edited" mark — the tooltip reveals who edited and how long ago
+                    let edited = document.createElement("span");
+                    edited.className = "cmt-edited";
+                    edited.textContent = txt("editedLabel", "Edited");
+                    edited.setAttribute("title", ((comment.nameEditUser || "") + " · " + comment.edited).trim());
+                    time.appendChild(document.createTextNode(" · "));
+                    time.appendChild(edited);
+                }
                 head.appendChild(time);
 
                 let actions = document.createElement("div");
                 actions.className = "cmt-actions";
                 head.appendChild(actions);
 
-                actions.appendChild(iconButton("cmt-edit", "bi bi-pencil", txt("editLabel", "Edit"), function () {
-                    controller.changeProperty("edit", comment);
-                }));
-                actions.appendChild(iconButton("cmt-delete", "bi bi-trash", txt("deleteLabel", "Delete"), function () {
-                    // the form exposes the action aliased as `delete = DELETE`, so the client-facing
-                    // property name is lowercase "delete" (calling "DELETE" was a silent no-op)
-                    controller.changeProperty("delete", comment);
-                }));
+                // author / moderator only — the server re-checks (editable gate + constraint),
+                // this just keeps the buttons off other users' comments
+                if (comment.editable) {
+                    actions.appendChild(iconButton("cmt-edit", "bi bi-pencil", txt("editLabel", "Edit"), function () {
+                        controller.changeProperty("edit", comment);
+                    }));
+                    actions.appendChild(iconButton("cmt-delete", "bi bi-trash", txt("deleteLabel", "Delete"), function () {
+                        // the form exposes the action aliased as `delete = deleteComment`, so the
+                        // client-facing property name is lowercase "delete"
+                        controller.changeProperty("delete", comment);
+                    }));
+                }
 
                 let message = document.createElement("div");
                 message.className = "cmt-message ql-editor ql-bubble";

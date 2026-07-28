@@ -57,7 +57,7 @@ Jeśli system nie pozwala zmienić statusu, przyczyna zwykle jest jedną z poni�
 
 Do współpracy używaj:
 
-- komentarzy — do zapisywania decyzji, ustaleń i doprecyzowań;
+- komentarzy — do zapisywania decyzji, ustaleń i doprecyzowań (edytować i usuwać można tylko własne komentarze, zmiany są oznaczane jako **„Edytowane”**);
 - plików dołączonych — aby trzymać specyfikacje, zrzuty ekranu i inne materiały bezpośrednio na zagadnieniu;
 - historii zmian — aby zobaczyć, kiedy i przez kogo zmieniono kluczowe dane zagadnienia.
 

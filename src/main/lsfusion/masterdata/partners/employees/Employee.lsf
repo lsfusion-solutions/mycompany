@@ -1,6 +1,6 @@
 MODULE Employee;
 
-REQUIRE Individual, Company, Authentication, Security, ObjectUtils, FileUtils, Image;
+REQUIRE Individual, Company, Authentication, Security, ObjectUtils, FileUtils, Image, Comments;
 
 NAMESPACE MasterData;
 
@@ -59,6 +59,9 @@ photo = DATA IMAGEFILE (Employee);
 avatar = DATA IMAGEFILE (Employee);
 avatar (Employee e) += avatar(e);
 
+moderateComments 'Manage all comments' = DATA BOOLEAN (Employee);
+moderateComments (Employee e) += moderateComments(e);
+
 WHEN SETCHANGED(photo(Employee e)) AND NOT CHANGED(avatar(e)) DO {
     TRY {
         resizeImageMaxSize(photo(e), 64);
@@ -93,7 +96,7 @@ changePassword '{authentication.change.password}' (Employee e) {
 FORM employee 'Employee'
     OBJECTS e = Employee PANEL
     PROPERTIES(e) READONLYIF readonly(e)
-                 id, login, changePassword, photo, avatar, isLocked, archived,
+                 id, login, changePassword, photo, avatar, isLocked, archived, moderateComments,
                  nameLegalEntity, nameDepartment, lastName, firstName, middleName, namePosition, email, phone, address, city, state,
                  zip, birthday
     
@@ -144,6 +147,7 @@ DESIGN employee {
                                 fill = 1;
                                 MOVE PROPERTY(isLocked(e));
                                 MOVE PROPERTY(archived(e));
+                                MOVE PROPERTY(moderateComments(e));
                             }
                             MOVE PROPERTY(avatar(e)) {
                                 caption = 'Avatar';

@@ -166,7 +166,7 @@ See details in [Orders and invoices from a lead](sales-and-documents.md).
 The right side of the card also contains:
 
 - **“Activities”** — planned activities for the lead (the set of activity types depends on configuration): add an activity of the required type, assign a person responsible, set a due date and mark it as done when completed (you can enter feedback at that moment; a record about the completed activity is added to the lead comments). The panel is shown when activity types are configured.
-- **“Comments”** — a comment feed for the lead. Comments support mentioning users with **@**; attached files and key changes are shown together with the comments. The sales person and mentioned users can receive email notifications about new comments (enabled in the user profile).
+- **“Comments”** — a comment feed for the lead. Comments support mentioning users with **@**; attached files and key changes are shown together with the comments. The sales person and mentioned users can receive email notifications about new comments (enabled in the user profile). You can edit and delete (with a confirmation) only your own comments — the icons appear on hover; an edited comment gets an **“Edited”** mark (hover over it to see who changed it and when). A user with the **Manage all comments** flag on the employee card can edit and delete any comments.
 
 ## Creating and deleting a lead
 

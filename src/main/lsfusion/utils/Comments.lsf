@@ -14,6 +14,14 @@ onWebClientInit() + {
 }
 inputComment '' = DATA LOCAL RICHTEXT ();
 
+// Comment moderation: by default a user may edit / delete only their own comments; this flag
+// (implemented and exposed on the employee card in Employee, like avatar) lifts the restriction.
+// Declared here on User — not in Employee — because the meta is expanded in modules
+// (Partner, Item, ...) that cannot REQUIRE Employee.
+moderateComments 'Manage all comments' = ABSTRACT BOOLEAN (User);
+// Editing window for the author, in minutes (empty — no limit). Does not apply to moderators.
+editPeriodComment 'Comment editing period (min)' = DATA INTEGER () PREREAD;
+
 avatar = ABSTRACT IMAGEFILE (User);
 avatarBase64 (User u) = ('data:image/png;base64,' + encodeBase64Unchunked(avatar(u)));
 
@@ -24,6 +32,7 @@ commentsI18n () = JSON FROM
     noComments = 'No comments yet',
     editLabel = 'Edit',
     deleteLabel = 'Delete',
+    editedLabel = 'Edited',
     placeholder = 'Add a comment…  (type @ to mention)',
     loadError = 'Comment editor failed to load';
 
@@ -45,7 +54,31 @@ META defineObjectComments (obj, let, container)
     user(###obj##Comment f) <- currentUser() WHEN SET(f IS ###obj##Comment);
     
     text 'Text' = DATA RICHTEXT (###obj##Comment);
-    
+
+    // "Edited" mark: stamped whenever the text of an existing comment changes. A freshly created
+    // comment gets its text in the same session, so PREV(text(c)) is still NULL and no mark is set.
+    editDateTime 'Edited' = DATA DATETIME (###obj##Comment);
+    editUser = DATA User (###obj##Comment);
+    nameEditUser 'Edited by' (###obj##Comment c) = name(editUser(c));
+    textTimeDurationEdit (###obj##Comment c) = textTimeDuration(editDateTime(c));
+
+    WHEN CHANGED(text(###obj##Comment c)) AND PREV(text(c)) DO {
+        editDateTime(c) <- currentDateTime();
+        editUser(c) <- currentUser();
+    }
+
+    // Who may edit / delete the comment: a moderator, or the author within the editing window
+    // (no window configured — no time limit).
+    editable (###obj##Comment c) = c IS ###obj##Comment AND (moderateComments(currentUser()) OR
+        (user(c) = currentUser() AND NOT secondsTimeDuration(dateTime(c)) > editPeriodComment() * 60));
+
+    // Server-side backstop: the JS hides the buttons and the actions below re-check, but text can
+    // still be changed through the API — reject a foreign / expired edit at apply time.
+    // The explicit IS guard keeps the constraint out of DELETE's way: deleting a comment also
+    // CHANGEs its text (to NULL), while editable() of a deleted object is NULL too.
+    CONSTRAINT CHANGED(text(###obj##Comment c)) AND c IS ###obj##Comment AND NOT editable(c)
+        MESSAGE 'You can only edit your own comments';
+
     header = ABSTRACT VALUE HTMLTEXT (###obj##Comment);
     footer = ABSTRACT VALUE HTMLTEXT (###obj##Comment);
     html (###obj##Comment c) = CONCAT '', header(c), text(c), footer(c);
@@ -76,14 +109,24 @@ META defineObjectComments (obj, let, container)
         }
     }
     
+    // Guarded delete: only the author / a moderator, and with a confirmation (a stray click on the
+    // trash icon used to remove the comment silently).
+    deleteComment (###obj##Comment c) {
+        IF NOT editable(c) THEN RETURN;
+        ASK 'Delete this comment?' DO
+            DELETE c;
+    }
+
     EXTEND FORM obj
         OBJECTS cmt = ###obj##Comment CUSTOM 'comments' OPTIONS JSON FROM i18n = commentsI18n()
         PROPERTIES id = VALUE(cmt)
-        PROPERTIES(cmt) nameUser, avatarBase64User, textTimeDuration, dateTime, text = html
+        PROPERTIES(cmt) nameUser, avatarBase64User, textTimeDuration, dateTime, text = html,
+                        editable, edited = textTimeDurationEdit, nameEditUser
         PROPERTIES(cmt) edit ON CHANGE {
-            SHOW edit###obj##Comment OBJECTS c = cmt;
+            IF editable(cmt) THEN
+                SHOW edit###obj##Comment OBJECTS c = cmt;
         },
-            delete = DELETE
+            delete = deleteComment
         ORDERS id DESC
         FILTERS obj(cmt) = let
     ;

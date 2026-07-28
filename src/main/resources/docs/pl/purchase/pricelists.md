@@ -35,7 +35,8 @@ W liniach określa się:
 Karta cennika może zawierać strumień komentarzy:
 
 - dodawaj komentarze, aby rejestrować uzgodnienia i źródło cen;
-- przeglądaj datę/godzinę i autora komentarzy.
+- przeglądaj datę/godzinę i autora komentarzy;
+- edytuj i usuwaj własne komentarze (cudze — tylko z flagą **„Zarządzanie wszystkimi komentarzami”** na karcie pracownika); zmiany są oznaczane jako **„Edytowane”**.
 
 ## Statusy cennika
 

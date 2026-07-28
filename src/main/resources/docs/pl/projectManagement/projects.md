@@ -129,7 +129,9 @@ Dyskusję w projekcie możesz prowadzić poprzez **komentarze**:
 
 - widać, kto i kiedy dodał wpis;
 - tekst może być szczegółowy;
-- dyskusja jest przechowywana w kontekście projektu.
+- dyskusja jest przechowywana w kontekście projektu;
+- edytować i usuwać (z potwierdzeniem) można tylko własne komentarze; użytkownik z flagą **„Zarządzanie wszystkimi komentarzami”** na karcie pracownika — dowolne;
+- edytowany komentarz otrzymuje oznaczenie **„Edytowane”**.
 
 Zaleca się używać komentarzy jako dziennika decyzji i ustaleń.
 

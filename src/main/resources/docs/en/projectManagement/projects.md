@@ -133,7 +133,9 @@ You can keep a discussion in a project using **comments**:
 
 - you can see who left a record and when;
 - the text can be detailed;
-- the discussion is stored in the project context.
+- the discussion is stored in the project context;
+- you can edit and delete (with a confirmation) only your own comments; a user with the **Manage all comments** flag on the employee card — any;
+- an edited comment gets an **“Edited”** mark.
 
 It is recommended to use comments as a log of decisions and agreements.
 

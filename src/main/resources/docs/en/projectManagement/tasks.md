@@ -61,7 +61,7 @@ If the system does not allow changing a status, the reason is usually one of the
 
 For collaboration, use:
 
-- comments — to record decisions, agreements, and clarifications;
+- comments — to record decisions, agreements, and clarifications (you can edit and delete only your own comments; edits are marked as **“Edited”**);
 - file attachments — to keep specifications, screenshots, and other artefacts directly on the task;
 - change history — to see when and by whom key task data was changed.
 

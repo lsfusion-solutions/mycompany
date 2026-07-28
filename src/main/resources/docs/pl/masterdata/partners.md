@@ -93,6 +93,7 @@ Jeśli włączona jest automatyzacja zakupów, a partner jest oznaczony jako **D
 Karta pracownika zawiera:
 
 - **Login**, akcję zmiany hasła oraz flagę **Zablokowane** — konto użytkownika;
+- **Zarządzanie wszystkimi komentarzami** — flaga moderatora: domyślnie użytkownik może edytować i usuwać tylko własne komentarze, flaga znosi to ograniczenie;
 - **Role** — role uprawnień użytkownika;
 - **Przedsiębiorstwo** — musi być jedną z Twoich firm (uzupełniane automatycznie, gdy jest dokładnie jedna);
 - **Dział**, **Pozycję**;
