@@ -1,6 +1,6 @@
 MODULE Comments;
 
-REQUIRE SystemEvents, DateUtils;
+REQUIRE SystemEvents, DateUtils, MasterDataSettings;
 
 NAMESPACE Utils;
 
@@ -21,6 +21,16 @@ inputComment '' = DATA LOCAL RICHTEXT ();
 moderateComments 'Manage all comments' = ABSTRACT BOOLEAN (User);
 // Editing window for the author, in minutes (empty — no limit). Does not apply to moderators.
 editPeriodComment 'Comment editing period (min)' = DATA INTEGER () PREREAD;
+
+EXTEND FORM MasterData.options
+    PROPERTIES editPeriodComment()
+;
+
+DESIGN MasterData.options {
+    commons {
+        MOVE PROPERTY(editPeriodComment());
+    }
+}
 
 avatar = ABSTRACT IMAGEFILE (User);
 avatarBase64 (User u) = ('data:image/png;base64,' + encodeBase64Unchunked(avatar(u)));
