@@ -863,6 +863,12 @@ function taskGantt() {
     return {
         render: function (element, controller) {
             element.tgUid = "tgantt" + (++uidCounter);
+            // the platform wraps the custom view in a flex item with flex-shrink:0, so it grows
+            // to its content height and an lsFusion ancestor becomes the vertical scroller —
+            // scrolling the sticky header away. Letting the wrapper shrink keeps the scrolling
+            // inside .tg-scroll, where the header/name-column stickiness works.
+            element.style.minHeight = "0";
+            element.style.flexShrink = "1";
             element.tgScale = loadScale();
             let root = document.createElement("div");
             root.className = "tgantt";
