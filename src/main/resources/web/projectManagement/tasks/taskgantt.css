@@ -1,0 +1,617 @@
+.tgantt {
+    --hue: 212;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    height: 100%;
+    width: 100%;
+    min-height: 360px;
+    padding: 4px 2px 2px;
+    color: #1f2937;
+    font-size: 13px;
+    box-sizing: border-box;
+}
+.tgantt * { box-sizing: border-box; }
+
+/* ---------- toolbar ---------- */
+.tg-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+    padding: 0 4px;
+}
+.tg-today-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid #d8dce3;
+    background: #fff;
+    border-radius: 8px;
+    padding: 5px 12px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    transition: background .12s, border-color .12s, color .12s;
+}
+.tg-today-btn:hover { color: #2563eb; border-color: #cdddff; background: #eef4ff; }
+.tg-today-btn i { font-size: 12px; }
+
+/* day / week / month zoom switcher (segmented control) */
+.tg-scale {
+    display: inline-flex;
+    border: 1px solid #d8dce3;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.tg-scale-btn {
+    border: none;
+    border-left: 1px solid #d8dce3;
+    background: #fff;
+    padding: 5px 12px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    transition: background .12s, color .12s;
+}
+.tg-scale-btn:first-child { border-left: none; }
+.tg-scale-btn:hover { color: #2563eb; background: #f5f8ff; }
+.tg-scale-btn.active { color: #2563eb; background: #eef4ff; }
+
+/* ---------- scroll wrapper ---------- */
+.tg-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    border: 1px solid #edf0f4;
+    border-radius: 11px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(16,24,40,.05);
+}
+.tg-scroll::-webkit-scrollbar { width: 9px; height: 9px; }
+.tg-scroll::-webkit-scrollbar-thumb { background: #d6dbe2; border-radius: 5px; }
+.tg-scroll::-webkit-scrollbar-thumb:hover { background: #c2c9d2; }
+
+/* ---------- grid: sticky name column + N fixed day columns ----------
+   The real template (name width, day count) is set inline from JS each render;
+   the value below is just a sane fallback. */
+.tg-grid {
+    display: grid;
+    grid-template-columns: 240px repeat(14, 34px);
+    align-content: start;
+    width: max-content;
+    min-width: 100%;
+    position: relative; /* anchors the row-drop indicator */
+}
+
+/* insertion indicator while a row is being dragged to a new position */
+.tg-rowdrop {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #2563eb;
+    box-shadow: 0 0 4px rgba(37,99,235,.6);
+    z-index: 6;
+    pointer-events: none;
+}
+
+/* ---------- header ---------- */
+.tg-corner {
+    position: sticky;
+    top: 0;
+    left: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    padding-left: 12px;
+    background: #fbfcfd;
+    border-bottom: 1px solid #e7ebf0;
+    border-right: 1px solid #e7ebf0;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: #94a0b0;
+}
+
+/* drag handle to resize the name column (sits on the corner's right edge) */
+.tg-resizer {
+    position: absolute;
+    top: 0;
+    right: -4px;
+    width: 9px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 6;
+    touch-action: none;
+}
+.tg-resizer::after {
+    content: "";
+    position: absolute;
+    top: 5px;
+    bottom: 5px;
+    left: 50%;
+    width: 2px;
+    transform: translateX(-50%);
+    border-radius: 2px;
+    background: transparent;
+    transition: background .12s;
+}
+.tg-resizer:hover::after, .tg-resizer.active::after { background: #2563eb; }
+
+.tg-month {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    background: #fbfcfd;
+    border-bottom: 1px solid #eef1f5;
+    border-left: 1px solid #e7ebf0;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: #7c8797;
+    white-space: nowrap;
+}
+/* the label itself also sticks (offset past the sticky name column), so a long month keeps
+   its name in view while scrolling; an overflowing label is painted over by the next month
+   cell, which follows it in the DOM */
+.tg-month span { position: sticky; left: calc(var(--tg-name-w, 240px) + 8px); }
+
+.tg-day {
+    position: sticky;
+    top: 26px; /* below the month row (MONTH_H) */
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: #fbfcfd;
+    border-bottom: 1px solid #e7ebf0;
+    padding: 3px 0 4px;
+}
+.tg-daynum { font-size: 13px; font-weight: 800; color: #374151; line-height: 1.1; }
+.tg-dow {
+    font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px;
+    color: #98a2b3; margin-top: 1px;
+    max-width: 100%; overflow: hidden;
+}
+.tg-day.weekend { background: #f4f6f8; }
+.tg-day.weekend .tg-daynum { color: #b91c1c; }
+.tg-day.today { background: #f3f7ff; box-shadow: inset 0 -2px 0 #2563eb; }
+.tg-day.today .tg-daynum, .tg-day.today .tg-dow { color: #2563eb; }
+
+/* week / month scale: one cell per unit with a single small label */
+.tg-day.tg-unit {
+    border-left: 1px solid #eef1f5;
+    font-size: 11px;
+    font-weight: 700;
+    color: #7c8797;
+    white-space: nowrap;
+    overflow: hidden;
+}
+.tg-day.tg-unit.today { color: #2563eb; }
+
+/* ---------- body: column shades, row stripes ---------- */
+.tg-colshade.weekend { background: #fafbfc; }
+.tg-colshade.today { background: #f3f7ff; box-shadow: inset 2px 0 0 rgba(37,99,235,.35); }
+.tg-colline { border-left: 1px solid #eef1f5; }
+
+/* the separator step follows the zoom scale (a day or a week per line, set from JS);
+   on the month scale the uneven month lengths are drawn with .tg-colline instead */
+.tg-rowbg {
+    border-bottom: 1px solid #f0f2f5;
+    background-image: repeating-linear-gradient(to right, #f3f5f8 0 1px, transparent 1px var(--tg-grid-step, 34px));
+}
+.tg-grid.tg-scale-month .tg-rowbg { background-image: none; }
+.tg-rowbg.current { background-color: rgba(37,99,235,.05); }
+
+/* ---------- sticky name column ---------- */
+.tg-name {
+    position: sticky;
+    left: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border-right: 1px solid #e7ebf0;
+    border-bottom: 1px solid #f0f2f5;
+    padding: 0 10px 0 12px;
+    cursor: pointer;
+    user-select: none;
+}
+.tg-name:hover { background: #f7f9fc; }
+.tg-name.current { background: #f0f5ff; box-shadow: inset 3px 0 0 #2563eb; }
+.tg-name.row-dragging { opacity: .45; }
+.tg-name-grip {
+    flex: 0 0 auto;
+    margin-left: -6px;
+    font-size: 12px;
+    color: #c4ccd6;
+    opacity: 0;
+    transition: opacity .12s;
+    cursor: grab;
+}
+.tg-name:hover .tg-name-grip { opacity: 1; }
+.tg-name-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #475569;
+}
+.tg-name-pct {
+    flex: 0 0 auto;
+    font-size: 10px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: #6b7280;
+    background: #f1f3f6;
+    border-radius: 8px;
+    padding: 2px 6px;
+}
+.tg-name-pct.full { color: #15803d; background: #ecfdf3; }
+
+/* ---------- dependency arrows ---------- */
+.tg-links {
+    pointer-events: none;
+    z-index: 1;
+    overflow: visible;
+}
+.tg-links path { fill: none; stroke: #9aa7b8; stroke-width: 1.6; }
+.tg-links marker path { fill: #9aa7b8; stroke: none; }
+.tg-links path.tg-templink { stroke: #2563eb; stroke-width: 1.8; stroke-dasharray: 5 4; marker-end: none; }
+
+/* ---------- bars ---------- */
+.tg-bar {
+    --hue: 212;
+    position: relative;
+    z-index: 2;
+    align-self: center;
+    height: 24px;
+    border-radius: 7px;
+    cursor: grab;
+    /* visible overflow so the link connector can sit outside the right edge;
+       the label and the progress fill clip themselves */
+    overflow: visible;
+    color: hsl(var(--hue), 42%, 27%);
+    background: linear-gradient(180deg, hsl(var(--hue), 88%, 96%), hsl(var(--hue), 82%, 91%));
+    border: 1px solid hsl(var(--hue), 60%, 82%);
+    box-shadow: 0 1px 2px rgba(16,24,40,.08);
+    touch-action: none;
+    transition: box-shadow .12s, filter .12s;
+}
+.tg-bar:hover { filter: saturate(1.06); box-shadow: 0 3px 9px rgba(37,99,235,.22); }
+.tg-bar:active { cursor: grabbing; }
+.tg-bar.dragging { opacity: .75; box-shadow: 0 6px 16px rgba(37,99,235,.3); }
+.tg-bar.current { border-color: hsl(var(--hue), 62%, 52%); box-shadow: 0 0 0 2px rgba(37,99,235,.25); }
+
+.tg-bar-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    max-width: 100%;
+    background: linear-gradient(180deg, hsl(var(--hue), 72%, 72%), hsl(var(--hue), 66%, 62%));
+    border-radius: 6px;
+}
+.tg-bar.link-target { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,.45); }
+.tg-bar-label {
+    position: relative;
+    display: block;
+    padding: 3px 10px 0;
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+}
+
+/* edge handles for resizing (visible on hover) */
+.tg-handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 8px;
+    cursor: ew-resize;
+    opacity: 0;
+    transition: opacity .12s;
+    touch-action: none;
+}
+.tg-handle-l { left: 0; border-radius: 7px 0 0 7px; }
+.tg-handle-r { right: 0; border-radius: 0 7px 7px 0; }
+.tg-bar:hover .tg-handle { opacity: 1; background: rgba(37,99,235,.28); }
+
+/* link connector: a dot outside the bar's right edge; drag it onto another bar
+   to add a dependency (revealed on bar hover, like the resize handles) */
+.tg-connector {
+    position: absolute;
+    top: 50%;
+    right: -15px;
+    width: 11px;
+    height: 11px;
+    transform: translateY(-50%);
+    border-radius: 50%;
+    border: 2px solid #2563eb;
+    background: #fff;
+    cursor: crosshair;
+    opacity: 0;
+    transition: opacity .12s, transform .1s;
+    touch-action: none;
+    z-index: 3;
+}
+.tg-bar:hover .tg-connector, .tg-bar.link-source .tg-connector { opacity: 1; }
+.tg-connector:hover { transform: translateY(-50%) scale(1.25); }
+
+/* ---------- click popup (task preview: dates, progress, edit / delete) ---------- */
+.tg-pop {
+    --hue: 212;
+    position: fixed;
+    z-index: 9000; /* above the grid's sticky cells; it's only a click preview */
+    width: 260px;
+    max-width: 92vw;
+    box-sizing: border-box;
+    background: #fff;
+    color: #1f2937;
+    border: 1px solid #e5e7eb;
+    border-top: 3px solid hsl(var(--hue), 62%, 52%);
+    border-radius: 11px;
+    box-shadow: 0 14px 36px rgba(16, 24, 40, .24);
+    padding: 11px 13px 12px;
+    font-size: 13px;
+}
+.tg-pop * { box-sizing: border-box; }
+.tg-pop-title {
+    font-size: 14px;
+    font-weight: 800;
+    margin-bottom: 7px;
+    word-break: break-word;
+}
+.tg-pop-meta { display: flex; flex-direction: column; gap: 4px; margin-bottom: 9px; }
+.tg-pop-row { display: flex; align-items: center; gap: 7px; color: #4b5563; font-size: 12.5px; }
+.tg-pop-row i { color: #9ca3af; width: 14px; text-align: center; flex: 0 0 auto; }
+.tg-pop-row span { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* dependency chips: parent task name + a remove cross */
+.tg-pop-deps { border-top: 1px solid #f0f2f5; padding-top: 8px; margin-bottom: 9px; }
+.tg-pop-deps-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 6px;
+}
+.tg-pop-deps-label i { color: #9ca3af; }
+.tg-pop-deps-list { display: flex; flex-wrap: wrap; gap: 5px; max-height: 96px; overflow-y: auto; }
+.tg-pop-dep {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    max-width: 100%;
+    border: 1px solid #dbe3ee;
+    background: #f4f7fb;
+    border-radius: 12px;
+    padding: 2px 4px 2px 9px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #475569;
+}
+.tg-pop-dep-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tg-pop-dep-x {
+    border: none;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    color: #94a0b0;
+    border-radius: 50%;
+}
+.tg-pop-dep-x:hover { color: #b91c1c; background: #fee2e2; }
+.tg-pop-dep-x i { font-size: 14px; }
+
+.tg-pop-progress { border-top: 1px solid #f0f2f5; padding-top: 8px; margin-bottom: 9px; }
+.tg-pop-progress-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 4px;
+}
+.tg-pop-progress-val { font-variant-numeric: tabular-nums; color: #2563eb; }
+.tg-pop-progress input[type="range"] { width: 100%; accent-color: #2563eb; }
+.tg-pop-actions { display: flex; align-items: center; gap: 6px; }
+.tg-pop-btn {
+    border: 1px solid #d8dce3;
+    background: #fff;
+    border-radius: 8px;
+    padding: 5px 10px;
+    cursor: pointer;
+    line-height: 1;
+    color: #374151;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    transition: background .12s, border-color .12s, color .12s;
+}
+.tg-pop-edit { flex: 1 1 auto; }
+.tg-pop-edit:hover { color: #2563eb; border-color: #cdddff; background: #eef4ff; }
+.tg-pop-delete { flex: 0 0 auto; margin-left: auto; color: #b91c1c; border-color: #fecaca; background: #fef2f2; }
+.tg-pop-delete:hover { background: #fee2e2; }
+
+/* ======================================================================
+   Dark theme (Bootstrap 5.3 [data-bs-theme="dark"]) — mirrors the shift
+   schedule's theme-aware treatment: neutral chrome from --bs-* variables,
+   hue-tinted bars on a dark surface with light text.
+   ====================================================================== */
+[data-bs-theme="dark"] .tgantt { color: var(--bs-body-color); }
+
+[data-bs-theme="dark"] .tg-today-btn {
+    border-color: var(--bs-border-color);
+    background: transparent;
+    color: var(--bs-body-color);
+}
+[data-bs-theme="dark"] .tg-today-btn:hover {
+    color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.12);
+}
+
+[data-bs-theme="dark"] .tg-scale { border-color: var(--bs-border-color); }
+[data-bs-theme="dark"] .tg-scale-btn {
+    border-left-color: var(--bs-border-color);
+    background: transparent;
+    color: var(--bs-body-color);
+}
+[data-bs-theme="dark"] .tg-scale-btn:hover {
+    color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.08);
+}
+[data-bs-theme="dark"] .tg-scale-btn.active {
+    color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.16);
+}
+
+[data-bs-theme="dark"] .tg-scroll {
+    border-color: var(--bs-border-color);
+    background: var(--bs-body-bg);
+}
+[data-bs-theme="dark"] .tg-scroll::-webkit-scrollbar-thumb { background: var(--bs-secondary-bg); }
+[data-bs-theme="dark"] .tg-scroll::-webkit-scrollbar-thumb:hover { background: var(--bs-tertiary-bg); }
+
+[data-bs-theme="dark"] .tg-corner,
+[data-bs-theme="dark"] .tg-month,
+[data-bs-theme="dark"] .tg-day {
+    background: var(--bs-tertiary-bg);
+    border-bottom-color: var(--bs-border-color);
+}
+[data-bs-theme="dark"] .tg-corner { color: var(--bs-secondary-color); border-right-color: var(--bs-border-color); }
+[data-bs-theme="dark"] .tg-month { color: var(--bs-secondary-color); border-left-color: var(--bs-border-color); }
+[data-bs-theme="dark"] .tg-daynum { color: var(--bs-body-color); }
+[data-bs-theme="dark"] .tg-dow { color: var(--bs-secondary-color); }
+[data-bs-theme="dark"] .tg-day.weekend { background: var(--bs-secondary-bg); }
+[data-bs-theme="dark"] .tg-day.weekend .tg-daynum { color: var(--bs-danger); }
+[data-bs-theme="dark"] .tg-day.today {
+    background: rgba(var(--bs-primary-rgb), 0.16);
+    box-shadow: inset 0 -2px 0 var(--bs-primary);
+}
+[data-bs-theme="dark"] .tg-day.today .tg-daynum,
+[data-bs-theme="dark"] .tg-day.today .tg-dow { color: var(--bs-primary); }
+[data-bs-theme="dark"] .tg-day.tg-unit { border-left-color: var(--bs-border-color); color: var(--bs-secondary-color); }
+[data-bs-theme="dark"] .tg-day.tg-unit.today { color: var(--bs-primary); }
+
+[data-bs-theme="dark"] .tg-resizer:hover::after,
+[data-bs-theme="dark"] .tg-resizer.active::after { background: var(--bs-primary); }
+
+[data-bs-theme="dark"] .tg-colshade.weekend { background: rgba(255, 255, 255, 0.03); }
+[data-bs-theme="dark"] .tg-colshade.today {
+    background: rgba(var(--bs-primary-rgb), 0.08);
+    box-shadow: inset 2px 0 0 rgba(var(--bs-primary-rgb), 0.45);
+}
+[data-bs-theme="dark"] .tg-colline { border-left-color: var(--bs-border-color); }
+[data-bs-theme="dark"] .tg-rowbg {
+    border-bottom-color: var(--bs-border-color);
+    background-image: repeating-linear-gradient(to right, rgba(255,255,255,.04) 0 1px, transparent 1px var(--tg-grid-step, 34px));
+}
+[data-bs-theme="dark"] .tg-rowbg.current { background-color: rgba(var(--bs-primary-rgb), 0.08); }
+
+[data-bs-theme="dark"] .tg-name {
+    background: var(--bs-body-bg);
+    border-right-color: var(--bs-border-color);
+    border-bottom-color: var(--bs-border-color);
+}
+[data-bs-theme="dark"] .tg-name:hover { background: var(--bs-tertiary-bg); }
+[data-bs-theme="dark"] .tg-name.current {
+    background: rgba(var(--bs-primary-rgb), 0.12);
+    box-shadow: inset 3px 0 0 var(--bs-primary);
+}
+[data-bs-theme="dark"] .tg-name-text { color: var(--bs-body-color); }
+[data-bs-theme="dark"] .tg-name-grip { color: var(--bs-secondary-color); }
+[data-bs-theme="dark"] .tg-rowdrop {
+    background: var(--bs-primary);
+    box-shadow: 0 0 4px rgba(var(--bs-primary-rgb), .7);
+}
+[data-bs-theme="dark"] .tg-name-pct { color: var(--bs-secondary-color); background: var(--bs-secondary-bg); }
+[data-bs-theme="dark"] .tg-name-pct.full { color: var(--bs-success); background: rgba(var(--bs-success-rgb), 0.15); }
+
+[data-bs-theme="dark"] .tg-links path { stroke: var(--bs-secondary-color); }
+[data-bs-theme="dark"] .tg-links marker path { fill: var(--bs-secondary-color); }
+[data-bs-theme="dark"] .tg-links path.tg-templink { stroke: var(--bs-primary); }
+[data-bs-theme="dark"] .tg-connector { border-color: var(--bs-primary); background: var(--bs-body-bg); }
+[data-bs-theme="dark"] .tg-bar.link-target {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 2px rgba(var(--bs-primary-rgb), 0.55);
+}
+
+[data-bs-theme="dark"] .tg-bar {
+    color: hsl(var(--hue), 75%, 82%);
+    background: linear-gradient(180deg, hsl(var(--hue), 38%, 24%), hsl(var(--hue), 40%, 19%));
+    border-color: hsl(var(--hue), 35%, 36%);
+}
+[data-bs-theme="dark"] .tg-bar:hover { box-shadow: 0 3px 9px rgba(0, 0, 0, 0.45); }
+[data-bs-theme="dark"] .tg-bar.current {
+    border-color: hsl(var(--hue), 60%, 55%);
+    box-shadow: 0 0 0 2px rgba(var(--bs-primary-rgb), 0.35);
+}
+[data-bs-theme="dark"] .tg-bar-fill {
+    background: linear-gradient(180deg, hsl(var(--hue), 45%, 42%), hsl(var(--hue), 48%, 34%));
+}
+[data-bs-theme="dark"] .tg-bar:hover .tg-handle { background: rgba(var(--bs-primary-rgb), 0.4); }
+
+[data-bs-theme="dark"] .tg-pop {
+    background: var(--bs-secondary-bg);
+    color: var(--bs-body-color);
+    border-color: var(--bs-border-color);
+    border-top-color: hsl(var(--hue), 62%, 58%);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.6);
+}
+[data-bs-theme="dark"] .tg-pop-row,
+[data-bs-theme="dark"] .tg-pop-row i { color: var(--bs-secondary-color); }
+[data-bs-theme="dark"] .tg-pop-deps { border-top-color: var(--bs-border-color); }
+[data-bs-theme="dark"] .tg-pop-deps-label,
+[data-bs-theme="dark"] .tg-pop-deps-label i { color: var(--bs-secondary-color); }
+[data-bs-theme="dark"] .tg-pop-dep {
+    border-color: var(--bs-border-color);
+    background: var(--bs-tertiary-bg);
+    color: var(--bs-body-color);
+}
+[data-bs-theme="dark"] .tg-pop-dep-x { color: var(--bs-secondary-color); }
+[data-bs-theme="dark"] .tg-pop-dep-x:hover { color: var(--bs-danger); background: rgba(var(--bs-danger-rgb), 0.2); }
+[data-bs-theme="dark"] .tg-pop-progress { border-top-color: var(--bs-border-color); }
+[data-bs-theme="dark"] .tg-pop-progress-label { color: var(--bs-secondary-color); }
+[data-bs-theme="dark"] .tg-pop-progress-val { color: var(--bs-primary); }
+[data-bs-theme="dark"] .tg-pop-btn {
+    border-color: var(--bs-border-color);
+    background: transparent;
+    color: var(--bs-body-color);
+}
+[data-bs-theme="dark"] .tg-pop-edit:hover {
+    color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.12);
+}
+[data-bs-theme="dark"] .tg-pop-delete {
+    color: var(--bs-danger);
+    border-color: rgba(var(--bs-danger-rgb), 0.5);
+    background: rgba(var(--bs-danger-rgb), 0.12);
+}
+[data-bs-theme="dark"] .tg-pop-delete:hover { background: rgba(var(--bs-danger-rgb), 0.2); }

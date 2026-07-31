@@ -1,19 +1,49 @@
 MODULE TaskGantt;
 
-REQUIRE FrappeGantt, TaskDependency;
+REQUIRE TaskDependency, SystemEvents, Authentication;
 
 NAMESPACE ProjectManagement;
 
+ganttI18n () = JSON FROM tasks = 'Tasks', today = 'Today', edit = 'Edit', delete = 'Delete',
+                         done = 'Done', start = 'Start date', deadline = 'Deadline', dependsOn = 'Depends on',
+                         day = 'Day', week = 'Week', month = 'Month';
+
+// invoked from taskgantt.js via controller.form.exec: a link dragged between two bars adds
+// a dependency, the popup's chips remove one. level() already covers ancestor-or-self, so the
+// guard rejects both self-links and anything that would close a cycle.
+setDepends (Task parent, Task child) {
+    IF level(child, parent) THEN {
+        MESSAGE 'Cyclic dependency';
+    } ELSE {
+        depends(parent, child) <- TRUE;
+        APPLY;
+    }
+}
+
+dropDepends (Task parent, Task child) {
+    depends(parent, child) <- NULL;
+    APPLY;
+}
+
+// shared (not per-user) manual row order on the chart; assigned by dragging a task-name
+// cell in taskgantt.js
+ganttOrder = DATA LONG (Task);
+
 EXTEND FORM tasks
-    OBJECTS tg = Task CUSTOM 'frappeGantt' OPTIONS JSON FROM view_mode = r'Day'
+    OBJECTS tg = Task CUSTOM 'taskGantt' OPTIONS JSON FROM locale = language(currentUser()), i18n = ganttI18n()
 
-    PROPERTIES(tg) READONLY id = VALUE, name, progress, dependencies = depends, maxParentLevel
-    PROPERTIES start(tg), end = deadline(tg)
+    PROPERTIES(tg) READONLY id = VALUE, name, depends, maxParentLevel
+    PROPERTIES(tg) start APPLY, deadline APPLY, progress APPLY, order = ganttOrder APPLY
 
-    PROPERTIES(tg) PANEL pprogress = progress, editGantt = EDIT
-    
-    ORDERS maxParentLevel(tg)
-    
+    // invoked from taskgantt.js via changeProperty (the popup's Edit / Delete buttons)
+    PROPERTIES(tg) GRID edit = EDIT NEWSESSION, delete = DELETE
+
+    // dependency editing from taskgantt.js via controller.form.exec
+    CUSTOMS setDepends[Task, Task], dropDepends[Task, Task]
+
+    // manual order first; tasks the user has not arranged yet fall back to dependency depth
+    ORDERS order, maxParentLevel(tg)
+
     FILTERS [FILTER tasks.t](tg),
             start(tg), deadline(tg)
 ;
@@ -25,10 +55,14 @@ DESIGN tasks {
             height = 500;
             caption = 'Gantt chart';
             MOVE GRID(tg) {
-                MOVE PROPERTY(pprogress);
-                MOVE PROPERTY(editGantt);
-                REMOVE BOX(tg);
+                fill = 1;
             }
+            REMOVE BOX(tg);
         }
     }
+}
+
+onWebClientInit() + {
+    onWebClientInit('taskgantt.js') <- 1;
+    onWebClientInit('taskgantt.css') <- 1;
 }
