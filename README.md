@@ -60,6 +60,13 @@ The MyCompany interface is translated into **English, Polish and Russian**. It c
 
 Company-specific changes — from extra fields to entirely new modules — live in separate lsFusion modules, so product updates stay manageable. See the [development guide](https://mycompany-docs.lsfusion.org/administration/development/).
 
+To customize MyCompany with an AI coding assistant, install the [lsFusion AI skills](https://github.com/lsfusion/ai-skills) — a Claude Code plugin that teaches the assistant lsFusion syntax and how to run, deploy and verify the application:
+
+```
+/plugin marketplace add lsfusion/ai-skills
+/plugin install lsfusion-ai-skills
+```
+
 ![MyCompany retail POS cashier screen with barcode entry and touch product grid](docs/images/retail-pos.png)
 
 ## 🛠 Support
