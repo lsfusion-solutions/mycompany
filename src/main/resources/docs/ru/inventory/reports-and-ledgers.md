@@ -6,7 +6,7 @@ title: Отчёты и регистры
 
 ## Отчёты
 
-![Отчёт по остаткам](images/inventory-report.png)
+![Отчёт по остаткам](images/inventory-report.webp)
 
 Чаще всего используются:
 
