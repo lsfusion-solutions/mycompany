@@ -10,7 +10,7 @@ The **“Settings”** form is organized into tabs and contains the parameters a
 
 The **“Configuration”** group also contains separate items for marketing reference data — **“Campaigns”**, **“Mediums”** and **“Sources”** (see [Marketing settings](#marketing-settings) below).
 
-![Settings form](images/crm-settings.png)
+![Settings form](images/crm-settings.webp)
 
 ## Parameters
 

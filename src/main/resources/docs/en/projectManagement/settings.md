@@ -8,7 +8,7 @@ Open **Projects → Configuration → Settings**.
 
 ## What is usually configured
 
-![The Projects settings form with directory tabs](images/settings-options.png)
+![The Projects settings form with directory tabs](images/settings-options.webp)
 
 #### Project types
 

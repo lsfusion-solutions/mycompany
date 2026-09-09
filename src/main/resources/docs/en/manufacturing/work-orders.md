@@ -49,7 +49,7 @@ Automatically generated work orders additionally keep an internal link to the so
 
 To see a global view of all production tasks, go to **Manufacturing** → **Operations** → **Work orders**.
 
-![Work orders list](images/work-orders-list.png)
+![Work orders list](images/work-orders-list.webp)
 
 This list allows supervisors to:
 - Track the progress of operations across different manufacturing orders.
@@ -95,7 +95,7 @@ The **Work center load** dashboard is a powerful tool for visual scheduling and 
 ### Accessing the dashboard
 Go to **Manufacturing** → **Processes** → **Work center load**.
 
-![Work center load dashboard](images/work-center-load.png)
+![Work center load dashboard](images/work-center-load.webp)
 
 ### Interface overview
 

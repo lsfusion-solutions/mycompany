@@ -6,7 +6,7 @@ title: Sales settings
 
 Open **“Sales” → “Configuration” → “Settings”**.
 
-![Sales settings](images/settings.png)
+![Sales settings](images/settings.webp)
 
 ## What is typically configured
 

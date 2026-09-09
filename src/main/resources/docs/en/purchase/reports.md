@@ -8,7 +8,7 @@ Purchase reporting consists of a single report — the **“Order report”**, l
 
 ## Order report
 
-![Order report](images/report.png)
+![Order report](images/report.webp)
 
 The report allows you to analyze purchase orders by:
 

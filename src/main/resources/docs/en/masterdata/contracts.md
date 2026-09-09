@@ -4,7 +4,7 @@ title: Contracts
 
 The **“Contracts”** directory is used to register contracts with partners and then select a contract in documents (if the process implies it).
 
-![Contract list](images/contracts-list.png)
+![Contract list](images/contracts-list.webp)
 
 ## Contract card
 

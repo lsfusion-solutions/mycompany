@@ -14,7 +14,7 @@ Each mark creates/updates an **Attendance** record. The system can also store **
 - The **Attendances** list is in **“Human Resources” → “Operations” → “Attendances”**.
 - The **mobile attendance** and the **attendance kiosk** are in **“Human Resources” → “Processes”**.
 
-![Attendances list](images/attendances-list.png)
+![Attendances list](images/attendances-list.webp)
 
 ## What is recorded
 

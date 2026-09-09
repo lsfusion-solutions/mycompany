@@ -6,7 +6,7 @@ title: Manufacturing settings and directories
 
 Open **"Manufacturing"** → **"Configuration"** → **"Settings"**.
 
-![Manufacturing settings form](images/settings.png)
+![Manufacturing settings form](images/settings.webp)
 
 The form is organized into tabs:
 

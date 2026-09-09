@@ -6,7 +6,7 @@ title: Vendor pricelists
 
 Forms for working with pricelists are usually located at **“Purchase” → “Operations” → “Vendor pricelists”**.
 
-![Vendor pricelists list](images/pricelists-list.png)
+![Vendor pricelists list](images/pricelists-list.webp)
 
 ## Purpose
 
@@ -18,7 +18,7 @@ A **pricelist** stores [vendor](../masterdata/partners.md) prices and is used fo
 
 ## Pricelist structure
 
-![Vendor pricelist card](images/pricelist-card.png)
+![Vendor pricelist card](images/pricelist-card.webp)
 
 In a pricelist, you typically specify:
 

@@ -6,7 +6,7 @@ title: Lead board (kanban)
 
 Open the **“Leads”** section (the **“Operations”** group). The **“Kanban”** tab is the first tab of the section and opens by default.
 
-![Lead board (kanban)](images/lead-kanban.png)
+![Lead board (kanban)](images/lead-kanban.webp)
 
 ## What the board is for
 

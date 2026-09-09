@@ -109,7 +109,7 @@ A production order affects costing as follows:
 
 Open **“Inventory” → “Reporting” → “Inventory valuation”**.
 
-![Inventory valuation](images/inventory-valuation.png)
+![Inventory valuation](images/inventory-valuation.webp)
 
 What you can see:
 
@@ -128,7 +128,7 @@ Also, at the bottom (or in a separate details area) you can see:
 
 Open **“Inventory” → “Reporting” → “Cost report”**.
 
-![Cost report](images/cost-ledger-report.png)
+![Cost report](images/cost-ledger-report.webp)
 
 The report shows movements that form cost (inbound/outbound) with quantities and amounts.
 

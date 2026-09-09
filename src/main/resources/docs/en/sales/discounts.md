@@ -13,7 +13,7 @@ A discount can be defined:
 
 Usually, the discount list is located in **“Sales” → “Operations” → “Discounts”**.
 
-![Discounts list](images/discounts-list.png)
+![Discounts list](images/discounts-list.webp)
 
 By default, the list shows only currently valid discounts — the **“Active”** filter is enabled; turn it off to see all discounts.
 
@@ -26,7 +26,7 @@ In the discount card, you specify:
 - if needed — which [locations](../inventory/locations.md) it applies to;
 - discount amount (percent) or a price type (if the discount is defined by price).
 
-![Discount card](images/discount-card.png)
+![Discount card](images/discount-card.webp)
 
 ## How the system decides whether a discount matches a line
 

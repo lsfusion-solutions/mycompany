@@ -8,7 +8,7 @@ Open **“Inventory” → “Operations” → “Adjustments”**.
 
 The adjustment moves through the following statuses: **Draft** → **In progress** → **Done**, with **Canceled** as an alternative terminal state. The variance per line is recalculated automatically while the document is in **In progress** (as counted quantity minus theoretical quantity), and the corresponding inventory ledger postings are written when the document is moved to **Done**.
 
-![Adjustment card](images/adjustment-card.png)
+![Adjustment card](images/adjustment-card.webp)
 
 ## Adjustment types
 

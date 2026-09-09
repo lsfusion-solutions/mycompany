@@ -8,7 +8,7 @@ A discount card identifies a customer at the [cash register](pos.md): when a car
 
 **“Retail” → “Configuration” → “Discount cards”**.
 
-![Discount cards list](images/discount-cards.png)
+![Discount cards list](images/discount-cards.webp)
 
 ## Main card data
 

@@ -12,7 +12,7 @@ Open **“Fleet” → “Operations” → “Vehicle services”**.
 
 Service history is also usually available in the vehicle card in the corresponding block.
 
-![Vehicle services list](images/services-list.png)
+![Vehicle services list](images/services-list.webp)
 
 ## Creating a service record
 
@@ -30,7 +30,7 @@ Service history is also usually available in the vehicle card in the correspondi
 
 When you select a vehicle, the **[Vendor](../masterdata/partners.md)** and **Odometer value** are pre-filled from the latest service of that vehicle (if there is one) — check and correct them if needed.
 
-![Vehicle service card](images/service-card.png)
+![Vehicle service card](images/service-card.webp)
 
 ### How to fill the cost
 

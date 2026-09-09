@@ -10,7 +10,7 @@ In the **“Sales”** section, a sales order goes through statuses. Statuses de
 
 Whether an order is editable in a given status is configured with the **“Read-only”** checkbox in **“Sales” → “Configuration” → “Settings”**. In addition, a single order can be locked for editing with the padlock toggle on its card.
 
-![Order workflow](images/order-workflow.png)
+![Order workflow](images/order-workflow.webp)
 
 ## Typical workflow
 

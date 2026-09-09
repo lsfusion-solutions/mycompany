@@ -18,7 +18,7 @@ Scrap is used to record stock decreases for reasons not related to sales:
 
 The reason for the write-off is represented by the **type** of the document (a directory of scrap types — for example, "Damage", "Loss", "Expiry") rather than by a per-line field. Scrap types are configured in **Inventory → Configuration → Settings**; each type has its own **numerator** (numbering rule) and a default **location**.
 
-![Scrap list](images/scrap-list.png)
+![Scrap list](images/scrap-list.webp)
 
 The scrap document moves through the statuses **Draft → Done**, with **Canceled** as an alternative terminal state.
 

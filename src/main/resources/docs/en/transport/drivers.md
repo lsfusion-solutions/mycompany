@@ -10,7 +10,7 @@ A driver assignment is stored as a separate record with a validity period. This 
 
 Open **“Fleet” → “Operations” → “Drivers”**.
 
-![Drivers list](images/drivers-list.png)
+![Drivers list](images/drivers-list.webp)
 
 ## Assigning a driver to a vehicle
 

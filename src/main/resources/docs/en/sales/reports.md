@@ -22,7 +22,7 @@ The **Sales** module includes the following reports:
 
 The **Price report** allows you to analyze product prices at specific points in time, compare them between two dates, and view stock levels at selected locations.
 
-![Price report](images/report-prices.png)
+![Price report](images/report-prices.webp)
 
 ### Main Features
 
@@ -82,7 +82,7 @@ The comparison highlights changes:
 
 The **Order report** provides a detailed view of sales orders and their lines. It is useful for operational analysis (what was ordered, by whom, for which delivery location/date) and for exporting order data to spreadsheets.
 
-![Order report](images/report-orders.png)
+![Order report](images/report-orders.webp)
 
 ### How to use
 
@@ -119,7 +119,7 @@ The report shows order header information and order line information (order head
 
 The **Sales report** is a detailed report based on sales ledger entries. It combines sales quantities with cost and markup metrics, and can be used for profitability analysis.
 
-![Sales report](images/report-sales.png)
+![Sales report](images/report-sales.webp)
 
 ### How to use
 
@@ -168,7 +168,7 @@ Depending on enabled features, the Sales report can include:
 
 The **Sales summary** is a dashboard with a fixed set of charts that provides a high-level overview of sales trends.
 
-![Sales summary](images/sales-summary.png)
+![Sales summary](images/sales-summary.webp)
 
 ### How to use
 

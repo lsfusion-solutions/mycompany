@@ -19,7 +19,7 @@ The POS screen has two panes:
 
 A row of **hotkey buttons** for frequently sold items is shown at the bottom of the screen (see *Adding items* below).
 
-![POS screen](images/pos.png)
+![POS screen](images/pos.webp)
 
 ## Selecting the cash register and session
 
@@ -51,7 +51,7 @@ Items can be added in several ways:
 - **Touch tab** — a tiled grid of categories and items with pictures. Tap a category to drill down, tap an item to add it; use **“Back”** and **“Reset”** to navigate. Categories and items can be hidden from this grid in the **“Touch”** tab of the Settings form.
 - **Hotkey buttons** — items that have the **“Hot key (name)”** field filled in on the item card appear as quick-add buttons at the bottom of the POS screen.
 
-![Search tab on the POS screen](images/pos-search.png)
+![Search tab on the POS screen](images/pos-search.webp)
 
 ### Changing a line
 
@@ -84,7 +84,7 @@ Each receipt line has a **discount** selector and **discount** / **discount pric
 
 The **“By order”** tab lists confirmed [sales orders](../sales/orders.md) for the receipt’s customer (or orders without a customer if none is set on the receipt). The **“Delivery today”** filter narrows them to orders scheduled for the current date. **“Add to receipt”** copies the order lines into the current receipt.
 
-![By order tab on the POS screen](images/pos-order.png)
+![By order tab on the POS screen](images/pos-order.webp)
 
 ## Marked goods and lots
 
@@ -119,7 +119,7 @@ Add items in any convenient way:
 
 Each added item appears as a receipt line with quantity, price, and (if applicable) discount. To add the same item again, scan it once more or change the line quantity.
 
-![Receipt with added items](images/pos-receipt.png)
+![Receipt with added items](images/pos-receipt.webp)
 
 ### Step 3. Check quantities and discounts
 
@@ -131,7 +131,7 @@ Each added item appears as a receipt line with quantity, price, and (if applicab
 
 Press **“Payment”** (`Ctrl+Enter`) — the button is active once the receipt has an amount. The payment dialog opens, showing the receipt amount.
 
-![Payment dialog](images/pos-payment.png)
+![Payment dialog](images/pos-payment.webp)
 
 ### Step 5. Settle with the customer
 
@@ -178,4 +178,4 @@ The full procedure — adjusting return lines, the return payment, and the rules
 
 The **Session** tab shows the session number, opening time, and totals, including the **net** amount for each payment method (payments received in sales minus payouts in returns). The **“Cash receipts”** and **“Refunds”** lists show the sales and returns made in the session.
 
-![Session tab on the POS screen](images/pos-session.png)
+![Session tab on the POS screen](images/pos-session.webp)

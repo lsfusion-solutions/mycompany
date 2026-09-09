@@ -51,7 +51,7 @@ In the orders list, aggregated **“Receipt status”** and **“Bill status”*
 
 ## How to create a bill based on a purchase order
 
-![Create Bill from the order](images/order-create-bill.png)
+![Create Bill from the order](images/order-create-bill.webp)
 
 1. Open the [purchase order](orders.md).
 2. Run the **“Create Bill”** action (if it is available in your configuration).
@@ -68,7 +68,7 @@ In the orders list, aggregated **“Receipt status”** and **“Bill status”*
 5. If needed, adjust quantities/prices to match the vendor documents.
 6. Move the bill to the required status according to your configuration rules (for example, “to pay”).
 
-![Bill created from the order](images/bill-from-order.png)
+![Bill created from the order](images/bill-from-order.webp)
 
 ## Multiple bills for one purchase order (partial coverage)
 

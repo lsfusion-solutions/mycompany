@@ -4,7 +4,7 @@ title: Recruitment
 
 The “Recruitment” section is used to work with candidates: registering applications, storing files (resume, etc.), planning interviews, and recording decisions.
 
-![Applications list](images/applications-list.png)
+![Applications list](images/applications-list.webp)
 
 ## Main objects
 
@@ -28,7 +28,7 @@ An application moves through four fixed statuses: **New**, **Interview**, **Hire
 
 The **Hired** and **Refused** indicators on the card can also be toggled directly, but this only changes the status: no employee is created, no refuse reason is asked, and no email is sent (when both are set, **Refused** wins). Use the **“Hire”** and **“Refuse”** actions for the complete workflow.
 
-![Candidate application card](images/application-card.png)
+![Candidate application card](images/application-card.webp)
 
 ### Interview
 

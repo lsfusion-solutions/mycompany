@@ -14,7 +14,7 @@ Incoming payments are typically used to:
 
 Open: **“Invoicing” → “Operations” → “Incoming payments”**.
 
-![Incoming payments list](images/incoming-payments-list.png)
+![Incoming payments list](images/incoming-payments-list.webp)
 
 ## Creating an incoming payment
 

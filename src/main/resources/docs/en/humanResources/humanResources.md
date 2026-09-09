@@ -61,7 +61,7 @@ The **“Human Resources”** section contains three groups:
 
 The available menu items and actions depend on configuration and user permissions.
 
-![The “Human Resources” section in the navigator](images/hr-nav.png)
+![The “Human Resources” section in the navigator](images/hr-nav.webp)
 
 ## User roles and permissions
 

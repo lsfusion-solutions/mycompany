@@ -52,7 +52,7 @@ Note: receipts are usually created **for goods [items](../masterdata/items.md)**
 
 ## How to process a receipt based on a purchase order
 
-![Receipt card](images/receipt-card.png)
+![Receipt card](images/receipt-card.webp)
 
 1. Open the [purchase order](orders.md).
 2. In the related documents block, open the required **receipt** (or create a new one, if supported in your configuration).

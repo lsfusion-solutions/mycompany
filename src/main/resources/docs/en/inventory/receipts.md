@@ -19,7 +19,7 @@ The document is used to:
 
 ## Receipt list
 
-![Receipts list](images/receipts-list.png)
+![Receipts list](images/receipts-list.webp)
 
 The list typically shows:
 
@@ -42,7 +42,7 @@ Above the list there are filters by **date interval**, **type**, **location** an
 
 ## Receipt card
 
-![Receipt card](images/receipt-card.png)
+![Receipt card](images/receipt-card.webp)
 
 ### Header fields
 

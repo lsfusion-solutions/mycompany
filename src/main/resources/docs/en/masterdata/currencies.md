@@ -6,7 +6,7 @@ The **“Currencies”** and **“Exchange rates”** directories are used for s
 
 ## Currencies
 
-![Currency list](images/currencies.png)
+![Currency list](images/currencies.webp)
 
 ### Currency card
 
@@ -25,7 +25,7 @@ It is recommended to:
 
 An exchange rate is stored as a set of lines with dates and values.
 
-![Exchange rate list](images/exchange-rates.png)
+![Exchange rate list](images/exchange-rates.webp)
 
 ### Exchange rate card
 

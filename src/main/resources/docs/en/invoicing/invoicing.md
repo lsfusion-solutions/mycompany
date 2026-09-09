@@ -86,7 +86,7 @@ The "Invoicing" section contains the groups:
 - **Reporting** — [Payment calendar](debt-and-calendar.md), Payments, Bills report, Invoices report.
 - **Configuration** — the **Settings** form, [Taxes](taxes.md), Payment terms, Banks, Accounts (bank + cash), Analytic accounts.
 
-![The "Invoicing" section in the navigator with expanded groups](images/invoicing-nav.png)
+![The "Invoicing" section in the navigator with expanded groups](images/invoicing-nav.webp)
 
 ## Terms
 

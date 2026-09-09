@@ -15,7 +15,7 @@ Typically the workflow is:
 
 Open **“Human Resources” → “Operations” → “Payslip batches”**.
 
-![Payslip batches list](images/payslip-batches.png)
+![Payslip batches list](images/payslip-batches.webp)
 
 ## Batch fields
 
@@ -42,7 +42,7 @@ A category total can be entered directly in the table if the category is marked 
 
 From the batch you can open a payslip and review its **“Salary computation”** lines.
 
-![Payslip batch card](images/payslip-batch-card.png)
+![Payslip batch card](images/payslip-batch-card.webp)
 
 ## What “Generate” does
 

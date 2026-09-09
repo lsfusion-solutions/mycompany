@@ -6,7 +6,7 @@ title: Settings and directories
 
 Open **"Invoicing" → "Configuration" → "Settings"**.
 
-![The "Settings" form of the Invoicing module](images/settings.png)
+![The "Settings" form of the Invoicing module](images/settings.webp)
 
 ## The Settings form
 
@@ -40,7 +40,7 @@ Payment terms carry a number of **Days**; assigned to a partner (separately for 
 - [payment calendar](debt-and-calendar.md) generation;
 - overdue control.
 
-![Payment terms directory](images/payment-terms-list.png)
+![Payment terms directory](images/payment-terms-list.webp)
 
 ## Bill file import
 

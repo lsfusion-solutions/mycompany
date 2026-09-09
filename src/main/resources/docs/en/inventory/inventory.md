@@ -46,7 +46,7 @@ Below is a typical warehouse cycle.
 
 ## Navigation
 
-![The Inventory section in the navigator](images/inventory-nav.png)
+![The Inventory section in the navigator](images/inventory-nav.webp)
 
 The "Inventory" section contains the following groups and forms:
 

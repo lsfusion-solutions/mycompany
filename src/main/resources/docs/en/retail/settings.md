@@ -10,7 +10,7 @@ Settings are usually located in **“Retail” → “Configuration” → “Se
 
 In most configurations the **Cash registers** and **Discount cards** directories are available directly in this section; **payment methods** are not a separate directory — they are maintained on the **Settings** form itself (see below).
 
-![The Settings form of the Retail module](images/settings.png)
+![The Settings form of the Retail module](images/settings.webp)
 
 ## Cash registers
 
@@ -27,7 +27,7 @@ Typically configured:
 - linking the cash register to one or more **computers** — once a computer has at least one linked register, only its linked registers are offered on that computer; a computer with no links sees all registers. In all cases the selector also hides registers whose location the current user cannot access (registers without a location stay visible);
 - **accounts per payment method** — on a separate cash-register tab you can, for each **[payment method](payments.md)**, specify the **account** that payments received with that method are posted to, and mark a method as **disabled** so it is not offered in the sale and return payment dialogs at this register.
 
-![Cash registers directory](images/cash-registers.png)
+![Cash registers directory](images/cash-registers.webp)
 
 > **Cash account.** For the **“Deposit cash”** and **“Withdraw”** operations to work on the POS screen (and for the **“Cash at the checkout”** balance to show on the Session tab), the cash register must have an **account** specified for the **“Cash”** payment method. Until the cash account is set, the cash deposit and withdrawal buttons on the POS screen stay **disabled**. In addition, the **“Deposit type”** and **“Withdrawal type”** must be configured on the **“Main”** tab of the Settings form for the deposit/withdrawal operations themselves.
 

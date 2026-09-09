@@ -12,7 +12,7 @@ Open **“Fleet” → “Operations” → “Vehicle contracts”**.
 
 The list shows contracts whose type allows linking a vehicle.
 
-![Vehicle contracts list](images/contracts-list.png)
+![Vehicle contracts list](images/contracts-list.webp)
 
 ## Creating a contract
 

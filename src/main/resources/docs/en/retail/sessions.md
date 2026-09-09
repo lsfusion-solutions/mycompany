@@ -45,4 +45,4 @@ A session aggregates the operations performed at the cash register while it was 
 
 The standalone **“Retail” → “Operations” → “Sessions”** list is used to browse and review sessions — the sales and returns count and amount columns are shown there. It also allows manual **New**, **Edit**, and **Delete**; note that creating a session here does not run the POS **“Open session”** checks (duplicate open session, fiscal opening), so opening from POS remains the normal workflow.
 
-![Session list](images/sessions-list.png)
+![Session list](images/sessions-list.webp)

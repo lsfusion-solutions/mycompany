@@ -10,7 +10,7 @@ Settings are usually located at **“Purchase” → “Configuration” → “
 
 Most purchase behavior is configured on the **purchase order type**. For each type you can set:
 
-![Purchase order type](images/order-type-card.png)
+![Purchase order type](images/order-type-card.webp)
 
 ### Basic fields
 

@@ -4,7 +4,7 @@ title: Pricelists and price types
 
 Pricelists are used to store and apply prices in sales orders and invoices.
 
-![Pricelists list](images/pricelists-list.png)
+![Pricelists list](images/pricelists-list.webp)
 
 ## Where to find
 

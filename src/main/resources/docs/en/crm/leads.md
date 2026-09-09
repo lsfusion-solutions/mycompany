@@ -19,7 +19,7 @@ In this section you can typically access:
 
 The list is intended for daily work: quickly see what is in progress, who is responsible, what needs to be closed, and where things are “stuck”.
 
-![Lead list](images/leads-list.png)
+![Lead list](images/leads-list.webp)
 
 ### What data is shown in the list
 
@@ -67,7 +67,7 @@ To open a lead card:
 
 The lead card is used to maintain full information about the lead and perform actions: change status, mark as lost, and work with related communications and documents.
 
-![Lead card](images/lead-card.png)
+![Lead card](images/lead-card.webp)
 
 ### Card structure
 

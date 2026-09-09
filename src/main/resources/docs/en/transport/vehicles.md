@@ -6,7 +6,7 @@ The section is intended for maintaining the list of vehicles and viewing all rel
 
 A vehicle card is an “aggregation point” for a specific car: it is convenient to control who is currently assigned to the vehicle, what services were done, which contracts are active, and to store documents.
 
-![Vehicle card](images/vehicle-card.png)
+![Vehicle card](images/vehicle-card.webp)
 
 ## Where to find it
 
@@ -20,7 +20,7 @@ The list usually shows the main vehicle data (vehicle model, license plate, comp
 
 In addition, the list can show columns for each [vehicle service type](settings.md) (the date and odometer value of the latest service of that type) and for each vehicle contract type (the number and dates of the latest contract of that type) — the set of columns depends on the configured types and the system version.
 
-![Vehicles list](images/vehicles-list.png)
+![Vehicles list](images/vehicles-list.webp)
 
 Typical actions in the list:
 

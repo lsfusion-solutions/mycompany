@@ -54,7 +54,7 @@ A shipment goes through the statuses **Draft → Waiting → Ready → Done** (a
 
 The actions that advance a shipment are **“Mark as Todo”** (Draft → Waiting), **“Check availability”** (reserves stock; when all lines are fully reserved, the shipment automatically becomes **Ready**), and **“Mark as Done”**. The **“Ship partially”** and **“Unreserve”** actions are also available. The line columns **“On hand”**, **“Expected”**, and **“Available”** help check stock (see [shipments](../inventory/shipments.md)).
 
-![Shipment card](images/shipment-card.png)
+![Shipment card](images/shipment-card.webp)
 
 ### “Reserve” shipment for an order (status `Waiting`)
 

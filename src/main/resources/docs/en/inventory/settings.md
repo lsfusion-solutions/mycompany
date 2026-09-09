@@ -6,7 +6,7 @@ title: Inventory settings
 
 Open **“Inventory” → “Configuration” → “Settings”**.
 
-![Inventory Settings form](images/settings.png)
+![Inventory Settings form](images/settings.webp)
 
 ## What is typically configured
 

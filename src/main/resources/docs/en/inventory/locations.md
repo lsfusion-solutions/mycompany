@@ -34,7 +34,7 @@ Locations are organized hierarchically via a single **Parent** field that points
 
 The system also shows a **Tree** view next to the list view, which is the easiest way to navigate the hierarchy.
 
-![Locations list with the Tree tab](images/locations-list.png)
+![Locations list with the Tree tab](images/locations-list.webp)
 
 Recommendations:
 

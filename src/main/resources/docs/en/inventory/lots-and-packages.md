@@ -6,7 +6,7 @@ title: Lots and packages
 
 A lot (batch/serial) is used for traceability. The lot directory is available at **“Inventory” → “Operations” → “Lots”**.
 
-![Lots list](images/lots-list.png)
+![Lots list](images/lots-list.webp)
 
 Lot tracking is controlled by several layers of settings:
 
@@ -41,7 +41,7 @@ Lot barcode labels can be printed: the print action is available both on the lot
 
 A package is a container/multi-item unit identified by an **ID** (and an optional **reference**) that has its own line list of product quantities. The package directory is available at **“Inventory” → “Operations” → “Packages”**.
 
-![Packages list](images/packages-list.png)
+![Packages list](images/packages-list.webp)
 
 > Package handling in the standard configuration is currently supported **only in [receipts](receipts.md)**: packages can be linked to a receipt, and a package line can be linked to a lot. Shipments, transfers, scrap and adjustments work with lots only — they do not have package-level support out of the box.
 

@@ -8,7 +8,7 @@ title: Reporting
 
 Open **“Reporting”**, then **“Lead report”**.
 
-![Lead report](images/lead-report.png)
+![Lead report](images/lead-report.webp)
 
 ### Purpose
 

@@ -10,7 +10,7 @@ In the system, a Bill of Materials is used as a source of planned norms: based o
 
 The Bills of Materials list is available in **"Manufacturing" → "Operations" → "Bills of Materials"**.
 
-![Bills of Materials list](images/bom-list.png)
+![Bills of Materials list](images/bom-list.webp)
 
 The list shows the **Number**, **Item**, **Qty**, **UoM**, **Name**, the **Archived** flag and the **Components** / **Byproducts** line counters. By default the **Active** filter hides archived Bills of Materials.
 
@@ -29,7 +29,7 @@ A Bill of Materials is used for:
 
 ## Bill of Materials card: main fields
 
-![Bill of Materials card](images/bom-card.png)
+![Bill of Materials card](images/bom-card.webp)
 
 In the Bill of Materials card you typically set:
 

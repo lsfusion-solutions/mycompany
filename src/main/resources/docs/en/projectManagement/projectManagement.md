@@ -61,7 +61,7 @@ Details: see [Projects](projects.md), [Tasks](tasks.md), [Team and roles on a pr
 
 ## Navigation
 
-![The Projects section in the navigator with expanded groups](images/projects-nav.png)
+![The Projects section in the navigator with expanded groups](images/projects-nav.webp)
 
 The **Projects** section typically includes groups:
 

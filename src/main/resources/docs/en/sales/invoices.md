@@ -26,7 +26,7 @@ An invoice goes through the statuses **Draft → To pay → Paid**; an invoice c
 
 The lines of a confirmed order show the **“Invoiced”** and **“Paid”** columns.
 
-![Invoice created from the order](images/invoice-from-order.png)
+![Invoice created from the order](images/invoice-from-order.webp)
 
 ## Typical scenario
 

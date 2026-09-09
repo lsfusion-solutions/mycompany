@@ -14,7 +14,7 @@ Access to configuration is typically restricted by administrator permissions or 
 
 The **“Settings”** form is organized into tabs. The **“Main”** tab holds general section parameters (for example, the numerator used to generate vehicle IDs). The other tabs are directories (the set depends on the configuration):
 
-![Settings form](images/transport-settings.png)
+![Settings form](images/transport-settings.webp)
 
 - **Fuel types** — options for the “Fuel type” field in the vehicle card.
 - **Vehicle categories** — vehicle classification (for example, passenger cars, trucks, special equipment).

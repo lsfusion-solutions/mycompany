@@ -22,7 +22,7 @@ A manufacturing order is the main manufacturing document. It is used to:
 
 The list is used to control current orders and quickly open the order card.
 
-![Manufacturing orders list](images/orders-list.png)
+![Manufacturing orders list](images/orders-list.webp)
 
 Typical columns:
 
@@ -96,7 +96,7 @@ These quantities increase the suggested **Auto order** amount together with ship
 
 The manufacturing order card is used to run the process step by step.
 
-![Manufacturing order card](images/order-card.png)
+![Manufacturing order card](images/order-card.webp)
 
 ### Main fields
 

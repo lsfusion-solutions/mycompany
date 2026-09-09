@@ -17,7 +17,7 @@ The same form is used for both shipments and transfers — the behavior depends 
 
 ## Shipment list
 
-![Shipments list](images/shipments-list.png)
+![Shipments list](images/shipments-list.webp)
 
 The list typically shows:
 
@@ -55,7 +55,7 @@ Additionally, the tab may show hints about stock at the source [location](locati
 
 ## Shipment card
 
-![Shipment card](images/shipment-card.png)
+![Shipment card](images/shipment-card.webp)
 
 ### Document header
 

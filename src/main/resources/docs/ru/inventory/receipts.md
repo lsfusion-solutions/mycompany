@@ -19,7 +19,7 @@ title: Приемки
 
 ## Список приемок
 
-![Список приемок](images/receipts-list.png)
+![Список приемок](images/receipts-list.webp)
 
 В списке обычно видны:
 
@@ -42,7 +42,7 @@ title: Приемки
 
 ## Карточка приемки
 
-![Карточка приемки](images/receipt-card.png)
+![Карточка приемки](images/receipt-card.webp)
 
 ### Шапка документа
 

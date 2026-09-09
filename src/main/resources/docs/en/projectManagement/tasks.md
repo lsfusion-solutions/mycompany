@@ -8,7 +8,7 @@ A task is the main work unit within a project. It is recommended to keep tasks i
 
 ## Main task data
 
-![Task list with priority colour coding](images/tasks-list.png)
+![Task list with priority colour coding](images/tasks-list.webp)
 
 A task typically contains:
 
@@ -39,7 +39,7 @@ The set of allowed statuses depends on the task type and is configured on the ty
 
 ## Statuses and workflow
 
-![Task card: status panel, fields, comments](images/task-card.png)
+![Task card: status panel, fields, comments](images/task-card.webp)
 
 A task goes through states defined by **[task statuses](settings.md#task-statuses)**. Transitions between statuses are controlled by the **[workflow](settings.md#workflow)**.
 
@@ -81,7 +81,7 @@ In addition to the task list, special views can be used to monitor progress. The
 
 ### Kanban
 
-![Task board (Kanban): columns are statuses](images/task-kanban.png)
+![Task board (Kanban): columns are statuses](images/task-kanban.webp)
 
 Kanban helps control the workflow by statuses. Use it for the team’s daily work: it quickly shows what is in the queue, what is in progress, and what is completed.
 
@@ -97,7 +97,7 @@ Recommendations:
 
 ### Gantt chart
 
-![Gantt chart of tasks](images/task-gantt.png)
+![Gantt chart of tasks](images/task-gantt.webp)
 
 The Gantt chart is used for date-based planning and visual due date control. It is useful when it is important to agree on the project calendar plan and evaluate overlaps between tasks.
 

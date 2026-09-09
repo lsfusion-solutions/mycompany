@@ -6,7 +6,7 @@ The “Settings” section contains parameters and directories that define Human
 
 Available settings depend on your organization configuration and user permissions.
 
-![The Human Resources “Settings” form](images/settings.png)
+![The Human Resources “Settings” form](images/settings.webp)
 
 ## Recruitment
 

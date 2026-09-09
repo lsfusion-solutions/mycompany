@@ -56,7 +56,7 @@ The section is located in the navigation tree as **"Manufacturing"** and usually
 - **Reporting** — the **"Order report"** ([manufacturing reports](reports.md)).
 - **Configuration** — directories and parameters: the **"Settings"** form (with [order types](settings.md) and status flags), **"Operations"** ([BoM operations](bom.md)) and **"Work centers"** ([work centers](work-orders.md)).
 
-![Manufacturing section in the navigator](images/manufacturing-nav.png)
+![Manufacturing section in the navigator](images/manufacturing-nav.webp)
 
 ## Terms
 

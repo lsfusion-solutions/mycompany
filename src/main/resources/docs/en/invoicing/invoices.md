@@ -21,11 +21,11 @@ Depending on settings, an invoice can be:
 - a basis for creating a **[shipment](shipments-from-invoice.md)** (if [Inventory](../inventory/inventory.md) is used);
 - a document for printing primary forms (if print templates are enabled).
 
-![Invoice list](images/invoices-list.png)
+![Invoice list](images/invoices-list.webp)
 
 ## Invoice card
 
-![Invoice card](images/invoice-card.png)
+![Invoice card](images/invoice-card.webp)
 
 ### Main fields
 

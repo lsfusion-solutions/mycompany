@@ -37,11 +37,11 @@ The list shows, among others:
 
 The list also has ready-made filter groups **Not paid** / **Paid** / **Partially paid** for quickly finding documents by settlement state.
 
-![Bill list](images/bills-list.png)
+![Bill list](images/bills-list.webp)
 
 ## Bill card
 
-![Bill card](images/bills-card.png)
+![Bill card](images/bills-card.webp)
 
 ### Main fields
 

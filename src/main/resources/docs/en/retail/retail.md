@@ -66,7 +66,7 @@ Typical menu items:
 - **“Retail” → “Operations” → “Sessions”** — the session list.
 - **“Retail” → “Configuration” → “Settings”** — section parameters.
 
-![The Retail section in the navigator](images/retail-nav.png)
+![The Retail section in the navigator](images/retail-nav.webp)
 
 ## Terms
 

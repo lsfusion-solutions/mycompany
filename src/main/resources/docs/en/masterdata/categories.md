@@ -11,7 +11,7 @@ Two views are usually available:
 - **List** — a flat list of categories;
 - **Tree** — a hierarchy of categories.
 
-![Category list](images/categories.png)
+![Category list](images/categories.webp)
 
 ## Category card
 

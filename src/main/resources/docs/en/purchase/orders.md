@@ -6,7 +6,7 @@ title: Purchase orders
 
 The main forms for working with purchase orders are usually located at **“Purchase” → “Operations” → “Purchase orders”**.
 
-![Purchase orders list](images/orders-list.png)
+![Purchase orders list](images/orders-list.webp)
 
 The list has a default **“Opened”** filter that hides locked orders. Status actions (**“Send”**, **“Confirm”**, **“Cancel”**, **“Lock”**) can also be applied to several selected orders at once.
 
@@ -31,7 +31,7 @@ When creating a purchase order, you typically fill in:
 - **scheduled date** (expected delivery);
 - **note** and **vendor reference**.
 
-![Purchase order card](images/order-card.png)
+![Purchase order card](images/order-card.webp)
 
 The card footer shows the vendor **“Debt”** and **“Overdue debt”**; clicking a value opens the detailed vendor debt breakdown.
 

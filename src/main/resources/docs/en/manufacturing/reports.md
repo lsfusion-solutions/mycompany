@@ -4,7 +4,7 @@ title: Manufacturing reports
 
 The reporting section is used to analyze [manufacturing orders](orders.md). Open **"Manufacturing" → "Reporting" → "Order report"**.
 
-![Manufacturing order report](images/order-report.png)
+![Manufacturing order report](images/order-report.webp)
 
 ## What the report shows
 

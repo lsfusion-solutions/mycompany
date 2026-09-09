@@ -51,7 +51,7 @@ Check the return lines:
 
 If return quantity control is enabled in your configuration, the system will not allow returning more than was sold in the original receipt.
 
-![Return on the POS screen](images/pos-return.png)
+![Return on the POS screen](images/pos-return.webp)
 
 ### Step 4. Pay out funds (return payment)
 
@@ -67,7 +67,7 @@ The return payment is restricted: **you cannot refund more by a payment method t
 
 Example: if the purchase was paid partly in cash and partly by bank card, then the return usually has to be split by the same payment methods within the paid amounts.
 
-![Return payment dialog](images/pos-return-payment.png)
+![Return payment dialog](images/pos-return-payment.webp)
 
 After confirming the return payment, POS usually creates a new receipt for further work.
 

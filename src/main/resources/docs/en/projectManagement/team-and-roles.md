@@ -10,7 +10,7 @@ It is recommended to maintain the team and roles from the first days of the proj
 
 A team is a separate list of employees that can be assigned **to multiple projects at the same time**. Teams are maintained in **Projects → Configuration**.
 
-![Team list with members](images/teams.png)
+![Team list with members](images/teams.webp)
 
 This is convenient when the same group works on different projects or on several areas within the organization.
 

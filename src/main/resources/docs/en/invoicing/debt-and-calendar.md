@@ -39,7 +39,7 @@ Layout:
 
 The calendar has two breakdown tabs — **Type** and **Partner** — plus a cash-balance chart.
 
-![Payment calendar](images/payment-calendar.png) The due date comes from each document's stored **Pay before** value (computed once from the payment terms at entry), not re-derived on the fly.
+![Payment calendar](images/payment-calendar.webp) The due date comes from each document's stored **Pay before** value (computed once from the payment terms at entry), not re-derived on the fly.
 
 Clicking a **Debt before** or date cell drills down into the underlying documents (the **Debts** list filtered by company, type, partner and due date).
 

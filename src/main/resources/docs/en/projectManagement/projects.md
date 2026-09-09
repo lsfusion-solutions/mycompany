@@ -10,7 +10,7 @@ A project combines related **[tasks](tasks.md)**, the **[team and roles](team-an
 
 Open **Projects → Operations → Projects**.
 
-![Project list with filters](images/projects-list.png)
+![Project list with filters](images/projects-list.webp)
 
 The list typically shows:
 
@@ -50,7 +50,7 @@ If there are many projects in the list, also use field search in the list (for e
 
 ## Project card
 
-![Project card](images/project-card.png)
+![Project card](images/project-card.webp)
 
 The project card contains the main fields:
 

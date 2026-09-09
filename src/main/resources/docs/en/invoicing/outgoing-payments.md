@@ -14,7 +14,7 @@ Typical scenarios:
 
 Open: **“Invoicing” → “Operations” → “Outgoing payments”**.
 
-![Outgoing payments list](images/outgoing-payments-list.png)
+![Outgoing payments list](images/outgoing-payments-list.webp)
 
 ## Creating an outgoing payment
 

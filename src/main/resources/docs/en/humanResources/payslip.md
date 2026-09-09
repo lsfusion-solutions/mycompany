@@ -8,7 +8,7 @@ A payslip is an employee payroll calculation document for a period. It includes:
 - the **“Net wage”** total;
 - (if used) source data details, e.g., a list of time entries.
 
-![Payslip card](images/payslip-card.png)
+![Payslip card](images/payslip-card.webp)
 
 ## Payslip fields
 

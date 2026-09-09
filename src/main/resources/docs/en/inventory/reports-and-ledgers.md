@@ -8,7 +8,7 @@ The reports live in **“Inventory” → “Reporting”**. Four forms are avai
 
 Stock on hand with filters and breakdowns.
 
-![Inventory report](images/inventory-report.png)
+![Inventory report](images/inventory-report.webp)
 
 - Filters: an optional date (**Select date** — the “as of” view), a **Single location** toggle, and **Locations** (tree), **Categories** and **Attributes** filter tabs.
 - Columns per location/product: **Expected**, **Reserved**, **Available** (from the reservation ledger), **On hand**, **On hand (including nesting)** — i.e., together with child locations, on hand **as of the selected date**, and **Last receipt date** / **Last shipment date**.

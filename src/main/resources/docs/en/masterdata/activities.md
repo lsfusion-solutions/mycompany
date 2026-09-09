@@ -4,7 +4,7 @@ title: Activities
 
 The **“Activities”** section is used to plan and track tasks, meetings, calls, and other actions.
 
-![Activities section](images/activities.png)
+![Activities section](images/activities.webp)
 
 ## Activities and Types
 

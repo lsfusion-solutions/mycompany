@@ -11,7 +11,7 @@ The list typically shows:
 - **Name**;
 - **ID** (can be generated automatically).
 
-![Unit of measure list](images/uom-list.png)
+![Unit of measure list](images/uom-list.webp)
 
 ## Unit of measure card
 

@@ -15,7 +15,7 @@ The screen opens on the upcoming week (a 7-day interval starting from the curren
 
 Use the **Previous week** / **Next week** buttons, or the date interval field, to move between weeks. Both tabs show the shifts of the selected period.
 
-![Shift list](images/shifts-list.png)
+![Shift list](images/shifts-list.webp)
 
 ## Shift card
 
@@ -31,7 +31,7 @@ A shift contains:
 
 To open a shift, double‑click it in the list (or use **Edit**).
 
-![Shift card](images/shift-card.png)
+![Shift card](images/shift-card.webp)
 
 ## Night shifts
 
@@ -50,7 +50,7 @@ A **shift template** can also be marked as a night shift (on the **“Shift temp
 
 The **Schedule** tab shows the selected week as a board — rows are employees, columns are days. The rows show employees who have shifts; shifts without an employee fall into the **Unassigned** row. A row of **shift templates** is shown above the board.
 
-![The Schedule view](images/shift-schedule.png)
+![The Schedule view](images/shift-schedule.webp)
 
 On the board you can:
 
@@ -66,7 +66,7 @@ A **shift template** is a predefined time interval (for example, a morning shift
 
 Shift templates are configured on the **Settings** form, on the **“Shift templates”** tab — see [Settings](settings.md#shift-templates).
 
-![The Shift templates tab in Settings](images/shift-templates.png)
+![The Shift templates tab in Settings](images/shift-templates.webp)
 
 ## Shifts and projects
 

@@ -46,7 +46,7 @@ For easier control, the table usually uses highlighting:
 
 Open **Projects → Processes → Supervisor timesheet**.
 
-![Supervisor timesheet: employees by days of the period](images/timesheet-supervisor.png)
+![Supervisor timesheet: employees by days of the period](images/timesheet-supervisor.webp)
 
 ### Purpose
 
@@ -126,7 +126,7 @@ A simplified variant of the supervisor timesheet for working from a phone:
 
 Open **Projects → Processes → Employee timesheet**.
 
-![Employee timesheet: tasks by days of the period](images/timesheet-employee.png)
+![Employee timesheet: tasks by days of the period](images/timesheet-employee.webp)
 
 ### Purpose
 

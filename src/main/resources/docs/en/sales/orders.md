@@ -18,7 +18,7 @@ A sales order records:
 
 ## Sales order list
 
-![Sales orders list](images/orders-list.png)
+![Sales orders list](images/orders-list.webp)
 
 In the list, you typically see:
 
@@ -35,7 +35,7 @@ Filters and the set of columns depend on your configuration.
 
 ## Sales order card
 
-![Sales order card](images/order-card.png)
+![Sales order card](images/order-card.webp)
 
 ### Main fields
 

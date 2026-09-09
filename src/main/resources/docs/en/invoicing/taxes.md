@@ -11,7 +11,7 @@ The configuration uses two directories:
 - **Taxes** — each tax has a **name**, a rate in the **"Value, %"** field, and belongs to a **tax group** (mandatory). For example: "VAT 20%" with value 20 in the "VAT" group.
 - **Tax groups** — taxes are grouped so that only **one tax per group** can be applied to a given document line at the same time. This is the standard way of expressing mutually-exclusive tax variants (e.g., a "VAT" group containing rates 0%, 5%, 10%, 20% — only one can be selected per line). A tax group has a name and a short **ID** used as the key for import.
 
-![Taxes directory](images/taxes-list.png)
+![Taxes directory](images/taxes-list.webp)
 
 ## Taxes on items
 

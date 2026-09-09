@@ -80,7 +80,7 @@ Typical fields:
 - **Phone**, **Email**;
 - **Archived** — a flag to exclude the partner from active use.
 
-![Partner card](images/partner-card.png)
+![Partner card](images/partner-card.webp)
 
 ### Vendor purchase settings
 

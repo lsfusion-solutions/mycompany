@@ -107,7 +107,7 @@ Typical fields:
 - **Description**;
 - **Archived**.
 
-![Item card](images/item-card.png)
+![Item card](images/item-card.webp)
 
 ### Inventory settings
 

@@ -16,7 +16,7 @@ In addition to managerial control, time entries are often used for internal repo
 
 ## How to add a time entry
 
-![Time entry list](images/time-entries-list.png)
+![Time entry list](images/time-entries-list.webp)
 
 Typical scenarios:
 

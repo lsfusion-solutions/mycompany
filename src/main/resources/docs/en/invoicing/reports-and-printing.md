@@ -131,11 +131,11 @@ The base configuration ships four forms in **Invoicing → Reporting**:
 - **Payments** — a unified view of all incoming and outgoing payments with type, date, number, partner, accounts, company and signed amount; the same form also has an **Accounts** tab that shows current account balances and, with a **Select date** picker, the balance as of a chosen date.
 - **[Payment calendar](debt-and-calendar.md)** — outstanding balance and forecast cash across a date range, with **Type** and **Partner** breakdown tabs.
 
-![Bills report](images/bill-report.png)
+![Bills report](images/bill-report.webp)
 
-![Invoices report](images/invoice-report.png)
+![Invoices report](images/invoice-report.webp)
 
-![Payments report](images/payments-report.png)
+![Payments report](images/payments-report.webp)
 
 [Debt](debt-and-calendar.md) figures are also visible directly on the **Bill** and **Invoice** cards (matched payments and remaining debt) and through the dedicated **Partner debts** / **Contract debts** views.
 
