@@ -1,6 +1,6 @@
 MODULE Session;
 
-REQUIRE MetaNumerator, Time, DateUtils, 
+REQUIRE MetaNumerator, Time, DateUtils, Doc,
         RetailSettings, Pos;
 
 NAMESPACE Retail;
@@ -17,6 +17,8 @@ CONSTRAINT closingDateTime(Session s) < openingDateTime(s)
 
 opened 'Opened' (Session s) = openingDateTime(s) AND NOT closingDateTime(s);
 
+nameStatus 'Status' (Session s) = CASE WHEN opened(s) THEN 'Opened' WHEN closingDateTime(s) THEN 'Closed';
+
 @defineNumber(session, 'Sessions', 'SM');
 
 numberDate 'Description' (Session s) = number(s) + ' (' + openingDateTime(s) + ')' IN id;
@@ -24,64 +26,11 @@ numberDate 'Description' (Session s) = number(s) + ' (' + openingDateTime(s) + '
 pos 'POS' = DATA Pos (Session) NONULL;
 namePos 'POS' (Session s) = name(pos(s));
 
+company 'Company' (Session s) = company(pos(s));
+nameCompany 'Company' (Session s) = name(company(s));
+
 // opened
 openedSession (Pos p) = GROUP AGGR Session s WHERE opened(s) BY pos(s);
-
-FORM session '{Session}'
-    OBJECTS s = Session PANEL
-    PROPERTIES(s) namePos, number, 
-                  openingDateTime, closingDateTime
-    
-    EDIT Session OBJECT s
-;
-
-DESIGN session {
-    OBJECTS {
-        NEW header {
-            NEW title {
-                horizontal = TRUE;
-                alignment = STRETCH;
-                MOVE PROPERTY(namePos(s));
-                MOVE PROPERTY(number(s));
-            }
-            NEW period {
-                horizontal = TRUE;
-                alignment = STRETCH;
-                MOVE PROPERTY(openingDateTime(s));
-                MOVE PROPERTY(closingDateTime(s));
-            }
-        }
-        NEW tabPane {
-            fill = 1;
-            tabbed = TRUE;
-        }
-    }
-}
-
-FORM sessions 'Sessions'
-    OBJECTS o = Session
-    PROPERTIES(o) READONLY number, openingDateTime, closingDateTime, namePos
-    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
-    
-    LIST Session OBJECT o
-;
-
-DESIGN sessions {
-    OBJECTS {
-        NEW filters FIRST { 
-            caption = 'Filters';
-            horizontal = TRUE;
-        }
-    }
-}
-
-@defineDateFilterForm(sessions, o, opening);
-
-NAVIGATOR {
-    operations {
-        NEW sessions;
-    }
-}
 
 // actions
 breakSession = DATA LOCAL BOOLEAN ();
@@ -122,3 +71,70 @@ close 'Close session' (Session s) {
         }
     }
 } CONFIRM;
+
+FORM session '{Session}'
+    OBJECTS s = Session PANEL
+    PROPERTIES(s) namePos, number, 
+                  openingDateTime, closingDateTime
+    PROPERTIES(s) READONLY nameStatus
+    PROPERTIES(s) close SHOWIF opened(s)
+    
+    EDIT Session OBJECT s
+;
+
+@defineFormStatusContainer(session);
+
+DESIGN session {
+    caption = badgedDoc('{Session}', number(s), openingDateTime(s));
+    primaryActions {
+        MOVE PROPERTY(close(s)) { valueClass = 'btn-primary'; }
+    }
+    status {
+        MOVE PROPERTY(nameStatus(s));
+    }
+    OBJECTS {
+        NEW header {
+            NEW headerMain {
+                horizontal = TRUE;
+                alignment = STRETCH;
+                NEW headerLeft {
+                    MOVE PROPERTY(namePos(s)) { notNull = TRUE; }
+                    MOVE PROPERTY(number(s));
+                }
+                NEW headerRight {
+                    MOVE PROPERTY(openingDateTime(s));
+                    MOVE PROPERTY(closingDateTime(s));
+                }
+            }
+        }
+        NEW tabbedPane {
+            fill = 1;
+            tabbed = TRUE;
+        }
+    }
+}
+
+FORM sessions 'Sessions'
+    OBJECTS o = Session
+    PROPERTIES(o) READONLY number, openingDateTime, closingDateTime, nameStatus, namePos, nameCompany
+    PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+    
+    FILTERGROUP status
+        FILTER 'Opened' opened(o) 'F8'
+        FILTER 'Closed' closingDateTime(o) 'F7'
+    
+    LIST Session OBJECT o
+;
+
+@defineDocObjectsForm(sessions, o, 'Sessions');
+
+@defineDateFilterForm(sessions, o, opening);
+
+@defineDocFilter(session, Pos, pos, o, 'POS');
+@defineDocFilter(session, Company, company, o, 'Company');
+
+NAVIGATOR {
+    operations {
+        NEW sessions;
+    }
+}
