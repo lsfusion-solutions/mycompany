@@ -205,7 +205,9 @@ META defineObjectCommentsHistory(obj)
     changes (###obj##Comment tc) = HTMLTEXT('<ul style="color:#959595">' + (GROUP CONCAT ('<li>' + type(###obj##History th) + ' : ' + description(th) + '</li>') IF comment(th) = tc, '' ORDER th) + '</ul>');
     header (###obj##Comment tc) += changes(tc);
 
-    WHEN SET(###obj##Comment tc IS ###obj##Comment) AND SET(###obj##History th IS ###obj##History) DO
+    // only the comment of the same object: a session changing several objects at once (a bulk move,
+    // an import) must not attach the changes of one object to the comment of another
+    WHEN SET(###obj##Comment tc IS ###obj##Comment) AND SET(###obj##History th IS ###obj##History) AND obj(tc) = obj(th) DO
         comment(th) <- tc;
 END
 
@@ -217,7 +219,7 @@ META defineObjectCommentsFiles(obj, NS)
                       IF comment(tf) = tc, '' ORDER tf) + '</ul>');
     footer (###obj##Comment tc) += files(tc);
 
-    WHEN SET(###obj##Comment tc IS ###obj##Comment) AND SET(###obj##File tf IS ###obj##File) DO
+    WHEN SET(###obj##Comment tc IS ###obj##Comment) AND SET(###obj##File tf IS ###obj##File) AND obj(tc) = obj(tf) DO
         comment(tf) <- tc;
 END
 
