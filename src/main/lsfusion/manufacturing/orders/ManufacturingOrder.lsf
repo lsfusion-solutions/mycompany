@@ -300,6 +300,9 @@ clone(ManufacturingOrder to, ManufacturingOrder from) +{
 }
 
 copy 'Copy' (ManufacturingOrder from) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
     NEWSESSION {
         NEW to = ManufacturingOrder {
             clone(to, from);

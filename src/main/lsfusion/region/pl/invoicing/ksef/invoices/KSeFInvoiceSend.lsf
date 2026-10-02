@@ -6,6 +6,9 @@ REQUIRE KSeF, KSeFCertificate, KSeFFakturaSend, KSeFInvoice, KSeFSession, Invoic
 NAMESPACE KSeF;
 
 sendToKSeF 'Wyślij do KSeF' (Invoice i) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
     NEWSESSION {
         TRY {
             createFaktura(i);

@@ -363,6 +363,9 @@ clone (Invoice to, Invoice from) + {
 }
 
 copy 'Copy' (Invoice from)  { 
+    APPLY;
+    IF canceled() THEN RETURN;
+
     NEWSESSION {
         NEW to = Invoice {
             clone(to, from);
