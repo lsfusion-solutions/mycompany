@@ -15,6 +15,9 @@ countryOrigin 'Country of origin'  = DATA Country (Product);
 nameCountryOrigin 'Country of origin' (Product p) = name(countryOrigin(p));
 
 copy 'Copy' (Product p) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
     NEWSESSION {
         NEW np = Product {
             weight(np) <- weight(p);

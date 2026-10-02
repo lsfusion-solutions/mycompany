@@ -5,6 +5,9 @@ REQUIRE ReceiptDone, Scrap;
 NAMESPACE Inventory;
 
 scrap 'Scrap' (Receipt r) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
     NEWSESSION {
         NEW s = Scrap {
             location(s) <- location(r);

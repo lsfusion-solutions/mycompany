@@ -269,6 +269,9 @@ clone(Shipment to, Shipment from) {
 }
 
 copy 'Copy' (Shipment from)  { 
+    APPLY;
+    IF canceled() THEN RETURN;
+
     NEWSESSION {
         NEW to = Shipment {
             clone(to, from);

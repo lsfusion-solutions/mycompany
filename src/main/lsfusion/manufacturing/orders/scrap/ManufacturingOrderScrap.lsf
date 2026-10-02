@@ -20,6 +20,9 @@ DESIGN manufacturingOrderType {
 @defineDocRelation(manufacturingOrder, scrap, 'Manufacturing order', 'Scrap', o, s, );
 
 scrap 'Scrap' (ManufacturingOrder o) {
+    APPLY;
+    IF canceled() THEN RETURN;
+
     NEWSESSION {
         NEW s = Scrap {
             manufacturingOrder(s) <- o;

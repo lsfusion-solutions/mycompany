@@ -322,6 +322,9 @@ clone (Order to, Order from) {
 }
 
 copy 'Copy' (Order from)  { 
+    APPLY;
+    IF canceled() THEN RETURN;
+
     NEWSESSION {
         NEW to = Order {
             clone(to, from);
