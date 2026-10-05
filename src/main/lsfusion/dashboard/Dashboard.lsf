@@ -47,9 +47,9 @@ dashboardChartOptions (STRING title, STRING labelField, STRING valueField, STRIN
 
 FORM dashboard 'Dashboard'
     OBJECTS dates = INTERVAL[DATE] PANEL NULL
-    PROPERTIES prevInterval '<' = { SEEK dashboard.dates = prevMonthInterval(dates); },
+    PROPERTIES prevInterval '<' = { ACTIVATE dashboard.dates = prevMonthInterval(dates); },
                period 'Period' = VALUE(dates),
-               nextInterval '>' = { SEEK dashboard.dates = nextMonthInterval(dates); }
+               nextInterval '>' = { ACTIVATE dashboard.dates = nextMonthInterval(dates); }
 
     OBJECTS k = DashboardKpi CUSTOM 'dashboardKpis' OPTIONS JSON FROM locale = language(currentUser()), i18n = dashboardI18n()
     PROPERTIES(k) READONLY caption, group, nameGroup, iconGroup, orderGroup, scale, value
@@ -57,7 +57,7 @@ FORM dashboard 'Dashboard'
     PROPERTIES(k, dates) GRID open
     ORDERS orderGroup(k)
 
-    EVENTS ON INIT { SEEK dashboard.dates = interval(firstDayOfMonth(currentDate()), lastDayOfMonth(currentDate())); },
+    EVENTS ON INIT { ACTIVATE dashboard.dates = interval(firstDayOfMonth(currentDate()), lastDayOfMonth(currentDate())); },
            ON SCHEDULE PERIOD 300 formRefresh()
 ;
 
