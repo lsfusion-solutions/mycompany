@@ -1,0 +1,19 @@
+MODULE PurchaseDashboard;
+
+REQUIRE Dashboard, PurchaseOrderLocked;
+
+NAMESPACE Purchase;
+
+EXTEND CLASS DashboardGroup {
+    purchase 'Purchase'
+}
+icon(DashboardGroup g) += WHEN g = DashboardGroup.purchase THEN r'bi bi-bag';
+order(DashboardGroup g) += WHEN g = DashboardGroup.purchase THEN 30;
+
+EXTEND CLASS DashboardKpi {
+    purchaseOpened 'Purchase orders'
+}
+group(DashboardKpi k) += WHEN k = DashboardKpi.purchaseOpened THEN DashboardGroup.purchase;
+
+value(DashboardKpi k) += WHEN k = DashboardKpi.purchaseOpened THEN (OVERRIDE countUnlockedOrders(), 0);
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.purchaseOpened THEN { SHOW orders FILTERS NOT locked(o) DOCKED; }

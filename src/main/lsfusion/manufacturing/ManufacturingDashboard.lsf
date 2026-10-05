@@ -1,0 +1,22 @@
+MODULE ManufacturingDashboard;
+
+REQUIRE Dashboard, ManufacturingOrderInProgress;
+
+NAMESPACE Manufacturing;
+
+EXTEND CLASS DashboardGroup {
+    manufacturing 'Manufacturing'
+}
+icon(DashboardGroup g) += WHEN g = DashboardGroup.manufacturing THEN r'bi bi-gear-wide-connected';
+order(DashboardGroup g) += WHEN g = DashboardGroup.manufacturing THEN 50;
+
+EXTEND CLASS DashboardKpi {
+    manufacturingOpened 'Manufacturing orders',
+    manufacturingInProgress 'In progress'
+}
+group(DashboardKpi k) += WHEN k = DashboardKpi.manufacturingOpened OR k = DashboardKpi.manufacturingInProgress THEN DashboardGroup.manufacturing;
+
+value(DashboardKpi k) += WHEN k = DashboardKpi.manufacturingOpened THEN (OVERRIDE countOpenedManufacturingOrders(), 0);
+value(DashboardKpi k) += WHEN k = DashboardKpi.manufacturingInProgress THEN (OVERRIDE countInProgressManufacturingOrders(), 0);
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.manufacturingOpened THEN { SHOW manufacturingOrders FILTERS opened(o) DOCKED; }
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.manufacturingInProgress THEN { SHOW manufacturingOrders FILTERS status(o) = ManufacturingOrderStatus.inProgress DOCKED; }

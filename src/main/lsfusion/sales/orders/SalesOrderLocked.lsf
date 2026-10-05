@@ -8,6 +8,7 @@ EXTEND CLASS OrderStatus {
     locked 'Locked'
 }
 locked 'Locked' = DATA BOOLEAN (Order);
+countUnlockedOrders 'Opened' () = GROUP SUM 1 IF NOT locked(Order o) AND o IS Order;
 
 status(Order o) += WHEN locked(o) THEN OrderStatus.locked;
 color(OrderStatus o) += WHEN o = OrderStatus.locked THEN RGB(255,255,255);

@@ -1,0 +1,116 @@
+/* Dashboard charts (dashboardcharts.js): the card around the SVG, axis and grid styling, the
+   hover tooltip. Theme colours come from the Bootstrap 5.3 variables (--bs-*), the series colour
+   is the accent the chart was given in its OPTIONS. */
+
+.dchart {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 220px;
+    padding: 0.6rem 0.8rem 0.5rem;
+    border: 1px solid var(--bs-border-color, rgba(128, 128, 128, 0.25));
+    border-radius: 0.85rem;
+    background: var(--bs-body-bg, #fff);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+    box-sizing: border-box;
+    overflow: hidden;
+}
+.dchart * { box-sizing: border-box; }
+
+.dchart-title {
+    flex: 0 0 auto;
+    margin-bottom: 0.35rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color, #6b7280);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dchart-body {
+    flex: 1 1 auto;
+    position: relative;
+    min-height: 0;
+    overflow: hidden;
+}
+.dchart-svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.dchart-grid {
+    stroke: var(--bs-border-color, #e5e7eb);
+    stroke-width: 1;
+    stroke-dasharray: 3 3;
+}
+.dchart-grid-base { stroke-dasharray: none; }
+
+.dchart-tick,
+.dchart-label {
+    fill: var(--bs-secondary-color, #6b7280);
+    font-size: 11px;
+}
+.dchart-value {
+    fill: var(--bs-body-color, #111827);
+    font-size: 11px;
+    font-weight: 600;
+}
+.dchart-empty {
+    fill: var(--bs-secondary-color, #6b7280);
+    font-size: 13px;
+}
+
+.dchart-bar {
+    stroke: var(--bs-body-color, #111827);
+    stroke-opacity: 0;
+    transition: stroke-opacity 0.12s ease;
+}
+.dchart-bar.is-hover { stroke-opacity: 0.35; }
+
+.dchart-line {
+    fill: none;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+.dchart-dot {
+    fill: var(--bs-body-bg, #fff);
+    stroke-width: 2;
+}
+.dchart-focus {
+    fill: var(--bs-body-bg, #fff);
+    stroke-width: 3;
+    pointer-events: none;
+}
+.dchart-guide {
+    stroke: var(--bs-secondary-color, #6b7280);
+    stroke-dasharray: 3 3;
+    pointer-events: none;
+}
+.dchart-hit {
+    fill: transparent;
+    pointer-events: all;
+}
+
+.dchart-tip {
+    position: absolute;
+    z-index: 5;
+    pointer-events: none;
+    padding: 0.35rem 0.6rem;
+    border-radius: 0.5rem;
+    background: var(--bs-body-color, #111827);
+    color: var(--bs-body-bg, #fff);
+    font-size: 0.78rem;
+    line-height: 1.25;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(16, 24, 40, 0.18);
+}
+.dchart-tip-head { opacity: 0.75; }
+.dchart-tip-value {
+    font-weight: 700;
+    font-size: 0.9rem;
+}

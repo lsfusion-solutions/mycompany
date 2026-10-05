@@ -41,6 +41,7 @@ hours 'Hours' (DATE d, Employee e) =
 hours 'Hours' (Employee e, DATE from, DATE to) =
     GROUP SUM hours(TimeEntry t) IF employee(t) = e AND date(t) >= from AND date(t) <= to;
 hours 'Hours' (Employee e, INTERVAL[DATE] i) = hours(e, from(i), to(i));
+hours 'Hours' (INTERVAL[DATE] i) = GROUP SUM hours(TimeEntry e) IF date(e) >= from(i) AND date(e) <= to(i);
 
 FORM timeEntry 'Time entry'
     OBJECTS t = TimeEntry PANEL

@@ -1,0 +1,51 @@
+MODULE ProjectManagementDashboard;
+
+REQUIRE Dashboard, Task, ProjectTask, TimeEntry;
+
+NAMESPACE ProjectManagement;
+
+// group and key figures
+EXTEND CLASS DashboardGroup {
+    projects 'Projects'
+}
+icon(DashboardGroup g) += WHEN g = DashboardGroup.projects THEN r'bi bi-kanban';
+order(DashboardGroup g) += WHEN g = DashboardGroup.projects THEN 60;
+
+EXTEND CLASS DashboardKpi {
+    myTasks 'My tasks',
+    overdueTasks 'Overdue',
+    hoursLogged 'Hours'
+}
+group(DashboardKpi k) += WHEN k = DashboardKpi.myTasks OR k = DashboardKpi.overdueTasks OR k = DashboardKpi.hoursLogged THEN DashboardGroup.projects;
+scale(DashboardKpi k) += WHEN k = DashboardKpi.hoursLogged THEN 2;
+
+value(DashboardKpi k) += WHEN k = DashboardKpi.myTasks THEN (OVERRIDE countOpenAssignedTask(currentUser()), 0);
+value(DashboardKpi k) += WHEN k = DashboardKpi.overdueTasks THEN (OVERRIDE countOverdueTasks(), 0);
+value(DashboardKpi k, INTERVAL[DATE] i) += WHEN k = DashboardKpi.hoursLogged THEN (OVERRIDE hours(i), 0.0);
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.myTasks THEN { SHOW tasks FILTERS opened(t), assignedTo(t, currentUser()) DOCKED; }
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.overdueTasks THEN { SHOW tasks FILTERS opened(t), deadline(t) < currentDate() DOCKED; }
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.hoursLogged THEN { SHOW timeEntries FILTERS date(t) >= from(i), date(t) <= to(i) DOCKED; }
+
+// chart: open tasks per status; list: the tasks assigned to the current user
+EXTEND FORM dashboard
+    OBJECTS ts = TaskStatus CUSTOM 'dashboardBarChart' OPTIONS dashboardChartOptions('Tasks', r'name', r'countTasks', r'#0891b2', 0)
+    PROPERTIES(ts) READONLY name, sortingOrder, countTasks
+    ORDERS sortingOrder(ts)
+    FILTERS countTasks(ts), NOT closed(ts)
+
+    OBJECTS mt 'My tasks' = Task
+    PROPERTIES(mt) READONLY name, nameProject, nameStatus, deadline, namePriority
+    PROPERTIES(mt) NEWSESSION EDIT
+    ORDERS deadline(mt)
+    FILTERS opened(mt), assignedTo(mt, currentUser())
+;
+
+DESIGN dashboard {
+    charts {
+        MOVE GRID(ts) { fill = 1; alignment = STRETCH; height = 280; }
+        REMOVE BOX(ts);
+    }
+    lists {
+        MOVE BOX(mt);
+    }
+}

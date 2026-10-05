@@ -1,0 +1,43 @@
+MODULE SalesDashboard;
+
+REQUIRE Dashboard, SalesLedger, SalesLedgerReport, SalesOrderLocked;
+
+NAMESPACE Sales;
+
+// group and key figures
+EXTEND CLASS DashboardGroup {
+    sales 'Sales'
+}
+icon(DashboardGroup g) += WHEN g = DashboardGroup.sales THEN r'bi bi-cart-check';
+order(DashboardGroup g) += WHEN g = DashboardGroup.sales THEN 10;
+
+EXTEND CLASS DashboardKpi {
+    salesAmount 'Turnover',
+    salesMarkup 'Markup',
+    salesOpened 'Sales orders'
+}
+group(DashboardKpi k) += WHEN k = DashboardKpi.salesAmount OR k = DashboardKpi.salesMarkup OR k = DashboardKpi.salesOpened THEN DashboardGroup.sales;
+scale(DashboardKpi k) += WHEN k = DashboardKpi.salesAmount OR k = DashboardKpi.salesMarkup THEN 2;
+
+value(DashboardKpi k, INTERVAL[DATE] i) += WHEN k = DashboardKpi.salesAmount THEN (OVERRIDE amount(i), 0.0);
+value(DashboardKpi k, INTERVAL[DATE] i) += WHEN k = DashboardKpi.salesMarkup THEN (OVERRIDE markupAmount(i), 0.0);
+value(DashboardKpi k) += WHEN k = DashboardKpi.salesOpened THEN (OVERRIDE countUnlockedOrders(), 0);
+// the card opens the list filtered exactly as the figure is computed
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.salesAmount OR k = DashboardKpi.salesMarkup THEN { SHOW salesLedgerReport OBJECTS dates = i DOCKED; }
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.salesOpened THEN { SHOW orders FILTERS NOT locked(o) DOCKED; }
+
+// chart: turnover per day of the selected period
+EXTEND FORM dashboard
+    OBJECTS sd = DATE CUSTOM 'dashboardLineChart' OPTIONS dashboardChartOptions('Turnover', r'day', r'amount', r'#2563eb', 2)
+    PROPERTIES day = VALUE(sd)
+    PROPERTIES(sd) READONLY amount
+    ORDERS day
+    FILTERS iterate(sd, from(dates), to(dates))
+;
+
+DESIGN dashboard {
+    charts {
+        MOVE GRID(sd) { fill = 1; alignment = STRETCH; height = 280; }
+        REMOVE BOX(sd);
+    }
+}

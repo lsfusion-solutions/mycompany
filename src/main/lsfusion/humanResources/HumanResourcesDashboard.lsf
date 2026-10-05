@@ -1,0 +1,22 @@
+MODULE HumanResourcesDashboard;
+
+REQUIRE Dashboard, Attendance;
+
+NAMESPACE HumanResources;
+
+EXTEND CLASS DashboardGroup {
+    humanResources 'Human resources'
+}
+icon(DashboardGroup g) += WHEN g = DashboardGroup.humanResources THEN r'bi bi-person-badge';
+order(DashboardGroup g) += WHEN g = DashboardGroup.humanResources THEN 80;
+
+EXTEND CLASS DashboardKpi {
+    employees 'Employees',
+    checkedIn 'Checked in now'
+}
+group(DashboardKpi k) += WHEN k = DashboardKpi.employees OR k = DashboardKpi.checkedIn THEN DashboardGroup.humanResources;
+
+value(DashboardKpi k) += WHEN k = DashboardKpi.employees THEN (OVERRIDE countEmployees(), 0);
+value(DashboardKpi k) += WHEN k = DashboardKpi.checkedIn THEN (OVERRIDE countOpenedAttendances(), 0);
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.employees THEN { SHOW employees FILTERS active(e) DOCKED; }
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.checkedIn THEN { SHOW attendances FILTERS lastAttendance(employee(a)) = a, NOT checkOut(a) DOCKED; }

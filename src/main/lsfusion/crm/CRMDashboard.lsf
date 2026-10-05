@@ -1,0 +1,42 @@
+MODULE CRMDashboard;
+
+REQUIRE Dashboard, Lead, LeadReport;
+
+NAMESPACE CRM;
+
+// group and key figures
+EXTEND CLASS DashboardGroup {
+    crm 'CRM'
+}
+icon(DashboardGroup g) += WHEN g = DashboardGroup.crm THEN r'bi bi-people';
+order(DashboardGroup g) += WHEN g = DashboardGroup.crm THEN 70;
+
+EXTEND CLASS DashboardKpi {
+    openLeads 'Leads',
+    leadRevenue 'Expected revenue',
+    newLeads 'New'
+}
+group(DashboardKpi k) += WHEN k = DashboardKpi.openLeads OR k = DashboardKpi.leadRevenue OR k = DashboardKpi.newLeads THEN DashboardGroup.crm;
+scale(DashboardKpi k) += WHEN k = DashboardKpi.leadRevenue THEN 2;
+
+value(DashboardKpi k) += WHEN k = DashboardKpi.openLeads THEN (OVERRIDE countOpenedLeads(), 0);
+value(DashboardKpi k) += WHEN k = DashboardKpi.leadRevenue THEN (OVERRIDE expectedRevenue(), 0.0);
+value(DashboardKpi k, INTERVAL[DATE] i) += WHEN k = DashboardKpi.newLeads THEN (OVERRIDE countLeads(i), 0);
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.openLeads OR k = DashboardKpi.leadRevenue THEN { SHOW leads FILTERS opened(l) DOCKED; }
+// new leads of the period: the lead report has the same period object and no default status filter
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.newLeads THEN { SHOW leadReport OBJECTS dates = i DOCKED; }
+
+// chart: open leads per status
+EXTEND FORM dashboard
+    OBJECTS ls = LeadStatus CUSTOM 'dashboardBarChart' OPTIONS dashboardChartOptions('Leads', r'name', r'countLeads', r'#ea580c', 0)
+    PROPERTIES(ls) READONLY name, sortingOrder, countLeads
+    ORDERS sortingOrder(ls)
+    FILTERS countLeads(ls), NOT closed(ls)
+;
+
+DESIGN dashboard {
+    charts {
+        MOVE GRID(ls) { fill = 1; alignment = STRETCH; height = 280; }
+        REMOVE BOX(ls);
+    }
+}

@@ -59,9 +59,12 @@ description 'Description' = DATA RICHTEXT (Task) CHARWIDTH 20;
 status 'Status' = DATA TaskStatus (Task);
 nameStatus 'Status' (Task t) = name(status(t)) IN id;
 @definePropertyValue(task, status, 'Status', nameStatus);
+countTasks 'Tasks' (TaskStatus s) = GROUP SUM 1 IF status(Task t) = s;
 
 closed 'Closed' (Task t) = closed(status(t));
 opened 'Opened' (Task t) = t IS Task AND NOT closed(t);
+countOpenAssignedTask (Employee e) = GROUP SUM 1 IF assignedTo(Task t, e) AND opened(t);
+countOverdueTasks 'Overdue' () = GROUP SUM 1 IF opened(Task t) AND deadline(t) < currentDate();
 
 type 'Type' = DATA TaskType (Task);
 nameType 'Type' (Task t) = name(type(t)) IN id;

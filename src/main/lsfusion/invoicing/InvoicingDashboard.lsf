@@ -1,0 +1,47 @@
+MODULE InvoicingDashboard;
+
+REQUIRE Dashboard, DebtPartner, Payment;
+
+NAMESPACE Invoicing;
+
+// group and key figures
+EXTEND CLASS DashboardGroup {
+    invoicing 'Invoicing'
+}
+icon(DashboardGroup g) += WHEN g = DashboardGroup.invoicing THEN r'bi bi-receipt';
+order(DashboardGroup g) += WHEN g = DashboardGroup.invoicing THEN 20;
+
+EXTEND CLASS DashboardKpi {
+    receivables 'Debt',
+    overdueReceivables 'Overdue debt',
+    payables 'Payables',
+    cashBalance 'Cash balance'
+}
+group(DashboardKpi k) += WHEN k = DashboardKpi.receivables OR k = DashboardKpi.overdueReceivables OR k = DashboardKpi.payables OR k = DashboardKpi.cashBalance THEN DashboardGroup.invoicing;
+scale(DashboardKpi k) += WHEN k = DashboardKpi.receivables OR k = DashboardKpi.overdueReceivables OR k = DashboardKpi.payables OR k = DashboardKpi.cashBalance THEN 2;
+
+value(DashboardKpi k) += WHEN k = DashboardKpi.receivables THEN (OVERRIDE debt(), 0.0);
+value(DashboardKpi k) += WHEN k = DashboardKpi.overdueReceivables THEN (OVERRIDE pastDueDebt(), 0.0);
+value(DashboardKpi k) += WHEN k = DashboardKpi.payables THEN (OVERRIDE payable(), 0.0);
+value(DashboardKpi k) += WHEN k = DashboardKpi.cashBalance THEN (OVERRIDE cashBalance(), 0.0);
+// the cards open the partner list filtered exactly as the figures are computed
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.receivables THEN { SHOW partners FILTERS debt(p) > 0 DOCKED; }
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.overdueReceivables THEN { SHOW partners FILTERS pastDueDebt(p) > 0 DOCKED; }
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.payables THEN { SHOW partners FILTERS debt(p) < 0 DOCKED; }
+// the payments form lists the company accounts with their balances on its Accounts tab
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.cashBalance THEN { SHOW payments DOCKED { ACTIVATE TAB payments.accounts; }; }
+
+// list: overdue debts of partners
+EXTEND FORM dashboard
+    OBJECTS od 'Overdue debt' = Debt
+    PROPERTIES(od) READONLY class, number, dateTime, dueDateTime, namePartner, amount, left
+    PROPERTIES(od) NEWSESSION EDIT
+    ORDERS dueDateTime(od)
+    FILTERS active(od), signedLeft(od) > 0, dueDateTime(od) < currentDateTime()
+;
+
+DESIGN dashboard {
+    lists {
+        MOVE BOX(od);
+    }
+}

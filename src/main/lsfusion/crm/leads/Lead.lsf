@@ -13,6 +13,7 @@ readonly = ABSTRACT CASE BOOLEAN (Lead);
 dateTime 'Date' = DATA DATETIME (Lead) NONULL IN id;
 WHEN LOCAL SET (Lead l IS Lead) AND NOT CHANGED(dateTime(l)) DO dateTime(l) <- currentDateTime();
 @defineDateTimeAggregation(Lead);
+countLeads 'Leads' (INTERVAL[DATE] i) = GROUP SUM 1 IF date(Lead l) >= from(i) AND date(l) <= to(i);
 // localized relative duration of the creation date (date(l) = DATE(dateTime), from the
 // aggregation above), e.g. for kanban cards — same shape as textDateDuration(Activity)
 textDateDuration (Lead l) = textDateDuration(date(l));
@@ -55,11 +56,13 @@ description 'Description' = DATA RICHTEXT (Lead) CHARWIDTH 20;
 status 'Status' = DATA LeadStatus (Lead);
 nameStatus 'Status' (Lead l) = name(status(l)) IN id;
 @definePropertyValue(lead, status, 'Status', nameStatus);
+countLeads 'Leads' (LeadStatus s) = GROUP SUM 1 IF status(Lead l) = s;
 
 status (Lead l) <- firstLeadStatus() WHEN SET(l IS Lead);
 
 closed 'Closed' (Lead l) = closed(status(l));
 opened 'Opened' (Lead l) = l IS Lead AND NOT closed(l);
+countOpenedLeads 'Leads' () = GROUP SUM 1 IF opened(Lead l);
 
 type 'Type' = DATA LeadType (Lead);
 nameType 'Type' (Lead t) = name(type(t)) IN id;
@@ -87,6 +90,7 @@ tags 'Tags' (Lead l) = GROUP CONCAT name(LeadTag tg) IF in(l, tg), ', ' ORDER na
 // revenue
 
 expectedRevenue 'Expected revenue' = DATA NUMERIC[12,2] (Lead);
+expectedRevenue 'Expected revenue' () = GROUP SUM expectedRevenue(Lead l) IF opened(l);
 probability 'Probability' = DATA NUMERIC[6,2] (Lead);
 
 // company

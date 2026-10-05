@@ -14,6 +14,11 @@ debt 'Debt' (Partner p) = GROUP SUM signedAmount(Debt d) IF active(d) AND partne
 
 pastDueDebt 'Overdue debt' (Partner p) = GROUP SUM signedLeft(Debt d) IF active(d) AND partner(d) = p AND dueDateTime(d) < currentDateTime();
 
+// totals over the active partners: what partners owe the company, what the company owes partners, and the overdue part
+debt 'Debt' () = GROUP SUM debt(Partner p) IF debt(p) > 0 AND active(p);
+payable 'Payables' () = GROUP SUM -debt(Partner p) IF debt(p) < 0 AND active(p);
+pastDueDebt 'Overdue debt' () = GROUP SUM pastDueDebt(Partner p) IF pastDueDebt(p) > 0 AND active(p);
+
 FORM partnerDebts 'Partner debts'
     OBJECTS p = Partner PANEL
     PROPERTIES(p) READONLY name

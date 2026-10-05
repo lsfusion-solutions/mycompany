@@ -1,0 +1,127 @@
+/* Dashboard key-figure cards (dashboardkpis.js). Colours come from the Bootstrap 5.3 theme
+   variables (--bs-*) so the cards follow the light and dark themes; the per-group accent is set
+   by the JS as --dkpi-accent on each card. */
+
+.dkpi {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(13.5rem, 1fr));
+    gap: 0.75rem;
+    padding: 0.5rem 0.25rem 0.75rem;
+    box-sizing: border-box;
+}
+.dkpi * { box-sizing: border-box; }
+
+.dkpi-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-height: 6.2rem;
+    padding: 0.7rem 0.9rem 0.7rem 1.05rem;
+    border: 1px solid var(--bs-border-color, rgba(128, 128, 128, 0.25));
+    border-radius: 0.85rem;
+    background: var(--bs-body-bg, #fff);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+}
+/* coloured accent bar on the left, one colour per group */
+.dkpi-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0.3rem;
+    background: var(--dkpi-accent, #2563eb);
+}
+.dkpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(16, 24, 40, 0.12);
+    border-color: var(--dkpi-accent, #2563eb);
+}
+.dkpi-card-current {
+    border-color: var(--dkpi-accent, #2563eb);
+}
+
+.dkpi-head {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-width: 0;
+}
+.dkpi-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 1.7rem;
+    height: 1.7rem;
+    border-radius: 0.5rem;
+    color: var(--dkpi-accent, #2563eb);
+    background: color-mix(in srgb, var(--dkpi-accent, #2563eb) 14%, transparent);
+    font-size: 0.95rem;
+}
+.dkpi-group {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color, #6b7280);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dkpi-caption {
+    font-size: 0.82rem;
+    color: var(--bs-secondary-color, #6b7280);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dkpi-value {
+    font-size: 1.45rem;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--bs-body-color, #111827);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.dkpi-value-empty {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--bs-secondary-color, #6b7280);
+}
+
+.dkpi-trend {
+    display: flex;
+    align-items: baseline;
+    gap: 0.3rem;
+    margin-top: 0.1rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.dkpi-trend-up { color: var(--bs-success, #198754); }
+.dkpi-trend-down { color: var(--bs-danger, #dc3545); }
+.dkpi-trend-flat { color: var(--bs-secondary-color, #6b7280); }
+.dkpi-trend-arrow { font-size: 0.7rem; }
+.dkpi-trend-hint {
+    font-weight: 400;
+    color: var(--bs-secondary-color, #6b7280);
+}
+
+@media (max-width: 600px) {
+    .dkpi { grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); gap: 0.5rem; }
+    .dkpi-value { font-size: 1.2rem; }
+}

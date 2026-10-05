@@ -1,0 +1,19 @@
+MODULE RetailDashboard;
+
+REQUIRE Dashboard, Session;
+
+NAMESPACE Retail;
+
+EXTEND CLASS DashboardGroup {
+    retail 'Retail'
+}
+icon(DashboardGroup g) += WHEN g = DashboardGroup.retail THEN r'bi bi-shop';
+order(DashboardGroup g) += WHEN g = DashboardGroup.retail THEN 90;
+
+EXTEND CLASS DashboardKpi {
+    retailSessions 'Sessions'
+}
+group(DashboardKpi k) += WHEN k = DashboardKpi.retailSessions THEN DashboardGroup.retail;
+
+value(DashboardKpi k) += WHEN k = DashboardKpi.retailSessions THEN (OVERRIDE countOpenedSessions(), 0);
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.retailSessions THEN { SHOW sessions FILTERS opened(o) DOCKED; }

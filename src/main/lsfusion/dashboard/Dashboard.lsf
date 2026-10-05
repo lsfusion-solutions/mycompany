@@ -1,0 +1,108 @@
+MODULE Dashboard;
+
+REQUIRE Time, DateUtils, SystemEvents, Authentication;
+
+NAMESPACE Dashboard;
+
+// Base dashboard. The form declares the period selector, the key-figure cards (a CUSTOM view
+// drawn by web/dashboard/dashboardkpis.js) and the layout areas for charts and lists.
+// Application modules contribute their content without touching this module:
+//   - a group (one per module) is a static object of DashboardGroup with icon and order;
+//   - a key figure is a static object of DashboardKpi linked to its group; it gets its number
+//     through value(DashboardKpi) (as of now) or value(DashboardKpi, INTERVAL[DATE]) (for the
+//     selected period), scale for the decimals, and an optional open(DashboardKpi, INTERVAL[DATE])
+//     implementation that runs when the card is clicked and opens the list behind the figure
+//     with the very filter the figure is computed with;
+//   - charts are object groups drawn by the dashboardBarChart / dashboardLineChart CUSTOM views
+//     (web/dashboard/dashboardcharts.js, plain SVG) with OPTIONS built by dashboardChartOptions,
+//     lists are ordinary grids; both are added with EXTEND FORM and moved into the charts / lists
+//     containers in DESIGN.
+
+// groups: one per module
+CLASS DashboardGroup 'Dashboard group' : StaticObject;
+icon 'Icon' = ABSTRACT CASE STRING (DashboardGroup);
+order 'Order' = ABSTRACT CASE INTEGER (DashboardGroup);
+
+// key figures
+CLASS DashboardKpi 'Key figure' : StaticObject;
+group = ABSTRACT CASE DashboardGroup (DashboardKpi);
+nameGroup 'Group' (DashboardKpi k) = caption(group(k));
+iconGroup (DashboardKpi k) = icon(group(k));
+orderGroup (DashboardKpi k) = order(group(k));
+scale 'Decimals' = ABSTRACT CASE INTEGER (DashboardKpi);
+
+value 'Value' = ABSTRACT CASE NUMERIC[20,4] (DashboardKpi);
+value 'Value' = ABSTRACT CASE NUMERIC[20,4] (DashboardKpi, INTERVAL[DATE]);
+prevValue 'Previous period' (DashboardKpi k, INTERVAL[DATE] i) = value(k, prevMonthInterval(i));
+
+open 'Open' ABSTRACT CASE (DashboardKpi, INTERVAL[DATE]);
+
+// UI text of the cards; plain English is localized by reverse translation and reaches the JS via OPTIONS
+dashboardI18n () = JSON FROM prev = 'vs previous period', noData = 'No data';
+
+// Options of a chart component: the chart title, the row fields holding the label and the value,
+// the accent colour and the decimals of the values
+dashboardChartOptions (STRING title, STRING labelField, STRING valueField, STRING color, INTEGER decimals) =
+    JSON FROM title = title, label = labelField, value = valueField, color = color, scale = decimals, locale = language(currentUser()), i18n = dashboardI18n();
+
+FORM dashboard 'Dashboard'
+    OBJECTS dates = INTERVAL[DATE] PANEL NULL
+    PROPERTIES prevInterval '<' = { SEEK dashboard.dates = prevMonthInterval(dates); },
+               period 'Period' = VALUE(dates),
+               nextInterval '>' = { SEEK dashboard.dates = nextMonthInterval(dates); }
+
+    OBJECTS k = DashboardKpi CUSTOM 'dashboardKpis' OPTIONS JSON FROM locale = language(currentUser()), i18n = dashboardI18n()
+    PROPERTIES(k) READONLY caption, group, nameGroup, iconGroup, orderGroup, scale, value
+    PROPERTIES(k, dates) READONLY periodValue = value, prevValue
+    PROPERTIES(k, dates) GRID open
+    ORDERS orderGroup(k)
+
+    EVENTS ON INIT { SEEK dashboard.dates = interval(firstDayOfMonth(currentDate()), lastDayOfMonth(currentDate())); },
+           ON SCHEDULE PERIOD 300 formRefresh()
+;
+
+DESIGN dashboard {
+    OBJECTS {
+        NEW topPane {
+            horizontal = TRUE;
+            alignment = STRETCH;
+            NEW interval {
+                horizontal = TRUE;
+                MOVE PROPERTY(prevInterval);
+                MOVE PROPERTY(period);
+                MOVE PROPERTY(nextInterval);
+            }
+        }
+        NEW kpis {
+            alignment = STRETCH;
+            MOVE GRID(k) {
+                alignment = STRETCH;
+                autoSize = TRUE;
+            }
+            REMOVE BOX(k);
+        }
+        // charts: two columns, each module moves GRID(obj) of its chart here and removes BOX(obj)
+        NEW charts {
+            fill = 1;
+            alignment = STRETCH;
+            lines = 2;
+        }
+        // lists: tabs, each module moves BOX(obj) of its list here
+        NEW lists {
+            fill = 1;
+            alignment = STRETCH;
+            tabbed = TRUE;
+        }
+    }
+}
+
+NAVIGATOR {
+    NEW dashboard FIRST IMAGE r'gauge-high';
+}
+
+onWebClientInit() + {
+    onWebClientInit('dashboardkpis.js') <- 1;
+    onWebClientInit('dashboardkpis.css') <- 1;
+    onWebClientInit('dashboardcharts.js') <- 1;
+    onWebClientInit('dashboardcharts.css') <- 1;
+}

@@ -16,6 +16,7 @@ CONSTRAINT closingDateTime(Session s) < openingDateTime(s)
     MESSAGE 'The session cannot be closed earlier than it was open';
 
 opened 'Opened' (Session s) = openingDateTime(s) AND NOT closingDateTime(s);
+countOpenedSessions 'Sessions' () = GROUP SUM 1 IF opened(Session s);
 
 nameStatus 'Status' (Session s) = CASE WHEN opened(s) THEN 'Opened' WHEN closingDateTime(s) THEN 'Closed';
 

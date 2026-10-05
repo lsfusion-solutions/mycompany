@@ -1,0 +1,35 @@
+MODULE InventoryDashboard;
+
+REQUIRE Dashboard, CostLedger, InventoryValuation;
+
+NAMESPACE Inventory;
+
+EXTEND CLASS DashboardGroup {
+    inventory 'Inventory'
+}
+icon(DashboardGroup g) += WHEN g = DashboardGroup.inventory THEN r'bi bi-box-seam';
+order(DashboardGroup g) += WHEN g = DashboardGroup.inventory THEN 40;
+
+EXTEND CLASS DashboardKpi {
+    stockValue 'Inventory valuation'
+}
+group(DashboardKpi k) += WHEN k = DashboardKpi.stockValue THEN DashboardGroup.inventory;
+scale(DashboardKpi k) += WHEN k = DashboardKpi.stockValue THEN 2;
+
+value(DashboardKpi k) += WHEN k = DashboardKpi.stockValue THEN (OVERRIDE costAmount(), 0.0);
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.stockValue THEN { SHOW inventoryValuation FILTERS costAmount(l, p) DOCKED; }
+
+// chart: valuation per location
+EXTEND FORM dashboard
+    OBJECTS il = Location CUSTOM 'dashboardBarChart' OPTIONS dashboardChartOptions('Inventory valuation', r'name', r'costAmount', r'#7c3aed', 2)
+    PROPERTIES(il) READONLY name, costAmount
+    ORDERS costAmount(il) DESC
+    FILTERS costAmount(il)
+;
+
+DESIGN dashboard {
+    charts {
+        MOVE GRID(il) { fill = 1; alignment = STRETCH; height = 280; }
+        REMOVE BOX(il);
+    }
+}
