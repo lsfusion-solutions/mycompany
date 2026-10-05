@@ -29,7 +29,7 @@ createShipmentOrders 'Create orders' () {
                 }
                 orderLine(ShipmentLine l) <- lastOrderLine(o, product(l)) WHERE selected(shipment(l)) AND location(l) = shipmentLocation() AND
                                                                                 vendorA(product(l)) = p;
-                SHOW order OBJECTS o = o DOCKED;
+                SHOW order OBJECTS o = o WINDOW;
             }
 
         IF [GROUP SUM 1 IF toOrder(Product p) AND NOT vendorA(p)]() THEN NEWSESSION
@@ -42,7 +42,7 @@ createShipmentOrders 'Create orders' () {
                 }
                 orderLine(ShipmentLine l) <- lastOrderLine(o, product(l)) WHERE selected(shipment(l)) AND location(l) = shipmentLocation() AND
                                                                                 NOT vendorA(product(l));
-                SHOW order OBJECTS o = o DOCKED;
+                SHOW order OBJECTS o = o WINDOW;
             }
     }
 }

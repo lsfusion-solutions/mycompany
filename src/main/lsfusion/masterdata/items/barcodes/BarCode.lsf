@@ -83,7 +83,7 @@ META defineBarCodeSearch(doc, docLine, let, line, quantity)
         INPUT id = STRING DO {
             IF itemSingleBarCode(id) THEN {
                 set###quantity(d, itemSingleBarCode(id), quantity(d, itemSingleBarCode(id)) (+) 1);
-                SEEK ##doc.line = last##docLine(d, itemSingleBarCode(id));
+                ACTIVATE ##doc.line = last##docLine(d, itemSingleBarCode(id));
                 IF NOT doNotActivateQuantityAfterScanning() THEN
                     ACTIVATE PROPERTY ##doc.quantity(line); 
             } ELSE {
@@ -108,7 +108,7 @@ META defineBarCodeSeek(form, obj, gobj)
     scanBarCode###form () {
         INPUT id = STRING DO {
             IF itemBarCode(id) THEN
-                SEEK form.obj = itemBarCode(id);
+                ACTIVATE form.obj = itemBarCode(id);
             ELSE
                 MESSAGE 'Barcode not found' + ' (' + id + ')';
         }

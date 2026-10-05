@@ -150,7 +150,7 @@ META defineDocBarCodeLot (doc, docLine, item, quantity)
                     }
                 } ELSE               
                     line() <- last##docLine(doc(rl), product(lot()));
-                SEEK doc.l = line();            
+                ACTIVATE doc.l = line();            
             } ELSE
                 line() <- rl;                      
                 
@@ -191,7 +191,7 @@ META defineDocDesignLotTab(doc, docLine, quantity, item, line, container, filter
     }
     
     afterProcess##docLine##LotBarCode(###doc d, STRING s) + {
-        SEEK doc.lot###line = lot(s);
+        ACTIVATE doc.lot###line = lot(s);
         ACTIVATE TAB doc.BOX(lot###line);
         ACTIVATE PROPERTY doc.quantity(line, lot###line); 
     }    
@@ -223,7 +223,7 @@ META defineLotCodeSearch(doc, quantity)
                     MESSAGE 'The lot refers to another product' + ' (' + name(product(lot(id))) + ')';
                 } ELSE {                
                     quantity(rl, lot(id)) <- quantity(rl, lot(id)) (+) 1;
-                    SEEK doc.lot = lot(id);
+                    ACTIVATE doc.lot = lot(id);
                     ACTIVATE PROPERTY doc.quantity(l, lot);                 
                 }          
             }

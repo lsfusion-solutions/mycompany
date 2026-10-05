@@ -43,10 +43,10 @@ FORM timesheetSupervisor 'Supervisor timesheet'
         IF NOT timesheetProject() THEN
             timesheetProject() <- defaultProject(currentUser());
         timesheetTimeEntryType() <- defaultTimeEntryType();
-        SEEK timesheetSupervisor.dates = interval(firstDayOfMonth(currentDate()), lastDayOfMonth(currentDate()));
+        ACTIVATE timesheetSupervisor.dates = interval(firstDayOfMonth(currentDate()), lastDayOfMonth(currentDate()));
     }
-    PROPERTIES prevInterval '<' = { SEEK timesheetSupervisor.dates = prevMonthInterval(dates); },
-               nextInterval '>' = { SEEK timesheetSupervisor.dates = nextMonthInterval(dates); }
+    PROPERTIES prevInterval '<' = { ACTIVATE timesheetSupervisor.dates = prevMonthInterval(dates); },
+               nextInterval '>' = { ACTIVATE timesheetSupervisor.dates = nextMonthInterval(dates); }
 ;
 
 WHEN LOCAL FORMS timesheetSupervisor CHANGED(timesheetTimeEntryType()) DO timesheetTimeEntryHours() <- defaultHours(timesheetTimeEntryType());
@@ -103,7 +103,7 @@ NAVIGATOR {
 showTimesheetSupervisor 'Supervisor timesheet' (Project p) {
     NEWSESSION {
         timesheetProject() <- p;
-        SHOW timesheetSupervisor DOCKED;
+        SHOW timesheetSupervisor WINDOW;
     }
 }
 

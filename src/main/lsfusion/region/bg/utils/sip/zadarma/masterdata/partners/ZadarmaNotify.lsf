@@ -61,13 +61,12 @@ notify (STRING zd_echo,
         STRING internal, STRING transfer_from, STRING transfer_type, STRING destination,
         INTEGER duration, STRING disposition, STRING last_internal, INTEGER status_code, 
         INTEGER is_recorded, STRING call_id_with_rec) {
-    logToFile('zadarma', CONCAT ' - ',
+    printToLog((CONCAT ' - ',
         'zd_echo: ' + zd_echo,
         'event:' + event, 'call_start: ' + call_start, 'pbx_call_id: ' + pbx_call_id, 'caller_id ' + caller_id, 'called_did: ' + called_did,
         'internal:' + internal, 'transfer_from: ' + transfer_from, 'transfer_type: ' + transfer_type, 'destination:' + destination,
         'duration:' + duration, 'disposition: ' + disposition, 'last_internal: ' + last_internal, 'status_code:' + status_code,
-        'is_recorded:' + is_recorded, 'call_id_with_rec: ' + call_id_with_rec
-    );
+        'is_recorded:' + is_recorded, 'call_id_with_rec: ' + call_id_with_rec), 'zadarma');
     
     IF zd_echo THEN {
         stringToFile(zd_echo);
@@ -101,7 +100,7 @@ notify (STRING zd_echo,
     }
         
     fileToString(notifyResult());
-    logToFile('zadarma', 'Response: ' + resultString());
+    printToLog('Response: ' + resultString(), 'zadarma');
     
     exportFile() <- notifyResult();
 } @@api @@noauth;

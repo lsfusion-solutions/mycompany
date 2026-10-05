@@ -29,7 +29,7 @@ createManufacturingOrders 'Create orders' () {
                 }
                 orderLine(ConsumedLine l) <- lastOrderLine(o, item(l)) WHERE selected(manufacturingOrder(l)) AND materialsLocation(manufacturingOrder(l)) = manufacturingOrderMaterialsLocation() AND
                                                                             vendorA(item(l)) = p;
-                SHOW order OBJECTS o = o DOCKED;
+                SHOW order OBJECTS o = o WINDOW;
             }
 
         IF [GROUP SUM 1 IF toOrder(Item i) AND NOT vendorA(i)]() THEN NEWSESSION
@@ -42,7 +42,7 @@ createManufacturingOrders 'Create orders' () {
                 }
                 orderLine(ConsumedLine l) <- lastOrderLine(o, item(l)) WHERE selected(manufacturingOrder(l)) AND materialsLocation(manufacturingOrder(l)) = manufacturingOrderMaterialsLocation() AND
                                                                             NOT vendorA(item(l));
-                SHOW order OBJECTS o = o DOCKED;
+                SHOW order OBJECTS o = o WINDOW;
             }
     }
 }

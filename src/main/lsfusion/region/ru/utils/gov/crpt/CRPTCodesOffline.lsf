@@ -71,7 +71,7 @@ checkCodesOffline (LocalModule l, JSON marks) {
     checkCodesResult() <- NULL;
 
     TRY {
-        logToFile('crptlocal', STRING(marks));
+        printToLog(STRING(marks), 'crptlocal');
 
         localHeaders(STRING h) <- headers(l, h);
         EXTERNAL HTTP CLIENT POST url(l) + '/cis/outCheck' HEADERS localHeaders
@@ -81,7 +81,7 @@ checkCodesOffline (LocalModule l, JSON marks) {
 
         IF logRequests() THEN {
             fileToString(result());
-            logToFile('crptlocal', 'request : ' + STRING(marks) + ' - response : ' + OVERRIDE resultString(), '');
+            printToLog(('request : ' + STRING(marks) + ' - response : ' + OVERRIDE resultString(), ''), 'crptlocal');
         }
 
         CASE
@@ -94,7 +94,7 @@ checkCodesOffline (LocalModule l, JSON marks) {
 
     } CATCH {
         fileToString(result());
-        logToFile('crptlocal', 'request : ' + STRING(marks) + ' - error : ' + (OVERRIDE messageCaughtException(), '') + ' / ' + OVERRIDE resultString(), '');
+        printToLog(('request : ' + STRING(marks) + ' - error : ' + (OVERRIDE messageCaughtException(), '') + ' / ' + OVERRIDE resultString(), ''), 'crptlocal');
         checkCodesResult() <- 'Ошибка при чтении марки из ЛМ ЧЗ : \n' + (OVERRIDE messageCaughtException(), '') + '\n' + OVERRIDE resultString(), '';
     }
 }
@@ -111,7 +111,7 @@ sellCodesOffline (LocalModule l, JSON marks) {
     checkCodesResult() <- NULL;
 
     TRY {
-        logToFile('crptlocal', 'sell : ' + STRING(marks));
+        printToLog('sell : ' + STRING(marks), 'crptlocal');
     
         localHeaders(STRING h) <- headers(l, h);
         EXTERNAL HTTP POST url(l) + '/cis/sell' HEADERS localHeaders
@@ -119,11 +119,11 @@ sellCodesOffline (LocalModule l, JSON marks) {
     
         IF logRequests() THEN {
             fileToString(result());
-            logToFile('crptlocal', 'sell request : ' + STRING(marks) + ' - response : ' + OVERRIDE resultString(), '');
+            printToLog(('sell request : ' + STRING(marks) + ' - response : ' + OVERRIDE resultString(), ''), 'crptlocal');
         }
     } CATCH {
         fileToString(result());
-        logToFile('crptlocal', 'sell request : ' + STRING(marks) + ' - error : ' + (OVERRIDE messageCaughtException(), '') + ' / ' + OVERRIDE resultString(), '');
+        printToLog(('sell request : ' + STRING(marks) + ' - error : ' + (OVERRIDE messageCaughtException(), '') + ' / ' + OVERRIDE resultString(), ''), 'crptlocal');
         checkCodesResult() <- 'Ошибка при продаже марки в ЛМ ЧЗ : \n' + (OVERRIDE messageCaughtException(), '') + '\n' + OVERRIDE resultString(), '';
     }
 }
@@ -137,7 +137,7 @@ returnCodesOffline (LocalModule l, JSON marks) {
     LOCAL result = FILE();
 
     TRY {
-        logToFile('crptlocal', 'return : ' + STRING(marks));
+        printToLog('return : ' + STRING(marks), 'crptlocal');
 
         localHeaders(STRING h) <- headers(l, h);
         EXTERNAL HTTP POST url(l) + '/cis/return' HEADERS localHeaders
@@ -145,11 +145,11 @@ returnCodesOffline (LocalModule l, JSON marks) {
 
         IF logRequests() THEN {
             fileToString(result());
-            logToFile('crptlocal', 'return request : ' + STRING(marks) + ' - response : ' + resultString());
+            printToLog('return request : ' + STRING(marks) + ' - response : ' + resultString(), 'crptlocal');
         }
     } CATCH {
         fileToString(result());
-        logToFile('crptlocal', 'return request : ' + STRING(marks) + ' - error : ' + (OVERRIDE messageCaughtException(), '') + ' / ' + OVERRIDE resultString(), '');
+        printToLog(('return request : ' + STRING(marks) + ' - error : ' + (OVERRIDE messageCaughtException(), '') + ' / ' + OVERRIDE resultString(), ''), 'crptlocal');
         checkCodesResult() <- 'Ошибка при возврате марки в ЛМ ЧЗ : \n' + (OVERRIDE messageCaughtException(), '') + '\n' + OVERRIDE resultString(), '';
     }
 }

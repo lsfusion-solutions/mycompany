@@ -58,11 +58,11 @@ EXTEND FORM posDashboard
 ;
 
 back 'Back' (TouchNode tn) {
-    SEEK posDashboard.tn = parent(tn);
+    ACTIVATE posDashboard.tn = parent(tn);
 }
 
 drop 'Reset' () {
-    SEEK posDashboard.tn = GROUP LAST Category c ORDER c WHERE c IS Category AND NOT parent(c);
+    ACTIVATE posDashboard.tn = GROUP LAST Category c ORDER c WHERE c IS Category AND NOT parent(c);
 }
 EXTEND FORM posDashboard 
     PROPERTIES drop(), back(tn)
@@ -71,7 +71,7 @@ EXTEND FORM posDashboard
 
 select (Invoice i, TouchNode tn) {
     IF tn IS Category THEN
-        SEEK posDashboard.tn = tn;
+        ACTIVATE posDashboard.tn = tn;
     ELSE
         selectPosSearch(i, tn);
 }

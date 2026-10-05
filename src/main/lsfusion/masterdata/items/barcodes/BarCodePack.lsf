@@ -9,7 +9,7 @@ META defineBarCodeSearchPack(doc, line, quantity)
         IF ratio(barCode(id)) THEN {
             set###quantity(r, itemBarCode(id), quantity(r, itemBarCode(id)) (+) ratio(barCode(id)));
             packUom(###doc##Line l) <- uom(barCode(id)) WHERE l = last###doc##Line(r, itemBarCode(id));
-            SEEK ##doc.line = last###doc##Line(r, itemBarCode(id));
+            ACTIVATE ##doc.line = last###doc##Line(r, itemBarCode(id));
             IF NOT doNotActivateQuantityAfterScanning() THEN
                 ACTIVATE PROPERTY ##doc.packQuantity(line);
             consumedBarCode() <- TRUE;

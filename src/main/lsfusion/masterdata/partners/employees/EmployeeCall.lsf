@@ -19,7 +19,7 @@ incoming (Call c, Employee e) {
         APPLY NESTED (incomingNotifyOptions, incomingNotifyAction);
 
         NEWTHREAD NEWSESSION {
-            SHOW call OBJECTS c = c DOCKED;
+            SHOW call OBJECTS c = c WINDOW;
         } CLIENT exportInteger;
 
         IF NOT incomingNotifyOptions() THEN 
@@ -103,7 +103,7 @@ META defineObjectHooks (object, let, capt, findProp, redirectProp, hintProp)
     notify (Call c, Employee e) +{
         FOR ###object l = object(c) DO {
 //            NEWTHREAD NEWSESSION {
-//                SHOW object OBJECTS let = l DOCKED NOWAIT;
+//                SHOW object OBJECTS let = l WINDOW NOWAIT;
 //            } TO incomingNotifyAction;
             
             incomingNotifyOptions() <- notification('Incoming call', JSON FROM body = hintProp(l));
@@ -118,7 +118,7 @@ answer (Call c, Employee e) +{
 META extendFormCall (cls, obj, capt, ncls, ncapt)
     open###cls capt (Call c) {
         NEWSESSION {
-            SHOW cls OBJECTS obj = cls(c) DOCKED;
+            SHOW cls OBJECTS obj = cls(c) WINDOW;
         }
     }
     

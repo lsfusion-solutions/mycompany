@@ -47,7 +47,7 @@ leadCall (Call c) = OVERRIDE lead(c), leadPhone(caller(c));
 
 openLeadCall 'Lead' (Call c) {
     NEWSESSION {
-        SHOW lead OBJECTS l = leadCall(c) DOCKED;
+        SHOW lead OBJECTS l = leadCall(c) WINDOW;
     }
 }
 
@@ -61,7 +61,7 @@ createLead 'Create' (Call c) {
             
             salesPerson(o) <- employee(c);
 
-            SHOW lead OBJECTS l = o DOCKED;
+            SHOW lead OBJECTS l = o WINDOW;
         }
     }
 }
@@ -72,7 +72,7 @@ attachLead 'Attach' (Call c) {
             ignoredLead(c) <- NULL;
             lead(c) <- leadPhone(caller(c));
 
-            SHOW lead OBJECTS l = o DOCKED;
+            SHOW lead OBJECTS l = o WINDOW;
         }
     }
 }
@@ -86,7 +86,7 @@ EXTEND FORM leads
     PROPERTIES(call) BACKGROUND RGB(255,212,255) IF outgoing(call)
                      id, startedAt, caller, recipient, callerName, nameRedirect, nameEmployee, duration, result
     PROPERTIES(call) requestRecord GRID DISABLEIF NOT recorded(call)
-    PROPERTIES(call) ignoredLead ON CHANGE { NEWSESSION { INPUT b = ignoredLead(call) CHANGE; APPLY; } }
+    PROPERTIES(call) ignoredLead NEWSESSION APPLY
     PROPERTIES(call) openLeadCall GRID DISABLEIF NOT leadCall(call)
     PROPERTIES(call) TOOLBAR
                             createLead SHOWIF NOT leadCall(call),

@@ -48,12 +48,12 @@ FORM timesheetEmployee 'Employee timesheet'
     
     EVENTS ON INIT {
         timesheetTimeEntryType() <- defaultTimeEntryType();
-        SEEK timesheetEmployee.e = currentUser();
-        SEEK timesheetEmployee.dates = interval(firstDayOfMonth(currentDate()), lastDayOfMonth(currentDate()));
+        ACTIVATE timesheetEmployee.e = currentUser();
+        ACTIVATE timesheetEmployee.dates = interval(firstDayOfMonth(currentDate()), lastDayOfMonth(currentDate()));
     }
     
-    PROPERTIES prevInterval '<' = { SEEK timesheetEmployee.dates = prevMonthInterval(dates); },
-               nextInterval '>' = { SEEK timesheetEmployee.dates = nextMonthInterval(dates); }
+    PROPERTIES prevInterval '<' = { ACTIVATE timesheetEmployee.dates = prevMonthInterval(dates); },
+               nextInterval '>' = { ACTIVATE timesheetEmployee.dates = nextMonthInterval(dates); }
         //    PROPERTIES hoursTimesheet(d, t, e) WAIT COLUMNS (d) HEADER extractDay(d) BACKGROUND backgroundHoursTimesheet(d, e)
 ;
 

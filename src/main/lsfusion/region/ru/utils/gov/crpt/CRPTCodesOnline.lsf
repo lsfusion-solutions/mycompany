@@ -47,7 +47,7 @@ checkCodesOnline (CDN cdn, JSON marks) {
     TRY {
         timeoutHttp() <- 1500; 
 
-        logToFile('crpt', STRING(marks));
+        printToLog(STRING(marks), 'crpt');
         EXTERNAL HTTP POST trueApiMarkirovkaUrl(cdn) + '/codes/check' HEADERS headers
             PARAMS marks TO result;
 
@@ -55,7 +55,7 @@ checkCodesOnline (CDN cdn, JSON marks) {
         
         IF logRequests() THEN {
             fileToString(result());
-            logToFile('crpt', 'request : ' + STRING(marks) + ' - response : ' + OVERRIDE resultString(), '');
+            printToLog(('request : ' + STRING(marks) + ' - response : ' + OVERRIDE resultString(), ''), 'crpt');
         }
 
         CASE
@@ -80,7 +80,7 @@ checkCodesOnline (CDN cdn, JSON marks) {
             NEWSESSION { disableTill(cdn) <- sumMinutes(currentDateTime(), 15); APPLY; }
         }
         fileToString(result());
-        logToFile('crpt', 'request : ' + STRING(marks) + ' - error : ' + (OVERRIDE messageCaughtException(), '') + ' / ' + OVERRIDE resultString(), '');
+        printToLog(('request : ' + STRING(marks) + ' - error : ' + (OVERRIDE messageCaughtException(), '') + ' / ' + OVERRIDE resultString(), ''), 'crpt');
         checkCodesResult() <- 'Ошибка при чтении марки : \n' + (OVERRIDE messageCaughtException(), '') + '\n' + OVERRIDE resultString(), '';
     }
 }

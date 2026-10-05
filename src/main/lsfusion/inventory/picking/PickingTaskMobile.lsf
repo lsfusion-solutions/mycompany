@@ -47,7 +47,7 @@ FORM pickingTaskMobile 'Picking'
     OBJECTS t = PickingTask PANEL
     PROPERTIES(t) html ON CHANGE {
                             DIALOG pickingTasksMobile OBJECTS pt = t INPUT DO {
-                                SEEK pickingTaskMobile.t = pt;
+                                ACTIVATE pickingTaskMobile.t = pt;
                             }
                         },
                   markAsDone
@@ -60,11 +60,7 @@ FORM pickingTaskMobile 'Picking'
     FILTERS left(t, p)
     
     OBJECTS l = PickingLine
-    PROPERTIES(l) '' = html READONLY, '' = quantity ON CHANGE { 
-                        INPUT q = quantity(l) DO { 
-                            NEWSESSION { APPLY { quantity(l) <- q; } } 
-                        }
-                    }
+    PROPERTIES(l) '' = html READONLY, '' = quantity NEWSESSION APPLY
     FILTERS task(l) = t
 ;
 
@@ -122,7 +118,7 @@ pick 'Pick' (PickingTask t, Product p) {
             task(pl) <- t;
             product(pl) <- p;
             quantity(pl) <- 1;
-            SEEK pickingTaskMobile.l = pl;
+            ACTIVATE pickingTaskMobile.l = pl;
         }
         APPLY;
     }
