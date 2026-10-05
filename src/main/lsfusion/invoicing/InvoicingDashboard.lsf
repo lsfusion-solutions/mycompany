@@ -25,11 +25,11 @@ value(DashboardKpi k) += WHEN k = DashboardKpi.overdueReceivables THEN (OVERRIDE
 value(DashboardKpi k) += WHEN k = DashboardKpi.payables THEN (OVERRIDE payable(), 0.0);
 value(DashboardKpi k) += WHEN k = DashboardKpi.cashBalance THEN (OVERRIDE cashBalance(), 0.0);
 // the cards open the partner list filtered exactly as the figures are computed
-open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.receivables THEN { SHOW partners FILTERS debt(p) > 0 DOCKED; }
-open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.overdueReceivables THEN { SHOW partners FILTERS pastDueDebt(p) > 0 DOCKED; }
-open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.payables THEN { SHOW partners FILTERS debt(p) < 0 DOCKED; }
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.receivables THEN { SHOW partners FILTERS debt(p) > 0 WINDOW; }
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.overdueReceivables THEN { SHOW partners FILTERS pastDueDebt(p) > 0 WINDOW; }
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.payables THEN { SHOW partners FILTERS debt(p) < 0 WINDOW; }
 // the payments form lists the company accounts with their balances on its Accounts tab
-open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.cashBalance THEN { SHOW payments DOCKED { ACTIVATE TAB payments.accounts; }; }
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.cashBalance THEN { SHOW payments WINDOW { ACTIVATE TAB payments.accounts; }; }
 
 // list: overdue debts of partners
 EXTEND FORM dashboard

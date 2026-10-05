@@ -22,9 +22,9 @@ scale(DashboardKpi k) += WHEN k = DashboardKpi.leadRevenue THEN 2;
 value(DashboardKpi k) += WHEN k = DashboardKpi.openLeads THEN (OVERRIDE countOpenedLeads(), 0);
 value(DashboardKpi k) += WHEN k = DashboardKpi.leadRevenue THEN (OVERRIDE expectedRevenue(), 0.0);
 value(DashboardKpi k, INTERVAL[DATE] i) += WHEN k = DashboardKpi.newLeads THEN (OVERRIDE countLeads(i), 0);
-open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.openLeads OR k = DashboardKpi.leadRevenue THEN { SHOW leads FILTERS opened(l) DOCKED; }
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.openLeads OR k = DashboardKpi.leadRevenue THEN { SHOW leads FILTERS opened(l) WINDOW; }
 // new leads of the period: the lead report has the same period object and no default status filter
-open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.newLeads THEN { SHOW leadReport OBJECTS dates = i DOCKED; }
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.newLeads THEN { SHOW leadReport OBJECTS dates = i WINDOW; }
 
 // chart: open leads per status
 EXTEND FORM dashboard

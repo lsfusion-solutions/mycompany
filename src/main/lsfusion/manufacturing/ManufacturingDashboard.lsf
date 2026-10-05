@@ -18,5 +18,5 @@ group(DashboardKpi k) += WHEN k = DashboardKpi.manufacturingOpened OR k = Dashbo
 
 value(DashboardKpi k) += WHEN k = DashboardKpi.manufacturingOpened THEN (OVERRIDE countOpenedManufacturingOrders(), 0);
 value(DashboardKpi k) += WHEN k = DashboardKpi.manufacturingInProgress THEN (OVERRIDE countInProgressManufacturingOrders(), 0);
-open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.manufacturingOpened THEN { SHOW manufacturingOrders FILTERS opened(o) DOCKED; }
-open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.manufacturingInProgress THEN { SHOW manufacturingOrders FILTERS status(o) = ManufacturingOrderStatus.inProgress DOCKED; }
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.manufacturingOpened THEN { SHOW manufacturingOrders FILTERS opened(o) WINDOW; }
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.manufacturingInProgress THEN { SHOW manufacturingOrders FILTERS status(o) = ManufacturingOrderStatus.inProgress WINDOW; }

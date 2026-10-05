@@ -22,9 +22,9 @@ scale(DashboardKpi k) += WHEN k = DashboardKpi.hoursLogged THEN 2;
 value(DashboardKpi k) += WHEN k = DashboardKpi.myTasks THEN (OVERRIDE countOpenAssignedTask(currentUser()), 0);
 value(DashboardKpi k) += WHEN k = DashboardKpi.overdueTasks THEN (OVERRIDE countOverdueTasks(), 0);
 value(DashboardKpi k, INTERVAL[DATE] i) += WHEN k = DashboardKpi.hoursLogged THEN (OVERRIDE hours(i), 0.0);
-open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.myTasks THEN { SHOW tasks FILTERS opened(t), assignedTo(t, currentUser()) DOCKED; }
-open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.overdueTasks THEN { SHOW tasks FILTERS opened(t), deadline(t) < currentDate() DOCKED; }
-open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.hoursLogged THEN { SHOW timeEntries FILTERS date(t) >= from(i), date(t) <= to(i) DOCKED; }
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.myTasks THEN { SHOW tasks FILTERS opened(t), assignedTo(t, currentUser()) WINDOW; }
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.overdueTasks THEN { SHOW tasks FILTERS opened(t), deadline(t) < currentDate() WINDOW; }
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.hoursLogged THEN { SHOW timeEntries FILTERS date(t) >= from(i), date(t) <= to(i) WINDOW; }
 
 // chart: open tasks per status; list: the tasks assigned to the current user
 EXTEND FORM dashboard

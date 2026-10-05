@@ -23,8 +23,8 @@ value(DashboardKpi k, INTERVAL[DATE] i) += WHEN k = DashboardKpi.salesAmount THE
 value(DashboardKpi k, INTERVAL[DATE] i) += WHEN k = DashboardKpi.salesMarkup THEN (OVERRIDE markupAmount(i), 0.0);
 value(DashboardKpi k) += WHEN k = DashboardKpi.salesOpened THEN (OVERRIDE countUnlockedOrders(), 0);
 // the card opens the list filtered exactly as the figure is computed
-open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.salesAmount OR k = DashboardKpi.salesMarkup THEN { SHOW salesLedgerReport OBJECTS dates = i DOCKED; }
-open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.salesOpened THEN { SHOW orders FILTERS NOT locked(o) DOCKED; }
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.salesAmount OR k = DashboardKpi.salesMarkup THEN { SHOW salesLedgerReport OBJECTS dates = i WINDOW; }
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.salesOpened THEN { SHOW orders FILTERS NOT locked(o) WINDOW; }
 
 // chart: turnover per day of the selected period
 EXTEND FORM dashboard

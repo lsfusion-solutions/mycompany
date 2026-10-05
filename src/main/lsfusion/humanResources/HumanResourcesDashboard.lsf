@@ -18,5 +18,5 @@ group(DashboardKpi k) += WHEN k = DashboardKpi.employees OR k = DashboardKpi.che
 
 value(DashboardKpi k) += WHEN k = DashboardKpi.employees THEN (OVERRIDE countEmployees(), 0);
 value(DashboardKpi k) += WHEN k = DashboardKpi.checkedIn THEN (OVERRIDE countOpenedAttendances(), 0);
-open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.employees THEN { SHOW employees FILTERS active(e) DOCKED; }
-open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.checkedIn THEN { SHOW attendances FILTERS lastAttendance(employee(a)) = a, NOT checkOut(a) DOCKED; }
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.employees THEN { SHOW employees FILTERS active(e) WINDOW; }
+open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.checkedIn THEN { SHOW attendances FILTERS lastAttendance(employee(a)) = a, NOT checkOut(a) WINDOW; }
