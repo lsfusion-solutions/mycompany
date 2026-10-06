@@ -25,6 +25,8 @@ value(DashboardKpi k, INTERVAL[DATE] i) += WHEN k = DashboardKpi.hoursLogged THE
 open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.myTasks THEN { SHOW tasks FILTERS opened(t), assignedTo(t, currentUser()) WINDOW; }
 open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.overdueTasks THEN { SHOW tasks FILTERS opened(t), deadline(t) < currentDate() WINDOW; }
 open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.hoursLogged THEN { SHOW timeEntries FILTERS date(t) >= from(i), date(t) <= to(i) WINDOW; }
+form(DashboardKpi k) += WHEN k = DashboardKpi.myTasks OR k = DashboardKpi.overdueTasks THEN form(r'ProjectManagement.tasks');
+form(DashboardKpi k) += WHEN k = DashboardKpi.hoursLogged THEN form(r'ProjectManagement.timeEntries');
 
 // chart: open tasks per status; list: the tasks assigned to the current user
 EXTEND FORM dashboard
@@ -42,10 +44,10 @@ EXTEND FORM dashboard
 
 DESIGN dashboard {
     charts {
-        MOVE GRID(ts) { fill = 1; alignment = STRETCH; height = 280; }
+        MOVE GRID(ts) { fill = 1; alignment = STRETCH; height = 280; showIf = permit(form(r'ProjectManagement.tasks')); }
         REMOVE BOX(ts);
     }
     lists {
-        MOVE BOX(mt);
+        MOVE BOX(mt) { showIf = permit(form(r'ProjectManagement.tasks')); }
     }
 }

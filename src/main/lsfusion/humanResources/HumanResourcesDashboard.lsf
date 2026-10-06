@@ -20,3 +20,5 @@ value(DashboardKpi k) += WHEN k = DashboardKpi.employees THEN (OVERRIDE countEmp
 value(DashboardKpi k) += WHEN k = DashboardKpi.checkedIn THEN (OVERRIDE countOpenedAttendances(), 0);
 open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.employees THEN { SHOW employees FILTERS active(e) WINDOW; }
 open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.checkedIn THEN { SHOW attendances FILTERS lastAttendance(employee(a)) = a, NOT checkOut(a) WINDOW; }
+form(DashboardKpi k) += WHEN k = DashboardKpi.employees THEN form(r'MasterData.employees');
+form(DashboardKpi k) += WHEN k = DashboardKpi.checkedIn THEN form(r'HumanResources.attendances');

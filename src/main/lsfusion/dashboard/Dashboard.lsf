@@ -1,6 +1,6 @@
 MODULE Dashboard;
 
-REQUIRE Time, DateUtils, SystemEvents, Authentication;
+REQUIRE Time, DateUtils, SystemEvents, Authentication, Reflection, Security;
 
 NAMESPACE Dashboard;
 
@@ -12,11 +12,12 @@ NAMESPACE Dashboard;
 //     through value(DashboardKpi) (as of now) or value(DashboardKpi, INTERVAL[DATE]) (for the
 //     selected period), scale for the decimals, and an optional open(DashboardKpi, INTERVAL[DATE])
 //     implementation that runs when the card is clicked and opens the list behind the figure
-//     with the very filter the figure is computed with;
+//     with the very filter the figure is computed with; form(DashboardKpi) names that form and
+//     the card is shown only to the users who can open it (permit(Form) below);
 //   - charts are object groups drawn by the dashboardBarChart / dashboardLineChart CUSTOM views
 //     (web/dashboard/dashboardcharts.js, plain SVG) with OPTIONS built by dashboardChartOptions,
 //     lists are ordinary grids; both are added with EXTEND FORM and moved into the charts / lists
-//     containers in DESIGN.
+//     containers in DESIGN with showIf = permit(form('...')) of the general form of the module.
 
 // groups: one per module
 CLASS DashboardGroup 'Dashboard group' : StaticObject;
@@ -36,6 +37,12 @@ value 'Value' = ABSTRACT CASE NUMERIC[20,4] (DashboardKpi, INTERVAL[DATE]);
 prevValue 'Previous period' (DashboardKpi k, INTERVAL[DATE] i) = value(k, prevMonthInterval(i));
 
 open 'Open' ABSTRACT CASE (DashboardKpi, INTERVAL[DATE]);
+// the form that open shows, looked up by its canonical name: form('Sales.orders') (Reflection)
+form = ABSTRACT CASE Form (DashboardKpi);
+
+// access: the current user can open a form when the navigator has an element that opens it and
+// the user is permitted to (the security policy is set on navigator elements)
+permit (Form f) = GROUP SUM 1 IF permit(currentUser(), NavigatorElement e) BY form(e);
 
 // UI text of the cards; plain English is localized by reverse translation and reaches the JS via OPTIONS
 dashboardI18n () = JSON FROM prev = 'vs previous period', noData = 'No data';
@@ -56,6 +63,8 @@ FORM dashboard 'Dashboard'
     PROPERTIES(k, dates) READONLY periodValue = value, prevValue
     PROPERTIES(k, dates) GRID open
     ORDERS orderGroup(k)
+    // a card is shown when the user can open its form (or the figure has no form to open)
+    FILTERS permit(form(k)) OR NOT form(k)
 
     EVENTS ON INIT { ACTIVATE dashboard.dates = interval(firstDayOfMonth(currentDate()), lastDayOfMonth(currentDate())); },
            ON SCHEDULE PERIOD 300 formRefresh()

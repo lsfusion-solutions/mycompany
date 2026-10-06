@@ -25,6 +25,8 @@ value(DashboardKpi k) += WHEN k = DashboardKpi.salesOpened THEN (OVERRIDE countU
 // the card opens the list filtered exactly as the figure is computed
 open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.salesAmount OR k = DashboardKpi.salesMarkup THEN { SHOW salesLedgerReport OBJECTS dates = i WINDOW; }
 open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.salesOpened THEN { SHOW orders FILTERS NOT locked(o) WINDOW; }
+form(DashboardKpi k) += WHEN k = DashboardKpi.salesAmount OR k = DashboardKpi.salesMarkup THEN form(r'Sales.salesLedgerReport');
+form(DashboardKpi k) += WHEN k = DashboardKpi.salesOpened THEN form(r'Sales.orders');
 
 // chart: turnover per day of the selected period
 EXTEND FORM dashboard
@@ -37,7 +39,7 @@ EXTEND FORM dashboard
 
 DESIGN dashboard {
     charts {
-        MOVE GRID(sd) { fill = 1; alignment = STRETCH; height = 280; }
+        MOVE GRID(sd) { fill = 1; alignment = STRETCH; height = 280; showIf = permit(form(r'Sales.salesLedgerReport')); }
         REMOVE BOX(sd);
     }
 }

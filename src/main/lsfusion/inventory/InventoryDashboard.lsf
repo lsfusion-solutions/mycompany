@@ -18,6 +18,7 @@ scale(DashboardKpi k) += WHEN k = DashboardKpi.stockValue THEN 2;
 
 value(DashboardKpi k) += WHEN k = DashboardKpi.stockValue THEN (OVERRIDE costAmount(), 0.0);
 open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.stockValue THEN { SHOW inventoryValuation FILTERS costAmount(l, p) WINDOW; }
+form(DashboardKpi k) += WHEN k = DashboardKpi.stockValue THEN form(r'Inventory.inventoryValuation');
 
 // chart: valuation per location
 EXTEND FORM dashboard
@@ -29,7 +30,7 @@ EXTEND FORM dashboard
 
 DESIGN dashboard {
     charts {
-        MOVE GRID(il) { fill = 1; alignment = STRETCH; height = 280; }
+        MOVE GRID(il) { fill = 1; alignment = STRETCH; height = 280; showIf = permit(form(r'Inventory.inventoryValuation')); }
         REMOVE BOX(il);
     }
 }

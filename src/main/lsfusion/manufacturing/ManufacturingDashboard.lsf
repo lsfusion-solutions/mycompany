@@ -20,3 +20,4 @@ value(DashboardKpi k) += WHEN k = DashboardKpi.manufacturingOpened THEN (OVERRID
 value(DashboardKpi k) += WHEN k = DashboardKpi.manufacturingInProgress THEN (OVERRIDE countInProgressManufacturingOrders(), 0);
 open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.manufacturingOpened THEN { SHOW manufacturingOrders FILTERS opened(o) WINDOW; }
 open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.manufacturingInProgress THEN { SHOW manufacturingOrders FILTERS status(o) = ManufacturingOrderStatus.inProgress WINDOW; }
+form(DashboardKpi k) += WHEN k = DashboardKpi.manufacturingOpened OR k = DashboardKpi.manufacturingInProgress THEN form(r'Manufacturing.manufacturingOrders');

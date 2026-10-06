@@ -25,6 +25,8 @@ value(DashboardKpi k, INTERVAL[DATE] i) += WHEN k = DashboardKpi.newLeads THEN (
 open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.openLeads OR k = DashboardKpi.leadRevenue THEN { SHOW leads FILTERS opened(l) WINDOW; }
 // new leads of the period: the lead report has the same period object and no default status filter
 open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.newLeads THEN { SHOW leadReport OBJECTS dates = i WINDOW; }
+form(DashboardKpi k) += WHEN k = DashboardKpi.openLeads OR k = DashboardKpi.leadRevenue THEN form(r'CRM.leads');
+form(DashboardKpi k) += WHEN k = DashboardKpi.newLeads THEN form(r'CRM.leadReport');
 
 // chart: open leads per status
 EXTEND FORM dashboard
@@ -36,7 +38,7 @@ EXTEND FORM dashboard
 
 DESIGN dashboard {
     charts {
-        MOVE GRID(ls) { fill = 1; alignment = STRETCH; height = 280; }
+        MOVE GRID(ls) { fill = 1; alignment = STRETCH; height = 280; showIf = permit(form(r'CRM.leads')); }
         REMOVE BOX(ls);
     }
 }

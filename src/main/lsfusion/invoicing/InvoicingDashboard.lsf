@@ -30,6 +30,8 @@ open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.overdueReceivable
 open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.payables THEN { SHOW partners FILTERS debt(p) < 0 WINDOW; }
 // the payments form lists the company accounts with their balances on its Accounts tab
 open(DashboardKpi k, INTERVAL[DATE] i) + WHEN k = DashboardKpi.cashBalance THEN { SHOW payments WINDOW { ACTIVATE TAB payments.accounts; }; }
+form(DashboardKpi k) += WHEN k = DashboardKpi.receivables OR k = DashboardKpi.overdueReceivables OR k = DashboardKpi.payables THEN form(r'MasterData.partners');
+form(DashboardKpi k) += WHEN k = DashboardKpi.cashBalance THEN form(r'Invoicing.payments');
 
 // list: overdue debts of partners
 EXTEND FORM dashboard
@@ -42,6 +44,7 @@ EXTEND FORM dashboard
 
 DESIGN dashboard {
     lists {
-        MOVE BOX(od);
+        // debts have no list of their own in the navigator: the payment calendar is their general form
+        MOVE BOX(od) { showIf = permit(form(r'Invoicing.paymentCalendar')); }
     }
 }
