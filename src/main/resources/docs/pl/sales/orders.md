@@ -60,6 +60,10 @@ Zamówienie przechodzi przez statusy **„Projekt” → „Wysłane” → „P
 
 Szczegóły statusów, przejść i ograniczeń: [Przepływ pracy i statusy zamówień](workflow-and-statuses.md).
 
+## Drukowanie
+
+System dostarcza dla zamówień sprzedaży dwa standardowe szablony wydruku: **Quotation** (oferta z datą ważności) i **Sales order**; **„Drukuj”** pyta, którego użyć. Zobacz [Raporty i drukowanie](../invoicing/reports-and-printing.md).
+
 ## Dokumenty powiązane
 
 Karta zamówienia może zawierać bloki z dokumentami powiązanymi:

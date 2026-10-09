@@ -131,6 +131,8 @@ Lista płatności przychodzących ma filtr **„Nierozliczone”** — pomaga sz
 
 Predefiniowany dokument wydruku nosi tytuł **„Płatność przychodząca”**; drukowanie korzysta z **Szablonów płatności przychodzącej** skonfigurowanych dla typu płatności.
 
+Płatności od klientów są drukowane według standardowego szablonu **Payment receipt**: otrzymana kwota i dokumenty, z którymi płatność została dopasowana.
+
 Zobacz: [Raporty i drukowanie](reports-and-printing.md).
 
 ## Typowe sytuacje i rozwiązania

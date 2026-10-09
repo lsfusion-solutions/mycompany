@@ -1,0 +1,13 @@
+MODULE CreditNotePrintInitial;
+
+REQUIRE CreditNotePrint, CreditNoteInitial;
+
+NAMESPACE Invoicing;
+
+loadDefaultData () + {
+    NEW tm = BillTemplate {
+        name(tm) <- r'Credit note';
+        template(tm) <- r'CreditNote.jrxml';
+        in(tm, BillType t) <- TRUE WHERE isCreditNote(t);
+    }
+}

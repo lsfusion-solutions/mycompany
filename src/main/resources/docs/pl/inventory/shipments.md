@@ -189,6 +189,8 @@ Jednocześnie status dokumentu pozostaje jednym ze statusów wymienionych powyż
 
 Akcja **„Drukuj”** drukuje wydanie według konfigurowalnego szablonu (szablony są utrzymywane w ustawieniach). Gdy używane są partie, z pozycji można także drukować etykiety partii.
 
+System dostarcza dla typu „Wydanie” standardowy szablon **Delivery note**: klient i adres dostawy, ilości zamówione i wydane, miejsca na podpisy wydającego i odbierającego.
+
 ## Tworzenie wydań z zamówień sprzedaży
 
 Jeżeli używany jest moduł Sprzedaż, a typ zamówienia sprzedaży jest powiązany z typem wydania, zatwierdzenie zamówienia sprzedaży tworzy powiązane wydanie z pozycjami zamówienia. Dokumenty odwołują się wtedy do siebie nawzajem (zamówienie pokazuje swoje wydania, a wydanie — źródłowe zamówienie).

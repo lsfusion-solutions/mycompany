@@ -197,4 +197,6 @@ Dostępność wydruku najczęściej zależy od:
 - statusu (np. drukowanie jest dostępne od „Do zapłaty”);
 - obecności co najmniej jednego włączonego szablonu wydruku dla danego typu faktury zakupu.
 
+[Noty uznaniowe](refunds-and-corrections.md#noty-uznaniowe-faktury-zakupu-zwrotu) są drukowane według standardowego szablonu **Credit note**, który wskazuje też fakturę pierwotną.
+
 Zobacz: [Raporty i drukowanie](reports-and-printing.md), [Ustawienia i katalogi](settings.md).

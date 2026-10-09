@@ -1,19 +1,33 @@
 MODULE IncomingPaymentPrint;
 
-REQUIRE IncomingPayment, DocTemplate;
+REQUIRE IncomingPayment, IncomingPaymentCurrency, IncomingPaymentDebt, DocTemplate;
 
 NAMESPACE Invoicing;
 
 fullNameCompany (IncomingPayment p) = fullName(company(p));
+logoCompany (IncomingPayment p) = logo(company(p));
+addressLinesCompany (IncomingPayment p) = addressLines(company(p));
+nameCountryCompany (IncomingPayment p) = nameCountry(company(p));
+contactsCompany (IncomingPayment p) = CONCAT r'  ·  ', phone(company(p)), email(company(p)), website(company(p));
+
+fullNamePartner (IncomingPayment p) = fullName(partner(p));
+addressLinesPartner (IncomingPayment p) = addressLines(partner(p));
+nameCountryPartner (IncomingPayment p) = nameCountry(partner(p));
+contactsPartner (IncomingPayment p) = CONCAT r'  ·  ', phone(partner(p)), email(partner(p));
+
+idCurrency (IncomingPayment p) = id(currency(p));
+
+numberDebts (IncomingPayment p) = GROUP CONCAT number(OutgoingDebt d) IF paid(p, d) AND active(d), ', ' ORDER dateTime(d), d;
 
 FORM printIncomingPayment 'Incoming payment'
 
     OBJECTS o = IncomingPayment PANEL 
     PROPERTIES(o)
-        dateTime, number,
-        namePartner, namePartnerAccount,
-        nameCompany, fullNameCompany, nameCompanyAccount,
-        amount, note, reference 
+        dateTime, number, nameType,
+        namePartner, fullNamePartner, addressLinesPartner, nameCountryPartner, contactsPartner, namePartnerAccount,
+        nameCompany, fullNameCompany, logoCompany, addressLinesCompany, nameCountryCompany, contactsCompany,
+        nameCompanyAccount,
+        amount, nameCurrency, idCurrency, numberDebts, note, reference 
 ;
 
 @defineDocTemplateType(incomingPayment, 'Incoming payment template');

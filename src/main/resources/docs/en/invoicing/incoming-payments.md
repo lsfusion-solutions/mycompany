@@ -133,6 +133,8 @@ The incoming payments list has a **“Not matched”** filter — it helps quick
 
 The predefined print form is titled **"Incoming payment"**; printing uses the **Incoming payment templates** configured for the payment type.
 
+Customer payments are printed with the standard **Payment receipt** template: the amount received and the documents the payment is matched to.
+
 See: [Reports and printing](reports-and-printing.md).
 
 ## Typical situations and solutions

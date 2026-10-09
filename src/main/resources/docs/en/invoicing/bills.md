@@ -199,4 +199,6 @@ Printing availability most often depends on:
 - status (for example, printing is available from “To pay”);
 - the presence of at least one enabled print template for the bill type.
 
+[Credit notes](refunds-and-corrections.md#credit-notes-return-bills) are printed with the standard **Credit note** template, which also shows the original invoice.
+
 See: [Reports and printing](reports-and-printing.md), [Settings and directories](settings.md).

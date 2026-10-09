@@ -122,6 +122,21 @@ Otwórz szablon i kliknij **Zresetuj** (jeśli wcześniej wgrano plik).
 
 W zależności od dostawy mogą być dostępne typowe predefiniowane wydruki faktury (np. WZ, faktura, uniwersalny dokument przekazania, faktura proforma). Możesz używać ich bez zmian albo zastąpić własnymi plikami przez **Prześlij**.
 
+Przy wypełnianiu nowej bazy danymi domyślnymi każda edycja rejestruje neutralne formularze w języku angielskim. W nagłówku każdego z nich jest logo firmy (z karty firmy), jej adres i dane kontaktowe:
+
+- **Invoice** — dla wszystkich typów faktur; zawiera także dane rachunku firmy oraz kwoty opłacone / pozostałe;
+- **Credit note** — dla typów faktur zakupu z flagą **„Zwrot”**; wskazuje fakturę pierwotną;
+- **Payment receipt** — dla płatności od klientów (bank i kasa); zawiera otrzymaną kwotę i dokumenty, z którymi płatność została dopasowana;
+- **Quotation** i **Sales order** — dla typów [zamówień sprzedaży](../sales/orders.md);
+- **Purchase order** — dla typów [zamówień zakupu](../purchase/orders.md);
+- **Delivery note** — dla typu [wydania](../inventory/shipments.md) „Wydanie”.
+
+Edycje regionalne (polska, rosyjska) rejestrują obok nich własne formularze; jeśli dla typu dokumentu włączono kilka szablonów, podczas drukowania system pyta, którego użyć.
+
+W bazie utworzonej przed pojawieniem się tych formularzy można zarejestrować je ręcznie: utwórz szablon z nazwą pliku szablonu `Invoice.jrxml`, `CreditNote.jrxml`, `PaymentReceipt.jrxml`, `SalesQuotation.jrxml`, `SalesOrder.jrxml`, `PurchaseOrder.jrxml` lub `DeliveryNote.jrxml` i włącz go dla wymaganych typów dokumentów.
+
+Formularze są ułożone na siatce kolumn swojej tabeli pozycji, więc także w formacie **XLSX** powstaje uporządkowany arkusz: każda kolumna tabeli staje się kolumną arkusza, każdy wiersz nagłówka — osobnym wierszem, bez pustych wierszy i kolumn.
+
 ## Raporty
 
 W konfiguracji podstawowej w **„Fakturowanie” → „Raportowanie”** dostarczane są cztery formularze:

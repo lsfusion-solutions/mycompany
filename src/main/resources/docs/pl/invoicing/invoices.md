@@ -112,4 +112,6 @@ Zobacz: [Płatności przychodzące](incoming-payments.md).
 
 Predefiniowany dokument pierwotny nosi tytuł **„Faktura”**, a każdy typ faktury ma własną listę **Szablonów faktury**. W zależności od konfiguracji wydruk może dodatkowo zawierać kontrakt, lokalizację, jednostki miary partnera oraz kwoty opłacone/pozostałe. Drukowanie wymaga co najmniej jednego włączonego szablonu dla danego typu faktury; zobacz [Raporty i drukowanie](reports-and-printing.md).
 
+System dostarcza neutralny szablon **Invoice** z logo firmy, danymi rachunku firmy oraz kwotami opłaconymi / pozostałymi.
+
 Zobacz także: [Płatności](payments.md), [Dług i kalendarz płatności](debt-and-calendar.md).

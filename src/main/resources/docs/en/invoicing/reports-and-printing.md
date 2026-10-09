@@ -120,7 +120,22 @@ Open the template and click **Reset** (if a file was uploaded earlier).
 
 #### Examples of predefined forms
 
-Depending on the delivery, typical predefined print forms for an invoice may be available (for example, delivery note, invoice, universal transfer document, proforma invoice). You can use them as-is or replace them with your own files using **Upload**.
+When a new database is filled with default data, neutral English forms are registered in every edition. Each form has the company logo (taken from the company card), the company address and contacts in the header:
+
+- **Invoice** — for all invoice types; it also shows the payment details of the company account and the paid / remaining amounts;
+- **Credit note** — for the bill types with the **"Return"** flag; it shows the original invoice;
+- **Payment receipt** — for customer payments (bank and cash); it shows the amount received and the documents the payment is matched to;
+- **Quotation** and **Sales order** — for the [sales order](../sales/orders.md) types;
+- **Purchase order** — for the [purchase order](../purchase/orders.md) types;
+- **Delivery note** — for the [shipment](../inventory/shipments.md) type “Shipment”.
+
+Regional editions register their own forms next to them (for example, delivery note, invoice, universal transfer document, proforma invoice); when several templates are enabled for a document type, **Print** asks which one to use.
+
+In a database created before these forms appeared, register them by hand: create a template with the template file name `Invoice.jrxml`, `CreditNote.jrxml`, `PaymentReceipt.jrxml`, `SalesQuotation.jrxml`, `SalesOrder.jrxml`, `PurchaseOrder.jrxml` or `DeliveryNote.jrxml` and enable it for the required document types.
+
+The forms are laid out on the column grid of their lines table, so the **XLSX** format gives a tidy sheet as well: every table column becomes a sheet column, each header line gets its own row, and there are no empty rows or columns.
+
+You can use the forms as-is or replace them with your own files using **Upload**.
 
 ## Reports
 

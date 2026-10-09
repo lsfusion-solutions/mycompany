@@ -8,18 +8,28 @@ addressCompany (Bill i) = addressLines(company(i));
 phoneCompany (Bill i) = phone(company(i));
 emailCompany (Bill i) = email(company(i));
 websiteCompany (Bill i) = website(company(i));
+fullNameCompany (Bill b) = fullName(company(b));
+logoCompany (Bill b) = logo(company(b));
+nameCountryCompany (Bill b) = nameCountry(company(b));
+contactsCompany (Bill b) = CONCAT r'  ·  ', phoneCompany(b), emailCompany(b), websiteCompany(b);
 
 addressLinesVendor (Bill i) = addressLines(vendor(i)); 
 phoneVendor (Bill i) = phone(vendor(i));
+fullNameVendor (Bill b) = fullName(vendor(b));
+nameCountryVendor (Bill b) = nameCountry(vendor(b));
+contactsVendor (Bill b) = CONCAT r'  ·  ', phoneVendor(b), email(vendor(b));
 
-FORM printBill 'Invoice'
+FORM printBill 'Bill'
     OBJECTS o = Bill PANEL 
     PROPERTIES(o) dateTime, deliveryDateTime, executionDateTime, dueDateTime, number,
-                  nameCompany, addressCompany, phoneCompany, emailCompany, websiteCompany,
-                  nameVendor, addressLinesVendor, phoneVendor
+                  nameCompany, fullNameCompany, logoCompany, addressCompany, phoneCompany, emailCompany, websiteCompany,
+                  nameCountryCompany, contactsCompany,
+                  nameVendor, fullNameVendor, addressLinesVendor, phoneVendor, nameCountryVendor, contactsVendor,
+                  vendorReference, note,
+                  nettoAmount, taxAmount, amount
     
     OBJECTS l = BillLine
-    PROPERTIES(l) nameItem, description, nameUom, idBarCodeItem, idItem, referenceItem,
+    PROPERTIES(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, referenceItem,
                   nameCategoryItem, level1Item, level2Item, level3Item, level4Item,
                   quantity, price, untaxedAmount,
                   taxPercent, taxAmount, taxes, 

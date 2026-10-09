@@ -193,6 +193,8 @@ At the same time, the document status remains one of the statuses listed above (
 
 The **Print** action prints the shipment using a configurable template (templates are maintained in the settings). When lots are used, lot labels can also be printed from the lines.
 
+The system comes with the **Delivery note** template for the “Shipment” type: customer and delivery address, ordered and delivered quantities, signature fields for the delivering and receiving parties.
+
 ## Creating shipments from sales orders
 
 If the Sales module is used and the sales order type is linked to a shipment type, confirming a sales order creates a linked shipment with the ordered lines. The documents then reference each other (the order shows its shipments, the shipment shows the source order).

@@ -8,22 +8,35 @@ addressLinesCompany (Order o) = addressLines(company(o));
 addressCsvCompany (Order o) = addressCsv(company(o));
 phoneCompany (Order o) = phone(company(o));
 fullNameCompany (Order o) = fullName(company(o));
+logoCompany (Order o) = logo(company(o));
+nameCountryCompany (Order o) = nameCountry(company(o));
+contactsCompany (Order o) = CONCAT r'  ·  ', phoneCompany(o), email(company(o)), website(company(o));
 
 addressLinesVendor (Order o) = addressLines(vendor(o));
 phoneVendor (Order o) = phone(vendor(o));
+fullNameVendor (Order o) = fullName(vendor(o));
+nameCountryVendor (Order o) = nameCountry(vendor(o));
+contactsVendor (Order o) = CONCAT r'  ·  ', phoneVendor(o), email(vendor(o));
 
 addressLinesLocation (Order o) = addressLines(location(o));
 addressCsvLocation (Order o) = addressCsv(location(o));
 
+idCurrency (Order o) = id(currency(o));
+
 FORM printOrder 'Purchase order'   
     OBJECTS o = Order PANEL 
     PROPERTIES(o) scheduledDateTime, dateTime, number, nameRepresentative,
-                  nameCompany, fullNameCompany, addressLinesCompany, addressCsvCompany, phoneCompany,
-                  nameVendor, addressLinesVendor, addressCsvVendor, phoneVendor,  
-                  nameLocation, addressLinesLocation, addressCsvLocation
+                  nameCompany, fullNameCompany, logoCompany, addressLinesCompany, addressCsvCompany, phoneCompany,
+                  nameCountryCompany, contactsCompany,
+                  nameVendor, fullNameVendor, addressLinesVendor, addressCsvVendor, phoneVendor,
+                  nameCountryVendor, contactsVendor,
+                  nameLocation, addressLinesLocation, addressCsvLocation,
+                  namePaymentTerms, vendorReference, note,
+                  nameCurrency, idCurrency,
+                  nettoAmount, taxAmount, amount
         
     OBJECTS l = OrderLine
-    PROPERTIES(l) nameItem, description, nameUom, idBarCodeItem, idItem, referenceItem,
+    PROPERTIES(l) index, nameItem, description, nameUom, idBarCodeItem, idItem, referenceItem,
                   nameCategoryItem, level1Item, level2Item, level3Item, level4Item,
                   quantity, price, untaxedAmount,
                   taxPercent, taxAmount, taxes, 

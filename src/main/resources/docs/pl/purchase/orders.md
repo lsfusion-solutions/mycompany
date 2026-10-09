@@ -76,6 +76,8 @@ Jeśli w systemie skonfigurowano wysyłanie, karta zamówienia zakupu udostępni
 - wysyłany jest e-mail do dostawcy;
 - zamówienie zakupu przechodzi w status **„Wysłano”**.
 
+System dostarcza neutralny szablon wydruku **Purchase order** (logo firmy, dostawca, miejsce dostawy, pozycje i sumy); wybierz go jako **„Domyślny szablon”** w typie zamówienia, aby był dołączany do wiadomości.
+
 ### Potwierdzanie zamówienia zakupu
 
 Akcja **„Potwierdź”** rejestruje, że zamówienie zakupu jest gotowe do dalszych operacji.

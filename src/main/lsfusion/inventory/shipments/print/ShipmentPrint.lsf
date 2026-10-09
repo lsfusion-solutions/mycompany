@@ -6,17 +6,22 @@ NAMESPACE Inventory;
 
 nameCompany (Shipment s) = name(company(s));
 fullNameCompany (Shipment s) = fullName(company(s));
+logoCompany (Shipment s) = logo(company(s));
 
 addressLinesCompany (Shipment i) = addressLines(company(i));
 addressCsvCompany (Shipment i) = addressCsv(company(i));
 phoneCompany (Shipment i) = phone(company(i));
 emailCompany (Shipment i) = email(company(i));
 websiteCompany (Shipment i) = website(company(i));
+nameCountryCompany (Shipment s) = nameCountry(company(s));
+contactsCompany (Shipment s) = CONCAT r'  ·  ', phoneCompany(s), emailCompany(s), websiteCompany(s);
 
 fullNameCustomer (Shipment s) = fullName(customer(s)); 
 
 addressLinesCustomer (Shipment s) = addressLines(customer(s)); 
 phoneCustomer (Shipment s) = phone(customer(s));
+nameCountryCustomer (Shipment s) = nameCountry(customer(s));
+contactsCustomer (Shipment s) = CONCAT r'  ·  ', phoneCustomer(s), email(customer(s));
 
 addressLinesLocation (Shipment s)  = addressLines(location(s));
 addressCsvLocation (Shipment s)  = addressCsv(location(s));
@@ -29,14 +34,15 @@ note 'Note' = ABSTRACT TEXT (ShipmentLine);
 FORM printShipment 'Shipment task'
     OBJECTS o = Shipment PANEL 
     PROPERTIES(o) scheduledDateTime, executionDateTime, number,
-                  nameCompany, fullNameCompany,
+                  nameCompany, fullNameCompany, logoCompany,
                   addressLinesCompany, addressCsvCompany, phoneCompany, 
-                  emailCompany, websiteCompany,
+                  emailCompany, websiteCompany, nameCountryCompany, contactsCompany,
                   nameCustomer, fullNameCustomer,
                   addressLinesCustomer, addressCsvCustomer, deliveryAddress,
-                  phoneCustomer,
+                  phoneCustomer, nameCountryCustomer, contactsCustomer,
                   nameLocation, addressLinesLocation, addressCsvLocation,
-                  nameToLocation, addressLinesToLocation, addressCsvToLocation
+                  nameToLocation, addressLinesToLocation, addressCsvToLocation,
+                  customerReference, note
     
     OBJECTS l = ShipmentLine
     PROPERTIES(l) index, nameProduct, idProduct, nameUom, idBarCodeProduct, referenceProduct,

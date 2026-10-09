@@ -90,6 +90,8 @@ If sending is configured in your system, the purchase order card provides the **
 - an email is sent to the vendor;
 - the purchase order is switched to **“Sent”**.
 
+The system comes with a neutral **Purchase order** print template (company logo, vendor, delivery location, lines and totals); select it as the **“Default template”** of the order type to have it attached.
+
 ### Confirming a purchase order
 
 The **“Confirm”** action records that the purchase order is ready for further operations.

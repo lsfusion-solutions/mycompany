@@ -1,0 +1,13 @@
+MODULE CreditNotePrint;
+
+REQUIRE BillPrint, BillCurrency, CreditNote;
+
+NAMESPACE Invoicing;
+
+idCurrency (Bill b) = id(currency(b));
+
+numberInvoices (Bill b) = GROUP CONCAT number(Invoice i) IF in(i, b), ', ' ORDER i;
+
+EXTEND FORM printBill
+    PROPERTIES(o) nameCurrency, idCurrency, numberInvoices
+;

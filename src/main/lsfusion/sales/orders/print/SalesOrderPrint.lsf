@@ -6,6 +6,9 @@ NAMESPACE Sales;
 
 addressLinesCustomer (Order o) = addressLines(customer(o));
 phoneCustomer (Order o) = phone(customer(o));
+fullNameCustomer (Order o) = fullName(customer(o));
+nameCountryCustomer (Order o) = nameCountry(customer(o));
+contactsCustomer (Order o) = CONCAT r'  ·  ', phoneCustomer(o), email(customer(o));
 
 addressLinesLocation (Order o) = addressLines(location(o));
 addressCsvLocation (Order o) = addressCsv(location(o));
@@ -15,6 +18,10 @@ addressCsvCompany (Order o) = addressCsv(company(o));
 phoneCompany (Order o) = phone(company(o));
 fullNameCompany (Order o) = fullName(company(o));
 logoCompany (Order o) = logo(company(o));
+nameCountryCompany (Order o) = nameCountry(company(o));
+contactsCompany (Order o) = CONCAT r'  ·  ', phoneCompany(o), email(company(o)), website(company(o));
+
+idCurrency (Order o) = id(currency(o));
 
 printUom = ABSTRACT VALUE Uom (OrderLine);
 namePrintUom (OrderLine l) = name(printUom(l));
@@ -30,17 +37,19 @@ FORM printOrder 'Sales order'
     OBJECTS o = Order PANEL
     PROPERTIES document = r'Order'
     PROPERTIES(o) number, dateTime, scheduledDateTime, dueDateTime, nameRepresentative,
-                  nameCustomer, addressLinesCustomer, addressCsvCustomer, 
-                  phoneCustomer, deliveryAddress,   
+                  nameCustomer, fullNameCustomer, addressLinesCustomer, addressCsvCustomer, nameCountryCustomer,
+                  phoneCustomer, contactsCustomer, deliveryAddress,
                   nameLocation, addressLinesLocation, addressCsvLocation, 
                   nameCompany, fullNameCompany, logoCompany,
-                  addressLinesCompany, addressCsvCompany, phoneCompany,
-                  nameCurrency
+                  addressLinesCompany, addressCsvCompany, phoneCompany, nameCountryCompany, contactsCompany,
+                  validity, namePaymentTerms, customerReference, note,
+                  nameCurrency, idCurrency,
+                  nettoAmount, taxAmount, amount
         
     OBJECTS l = OrderLine
     PROPERTIES(l) index, idItem, nameItem, description, nameUom = namePrintUom, idBarCodeItem, referenceItem, isService,
                   nameCategoryItem, level1Item, level2Item, level3Item, level4Item,
-                  quantity = printQuantity, price = printPrice,
+                  quantity = printQuantity, price = printPrice, discount,
                   taxPercent, taxAmount, taxes, 
                   untaxedAmount, amount
     FILTERS order(l) = o

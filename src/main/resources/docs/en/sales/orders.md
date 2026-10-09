@@ -68,6 +68,10 @@ An order moves through the statuses **Draft → Sent → Confirmed → Locked**,
 
 For details on statuses, transitions, and restrictions, see: [Sales order workflow and statuses](workflow-and-statuses.md).
 
+## Printing
+
+The system comes with two standard print templates for sales orders: **Quotation** (with the **“Validity”** date) and **Sales order**; **“Print”** asks which one to use. See [Reports and printing](../invoicing/reports-and-printing.md).
+
 ## Related documents
 
 The order card shows related documents as tabs:

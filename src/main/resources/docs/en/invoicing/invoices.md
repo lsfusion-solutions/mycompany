@@ -114,4 +114,6 @@ See: [Incoming payments](incoming-payments.md).
 
 The predefined primary form is titled **"Invoice"**, and each invoice type carries its own list of **Invoice templates**. Depending on the configuration, the printout can additionally include the contract, the location, partner units of measure, and the paid/remaining amounts. Printing requires at least one enabled template for the invoice type; see [Reports and printing](reports-and-printing.md).
 
+The system comes with a neutral **Invoice** template that shows the company logo, the payment details of the company account and the paid / remaining amounts.
+
 See also: [Payments](payments.md), [Debt and payment calendar](debt-and-calendar.md).

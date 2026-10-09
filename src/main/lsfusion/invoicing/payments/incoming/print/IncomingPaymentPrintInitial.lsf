@@ -1,0 +1,13 @@
+MODULE IncomingPaymentPrintInitial;
+
+REQUIRE IncomingPaymentPrint, IncomingPaymentInitial;
+
+NAMESPACE Invoicing;
+
+loadDefaultData () + {
+    NEW tm = IncomingPaymentTemplate {
+        name(tm) <- r'Payment receipt';
+        template(tm) <- r'PaymentReceipt.jrxml';
+        in(tm, IncomingPaymentType t) <- TRUE WHERE id(t) = 'customerbank' OR id(t) = 'customercash';
+    }
+}
