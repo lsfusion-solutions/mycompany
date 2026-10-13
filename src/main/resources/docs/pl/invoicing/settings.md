@@ -12,6 +12,7 @@ Sam formularz **„Ustawienia”** (**„Konfiguracja” → „Ustawienia”**)
 
 - katalogi **typów dokumentów** — **typy faktur zakupu**, **typy faktur**, **typy płatności przychodzących**, **typy płatności wychodzących** — każdy z numeratorem, partnerem domyślnym, ustawieniem, czy **cena zawiera podatki**, zachowaniem płatności/wydań oraz (dla zwrotów) flagą **„Zwrot” (Return)** i powiązanym **„Typem zwrotu” (Return type)** opisanymi w sekcji [Zwroty i korekty](refunds-and-corrections.md);
 - katalog **grup podatków**;
+- zakładkę **„Przedział wiekowania”** — granice przedziałów raportu [wiekowania zadłużenia](debt-and-calendar.md) (zobacz poniżej);
 - przełącznik **„Nie przeliczaj długu na walutę domyślną” (Skip converting debt to default currency)** — po włączeniu wartości długu są utrzymywane w walucie własnej każdego dokumentu, zamiast być przeliczane na walutę domyślną.
 
 Każdy typ dokumentu może również określać **walutę domyślną** podstawianą do jego dokumentów. Jest to niezależne od ogólnosystemowej **waluty domyślnej**, na którą przeliczane są wartości długu (o ile nie włączono przełącznika powyżej).
@@ -37,6 +38,10 @@ Warunki płatności przechowują liczbę **dni**; przypisane do partnera (osobno
 - obliczaniem daty **„Zapłać do” (Pay before)**;
 - generowaniem [kalendarza płatności](debt-and-calendar.md);
 - kontrolą przeterminowań.
+
+## Przedziały wiekowania
+
+Zakładka **„Przedział wiekowania”** formularza „Ustawienia” przechowuje przedziały raportu [wiekowania zadłużenia](debt-and-calendar.md). Każdy wiersz to przedział z górną granicą w dniach po terminie (**„Do (dni)”**); **nazwa** przedziału (`1-30`, `31-60`, …) jest wyliczana z granic. Nowa baza startuje z granicami 30, 60 i 90 dni; dodawaj i usuwaj wiersze, aby zmienić podział — długi starsze niż ostatnia granica trafiają do kolumny **„> N”** raportu. Granice muszą być dodatnie i różne.
 
 ## Import faktur zakupu z pliku
 

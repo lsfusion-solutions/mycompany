@@ -1,0 +1,13 @@
+MODULE DebtAgingInitial;
+
+REQUIRE DebtAging, DefaultData;
+
+NAMESPACE Invoicing;
+
+loadDefaultData () + {
+    IF NOT GROUP SUM 1 IF AgingBucket b IS AgingBucket THEN {
+        NEW b = AgingBucket { days(b) <- 30; }
+        NEW b = AgingBucket { days(b) <- 60; }
+        NEW b = AgingBucket { days(b) <- 90; }
+    }
+}

@@ -14,6 +14,10 @@ dateTime 'Date' = ABSTRACT DATETIME (Debt) MATERIALIZED;
 dueDateTime 'Pay before' = ABSTRACT DATETIME(Debt) MATERIALIZED;
 @defineDateTimeAggregation(Debt, due, '(pay before)');
 
+// days overdue as of a date: a debt due on that date is not overdue yet
+overdueDays 'Days overdue' (Debt d, DATE dt) = daysBetweenDates(dt, dueDate(d)) IF dueDate(d) < dt;
+overdueDays 'Days overdue' (Debt d) = overdueDays(d, currentDate());
+
 partner = ABSTRACT Partner (Debt) MATERIALIZED;
 namePartner 'Partner' (Debt d) = name(partner(d));
 
@@ -78,6 +82,14 @@ left 'Left' (IncomingDebt id) = (amount(id) IF id IS IncomingDebt) (-) paid(id);
 left 'Left' (OutgoingDebt od) = (amount(od) IF od IS OutgoingDebt) (-) paid(od);
 left 'Left' (Debt d) = MULTI left[IncomingDebt](d), left[OutgoingDebt](d);
 signedLeft 'Left' (Debt d) = IF d IS OutgoingDebt THEN left(d) ELSE -left(d);
+
+// as of a date: the amount less the matched payments dated not later than that date
+paid (IncomingDebt id, DATE dt) = GROUP SUM paid(id, OutgoingDebt od) IF active(od) AND date(od) <= dt;
+paid (OutgoingDebt od, DATE dt) = GROUP SUM paid(IncomingDebt id, od) IF active(id) AND date(id) <= dt;
+paid (Debt d, DATE dt) = MULTI paid[IncomingDebt,DATE](d, dt), paid[OutgoingDebt,DATE](d, dt);
+
+left 'Left' (Debt d, DATE dt) = (amount(d) (-) paid(d, dt)) IF date(d) <= dt;
+signedLeft 'Left' (Debt d, DATE dt) = IF d IS OutgoingDebt THEN left(d, dt) ELSE -left(d, dt);
 
 left 'Left' (IncomingDebt id, OutgoingDebt od) = min(left(id), left(od));
 

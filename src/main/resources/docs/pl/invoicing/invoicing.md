@@ -84,7 +84,7 @@ Sekcja „Fakturowanie” zawiera grupy:
 
 - **Operacje** — [faktury zakupu](bills.md), [faktury](invoices.md), [płatności przychodzące](incoming-payments.md), [płatności wychodzące](outgoing-payments.md) oraz deklaracje celne.
 - **Procesy** — [mobilna faktura zakupu](mobile-bills.md).
-- **Raportowanie** — [kalendarz płatności](debt-and-calendar.md), Płatności, Raport faktur zakupu, Raport faktur.
+- **Raportowanie** — [kalendarz płatności](debt-and-calendar.md), [wiekowanie zadłużenia](debt-and-calendar.md), Płatności, Raport faktur zakupu, Raport faktur.
 - **Konfiguracja** — formularz **„Ustawienia”**, [podatki](taxes.md), Warunki płatności, Banki, Konta (bankowe + kasowe), Konta analityczne.
 
 ## Terminy

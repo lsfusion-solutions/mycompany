@@ -14,6 +14,7 @@ The **Settings** form itself (**Configuration → Settings**) holds:
 
 - the **document-type** directories — **Bill types**, **Invoice types**, **Incoming payment types**, **Outgoing payment types** — each with its numerator, default partner, whether the **price includes taxes**, the payment/shipment behaviour, and (for returns) the **Return** flag and its linked **Return type** described in [Refunds and corrections](refunds-and-corrections.md);
 - the **Tax groups** directory;
+- the **Aging bucket** tab — the bounds of the [debt aging](debt-and-calendar.md) buckets (see below);
 - the **Skip converting debt to default currency** switch — when turned on, debt figures are kept in each document's own currency instead of being converted to the default currency.
 
 Each document type can also define a **default currency** that is substituted into its documents. This is separate from the system-wide **default currency**, which is the one debt figures are converted to (unless the switch above is on).
@@ -41,6 +42,10 @@ Payment terms carry a number of **Days**; assigned to a partner (separately for 
 - overdue control.
 
 ![Payment terms directory](images/payment-terms-list.webp)
+
+## Aging buckets
+
+The **Aging bucket** tab of the Settings form keeps the buckets of the [debt aging](debt-and-calendar.md) report. Each row is a bucket with its upper bound in days overdue (**Up to (days)**); the **Name** of the bucket (`1-30`, `31-60`, …) is derived from the bounds. A new database starts with the bounds 30, 60 and 90; add or delete rows to change the breakdown — debts older than the last bound go to the **> N** column of the report. The bounds must be positive and different.
 
 ## Bill file import
 

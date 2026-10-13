@@ -15,7 +15,7 @@ Points worth understanding:
 - **Overdue debt** is the part of the debt whose **Pay before** date is already in the past;
 - matching only affects the document-level **Left**/**Paid** figures; the partner total already reflects the document from the moment it is entered.
 
-The dedicated views **Partner debts** and **Contract debts** list each debt entry (type, number, date, **Pay before**, company, amount, **Left**, running **Debt**) with an **Overdue** filter, and show **Debt** plus **Overdue debt** totals per partner/contract.
+The dedicated views **Partner debts** and **Contract debts** list each debt entry (type, number, date, **Pay before**, company, amount, **Left**, running **Debt**) with an **Overdue** filter, and show **Debt** plus **Overdue debt** totals per partner/contract. **Partner debts** also shows, for each entry, the **Days overdue** and the **Aging bucket** it falls into as of today (see [Debt aging](#debt-aging)).
 
 ## How debt is closed
 
@@ -50,5 +50,25 @@ Check:
 - whether **payment terms / Pay before** are filled in documents;
 - whether the chosen **date interval** actually covers the due dates;
 - whether documents are excluded by status (for example, Canceled).
+
+## Debt aging
+
+**Invoicing → Reporting → Debt aging** splits the outstanding debt of every partner by how long it has been overdue, as of a chosen date — the usual aging schedule of receivables and payables.
+
+Layout:
+
+- at the top pick the **Company** and the **Date** (today by default); the **Vendors** switch turns the report from customers (partners that owe the company) to vendors (partners the company owes) — on the vendor side the amounts are shown as positive numbers;
+- one row per partner with its **Sales person**, the **Total** debt as of the date, the part whose term has not come yet (**Not due**), one column per aging bucket (**1-30**, **31-60**, **61-90** with the default buckets) and the **> 90** column for debts older than the last bucket;
+- the **My customers** filter keeps only the partners whose **Sales person** is the current user;
+- the lower table lists the debts of the selected partner with **Days overdue**, the **Aging bucket**, the amount and the **Debt** left as of the date.
+
+How the figures are computed:
+
+- a debt is overdue as of the date when its **Pay before** date is earlier than that date; the days overdue are counted from **Pay before**;
+- the debt left as of the date is the document amount less the matched payments dated not later than that date, so the report can be built for a past date as well;
+- debts without **Pay before** (for example, unmatched payments) are counted in **Not due**;
+- the partner's figures are net, like **Debt** and **Overdue debt** on the partner card: documents in both directions are summed with their sign, so for today the buckets add up to the card's **Overdue debt**; a partner with both receivables and payables may therefore show a negative cell.
+
+The bucket bounds are kept in the **Aging bucket** tab of the [Settings](settings.md) form.
 
 See parameters: [Settings and directories](settings.md).

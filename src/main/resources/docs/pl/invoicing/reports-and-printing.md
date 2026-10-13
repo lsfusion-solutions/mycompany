@@ -139,16 +139,17 @@ Formularze są ułożone na siatce kolumn swojej tabeli pozycji, więc także w 
 
 ## Raporty
 
-W konfiguracji podstawowej w **„Fakturowanie” → „Raportowanie”** dostarczane są cztery formularze:
+W konfiguracji podstawowej w **„Fakturowanie” → „Raportowanie”** dostarczanych jest pięć formularzy:
 
 - **„Raport faktur zakupu” (Bills report)** — **tabela przestawna** (pivot) po liniach [faktur zakupu](bills.md). Kolumny dokumentu obejmują numer, datę, dostawcę, status, typ, konta, walutę, warunki płatności oraz termin płatności (Pay before); kolumny linii obejmują towar, jego kategorie, dynamiczne kolumny atrybutów towaru, ilość, cenę i podatki; **miarami** przestawnymi są kwota bez podatku, kwota podatku, kwota oraz kwota w walucie. Panel **„Filtry”** i filtr **„Przedział dat”** pozwalają zawęzić dane, a grupowanie w tabeli przestawnej układasz samodzielnie.
 - **„Raport faktur” (Invoices report)** — ta sama tabela przestawna po liniach [faktur](invoices.md), z polami **„Klient”** i **„Dział”** w miejsce pól dostawcy.
 - **„Płatności”** — jednolity widok wszystkich płatności przychodzących i wychodzących z typem, datą, numerem, partnerem, kontami, firmą i kwotą ze znakiem; na tym samym formularzu jest też zakładka **„Konta”**, która pokazuje bieżące salda kont oraz — po wskazaniu daty selektorem **„Wybierz datę”** — saldo na wybraną datę.
 - **[Kalendarz płatności](debt-and-calendar.md)** — niespłacone saldo i prognoza gotówki na zakres dat, z zakładkami rozbicia **„Typ” (Type)** oraz **„Partner”**.
+- **[Wiekowanie zadłużenia](debt-and-calendar.md)** — dług każdego partnera na datę w podziale według długości przeterminowania, dla klientów albo dostawców.
 
 Wartości [długu](debt-and-calendar.md) widoczne są również bezpośrednio na karcie **faktury zakupu** i **faktury** (dopasowane płatności i pozostały dług) oraz przez dedykowane widoki **„Dług wg partnerów”** / **„Dług wg kontraktów”**.
 
 Rekomendacje:
 
 1. Używaj filtra **„Przedział dat”**.
-2. Do analizy długu korzystaj z widoków **„Dług wg partnerów”** / **„Dług wg kontraktów”** i ich filtra **„Przeterminowane” (Overdue)**.
+2. Do analizy długu korzystaj z widoków **„Dług wg partnerów”** / **„Dług wg kontraktów”** i ich filtra **„Przeterminowane” (Overdue)**, a do podziału według dni po terminie — z raportu **„Wiekowanie zadłużenia”**.

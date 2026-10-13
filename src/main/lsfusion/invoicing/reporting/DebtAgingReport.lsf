@@ -1,0 +1,74 @@
+MODULE DebtAgingReport;
+
+REQUIRE DebtAging, PartnerSales, Company, Partner;
+
+NAMESPACE Invoicing;
+
+// receivables are shown as they are, payables with the sign flipped, so both sides read as positive amounts
+sign (BOOLEAN vendors) = IF vendors THEN -1 ELSE 1;
+
+FORM debtAging 'Debt aging'
+    OBJECTS c = Company PANEL
+    PROPERTIES(c) 'Company' = name SELECTOR
+
+    OBJECTS dt = DATE PANEL
+    PROPERTIES(dt) dateValue = VALUE
+
+    OBJECTS v = BOOLEAN PANEL NULL
+    PROPERTIES(v) vendors 'Vendors' = VALUE
+
+    // the buckets give the columns, their own table is removed from the design
+    OBJECTS b = AgingBucket
+    PROPERTIES(b) READONLY number
+    ORDERS number(b)
+
+    OBJECTS p = Partner
+    PROPERTIES(p) READONLY name, nameSalesPerson
+    PROPERTIES READONLY total 'Total' = NUMERIC[14,2](sign(v) * debt(c, p, dt)),
+                        notDue 'Not due' = NUMERIC[14,2](sign(v) * notDueDebt(c, p, dt)),
+                        bucket = NUMERIC[14,2](sign(v) * debt(c, p, dt, b)) COLUMNS (b) HEADER name(b),
+                        older 'Older' = NUMERIC[14,2](sign(v) * olderDebt(c, p, dt)) HEADER nameOlderAgingBucket()
+    ORDERS name(p)
+    FILTERS sign(v) * debt(c, p, dt) > 0
+    FILTERGROUP my
+        FILTER 'My customers' salesPerson(p) = currentUser() 'F6'
+
+    OBJECTS d = Debt
+    PROPERTIES(d) READONLY class, type, number, dateTime, dueDateTime
+    PROPERTIES(d, dt) READONLY overdueDays, nameAgingBucket
+    PROPERTIES(d) READONLY amount
+    PROPERTIES READONLY debt 'Debt' = NUMERIC[14,2](sign(v) * signedLeft(d, dt))
+    PROPERTIES(d) NEWSESSION EDIT
+    ORDERS dueDateTime(d)
+    FILTERS active(d),
+            company(d) = c,
+            partner(d) = p,
+            signedLeft(d, dt)
+;
+
+DESIGN debtAging {
+    REMOVE BOX(b);
+    OBJECTS {
+        NEW header {
+            horizontal = TRUE;
+            MOVE PROPERTY(name(c));
+            MOVE PROPERTY(dateValue);
+            MOVE PROPERTY(vendors);
+        }
+        MOVE BOX(p) {
+            fill = 2;
+            PROPERTY(name(p)) {
+                caption = 'Partner';
+            }
+        }
+        MOVE BOX(d) {
+            caption = 'Debts';
+        }
+    }
+}
+
+NAVIGATOR {
+    reporting {
+        NEW debtAging;
+    }
+}

@@ -15,7 +15,7 @@ Warto zrozumieć:
 - **Dług przeterminowany** to ta część długu, której data **„Zapłać do” (Pay before)** jest już w przeszłości;
 - dopasowanie wpływa tylko na wielkości poziomu dokumentu — **„Pozostało” (Left)** / **„Zapłacono”**; suma partnera odzwierciedla dokument już od momentu jego wprowadzenia.
 
-Dedykowane widoki **„Dług wg partnerów”** oraz **„Dług wg kontraktów”** wyliczają każdy wpis długu (typ, numer, data, **„Zapłać do” (Pay before)**, firma, kwota, **„Pozostało” (Left)**, narastający **„Dług”**) z filtrem **„Przeterminowane” (Overdue)** i pokazują sumy **„Dług”** oraz **„Dług przeterminowany”** dla każdego partnera/kontraktu.
+Dedykowane widoki **„Dług wg partnerów”** oraz **„Dług wg kontraktów”** wyliczają każdy wpis długu (typ, numer, data, **„Zapłać do” (Pay before)**, firma, kwota, **„Pozostało” (Left)**, narastający **„Dług”**) z filtrem **„Przeterminowane” (Overdue)** i pokazują sumy **„Dług”** oraz **„Dług przeterminowany”** dla każdego partnera/kontraktu. W widoku **„Dług wg partnerów”** każdy wpis ma dodatkowo kolumny **„Dni po terminie”** i **„Przedział wiekowania”** na dziś (zobacz sekcję „Wiekowanie zadłużenia” poniżej).
 
 ## Jak dług jest zamykany
 
@@ -50,5 +50,25 @@ Sprawdź:
 - czy w dokumentach są uzupełnione **warunki płatności / termin płatności**;
 - czy wybrany **przedział dat** rzeczywiście obejmuje terminy płatności;
 - czy dokumenty nie są wykluczane przez status (np. „Anulowano”).
+
+## Wiekowanie zadłużenia
+
+**„Fakturowanie” → „Raportowanie” → „Wiekowanie zadłużenia”** rozkłada niespłacony dług każdego partnera według długości przeterminowania na wybraną datę — klasyczna struktura wiekowa należności i zobowiązań.
+
+Układ:
+
+- na górze wybierasz **„Firmę”** i **„Datę”** (domyślnie dziś); przełącznik **„Dostawcy”** przełącza raport z klientów (partnerów, którzy są winni firmie) na dostawców (partnerów, którym firma jest winna) — po stronie dostawców kwoty są pokazywane jako dodatnie;
+- jeden wiersz na partnera: **„Sprzedawca”**, **„Suma”** długu na datę, część **„Nieprzeterminowane”**, po jednej kolumnie na każdy przedział wiekowania (**1-30**, **31-60**, **61-90** przy przedziałach domyślnych) oraz kolumna **„> 90”** dla długów starszych niż ostatni przedział;
+- filtr **„Moi klienci”** zostawia tylko partnerów, których sprzedawcą jest bieżący użytkownik;
+- dolna tabela wymienia długi wybranego partnera z kolumnami **„Dni po terminie”**, **„Przedział wiekowania”**, kwotą i **„Długiem”** pozostałym na datę.
+
+Jak liczone są wartości:
+
+- dług jest przeterminowany na datę, gdy jego data **„Zapłać do” (Pay before)** jest wcześniejsza niż ta data; dni po terminie liczone są od **„Zapłać do”**;
+- dług pozostały na datę to kwota dokumentu pomniejszona o dopasowane płatności z datą nie późniejszą niż ta data, więc raport można zbudować także na datę przeszłą;
+- długi bez **„Zapłać do”** (np. niedopasowane płatności) trafiają do **„Nieprzeterminowane”**;
+- wartości partnera są netto, tak jak **„Dług”** i **„Dług przeterminowany”** na jego karcie: dokumenty w obu kierunkach są sumowane ze znakiem, więc na dziś suma przedziałów równa się **„Długowi przeterminowanemu”** z karty; partner mający jednocześnie należności i zobowiązania może pokazać komórkę ujemną.
+
+Granice przedziałów ustawia się w zakładce **„Przedział wiekowania”** formularza [„Ustawienia”](settings.md).
 
 Zobacz parametry: [Ustawienia i katalogi](settings.md).

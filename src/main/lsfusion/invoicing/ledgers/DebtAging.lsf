@@ -1,0 +1,49 @@
+MODULE DebtAging;
+
+REQUIRE Debt, DebtPartner;
+
+NAMESPACE Invoicing;
+
+// aging buckets: a bucket covers the days overdue from the previous bound (exclusive) up to its own bound (inclusive),
+// debts beyond the last bound are older than any bucket
+CLASS AgingBucket 'Aging bucket';
+TABLE agingBucket (AgingBucket);
+
+days 'Up to (days)' = DATA INTEGER (AgingBucket) NONULL;
+
+CONSTRAINT days(AgingBucket b) < 1 MESSAGE 'Aging bucket bounds must be positive and different';
+CONSTRAINT days(AgingBucket a) = days(AgingBucket b) AND a != b MESSAGE 'Aging bucket bounds must be positive and different';
+
+number 'Number' (AgingBucket b) = PARTITION SUM 1 IF b IS AgingBucket ORDER days(b), b MATERIALIZED;
+fromDays (AgingBucket b) = (OVERRIDE [PARTITION PREV days(AgingBucket p) ORDER days(p), p](b), 0 IF b IS AgingBucket) + 1 MATERIALIZED;
+name '{Name}' (AgingBucket b) = STRING[20](fromDays(b) + r'-' + days(b));
+
+// the debts older than the last bound have no bucket and are named after that bound
+nameOlderAgingBucket 'Older' () = r'> ' + (OVERRIDE (GROUP MAX days(AgingBucket b)), 0);
+
+EXTEND FORM options
+    OBJECTS ab = AgingBucket
+    PROPERTIES(ab) READONLY number, name
+    PROPERTIES(ab) days
+    PROPERTIES(ab) NEW, DELETE
+    ORDERS number(ab)
+;
+DESIGN options {
+    tabbedPane {
+        MOVE BOX(ab) { caption = 'Aging bucket'; }
+    }
+}
+
+// the first bucket whose bound covers the days overdue
+agingBucket 'Aging bucket' (Debt d, DATE dt) = GROUP LAST AgingBucket b ORDER DESC days(b), b WHERE days(b) >= overdueDays(d, dt);
+
+nameAgingBucket 'Aging bucket' (Debt d, DATE dt) = OVERRIDE name(agingBucket(d, dt)), (nameOlderAgingBucket() IF dueDate(d) < dt);
+nameAgingBucket 'Aging bucket' (Debt d) = nameAgingBucket(d, currentDate());
+
+// debts of a partner within a company as of a date: by bucket, and older than the last bound
+debt (Company c, Partner p, DATE dt, AgingBucket b) = GROUP SUM signedLeft(Debt d, dt) IF active(d) AND company(d) = c AND partner(d) = p AND agingBucket(d, dt) = b;
+olderDebt 'Older' (Company c, Partner p, DATE dt) = GROUP SUM signedLeft(Debt d, dt) IF active(d) AND company(d) = c AND partner(d) = p AND dueDate(d) < dt AND NOT agingBucket(d, dt);
+
+EXTEND FORM partnerDebts
+    PROPERTIES(d) READONLY AFTER overdueDays(d) nameAgingBucket
+;

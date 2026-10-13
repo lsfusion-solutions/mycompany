@@ -14,6 +14,10 @@ debt 'Debt' (Partner p) = GROUP SUM signedAmount(Debt d) IF active(d) AND partne
 
 pastDueDebt 'Overdue debt' (Partner p) = GROUP SUM signedLeft(Debt d) IF active(d) AND partner(d) = p AND dueDateTime(d) < currentDateTime();
 
+// as of a date, within a company
+debt 'Debt' (Company c, Partner p, DATE dt) = GROUP SUM signedLeft(Debt d, dt) IF active(d) AND company(d) = c AND partner(d) = p;
+notDueDebt 'Not due' (Company c, Partner p, DATE dt) = GROUP SUM signedLeft(Debt d, dt) IF active(d) AND company(d) = c AND partner(d) = p AND NOT dueDate(d) < dt;
+
 // totals over the active partners: what partners owe the company, what the company owes partners, and the overdue part
 debt 'Debt' () = GROUP SUM debt(Partner p) IF debt(p) > 0 AND active(p);
 payable 'Payables' () = GROUP SUM -debt(Partner p) IF debt(p) < 0 AND active(p);
@@ -24,7 +28,7 @@ FORM partnerDebts 'Partner debts'
     PROPERTIES(p) READONLY name
 
     OBJECTS d = Debt
-    PROPERTIES(d) READONLY class, type, number, dateTime, dueDateTime, nameCompany, 
+    PROPERTIES(d) READONLY class, type, number, dateTime, dueDateTime, overdueDays, nameCompany, 
                            sourceAmount, nameSourceCurrency, rate1, amount, left, debt
     PROPERTIES(d) NEWSESSION EDIT
     ORDERS dateTime(d)
