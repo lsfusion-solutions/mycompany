@@ -216,11 +216,14 @@ META defineObjectActivity (obj, let, container, nameProp)
     EXTEND FORM obj
         OBJECTS act = Activity CUSTOM 'activities' OPTIONS JSON FROM i18n = activityI18n()
         PROPERTIES(act) nameType, dueDate, textDateDuration, daysLeft, name, nameAssignedTo, avatarBase64AssignedTo, description, done
-        PROPERTIES setDone(act),
-                   editAct = edit(act) ON CHANGE {
-                        SHOW activity OBJECTS a = act FLOAT;
-                   },
-                   deleteAct = DELETE(act)
+        // GRID: the actions are columns of the custom view, so activities.js runs them with
+        // changeProperty('setDone' / 'editAct' / 'deleteAct', row); a PANEL action is not a column of the view,
+        // and the form resolves it only by its group-qualified name ('act.editAct')
+        PROPERTIES(act) GRID setDone,
+                        editAct = edit ON CHANGE {
+                             SHOW activity OBJECTS a = act FLOAT;
+                        },
+                        deleteAct = DELETE
         ORDERS dueDate(act)
         FILTERS object(act) = let,
             NOT PREV(done(act))

@@ -176,7 +176,8 @@ function comments() {
                 head.appendChild(actions);
 
                 // author / moderator only — the server re-checks (editable gate + constraint),
-                // this just keeps the buttons off other users' comments
+                // this just keeps the buttons off other users' comments. Both actions are GRID columns of the
+                // cmt view (see Comments.lsf), so their bare names resolve in this view's controller
                 if (comment.editable) {
                     actions.appendChild(iconButton("cmt-edit", "bi bi-pencil", txt("editLabel", "Edit"), function () {
                         controller.changeProperty("edit", comment);

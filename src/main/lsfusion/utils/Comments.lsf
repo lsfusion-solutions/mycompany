@@ -132,7 +132,9 @@ META defineObjectComments (obj, let, container)
         PROPERTIES id = VALUE(cmt)
         PROPERTIES(cmt) nameUser, avatarBase64User, textTimeDuration, dateTime, text = html,
                         editable, edited = textTimeDurationEdit, nameEditUser
-        PROPERTIES(cmt) edit ON CHANGE {
+        // GRID: the actions are columns of the custom view, so comments.js runs them with changeProperty('edit' / 'delete', row);
+        // a PANEL action is not a column of the view, and the form resolves it only by its group-qualified name ('cmt.edit')
+        PROPERTIES(cmt) GRID edit ON CHANGE {
             IF editable(cmt) THEN
                 SHOW edit###obj##Comment OBJECTS c = cmt;
         },

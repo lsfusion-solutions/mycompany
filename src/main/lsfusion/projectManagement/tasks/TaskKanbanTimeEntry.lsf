@@ -8,15 +8,13 @@ NAMESPACE ProjectManagement;
 
 // Log time straight from a task card on the kanban. The total logged hours feed the card popup
 // (hoursTimeEntry, a plain data value in the board's JSON), and the "time entry" action is invoked
-// from a button in that popup via changeProperty. Both are kept OFF the board layout — the popup is
-// the only UI — exactly like the popup's edit/delete actions, so nothing renders on the board itself.
+// from a button in that popup via changeProperty. Both are GRID columns of the kanban's custom view — exactly
+// like the popup's edit/delete actions — so nothing renders on the board itself, and the view resolves the
+// action by its bare name (a PANEL action is not a column of the view: the form would then require the
+// group-qualified name 'tt.logTime').
 // (`newTimeEntry` is aliased to `logTime` because the tasks form already carries `newTimeEntry` for
-// its standard list object `t`; the alias keeps REMOVE PROPERTY / changeProperty unambiguous.)
+// its standard list object `t`; the alias keeps the changeProperty name unambiguous.)
 EXTEND FORM tasks
-    PROPERTIES(tt) hoursTimeEntry,
-                   logTime = newTimeEntry
+    PROPERTIES(tt) hoursTimeEntry
+    PROPERTIES(tt) GRID logTime = newTimeEntry
 ;
-
-DESIGN tasks {
-    REMOVE PROPERTY(logTime);
-}
