@@ -71,4 +71,23 @@ How the figures are computed:
 
 The bucket bounds are kept in the **Aging bucket** tab of the [Settings](settings.md) form.
 
+## Reconciliation statement
+
+**Invoicing → Reporting → Reconciliation statement** builds the statement of mutual settlements with a partner for a period: the opening balance, every document of the period in the ledger form and the closing balance, with a printed two-sided act to send to the partner for confirmation. The same form opens from the **Reconciliation statement** button on the [partner](../masterdata/partners.md) card.
+
+Layout:
+
+- at the top pick the **Company**, the **Partner** and the **Period** (from the first day of the current year to today by default); **Print** builds the printed statement — it is available when the period contains documents, for a period without them the form still shows the balances;
+- the summary line shows the **Opening balance**, the **Debit** and **Credit** turnover of the period and the **Closing balance**;
+- the table lists the active debt entries of the partner within the company dated in the period — type, number, date — with the amount in the **Debit** column for the documents that increase the partner's debt (invoices, outgoing payments) and in the **Credit** column for those that decrease it (bills, incoming payments); **Edit** opens the document.
+
+How the figures are computed:
+
+- the balances are the partner's [debt](#debt) within the company as of a date — the opening balance as of the day before the period, the closing balance as of its last day — so the closing balance of a period ending today is the **Debt** of the partner card for that company; a positive balance means the partner owes the company, a negative one that the company owes the partner;
+- the closing balance is the opening balance plus the debit turnover less the credit turnover;
+- the amounts are in the currency of the debt figures — the default currency, or the partner's own one when the conversion is switched off in [settings](settings.md);
+- canceled documents are left out, as in every debt figure.
+
+The printed statement is laid out like the other neutral print forms: the company letterhead, the partner, the date, the period and the currency, then the ledger with the **Debit** / **Credit** columns under **According to the records of** each party — the partner's columns stay empty to be filled in — the opening balance, the turnover and the closing balance rows, a sentence stating who owes whom as of the period end, and a signature block for each party. Its captions are taken from the same resource bundle as the interface (`$R{key}` in the template, in the language of the server), so the same template (`ReconciliationStatement.jrxml`) serves every edition, and your own template may use any key of the bundle the same way. There is one template for the whole system: the **Reconciliation statement template** block of the [Settings](settings.md) form has **Open** (downloads the current jrxml, built-in or uploaded), **Upload** (replaces the built-in layout with your own file) and **Reset** (returns to the built-in one).
+
 See parameters: [Settings and directories](settings.md).

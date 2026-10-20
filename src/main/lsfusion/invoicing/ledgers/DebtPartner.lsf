@@ -18,6 +18,19 @@ pastDueDebt 'Overdue debt' (Partner p) = GROUP SUM signedLeft(Debt d) IF active(
 debt 'Debt' (Company c, Partner p, DATE dt) = GROUP SUM signedLeft(Debt d, dt) IF active(d) AND company(d) = c AND partner(d) = p;
 notDueDebt 'Not due' (Company c, Partner p, DATE dt) = GROUP SUM signedLeft(Debt d, dt) IF active(d) AND company(d) = c AND partner(d) = p AND NOT dueDate(d) < dt;
 
+// the signed sum of the documents up to a date (the debt of the partner card within a company as of that date,
+// unlike debt(c, p, dt) above, which is what is left after the matched payments) and the turnovers of a period
+balance 'Balance' (Company c, Partner p, DATE dt) = GROUP SUM signedAmount(Debt d) IF active(d) AND company(d) = c AND partner(d) = p AND date(d) <= dt;
+
+openingBalance 'Opening balance' (Company c, Partner p, INTERVAL[DATE] i) = balance(c, p, subtract(from(i), 1));
+debit 'Debit' (Company c, Partner p, INTERVAL[DATE] i) = GROUP SUM debit(Debt d) IF active(d) AND company(d) = c AND partner(d) = p AND date(d) >= from(i) AND date(d) <= to(i);
+credit 'Credit' (Company c, Partner p, INTERVAL[DATE] i) = GROUP SUM credit(Debt d) IF active(d) AND company(d) = c AND partner(d) = p AND date(d) >= from(i) AND date(d) <= to(i);
+closingBalance 'Closing balance' (Company c, Partner p, INTERVAL[DATE] i) = balance(c, p, to(i));
+countDebt 'Documents' (Company c, Partner p, INTERVAL[DATE] i) = GROUP SUM 1 IF active(Debt d) AND company(d) = c AND partner(d) = p AND date(d) >= from(i) AND date(d) <= to(i);
+
+// the currency of the partner's debts: the default one, or the partner's own when the conversion is switched off
+currency (Company c, Partner p) = GROUP MAX currency(Debt d) IF active(d) AND company(d) = c AND partner(d) = p;
+
 // totals over the active partners: what partners owe the company, what the company owes partners, and the overdue part
 debt 'Debt' () = GROUP SUM debt(Partner p) IF debt(p) > 0 AND active(p);
 payable 'Payables' () = GROUP SUM -debt(Partner p) IF debt(p) < 0 AND active(p);

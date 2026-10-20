@@ -129,7 +129,8 @@ Przy wypełnianiu nowej bazy danymi domyślnymi każda edycja rejestruje neutral
 - **Payment receipt** — dla płatności od klientów (bank i kasa); zawiera otrzymaną kwotę i dokumenty, z którymi płatność została dopasowana;
 - **Quotation** i **Sales order** — dla typów [zamówień sprzedaży](../sales/orders.md);
 - **Purchase order** — dla typów [zamówień zakupu](../purchase/orders.md);
-- **Delivery note** — dla typu [wydania](../inventory/shipments.md) „Wydanie”.
+- **Delivery note** — dla typu [wydania](../inventory/shipments.md) „Wydanie”;
+- **Reconciliation statement** — [uzgodnienie sald](debt-and-calendar.md) z partnerem za okres; nie ma ani typów dokumentów, ani listy szablonów: jeden jrxml dla całego systemu, pobierany i zastępowany w bloku **„Szablon uzgodnienia sald”** formularza Ustawienia.
 
 Edycje regionalne (polska, rosyjska) rejestrują obok nich własne formularze; jeśli dla typu dokumentu włączono kilka szablonów, podczas drukowania system pyta, którego użyć.
 
@@ -139,13 +140,14 @@ Formularze są ułożone na siatce kolumn swojej tabeli pozycji, więc także w 
 
 ## Raporty
 
-W konfiguracji podstawowej w **„Fakturowanie” → „Raportowanie”** dostarczanych jest pięć formularzy:
+W konfiguracji podstawowej w **„Fakturowanie” → „Raportowanie”** dostarczanych jest sześć formularzy:
 
 - **„Raport faktur zakupu” (Bills report)** — **tabela przestawna** (pivot) po liniach [faktur zakupu](bills.md). Kolumny dokumentu obejmują numer, datę, dostawcę, status, typ, konta, walutę, warunki płatności oraz termin płatności (Pay before); kolumny linii obejmują towar, jego kategorie, dynamiczne kolumny atrybutów towaru, ilość, cenę i podatki; **miarami** przestawnymi są kwota bez podatku, kwota podatku, kwota oraz kwota w walucie. Panel **„Filtry”** i filtr **„Przedział dat”** pozwalają zawęzić dane, a grupowanie w tabeli przestawnej układasz samodzielnie.
 - **„Raport faktur” (Invoices report)** — ta sama tabela przestawna po liniach [faktur](invoices.md), z polami **„Klient”** i **„Dział”** w miejsce pól dostawcy.
 - **„Płatności”** — jednolity widok wszystkich płatności przychodzących i wychodzących z typem, datą, numerem, partnerem, kontami, firmą i kwotą ze znakiem; na tym samym formularzu jest też zakładka **„Konta”**, która pokazuje bieżące salda kont oraz — po wskazaniu daty selektorem **„Wybierz datę”** — saldo na wybraną datę.
 - **[Kalendarz płatności](debt-and-calendar.md)** — niespłacone saldo i prognoza gotówki na zakres dat, z zakładkami rozbicia **„Typ” (Type)** oraz **„Partner”**.
 - **[Wiekowanie zadłużenia](debt-and-calendar.md)** — dług każdego partnera na datę w podziale według długości przeterminowania, dla klientów albo dostawców.
+- **[Uzgodnienie sald](debt-and-calendar.md)** — rozrachunki z partnerem za okres: saldo otwarcia, dokumenty okresu w układzie księgi, saldo zamknięcia i dwustronny wydruk do potwierdzenia przez partnera.
 
 Wartości [długu](debt-and-calendar.md) widoczne są również bezpośrednio na karcie **faktury zakupu** i **faktury** (dopasowane płatności i pozostały dług) oraz przez dedykowane widoki **„Dług wg partnerów”** / **„Dług wg kontraktów”**.
 

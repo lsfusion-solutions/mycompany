@@ -1,0 +1,560 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ReconciliationStatement" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="515" leftMargin="40" rightMargin="40" topMargin="30" bottomMargin="30" isSummaryWithPageHeaderAndFooter="true" resourceBundle="MyCompanyResourceBundle">
+	<property name="net.sf.jasperreports.export.xls.exclude.origin.band.pageFooter" value="pageFooter"/>
+	<property name="net.sf.jasperreports.export.xlsx.exclude.origin.band.pageFooter" value="pageFooter"/>
+	<style name="Base" isDefault="true" fontName="DejaVu Sans" fontSize="9" pdfFontName="DejaVu Sans" pdfEncoding="Identity-H"/>
+	<field name="logo(c)" class="java.io.InputStream"/>
+	<field name="name(c)" class="java.lang.String"/>
+	<field name="fullName(c)" class="java.lang.String"/>
+	<field name="addressLines(c)" class="java.lang.String"/>
+	<field name="nameCountry(c)" class="java.lang.String"/>
+	<field name="phone(c)" class="java.lang.String"/>
+	<field name="email(c)" class="java.lang.String"/>
+	<field name="website(c)" class="java.lang.String"/>
+	<field name="name(p)" class="java.lang.String"/>
+	<field name="fullName(p)" class="java.lang.String"/>
+	<field name="addressLines(p)" class="java.lang.String"/>
+	<field name="nameCountry(p)" class="java.lang.String"/>
+	<field name="phone(p)" class="java.lang.String"/>
+	<field name="email(p)" class="java.lang.String"/>
+	<field name="date" class="java.util.Date"/>
+	<field name="dateFrom" class="java.util.Date"/>
+	<field name="dateTo" class="java.util.Date"/>
+	<field name="nameCurrency" class="java.lang.String"/>
+	<field name="openingBalance" class="java.math.BigDecimal"/>
+	<field name="debit" class="java.math.BigDecimal"/>
+	<field name="credit" class="java.math.BigDecimal"/>
+	<field name="closingBalance" class="java.math.BigDecimal"/>
+	<field name="date(d)" class="java.util.Date"/>
+	<field name="type(d)" class="java.lang.String"/>
+	<field name="number(d)" class="java.lang.String"/>
+	<field name="debit(d)" class="java.math.BigDecimal"/>
+	<field name="credit(d)" class="java.math.BigDecimal"/>
+	<variable name="currentPage" class="java.lang.Integer" resetType="Page">
+		<variableExpression><![CDATA[$V{PAGE_NUMBER}]]></variableExpression>
+	</variable>
+	<group name="statement">
+		<groupExpression><![CDATA[Boolean.TRUE]]></groupExpression>
+		<groupHeader>
+			<band height="19" splitType="Stretch">
+				<frame>
+					<reportElement x="0" y="0" width="515" height="19"/>
+					<textField isBlankWhenNull="true">
+						<reportElement mode="Opaque" stretchType="ContainerHeight" x="0" y="0" width="225" height="19" backcolor="#F3F4F6"/>
+						<box topPadding="3" leftPadding="3" bottomPadding="3" rightPadding="3">
+							<bottomPen lineWidth="0.5" lineColor="#E5E7EB"/>
+						</box>
+						<textElement verticalAlignment="Middle">
+							<font isBold="true"/>
+						</textElement>
+						<textFieldExpression><![CDATA[$R{Opening_balance}]]></textFieldExpression>
+					</textField>
+					<textField textAdjust="ScaleFont" pattern="#,##0.00" isBlankWhenNull="true">
+						<reportElement mode="Opaque" stretchType="ContainerHeight" x="225" y="0" width="72" height="19" backcolor="#F3F4F6"/>
+						<box topPadding="3" leftPadding="3" bottomPadding="3" rightPadding="3">
+							<bottomPen lineWidth="0.5" lineColor="#E5E7EB"/>
+						</box>
+						<textElement textAlignment="Right" verticalAlignment="Middle">
+							<font isBold="true"/>
+						</textElement>
+						<textFieldExpression><![CDATA[$F{openingBalance} != null && $F{openingBalance}.signum() > 0 ? $F{openingBalance} : null]]></textFieldExpression>
+					</textField>
+					<textField textAdjust="ScaleFont" pattern="#,##0.00" isBlankWhenNull="true">
+						<reportElement mode="Opaque" stretchType="ContainerHeight" x="297" y="0" width="73" height="19" backcolor="#F3F4F6"/>
+						<box topPadding="3" leftPadding="3" bottomPadding="3" rightPadding="3">
+							<bottomPen lineWidth="0.5" lineColor="#E5E7EB"/>
+						</box>
+						<textElement textAlignment="Right" verticalAlignment="Middle">
+							<font isBold="true"/>
+						</textElement>
+						<textFieldExpression><![CDATA[$F{openingBalance} != null && $F{openingBalance}.signum() < 0 ? $F{openingBalance}.negate() : null]]></textFieldExpression>
+					</textField>
+					<staticText>
+						<reportElement mode="Opaque" stretchType="ContainerHeight" x="370" y="0" width="145" height="19" backcolor="#F3F4F6"/>
+						<box topPadding="3" leftPadding="3" bottomPadding="3" rightPadding="3">
+							<bottomPen lineWidth="0.5" lineColor="#E5E7EB"/>
+						</box>
+						<textElement verticalAlignment="Middle">
+							<font isBold="true"/>
+						</textElement>
+						<text><![CDATA[]]></text>
+					</staticText>
+				</frame>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="38" splitType="Prevent">
+				<frame>
+					<reportElement x="0" y="0" width="515" height="19"/>
+					<textField isBlankWhenNull="true">
+						<reportElement stretchType="ContainerHeight" x="0" y="0" width="225" height="19"/>
+						<box topPadding="3" leftPadding="3" bottomPadding="3" rightPadding="3">
+							<topPen lineWidth="0.75" lineColor="#9CA3AF"/>
+							<bottomPen lineWidth="0.5" lineColor="#E5E7EB"/>
+						</box>
+						<textElement verticalAlignment="Middle">
+							<font isBold="true"/>
+						</textElement>
+						<textFieldExpression><![CDATA[$R{Turnover}]]></textFieldExpression>
+					</textField>
+					<textField textAdjust="ScaleFont" pattern="#,##0.00" isBlankWhenNull="true">
+						<reportElement stretchType="ContainerHeight" x="225" y="0" width="72" height="19"/>
+						<box topPadding="3" leftPadding="3" bottomPadding="3" rightPadding="3">
+							<topPen lineWidth="0.75" lineColor="#9CA3AF"/>
+							<bottomPen lineWidth="0.5" lineColor="#E5E7EB"/>
+						</box>
+						<textElement textAlignment="Right" verticalAlignment="Middle">
+							<font isBold="true"/>
+						</textElement>
+						<textFieldExpression><![CDATA[$F{debit}]]></textFieldExpression>
+					</textField>
+					<textField textAdjust="ScaleFont" pattern="#,##0.00" isBlankWhenNull="true">
+						<reportElement stretchType="ContainerHeight" x="297" y="0" width="73" height="19"/>
+						<box topPadding="3" leftPadding="3" bottomPadding="3" rightPadding="3">
+							<topPen lineWidth="0.75" lineColor="#9CA3AF"/>
+							<bottomPen lineWidth="0.5" lineColor="#E5E7EB"/>
+						</box>
+						<textElement textAlignment="Right" verticalAlignment="Middle">
+							<font isBold="true"/>
+						</textElement>
+						<textFieldExpression><![CDATA[$F{credit}]]></textFieldExpression>
+					</textField>
+					<staticText>
+						<reportElement stretchType="ContainerHeight" x="370" y="0" width="145" height="19"/>
+						<box topPadding="3" leftPadding="3" bottomPadding="3" rightPadding="3">
+							<topPen lineWidth="0.75" lineColor="#9CA3AF"/>
+							<bottomPen lineWidth="0.5" lineColor="#E5E7EB"/>
+						</box>
+						<textElement verticalAlignment="Middle">
+							<font isBold="true"/>
+						</textElement>
+						<text><![CDATA[]]></text>
+					</staticText>
+				</frame>
+				<frame>
+					<reportElement positionType="Float" x="0" y="19" width="515" height="19"/>
+					<textField isBlankWhenNull="true">
+						<reportElement mode="Opaque" stretchType="ContainerHeight" x="0" y="0" width="225" height="19" backcolor="#F3F4F6"/>
+						<box topPadding="3" leftPadding="3" bottomPadding="3" rightPadding="3">
+							<bottomPen lineWidth="0.5" lineColor="#E5E7EB"/>
+						</box>
+						<textElement verticalAlignment="Middle">
+							<font isBold="true"/>
+						</textElement>
+						<textFieldExpression><![CDATA[$R{Closing_balance}]]></textFieldExpression>
+					</textField>
+					<textField textAdjust="ScaleFont" pattern="#,##0.00" isBlankWhenNull="true">
+						<reportElement mode="Opaque" stretchType="ContainerHeight" x="225" y="0" width="72" height="19" backcolor="#F3F4F6"/>
+						<box topPadding="3" leftPadding="3" bottomPadding="3" rightPadding="3">
+							<bottomPen lineWidth="0.5" lineColor="#E5E7EB"/>
+						</box>
+						<textElement textAlignment="Right" verticalAlignment="Middle">
+							<font isBold="true"/>
+						</textElement>
+						<textFieldExpression><![CDATA[$F{closingBalance} != null && $F{closingBalance}.signum() > 0 ? $F{closingBalance} : null]]></textFieldExpression>
+					</textField>
+					<textField textAdjust="ScaleFont" pattern="#,##0.00" isBlankWhenNull="true">
+						<reportElement mode="Opaque" stretchType="ContainerHeight" x="297" y="0" width="73" height="19" backcolor="#F3F4F6"/>
+						<box topPadding="3" leftPadding="3" bottomPadding="3" rightPadding="3">
+							<bottomPen lineWidth="0.5" lineColor="#E5E7EB"/>
+						</box>
+						<textElement textAlignment="Right" verticalAlignment="Middle">
+							<font isBold="true"/>
+						</textElement>
+						<textFieldExpression><![CDATA[$F{closingBalance} != null && $F{closingBalance}.signum() < 0 ? $F{closingBalance}.negate() : null]]></textFieldExpression>
+					</textField>
+					<staticText>
+						<reportElement mode="Opaque" stretchType="ContainerHeight" x="370" y="0" width="145" height="19" backcolor="#F3F4F6"/>
+						<box topPadding="3" leftPadding="3" bottomPadding="3" rightPadding="3">
+							<bottomPen lineWidth="0.5" lineColor="#E5E7EB"/>
+						</box>
+						<textElement verticalAlignment="Middle">
+							<font isBold="true"/>
+						</textElement>
+						<text><![CDATA[]]></text>
+					</staticText>
+				</frame>
+			</band>
+		</groupFooter>
+	</group>
+	<title>
+		<band height="169" splitType="Stretch">
+			<frame>
+				<reportElement x="0" y="0" width="515" height="64"/>
+				<image scaleImage="RetainShape" hAlign="Left" vAlign="Top" onErrorType="Blank">
+					<reportElement stretchType="ContainerHeight" x="0" y="0" width="225" height="64"/>
+					<box topPadding="0" leftPadding="0" bottomPadding="8" rightPadding="0">
+						<bottomPen lineWidth="0.75" lineColor="#D1D5DB"/>
+					</box>
+					<imageExpression><![CDATA[$F{logo(c)}]]></imageExpression>
+				</image>
+				<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+					<reportElement x="225" y="0" width="290" height="16" forecolor="#111827"/>
+					<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0"/>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{fullName(c)}]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+					<reportElement positionType="Float" x="225" y="16" width="290" height="48" forecolor="#4B5563"/>
+					<box topPadding="0" leftPadding="0" bottomPadding="8" rightPadding="0">
+						<bottomPen lineWidth="0.75" lineColor="#D1D5DB"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{addressLines(c)} != null ? $F{addressLines(c)} : "") + ($F{nameCountry(c)} != null ? "\n" + $F{nameCountry(c)} : "") + ("\n" + (($F{phone(c)} != null ? $F{phone(c)} + "  ·  " : "") + ($F{email(c)} != null ? $F{email(c)} + "  ·  " : "") + ($F{website(c)} != null ? $F{website(c)} + "  ·  " : "")).replaceAll("  ·  $", "")).replaceAll("\n$", "")]]></textFieldExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement positionType="Float" x="0" y="64" width="515" height="40"/>
+				<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="0" y="0" width="515" height="40"/>
+					<box topPadding="10" leftPadding="0" bottomPadding="8" rightPadding="0"/>
+					<textElement verticalAlignment="Top">
+						<font size="17" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Reconciliation_statement}]]></textFieldExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement positionType="Float" x="0" y="104" width="515" height="13"/>
+				<textField isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="0" y="0" width="225" height="13" forecolor="#6B7280"/>
+					<box topPadding="1" leftPadding="0" bottomPadding="0" rightPadding="12"/>
+					<textElement verticalAlignment="Bottom">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Partner}.toUpperCase()]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="225" y="0" width="145" height="13" forecolor="#4B5563"/>
+					<box topPadding="1" leftPadding="0" bottomPadding="0" rightPadding="6"/>
+					<textElement verticalAlignment="Bottom"/>
+					<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="ScaleFont" pattern="yyyy-MM-dd" isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="370" y="0" width="145" height="13"/>
+					<box topPadding="1" leftPadding="0" bottomPadding="0" rightPadding="0"/>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{date}]]></textFieldExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement positionType="Float" x="0" y="117" width="515" height="13"/>
+				<textField textAdjust="ScaleFont" isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="0" y="0" width="225" height="13" forecolor="#111827"/>
+					<box topPadding="1" leftPadding="0" bottomPadding="0" rightPadding="12"/>
+					<textElement verticalAlignment="Bottom">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{fullName(p)}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="225" y="0" width="145" height="13" forecolor="#4B5563"/>
+					<box topPadding="1" leftPadding="0" bottomPadding="0" rightPadding="6"/>
+					<textElement verticalAlignment="Bottom"/>
+					<textFieldExpression><![CDATA[$R{Period_from}]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="ScaleFont" pattern="yyyy-MM-dd" isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="370" y="0" width="145" height="13"/>
+					<box topPadding="1" leftPadding="0" bottomPadding="0" rightPadding="0"/>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{dateFrom}]]></textFieldExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement positionType="Float" x="0" y="130" width="515" height="13"/>
+				<textField textAdjust="ScaleFont" isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="0" y="0" width="225" height="13"/>
+					<box topPadding="1" leftPadding="0" bottomPadding="0" rightPadding="12"/>
+					<textElement verticalAlignment="Bottom"/>
+					<textFieldExpression><![CDATA[$F{addressLines(p)} != null ? $F{addressLines(p)}.replace("\n", ", ") : null]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="225" y="0" width="145" height="13" forecolor="#4B5563"/>
+					<box topPadding="1" leftPadding="0" bottomPadding="0" rightPadding="6"/>
+					<textElement verticalAlignment="Bottom"/>
+					<textFieldExpression><![CDATA[$R{Period_to}]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="ScaleFont" pattern="yyyy-MM-dd" isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="370" y="0" width="145" height="13"/>
+					<box topPadding="1" leftPadding="0" bottomPadding="0" rightPadding="0"/>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{dateTo}]]></textFieldExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement positionType="Float" x="0" y="143" width="515" height="13"/>
+				<textField textAdjust="ScaleFont" isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="0" y="0" width="225" height="13"/>
+					<box topPadding="1" leftPadding="0" bottomPadding="0" rightPadding="12"/>
+					<textElement verticalAlignment="Bottom"/>
+					<textFieldExpression><![CDATA[$F{nameCountry(p)}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="225" y="0" width="145" height="13" forecolor="#4B5563"/>
+					<box topPadding="1" leftPadding="0" bottomPadding="0" rightPadding="6"/>
+					<textElement verticalAlignment="Bottom"/>
+					<textFieldExpression><![CDATA[$R{Currency}]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="ScaleFont" isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="370" y="0" width="145" height="13"/>
+					<box topPadding="1" leftPadding="0" bottomPadding="0" rightPadding="0"/>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{nameCurrency}]]></textFieldExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement positionType="Float" x="0" y="156" width="515" height="13" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$F{phone(p)} != null || $F{email(p)} != null]]></printWhenExpression>
+				</reportElement>
+				<textField textAdjust="ScaleFont" isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="0" y="0" width="225" height="13" forecolor="#4B5563"/>
+					<box topPadding="1" leftPadding="0" bottomPadding="0" rightPadding="12"/>
+					<textElement verticalAlignment="Bottom">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[(($F{phone(p)} != null ? $F{phone(p)} + "  ·  " : "") + ($F{email(p)} != null ? $F{email(p)} : "")).replaceAll("  ·  $", "")]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="46" splitType="Stretch">
+			<frame>
+				<reportElement x="0" y="0" width="515" height="46"/>
+				<textField isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="0" y="0" width="62" height="46"/>
+					<box topPadding="14" leftPadding="3" bottomPadding="4" rightPadding="3">
+						<bottomPen lineWidth="0.75" lineColor="#9CA3AF"/>
+					</box>
+					<textElement verticalAlignment="Bottom">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="62" y="0" width="163" height="46"/>
+					<box topPadding="14" leftPadding="3" bottomPadding="4" rightPadding="3">
+						<bottomPen lineWidth="0.75" lineColor="#9CA3AF"/>
+					</box>
+					<textElement verticalAlignment="Bottom">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Document}]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="ScaleFont" isBlankWhenNull="true">
+					<reportElement x="225" y="0" width="145" height="28" forecolor="#6B7280"/>
+					<box topPadding="14" leftPadding="3" bottomPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[msg($R{According_to_the_records_of}, $F{name(c)})]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="225" y="28" width="72" height="18"/>
+					<box topPadding="2" leftPadding="3" bottomPadding="4" rightPadding="3">
+						<bottomPen lineWidth="0.75" lineColor="#9CA3AF"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Debit}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="297" y="28" width="73" height="18"/>
+					<box topPadding="2" leftPadding="3" bottomPadding="4" rightPadding="3">
+						<bottomPen lineWidth="0.75" lineColor="#9CA3AF"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Credit}]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="ScaleFont" isBlankWhenNull="true">
+					<reportElement x="370" y="0" width="145" height="28" forecolor="#6B7280"/>
+					<box topPadding="14" leftPadding="3" bottomPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[msg($R{According_to_the_records_of}, $F{name(p)})]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="370" y="28" width="72" height="18"/>
+					<box topPadding="2" leftPadding="3" bottomPadding="4" rightPadding="3">
+						<bottomPen lineWidth="0.75" lineColor="#9CA3AF"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Debit}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="442" y="28" width="73" height="18"/>
+					<box topPadding="2" leftPadding="3" bottomPadding="4" rightPadding="3">
+						<bottomPen lineWidth="0.75" lineColor="#9CA3AF"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Credit}]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="17" splitType="Prevent">
+			<frame>
+				<reportElement x="0" y="0" width="515" height="17"/>
+				<textField pattern="yyyy-MM-dd" isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="0" y="0" width="62" height="17"/>
+					<box topPadding="3" leftPadding="3" bottomPadding="3" rightPadding="3">
+						<bottomPen lineWidth="0.5" lineColor="#E5E7EB"/>
+					</box>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{date(d)}]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="62" y="0" width="163" height="17"/>
+					<box topPadding="3" leftPadding="3" bottomPadding="3" rightPadding="3">
+						<bottomPen lineWidth="0.5" lineColor="#E5E7EB"/>
+					</box>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[($F{type(d)} != null ? $F{type(d)} : "") + ($F{number(d)} != null ? " " + $F{number(d)} : "")]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="ScaleFont" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="225" y="0" width="72" height="17"/>
+					<box topPadding="3" leftPadding="3" bottomPadding="3" rightPadding="3">
+						<bottomPen lineWidth="0.5" lineColor="#E5E7EB"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{debit(d)}]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="ScaleFont" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="297" y="0" width="73" height="17"/>
+					<box topPadding="3" leftPadding="3" bottomPadding="3" rightPadding="3">
+						<bottomPen lineWidth="0.5" lineColor="#E5E7EB"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{credit(d)}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement stretchType="ContainerHeight" x="370" y="0" width="145" height="17"/>
+					<box topPadding="3" leftPadding="3" bottomPadding="3" rightPadding="3">
+						<bottomPen lineWidth="0.5" lineColor="#E5E7EB"/>
+					</box>
+					<textElement verticalAlignment="Top"/>
+					<text><![CDATA[]]></text>
+				</staticText>
+			</frame>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="20" splitType="Stretch">
+			<frame>
+				<reportElement x="0" y="0" width="515" height="20"/>
+				<textField isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="0" y="0" width="370" height="20" forecolor="#6B7280"/>
+					<box topPadding="5" leftPadding="0" bottomPadding="0" rightPadding="0">
+						<topPen lineWidth="0.5" lineColor="#E5E7EB"/>
+					</box>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Reconciliation_statement}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Auto" isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="370" y="0" width="145" height="20" forecolor="#6B7280"/>
+					<box topPadding="5" leftPadding="0" bottomPadding="0" rightPadding="0">
+						<topPen lineWidth="0.5" lineColor="#E5E7EB"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Page} + " " + $V{currentPage} + " / " + $V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="88" splitType="Prevent">
+			<frame>
+				<reportElement x="0" y="0" width="515" height="24"/>
+				<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="0" y="0" width="370" height="24"/>
+					<box topPadding="10" leftPadding="3" bottomPadding="0" rightPadding="6"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA[$F{closingBalance} != null ? msg($R{Balance_in_favour_of}, $F{fullName(c)}, $F{dateTo}, $F{closingBalance}.signum() > 0 ? $F{fullName(c)} : $F{fullName(p)}) : msg($R{No_outstanding_balance}, $F{fullName(c)}, $F{dateTo})]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="ScaleFont" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="370" y="0" width="72" height="24"/>
+					<box topPadding="10" leftPadding="3" bottomPadding="0" rightPadding="3"/>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{closingBalance} != null ? $F{closingBalance}.abs() : null]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="442" y="0" width="73" height="24"/>
+					<box topPadding="10" leftPadding="3" bottomPadding="0" rightPadding="3"/>
+					<textElement verticalAlignment="Top">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{closingBalance} != null ? $F{nameCurrency} : null]]></textFieldExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement positionType="Float" x="0" y="24" width="515" height="50"/>
+				<textField isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="0" y="0" width="225" height="50" forecolor="#6B7280"/>
+					<box topPadding="20" leftPadding="0" bottomPadding="0" rightPadding="0"/>
+					<textElement verticalAlignment="Top">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{name(c)}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="370" y="0" width="145" height="50" forecolor="#6B7280"/>
+					<box topPadding="20" leftPadding="0" bottomPadding="0" rightPadding="0"/>
+					<textElement verticalAlignment="Top">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{name(p)}]]></textFieldExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement positionType="Float" x="0" y="74" width="515" height="14"/>
+				<textField isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="0" y="0" width="225" height="14" forecolor="#6B7280"/>
+					<box topPadding="2" leftPadding="0" bottomPadding="0" rightPadding="0">
+						<topPen lineWidth="0.75" lineColor="#9CA3AF"/>
+					</box>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Name__signature__date}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement stretchType="ContainerHeight" x="370" y="0" width="145" height="14" forecolor="#6B7280"/>
+					<box topPadding="2" leftPadding="0" bottomPadding="0" rightPadding="0">
+						<topPen lineWidth="0.75" lineColor="#9CA3AF"/>
+					</box>
+					<textElement verticalAlignment="Top">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Name__signature__date}]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</summary>
+</jasperReport>

@@ -1,0 +1,121 @@
+MODULE ReconciliationStatement;
+
+REQUIRE Debt, DebtPartner, Company, Partner, DateUtils;
+
+NAMESPACE Invoicing;
+
+// the printed statement: the data comes from DebtPartner and Debt, the captions from the resource bundle ($R{...} in the jrxml);
+// the jrxml is the built-in ReconciliationStatement.jrxml, or the one uploaded in the settings
+template 'Reconciliation statement template' = DATA FILE ();
+
+openTemplate 'Open' () {
+    IF template() THEN
+        open(template());
+    ELSE {
+        readResource(r'ReconciliationStatement.jrxml');
+        open(resource());
+    }
+}
+loadTemplate 'Upload' () { INPUT = template() CHANGE; }
+dropTemplate 'Reset' () { template() <- NULL; }
+
+EXTEND FORM options
+    PROPERTIES() openTemplate, loadTemplate, dropTemplate SHOWIF template()
+;
+DESIGN options {
+    commons {
+        NEW reconciliationStatementTemplate {
+            caption = 'Reconciliation statement template';
+            horizontal = TRUE;
+            MOVE PROPERTY(openTemplate());
+            MOVE PROPERTY(loadTemplate());
+            MOVE PROPERTY(dropTemplate());
+        }
+    }
+}
+
+FORM printReconciliationStatement 'Reconciliation statement'
+    OBJECTS c = Company PANEL
+    PROPERTIES(c) name, fullName, logo, addressLines, nameCountry, phone, email, website
+
+    OBJECTS p = Partner PANEL
+    PROPERTIES(p) name, fullName, addressLines, nameCountry, phone, email
+
+    OBJECTS i = INTERVAL[DATE] PANEL
+    PROPERTIES dateFrom = from(i), dateTo = to(i), date = currentDate(), nameCurrency = name(currency(c, p)),
+               openingBalance = openingBalance(c, p, i), debit = debit(c, p, i), credit = credit(c, p, i),
+               closingBalance = closingBalance(c, p, i)
+
+    OBJECTS d = Debt
+    PROPERTIES(d) dateTime, date, type, number, debit, credit
+    ORDERS dateTime(d)
+    FILTERS active(d), company(d) = c, partner(d) = p, date(d) >= from(i), date(d) <= to(i)
+
+    REPORT OVERRIDE template(), file(RAWFILE(r'ReconciliationStatement.jrxml'), 'path')
+;
+
+print 'Print' (Company c, Partner p, INTERVAL[DATE] i) {
+    PRINT printReconciliationStatement OBJECTS c = c, p = p, i = i;
+}
+
+FORM reconciliationStatement 'Reconciliation statement'
+    OBJECTS c = Company PANEL
+    PROPERTIES(c) 'Company' = name SELECTOR
+
+    OBJECTS p = Partner PANEL
+    PROPERTIES(p) 'Partner' = name SELECTOR
+
+    OBJECTS i = INTERVAL[DATE] PANEL
+    PROPERTIES dates 'Period' = VALUE(i)
+
+    EVENTS ON INIT {
+        ACTIVATE reconciliationStatement.i = interval(firstDayOfYear(currentDate()), currentDate());
+    }
+
+    PROPERTIES(c, p, i) READONLY openingBalance, debit, credit, closingBalance
+    // a merged report prints nothing for a period without documents, so the statement is printed only with them
+    PROPERTIES(c, p, i) print DISABLEIF NOT countDebt(c, p, i)
+
+    OBJECTS d = Debt
+    PROPERTIES(d) READONLY dateTime, class, type, number, debit, credit
+    PROPERTIES(d) NEWSESSION EDIT
+    ORDERS dateTime(d)
+    FILTERS active(d), company(d) = c, partner(d) = p, date(d) >= from(i), date(d) <= to(i)
+;
+
+DESIGN reconciliationStatement {
+    OBJECTS {
+        NEW header {
+            horizontal = TRUE;
+            MOVE PROPERTY(name(c));
+            MOVE PROPERTY(name(p)) { charWidth = 30; }
+            MOVE PROPERTY(dates);
+            MOVE PROPERTY(print(c, p, i));
+        }
+        NEW balance {
+            horizontal = TRUE;
+            MOVE PROPERTY(openingBalance(c, p, i));
+            MOVE PROPERTY(debit(c, p, i));
+            MOVE PROPERTY(credit(c, p, i));
+            MOVE PROPERTY(closingBalance(c, p, i));
+        }
+        MOVE BOX(d) { fill = 1; }
+    }
+}
+
+NAVIGATOR {
+    reporting {
+        NEW reconciliationStatement;
+    }
+}
+
+showReconciliationStatement 'Reconciliation statement' (Partner p) { SHOW reconciliationStatement OBJECTS p = p WINDOW; }
+
+EXTEND FORM partner
+    PROPERTIES(p) showReconciliationStatement
+;
+DESIGN partner {
+    headerRight {
+        MOVE PROPERTY(showReconciliationStatement(p));
+    }
+}

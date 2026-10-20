@@ -58,6 +58,11 @@ CLASS ABSTRACT OutgoingDebt 'Outgoing debt' : Debt;
 
 signedAmount '{Amount}' (Debt d) = IF d IS OutgoingDebt THEN amount(d) ELSE -amount(d) MATERIALIZED;
 
+// the ledger view: the documents that increase the partner's debt (invoices, outgoing payments) are the debit,
+// the ones that decrease it (bills, incoming payments) are the credit
+debit 'Debit' (Debt d) = amount(d) IF d IS OutgoingDebt;
+credit 'Credit' (Debt d) = amount(d) IF d IS IncomingDebt;
+
 // match
 paid 'Paid' = DATA NUMERIC[14,2] (IncomingDebt, OutgoingDebt);
 

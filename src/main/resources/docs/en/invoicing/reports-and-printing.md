@@ -127,7 +127,8 @@ When a new database is filled with default data, neutral English forms are regis
 - **Payment receipt** — for customer payments (bank and cash); it shows the amount received and the documents the payment is matched to;
 - **Quotation** and **Sales order** — for the [sales order](../sales/orders.md) types;
 - **Purchase order** — for the [purchase order](../purchase/orders.md) types;
-- **Delivery note** — for the [shipment](../inventory/shipments.md) type “Shipment”.
+- **Delivery note** — for the [shipment](../inventory/shipments.md) type “Shipment”;
+- **Reconciliation statement** — the [statement of mutual settlements](debt-and-calendar.md) with a partner for a period; it has no document types and no template list: one jrxml for the whole system, downloaded and replaced in the **Reconciliation statement template** block of the Settings form.
 
 Regional editions register their own forms next to them (for example, delivery note, invoice, universal transfer document, proforma invoice); when several templates are enabled for a document type, **Print** asks which one to use.
 
@@ -139,13 +140,14 @@ You can use the forms as-is or replace them with your own files using **Upload**
 
 ## Reports
 
-The base configuration ships five forms in **Invoicing → Reporting**:
+The base configuration ships six forms in **Invoicing → Reporting**:
 
 - **Bills report** — a **pivot** over [bill](bills.md) lines. Document columns include number, date, vendor, status, type, accounts, currency, payment terms and Pay before; line columns include item, its categories, dynamic item-attribute columns, quantity, price and taxes; the pivot **measures** are untaxed amount, tax amount, amount and currency amount. A **Filters** panel and a **Date interval** filter let you scope the data, and you arrange the grouping yourself in the pivot.
 - **Invoices report** — the same pivot over [invoice](invoices.md) lines, with **Customer** and **Department** in place of the vendor fields.
 - **Payments** — a unified view of all incoming and outgoing payments with type, date, number, partner, accounts, company and signed amount; the same form also has an **Accounts** tab that shows current account balances and, with a **Select date** picker, the balance as of a chosen date.
 - **[Payment calendar](debt-and-calendar.md)** — outstanding balance and forecast cash across a date range, with **Type** and **Partner** breakdown tabs.
 - **[Debt aging](debt-and-calendar.md)** — the debt of every partner as of a date, split by how long it is overdue, for customers or for vendors.
+- **[Reconciliation statement](debt-and-calendar.md)** — the mutual settlements with a partner for a period: the opening balance, the documents of the period as a ledger, the closing balance, and a printed two-sided act for the partner to confirm.
 
 ![Bills report](images/bill-report.webp)
 

@@ -83,7 +83,7 @@ The "Invoicing" section contains the groups:
 
 - **Operations** — [Bills](bills.md), [Invoices](invoices.md), [Incoming payments](incoming-payments.md), [Outgoing payments](outgoing-payments.md), and Customs declarations.
 - **Processes** — [Mobile bill](mobile-bills.md).
-- **Reporting** — [Payment calendar](debt-and-calendar.md), [Debt aging](debt-and-calendar.md), Payments, Bills report, Invoices report.
+- **Reporting** — [Payment calendar](debt-and-calendar.md), [Debt aging](debt-and-calendar.md), [Reconciliation statement](debt-and-calendar.md), Payments, Bills report, Invoices report.
 - **Configuration** — the **Settings** form, [Taxes](taxes.md), Payment terms, Banks, Accounts (bank + cash), Analytic accounts.
 
 ![The "Invoicing" section in the navigator with expanded groups](images/invoicing-nav.webp)

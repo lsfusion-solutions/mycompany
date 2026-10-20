@@ -71,4 +71,23 @@ Jak liczone są wartości:
 
 Granice przedziałów ustawia się w zakładce **„Przedział wiekowania”** formularza [„Ustawienia”](settings.md).
 
+## Uzgodnienie sald
+
+**„Fakturowanie” → „Raportowanie” → „Uzgodnienie sald”** buduje zestawienie rozrachunków z partnerem za okres: saldo otwarcia, wszystkie dokumenty okresu w układzie księgi i saldo zamknięcia, wraz z dwustronnym wydrukiem do wysłania partnerowi do potwierdzenia. Ten sam formularz otwiera przycisk **„Uzgodnienie sald”** na karcie [partnera](../masterdata/partners.md).
+
+Układ:
+
+- na górze wybierasz **„Firmę”**, **„Partnera”** i **„Okres”** (domyślnie od pierwszego dnia bieżącego roku do dziś); **„Drukuj”** buduje wydruk — jest dostępny, gdy okres zawiera dokumenty, dla okresu bez nich formularz nadal pokazuje salda;
+- wiersz podsumowania pokazuje **„Saldo otwarcia”**, obroty okresu **„Wn”** i **„Ma”** oraz **„Saldo zamknięcia”**;
+- tabela wymienia aktywne pozycje długu partnera w firmie z datą w okresie — typ, numer, data; kwota trafia do kolumny **„Wn”** dla dokumentów zwiększających dług partnera (faktury, płatności wychodzące) i do kolumny **„Ma”** dla zmniejszających go (faktury zakupu, płatności przychodzące); **„Edytuj”** otwiera dokument.
+
+Jak liczone są wartości:
+
+- salda to [dług](#dług) partnera w firmie na datę — saldo otwarcia na dzień przed okresem, saldo zamknięcia na jego ostatni dzień — więc saldo zamknięcia okresu kończącego się dziś to **„Dług”** z karty partnera dla tej firmy; saldo dodatnie oznacza, że partner jest winien firmie, ujemne — że firma jest winna partnerowi;
+- saldo zamknięcia to saldo otwarcia plus obroty Wn minus obroty Ma;
+- kwoty są w walucie wartości długu — walucie domyślnej albo własnej walucie partnera, gdy przeliczanie jest wyłączone w [ustawieniach](settings.md);
+- dokumenty anulowane są pomijane, jak we wszystkich wartościach długu.
+
+Wydruk jest zbudowany jak pozostałe neutralne formularze wydruku: nagłówek firmy, partner, data, okres i waluta, potem księga z kolumnami **„Wn”** / **„Ma”** pod nagłówkiem **„Według danych”** każdej ze stron — kolumny partnera pozostają puste do wypełnienia — wiersze salda otwarcia, obrotów i salda zamknięcia, zdanie o tym, kto komu jest winien na koniec okresu, oraz miejsce na podpis każdej ze stron. Jego podpisy pochodzą z tego samego słownika zasobów co interfejs (`$R{klucz}` w szablonie, w języku serwera), więc jeden szablon (`ReconciliationStatement.jrxml`) obsługuje wszystkie edycje, a we własnym szablonie można tak samo użyć dowolnego klucza słownika. Szablon jest jeden dla całego systemu: blok **„Szablon uzgodnienia sald”** formularza [„Ustawienia”](settings.md) ma **„Otwórz”** (pobiera bieżący jrxml, wbudowany lub przesłany), **„Prześlij”** (zastępuje wbudowany układ własnym plikiem) i **„Resetuj”** (przywraca wbudowany).
+
 Zobacz parametry: [Ustawienia i katalogi](settings.md).
