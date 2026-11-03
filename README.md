@@ -52,6 +52,10 @@ Download and run the [MyCompany installer (x64)](https://download.lsfusion.org/s
 
 See the [Docker installation guide](https://mycompany-docs.lsfusion.org/administration/installation-docker/).
 
+## ☁️ One-Click Deploy
+
+[![Deploy on RepoCloud](https://d16t0pc4846x52.cloudfront.net/deploylobe.svg)](https://repocloud.io/details/MyCompany/)
+
 ## 🌍 Languages
 
 The MyCompany interface is translated into **English, Polish and Russian**. It can also run in other languages (German, Spanish, French, Portuguese, Ukrainian, Chinese) using the platform's interface localization, with English fallback for untranslated application strings.
