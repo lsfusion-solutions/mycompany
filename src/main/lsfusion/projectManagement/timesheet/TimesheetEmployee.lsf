@@ -30,10 +30,10 @@ FORM timesheetEmployee 'Employee timesheet'
                               ON CHANGE {
                                   IF NOT timesheetTimeEntryHours() THEN {
                                       INPUT n = hours(d, e, t) DO {
-                                          changeSaveTimesheetHours(d, e, t, n, NULL);
+                                          changeSaveTimesheetHours(d, e, t, timesheetTimeEntryType(), n, NULL);
                                       }
                                   } ELSE
-                                      changeSaveTimesheetHours(d, e, t, hours(timesheetTimeEntryHours()), timesheetTimeEntryHours());
+                                      changeSaveTimesheetHours(d, e, t, timesheetTimeEntryType(), hours(timesheetTimeEntryHours()), timesheetTimeEntryHours());
                               } 
     FILTERS assigned(project(t), e, dates) OR hours(t, e, dates) OR (NOT countAssignments(project(t)) AND accessAllProjects(currentUser())),
             project(t) = timesheetProject() OR NOT timesheetProject()

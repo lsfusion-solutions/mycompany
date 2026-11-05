@@ -4,22 +4,30 @@ REQUIRE Timesheet, ProjectTask, TaskTimeEntry;
 
 NAMESPACE ProjectManagement;
 
+timesheetTask = DATA LOCAL Task ();
+idNameTimesheetTask 'Hours' = idName(timesheetTask());
+CONSTRAINT timesheetTask() AND NOT ((project(timesheetTask()) = timesheetProject() OR NOT timesheetProject()) AND opened(timesheetTask()))
+    CHECKED BY timesheetTask[] MESSAGE '';
+
+timeEntryHoursTimesheetTask (DATE d, Employee e) = OVERRIDE trimScale(hours(d, e, timesheetTask())), nameTimeEntryHours(timeEntry(d, e, timesheetTask()));
+
 EXTEND FORM timesheetDateEmployee
     PROPERTIES(t) READONLY nameTask
 ;
 
-changeTimesheetHours (DATE d, Employee e, Task t, NUMERIC[8,2] n, TimeEntryHours h) {
+changeTimesheetHours (DATE d, Employee e, Task t, TimeEntryType et, NUMERIC[8,2] n, TimeEntryHours h) {
     IF n THEN {
         FOR TimeEntry te = timeEntry(d, e, t) DO {
-            IF hours(te) = n AND h THEN
+            IF hours(te) = n AND h AND type(te) = et THEN
                 DELETE te;
             ELSE {
+                type(te) <- et;
                 hours(te) <- n;
                 timeEntryHours(te) <- h;
             }
         } ELSE {
             NEW te = TimeEntry {
-                type(te) <- timesheetTimeEntryType();
+                type(te) <- et;
                 task(te) <- t;
                 employee(te) <- e;
                 date(te) <- d;
@@ -31,13 +39,12 @@ changeTimesheetHours (DATE d, Employee e, Task t, NUMERIC[8,2] n, TimeEntryHours
         DELETE TimeEntry te WHERE date(te) = d AND employee(te) = e AND task(te) = t;
 }
 
-changeSaveTimesheetHours (DATE d, Employee e, Task t, NUMERIC[8,2] n, TimeEntryHours h) {
+changeSaveTimesheetHours (DATE d, Employee e, Task t, TimeEntryType et, NUMERIC[8,2] n, TimeEntryHours h) {
     IF NOT autoSaveTimesheetHours() THEN {
-        changeTimesheetHours(d, e, t, n, h);
+        changeTimesheetHours(d, e, t, et, n, h);
     } ELSE
-        NEWSESSION NESTED (timesheetTimeEntryType[]) {
-            changeTimesheetHours(d, e, t, n, h);
-            APPLY NESTED (timesheetTimeEntryType[]);
+        NEWSESSION {
+            changeTimesheetHours(d, e, t, et, n, h);
+            APPLY;
         }
 }
-

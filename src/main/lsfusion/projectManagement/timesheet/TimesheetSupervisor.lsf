@@ -7,6 +7,8 @@ PRIORITY MasterData;
 
 NAMESPACE ProjectManagement;
 
+changeSelectedTimesheetHours ABSTRACT CASE (TimeEntryHours);
+
 FORM timesheetSupervisor 'Supervisor timesheet'
     OBJECTS dates = INTERVAL[DATE] PANEL NULL
     PROPERTIES dates '' = VALUE(dates)
@@ -33,10 +35,7 @@ FORM timesheetSupervisor 'Supervisor timesheet'
             OR hours(e, timesheetProject(), dates)
 
     OBJECTS h = TimeEntryHours
-    PROPERTIES NOWAIT changeHours = {
-                    FOR [SELECT timesheetSupervisor.e](Employee ee) AND [SELECT PROPERTY timesheetSupervisor.hours](DATE dd) DO
-                        changeSaveTimesheetHours(dd, ee, timesheetTimeEntryType(), hours(h), h, autoSaveTimesheetHours()); 
-               } COLUMNS (h) HEADER nameHours(h) BACKGROUND rgbColorType(h)
+    PROPERTIES NOWAIT changeHours = { changeSelectedTimesheetHours(h); } COLUMNS (h) HEADER nameHours(h) BACKGROUND rgbColorType(h)
     FILTERS type(h) = timesheetTimeEntryType()
 
     EVENTS ON INIT {
@@ -49,7 +48,11 @@ FORM timesheetSupervisor 'Supervisor timesheet'
                nextInterval '>' = { ACTIVATE timesheetSupervisor.dates = nextMonthInterval(dates); }
 ;
 
-WHEN LOCAL FORMS timesheetSupervisor CHANGED(timesheetTimeEntryType()) DO timesheetTimeEntryHours() <- defaultHours(timesheetTimeEntryType());
+// the template buttons act on the grid of the active tab : the implementations added by the modules with their own tabs are checked first
+changeSelectedTimesheetHours (TimeEntryHours h) + WHEN h IS TimeEntryHours THEN {
+    FOR [SELECT timesheetSupervisor.e](Employee ee) AND [SELECT PROPERTY timesheetSupervisor.hours](DATE dd) DO
+        changeSaveTimesheetHours(dd, ee, timesheetTimeEntryType(), hours(h), h, autoSaveTimesheetHours());
+}
 
 DESIGN timesheetSupervisor {
     OBJECTS {
