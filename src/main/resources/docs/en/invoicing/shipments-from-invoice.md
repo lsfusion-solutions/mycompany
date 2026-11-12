@@ -53,6 +53,18 @@ These rules apply to auto-created shipments only; a shipment created manually wi
 
 Practical meaning: an auto-created shipment stays consistent with the invoice while you work with the documents.
 
+## Editing the shipment manually
+
+A shipment created from an invoice can be extended by hand — for example, when one more item is added to the invoice and the same position is entered in the already existing shipment. A shipment line added manually is automatically linked to the first invoice line with the same product. As a result, the invoice's “to ship” quantity decreases just as it does for lines created with **"Create Shipment"**:
+
+- the link is set when the document is saved and does not depend on the order of actions: if the product is added to the shipment first and to the invoice afterwards, the shipment line is linked to the added invoice line;
+- the shipped quantity is counted over all linked lines, so when the quantity is increased in the invoice, you can either change the quantity in the existing shipment line or add a separate line for the difference;
+- a line whose product is not in the invoice stays unlinked and does not affect the “to ship” quantity;
+- if the same product is entered in several invoice lines, shipment lines added manually are linked to the first of them; ship the remainder of the other lines with **"Create Shipment"**;
+- for an invoice type with **Automatically create shipment**, the synchronization rules start to apply to the linked line: a change of the quantity or the product in the invoice line is carried over to the shipment line.
+
+The rule applies only to a shipment that is already linked to the invoice (it has at least one line linked to a line of this invoice). A shipment created entirely by hand is not linked to an invoice — use **"Create Shipment"** or create the invoice from shipments (see below). If a line with a product from the invoice is later added to a shipment that has already been invoiced, it is linked to that invoice as well and is not included in the next invoice.
+
 ## Typical scenario
 
 1. Open an invoice.

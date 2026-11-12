@@ -56,6 +56,16 @@ toShip (InvoiceLine il) =
 
 toShip (Invoice i) = GROUP SUM toShip(InvoiceLine il) IF invoice(il) = i;
 
+// a line added to the shipment of an invoice manually is linked to the first line of that invoice with the same product
+WHEN SETCHANGED(product(ShipmentLine sl)) AND countInvoice(shipment(sl)) AND NOT invoiceLine(sl) DO
+    invoiceLine(sl) <- GROUP MIN InvoiceLine il IF in(invoice(il), shipment(sl)) AND shippedProduct(il) = product(sl);
+
+// and vice versa: a line added to an invoice picks up the lines of its shipments with the same product that are not linked yet
+// (if several invoice lines are changed at once, the first one wins)
+WHEN SETCHANGED(shippedProduct(InvoiceLine il)) AND in(invoice(il), shipment(ShipmentLine sl)) AND
+     product(sl) = shippedProduct(il) AND NOT invoiceLine(sl) ORDER DESC il DO
+    invoiceLine(sl) <- il;
+
 fill ABSTRACT LIST (Shipment, Invoice);
 fill ABSTRACT LIST (Invoice, Shipment);
 fill ABSTRACT LIST (ShipmentLine, InvoiceLine);

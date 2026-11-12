@@ -53,6 +53,18 @@ Reguły te dotyczą wyłącznie wydań utworzonych automatycznie; wydanie utworz
 
 Znaczenie praktyczne: wydanie utworzone automatycznie pozostaje spójne z fakturą podczas pracy z dokumentami.
 
+## Ręczna edycja wydania
+
+Wydanie utworzone z faktury można uzupełniać ręcznie — na przykład gdy do faktury dodano kolejny towar, a tę samą pozycję wprowadzono do już istniejącego wydania. Linia wydania dodana ręcznie jest automatycznie wiązana z pierwszą linią faktury z tym samym towarem. Dzięki temu ilość „do wydania” na fakturze zmniejsza się tak samo, jak dla linii utworzonych akcją **„Utwórz wydanie”**:
+
+- powiązanie jest ustawiane przy zapisie dokumentu i nie zależy od kolejności działań: jeśli towar dodano najpierw do wydania, a dopiero potem do faktury, linia wydania zostaje powiązana z dodaną linią faktury;
+- ilość wydana jest liczona ze wszystkich powiązanych linii, dlatego gdy na fakturze zwiększono ilość, w wydaniu można zmienić ilość w istniejącej linii albo dodać osobną linię na różnicę;
+- linia z towarem, którego nie ma na fakturze, pozostaje niepowiązana i nie wpływa na ilość „do wydania”;
+- jeśli ten sam towar występuje w kilku liniach faktury, linie wydania dodane ręcznie są wiązane z pierwszą z nich; pozostałą ilość z innych linii wydaj akcją **„Utwórz wydanie”**;
+- dla typu faktury z ustawieniem **Automatycznie utwórz wydanie** powiązaną linię zaczynają obejmować reguły synchronizacji: zmiana ilości lub towaru w linii faktury jest przenoszona do linii wydania.
+
+Reguła dotyczy tylko wydania, które jest już powiązane z fakturą (ma co najmniej jedną linię powiązaną z linią tej faktury). Wydanie utworzone w całości ręcznie nie jest wiązane z fakturą — użyj akcji **„Utwórz wydanie”** albo utwórz fakturę z wydań (patrz niżej). Jeśli do wydania, do którego wystawiono już fakturę, zostanie później dodana linia z towarem z tej faktury, również zostanie z nią powiązana i nie trafi do następnej faktury.
+
 ## Typowy scenariusz
 
 1. Otwórz fakturę.
